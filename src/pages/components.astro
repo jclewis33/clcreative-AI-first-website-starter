@@ -45,6 +45,19 @@ import PricingItem from "../components/ui/PricingItem.astro";
 import Marquee from "../components/ui/Marquee.astro";
 import ScrollReveal from "../components/ui/ScrollReveal.astro";
 
+/* ── Demo image pools (from the shared placeholder library) ── */
+import phL1 from "../assets/placeholder-images/placeholder-1.webp";
+import phL2 from "../assets/placeholder-images/placeholder-2.webp";
+import phL3 from "../assets/placeholder-images/placeholder-3.webp";
+import phL4 from "../assets/placeholder-images/placeholder-4.webp";
+import phL5 from "../assets/placeholder-images/placeholder-5.webp";
+import phL6 from "../assets/placeholder-images/placeholder-6.webp";
+import phS1 from "../assets/placeholder-images/placeholder-11.webp";
+import phS2 from "../assets/placeholder-images/placeholder-12.webp";
+import phS3 from "../assets/placeholder-images/placeholder-13.webp";
+const demoLandscape = [phL1.src, phL2.src, phL3.src, phL4.src, phL5.src, phL6.src];
+const demoSquare = [phS1.src, phS2.src, phS3.src];
+
 /* ── Fetch testimonials from Sanity (tolerate an empty/unreachable dataset) ── */
 import { getDraftModeProps } from "../sanity/lib/draft-mode";
 const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
@@ -161,7 +174,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       </Col>
       <img
         slot="col2"
-        src="https://picsum.photos/seed/layout-col/800/600"
+        src={phL1.src}
         alt="Placeholder image"
         loading="lazy"
         style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -191,7 +204,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       </Col>
       <img
         slot="col2"
-        src="https://picsum.photos/seed/layout-rev/800/600"
+        src={phL2.src}
         alt="Placeholder image"
         loading="lazy"
         style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -220,7 +233,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       </Col>
 
       <Visual
-        src={"https://picsum.photos/seed/layout-bk/800/1000"}
+        src={phS1.src}
         ratio="16/9"
         alt="layout image"
         slot="col2"
@@ -252,7 +265,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       </Col>
       <img
         slot="col2"
-        src="https://picsum.photos/seed/layout-contain/800/600"
+        src={phL3.src}
         alt="Placeholder image"
         loading="lazy"
         style="width: 100%; height: 100%; object-fit: cover; display: block;"
@@ -266,7 +279,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     <Layout variant="contain-reversed">
       <img
         slot="col1"
-        src="https://picsum.photos/seed/layout-contain-rev/800/600"
+        src={phL4.src}
         alt="Placeholder image"
         loading="lazy"
         style="width: 100%; height: 100%; object-fit: cover; display: block;"
@@ -467,11 +480,11 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
             title: "SEO Architecture",
             text: "Sites built with a crawl-first mindset — structured data, performance, and authority.",
           },
-        ].map(({ seed, title, text }) => (
+        ].map(({ title, text }, i) => (
           <Card variant="default" title={title} href="#">
             <img
               slot="visual"
-              src={`https://picsum.photos/seed/${seed}/800/500`}
+              src={demoLandscape[i % demoLandscape.length]}
               alt={title}
               loading="lazy"
               style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;"
@@ -544,11 +557,11 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
             title: "TreeRing",
             text: "Custom school yearbooks, reimagined.",
           },
-        ].map(({ seed, title, text }) => (
+        ].map(({ title, text }, i) => (
           <Card variant="cover" title={title} href="#">
             <img
               slot="visual"
-              src={`https://picsum.photos/seed/${seed}/800/1000`}
+              src={demoSquare[i % demoSquare.length]}
               alt={title}
               loading="lazy"
               style="width:100%; height:100%; object-fit:cover; display:block;"
@@ -617,12 +630,12 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
               title: "Conversion Rate",
               text: "A/B testing and UX audit to maximise every visit.",
             },
-          ].map(({ seed, title, text }) => (
+          ].map(({ title, text }, i) => (
             <div class="swiper-slide">
               <Card variant="default" title={title} href="#">
                 <img
                   slot="visual"
-                  src={`https://picsum.photos/seed/${seed}/800/500`}
+                  src={demoLandscape[i % demoLandscape.length]}
                   alt={title}
                   loading="lazy"
                   style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;"
@@ -772,7 +785,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-feat/800/500"
+            src={phL5.src}
             alt="Features"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -791,7 +804,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-price/800/500"
+            src={phL6.src}
             alt="Pricing"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -810,7 +823,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-supp/800/500"
+            src={phL1.src}
             alt="Support"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -837,7 +850,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           interaction.
         </Text>
         <img
-          src="https://picsum.photos/seed/tab-design/800/400"
+          src={phL2.src}
           alt="Web design services"
           loading="lazy"
           class="u-margin-top-4"
@@ -852,7 +865,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           Performance is a feature, not an afterthought.
         </Text>
         <img
-          src="https://picsum.photos/seed/tab-dev/800/400"
+          src={phL3.src}
           alt="Development services"
           loading="lazy"
           class="u-margin-top-4"
@@ -867,7 +880,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           crawl-first markup, and performance optimisation from the ground up.
         </Text>
         <img
-          src="https://picsum.photos/seed/tab-seo/800/400"
+          src={phL4.src}
           alt="SEO strategy services"
           loading="lazy"
           class="u-margin-top-4"
@@ -898,7 +911,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-s1/800/500"
+            src={phL5.src}
             alt="Discovery phase"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -918,7 +931,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-s2/800/500"
+            src={phL6.src}
             alt="Design phase"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -938,7 +951,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-s3/800/500"
+            src={phL1.src}
             alt="Development phase"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -958,7 +971,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-s4/800/500"
+            src={phL2.src}
             alt="Launch phase"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
