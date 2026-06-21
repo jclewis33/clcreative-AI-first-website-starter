@@ -266,7 +266,7 @@ matching `SITE.*Path` in [site.ts](../../../src/config/site.ts).
 
 | Asset | File (in [public/images/](../../../public/images/)) | Notes |
 |---|---|---|
-| Open Graph image | `cl-creative-open-graph.png` (`SITE.ogImagePath`) | 1200×630, the social-share card |
+| Open Graph image | `og-image.png` (`SITE.ogImagePath`) | 1200×630, the social-share card |
 | Favicon | `favicon.png` (`SITE.logoPath` — also the JSON-LD logo) | square |
 | Apple touch / web clip | `webclip.png` (`SITE.appleTouchIconPath`) | 180×180 |
 
