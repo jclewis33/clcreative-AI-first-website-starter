@@ -28,7 +28,6 @@ import { loadQuery } from "../../sanity/lib/load-query";
 import { getDraftModeProps } from "../../sanity/lib/draft-mode";
 import { BLOG_POSTS_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
 import { urlFor } from "../../sanity/lib/image";
-import { displayCategory } from "../../lib/category-display";
 import { stegaClean } from "@sanity/client/stega";
 
 // Styles
@@ -151,7 +150,7 @@ function formatDate(dateStr: string) {
         {
           categorySections.map((cat) => (
             <a href={`#${cat.slug}`} class="blog_category_nav_link">
-              {displayCategory(cat.name)}
+              {cat.name}
             </a>
           ))
         }
@@ -239,7 +238,7 @@ function formatDate(dateStr: string) {
                 <div class="blog_slider_card_content">
                   {post.categories?.[0] && (
                     <span class="blog_slider_card_category">
-                      {displayCategory(post.categories[0])}
+                      {post.categories[0]}
                     </span>
                   )}
                   <h3 class="blog_slider_card_title">{post.title}</h3>
@@ -274,7 +273,7 @@ function formatDate(dateStr: string) {
           <div class="blog_section_header">
             <div class="blog_section_header_text">
               <Heading data-split-text tag="h2" marginBottom={0}>
-                {displayCategory(cat.name)}
+                {cat.name}
               </Heading>
               <Text data-fade-in muted marginBottom={0}>
                 {cat.description}
@@ -359,7 +358,7 @@ function formatDate(dateStr: string) {
             <Button
               variant="text"
               href={`/blog/category/${cat.slug}`}
-              ariaLabel={`View all ${displayCategory(cat.name)} articles`}
+              ariaLabel={`View all ${cat.name} articles`}
             >
               View all articles
               <svg

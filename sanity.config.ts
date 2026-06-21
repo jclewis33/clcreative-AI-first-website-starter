@@ -49,10 +49,10 @@ const DATE_DESC = [{ field: "date", direction: "desc" as const }];
 const STRUCTURE_API_VERSION = "2025-03-15";
 
 export default defineConfig({
-  name: "clcreative",
-  title: "CL Creative",
+  name: "your-project",
+  title: "Your Company",
   icon: StudioIcon,
-  // Custom CL Creative wordmark in the Studio navbar (StudioLogo).
+  // Custom wordmark in the Studio navbar (StudioLogo).
   // See src/sanity/components/.
   studio: {
     components: {
@@ -222,21 +222,21 @@ export default defineConfig({
     }),
     presentationTool({
       resolve,
-      // The Studio is hosted at clcreative.sanity.studio and iframes the live
+      // The Studio is hosted at <studioHost>.sanity.studio and iframes the live
       // site cross-origin. `initial` is the site origin (overridable via
       // SANITY_STUDIO_PREVIEW_URL for local `sanity dev` against localhost).
       // The enable/disable endpoints resolve relative to it and live on the
       // site (src/pages/api/draft-mode/*).
       previewUrl: {
         initial:
-          process.env.SANITY_STUDIO_PREVIEW_URL || "https://www.clcreative.co",
+          process.env.SANITY_STUDIO_PREVIEW_URL || "https://www.example.com",
         previewMode: {
           enable: "/api/draft-mode/enable",
           disable: "/api/draft-mode/disable",
         },
       },
       // Iframe origins the Studio trusts for Comlink/overlay messaging.
-      allowOrigins: ["http://localhost:*", "https://www.clcreative.co"],
+      allowOrigins: ["http://localhost:*", "https://www.example.com"],
     }),
     // Dev-only GROQ playground for testing queries against the live dataset.
     // Gated so it never appears in the deployed Studio toolbar. The static

@@ -44,7 +44,6 @@ import Card from "./Card.astro";
 import Visual from "./Visual.astro";
 import Heading from "./Heading.astro";
 import Text from "./Text.astro";
-import { displayCategory } from "../../lib/category-display";
 
 /**
  * BlogCard — blog post card with image, title, description, category,
@@ -172,7 +171,7 @@ const formattedDate = date
         marginBottom={0}
         class="blog_card_category"
       >
-        {displayCategory(cat)}
+        {cat}
       </Text>
     ))}
   </div>

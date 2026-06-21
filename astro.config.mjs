@@ -173,7 +173,7 @@ export default defineConfig({
       useCdn: true,
       apiVersion: SANITY_API_VERSION,
       // No `studioBasePath` — the Studio is hosted by Sanity at
-      // clcreative.sanity.studio (deployed via `npx sanity deploy`), not
+      // <studioHost>.sanity.studio (deployed via `npx sanity deploy`), not
       // embedded in this app. The integration still provides the
       // `sanity:client` virtual module used by src/sanity/lib/load-query.ts.
       stega: {
@@ -182,7 +182,7 @@ export default defineConfig({
         // the overlay reads to map clicks back to the corresponding Studio
         // field. The studioUrl tells the overlay which Studio to deep-link —
         // the hosted Studio origin (cross-origin from the site).
-        studioUrl: "https://clcreative.sanity.studio",
+        studioUrl: "https://your-studio.sanity.studio",
       },
     }),
   ],

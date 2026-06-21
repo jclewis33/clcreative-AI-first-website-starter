@@ -61,7 +61,6 @@ import Section from "../ui/Section.astro";
 import Grid from "../ui/Grid.astro";
 import Heading from "../ui/Heading.astro";
 import BlogCard from "../ui/BlogCard.astro";
-import { displayCategory } from "../../lib/category-display";
 
 // Images — replace with CMS image fields when connecting a headless CMS
 import heroImage from "../../assets/placeholder-6.avif";
@@ -546,7 +545,7 @@ const hasHeadingSlot = Astro.slots.has("heading");
 const defaultHeadings: Record<GridVariant, string> = {
   related: "Related Posts",
   recent: "Recent Posts",
-  category: `More in ${displayCategory(category ?? "")}`,
+  category: `More in ${(category ?? "")}`,
   manual: "Related Posts",
 };
 

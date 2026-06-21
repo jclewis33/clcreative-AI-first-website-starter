@@ -8,7 +8,7 @@
  *   2. In another terminal, run:                node scripts/check-schema.mjs
  *
  * Override the base URL with --base (default http://localhost:4321):
- *   node scripts/check-schema.mjs --base https://www.clcreative.co
+ *   node scripts/check-schema.mjs --base https://www.example.com
  *
  * What it checks per page:
  *   - Every <script type="application/ld+json"> parses as valid JSON

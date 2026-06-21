@@ -30,7 +30,6 @@ import {
   SITE_SETTINGS_QUERY,
 } from "../../../sanity/lib/queries";
 import { urlFor } from "../../../sanity/lib/image";
-import { displayCategory } from "../../../lib/category-display";
 
 // Styles
 import "../../../styles/pages/blog.css";
@@ -57,7 +56,7 @@ if (categorySlug === "all") {
   category = match;
 }
 
-const categoryLabel = category === "All" ? "All" : displayCategory(category);
+const categoryLabel = category === "All" ? "All" : category;
 
 /* ── Fetch posts — all posts for "All", filtered for specific category ── */
 

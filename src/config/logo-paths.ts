@@ -1,5 +1,9 @@
 /**
- * CL Creative logo SVG path data — the ONE source for the brand mark + wordmark.
+ * Logo SVG path data — the ONE source for the brand mark + wordmark.
+ *
+ * The path data below still draws the original placeholder wordmark. Replace
+ * LOGO_VIEWBOX / LOGO_MARK_PATHS / LOGO_WORDMARK_PATHS with your own logo's SVG
+ * paths (and LOGO_LABEL with your brand name) when rebranding.
  *
  * Rendered by the front-end logo ([src/components/global/Logo.astro]) and the
  * Sanity Studio navbar logo ([src/sanity/components/StudioLogo.tsx]). Both map
@@ -16,7 +20,7 @@
 export const LOGO_VIEWBOX = "0 0 138 22";
 
 /** Accessible label for the logo. */
-export const LOGO_LABEL = "CL Creative";
+export const LOGO_LABEL = "Your Company";
 
 /** The "CL" monogram mark (two interlocking C shapes). */
 export const LOGO_MARK_PATHS: string[] = [

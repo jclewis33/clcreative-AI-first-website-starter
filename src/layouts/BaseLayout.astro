@@ -187,9 +187,10 @@ const bannerHref = banner?.href;
     </script>
   </head>
   <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${SITE.integrations.gtmId}`} height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
+    <!-- Google Tag Manager (noscript) — only when a GTM container id is configured -->
+    {SITE.integrations.gtmId && (
+      <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${SITE.integrations.gtmId}`} height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    )}
     <div class="page_wrap">
       <!--Navbar appears at the top of every page -->
       <Navbar theme="dark" bannerText={bannerText} bannerHref={bannerHref} />

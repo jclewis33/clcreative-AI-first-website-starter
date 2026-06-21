@@ -108,31 +108,15 @@ const richTextStyles = [
 ];
 
 /**
- * Thumbnail images for the "Add item" content-block picker (the array
- * `insertMenu` grid view). Keyed by each block's array-member `name`. These are
- * Sanity Media-library assets (content-addressed CDN URLs, so they're immutable
- * and safe to hardcode) uploaded specifically as picker thumbnails.
+ * Optional thumbnail images for the "Add item" content-block picker (the array
+ * `insertMenu` grid view), keyed by each block's array-member `name`.
  *
- * ⚠️ Keep these assets in the Media library — they aren't referenced by any
- * document field, so a "remove unused assets" cleanup would wrongly flag them.
- * If you re-upload a thumbnail, update its URL here.
+ * Empty by default — the picker falls back to icons/labels. To add thumbnails,
+ * upload images to your project's Media library and map each block `name` to its
+ * content-addressed CDN URL here, e.g.:
+ *   richText: "https://cdn.sanity.io/images/<projectId>/<dataset>/<asset>.png",
  */
-const blockPreviewImages: Record<string, string> = {
-  richText:
-    "https://cdn.sanity.io/images/2mcikzx3/production/9298fc64e5d47c60d316cdfa370434d2c8d191d0-1440x492.png",
-  richTextLeft:
-    "https://cdn.sanity.io/images/2mcikzx3/production/c0923e2615aaa57dc672bc72e3489bbd2d9c0dbe-1440x392.png",
-  richTextColumns:
-    "https://cdn.sanity.io/images/2mcikzx3/production/68f524fbff9f444eb958e043d14697ef499da294-1440x460.png",
-  richTextWithImage:
-    "https://cdn.sanity.io/images/2mcikzx3/production/27d9a2ed196d0ed29def7d8393b8eb69b36e81aa-1440x608.png",
-  fullWidthImage:
-    "https://cdn.sanity.io/images/2mcikzx3/production/4b9245a6194c5be1713c0f2ab7fa2b21fc04b4da-1440x857.png",
-  imageGrid:
-    "https://cdn.sanity.io/images/2mcikzx3/production/bea2cec36ce4d9378344f3d8caf8296826467b5f-1440x1250.png",
-  stats:
-    "https://cdn.sanity.io/images/2mcikzx3/production/acc8eefdb6a56da097396aaa5ec85f1c942b9ecf-1440x428.png",
-};
+const blockPreviewImages: Record<string, string> = {};
 
 export const caseStudy = defineType({
   name: "caseStudy",

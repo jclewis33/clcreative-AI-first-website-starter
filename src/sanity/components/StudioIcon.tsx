@@ -1,9 +1,9 @@
 /**
- * Compact CL Creative mark — used as the Studio workspace `icon` (the small
- * square badge in the workspace switcher). This is just the symbol portion of
- * the logo, without the wordmark. Uses `currentColor` so it adapts to the
- * Studio's light/dark theme. Path data mirrors the navbar mark in
- * src/components/global/Logo.astro.
+ * Compact brand mark — used as the Studio workspace `icon` (the small square
+ * badge in the workspace switcher). This is just the symbol portion of the
+ * logo, without the wordmark. Uses `currentColor` so it adapts to the Studio's
+ * light/dark theme. Path data mirrors the navbar mark in
+ * src/components/global/Logo.astro. Replace with your own mark when rebranding.
  */
 export function StudioIcon() {
   return (
@@ -14,7 +14,7 @@ export function StudioIcon() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="CL Creative"
+      aria-label="Your Company"
     >
       <path
         fillRule="evenodd"
