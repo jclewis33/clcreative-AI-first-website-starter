@@ -11,7 +11,7 @@ Work top to bottom. Items marked **🔁 per-fork** must be done for every new pr
 > - **`/setup` (Claude Code skill)** — *recommended.* In a Claude Code session on the fork, run `/setup`. Claude gathers your identity info, **creates the new Sanity project + dataset, deploys the schema, and adds the CORS origins** via the Sanity MCP, runs the CLI below for the file edits, verifies with a build, then hands you the short list of dashboard items only a human can finish. It also **pulls brand colors from a Figma file** (when a Figma MCP is connected), asks about your **fluid type scale**, and walks you through swapping **fonts, the OG image, favicon, and logos**. This is the only path that automates standing up the Sanity backend. See [.claude/skills/setup/SKILL.md](../.claude/skills/setup/SKILL.md).
 > - **`npm run setup` (CLI)** — the deterministic engine. Prompts for each identity value and rewrites `site.shared.mjs`, `site.ts`, `wrangler.jsonc`, `colors.css`, `themes.css`, `typography.css`, `logo-paths.ts`, `sanity.cli.ts`, and `.env`. Also accepts `cssColors` / `themeColors` / `fluidType` maps (via `--config`) so a Figma palette and type scale land deterministically. No AI, no network — works for anyone forking. (`/setup` calls this under the hood.) It does **not** create the Sanity project, swap fonts/images, or touch any dashboard.
 >
-> Both deliberately **leave the content scaffolding** (`areaServed`, `social`, `sameAs`, location pages, FAQs, `site-structure.ts`) in place as a working skeleton — review and replace that copy for your business after setup. The sections below remain the source of truth for the **dashboard work neither tool can perform** (Cloudflare secrets/WAF/domain, GitHub Dependabot, the Sanity Viewer token).
+> Both deliberately **leave the content scaffolding** (`areaServed`, `social`, `sameAs`, `faqs.ts`, `site-structure.ts`) in place as a working skeleton — review and replace that copy for your business after setup. The sections below remain the source of truth for the **dashboard work neither tool can perform** (Cloudflare secrets/WAF/domain, GitHub Dependabot, the Sanity Viewer token).
 
 ---
 
@@ -52,7 +52,7 @@ Full narrative + the embedded alternative: the Notion guide *"Sanity + Astro + C
 4. **`.env`** — copy from [.env.example](../.env.example), fill in. **Never commit it** (gitignore already covers it; GitHub push protection is the backstop).
 5. Brand: `--color-brand-500` in [colors.css](../src/styles/variables/colors.css) + the `SITE.brand.color` mirror; [logo-paths.ts](../src/config/logo-paths.ts) for the wordmark.
 6. `src/data/site-structure.ts` — pages, nav, footer, banner for the new site.
-7. Third-party integration ids in `SITE.integrations` ([site.ts](../src/config/site.ts)) — GTM, MailerLite, Usercentrics, and the HoneyBook placement id (read by the `HoneyBookEmbed*` components). Swap or delete the ones the new site doesn't use; the `HoneyBookEmbed*` components and their pages can be removed if there's no HoneyBook account.
+7. Third-party integration ids in `SITE.integrations` ([site.ts](../src/config/site.ts)) — GTM, MailerLite, Usercentrics, and the HoneyBook placement id. **All ship blank (`""`) = off**; fill in the ones the new site uses (Head.astro only injects each script when its id is set). The `HoneyBookEmbed*` components ([src/components/ui/](../src/components/ui/)) are currently **unused** — wire one in where you want a booking/contact form, or delete them.
 
 ---
 

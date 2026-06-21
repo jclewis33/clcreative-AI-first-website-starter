@@ -394,7 +394,7 @@ import Button from '@/components/ui/Button.astro';
 <Button href="/contact" ariaLabel="Contact us">Contact Us</Button>
 
 <!-- Secondary -->
-<Button variant="secondary" href="/about" ariaLabel="Learn more">Learn More</Button>
+<Button variant="secondary" href="/case-studies" ariaLabel="Learn more">Learn More</Button>
 
 <!-- Text-link style -->
 <Button variant="text" href="/blog" ariaLabel="Read articles">Read more →</Button>
@@ -447,12 +447,12 @@ Nav items come from the **`NAV_MENU`** array in [src/data/site-structure.ts](src
 ```ts
 // src/data/site-structure.ts
 export const NAV_MENU: NavMenuItem[] = [
-  { path: "/about" },
+  { path: "/blog" },
   {
-    label: "Services",
-    children: ["/services/web-design", "/services/seo"],
+    label: "More",
+    children: ["/case-studies", "/glossary"],
   },
-  { path: "/case-studies" },
+  { path: "/contact" },
 ];
 ```
 
@@ -1521,7 +1521,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
       <Text variant="large" align="center">Supporting text.</Text>
       <div class="u-button-wrapper">
         <Button href="/contact" ariaLabel="Get started">Get Started</Button>
-        <Button variant="secondary" href="/about" ariaLabel="Learn more">Learn More</Button>
+        <Button variant="secondary" href="/case-studies" ariaLabel="Learn more">Learn More</Button>
       </div>
     </Col>
   </Layout>
@@ -1641,7 +1641,7 @@ No content-publish webhook is needed — every request fetches fresh from Sanity
 URLs must resolve without trailing slashes. Two places must stay in sync:
 
 1. **[astro.config.mjs](astro.config.mjs)** — set `trailingSlash: 'never'` on the root config so Astro emits canonical URLs, sitemap entries, and internal links without trailing slashes.
-2. **[wrangler.jsonc](wrangler.jsonc)** — inside the `assets` block, set `"html_handling": "drop-trailing-slash"` so the Cloudflare Worker serves `/about` instead of redirecting `/about` → `/about/` (or vice versa) at the edge:
+2. **[wrangler.jsonc](wrangler.jsonc)** — inside the `assets` block, set `"html_handling": "drop-trailing-slash"` so the Cloudflare Worker serves `/contact` instead of redirecting `/contact` → `/contact/` (or vice versa) at the edge:
 
    ```jsonc
    "assets": {
@@ -1794,88 +1794,82 @@ For dynamic routes, read `Astro.params.slug` directly — no `getStaticPaths()` 
 
 ---
 
-## Location Pages — SEO, Schema & Site Wiring
+## Per-page SEO & Structured Data
 
-Per-city marketing pages (currently [/web-design-midlothian](src/pages/web-design-midlothian.astro) and [/web-design-waxahachie](src/pages/web-design-waxahachie.astro)). Use this checklist when adding a new one.
+Most pages need nothing here — BaseLayout emits the baseline schema automatically.
+Reach for this only when a page should advertise a specific **Service** (and
+optionally an **FAQ**) to search engines, e.g. a marketing/service/landing page.
 
 ### Sitewide pieces — already wired, do not duplicate
 
-- **LocalBusiness JSON-LD** lives in [src/layouts/BaseLayout.astro](src/layouts/BaseLayout.astro) as a single `ProfessionalService` node with `@id: https://www.example.com/#localbusiness`. It renders on every page. Per-page `Service` schemas reference it via `provider.@id` — never redefine the LocalBusiness on a location page.
-- **`areaServed` on the sitewide node** mirrors the Google Business Profile city list. If a new city the page targets isn't already in that array, add it to [BaseLayout.astro](src/layouts/BaseLayout.astro). This is independent of whether a per-city page exists.
-- **Image/logo paths** in JSON-LD are standardized: `image: /cl-creative-open-graph.png`, `logo: /images/favicon.png`. The same paths are used by [src/lib/jsonld.ts](src/lib/jsonld.ts) for blog/case-study/glossary templates.
+- **LocalBusiness JSON-LD** lives in [src/layouts/BaseLayout.astro](src/layouts/BaseLayout.astro) as a single `ProfessionalService` node with `@id: ${SITE.url}/#localbusiness`. It renders on **every** page. Per-page `Service` schemas reference it via `provider.@id` — never redefine the LocalBusiness on a page.
+- **`areaServed`** on the sitewide node comes from `SITE.areaServed` in [src/config/site.ts](src/config/site.ts). Add the cities/regions your business serves there (once) — it's independent of whether any per-page Service schema exists.
+- **Baseline per page:** BaseLayout always renders `LocalBusiness + WebPage + BreadcrumbList`. Image/logo paths come from `SITE.ogImagePath` (`/images/og-image.png`) and `SITE.logoPath` (`/images/favicon.png`); [src/lib/jsonld.ts](src/lib/jsonld.ts) reuses the same `SITE.*` values for the blog/case-study/glossary templates.
 
-### Per-page checklist (new location page)
+### Adding a Service (+ optional FAQ) graph to a page
 
-1. **Title tag** — `<= 60 chars`, format: `Web Design in {City}, TX | Your Company`
-2. **Meta description** — `<= 155 chars`, mention the city + Webflow + a CTA
-3. **`canonical` prop on BaseLayout** — `https://www.example.com/web-design-{city}` (no trailing slash; the project enforces this in [astro.config.mjs](astro.config.mjs) and [wrangler.jsonc](wrangler.jsonc))
-4. **H1** — natural sentence that includes the city name. Don't keyword-stuff.
-5. **Image alt text** — specific and real (e.g. `"Your Company web designer serving {City}, TX"`). Not keyword-stuffed.
-6. **Internal links woven into body copy**: `/web-design-{other-city}`, `/m2m-framework`, `/why-webflow`. The `HowWeWorkPromo`, `CaseStudyFeatured`, and `FAQ` sections already link `/how-we-work` and `/case-studies`.
-7. **FAQs** — add a `webDesign{City}Faqs` export to [src/data/faqs.ts](src/data/faqs.ts). HTML is allowed in answers (use `<a class="u-text-style-underline">` for links, `<br><br>` for paragraph breaks, `<strong>` for bold).
-8. **Per-page `@graph`** — build a Service (+ FAQPage) graph with the `serviceFaqJsonLd()` helper in [src/lib/jsonld.ts](src/lib/jsonld.ts). Don't hand-write the JSON or a raw `<script>` block. Copy the pattern from [web-design-waxahachie.astro](src/pages/web-design-waxahachie.astro):
+1. Build the graph with the `serviceFaqJsonLd()` helper in [src/lib/jsonld.ts](src/lib/jsonld.ts) — don't hand-write JSON or a raw `<script>` block:
 
    ```ts
    import { serviceFaqJsonLd } from "../lib/jsonld";
    import { SITE } from "../config/site";
+   import { generalFaqs } from "../data/faqs";
 
    // Build the URL from SITE.url — never hardcode the host literal.
-   const pageUrl = `${SITE.url}/web-design-{city}`;
+   const pageUrl = `${SITE.url}/your-page`;
 
    const schemaGraph = serviceFaqJsonLd({
      pageUrl,
      serviceType: "Web Design",
-     name: "Web Design in {City}, TX",
+     name: "Your service name",
      description: "...",
      areaServed: [
-       { type: "City", name: "{City}" },
-       { type: "AdministrativeArea", name: "{County}" },
+       { type: "City", name: "Your City" },
+       { type: "AdministrativeArea", name: "Your County" },
      ],
-     audience: { audienceType: "..." },          // type defaults to "BusinessAudience"
-     faqs: webDesign{City}Faqs,                   // omit to skip the FAQPage node
+     audience: { audienceType: "..." },   // type defaults to "BusinessAudience"
+     faqs: generalFaqs,                    // omit to skip the FAQPage node
    });
    ```
 
-   The helper derives `provider.@id` from `SITE.url` so it **always** matches the sitewide LocalBusiness `@id` — no more character-for-character copying. Per-page `areaServed` stays tight (city + county) — do not list other cities here even though the sitewide LocalBusiness does.
+   The helper derives `provider.@id` from `SITE.url` so it **always** matches the
+   sitewide LocalBusiness `@id`. Keep the per-page `areaServed` tight (the specific
+   area this page targets) — the full list belongs on the sitewide node only.
 
-9. **Pass it to BaseLayout** via the `schema` prop — BaseLayout renders it through `JsonLd.astro` (which escapes `<`) alongside the automatic baseline schema (LocalBusiness + WebPage + BreadcrumbList). No manual `<script type="application/ld+json">` tag:
+2. **Pass it to BaseLayout** via the `schema` prop — BaseLayout renders it through `JsonLd.astro` (which escapes `<`) alongside the automatic baseline (LocalBusiness + WebPage + BreadcrumbList). No manual `<script type="application/ld+json">` tag:
    ```astro
    <BaseLayout title="..." canonical={pageUrl} schema={schemaGraph}>
    ```
 
-10. **Footer "Locations Served" dropdown** — add a `<div class="footer_group_item">` entry in [src/components/global/Footer.astro](src/components/global/Footer.astro) (search for the existing Your City/Another City entries).
+3. **Register the page** in the `PAGES` array in [src/data/site-structure.ts](src/data/site-structure.ts) with the matching `group` (the single registry that feeds `/llms.txt`, `/llms-full.txt`, the nav, and the footer), then reference its `path` in `NAV_MENU`/`FOOTER_GROUPS` if it should appear there. See **LLM Discoverability** below.
 
-11. **Redirect from the old location URL** — the prior site used `/location/web-design-{city}`. Add a 301 to [public/_redirects](public/_redirects) **above** the `/location/* /services/web-design 301` wildcard:
-    ```
-    /location/web-design-{city} /web-design-{city} 301
-    ```
-    Order matters — the wildcard catches anything below it, so the specific rule must come first.
+4. **Per-page FAQs:** [src/data/faqs.ts](src/data/faqs.ts) ships one generic `generalFaqs` set; add more exports there (HTML is allowed in answers — `<a class="u-text-style-underline">` links, `<br><br>` breaks, `<strong>` bold) and pass the one you want as `faqs`.
 
-12. **Validate** — run the schema check:
-    ```bash
-    npm run dev               # in one terminal
-    npm run check:schema      # in another
-    ```
-    The script ([scripts/check-schema.mjs](scripts/check-schema.mjs)) validates the two static location pages plus one live sample of each CMS content type. To add a new location to the check, append its path to the `STATIC_PAGES` array at the top of the file.
+### Validate
 
-13. **Register the page** — add it to the `PAGES` array in [src/data/site-structure.ts](src/data/site-structure.ts) with `group: "location"` (this is the single registry that feeds `/llms.txt`, `/llms-full.txt`, the nav, and the footer). Then reference its `path` in `FOOTER_GROUPS`/`NAV_MENU` if it should appear there. See the **LLM Discoverability** section below.
+```bash
+npm run dev               # in one terminal
+npm run check:schema      # in another
+```
 
-### What the schema check catches
+[scripts/check-schema.mjs](scripts/check-schema.mjs) validates the JSON-LD on the
+pages in its `STATIC_PAGES` array (currently `/` and `/contact`) plus one live
+sample of each CMS content type. **Add any page that ships a custom `schema`** to
+`STATIC_PAGES`. It catches:
 
 - JSON parse errors
 - Missing `@context` / `@type` / required fields
 - Duplicate or malformed `@id` values
-- Dangling `provider.@id` references (the load-bearing failure mode for the location/business linkage)
+- Dangling `provider.@id` references (the load-bearing failure mode for the page→business linkage)
 - Empty FAQ entries
 
-What it doesn't catch: Google's rich-result eligibility rules. After deploy, paste each script into [Google's Rich Results Test](https://search.google.com/test/rich-results) (Test code tab) or point it at the live URL to confirm Google specifically detects LocalBusiness, Service, and FAQ rich results.
+What it doesn't catch: Google's rich-result eligibility rules. After deploy, paste each script into [Google's Rich Results Test](https://search.google.com/test/rich-results) (Test code tab) or point it at the live URL to confirm Google detects the LocalBusiness, Service, and FAQ rich results.
 
 ### Don'ts
 
-- **Don't redefine the LocalBusiness node on the page.** It only lives in BaseLayout. Pages reference it.
-- **Don't list every city in the per-page `Service.areaServed`.** That's the sitewide node's job. The page-level `Service` stays scoped to the city the page is targeting.
-- **Don't invent contact details.** Phone is `+1-555-555-5555`, email is `you@example.com`, address has no street line (home-based). These live in one place — the sitewide node.
-- **Don't mirror Your City copy on a new page.** Each location page's body must be distinct (Google penalizes near-duplicate doorway pages). Pull fresh copy from Figma or write new.
+- **Don't redefine the LocalBusiness node on a page.** It only lives in BaseLayout. Pages reference it via `provider.@id`.
+- **Don't list every area in a per-page `Service.areaServed`.** That's the sitewide node's job; the page-level `Service` stays scoped to what that page targets.
+- **Don't hardcode contact details.** They live in one place — `SITE` in [src/config/site.ts](src/config/site.ts) — and flow into the sitewide node.
 
 ---
 

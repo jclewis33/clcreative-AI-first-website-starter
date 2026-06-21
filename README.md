@@ -89,4 +89,4 @@ That covers identity. For everything else a fork needs — Sanity project + CORS
 
 ## 👀 Want to learn more?
 
-See [`CLAUDE.md`](CLAUDE.md) for the full front-end system (class conventions, component APIs, JSON-LD, SEO/location-page checklist), or the [Astro docs](https://docs.astro.build).
+See [`CLAUDE.md`](CLAUDE.md) for the full front-end system (class conventions, component APIs, JSON-LD, SEO & structured data), or the [Astro docs](https://docs.astro.build).
