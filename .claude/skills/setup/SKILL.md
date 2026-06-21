@@ -9,15 +9,18 @@ license: MIT
 ## When to use this skill
 
 The user has **forked or duplicated this repo** to start a new site and wants it
-configured for their brand/business. This repo ships as a CL Creative–branded
-starter; setup swaps the identity, stands up a fresh (empty) Sanity backend, and
-verifies the build. The components and page structure stay — only identity,
+configured for their brand/business. This repo ships with **placeholder** identity
+values; setup swaps in the real identity, stands up a fresh (empty) Sanity backend,
+and verifies the build. The components and page structure stay — only identity,
 config, and the Sanity project change.
 
-**Do not run this against the canonical CL Creative repo.** First confirm this is
-a fork: check `git remote -v` and whether `src/config/site.shared.mjs` still
-points at `https://www.clcreative.co`. If it's clearly the origin repo (remote is
-`jclewis33/clcreative` and the user hasn't said they're testing), stop and ask.
+**Run this on your own fork/duplicate, not the canonical starter-template repo.**
+First confirm this is a fresh, not-yet-configured copy: check `git remote -v` (it
+should be the user's own repo, not the upstream starter template) and that
+`src/config/site.shared.mjs` still holds the placeholder values
+(`SANITY_PROJECT_ID = "your-sanity-project-id"`, `SITE_URL = "https://www.example.com"`).
+If the remote points at the upstream starter-template repo (and the user hasn't
+said they're testing), stop and ask before writing changes into it.
 
 ## Scope — re-value and swap content; never touch the system
 
@@ -31,7 +34,7 @@ any of it.** Its only job is to:
 - **Re-value existing knobs in place** — the *values* of variables and config
   fields that already exist (identity, Sanity ids, brand swatches, type scale).
 - **Swap the person's own content & assets in/out** — their copy, fonts, logo, OG
-  image, pages, FAQs; remove the CL Creative specifics.
+  image, pages, FAQs; replace the placeholder values.
 
 It must **NOT change how the system works**:
 
@@ -114,7 +117,7 @@ Optional (keep current if blank): tagline, descriptions, X handle, phone, hours,
 address (locality/region/country), priceRange, GTM/MailerLite/Usercentrics/
 HoneyBook ids.
 
-> **Always recommend a starter meta description — don't leave CL Creative's.**
+> **Always recommend a starter meta description — don't leave the placeholder.**
 > From what you learn about the business, **draft and propose** a sitewide default
 > meta description (the `defaultDescription` field → `SITE.defaultDescription`,
 > the fallback for any page that doesn't set its own and a key SEO signal). Give
@@ -132,14 +135,14 @@ HoneyBook ids.
 >
 > Offer (don't force) to also draft starter `description`s for the key pages in
 > [site-structure.ts](../../../src/data/site-structure.ts) `PAGES` (the `desc`
-> field, which also feeds llms.txt) so the new site isn't shipping CL Creative's
-> page copy — flag that those still hold placeholder text from the origin.
+> field, which also feeds llms.txt) so the new site isn't shipping the placeholder
+> page copy — flag that those still hold placeholder text.
 
 > **Integrations:** GTM, MailerLite, Usercentrics, and HoneyBook ids in
-> `SITE.integrations` are CL Creative's. If the new site doesn't use one, tell the
-> user it can be removed (delete the field + its use in `Head.astro` /
-> `BaseLayout.astro`; HoneyBook also has two components + pages). Don't leave live
-> third-party ids from the origin in a new site.
+> `SITE.integrations` all ship **blank (`""`) = off**. Fill in the ones the new
+> site uses (Head.astro only injects each script when its id is set). To drop one
+> permanently, delete the field + its use in `Head.astro` / `BaseLayout.astro`;
+> the two `HoneyBookEmbed*` components ship unused — wire one in or delete them.
 
 #### 1a. Brand colors — pull from Figma (optional)
 If the user has a Figma file / design system, offer to pull the palette instead of
@@ -317,10 +320,10 @@ Delete the temp JSON after. **Fonts and image/SVG assets (steps 1b/1d) are not
 written by the CLI — guide those separately.**
 
 > It deliberately **does not** touch the content scaffolding — `areaServed`,
-> `social`, `sameAs`, location pages, FAQs, `site-structure.ts`. Per the starter
-> design those stay as a working skeleton. **Remind the user** to review and
-> replace that scaffolding (service-area cities, social links, location pages,
-> FAQ copy) for their business — it currently holds CL Creative placeholders.
+> `social`, `sameAs`, FAQs, `site-structure.ts`. Per the starter design those
+> stay as a working skeleton. **Remind the user** to review and replace that
+> scaffolding (service-area cities, social links, FAQ copy) for their business —
+> it currently holds placeholder values.
 
 ### 4. Deploy the schema + Studio, then verify it's correct
 This is the load-bearing step — get it right so the new project's Studio and the

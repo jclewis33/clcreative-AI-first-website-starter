@@ -21,8 +21,8 @@
  *   • .env                             — created from .env.example (token left blank)
  *
  * It intentionally does NOT touch the content scaffolding (areaServed, social,
- * sameAs, location pages, FAQs, site-structure) — those stay as a working
- * skeleton for the new site to edit, per the starter design.
+ * sameAs, FAQs, site-structure) — those stay as a working skeleton for the new
+ * site to edit, per the starter design.
  *
  * Usage:
  *   node scripts/setup.mjs                      # interactive prompts
@@ -440,7 +440,7 @@ ${c.bold}Fork setup${c.reset} — rewrite per-fork identity/config files.
   node scripts/setup.mjs --dry-run     preview changes, write nothing
 
 Writes: ${SHARED}, ${SITE}, ${WRANGLER}, ${COLORS}, ${THEMES}, ${CLI}, .env
-Leaves content scaffolding (areaServed, social, location pages, FAQs) intact.
+Leaves content scaffolding (areaServed, social, FAQs, site-structure) intact.
 
 Color maps (--config only; e.g. pulled from Figma by the /setup skill):
   "cssColors":   { "--color-brand-500": "#1a73e8", "--color-dark-900": "#0c111d" }
