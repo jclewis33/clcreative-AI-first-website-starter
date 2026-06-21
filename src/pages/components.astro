@@ -36,8 +36,8 @@ import FormRange from "../components/form/FormRange.astro";
 import Visual from "../components/ui/Visual.astro";
 import BlogPostGrid from "../components/sections/BlogPostGrid.astro";
 
-import humanTouch from "../assets/placeholder-2.avif";
-import manCouch from "../assets/placeholder-3.avif";
+import humanTouch from "../assets/placeholder-images/placeholder-15.webp";
+import manCouch from "../assets/placeholder-images/placeholder-16.webp";
 import CaseStudyGrid from "../components/sections/CaseStudyGrid.astro";
 import ContentWrapper from "../components/ui/ContentWrapper.astro";
 import PricingCard from "../components/ui/PricingCard.astro";
@@ -45,9 +45,24 @@ import PricingItem from "../components/ui/PricingItem.astro";
 import Marquee from "../components/ui/Marquee.astro";
 import ScrollReveal from "../components/ui/ScrollReveal.astro";
 
-/* ── Fetch testimonials from Sanity ── */
+/* ── Demo image pools (from the shared placeholder library) ── */
+import phL1 from "../assets/placeholder-images/placeholder-1.webp";
+import phL2 from "../assets/placeholder-images/placeholder-2.webp";
+import phL3 from "../assets/placeholder-images/placeholder-3.webp";
+import phL4 from "../assets/placeholder-images/placeholder-4.webp";
+import phL5 from "../assets/placeholder-images/placeholder-5.webp";
+import phL6 from "../assets/placeholder-images/placeholder-6.webp";
+import phS1 from "../assets/placeholder-images/placeholder-11.webp";
+import phS2 from "../assets/placeholder-images/placeholder-12.webp";
+import phS3 from "../assets/placeholder-images/placeholder-13.webp";
+const demoLandscape = [phL1.src, phL2.src, phL3.src, phL4.src, phL5.src, phL6.src];
+const demoSquare = [phS1.src, phS2.src, phS3.src];
+
+/* ── Fetch testimonials from Sanity (tolerate an empty/unreachable dataset) ── */
 import { getDraftModeProps } from "../sanity/lib/draft-mode";
-const testimonials = await getTestimonials(getDraftModeProps(Astro));
+const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
+  () => [],
+);
 ---
 
 <BaseLayout
@@ -159,7 +174,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
       </Col>
       <img
         slot="col2"
-        src="https://picsum.photos/seed/layout-col/800/600"
+        src={phL1.src}
         alt="Placeholder image"
         loading="lazy"
         style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -189,7 +204,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
       </Col>
       <img
         slot="col2"
-        src="https://picsum.photos/seed/layout-rev/800/600"
+        src={phL2.src}
         alt="Placeholder image"
         loading="lazy"
         style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -218,7 +233,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
       </Col>
 
       <Visual
-        src={"https://picsum.photos/seed/layout-bk/800/1000"}
+        src={phS1.src}
         ratio="16/9"
         alt="layout image"
         slot="col2"
@@ -250,7 +265,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
       </Col>
       <img
         slot="col2"
-        src="https://picsum.photos/seed/layout-contain/800/600"
+        src={phL3.src}
         alt="Placeholder image"
         loading="lazy"
         style="width: 100%; height: 100%; object-fit: cover; display: block;"
@@ -264,7 +279,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
     <Layout variant="contain-reversed">
       <img
         slot="col1"
-        src="https://picsum.photos/seed/layout-contain-rev/800/600"
+        src={phL4.src}
         alt="Placeholder image"
         loading="lazy"
         style="width: 100%; height: 100%; object-fit: cover; display: block;"
@@ -452,24 +467,24 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
         [
           {
             seed: "card-d1",
-            title: "Strategic Web Design",
-            text: "Every pixel serves a purpose. We build interfaces that convert visitors into customers.",
+            title: "Card Title One",
+            text: "Supporting copy that describes this card. Swap in your own content.",
           },
           {
             seed: "card-d2",
-            title: "Custom Development",
-            text: "Clean, maintainable Astro code that performs at the highest level on any device.",
+            title: "Card Title Two",
+            text: "A short paragraph of placeholder body text for the card.",
           },
           {
             seed: "card-d3",
-            title: "SEO Architecture",
-            text: "Sites built with a crawl-first mindset — structured data, performance, and authority.",
+            title: "Card Title Three",
+            text: "Another line of neutral demo copy to show the card layout.",
           },
-        ].map(({ seed, title, text }) => (
+        ].map(({ title, text }, i) => (
           <Card variant="default" title={title} href="#">
             <img
               slot="visual"
-              src={`https://picsum.photos/seed/${seed}/800/500`}
+              src={demoLandscape[i % demoLandscape.length]}
               alt={title}
               loading="lazy"
               style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;"
@@ -529,24 +544,24 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
         [
           {
             seed: "cover-c1",
-            title: "Wizard Perks",
-            text: "Loyalty platform for retail brands.",
+            title: "Project One",
+            text: "A short tagline describing the project.",
           },
           {
             seed: "cover-c2",
-            title: "CL Creative",
-            text: "Always-on recruiting automation.",
+            title: "Project Two",
+            text: "Another concise project description.",
           },
           {
             seed: "cover-c3",
-            title: "TreeRing",
-            text: "Custom school yearbooks, reimagined.",
+            title: "Project Three",
+            text: "One more placeholder project line.",
           },
-        ].map(({ seed, title, text }) => (
+        ].map(({ title, text }, i) => (
           <Card variant="cover" title={title} href="#">
             <img
               slot="visual"
-              src={`https://picsum.photos/seed/${seed}/800/1000`}
+              src={demoSquare[i % demoSquare.length]}
               alt={title}
               loading="lazy"
               style="width:100%; height:100%; object-fit:cover; display:block;"
@@ -587,40 +602,40 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
           [
             {
               seed: "sl-1",
-              title: "Web Design",
-              text: "High-converting pages built on this design system.",
+              title: "Slide One",
+              text: "Placeholder copy for the first slide.",
             },
             {
               seed: "sl-2",
-              title: "Development",
-              text: "Astro + clean code that scales with your business.",
+              title: "Slide Two",
+              text: "Placeholder copy for the second slide.",
             },
             {
               seed: "sl-3",
-              title: "Brand Identity",
-              text: "Visual systems that make your brand unmistakable.",
+              title: "Slide Three",
+              text: "Placeholder copy for the third slide.",
             },
             {
               seed: "sl-4",
-              title: "SEO Strategy",
-              text: "Authority architecture that earns traffic and trust.",
+              title: "Slide Four",
+              text: "Placeholder copy for the fourth slide.",
             },
             {
               seed: "sl-5",
-              title: "Analytics",
-              text: "Data-informed decisions from day one of launch.",
+              title: "Slide Five",
+              text: "Placeholder copy for the fifth slide.",
             },
             {
               seed: "sl-6",
-              title: "Conversion Rate",
-              text: "A/B testing and UX audit to maximise every visit.",
+              title: "Slide Six",
+              text: "Placeholder copy for the sixth slide.",
             },
-          ].map(({ seed, title, text }) => (
+          ].map(({ title, text }, i) => (
             <div class="swiper-slide">
               <Card variant="default" title={title} href="#">
                 <img
                   slot="visual"
-                  src={`https://picsum.photos/seed/${seed}/800/500`}
+                  src={demoLandscape[i % demoLandscape.length]}
                   alt={title}
                   loading="lazy"
                   style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;"
@@ -663,7 +678,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
     <div class="u-margin-top-8">
       <Marquee direction="right" speed={30} gap={8}>
         <span class="marquee_item u-text-style-large u-text-style-muted"
-          >Webflow</span
+          >Cloudflare</span
         >
         <span class="marquee_item u-text-style-large u-text-style-muted"
           >Astro</span
@@ -770,7 +785,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-feat/800/500"
+            src={phL5.src}
             alt="Features"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -789,7 +804,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-price/800/500"
+            src={phL6.src}
             alt="Pricing"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -808,7 +823,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-supp/800/500"
+            src={phL1.src}
             alt="Support"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -822,21 +837,21 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
       >side</Heading
     >
     <Tab variant="side">
-      <Heading slot="heading" tag="h3" variant="h3">Our Services</Heading>
-      <TabButton slot="buttons" label="Web Design" />
-      <TabButton slot="buttons" label="Development" />
-      <TabButton slot="buttons" label="SEO Strategy" />
+      <Heading slot="heading" tag="h3" variant="h3">Built In</Heading>
+      <TabButton slot="buttons" label="Design System" />
+      <TabButton slot="buttons" label="Performance" />
+      <TabButton slot="buttons" label="SEO Ready" />
 
       <TabPanel>
-        <Heading tag="h4" variant="h4">Web Design</Heading>
+        <Heading tag="h4" variant="h4">Design System</Heading>
         <Text muted>
-          High-converting websites built on a structured design system. Every
-          pixel serves a purpose — from typography and spacing to colour and
-          interaction.
+          A structured class-naming system and typed component library. Every
+          utility, variable, and combo class follows the same predictable
+          conventions.
         </Text>
         <img
-          src="https://picsum.photos/seed/tab-design/800/400"
-          alt="Web design services"
+          src={phL2.src}
+          alt="Design system placeholder"
           loading="lazy"
           class="u-margin-top-4"
           style="width: 100%; aspect-ratio: 2/1; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -844,14 +859,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
       </TabPanel>
 
       <TabPanel>
-        <Heading tag="h4" variant="h4">Development</Heading>
+        <Heading tag="h4" variant="h4">Performance</Heading>
         <Text muted>
-          Clean, maintainable Astro code that ships zero JavaScript by default.
-          Performance is a feature, not an afterthought.
+          Astro ships zero JavaScript by default. Components render to static
+          HTML, so pages stay fast and lightweight out of the box.
         </Text>
         <img
-          src="https://picsum.photos/seed/tab-dev/800/400"
-          alt="Development services"
+          src={phL3.src}
+          alt="Performance placeholder"
           loading="lazy"
           class="u-margin-top-4"
           style="width: 100%; aspect-ratio: 2/1; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -859,14 +874,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
       </TabPanel>
 
       <TabPanel>
-        <Heading tag="h4" variant="h4">SEO Strategy</Heading>
+        <Heading tag="h4" variant="h4">SEO Ready</Heading>
         <Text muted>
-          Authority architecture that earns traffic and trust. Structured data,
-          crawl-first markup, and performance optimisation from the ground up.
+          Structured data, semantic markup, and an automatic sitemap. The
+          baseline schema renders on every page without extra wiring.
         </Text>
         <img
-          src="https://picsum.photos/seed/tab-seo/800/400"
-          alt="SEO strategy services"
+          src={phL4.src}
+          alt="SEO placeholder"
           loading="lazy"
           class="u-margin-top-4"
           style="width: 100%; aspect-ratio: 2/1; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -889,14 +904,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
           <Col slot="col1">
             <Heading tag="h3" variant="h3">Discovery</Heading>
             <Text muted>
-              We start by understanding your audience, goals, and competitive
-              landscape. Research-driven strategy sets the foundation for
-              everything that follows.
+              Understand the audience, goals, and competitive landscape.
+              Research-driven strategy sets the foundation for everything that
+              follows.
             </Text>
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-s1/800/500"
+            src={phL5.src}
             alt="Discovery phase"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -909,14 +924,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
           <Col slot="col1">
             <Heading tag="h3" variant="h3">Design</Heading>
             <Text muted>
-              Pixel-perfect layouts grounded in your brand identity. We design
-              systems, not just screens — so every page feels cohesive and
+              Pixel-perfect layouts grounded in a cohesive brand identity.
+              Design systems, not just screens — so every page feels
               intentional.
             </Text>
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-s2/800/500"
+            src={phL6.src}
             alt="Design phase"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -930,13 +945,12 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
             <Heading tag="h3" variant="h3">Develop</Heading>
             <Text muted>
               Production-ready Astro code that's fast, accessible, and
-              maintainable. We ship with confidence because every component is
-              tested and typed.
+              maintainable. Every component is tested and typed.
             </Text>
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-s3/800/500"
+            src={phL1.src}
             alt="Development phase"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -950,13 +964,12 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
             <Heading tag="h3" variant="h3">Launch</Heading>
             <Text muted>
               Go live with performance monitoring, analytics, and ongoing
-              support. We stay with you post-launch to iterate and optimise
-              based on real data.
+              support. Iterate and optimise based on real data.
             </Text>
           </Col>
           <img
             slot="col2"
-            src="https://picsum.photos/seed/tab-s4/800/500"
+            src={phL2.src}
             alt="Launch phase"
             loading="lazy"
             style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
@@ -1509,17 +1522,17 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
       variant="general"
       price="$5,000"
       priceLabel="Starting at"
-      href="/book-a-call"
-      buttonText="Book Your Free Strategy Call"
-      itemsLabel="Your Investment Includes:"
+      href="/contact"
+      buttonText="Get Started"
+      itemsLabel="What's Included:"
       class="u-box-shadow-small"
     >
-      <PricingItem>ICP discovery and strategic positioning</PricingItem>
-      <PricingItem>Custom Webflow design and development</PricingItem>
-      <PricingItem>Conversion-optimized messaging and structure</PricingItem>
-      <PricingItem>SEO foundation (technical + on-page)</PricingItem>
-      <PricingItem>Team training and documentation</PricingItem>
-      <PricingItem>30 days of post-launch support</PricingItem>
+      <PricingItem>Lorem ipsum dolor sit amet consectetur</PricingItem>
+      <PricingItem>Adipiscing elit sed do eiusmod tempor</PricingItem>
+      <PricingItem>Incididunt ut labore et dolore magna</PricingItem>
+      <PricingItem>Ut enim ad minim veniam quis nostrud</PricingItem>
+      <PricingItem>Exercitation ullamco laboris nisi</PricingItem>
+      <PricingItem>Duis aute irure dolor in reprehenderit</PricingItem>
     </PricingCard>
 
     {/* ---- Compact quick-view cards ---- */}

@@ -289,14 +289,14 @@ async function addToMailerLite(env: Env, payload: ScorecardPayload) {
     scorecard_score: totalScore,
     scorecard_tier: tier,
     scorecard_website: website ?? "",
-    scorecard_blueprint: rooms[0]?.score ?? 0,
-    scorecard_house: rooms[1]?.score ?? 0,
-    scorecard_porch: rooms[2]?.score ?? 0,
-    scorecard_mat: rooms[3]?.score ?? 0,
-    scorecard_mailbox: rooms[4]?.score ?? 0,
-    scorecard_door: rooms[5]?.score ?? 0,
-    scorecard_meter: rooms[6]?.score ?? 0,
-    scorecard_weakest_room: weakest?.name ?? "",
+    scorecard_section_1: rooms[0]?.score ?? 0,
+    scorecard_section_2: rooms[1]?.score ?? 0,
+    scorecard_section_3: rooms[2]?.score ?? 0,
+    scorecard_section_4: rooms[3]?.score ?? 0,
+    scorecard_section_5: rooms[4]?.score ?? 0,
+    scorecard_section_6: rooms[5]?.score ?? 0,
+    scorecard_section_7: rooms[6]?.score ?? 0,
+    scorecard_weakest_section: weakest?.name ?? "",
   };
 
   const body: Record<string, unknown> = {
@@ -325,7 +325,7 @@ async function addToMailerLite(env: Env, payload: ScorecardPayload) {
   return res.json();
 }
 
-// ---- Casey's notification email ----
+// ---- Admin notification email ----
 
 async function sendNotificationEmail(env: Env, payload: ScorecardPayload) {
   if (!env.RESEND_API_KEY || !env.NOTIFICATION_EMAIL) {
@@ -339,7 +339,7 @@ async function sendNotificationEmail(env: Env, payload: ScorecardPayload) {
   const html = `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:640px;margin:0 auto;color:#1a1a1a;">
       <h2 style="color:${BRAND_COLOR};margin-bottom:4px;">New Scorecard Submission</h2>
-      <p style="color:#888;margin-top:0;">Marketing Foundation Scorecard — ${HOST}/marketing-scorecard</p>
+      <p style="color:#888;margin-top:0;">Scorecard — ${HOST}/marketing-scorecard</p>
 
       <table style="width:100%;border-collapse:collapse;margin:20px 0;">
         <tr>
@@ -374,10 +374,10 @@ async function sendNotificationEmail(env: Env, payload: ScorecardPayload) {
         </tr>
       </table>
 
-      <h3 style="color:${BRAND_COLOR};margin-top:24px;margin-bottom:12px;">Detailed Room-by-Room Breakdown</h3>
+      <h3 style="color:${BRAND_COLOR};margin-top:24px;margin-bottom:12px;">Detailed Section-by-Section Breakdown</h3>
       ${renderRoomDetailsHTML(rooms)}
 
-      <h3 style="color:#3b0b0b;margin-top:24px;">Weakest Rooms (Focus Areas)</h3>
+      <h3 style="color:#3b0b0b;margin-top:24px;">Weakest Sections (Focus Areas)</h3>
       <ol style="padding-left:20px;">
         ${weakest.map((r) => `<li><strong>${escape(r.name)}</strong> (${escape(r.subtitle)}) — ${r.score}/${r.max}</li>`).join("")}
       </ol>
@@ -439,11 +439,11 @@ async function sendUserResultsEmail(env: Env, payload: ScorecardPayload) {
         ${tierMessage ? `<p style="margin:16px auto 0;max-width:480px;color:#444;line-height:1.5;">${escape(tierMessage)}</p>` : ""}
       </div>
 
-      <h2 style="color:${BRAND_COLOR};font-size:18px;margin:24px 0 12px;">Your Room-by-Room Breakdown</h2>
+      <h2 style="color:${BRAND_COLOR};font-size:18px;margin:24px 0 12px;">Your Section-by-Section Breakdown</h2>
       ${renderRoomDetailsHTML(rooms)}
 
       <h2 style="color:${BRAND_COLOR};font-size:18px;margin:24px 0 12px;">Where to focus first</h2>
-      <p style="margin:0 0 12px;color:#444;">Your three weakest rooms — these are where opportunity is leaking out:</p>
+      <p style="margin:0 0 12px;color:#444;">Your three weakest sections — start here:</p>
       <ol style="padding-left:20px;color:#1a1a1a;line-height:1.7;">
         ${weakest.map((r) => `<li><strong>${escape(r.name)}</strong> (${escape(r.subtitle)}) — ${r.score}/${r.max}</li>`).join("")}
       </ol>
@@ -452,28 +452,28 @@ async function sendUserResultsEmail(env: Env, payload: ScorecardPayload) {
         tierNext
           ? `
         <div style="background:${BRAND_COLOR};color:#fff;border-radius:12px;padding:24px;margin:32px 0;text-align:center;">
-          <p style="margin:0 0 12px;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;opacity:0.75;">What's next for you</p>
-          <h3 style="margin:0 0 12px;color:#fff;">Ready to build the foundation?</h3>
+          <p style="margin:0 0 12px;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;opacity:0.75;">What's next</p>
+          <h3 style="margin:0 0 12px;color:#fff;">Ready to take the next step?</h3>
           <p style="margin:0 0 20px;line-height:1.5;opacity:0.9;">${escape(tierNext)}</p>
-          <a href="${SITE.url}/book-a-call" style="display:inline-block;padding:12px 24px;background:#fff;color:${BRAND_COLOR};border-radius:999px;text-decoration:none;font-weight:600;">Book a Free Strategy Call</a>
+          <a href="${SITE.url}/contact" style="display:inline-block;padding:12px 24px;background:#fff;color:${BRAND_COLOR};border-radius:999px;text-decoration:none;font-weight:600;">Get in Touch</a>
         </div>`
           : ""
       }
 
       <p style="margin:32px 0 0;color:#888;font-size:13px;text-align:center;">
-        A free tool from ${SITE.name} — <a href="${SITE.url}" style="color:${BRAND_COLOR};">${HOST}</a>
+        From ${SITE.name} — <a href="${SITE.url}" style="color:${BRAND_COLOR};">${HOST}</a>
       </p>
     </div>
   `;
 
   const text = `Hi ${firstName},
 
-Here's your full Marketing Foundation Scorecard.
+Here's your full Scorecard.
 
 YOUR SCORE: ${totalScore}/${maxScore} (${tier})
 ${tierMessage ?? ""}
 
-ROOM-BY-ROOM BREAKDOWN:
+SECTION-BY-SECTION BREAKDOWN:
 ${renderRoomDetailsText(rooms)}
 
 WHERE TO FOCUS FIRST:
@@ -481,8 +481,8 @@ ${weakest.map((r, i) => `${i + 1}. ${r.name} (${r.subtitle}) — ${r.score}/${r.
 
 ${tierNext ?? ""}
 
-Ready to build the foundation? Book a free strategy call:
-${SITE.url}/book-a-call
+Ready to take the next step? Get in touch:
+${SITE.url}/contact
 
 — ${SITE.name}
 ${SITE.url}
@@ -490,7 +490,7 @@ ${SITE.url}
 
   return sendResend(env, {
     to: [email],
-    subject: `Your Marketing Foundation Scorecard — ${totalScore}/${maxScore}`,
+    subject: `Your Scorecard — ${totalScore}/${maxScore}`,
     html,
     text,
   });
@@ -509,7 +509,7 @@ async function sendResend(env: Env, { to, subject, html, text }: ResendArgs) {
   // Display name from SITE; the sender mailbox is infra-specific.
   // fork: set RESEND_FROM (or update this address) to your verified domain.
   const from =
-    env.RESEND_FROM ?? `${SITE.name} Scorecard <scorecard@clcreative.co>`;
+    env.RESEND_FROM ?? `${SITE.name} Scorecard <scorecard@example.com>`;
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",

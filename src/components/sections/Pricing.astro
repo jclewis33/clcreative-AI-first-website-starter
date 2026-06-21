@@ -27,7 +27,7 @@ import ContentWrapper from "../ui/ContentWrapper.astro";
 import PricingCard from "../ui/PricingCard.astro";
 import PricingItem from "../ui/PricingItem.astro";
 
-import afterLaunchImg from "../../assets/web-development/after-launch.avif";
+import afterLaunchImg from "../../assets/placeholder-images/placeholder-5.webp";
 import Grid from "../ui/Grid.astro";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
@@ -71,12 +71,11 @@ const {
   <Layout verticalAlign="start" variant="columns">
     <Col slot="col1">
       <Heading variant="eyebrow"> Investment</Heading>
-      <Heading tag="h3" variant="h2">Built as an asset. Not a brochure.</Heading
-      >
+      <Heading tag="h3" variant="h2">Lorem ipsum dolor sit amet.</Heading>
       <Text
-        >Most agencies hand over a pretty site and call it done. We hand over a
-        strategic asset, grounded in customer research, built to convert, and
-        structured to scale with your business.</Text
+        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua ut enim ad minim
+        veniam.</Text
       >
     </Col>
     <Layout rowGap="var(--space-5)" slot="col2" variant="stack">
@@ -86,52 +85,48 @@ const {
         variant="general"
         price="$5,000"
         priceLabel="Starting at"
-        description="Typical projects range from $7K–$15K+ depending on scope, page count, and custom development needs."
+        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor."
         href="/contact"
-        buttonText="Let's Fix Your Site"
-        buttonSupportText="One call. We'll confirm fit, scope your project, and give you a real number."
-        itemsLabel="Your Investment Includes:"
+        buttonText="Get Started"
+        buttonSupportText="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+        itemsLabel="What's Included:"
         class="u-box-shadow-small"
       >
-        <PricingItem
-          >ICP discovery and strategic positioning with the M2M Framework</PricingItem
-        >
-        <PricingItem>Custom Webflow design and development</PricingItem>
-        <PricingItem
-          >Conversion-optimized copy writing for aligned messaging and structure</PricingItem
-        >
-        <PricingItem>SEO foundation (technical + on-page)</PricingItem>
-        <PricingItem>Team training and documentation</PricingItem>
-        <PricingItem>30 days of post-launch support</PricingItem>
+        <PricingItem>Lorem ipsum dolor sit amet consectetur</PricingItem>
+        <PricingItem>Adipiscing elit sed do eiusmod tempor</PricingItem>
+        <PricingItem>Incididunt ut labore et dolore magna</PricingItem>
+        <PricingItem>Ut enim ad minim veniam quis nostrud</PricingItem>
+        <PricingItem>Exercitation ullamco laboris nisi</PricingItem>
+        <PricingItem>Duis aute irure dolor in reprehenderit</PricingItem>
       </PricingCard>
       <ContentWrapper slot="col2">
-        <Text variant="h5">Already have a site?</Text>
+        <Text variant="h5">Looking for add-ons?</Text>
         <!-- Add-on cards -->
         <Grid largeColumns={2} mediumColumns={2} smallColumns={1} rowGap={3}>
           <PricingCard
             variant="compact"
-            name="SEO & AEO"
-            description="Get found by the right buyers in search and AI tools."
-            href="/services/seo"
-            buttonText="Explore SEO"
+            name="Add-on One"
+            description="Lorem ipsum dolor sit amet consectetur adipiscing elit."
+            href="/contact"
+            buttonText="Learn More"
             buttonVariant="text"
             class="u-box-shadow-medium"
           />
           <PricingCard
             variant="compact"
-            name="Website Support"
-            description="Ongoing updates, optimization, and improvements."
-            href="/services/webflow-website-support"
-            buttonText="Explore Support"
+            name="Add-on Two"
+            description="Sed do eiusmod tempor incididunt ut labore et dolore."
+            href="/contact"
+            buttonText="Learn More"
             buttonVariant="text"
             class="u-box-shadow-medium"
           />
           <PricingCard
             variant="compact"
-            name="Marketing Partner"
-            description="Marketing run for you giving you the freedom to live yoru life and focus on your business."
-            href="/services/marketing-partner"
-            buttonText="Explore Marketing Partner"
+            name="Add-on Three"
+            description="Ut enim ad minim veniam quis nostrud exercitation ullamco."
+            href="/contact"
+            buttonText="Learn More"
             buttonVariant="text"
             class="u-box-shadow-medium"
             style="grid-column: 1 / -1;"

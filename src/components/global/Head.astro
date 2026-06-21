@@ -85,64 +85,88 @@ const resolvedTwitterImage = resolvedOgImage;
 <meta property="twitter:image" content={resolvedTwitterImage} />
 <meta property="twitter:image:alt" content={ogImageAlt} />
 
-<!-- UserCentric - Cookie Popup (loaded first so it can gate tracking scripts) -->
-<link rel="preconnect" href="//privacy-proxy.usercentrics.eu" />
-<link
-  rel="preload"
-  href="//privacy-proxy.usercentrics.eu/latest/uc-block.bundle.js"
-  as="script"
-/>
-<script
-  type="application/javascript"
-  src="https://privacy-proxy.usercentrics.eu/latest/uc-block.bundle.js"
-></script>
-<script
-  id="usercentrics-cmp"
-  src="https://app.usercentrics.eu/browser-ui/latest/loader.js"
-  data-settings-id={SITE.integrations.usercentricsId}
-  async></script>
-<script is:inline define:vars={{ translationsUrl: SITE.integrations.usercentricsTranslationsUrl }}>
-  uc.setCustomTranslations(translationsUrl);
-</script>
+<!-- UserCentric - Cookie Popup (loaded first so it can gate tracking scripts).
+     Rendered only when a Usercentrics settings id is configured (SITE.integrations). -->
+{
+  SITE.integrations.usercentricsId && (
+    <Fragment>
+      <link rel="preconnect" href="//privacy-proxy.usercentrics.eu" />
+      <link
+        rel="preload"
+        href="//privacy-proxy.usercentrics.eu/latest/uc-block.bundle.js"
+        as="script"
+      />
+      <script
+        type="application/javascript"
+        src="https://privacy-proxy.usercentrics.eu/latest/uc-block.bundle.js"
+      />
+      <script
+        id="usercentrics-cmp"
+        src="https://app.usercentrics.eu/browser-ui/latest/loader.js"
+        data-settings-id={SITE.integrations.usercentricsId}
+        async
+      />
+      {SITE.integrations.usercentricsTranslationsUrl && (
+        <script
+          is:inline
+          define:vars={{
+            translationsUrl: SITE.integrations.usercentricsTranslationsUrl,
+          }}
+        >
+          uc.setCustomTranslations(translationsUrl);
+        </script>
+      )}
+    </Fragment>
+  )
+}
 
-<!-- Google Tag Manager -->
-<script is:inline define:vars={{ gtmId: SITE.integrations.gtmId }}>
-  (function (w, d, s, l, i) {
-    w[l] = w[l] || [];
-    w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-    var f = d.getElementsByTagName(s)[0],
-      j = d.createElement(s),
-      dl = l != "dataLayer" ? "&l=" + l : "";
-    j.async = true;
-    j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-    f.parentNode.insertBefore(j, f);
-  })(window, document, "script", "dataLayer", gtmId);
-</script>
-<!-- End Google Tag Manager -->
+<!-- Google Tag Manager (rendered only when a GTM container id is configured) -->
+{
+  SITE.integrations.gtmId && (
+    <script is:inline define:vars={{ gtmId: SITE.integrations.gtmId }}>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", gtmId);
+    </script>
+  )
+}
 
-<!-- MailerLite Universal -->
-<script is:inline define:vars={{ mailerLiteAccount: SITE.integrations.mailerLiteAccount }}>
-  (function (w, d, e, u, f, l, n) {
-    ((w[f] =
-      w[f] ||
-      function () {
-        (w[f].q = w[f].q || []).push(arguments);
-      }),
-      (l = d.createElement(e)),
-      (l.async = 1),
-      (l.src = u),
-      (n = d.getElementsByTagName(e)[0]),
-      n.parentNode.insertBefore(l, n));
-  })(
-    window,
-    document,
-    "script",
-    "https://assets.mailerlite.com/js/universal.js",
-    "ml",
-  );
-  ml("account", mailerLiteAccount);
-</script>
-<!-- End MailerLite Universal -->
+<!-- MailerLite Universal (rendered only when a MailerLite account id is configured) -->
+{
+  SITE.integrations.mailerLiteAccount && (
+    <script
+      is:inline
+      define:vars={{ mailerLiteAccount: SITE.integrations.mailerLiteAccount }}
+    >
+      (function (w, d, e, u, f, l, n) {
+        ((w[f] =
+          w[f] ||
+          function () {
+            (w[f].q = w[f].q || []).push(arguments);
+          }),
+          (l = d.createElement(e)),
+          (l.async = 1),
+          (l.src = u),
+          (n = d.getElementsByTagName(e)[0]),
+          n.parentNode.insertBefore(l, n));
+      })(
+        window,
+        document,
+        "script",
+        "https://assets.mailerlite.com/js/universal.js",
+        "ml",
+      );
+      ml("account", mailerLiteAccount);
+    </script>
+  )
+}
 
 <!-- Data Prevent Flicker Remove if No Script Loaded -->
 

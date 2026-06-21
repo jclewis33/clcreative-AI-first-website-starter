@@ -42,40 +42,51 @@ async function getSanityUrls() {
     useCdn: true,
   });
 
-  const [posts, caseStudies, glossary, categories] = await Promise.all([
-    client.fetch(
-      `*[_type == "blogPost" && defined(slug.current)]{ "slug": slug.current }`,
-    ),
-    client.fetch(
-      `*[_type == "caseStudy" && defined(slug.current) && comingSoon != true]{ "slug": slug.current }`,
-    ),
-    client.fetch(
-      `*[_type == "glossaryTerm" && defined(slug.current)]{ "slug": slug.current }`,
-    ),
-    client.fetch(
-      `array::unique(*[_type == "blogPost" && defined(categories)].categories[])`,
-    ),
-  ]);
+  try {
+    const [posts, caseStudies, glossary, categories] = await Promise.all([
+      client.fetch(
+        `*[_type == "blogPost" && defined(slug.current)]{ "slug": slug.current }`,
+      ),
+      client.fetch(
+        `*[_type == "caseStudy" && defined(slug.current) && comingSoon != true]{ "slug": slug.current }`,
+      ),
+      client.fetch(
+        `*[_type == "glossaryTerm" && defined(slug.current)]{ "slug": slug.current }`,
+      ),
+      client.fetch(
+        `array::unique(*[_type == "blogPost" && defined(categories)].categories[])`,
+      ),
+    ]);
 
-  const categorySlugs = [
-    "all",
-    .../** @type {string[]} */ (categories ?? []).map((c) =>
-      String(c).toLowerCase().replace(/\s+/g, "-"),
-    ),
-  ];
+    const categorySlugs = [
+      "all",
+      .../** @type {string[]} */ (categories ?? []).map((c) =>
+        String(c).toLowerCase().replace(/\s+/g, "-"),
+      ),
+    ];
 
-  return [
-    .../** @type {{ slug: string }[]} */ (posts).map(
-      (p) => `${SITE_URL}/blog/${p.slug}`,
-    ),
-    .../** @type {{ slug: string }[]} */ (caseStudies).map(
-      (c) => `${SITE_URL}/case-studies/${c.slug}`,
-    ),
-    .../** @type {{ slug: string }[]} */ (glossary).map(
-      (g) => `${SITE_URL}/glossary/${g.slug}`,
-    ),
-    ...categorySlugs.map((s) => `${SITE_URL}/blog/category/${s}`),
-  ];
+    return [
+      .../** @type {{ slug: string }[]} */ (posts).map(
+        (p) => `${SITE_URL}/blog/${p.slug}`,
+      ),
+      .../** @type {{ slug: string }[]} */ (caseStudies).map(
+        (c) => `${SITE_URL}/case-studies/${c.slug}`,
+      ),
+      .../** @type {{ slug: string }[]} */ (glossary).map(
+        (g) => `${SITE_URL}/glossary/${g.slug}`,
+      ),
+      ...categorySlugs.map((s) => `${SITE_URL}/blog/category/${s}`),
+    ];
+  } catch (err) {
+    // A fresh fork (before `/setup` provisions Sanity) or a network-restricted
+    // build environment can't reach the dataset. Don't hard-fail the build —
+    // the sitemap just omits dynamic CMS URLs until Sanity is reachable.
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(
+      `[astro.config] Skipping Sanity sitemap URLs — could not reach the dataset: ${message}`,
+    );
+    return [];
+  }
 }
 
 const sanityCustomPages = await getSanityUrls();
@@ -113,31 +124,15 @@ function excludeDevOnlyPages() {
 }
 
 /**
- * 301 redirects from the old Webflow site URL structure to the new Astro
- * routes. Keep this map in sync with anything you rename or remove so existing
- * Google index entries and external backlinks don't 404.
+ * Static one-to-one 301 redirects. Empty by default — a new project starts with
+ * no redirects. Add `"old-path": "/new-path"` pairs here as you rename or remove
+ * routes so existing index entries and external backlinks don't 404, e.g.:
+ *   const redirects = { "/portfolio": "/case-studies" };
+ * (Wildcard/splat redirects go in public/_redirects instead.)
+ *
+ * @type {Record<string, string>}
  */
-const redirects = {
-  // Service page renames
-  "/services/webflow-web-design": "/services/web-design",
-  "/services/webflow-web-development": "/services/webflow-development",
-  "/services/webflow-seo-expert": "/services/seo",
-
-  // Discontinued service offerings — point to the closest equivalent
-  "/services/brand-visuals": "/services/web-design",
-  "/services/brand-strategy": "/services/web-design",
-  "/services/website-audit": "/services/seo",
-
-  // Old portfolio index → new case studies
-  "/portfolio": "/case-studies",
-
-  // Standalone pages with no direct equivalent
-  "/web-development-definitions": "/glossary",
-  "/why-we-use-webfllow": "/why-webflow",
-  "/seo-starter-guide": "/services/seo",
-  "/book-a-strategy-call": "/book-a-call",
-  "/checklist": "/",
-};
+const redirects = {};
 
 // https://astro.build/config
 export default defineConfig({
@@ -178,7 +173,7 @@ export default defineConfig({
       useCdn: true,
       apiVersion: SANITY_API_VERSION,
       // No `studioBasePath` — the Studio is hosted by Sanity at
-      // clcreative.sanity.studio (deployed via `npx sanity deploy`), not
+      // <studioHost>.sanity.studio (deployed via `npx sanity deploy`), not
       // embedded in this app. The integration still provides the
       // `sanity:client` virtual module used by src/sanity/lib/load-query.ts.
       stega: {
@@ -187,7 +182,7 @@ export default defineConfig({
         // the overlay reads to map clicks back to the corresponding Studio
         // field. The studioUrl tells the overlay which Studio to deep-link —
         // the hosted Studio origin (cross-origin from the site).
-        studioUrl: "https://clcreative.sanity.studio",
+        studioUrl: "https://your-studio.sanity.studio",
       },
     }),
   ],

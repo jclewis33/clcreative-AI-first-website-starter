@@ -8,7 +8,7 @@ import Button from "../ui/Button.astro";
 import Heading from "../ui/Heading.astro";
 import Text from "../ui/Text.astro";
 
-import defaultCtaImage from "../../assets/cta/cta-background.avif";
+import defaultCtaImage from "../../assets/placeholder-images/placeholder-6.webp";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
@@ -31,10 +31,10 @@ interface Props {
   /** Description text below heading. */
   text?: string;
 
-  /** CTA button label. @default 'Book a Strategy Call' */
+  /** CTA button label. @default 'Get Started' */
   buttonText?: string;
 
-  /** CTA button link. @default '/book-a-call' */
+  /** CTA button link. @default '/contact' */
   buttonHref?: string;
 
   /** Optional secondary button label. Renders a second button when provided. */
@@ -59,12 +59,12 @@ interface Props {
 
 const {
   docs,
-  heading = "Your website gets traffic but no leads? Let's figure out what's broken and fix it.",
-  text = "Book a FREE 30-Minute Strategy Session. You'll leave with a clearer picture of why your website and marketing aren't converting and how you can fix it, whether you hire us or not.",
-  buttonText = "Book a Strategy Call",
-  buttonHref = "/book-a-call",
-  secondaryButtonText = "Why's My Marketing Broken",
-  secondaryButtonHref = "/marketing-scorecard",
+  heading = "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do.",
+  text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam.",
+  buttonText = "Get Started",
+  buttonHref = "/contact",
+  secondaryButtonText = undefined,
+  secondaryButtonHref = undefined,
   image = defaultCtaImage,
   overlayStrength = 80,
   padding = "small",
@@ -100,7 +100,7 @@ const {
       </div>
     </Col>
     <Col slot="col2">
-      <Visual src={image} alt="" variant="background" />
+      <Visual src={image} alt="Call to action background" variant="background" />
       <Overlay strength={overlayStrength} />
     </Col>
   </Layout>

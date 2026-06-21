@@ -1,28 +1,36 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Section from "../components/ui/Section.astro";
+import Heading from "../components/ui/Heading.astro";
 ---
 
 <BaseLayout
-  title="Terms and Conditions | CL Creative"
-  description="Terms and Conditions for CL Creative"
+  title="Terms and Conditions | Astro Starter"
+  description="Terms and conditions."
 >
-  <Section>
-    <div
-      id="TTJSb1VUVkJTM0pqTTBRd1JVRTlQUT09"
-      class="policy_embed_div"
-      aria-live="polite"
-      aria-busy="true"
-    >
-      Please wait while the policy is loaded. If it does not load, please <a
-        rel="nofollow"
-        href="https://policies.termageddon.com/api/policy/TTJSb1VUVkJTM0pqTTBRd1JVRTlQUT09"
-        target="_blank">click here</a
-      > to view the policy.
+  <Section paddingTop="page-top" container="narrow">
+    <div class="u-rich-text">
+      <Heading tag="h1" variant="h1">Terms and Conditions</Heading>
+      <p><em>Replace this placeholder with your own terms and conditions.</em></p>
+      <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+        commodo consequat.
+      </p>
+      <h2>Use of the Site</h2>
+      <p>
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      </p>
+      <h2>Limitation of Liability</h2>
+      <p>
+        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+        accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab
+        illo inventore veritatis et quasi architecto beatae vitae dicta sunt
+        explicabo.
+      </p>
     </div>
   </Section>
-  <script
-    is:inline
-    src="https://policies.termageddon.com/api/embed/TTJSb1VUVkJTM0pqTTBRd1JVRTlQUT09.js"
-  ></script>
 </BaseLayout>

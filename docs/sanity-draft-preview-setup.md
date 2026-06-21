@@ -2,14 +2,14 @@
 
 > ⚠️ **This document describes an earlier architecture that is no longer used.**
 > It documented a *separate* SSR preview app (under `preview/`, deployed to
-> `preview.clcreative.co`) with a lightweight Studio "Open Preview" action. That
+> `preview.example.com`) with a lightweight Studio "Open Preview" action. That
 > `preview/` app and its helper files (`src/sanity/lib/preview.ts`,
 > `preview-action.ts`) have been removed.
 
 ## Current model
 
-Draft preview now runs on the **single** production Worker (`clcreative`,
-`www.clcreative.co`) via Sanity's **Presentation tool** and a
+Draft preview now runs on the **single** production Worker (`your-worker-name`,
+`www.example.com`) via Sanity's **Presentation tool** and a
 `sanity-preview-mode` cookie — there is no separate preview deployment or
 subdomain. The CMS content routes (`/blog/**`, `/case-studies/**`,
 `/glossary/**`) are SSR (`prerender = false`) so they can fetch drafts

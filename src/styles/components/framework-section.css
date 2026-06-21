@@ -1,0 +1,58 @@
+/* ==========================================================================
+   FRAMEWORK SECTION — brand/accent, watermark, 3-col numbered grid
+   ========================================================================== */
+
+/* Section is the positioning context for the watermark */
+.framework_section {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Large watermark text — top-right, behind content.
+   Clamp follows the same 20em→90em formula used in typography.css:
+   min=8rem, max=20rem → clamp(8rem, 4.57rem + 17.14vw, 20rem) */
+.framework_watermark {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-family: var(--font-primary);
+  font-size: clamp(8rem, 4.57rem + 17.14vw, 20rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-brand-700);
+  opacity: 0.15;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  padding-right: var(--site-margin);
+}
+
+/* Content wrapper — top padding replaces section paddingTop="none" */
+.framework_content {
+  position: relative;
+  z-index: 1;
+  padding-top: var(--section-space-large);
+}
+
+/* 3-column card grid */
+.framework_grid {
+  position: relative;
+  z-index: 1;
+  margin-top: var(--space-8);
+}
+
+/* Individual numbered card — top border, stacked content */
+.framework_card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: 1px solid currentColor;
+}
+
+/* Number label — IBM Plex Mono, uses h3 size (2rem→2.5rem) from type scale */
+.framework_card_number {
+  font-size: var(--h3-size);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}

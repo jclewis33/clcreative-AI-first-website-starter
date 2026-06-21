@@ -117,12 +117,8 @@ export const blogPost = defineType({
       type: "reference",
       to: [{ type: "author" }],
       group: "meta",
-      // Defaults to Casey Lewis (the usual author). Change per-post when needed.
-      // Reference initialValue takes only `_ref` — Sanity adds `_type` itself
-      // (the field type already declares it a reference).
-      initialValue: {
-        _ref: "832a4663-b291-4516-a83a-26214b62d8f9",
-      },
+      // To pre-select a default author, add `initialValue: { _ref: "<authorId>" }`
+      // pointing at an existing author document in your dataset.
       validation: (rule) => rule.required(),
     }),
     defineField({

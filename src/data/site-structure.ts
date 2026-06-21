@@ -52,7 +52,7 @@
  *
  *  ── Add a location to the footer "Locations Served" dropdown ─────────────
  *   Add the page to `PAGES` (group: "location") with a short `footerLabel`
- *   (e.g. "Dallas"), then add its path to `FOOTER_LOCATIONS`.
+ *   (e.g. "Austin"), then add its path to `FOOTER_LOCATIONS`.
  *
  *  ── Change the announcement banner ──────────────────────────────────────
  *   Edit `BANNER` at the bottom of this file: `default` is sitewide; add a path
@@ -86,178 +86,43 @@ export interface SitePage {
  * Keep group blocks contiguous (main → service → location → index → optional).
  */
 export const PAGES: SitePage[] = [
-  // ── Main marketing pages ─────────────────────────────────────────────────
+  // ── Main pages ───────────────────────────────────────────────────────────
   {
     path: "/",
     title: "Home",
-    desc: "Growth-stage web design, development, and SEO for businesses ready to scale.",
-    group: "main",
-  },
-  {
-    path: "/about",
-    title: "About",
-    desc: "Meet the team behind CL Creative. We build conversion-focused websites for growth-stage businesses using strategic positioning, Webflow, and SEO.",
-    group: "main",
-  },
-  {
-    path: "/how-we-work",
-    title: "How We Work",
-    desc: "A complete marketing foundation — strategy, messaging, website, content, and tools — not just a website.",
-    group: "main",
-  },
-  {
-    path: "/why-webflow",
-    title: "Why Webflow",
-    desc: "After 100+ projects, we've built on every platform that matters. Webflow is the one we keep coming back to.",
-    group: "main",
-  },
-  {
-    path: "/m2m-framework",
-    title: "The M2M Framework",
-    navLabel: "M2M Framework",
-    footerLabel: "M2M Framework",
-    desc: "Our research-first process for turning unclear positioning into a website that attracts, qualifies, and converts the clients you actually want.",
+    desc: "A starter website built on a structured component and design system.",
     group: "main",
   },
   {
     path: "/marketing-scorecard",
-    title: "Marketing Foundation Scorecard",
-    navLabel: "Marketing Health Check",
-    footerLabel: "Marketing Health Check",
-    desc: "How solid is your marketing foundation? Score yourself across 7 areas in 5 minutes. Free self-assessment for growth-stage business owners.",
+    title: "Scorecard",
+    desc: "An example multi-step quiz funnel with email capture and scored results.",
     group: "main",
   },
   {
     path: "/contact",
     title: "Contact",
-    desc: "Get in touch with CL Creative. Book a free strategy meeting to discuss your next web design, development, or SEO project.",
+    desc: "Get in touch.",
     group: "main",
-  },
-  {
-    path: "/book-a-call",
-    title: "Strategy Call",
-    footerLabel: "Free Strategy Call",
-    desc: "Book a free strategy meeting. We'll dig into how you're currently marketing your business and how you can improve.",
-    group: "main",
-  },
-  // Industry pages (live in the llms "Main Pages" section; nav/footer show them
-  // under an "Industries" group with short labels).
-  {
-    path: "/web-design/recruiting-firm",
-    title: "Web Design for Recruiting Firms",
-    navLabel: "Staffing Firms",
-    footerLabel: "Staffing Firms",
-    desc: "Web design for recruiting and staffing firms that brings in clients and candidates. Built by a team that's worked a desk in recruiting.",
-    group: "main",
-  },
-  {
-    path: "/web-design/coaches",
-    title: "Web Design for Coaches",
-    navLabel: "Coaches",
-    footerLabel: "Coaches",
-    desc: "Web design for business and executive coaches. Clear, client-focused sites that build trust and turn visitors into booked calls.",
-    group: "main",
-  },
-  {
-    path: "/web-design/home-services",
-    title: "Web Design for Home Services",
-    navLabel: "Home Services",
-    footerLabel: "Home Services",
-    desc: "Web design for home services companies, built mobile-first to turn local searches into booked jobs. Clear, fast, click-to-call sites.",
-    group: "main",
-  },
-  {
-    path: "/web-design/churches",
-    title: "Web Design for Churches",
-    navLabel: "Churches",
-    footerLabel: "Churches",
-    desc: "Web design for churches and ministries, built by a former pastor. Clear, welcoming sites that answer a guest's real questions and help them take a next step.",
-    group: "main",
-  },
-
-  // ── Services ─────────────────────────────────────────────────────────────
-  {
-    path: "/services/web-design",
-    title: "Web Design",
-    desc: "Web design for growth-stage companies.",
-    group: "service",
-  },
-  {
-    path: "/services/webflow-development",
-    title: "Webflow Development",
-    navLabel: "Web Development",
-    desc: "Webflow development for growth-stage companies.",
-    group: "service",
-  },
-  {
-    path: "/services/seo",
-    title: "SEO & AEO Services",
-    navLabel: "SEO & AEO",
-    footerLabel: "SEO & AEO",
-    desc: "Strategy-led SEO and AI Optimization built on the M2M Framework. Get cited by AI, and found by your next customer. Monthly retainers from $1,500.",
-    group: "service",
-  },
-  {
-    path: "/services/marketing-partner",
-    title: "Marketing Partner",
-    desc: "Your designer built the site, then disappeared. We stay. We run marketing with you so your website grows your business.",
-    group: "service",
-  },
-  {
-    path: "/services/webflow-website-support",
-    title: "Webflow Website Support",
-    navLabel: "Website Support",
-    footerLabel: "Website Support",
-    desc: "Get dedicated design and development support from a Webflow Professional Partner, without the overhead of a full-time hire.",
-    group: "service",
-  },
-  {
-    path: "/services/m2m-messaging-sprint",
-    title: "M2M Messaging Sprint",
-    desc: "Lock down who you're talking to and what to say. A focused sprint to fix your messaging across your website, sales calls, and marketing.",
-    group: "service",
-  },
-
-  // ── Location pages ───────────────────────────────────────────────────────
-  {
-    path: "/web-design-dallas",
-    title: "Web Design in Dallas, TX",
-    footerLabel: "Dallas",
-    desc: "Web design in Dallas, TX, trusted by companies from Highland Park to Downtown. Clear Webflow sites that bring in the right customers.",
-    group: "location",
-  },
-  {
-    path: "/web-design-waxahachie",
-    title: "Web Design in Waxahachie, TX",
-    footerLabel: "Waxahachie",
-    desc: "Web design in Waxahachie, TX from a website designer in your own Chamber of Commerce. Clear sites that bring in the right customers.",
-    group: "location",
-  },
-  {
-    path: "/web-design-midlothian",
-    title: "Web Design in Midlothian, TX",
-    footerLabel: "Midlothian",
-    desc: "Web design in Midlothian, TX that brings in the right customers. We build clear Webflow sites that turn visitors into bookings.",
-    group: "location",
   },
 
   // ── Collection index / landing pages ─────────────────────────────────────
   {
     path: "/blog",
     title: "Blog",
-    desc: "A web design, development, SEO, and business blog.",
+    desc: "Articles and updates.",
     group: "index",
   },
   {
     path: "/case-studies",
     title: "Case Studies",
-    desc: "Explore our portfolio of web design, development, migration, messaging, and SEO projects.",
+    desc: "A portfolio of selected projects.",
     group: "index",
   },
   {
     path: "/glossary",
     title: "Glossary",
-    desc: "A comprehensive glossary of web design, development, and SEO terms to help you grow your knowledge.",
+    desc: "A glossary of terms.",
     group: "index",
   },
 
@@ -265,26 +130,26 @@ export const PAGES: SitePage[] = [
   {
     path: "/privacy-policy",
     title: "Privacy Policy",
-    desc: "Privacy Policy for CL Creative.",
+    desc: "Privacy policy.",
     group: "optional",
   },
   {
     path: "/terms-and-conditions",
     title: "Terms and Conditions",
     footerLabel: "Terms & Conditions",
-    desc: "Terms and Conditions for CL Creative.",
+    desc: "Terms and conditions.",
     group: "optional",
   },
   {
     path: "/cookie-policy",
     title: "Cookie Policy",
-    desc: "Cookie Policy for CL Creative.",
+    desc: "Cookie policy.",
     group: "optional",
   },
   {
     path: "/disclaimer",
     title: "Disclaimer",
-    desc: "Disclaimer for CL Creative.",
+    desc: "Disclaimer.",
     group: "optional",
   },
 ];
@@ -342,38 +207,10 @@ export type NavMenuItem = NavMenuLink | NavMenuDropdown;
  * See "Add a link to the NAVBAR" in the header for the recipe.
  */
 export const NAV_MENU: NavMenuItem[] = [
-  { path: "/about" },
-  { path: "/how-we-work" },
-  {
-    label: "Services",
-    children: [
-      "/services/m2m-messaging-sprint",
-      "/services/webflow-development",
-      "/services/web-design",
-      "/services/seo",
-      "/services/webflow-website-support",
-      "/services/marketing-partner",
-    ],
-  },
-  {
-    label: "Industries",
-    children: [
-      "/web-design/churches",
-      "/web-design/coaches",
-      "/web-design/home-services",
-      "/web-design/recruiting-firm",
-    ],
-  },
-  {
-    label: "Resources",
-    children: [
-      "/blog",
-      "/why-webflow",
-      "/m2m-framework",
-      "/marketing-scorecard",
-    ],
-  },
+  { path: "/blog" },
   { path: "/case-studies" },
+  { path: "/glossary" },
+  { path: "/marketing-scorecard" },
 ];
 
 // ── Footer link groups ──────────────────────────────────────────────────────
@@ -391,11 +228,7 @@ export interface FooterGroup {
 }
 
 /** Footer "Locations Served" dropdown — page paths in display order. */
-export const FOOTER_LOCATIONS: string[] = [
-  "/web-design-midlothian",
-  "/web-design-waxahachie",
-  "/web-design-dallas",
-];
+export const FOOTER_LOCATIONS: string[] = [];
 
 /**
  * FOOTER — the footer link columns (one `{ title, links }` per column).
@@ -405,45 +238,12 @@ export const FOOTER_LOCATIONS: string[] = [
  */
 export const FOOTER_GROUPS: FooterGroup[] = [
   {
-    title: "Services",
-    links: [
-      "/services/m2m-messaging-sprint",
-      "/services/web-design",
-      "/services/webflow-development",
-      "/services/seo",
-      "/services/webflow-website-support",
-      "/services/marketing-partner",
-    ],
-  },
-  {
     title: "Resources",
-    links: [
-      "/blog",
-      "/case-studies",
-      "/glossary",
-      "/why-webflow",
-      "/m2m-framework",
-      "/marketing-scorecard",
-    ],
+    links: ["/blog", "/case-studies", "/glossary", "/marketing-scorecard"],
   },
   {
     title: "Company",
-    links: [
-      "/about",
-      { path: "/how-we-work", label: "Pricing", href: "/how-we-work#investment" },
-      "/contact",
-      "/book-a-call",
-    ],
-    locations: FOOTER_LOCATIONS,
-  },
-  {
-    title: "Industries",
-    links: [
-      "/web-design/churches",
-      "/web-design/coaches",
-      "/web-design/home-services",
-      "/web-design/recruiting-firm",
-    ],
+    links: ["/contact"],
   },
 ];
 
@@ -472,12 +272,11 @@ export const BANNER: {
   overrides: Record<string, BannerContent | null>;
 } = {
   default: {
-    text: "How healthy is your marketing? Take the free scorecard",
-    href: "/marketing-scorecard",
+    text: "",
   },
   overrides: {
-    // "/marketing-scorecard": null,                       // hide on the page it points to
-    // "/services/seo": { text: "...", href: "/contact" }, // custom banner for one page
+    // "/some-page": null,                       // hide the banner on this page
+    // "/other": { text: "...", href: "/contact" }, // custom banner for one page
   },
 };
 

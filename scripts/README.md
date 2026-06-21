@@ -18,9 +18,10 @@ Dev deps used by the migration scripts (`csv-parse`, `node-html-parser`,
 ## `check-schema.mjs` — JSON-LD validator (reusable)
 
 Validates the structured-data (`<script type="application/ld+json">`) on the
-location/SEO pages plus one live sample of each CMS content type. Catches JSON
-parse errors, missing `@context`/`@type`, duplicate/dangling `@id` references,
-and empty FAQ entries. Part of the location-page workflow in CLAUDE.md.
+static pages in its `STATIC_PAGES` array (currently `/` and `/contact`) plus one
+live sample of each CMS content type. Catches JSON parse errors, missing
+`@context`/`@type`, duplicate/dangling `@id` references, and empty FAQ entries.
+See _Per-page SEO & Structured Data_ in CLAUDE.md.
 
 ```bash
 npm run dev            # in one terminal

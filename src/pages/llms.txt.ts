@@ -43,7 +43,7 @@ interface GlossaryTerm {
   shortDefinition?: string;
 }
 
-/** `/about` → `https://www.clcreative.co/about`; `/` → site root. */
+/** `/contact` → `${SITE_URL}/contact`; `/` → site root. */
 function url(path: string): string {
   return path === "/" ? SITE_URL : `${SITE_URL}${path}`;
 }
@@ -58,25 +58,40 @@ function dynamicLine(title: string, path: string, desc?: string): string {
 }
 
 export const GET: APIRoute = async () => {
-  const [{ data: posts }, { data: caseStudies }, { data: glossary }] =
-    await Promise.all([
-      loadQuery<BlogPost[]>({ query: BLOG_POSTS_QUERY }),
-      loadQuery<CaseStudy[]>({ query: CASE_STUDIES_QUERY }),
-      loadQuery<GlossaryTerm[]>({ query: GLOSSARY_TERMS_QUERY }),
-    ]);
+  // Tolerate an empty or unreachable dataset (e.g. a fresh fork before
+  // `/setup`) — the file still renders the static page index.
+  const [posts, caseStudies, glossary] = await Promise.all([
+    loadQuery<BlogPost[]>({ query: BLOG_POSTS_QUERY })
+      .then((r) => r.data)
+      .catch(() => [] as BlogPost[]),
+    loadQuery<CaseStudy[]>({ query: CASE_STUDIES_QUERY })
+      .then((r) => r.data)
+      .catch(() => [] as CaseStudy[]),
+    loadQuery<GlossaryTerm[]>({ query: GLOSSARY_TERMS_QUERY })
+      .then((r) => r.data)
+      .catch(() => [] as GlossaryTerm[]),
+  ]);
 
   // Mirror the sitemap rule: hide case studies marked "coming soon".
   const publishedCaseStudies = (caseStudies ?? []).filter(
     (c) => c.comingSoon !== true,
   );
 
+  // Only emit static groups that have pages (services/locations are empty in
+  // the bare starter).
+  const staticGroups: Array<[string, StaticPage[]]> = [
+    ["Main Pages", MAIN_PAGES],
+    ["Services", SERVICE_PAGES],
+    ["Locations", LOCATION_PAGES],
+    ["Sections", INDEX_PAGES],
+  ];
+
   const sections: string[] = [
     `# ${SITE_NAME}`,
     `> ${SITE_SUMMARY}`,
-    `## Main Pages\n${MAIN_PAGES.map(staticLine).join("\n")}`,
-    `## Services\n${SERVICE_PAGES.map(staticLine).join("\n")}`,
-    `## Locations\n${LOCATION_PAGES.map(staticLine).join("\n")}`,
-    `## Sections\n${INDEX_PAGES.map(staticLine).join("\n")}`,
+    ...staticGroups
+      .filter(([, pages]) => pages.length)
+      .map(([heading, pages]) => `## ${heading}\n${pages.map(staticLine).join("\n")}`),
   ];
 
   if (publishedCaseStudies.length) {

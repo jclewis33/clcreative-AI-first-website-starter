@@ -18,7 +18,7 @@
  *   href="/blog/design-system"
  *   image={blogImage}
  *   imageAlt="Design system components"
- *   author="Casey Lewis"
+ *   author="Jane Doe"
  *   date="2026-03-01"
  * />
  * ```
@@ -32,7 +32,7 @@
  *   href="/blog/seo-fundamentals"
  *   image={seoImage}
  *   imageAlt="SEO dashboard screenshot"
- *   author="Casey Lewis"
+ *   author="Jane Doe"
  *   authorAvatar={avatarImage}
  *   date="2026-02-15"
  * />
@@ -44,7 +44,6 @@ import Card from "./Card.astro";
 import Visual from "./Visual.astro";
 import Heading from "./Heading.astro";
 import Text from "./Text.astro";
-import { displayCategory } from "../../lib/category-display";
 
 /**
  * BlogCard — blog post card with image, title, description, category,
@@ -172,7 +171,7 @@ const formattedDate = date
         marginBottom={0}
         class="blog_card_category"
       >
-        {displayCategory(cat)}
+        {cat}
       </Text>
     ))}
   </div>

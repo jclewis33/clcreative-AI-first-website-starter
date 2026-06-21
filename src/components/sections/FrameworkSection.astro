@@ -1,0 +1,139 @@
+---
+/**
+ * FrameworkSection — accent-themed framework / process section.
+ *
+ * Brand-themed section with a watermark, intro copy, and a 3-column numbered
+ * card grid for explaining a 3-step process or framework.
+ *
+ * All copy has placeholder defaults. Override per-section via named slots:
+ *   `heading`, `intro`, `card1Body`, `card2Body`, `card3Body`.
+ *
+ * @example Default usage
+ * ```astro
+ * <FrameworkSection />
+ * ```
+ *
+ * @example Override heading + intro + card bodies for a specific page
+ * ```astro
+ * <FrameworkSection>
+ *   <Fragment slot="heading">Your three-step headline</Fragment>
+ *   <Fragment slot="intro">A short intro paragraph.</Fragment>
+ *   <Fragment slot="card2Body">Step two body copy.</Fragment>
+ * </FrameworkSection>
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import ContentWrapper from "../ui/ContentWrapper.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Grid from "../ui/Grid.astro";
+import Button from "../ui/Button.astro";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **FrameworkSection props:**
+   * - `padding` — sets both paddingTop and paddingBottom (default `'main'`)
+   * - `paddingTop` — override top padding only
+   * - `paddingBottom` — override bottom padding only
+   * - `class` — extra classes on outer Section
+   */
+  docs?: string;
+
+  /** Sets both paddingTop and paddingBottom @default 'main' */
+  padding?: PaddingValue;
+  /** Override top padding only */
+  paddingTop?: PaddingValue;
+  /** Override bottom padding only */
+  paddingBottom?: PaddingValue;
+  /** Extra classes on the outer Section */
+  class?: string;
+}
+
+const {
+  docs,
+  padding = "main",
+  paddingTop = padding,
+  paddingBottom = padding,
+  class: className,
+} = Astro.props;
+---
+
+<Section
+  theme="brand"
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  class:list={["framework_section", className]}
+  id="framework"
+>
+  <div class="framework_watermark" aria-hidden="true">Flow</div>
+  <ContentWrapper class="framework_content">
+    <Heading data-fade-in variant="eyebrow" maxWidth="30ch">
+      Lorem ipsum eyebrow
+    </Heading>
+    <Heading data-split-text tag="h3" variant="h2" maxWidth="28ch">
+      <slot name="heading"
+        >Lorem ipsum dolor sit amet consectetur adipiscing elit.</slot
+      >
+    </Heading>
+    <slot name="intro">
+      <Text data-fade-in size="regular" maxWidth="60ch">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore.
+      </Text>
+      <Text data-fade-in size="regular" maxWidth="60ch" marginBottom={0}>
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+        ut aliquip ex ea commodo consequat duis aute irure dolor.
+      </Text>
+    </slot>
+  </ContentWrapper>
+  <Grid
+    data-fade-list
+    largeColumns={3}
+    mediumColumns={1}
+    smallColumns={1}
+    rowGap={0}
+    class="framework_grid"
+  >
+    <div class="framework_card">
+      <span class="framework_card_number u-font-mono">01</span>
+      <Heading tag="h4" variant="h4" marginBottom={0}>Lorem Ipsum One</Heading>
+      <Text size="regular">
+        <slot name="card1Body"
+          >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.</slot
+        >
+      </Text>
+    </div>
+    <div class="framework_card">
+      <span class="framework_card_number u-font-mono">02</span>
+      <Heading tag="h4" variant="h4" marginBottom={0}>Lorem Ipsum Two</Heading>
+      <Text size="regular">
+        <slot name="card2Body"
+          >Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+          nisi ut aliquip ex ea commodo consequat.</slot
+        >
+      </Text>
+    </div>
+    <div class="framework_card">
+      <span class="framework_card_number u-font-mono">03</span>
+      <Heading tag="h4" variant="h4" marginBottom={0}>Lorem Ipsum Three</Heading>
+      <Text size="regular">
+        <slot name="card3Body"
+          >Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+          dolore eu fugiat nulla pariatur excepteur sint.</slot
+        >
+      </Text>
+    </div>
+  </Grid>
+
+  <ContentWrapper align="center">
+    <div class="u-button-wrapper" data-fade-in>
+      <Button href="/contact" ariaLabel="Learn more">
+        Learn More
+      </Button>
+    </div>
+  </ContentWrapper>
+</Section>

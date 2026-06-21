@@ -9,9 +9,10 @@ export default defineCliConfig({
     projectId: SANITY_PROJECT_ID,
     dataset: SANITY_DATASET,
   },
-  studioHost: "clcreative",
+  studioHost: "your-studio",
   deployment: {
-    // App backing https://clcreative.sanity.studio (issued by `sanity deploy`).
-    appId: "x5ftewwzfgt17sngx8ntsjor",
+    // App backing https://<studioHost>.sanity.studio. Leave empty — the first
+    // `sanity deploy` issues a new appId; write the returned value back here.
+    appId: "",
   },
 });

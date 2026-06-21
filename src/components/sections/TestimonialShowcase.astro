@@ -42,7 +42,7 @@ interface Props {
    * - `testimonials` — array of `{ quote, name, role?, company?, avatar? }`
    *   Fetch with `getTestimonials()` or `getTestimonials({ featured: true })`
    * - `limit` — max testimonials to display (slices after Sanity ordering)
-   * - `heading` — section heading text (default `"Partner with Us and You'll be in Good Hands"`)
+   * - `heading` — section heading text (default `"Lorem ipsum dolor sit amet consectetur"`)
    * - `theme` — `'light'` | `'dark'` | `'brand'` (default `'light'`)
    * - `padding` — sets both paddingTop and paddingBottom (default `'main'`)
    * - `paddingTop` — override top padding only
@@ -76,7 +76,7 @@ const {
   docs,
   testimonials: rawTestimonials,
   limit,
-  heading = "Partner with Us and You'll be in Good Hands",
+  heading = "Lorem ipsum dolor sit amet consectetur",
   theme = "light",
   padding = "small",
   paddingTop = padding,

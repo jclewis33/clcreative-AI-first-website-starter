@@ -5,4 +5,4 @@ Disallow: /thank-you
 Disallow: /style-guide
 Disallow: /components
 
-Sitemap: https://www.clcreative.co/sitemap-index.xml
+Sitemap: https://www.example.com/sitemap-index.xml

@@ -1,0 +1,86 @@
+---
+/**
+ * SecondaryCtaPrompt — brand-themed low-commitment fallback CTA. Offers a
+ * secondary "send a note" path beneath a primary call-to-action.
+ *
+ * @example Default usage
+ * ```astro
+ * <SecondaryCtaPrompt />
+ * ```
+ *
+ * @example Custom link target
+ * ```astro
+ * <SecondaryCtaPrompt linkHref="/contact" linkText="Send a quick note instead →" />
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Heading from "../ui/Heading.astro";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **SecondaryCtaPrompt props:**
+   * - `heading` — lead-in text before the link
+   * - `linkText` — clickable link text
+   * - `linkHref` — link target (default `'/contact'`)
+   * - `theme` — section theme (default `'brand'`)
+   * - `padding` / `paddingTop` / `paddingBottom` — section padding (default `'small'`)
+   * - `class` — extra classes on outer Section
+   */
+  docs?: string;
+
+  /** Lead-in text before the link. */
+  heading?: string;
+  /** Clickable link text. */
+  linkText?: string;
+  /** Link target. @default '/contact' */
+  linkHref?: string;
+  /** Section color theme. @default 'brand' */
+  theme?: "light" | "dark" | "brand";
+  /** Sets both paddingTop and paddingBottom. @default 'small' */
+  padding?: PaddingValue;
+  /** Override top padding only. */
+  paddingTop?: PaddingValue;
+  /** Override bottom padding only. */
+  paddingBottom?: PaddingValue;
+  /** Extra classes on the outer Section. */
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  docs,
+  heading = "Not ready to commit?",
+  linkText = "Send a quick note instead →",
+  linkHref = "/contact",
+  theme = "brand",
+  padding = "small",
+  paddingTop = padding,
+  paddingBottom = padding,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<Section
+  theme={theme}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  class={className}
+  {...rest}
+>
+  <Layout variant="stack">
+    <Col slot="col1">
+      <Heading tag="h2" variant="h4">
+        {heading}
+        <a href={linkHref} class="u-text-style-underline">
+          {linkText}
+        </a>
+      </Heading>
+    </Col>
+  </Layout>
+</Section>

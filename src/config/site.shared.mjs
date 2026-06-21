@@ -19,7 +19,7 @@
  */
 
 /** Sanity project id (public — appears in every Sanity API URL). */
-export const SANITY_PROJECT_ID = "2mcikzx3";
+export const SANITY_PROJECT_ID = "your-sanity-project-id";
 
 /** Sanity dataset. */
 export const SANITY_DATASET = "production";
@@ -28,4 +28,4 @@ export const SANITY_DATASET = "production";
 export const SANITY_API_VERSION = "2025-03-15";
 
 /** Absolute site origin, no trailing slash. */
-export const SITE_URL = "https://www.clcreative.co";
+export const SITE_URL = "https://www.example.com";

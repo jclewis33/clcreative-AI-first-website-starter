@@ -1,10 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "WebFetch(domain:clcreative.jclewis33.workers.dev)",
-      "Bash(curl -sI https://clcreative.co)",
-      "Bash(dig clcreative.co +short)",
-      "Bash(dig www.clcreative.co +short)"
-    ]
+    "allow": []
   }
 }

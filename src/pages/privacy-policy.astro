@@ -1,29 +1,33 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Section from "../components/ui/Section.astro";
+import Heading from "../components/ui/Heading.astro";
 ---
 
-<BaseLayout
-  title="Privacy Policy | CL Creative"
-  description="Privacy Policy for CL Creative"
->
-  <Section>
-    <div
-      id="V1U5Uk4zZE1MMVFyYjNKWGFIYzlQUT09"
-      class="policy_embed_div"
-      aria-live="polite"
-      aria-busy="true"
-    >
-      Please wait while the policy is loaded. If it does not load, please <a
-        rel="nofollow"
-        aria-label="click here to view the policy"
-        href="https://policies.termageddon.com/api/policy/V1U5Uk4zZE1MMVFyYjNKWGFIYzlQUT09"
-        target="_blank">click here to view the policy</a
-      >.
+<BaseLayout title="Privacy Policy | Astro Starter" description="Privacy policy.">
+  <Section paddingTop="page-top" container="narrow">
+    <div class="u-rich-text">
+      <Heading tag="h1" variant="h1">Privacy Policy</Heading>
+      <p><em>Replace this placeholder with your own privacy policy.</em></p>
+      <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+        commodo consequat.
+      </p>
+      <h2>Information We Collect</h2>
+      <p>
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+        dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      </p>
+      <h2>How We Use Your Information</h2>
+      <p>
+        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+        accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab
+        illo inventore veritatis et quasi architecto beatae vitae dicta sunt
+        explicabo.
+      </p>
     </div>
   </Section>
-  <script
-    is:inline
-    src="https://policies.termageddon.com/api/embed/V1U5Uk4zZE1MMVFyYjNKWGFIYzlQUT09.js"
-  ></script>
 </BaseLayout>

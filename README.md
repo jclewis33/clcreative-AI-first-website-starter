@@ -1,6 +1,6 @@
-# CL Creative
+# Your Company
 
-Marketing site for CL Creative, built with [Astro](https://astro.build), [Sanity](https://www.sanity.io) (CMS), and deployed to a single [Cloudflare Worker](https://developers.cloudflare.com/workers/). The front-end follows a structured class system — see [`CLAUDE.md`](CLAUDE.md) for the full conventions, component reference, and architecture notes.
+Marketing site for Your Company, built with [Astro](https://astro.build), [Sanity](https://www.sanity.io) (CMS), and deployed to a single [Cloudflare Worker](https://developers.cloudflare.com/workers/). The front-end follows a structured class system — see [`CLAUDE.md`](CLAUDE.md) for the full conventions, component reference, and architecture notes.
 
 ## 🍴 Forking this as a starter
 
@@ -40,7 +40,7 @@ Everything else (home, about, services, location/industry pages, legal pages, `l
 
 ## 🚢 Deployment & content rebuilds
 
-`www.clcreative.co` is served by a single Cloudflare Worker (the `clcreative` project). There is no separate preview deployment — draft preview runs on the same URL via a cookie set by Sanity's Presentation tool (see below).
+`www.example.com` is served by a single Cloudflare Worker (the `your-worker-name` project). There is no separate preview deployment — draft preview runs on the same URL via a cookie set by Sanity's Presentation tool (see below).
 
 **Two things trigger a production rebuild (`astro build`, ~60–90s):**
 
@@ -49,15 +49,15 @@ Everything else (home, about, services, location/industry pages, legal pages, `l
 
 Because the build re-queries Sanity on every run, a rebuild regenerates the sitemap and `llms.txt` / `llms-full.txt` automatically — the same lifecycle as the pages.
 
-**Need a manual rebuild?** Either click **Retry deployment** in the Cloudflare dashboard (Workers & Pages → `clcreative` → Deployments), or `POST` the deploy-hook URL (handy from a script or an iOS Shortcut). No new infrastructure required.
+**Need a manual rebuild?** Either click **Retry deployment** in the Cloudflare dashboard (Workers & Pages → `your-worker-name` → Deployments), or `POST` the deploy-hook URL (handy from a script or an iOS Shortcut). No new infrastructure required.
 
 ### Sanity webhook
 
-Configured at [manage.sanity.io](https://www.sanity.io/manage) → project `2mcikzx3` → API → Webhooks.
+Configured at [manage.sanity.io](https://www.sanity.io/manage) → project `your-sanity-project-id` → API → Webhooks.
 
 | Field | Value |
 |---|---|
-| URL | Cloudflare deploy hook (Workers & Pages → `clcreative` → Settings → Builds → Deploy hooks, targeting `main`) |
+| URL | Cloudflare deploy hook (Workers & Pages → `your-worker-name` → Settings → Builds → Deploy hooks, targeting `main`) |
 | Dataset | `production` |
 | Trigger on | Create, Update, Delete |
 | HTTP method | `POST` |
@@ -89,4 +89,4 @@ That covers identity. For everything else a fork needs — Sanity project + CORS
 
 ## 👀 Want to learn more?
 
-See [`CLAUDE.md`](CLAUDE.md) for the full front-end system (class conventions, component APIs, JSON-LD, SEO/location-page checklist), or the [Astro docs](https://docs.astro.build).
+See [`CLAUDE.md`](CLAUDE.md) for the full front-end system (class conventions, component APIs, JSON-LD, SEO & structured data), or the [Astro docs](https://docs.astro.build).

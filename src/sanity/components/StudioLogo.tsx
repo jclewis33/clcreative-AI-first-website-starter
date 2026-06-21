@@ -1,9 +1,9 @@
 /**
- * CL Creative wordmark — rendered in the Studio navbar via
- * `studio.components.logo` in sanity.config.ts. Uses `currentColor` so it
- * adapts to the Studio's light/dark theme. Artwork comes from the shared
- * path data in src/config/logo-paths.ts (same source the front-end Logo uses),
- * so a logo redesign is a single edit.
+ * Brand wordmark — rendered in the Studio navbar via `studio.components.logo`
+ * in sanity.config.ts. Uses `currentColor` so it adapts to the Studio's
+ * light/dark theme. Artwork comes from the shared path data in
+ * src/config/logo-paths.ts (same source the front-end Logo uses), so a logo
+ * redesign is a single edit.
  */
 import {
   LOGO_VIEWBOX,

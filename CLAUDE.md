@@ -394,7 +394,7 @@ import Button from '@/components/ui/Button.astro';
 <Button href="/contact" ariaLabel="Contact us">Contact Us</Button>
 
 <!-- Secondary -->
-<Button variant="secondary" href="/about" ariaLabel="Learn more">Learn More</Button>
+<Button variant="secondary" href="/case-studies" ariaLabel="Learn more">Learn More</Button>
 
 <!-- Text-link style -->
 <Button variant="text" href="/blog" ariaLabel="Read articles">Read more →</Button>
@@ -447,12 +447,12 @@ Nav items come from the **`NAV_MENU`** array in [src/data/site-structure.ts](src
 ```ts
 // src/data/site-structure.ts
 export const NAV_MENU: NavMenuItem[] = [
-  { path: "/about" },
+  { path: "/blog" },
   {
-    label: "Services",
-    children: ["/services/web-design", "/services/seo"],
+    label: "More",
+    children: ["/case-studies", "/glossary"],
   },
-  { path: "/case-studies" },
+  { path: "/contact" },
 ];
 ```
 
@@ -653,9 +653,9 @@ Separates semantic tag (`tag`) from visual style (`variant`). Always choose the 
 - `h6` → smallest heading (1.125→1.25rem fluid)
 - `eyebrow` → small uppercase label (1.125rem fixed, wide letter-spacing)
 
-> **Display variants — framework vs. this project.** The `display-xl/lg/md/sm` variants are part of the base framework and are **kept intentionally available** for projects forked from this repo. They are **not deleted** even though the live CL Creative site doesn't lean on them.
+> **Display variants — framework vs. this project.** The `display-xl/lg/md/sm` variants are part of the base framework and are **kept intentionally available** for projects forked from this repo. They are **not deleted** even though the live Your Company site doesn't lean on them.
 >
-> On the **CL Creative** site specifically, the default visual maximum is **`h1`** — don't reach for display variants by default, and don't retrofit them onto existing pages. They're fine where an oversized headline is genuinely wanted (e.g. the `404` page already uses `display-lg`); leave existing usages as-is. When this repo is forked for a future project, the display tier is fully available to use freely.
+> On the **Your Company** site specifically, the default visual maximum is **`h1`** — don't reach for display variants by default, and don't retrofit them onto existing pages. They're fine where an oversized headline is genuinely wanted (e.g. the `404` page already uses `display-lg`); leave existing usages as-is. When this repo is forked for a future project, the display tier is fully available to use freely.
 
 ```astro
 <!-- h2 DOM node that looks like a large display heading -->
@@ -1087,7 +1087,7 @@ Blog post card built on top of the Card component. Image-top layout with title (
   href="/blog/design-system"
   image={blogImage}
   imageAlt="Design system components"
-  author="Casey Lewis"
+  author="Jane Doe"
   date="2026-03-01"
 />
 ```
@@ -1521,7 +1521,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
       <Text variant="large" align="center">Supporting text.</Text>
       <div class="u-button-wrapper">
         <Button href="/contact" ariaLabel="Get started">Get Started</Button>
-        <Button variant="secondary" href="/about" ariaLabel="Learn more">Learn More</Button>
+        <Button variant="secondary" href="/case-studies" ariaLabel="Learn more">Learn More</Button>
       </div>
     </Col>
   </Layout>
@@ -1610,9 +1610,9 @@ All site identity lives in **one file**: [src/config/site.ts](src/config/site.ts
 
 ## Deployment, Sanity Studio & Preview
 
-The site runs on a **single** Cloudflare Worker (the `clcreative` project). `www.clcreative.co` is the only public URL. The Studio is **hosted by Sanity** (deployed with `npx sanity deploy`), not embedded in the app. Its Presentation tool iframes the live site **cross-origin** for draft preview, via a cookie set by the `/api/draft-mode/enable` route on `www.clcreative.co` — there is still no separate preview environment. Because the frame is cross-origin, the site allows the Studio origin via CSP `frame-ancestors` (in [src/middleware.ts](src/middleware.ts) for SSR responses and [public/_headers](public/_headers) for static assets — keep both in sync), and the enable route sets the cookie `SameSite=None; Secure`.
+The site runs on a **single** Cloudflare Worker (the `your-worker-name` project). `www.example.com` is the only public URL. The Studio is **hosted by Sanity** (deployed with `npx sanity deploy`), not embedded in the app. Its Presentation tool iframes the live site **cross-origin** for draft preview, via a cookie set by the `/api/draft-mode/enable` route on `www.example.com` — there is still no separate preview environment. Because the frame is cross-origin, the site allows the Studio origin via CSP `frame-ancestors` (in [src/middleware.ts](src/middleware.ts) for SSR responses and [public/_headers](public/_headers) for static assets — keep both in sync), and the enable route sets the cookie `SameSite=None; Secure`.
 
-**Studio URLs (Sanity app model):** the branded host `clcreative.sanity.studio` is a **redirect shim** — it 302s (preserving deep `/intent/...` paths) to the actual app at `https://www.sanity.io/@oIRJgnPo2/studio/<appId>`, which is itself sandboxed under `*.sanity.studio` nested inside the `www.sanity.io` dashboard shell. So `frame-ancestors` (in `src/middleware.ts` + `public/_headers`) must allow **both** `https://*.sanity.io` **and** `https://*.sanity.studio` (plus `http://localhost:3333` for `sanity dev`) — NOT just the branded host, and NOT just `www.sanity.io` (an early single-origin value silently blocked Presentation). `stega.studioUrl` can still point at the branded `clcreative.sanity.studio` (overlay deep-links redirect through correctly). The backing app id is pinned in [sanity.cli.ts](sanity.cli.ts) (`deployment.appId`). ⚠️ The cross-site draft cookie can be blocked by Safari/ITP — verify Presentation in Chrome; a same-site `studio.clcreative.co` Studio is the fallback.
+**Studio URLs (Sanity app model):** the branded host `your-studio.sanity.studio` is a **redirect shim** — it 302s (preserving deep `/intent/...` paths) to the actual app at `https://www.sanity.io/@your-org-id/studio/<appId>`, which is itself sandboxed under `*.sanity.studio` nested inside the `www.sanity.io` dashboard shell. So `frame-ancestors` (in `src/middleware.ts` + `public/_headers`) must allow **both** `https://*.sanity.io` **and** `https://*.sanity.studio` (plus `http://localhost:3333` for `sanity dev`) — NOT just the branded host, and NOT just `www.sanity.io` (an early single-origin value silently blocked Presentation). `stega.studioUrl` can still point at the branded `your-studio.sanity.studio` (overlay deep-links redirect through correctly). The backing app id is pinned in [sanity.cli.ts](sanity.cli.ts) (`deployment.appId`). ⚠️ The cross-site draft cookie can be blocked by Safari/ITP — verify Presentation in Chrome; a same-site `studio.example.com` Studio is the fallback.
 
 **Forking this repo as a template?** Work through [docs/new-project-checklist.md](docs/new-project-checklist.md) — it lists the security/infra setup that lives in dashboards (Cloudflare WAF rate-limit rule, GitHub Dependabot settings, Sanity CORS, encrypted secrets) and must be re-created per project, plus the post-launch verification commands and the current dependency pins with their removal conditions. Keep that file updated when security-relevant setup changes (new API endpoints needing rate limits, new pins, new secrets).
 
@@ -1620,7 +1620,7 @@ Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.s
 
 ### How draft mode works
 
-1. Editor opens `clcreative.sanity.studio` and clicks **Presentation** in Studio's left rail.
+1. Editor opens `your-studio.sanity.studio` and clicks **Presentation** in Studio's left rail.
 2. Presentation calls `/api/draft-mode/enable` ([src/pages/api/draft-mode/enable.ts](src/pages/api/draft-mode/enable.ts)) with a Sanity-signed preview secret. The route validates the secret via `@sanity/preview-url-secret`'s `validatePreviewUrl` against the live dataset — if the request isn't from a legitimate Studio session, it returns 401.
 3. On success the route sets the `sanity-preview-mode` cookie (`perspectiveCookieName` from `@sanity/preview-url-secret/constants`) with the editor's chosen perspective (default `"drafts"`) and redirects to the target path.
 4. The Presentation iframe loads that path. Every page calls `getDraftModeProps(Astro.cookies)` ([src/sanity/lib/draft-mode.ts](src/sanity/lib/draft-mode.ts)) which reads the cookie and spreads `{ perspectiveCookie }` into `loadQuery` ([src/sanity/lib/load-query.ts](src/sanity/lib/load-query.ts)). When present, `loadQuery` fetches drafts with stega encoding and authenticates using `SANITY_API_READ_TOKEN`.
@@ -1641,7 +1641,7 @@ No content-publish webhook is needed — every request fetches fresh from Sanity
 URLs must resolve without trailing slashes. Two places must stay in sync:
 
 1. **[astro.config.mjs](astro.config.mjs)** — set `trailingSlash: 'never'` on the root config so Astro emits canonical URLs, sitemap entries, and internal links without trailing slashes.
-2. **[wrangler.jsonc](wrangler.jsonc)** — inside the `assets` block, set `"html_handling": "drop-trailing-slash"` so the Cloudflare Worker serves `/about` instead of redirecting `/about` → `/about/` (or vice versa) at the edge:
+2. **[wrangler.jsonc](wrangler.jsonc)** — inside the `assets` block, set `"html_handling": "drop-trailing-slash"` so the Cloudflare Worker serves `/contact` instead of redirecting `/contact` → `/contact/` (or vice versa) at the edge:
 
    ```jsonc
    "assets": {
@@ -1696,24 +1696,24 @@ sitemap({
 **When you add a new SSR page type** (new Sanity schema with its own route, a new dynamic `[slug].astro` under `src/pages/`, etc.):
 
 1. Add a query for it to `getSanityUrls()` in [astro.config.mjs](astro.config.mjs).
-2. Map each result to `https://www.clcreative.co/<route>/${slug}` with no trailing slash.
+2. Map each result to `https://www.example.com/<route>/${slug}` with no trailing slash.
 3. Run a build and inspect `dist/sitemap-0.xml` (or visit `/sitemap-index.xml` on the deployed site) to confirm entries appear.
 
 Static/prerendered pages do **not** need to be added here — Astro's sitemap picks them up automatically from the route table.
 
 ### Studio
 
-Sanity Studio is **hosted by Sanity** at `clcreative.sanity.studio` — it is *not* embedded in the app. The `@sanity/astro` integration in [astro.config.mjs](astro.config.mjs) intentionally omits `studioBasePath` (so no `/studio` route is injected) but is still present because it provides the `sanity:client` virtual module used by [src/sanity/lib/load-query.ts](src/sanity/lib/load-query.ts). Studio config lives in [sanity.config.ts](sanity.config.ts) and is shared by the hosted Studio, `npx sanity deploy`, and `npx sanity dev`. `stega.studioUrl` is set to the absolute hosted URL (`https://clcreative.sanity.studio`) so overlay clicks deep-link into the hosted Studio.
+Sanity Studio is **hosted by Sanity** at `your-studio.sanity.studio` — it is *not* embedded in the app. The `@sanity/astro` integration in [astro.config.mjs](astro.config.mjs) intentionally omits `studioBasePath` (so no `/studio` route is injected) but is still present because it provides the `sanity:client` virtual module used by [src/sanity/lib/load-query.ts](src/sanity/lib/load-query.ts). Studio config lives in [sanity.config.ts](sanity.config.ts) and is shared by the hosted Studio, `npx sanity deploy`, and `npx sanity dev`. `stega.studioUrl` is set to the absolute hosted URL (`https://your-studio.sanity.studio`) so overlay clicks deep-link into the hosted Studio.
 
-**Deploying the Studio:** `npx sanity schema deploy` then `npx sanity deploy` (publishes to `clcreative.sanity.studio` using the `studioHost`/`deployment.appId` already set in [sanity.cli.ts](sanity.cli.ts)). Studio updates ship independently of the site build.
+**Deploying the Studio:** `npx sanity schema deploy` then `npx sanity deploy` (publishes to `your-studio.sanity.studio` using the `studioHost`/`deployment.appId` already set in [sanity.cli.ts](sanity.cli.ts)). Studio updates ship independently of the site build.
 
-**Local workflow:** run `npx sanity dev` (Studio at `localhost:3333`) and `npm run dev` (site at `localhost:4321`) in separate terminals — there is no `/studio` on the dev site. To drive Presentation locally against the local site, set `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` (the Presentation `previewUrl.initial` falls back to `https://www.clcreative.co`). `frame-ancestors` already allows `localhost:3333`.
+**Local workflow:** run `npx sanity dev` (Studio at `localhost:3333`) and `npm run dev` (site at `localhost:4321`) in separate terminals — there is no `/studio` on the dev site. To drive Presentation locally against the local site, set `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` (the Presentation `previewUrl.initial` falls back to `https://www.example.com`). `frame-ancestors` already allows `localhost:3333`.
 
 ### Studio editing experience (desk, groups, icons, Vision)
 
 The Studio UI is configured entirely in code — [sanity.config.ts](sanity.config.ts) for the desk/plugins/branding, and each schema file for per-type icons and field groups. None of this touches content data; it's all editor-facing presentation.
 
-**Branding.** `defineConfig` sets `name: "clcreative"`, `title: "CL Creative"`, a workspace `icon` (`StudioIcon` — the compact CL mark), and a navbar `logo` via `studio.components.logo` (`StudioLogo` — the full wordmark). Both live in [src/sanity/components/](src/sanity/components/) as TSX SVGs using `currentColor` (so they adapt to Studio light/dark). `StudioLogo` and the front-end [Logo.astro](src/components/global/Logo.astro) both render their SVG paths from the shared [src/config/logo-paths.ts](src/config/logo-paths.ts) — edit that one file to restyle the wordmark everywhere.
+**Branding.** `defineConfig` sets `name: "your-project"`, `title: "Your Company"`, a workspace `icon` (`StudioIcon` — the compact CL mark), and a navbar `logo` via `studio.components.logo` (`StudioLogo` — the full wordmark). Both live in [src/sanity/components/](src/sanity/components/) as TSX SVGs using `currentColor` (so they adapt to Studio light/dark). `StudioLogo` and the front-end [Logo.astro](src/components/global/Logo.astro) both render their SVG paths from the shared [src/config/logo-paths.ts](src/config/logo-paths.ts) — edit that one file to restyle the wordmark everywhere.
 
 **Landing view / Dashboard.** There is **no in-Studio dashboard** — the old `@sanity/dashboard` `dashboardTool` (with the custom `QuickLinksWidget` + per-type `documentListWidget`s and the `StudioLayout` grid-fix CSS) was removed in favour of Sanity's **hosted Dashboard**. The deployed Studio is a Core app, so it already appears in the org Dashboard at `www.sanity.io` alongside Canvas, Media Library, Content Releases, etc. — that's the overview hub now. In `sanity.config.ts`, `structureTool` is the **first plugin**, so opening the Studio lands on the content desk. If you ever want the old quick-links/external-shortcuts back, rebuild them as a **custom widget in the hosted Dashboard** — don't re-add the in-Studio plugin.
 
@@ -1769,7 +1769,7 @@ Per-document iframe URLs are mapped in [src/sanity/lib/resolve.ts](src/sanity/li
 | `PUBLIC_SANITY_DATASET` | [wrangler.jsonc](wrangler.jsonc) `vars` + local `.env` | Dataset name |
 | `SANITY_API_READ_TOKEN` | Cloudflare **encrypted secret** + local `.env` | Viewer token — validates preview secrets and authenticates draft fetches. Never a plain wrangler var. |
 
-The Sanity project must have `https://www.clcreative.co` (and `http://localhost:4321` for dev) added as a CORS origin with **Allow credentials** checked.
+The Sanity project must have `https://www.example.com` (and `http://localhost:4321` for dev) added as a CORS origin with **Allow credentials** checked.
 
 ### Data fetching pattern
 
@@ -1794,88 +1794,82 @@ For dynamic routes, read `Astro.params.slug` directly — no `getStaticPaths()` 
 
 ---
 
-## Location Pages — SEO, Schema & Site Wiring
+## Per-page SEO & Structured Data
 
-Per-city marketing pages (currently [/web-design-midlothian](src/pages/web-design-midlothian.astro) and [/web-design-waxahachie](src/pages/web-design-waxahachie.astro)). Use this checklist when adding a new one.
+Most pages need nothing here — BaseLayout emits the baseline schema automatically.
+Reach for this only when a page should advertise a specific **Service** (and
+optionally an **FAQ**) to search engines, e.g. a marketing/service/landing page.
 
 ### Sitewide pieces — already wired, do not duplicate
 
-- **LocalBusiness JSON-LD** lives in [src/layouts/BaseLayout.astro](src/layouts/BaseLayout.astro) as a single `ProfessionalService` node with `@id: https://www.clcreative.co/#localbusiness`. It renders on every page. Per-page `Service` schemas reference it via `provider.@id` — never redefine the LocalBusiness on a location page.
-- **`areaServed` on the sitewide node** mirrors the Google Business Profile city list. If a new city the page targets isn't already in that array, add it to [BaseLayout.astro](src/layouts/BaseLayout.astro). This is independent of whether a per-city page exists.
-- **Image/logo paths** in JSON-LD are standardized: `image: /cl-creative-open-graph.png`, `logo: /images/favicon.png`. The same paths are used by [src/lib/jsonld.ts](src/lib/jsonld.ts) for blog/case-study/glossary templates.
+- **LocalBusiness JSON-LD** lives in [src/layouts/BaseLayout.astro](src/layouts/BaseLayout.astro) as a single `ProfessionalService` node with `@id: ${SITE.url}/#localbusiness`. It renders on **every** page. Per-page `Service` schemas reference it via `provider.@id` — never redefine the LocalBusiness on a page.
+- **`areaServed`** on the sitewide node comes from `SITE.areaServed` in [src/config/site.ts](src/config/site.ts). Add the cities/regions your business serves there (once) — it's independent of whether any per-page Service schema exists.
+- **Baseline per page:** BaseLayout always renders `LocalBusiness + WebPage + BreadcrumbList`. Image/logo paths come from `SITE.ogImagePath` (`/images/og-image.png`) and `SITE.logoPath` (`/images/favicon.png`); [src/lib/jsonld.ts](src/lib/jsonld.ts) reuses the same `SITE.*` values for the blog/case-study/glossary templates.
 
-### Per-page checklist (new location page)
+### Adding a Service (+ optional FAQ) graph to a page
 
-1. **Title tag** — `<= 60 chars`, format: `Web Design in {City}, TX | CL Creative`
-2. **Meta description** — `<= 155 chars`, mention the city + Webflow + a CTA
-3. **`canonical` prop on BaseLayout** — `https://www.clcreative.co/web-design-{city}` (no trailing slash; the project enforces this in [astro.config.mjs](astro.config.mjs) and [wrangler.jsonc](wrangler.jsonc))
-4. **H1** — natural sentence that includes the city name. Don't keyword-stuff.
-5. **Image alt text** — specific and real (e.g. `"CL Creative web designer serving {City}, TX"`). Not keyword-stuffed.
-6. **Internal links woven into body copy**: `/web-design-{other-city}`, `/m2m-framework`, `/why-webflow`. The `HowWeWorkPromo`, `CaseStudyFeatured`, and `FAQ` sections already link `/how-we-work` and `/case-studies`.
-7. **FAQs** — add a `webDesign{City}Faqs` export to [src/data/faqs.ts](src/data/faqs.ts). HTML is allowed in answers (use `<a class="u-text-style-underline">` for links, `<br><br>` for paragraph breaks, `<strong>` for bold).
-8. **Per-page `@graph`** — build a Service (+ FAQPage) graph with the `serviceFaqJsonLd()` helper in [src/lib/jsonld.ts](src/lib/jsonld.ts). Don't hand-write the JSON or a raw `<script>` block. Copy the pattern from [web-design-waxahachie.astro](src/pages/web-design-waxahachie.astro):
+1. Build the graph with the `serviceFaqJsonLd()` helper in [src/lib/jsonld.ts](src/lib/jsonld.ts) — don't hand-write JSON or a raw `<script>` block:
 
    ```ts
    import { serviceFaqJsonLd } from "../lib/jsonld";
    import { SITE } from "../config/site";
+   import { generalFaqs } from "../data/faqs";
 
    // Build the URL from SITE.url — never hardcode the host literal.
-   const pageUrl = `${SITE.url}/web-design-{city}`;
+   const pageUrl = `${SITE.url}/your-page`;
 
    const schemaGraph = serviceFaqJsonLd({
      pageUrl,
      serviceType: "Web Design",
-     name: "Web Design in {City}, TX",
+     name: "Your service name",
      description: "...",
      areaServed: [
-       { type: "City", name: "{City}" },
-       { type: "AdministrativeArea", name: "{County}" },
+       { type: "City", name: "Your City" },
+       { type: "AdministrativeArea", name: "Your County" },
      ],
-     audience: { audienceType: "..." },          // type defaults to "BusinessAudience"
-     faqs: webDesign{City}Faqs,                   // omit to skip the FAQPage node
+     audience: { audienceType: "..." },   // type defaults to "BusinessAudience"
+     faqs: generalFaqs,                    // omit to skip the FAQPage node
    });
    ```
 
-   The helper derives `provider.@id` from `SITE.url` so it **always** matches the sitewide LocalBusiness `@id` — no more character-for-character copying. Per-page `areaServed` stays tight (city + county) — do not list other cities here even though the sitewide LocalBusiness does.
+   The helper derives `provider.@id` from `SITE.url` so it **always** matches the
+   sitewide LocalBusiness `@id`. Keep the per-page `areaServed` tight (the specific
+   area this page targets) — the full list belongs on the sitewide node only.
 
-9. **Pass it to BaseLayout** via the `schema` prop — BaseLayout renders it through `JsonLd.astro` (which escapes `<`) alongside the automatic baseline schema (LocalBusiness + WebPage + BreadcrumbList). No manual `<script type="application/ld+json">` tag:
+2. **Pass it to BaseLayout** via the `schema` prop — BaseLayout renders it through `JsonLd.astro` (which escapes `<`) alongside the automatic baseline (LocalBusiness + WebPage + BreadcrumbList). No manual `<script type="application/ld+json">` tag:
    ```astro
    <BaseLayout title="..." canonical={pageUrl} schema={schemaGraph}>
    ```
 
-10. **Footer "Locations Served" dropdown** — add a `<div class="footer_group_item">` entry in [src/components/global/Footer.astro](src/components/global/Footer.astro) (search for the existing Midlothian/Waxahachie entries).
+3. **Register the page** in the `PAGES` array in [src/data/site-structure.ts](src/data/site-structure.ts) with the matching `group` (the single registry that feeds `/llms.txt`, `/llms-full.txt`, the nav, and the footer), then reference its `path` in `NAV_MENU`/`FOOTER_GROUPS` if it should appear there. See **LLM Discoverability** below.
 
-11. **Redirect from the old location URL** — the prior site used `/location/web-design-{city}`. Add a 301 to [public/_redirects](public/_redirects) **above** the `/location/* /services/web-design 301` wildcard:
-    ```
-    /location/web-design-{city} /web-design-{city} 301
-    ```
-    Order matters — the wildcard catches anything below it, so the specific rule must come first.
+4. **Per-page FAQs:** [src/data/faqs.ts](src/data/faqs.ts) ships one generic `generalFaqs` set; add more exports there (HTML is allowed in answers — `<a class="u-text-style-underline">` links, `<br><br>` breaks, `<strong>` bold) and pass the one you want as `faqs`.
 
-12. **Validate** — run the schema check:
-    ```bash
-    npm run dev               # in one terminal
-    npm run check:schema      # in another
-    ```
-    The script ([scripts/check-schema.mjs](scripts/check-schema.mjs)) validates the two static location pages plus one live sample of each CMS content type. To add a new location to the check, append its path to the `STATIC_PAGES` array at the top of the file.
+### Validate
 
-13. **Register the page** — add it to the `PAGES` array in [src/data/site-structure.ts](src/data/site-structure.ts) with `group: "location"` (this is the single registry that feeds `/llms.txt`, `/llms-full.txt`, the nav, and the footer). Then reference its `path` in `FOOTER_GROUPS`/`NAV_MENU` if it should appear there. See the **LLM Discoverability** section below.
+```bash
+npm run dev               # in one terminal
+npm run check:schema      # in another
+```
 
-### What the schema check catches
+[scripts/check-schema.mjs](scripts/check-schema.mjs) validates the JSON-LD on the
+pages in its `STATIC_PAGES` array (currently `/` and `/contact`) plus one live
+sample of each CMS content type. **Add any page that ships a custom `schema`** to
+`STATIC_PAGES`. It catches:
 
 - JSON parse errors
 - Missing `@context` / `@type` / required fields
 - Duplicate or malformed `@id` values
-- Dangling `provider.@id` references (the load-bearing failure mode for the location/business linkage)
+- Dangling `provider.@id` references (the load-bearing failure mode for the page→business linkage)
 - Empty FAQ entries
 
-What it doesn't catch: Google's rich-result eligibility rules. After deploy, paste each script into [Google's Rich Results Test](https://search.google.com/test/rich-results) (Test code tab) or point it at the live URL to confirm Google specifically detects LocalBusiness, Service, and FAQ rich results.
+What it doesn't catch: Google's rich-result eligibility rules. After deploy, paste each script into [Google's Rich Results Test](https://search.google.com/test/rich-results) (Test code tab) or point it at the live URL to confirm Google detects the LocalBusiness, Service, and FAQ rich results.
 
 ### Don'ts
 
-- **Don't redefine the LocalBusiness node on the page.** It only lives in BaseLayout. Pages reference it.
-- **Don't list every city in the per-page `Service.areaServed`.** That's the sitewide node's job. The page-level `Service` stays scoped to the city the page is targeting.
-- **Don't invent contact details.** Phone is `+1-706-338-6155`, email is `casey@clcreative.co`, address has no street line (home-based). These live in one place — the sitewide node.
-- **Don't mirror Midlothian copy on a new page.** Each location page's body must be distinct (Google penalizes near-duplicate doorway pages). Pull fresh copy from Figma or write new.
+- **Don't redefine the LocalBusiness node on a page.** It only lives in BaseLayout. Pages reference it via `provider.@id`.
+- **Don't list every area in a per-page `Service.areaServed`.** That's the sitewide node's job; the page-level `Service` stays scoped to what that page targets.
+- **Don't hardcode contact details.** They live in one place — `SITE` in [src/config/site.ts](src/config/site.ts) — and flow into the sitewide node.
 
 ---
 
@@ -1904,7 +1898,7 @@ Dynamic content is automatic; **static (non-Sanity) marketing pages are hand-cur
 | Collection index / landing | `"index"` |
 | Legal / policy page | `"optional"` |
 
-Each entry is `{ path, title, desc, group }` (plus optional `navLabel` / `footerLabel` overrides) — `path` is the site-relative URL with no trailing slash, `title` is the page title with the ` | CL Creative` suffix stripped, and `desc` is the page's meta description. The llms endpoints render each group via `pagesInGroup(group)`. Because nav and footer reference pages by path from this same registry, adding the page here once + referencing its path in `NAV_MENU`/`FOOTER_GROUPS` is all that's needed — no more three separate lists. New **CMS** content needs nothing here.
+Each entry is `{ path, title, desc, group }` (plus optional `navLabel` / `footerLabel` overrides) — `path` is the site-relative URL with no trailing slash, `title` is the page title with the ` | Your Company` suffix stripped, and `desc` is the page's meta description. The llms endpoints render each group via `pagesInGroup(group)`. Because nav and footer reference pages by path from this same registry, adding the page here once + referencing its path in `NAV_MENU`/`FOOTER_GROUPS` is all that's needed — no more three separate lists. New **CMS** content needs nothing here.
 
 To verify: `npm run dev`, then open `/llms.txt` and `/llms-full.txt` and confirm the new page appears.
 
