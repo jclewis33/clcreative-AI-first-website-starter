@@ -117,6 +117,20 @@ Optional (keep current if blank): tagline, descriptions, X handle, phone, hours,
 address (locality/region/country), priceRange, GTM/MailerLite/Usercentrics/
 HoneyBook ids.
 
+> **⚠️ Always ask about fonts and font sizes — do not skip.** Steps **1b (fonts)**
+> and **1c (fluid type scale)** below are **required parts of this conversational
+> gather, not optional add-ons.** Even if the user only gives you the identity
+> values above, you **must** explicitly ask:
+> 1. **Which typefaces** the new brand uses (or confirm they want to keep the
+>    starter's BDO Grotesk / Inter / IBM Plex Mono) — step 1b.
+> 2. **Whether the heading & body sizes** should change from the default fluid type
+>    scale, showing them the current min→max values — step 1c.
+>
+> A fork that ships with the wrong fonts or wrong type scale looks unbranded, so
+> surface both questions every run. Don't assume the defaults are wanted — ask, then
+> apply what they choose (fonts via astro.config.mjs, sizes via the `fluidType`
+> CLI map).
+
 > **Always recommend a starter meta description — don't leave the placeholder.**
 > From what you learn about the business, **draft and propose** a sitewide default
 > meta description (the `defaultDescription` field → `SITE.defaultDescription`,
@@ -218,14 +232,17 @@ asking them to type hex codes.
    `{ "brand": { "--background": "var(--color-brand-600)" } }`. Prefer swatch
    changes; reach for this only for genuine structural overrides.
 
-#### 1b. Fonts — swap in the project's typefaces
-Fonts use the **Astro Fonts API**, not raw `@font-face`. The registry is the
+#### 1b. Fonts — swap in the project's typefaces (REQUIRED ASK)
+**Always ask this — never silently keep the defaults.** Fonts use the **Astro
+Fonts API**, not raw `@font-face`. The registry is the
 `fonts` array in [astro.config.mjs](../../../astro.config.mjs) — three families
 today: `--font-bdo-grotesk` (primary), `--font-inter` (secondary),
 `--font-ibm-plex-mono` (tertiary, eyebrows). [fonts.css](../../../src/styles/fonts.css)
 is just a doc comment.
 
-Ask the user which typefaces the new brand uses, then:
+**Ask the user which typefaces the new brand uses** (primary / secondary / mono,
+or confirm they want to keep BDO Grotesk / Inter / IBM Plex Mono). If they name new
+fonts, then:
 1. **Get the files into the repo.** For self-hosted fonts, have the user add the
    `.woff2` files to [src/assets/fonts/](../../../src/assets/fonts/) (you can't
    receive binary uploads — tell them the exact folder, or they can commit them).
@@ -242,8 +259,9 @@ Ask the user which typefaces the new brand uses, then:
    those stacks.
 4. **Build to verify** the fonts resolve (`npm run build`).
 
-#### 1c. Fluid type scale — ask about heading & body sizes
-Every heading/text tier is fluid: its `clamp()` is computed from a
+#### 1c. Fluid type scale — ask about heading & body sizes (REQUIRED ASK)
+**Always ask this — never silently keep the defaults.** Every heading/text tier is
+fluid: its `clamp()` is computed from a
 `--{tier}-min` / `--{tier}-max` pair (in rem) in
 [typography.css](../../../src/styles/variables/typography.css). **Ask the user**
 whether the default scale works or the new brand wants larger/smaller headings or
@@ -415,6 +433,9 @@ Then run the **§7 post-launch verification** curl block from the checklist.
   back into `sanity.cli.ts` and committed.
 - Config files carry the new identity; `npm run check:config` and `npm run build`
   pass.
+- **Fonts and font sizes were explicitly discussed** (steps 1b/1c) — the user
+  either confirmed the starter defaults or supplied new typefaces / a new fluid
+  type scale, and those were applied.
 - CORS origins added; Viewer token created and placed.
 - The user has the residual Cloudflare/GitHub dashboard list and knows the content
   scaffolding still needs their copy.
