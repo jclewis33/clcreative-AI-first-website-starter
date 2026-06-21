@@ -1,4 +1,4 @@
-# Strip to Starter — removing CL Creative pages & content
+# Strip to Starter — removing Your Company pages & content
 
 How to turn a fresh clone of this repo into a **clean, content-free starter** that
 still builds and keeps the entire design system. This is a **one-time** pass that
@@ -7,8 +7,8 @@ produces the canonical starter; each real project later runs `/setup` (or
 
 ## When & where
 
-- **Do this in the new starter repo** (e.g. `clcreative-AI-first-website-starter`),
-  after cloning with fresh history — **not** on the production `clcreative` repo.
+- **Do this in the new starter repo** (e.g. `your-starter-repo`),
+  after cloning with fresh history — **not** on the production `your-worker-name` repo.
 - **End state:** all components / layouts / styles / CMS templates intact, no CL
   Creative marketing copy, and `npm run build` + `npm run check:schema` pass.
 - **Relationship to `/setup`:** opposite jobs. The strip *removes example content*;
@@ -40,7 +40,7 @@ neutralize the must-keep routes to placeholders.
 - **Config & data shells:** `src/config/**`, `src/sanity/**`, and
   `src/data/site-structure.ts` + `src/data/faqs.ts` (edit these, don't delete).
 
-## 🗑️ Delete — CL Creative marketing pages + their content
+## 🗑️ Delete — Your Company marketing pages + their content
 
 Delete each page **and** its matching `src/styles/pages/*.css` (page CSS is imported
 only by its own page, so there's no `global.css` line to remove):
@@ -113,7 +113,7 @@ Deleting a page without this breaks the build or leaves 404 links:
 
 - **`index.astro`** → minimal placeholder home.
 - **Legal pages + `404.astro`** → keep structure, swap body copy for neutral
-  placeholder text (no "CL Creative", "Casey", city names).
+  placeholder text (no brand name, founder name, or city names).
 - **Leave `src/config/site.ts`, the color/logo files as-is** — `/setup` re-values
   them per project; don't brand them in the starter.
 
@@ -126,10 +126,12 @@ npm run dev                   # one terminal
 npm run check:schema          # other terminal — after trimming STATIC_PAGES
 ```
 
-Then sweep for stray CL references in kept files (config is fine — setup owns it):
+Then sweep for stray brand references in kept files (config is fine — setup owns it).
+Replace the terms below with the source brand's name, founder, city names, and any
+third-party integration names:
 
 ```bash
-rg -n "clcreative|CL Creative|Casey|Midlothian|Waxahachie|HoneyBook" \
+rg -n "BrandName|Founder Name|City1|City2|HoneyBook" \
   src --glob '!src/config/**'
 ```
 

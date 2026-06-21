@@ -124,15 +124,13 @@ function excludeDevOnlyPages() {
 }
 
 /**
- * 301 redirects from the old Webflow site URL structure to the new Astro
- * routes. Keep this map in sync with anything you rename or remove so existing
- * Google index entries and external backlinks don't 404.
+ * Static one-to-one 301 redirects. Empty by default — a new project starts with
+ * no redirects. Add `"old-path": "/new-path"` pairs here as you rename or remove
+ * routes so existing index entries and external backlinks don't 404, e.g.:
+ *   const redirects = { "/portfolio": "/case-studies" };
+ * (Wildcard/splat redirects go in public/_redirects instead.)
  */
-const redirects = {
-  // Example one-to-one redirects. Add old → new path pairs here as the site
-  // grows so existing index entries and external backlinks don't 404.
-  "/portfolio": "/case-studies",
-};
+const redirects = {};
 
 // https://astro.build/config
 export default defineConfig({

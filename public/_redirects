@@ -1,15 +1,7 @@
-# Dynamic 301 redirects from the old Webflow URL structure to new Astro routes.
-# Handled at the Cloudflare edge before the worker runs. Static (one-to-one)
-# redirects live in `astro.config.mjs` under `redirects`.
+# Wildcard / splat 301 redirects, handled at the Cloudflare edge before the
+# worker runs. Empty by default — a new project starts with no redirects.
+# Static one-to-one redirects live in `astro.config.mjs` under `redirects`.
 #
 # Format: <source pattern> <destination> <status>
-# `:splat` captures the wildcard match.
-
-# Case study path: singular → plural (preserves slug)
-/case-study/* /case-studies/:splat 301
-
-# Blog category structure change (preserves category)
-/category/* /blog/category/:splat 301
-
-# Old portfolio CMS items — collapse to case studies index
-/portfolio/* /case-studies 301
+# `:splat` captures the wildcard match. Example:
+#   /old-blog/* /blog/:splat 301

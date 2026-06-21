@@ -15,7 +15,7 @@ Work top to bottom. Items marked **🔁 per-fork** must be done for every new pr
 
 ---
 
-## Architecture this fork sets up (the CL Creative default)
+## Architecture this fork sets up (the Your Company default)
 
 Every fork lands on the same proven shape — chosen to lean into what Sanity is actively investing in (Core apps, the hosted Dashboard, an auto-updating hosted Studio) and to keep client builds low-maintenance:
 
