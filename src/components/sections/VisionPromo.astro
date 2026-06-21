@@ -1,0 +1,80 @@
+---
+/**
+ * VisionPromo — dark centered-heading promo with a full-width visual and a
+ * two-column "picture the version of…" block plus a centered CTA.
+ *
+ * The right-column prose varies per page (and may contain inline links), so
+ * it's passed via the `body` slot.
+ *
+ * Slot:
+ * - `body` — the right-column paragraphs (Text components, may include links)
+ */
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Visual from "../ui/Visual.astro";
+import Heading from "../ui/Heading.astro";
+import Button from "../ui/Button.astro";
+import ContentWrapper from "../ui/ContentWrapper.astro";
+
+interface Props {
+  /**
+   * **VisionPromo props:**
+   * - `heading` — section heading
+   * - `image` / `imageAlt` — the full-width Visual
+   * - `pictureHeading` — left-column h3
+   * - `buttonText` / `buttonHref` — CTA
+   * - Slot `body` — right-column prose
+   */
+  docs?: string;
+
+  /** Section heading. */
+  heading: string;
+  /** Full-width Visual source. */
+  image: ImageMetadata | string;
+  /** Full-width Visual alt text. */
+  imageAlt: string;
+  /** Left-column heading. */
+  pictureHeading?: string;
+  /** CTA button label. @default 'Get Started' */
+  buttonText?: string;
+  /** CTA button link. @default '/contact' */
+  buttonHref?: string;
+
+  [key: string]: any;
+}
+
+const {
+  docs,
+  heading,
+  image,
+  imageAlt,
+  pictureHeading = "Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor.",
+  buttonText = "Get Started",
+  buttonHref = "/contact",
+  ...rest
+} = Astro.props;
+---
+
+<Section theme="dark" {...rest}>
+  <ContentWrapper align="center">
+    <Heading data-split-text tag="h2" variant="h2" maxWidth="35ch">
+      {heading}
+    </Heading>
+  </ContentWrapper>
+
+  <Visual data-fade-in src={image} alt={imageAlt} ratio="wide" />
+
+  <Layout data-fade-list variant="columns" verticalAlign="start">
+    <Heading slot="col1" tag="h3" variant="h4">{pictureHeading}</Heading>
+    <Col slot="col2">
+      <slot name="body" />
+    </Col>
+  </Layout>
+
+  <ContentWrapper align="center" data-fade-in>
+    <div class="u-button-wrapper">
+      <Button href={buttonHref} ariaLabel={buttonText}>{buttonText}</Button>
+    </div>
+  </ContentWrapper>
+</Section>

@@ -4,7 +4,7 @@
  * that a `<script type="application/ld+json">` tag can stringify.
  *
  * All functions expect `siteUrl` to be an absolute origin (e.g.
- * "https://www.clcreative.co") — pass `Astro.site!.toString().replace(/\/$/, "")`
+ * "https://www.example.com") — pass `Astro.site!.toString().replace(/\/$/, "")`
  * from calling templates.
  */
 
@@ -380,7 +380,7 @@ export function glossaryTermJsonLd(term: any, siteUrl: string): any {
     url: pageUrl,
     inDefinedTermSet: {
       "@type": "DefinedTermSet",
-      name: "CL Creative Glossary",
+      name: "Astro Starter Glossary",
       url: `${siteUrl}/glossary`,
     },
   };

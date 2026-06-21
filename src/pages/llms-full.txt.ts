@@ -105,13 +105,20 @@ function caseStudyContentToMarkdown(blocks: CaseStudyBlock[] | undefined): strin
 }
 
 export const GET: APIRoute = async () => {
-  // 1. Fetch the listings to know what exists (and order).
-  const [{ data: posts }, { data: caseStudies }, { data: glossary }] =
-    await Promise.all([
-      loadQuery<SlugItem[]>({ query: BLOG_POSTS_QUERY }),
-      loadQuery<SlugItem[]>({ query: CASE_STUDIES_QUERY }),
-      loadQuery<SlugItem[]>({ query: GLOSSARY_TERMS_QUERY }),
-    ]);
+  // 1. Fetch the listings to know what exists (and order). Tolerate an empty
+  //    or unreachable dataset (e.g. a fresh fork before `/setup`) — the file
+  //    still renders the static page index.
+  const [posts, caseStudies, glossary] = await Promise.all([
+    loadQuery<SlugItem[]>({ query: BLOG_POSTS_QUERY })
+      .then((r) => r.data)
+      .catch(() => [] as SlugItem[]),
+    loadQuery<SlugItem[]>({ query: CASE_STUDIES_QUERY })
+      .then((r) => r.data)
+      .catch(() => [] as SlugItem[]),
+    loadQuery<SlugItem[]>({ query: GLOSSARY_TERMS_QUERY })
+      .then((r) => r.data)
+      .catch(() => [] as SlugItem[]),
+  ]);
 
   const postSlugs = (posts ?? []).map((p) => p.slug);
   const caseStudySlugs = (caseStudies ?? [])
@@ -146,13 +153,19 @@ export const GET: APIRoute = async () => {
     ),
   ]);
 
+  const staticGroups: Array<[string, StaticPage[]]> = [
+    ["Main Pages", MAIN_PAGES],
+    ["Services", SERVICE_PAGES],
+    ["Locations", LOCATION_PAGES],
+    ["Sections", INDEX_PAGES],
+  ];
+
   const out: string[] = [
     `# ${SITE_NAME}`,
     `> ${SITE_SUMMARY}`,
-    pageIndex("Main Pages", MAIN_PAGES),
-    pageIndex("Services", SERVICE_PAGES),
-    pageIndex("Locations", LOCATION_PAGES),
-    pageIndex("Sections", INDEX_PAGES),
+    ...staticGroups
+      .filter(([, pages]) => pages.length)
+      .map(([heading, pages]) => pageIndex(heading, pages)),
   ];
 
   if (fullCaseStudies.length) {

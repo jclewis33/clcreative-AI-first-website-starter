@@ -1,0 +1,160 @@
+---
+/**
+ * FeatureCards — heading + a two-column intro (prose + image) + a two-column
+ * media block + a 3-card icon grid.
+ *
+ * The three cards are baked in with placeholder copy. The per-page prose is
+ * passed via the `intro` and `media` slots.
+ *
+ * Slots:
+ * - `intro` — the intro paragraphs (Text components) shown beside the image
+ * - `media` — rich-text content (rendered inside `.u-rich-text`)
+ */
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Heading from "../ui/Heading.astro";
+import Visual from "../ui/Visual.astro";
+import Grid from "../ui/Grid.astro";
+import Text from "../ui/Text.astro";
+
+interface Props {
+  /**
+   * **FeatureCards props:**
+   * - `heading` — main section heading
+   * - `portraitImage` / `portraitAlt` — intro image
+   * - `mediaImage` / `mediaAlt` — secondary block image
+   * - Slots: `intro` (prose beside the image), `media` (rich text)
+   */
+  docs?: string;
+
+  /** Main section heading. */
+  heading: string;
+  /** Intro image. */
+  portraitImage: ImageMetadata | string;
+  /** Intro image alt text. */
+  portraitAlt: string;
+  /** Secondary block image. */
+  mediaImage: ImageMetadata | string;
+  /** Secondary block image alt text. */
+  mediaAlt: string;
+
+  [key: string]: any;
+}
+
+const {
+  docs,
+  heading,
+  portraitImage,
+  portraitAlt,
+  mediaImage,
+  mediaAlt,
+  ...rest
+} = Astro.props;
+---
+
+<Section theme="dark" {...rest}>
+  <Layout variant="stack">
+    <Col slot="col1">
+      <Heading
+        data-split-text
+        data-prevent-flicker="true"
+        tag="h2"
+        variant="h2"
+        maxWidth="40ch"
+      >
+        {heading}
+      </Heading>
+    </Col>
+  </Layout>
+
+  <Layout data-fade-list variant="columns" ratio="4-8" verticalAlign="start">
+    <Col slot="col1">
+      <slot name="intro" />
+    </Col>
+    <Visual slot="col2" src={portraitImage} alt={portraitAlt} ratio="3/2" />
+  </Layout>
+
+  <Layout data-fade-list variant="columns" ratio="5-7" verticalAlign="center">
+    <Visual slot="col1" src={mediaImage} alt={mediaAlt} />
+    <div slot="col2" class="u-rich-text">
+      <slot name="media" />
+    </div>
+  </Layout>
+
+  <Grid
+    data-fade-in
+    largeColumns={3}
+    mediumColumns={1}
+    smallColumns={1}
+    rowGap={0}
+    class="feature-cards_grid"
+  >
+    <div class="feature-cards_card">
+      <svg
+        class="feature-cards_card_icon"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <polyline points="16 11 18 13 22 9"></polyline>
+      </svg>
+      <Heading maxWidth="40ch" tag="h3" variant="h5" marginBottom={0}
+        >Lorem Ipsum One</Heading
+      >
+      <Text variant="regular" marginBottom={0}>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt.
+      </Text>
+    </div>
+    <div class="feature-cards_card">
+      <svg
+        class="feature-cards_card_icon"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+        <polyline points="2 17 12 22 22 17"></polyline>
+        <polyline points="2 12 12 17 22 12"></polyline>
+      </svg>
+      <Heading maxWidth="40ch" tag="h3" variant="h5" marginBottom={0}
+        >Lorem Ipsum Two</Heading
+      >
+      <Text variant="regular" marginBottom={0}>
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+        ut aliquip ex ea commodo.
+      </Text>
+    </div>
+    <div class="feature-cards_card">
+      <svg
+        class="feature-cards_card_icon"
+        aria-hidden="true"
+        viewBox="0 0 32 32"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="16" cy="16" r="13" stroke-width="var(--border-width-main)"
+        ></circle>
+        <path d="M10 16l4 4 8-8" stroke-width="var(--border-width-main)"></path>
+      </svg>
+      <Heading maxWidth="40ch" tag="h3" variant="h5" marginBottom={0}
+        >Lorem Ipsum Three</Heading
+      >
+      <Text variant="regular" marginBottom={0}>
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+        dolore eu fugiat.
+      </Text>
+    </div>
+  </Grid>
+</Section>

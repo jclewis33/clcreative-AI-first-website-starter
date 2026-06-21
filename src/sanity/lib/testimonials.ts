@@ -83,7 +83,7 @@ export async function getTestimonials(
  * Returns `undefined` if no match is found.
  *
  * ```astro
- * const testimonial = await getTestimonialByName("Tom Connally");
+ * const testimonial = await getTestimonialByName("Jane Doe");
  * ```
  */
 export async function getTestimonialByName(

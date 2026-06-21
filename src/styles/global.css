@@ -55,8 +55,9 @@
 @import "./components/project-images.css";
 @import "./components/why-work-with-us.css";
 @import "./components/services.css";
-@import "./components/m2m-framework.css";
-@import "./components/after-launch.css";
+@import "./components/framework-section.css";
+@import "./components/feature-cards.css";
+@import "./components/post-launch-support.css";
 @import "./components/signup-form.css";
 @import "./components/marketing-scorecard.css";
 @import "./components/blog-cta.css";

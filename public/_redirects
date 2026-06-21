@@ -13,11 +13,3 @@
 
 # Old portfolio CMS items — collapse to case studies index
 /portfolio/* /case-studies 301
-
-# Discontinued local SEO landing pages (20 cities × 2 services)
-# Cities with a new dedicated landing page take precedence over the wildcard.
-/location/web-design-midlothian /web-design-midlothian 301
-/location/web-design-waxahachie /web-design-waxahachie 301
-/location/web-design-dallas /web-design-dallas 301
-/location/* /services/web-design 301
-/seo/* /services/seo 301

@@ -1,0 +1,151 @@
+---
+/**
+ * PostLaunchSupport — dark section with two-column intro, checklist, and full-width image.
+ *
+ * Left column: eyebrow + heading. Right column: body text, check-list items,
+ * and a text-link CTA. Full-width image below.
+ *
+ * @example Default usage
+ * ```astro
+ * <PostLaunchSupport />
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Visual from "../ui/Visual.astro";
+import Button from "../ui/Button.astro";
+
+import postLaunchImg from "../../assets/web-development/after-launch-1.webp";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **PostLaunchSupport props:**
+   * - `theme` — 'light' | 'dark' | 'brand'
+   * - `padding` / `paddingTop` / `paddingBottom` — section padding
+   * - `class` — extra classes
+   */
+  docs?: string;
+
+  theme?: "light" | "dark" | "brand";
+  padding?: PaddingValue;
+  paddingTop?: PaddingValue;
+  paddingBottom?: PaddingValue;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  docs,
+  theme = "dark",
+  padding = "main",
+  paddingTop = padding,
+  paddingBottom = padding,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const items = [
+  "Lorem ipsum dolor sit amet consectetur adipiscing.",
+  "Sed do eiusmod tempor incididunt ut labore et dolore.",
+  "Ut enim ad minim veniam quis nostrud exercitation ullamco laboris.",
+  "Duis aute irure dolor in reprehenderit in voluptate velit esse.",
+];
+---
+
+<Section
+  theme={theme}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  class={className}
+  {...rest}
+>
+  <Layout variant="columns" verticalAlign="start">
+    <Col slot="col1">
+      <Heading data-fade-in maxWidth="40ch" variant="eyebrow"
+        >Lorem ipsum eyebrow</Heading
+      >
+      <Heading data-split-text
+        >Lorem ipsum dolor sit amet consectetur</Heading
+      >
+    </Col>
+    <Col slot="col2">
+      <Text data-fade-in variant="large"
+        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+        eiusmod tempor incididunt ut labore et dolore magna aliqua.</Text
+      >
+      <Text data-fade-in variant="large"
+        >Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+        nisi ut aliquip ex ea commodo consequat.</Text
+      >
+
+      <ul data-fade-list class="post-launch_list">
+        {
+          items.map((item) => (
+            <li class="post-launch_item u-text-shrink">
+              <svg
+                class="post-launch_icon"
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <path
+                  d="M6.25 10L8.75 12.5L13.75 7.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="8.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-dasharray="2 2.5"
+                />
+              </svg>
+              <Text tag="span" marginBottom={0}>
+                {item}
+              </Text>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="u-button-wrapper">
+        <Button
+          variant="text"
+          href="/contact"
+          ariaLabel="Learn more"
+        >
+          Learn More
+          <svg
+            slot="icon"
+            aria-hidden="true"
+            viewBox="0 0 10 10"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <line x1="0" y1="5" x2="8" y2="5"></line>
+            <polyline points="5,2 8,5 5,8"></polyline>
+          </svg>
+        </Button>
+      </div>
+    </Col>
+  </Layout>
+
+  <Visual
+    src={postLaunchImg}
+    alt="Laptop showing a completed website project"
+    ratio="16/9"
+    radius="main"
+    data-fade-in
+  />
+</Section>

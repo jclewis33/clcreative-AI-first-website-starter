@@ -33,24 +33,10 @@ const args = process.argv.slice(2);
 const baseIdx = args.indexOf("--base");
 const BASE = baseIdx >= 0 ? args[baseIdx + 1] : "http://localhost:4321";
 
-// Static pages with per-page Service/FAQ JSON-LD (via serviceFaqJsonLd),
-// plus one baseline-only page to validate the automatic WebPage/Breadcrumb.
-const STATIC_PAGES = [
-  "/web-design-midlothian",
-  "/web-design-waxahachie",
-  "/web-design-dallas",
-  "/web-design/recruiting-firm",
-  "/web-design/coaches",
-  "/web-design/home-services",
-  "/web-design/churches",
-  "/services/web-design",
-  "/services/webflow-development",
-  "/services/seo",
-  "/services/marketing-partner",
-  "/services/webflow-website-support",
-  "/services/m2m-messaging-sprint",
-  "/about",
-];
+// Static pages to validate the automatic baseline (WebPage / Breadcrumb /
+// LocalBusiness) schema. Add pages here that ship per-page Service/FAQ JSON-LD
+// (via serviceFaqJsonLd) as the starter grows.
+const STATIC_PAGES = ["/", "/contact"];
 
 // Pull one sample slug from each Sanity content type so we also validate
 // the JsonLd helper output on blog / case-study / glossary templates.

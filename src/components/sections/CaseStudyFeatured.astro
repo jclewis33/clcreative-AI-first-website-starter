@@ -47,7 +47,7 @@ type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
  * CaseStudyFeatured — interactive 3-card showcase with hover expand animation.
  *
  * **Props:**
- * - `slugs` — 3 case study slugs in display order (falls back to Satterfield, Leverture, PopCandi)
+ * - `slugs` — 3 case study slugs in display order (falls back to placeholder slugs)
  * - `eyebrow` — eyebrow text above heading (default `'Proven Results'`)
  * - `headingVariant` — visual style for card title headings (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
  * - `theme` — light, dark, brand
@@ -62,7 +62,7 @@ interface Props {
   /**
    * **CaseStudyFeatured props:**
    * - `studies` — pre-fetched case study data array (skips internal Sanity fetch when provided)
-   * - `slugs` — 3 case study slugs in display order (falls back to Satterfield, Leverture, PopCandi)
+   * - `slugs` — 3 case study slugs in display order (falls back to placeholder slugs)
    * - `eyebrow` — eyebrow text (default `'Proven Results'`)
    * - `headingVariant` — card title heading variant (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
    * - `theme` — light, dark, brand
@@ -77,9 +77,9 @@ interface Props {
 
   /**
    * Case study slugs to display, in display order. Exactly 3 required.
-   * Falls back to Satterfield Builders, Leverture, PopCandi AI.
+   * Falls back to placeholder slugs.
    *
-   * @default ["satterfield-builders-website-redesign-for-modern-home-builder", "leverture-web-design-and-development-for-an-agency", "popcandi-ai-marketing-and-saas-platform"]
+   * @default ["case-study-one", "case-study-two", "case-study-three"]
    * @example slugs={["slug-a", "slug-b", "slug-c"]}
    */
   slugs?: [string, string, string];
@@ -157,9 +157,9 @@ interface Props {
 /* ── Exported constants for page-level fetching ───────────────────────── */
 
 export const FEATURED_CASE_STUDIES_SLUGS: [string, string, string] = [
-  "satterfield-builders-website-redesign-for-modern-home-builder",
-  "leverture-web-design-and-development-for-an-agency",
-  "popcandi-ai-marketing-and-saas-platform",
+  "case-study-one",
+  "case-study-two",
+  "case-study-three",
 ];
 
 export const FEATURED_CASE_STUDIES_QUERY = `*[_type == "caseStudy" && slug.current in $slugs] {
@@ -192,12 +192,15 @@ if (studies && studies.length >= 3) {
   // Pre-fetched data provided — skip internal fetch
   displayStudies = studies;
 } else {
-  // Fetch from Sanity (standalone usage)
-  const { data: results } = await loadQuery<any[]>({
+  // Fetch from Sanity (standalone usage). Tolerate an empty/unreachable
+  // dataset — the section simply doesn't render when fewer than 3 resolve.
+  const results = await loadQuery<any[]>({
     query: FEATURED_CASE_STUDIES_QUERY,
     params: { slugs },
     ...getDraftModeProps(Astro),
-  });
+  })
+    .then((r) => r.data)
+    .catch(() => []);
   displayStudies = slugs
     .map((slug: string) => (results ?? []).find((s: any) => s.slug === slug))
     .filter(Boolean);
@@ -236,11 +239,11 @@ const hasHeadingSlot = Astro.slots.has("heading");
                 variant="h1"
                 maxWidth="40ch"
               >
-                530% more traffic.
+                Lorem ipsum dolor.
                 <br />
-                Enterprise trial signups.
+                Consectetur adipiscing elit.
                 <br />
-                50+ SEO pages deployed.
+                Sed do eiusmod tempor.
               </Heading>
             </>
           )}

@@ -16,48 +16,48 @@ import Overlay from "../components/ui/Overlay.astro";
 export const prerender = true;
 
 const ROOMS = [
-  { icon: "📐", name: "The Blueprint", subtitle: "Your Messaging Strategy" },
-  { icon: "🏠", name: "The House", subtitle: "Your Website" },
-  { icon: "🪴", name: "The Front Porch", subtitle: "Your Content" },
-  { icon: "🪟", name: "The Welcome Mat", subtitle: "Your Lead Magnet" },
-  { icon: "📬", name: "The Mailbox", subtitle: "Your Newsletter & Email" },
-  { icon: "🚪", name: "The Front Door", subtitle: "Your Booking System" },
-  { icon: "📊", name: "The Meter Box", subtitle: "Your Analytics" },
+  { icon: "①", name: "Section One", subtitle: "Lorem ipsum" },
+  { icon: "②", name: "Section Two", subtitle: "Dolor sit amet" },
+  { icon: "③", name: "Section Three", subtitle: "Consectetur" },
+  { icon: "④", name: "Section Four", subtitle: "Adipiscing elit" },
+  { icon: "⑤", name: "Section Five", subtitle: "Sed do eiusmod" },
+  { icon: "⑥", name: "Section Six", subtitle: "Tempor incididunt" },
+  { icon: "⑦", name: "Section Seven", subtitle: "Ut labore" },
 ];
 
 const BENEFITS = [
   {
-    title: "Get clarity fast",
-    text: "See what's strong in your marketing and what's holding you back.",
+    title: "Lorem ipsum",
+    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
   },
   {
-    title: "See what's missing",
-    text: "Identify gaps that are costing you leads and growth.",
+    title: "Dolor sit amet",
+    text: "Sed do eiusmod tempor incididunt ut labore et dolore.",
   },
   {
-    title: "Prioritize with confidence",
-    text: "Know exactly where to focus first for the biggest impact.",
+    title: "Consectetur elit",
+    text: "Ut enim ad minim veniam, quis nostrud exercitation.",
   },
 ];
 
 const TRUST_BADGES = [
-  { title: "100% Free", text: "No cost. No catch. Just clarity." },
-  { title: "5 Minutes", text: "Quick, focused, valuable." },
+  { title: "100% Free", text: "Lorem ipsum dolor sit amet." },
+  { title: "5 Minutes", text: "Consectetur adipiscing elit." },
   {
     title: "Actionable Results",
-    text: "Clear next steps you can use right away.",
+    text: "Sed do eiusmod tempor incididunt.",
   },
 ];
 ---
 
 <BaseLayout
-  title="Marketing Foundation Scorecard | CL Creative"
-  description="Your marketing isn't bringing in leads and you can't figure out why. Score yourself across 7 areas in 5 minutes. Free self-assessment for growth-stage business owners."
+  title="Scorecard | Astro Starter"
+  description="An example multi-step quiz funnel with email capture and scored results."
   theme="light"
 >
   <Section id="scorecard-section">
     <Fragment slot="background">
-      <Visual src={heroBG} alt="" variant="background" priority />
+      <Visual src={heroBG} alt="Scorecard background" variant="background" priority />
     </Fragment>
 
     <!-- Stacked phases — both occupy the same grid cell. CSS fades between
@@ -71,18 +71,16 @@ const TRUST_BADGES = [
             <p class="scorecard_hero_eyebrow u-text-style-eyebrow">
               <span class="scorecard_hero_eyebrow_dot" aria-hidden="true"
               ></span>
-              The Marketing Foundation Scorecard
+              The Starter Scorecard
             </p>
 
             <Heading tag="h1" variant="h1">
-              Your marketing isn't bringing in leads and you can't figure out
-              why
+              Lorem ipsum dolor sit amet consectetur adipiscing elit
             </Heading>
 
             <Text variant="large">
               Answer a few quick questions across 7 key areas and get a
-              personalized breakdown of what's working, what's not, and what to
-              fix first — in about 5 minutes.
+              personalized breakdown of your results — in about 5 minutes.
             </Text>
 
             <Grid
@@ -144,7 +142,7 @@ const TRUST_BADGES = [
           <!-- Right column -->
           <div slot="col2" class="scorecard_hero_rooms_card">
             <p class="scorecard_hero_rooms_label u-text-style-eyebrow">
-              You'll score 7 rooms
+              You'll score 7 sections
             </p>
             <ul class="scorecard_rooms_list">
               {

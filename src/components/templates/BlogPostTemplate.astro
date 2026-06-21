@@ -26,7 +26,7 @@ import BlogCta from "../blog/BlogCta.astro";
 
 import "../../styles/pages/blog-post.css";
 
-import ctaImage from "../../assets/m2m-framework/m2m-workbook.avif";
+import ctaImage from "../../assets/blog/blog-cta.webp";
 
 import { urlFor } from "../../sanity/lib/image";
 import { buildToc } from "../../lib/toc";
@@ -334,13 +334,13 @@ const portableTextComponents = {
         <Card
           class="blog_post_sidebar_card"
           variant="cover"
-          href="/m2m-framework#m2m-worksheet"
-          ariaLabel="m2m worksheet"
+          href="/contact"
+          ariaLabel="Get in touch"
         >
           <Fragment slot="visual">
             <img
               src={typeof ctaImage === "string" ? ctaImage : ctaImage.src}
-              alt="M2M Workbook cover"
+              alt="Call to action cover image"
               class="u-image u-object-fit-cover"
             />
             <Overlay
@@ -357,18 +357,18 @@ const portableTextComponents = {
             variant="h6"
             class="u-margin-bottom-1 u-text-align-center"
           >
-            Get the M2M ICP Discovery Worksheet
+            Lorem ipsum dolor sit amet
           </Heading>
           <Text variant="small" class="u-margin-bottom-2 u-text-align-center">
-            Know who your website should speak to and what to say.
+            Consectetur adipiscing elit sed do eiusmod tempor incididunt.
           </Text>
           <div slot="footer">
             <Button
               docs=""
-              href="/m2m-framework#m2m-worksheet"
-              ariaLabel="m2m worksheet"
+              href="/contact"
+              ariaLabel="Get in touch"
               fullWidth
-              hoverTheme="brand">Get the Worksheet</Button
+              hoverTheme="brand">Get Started</Button
             >
           </div>
         </Card>

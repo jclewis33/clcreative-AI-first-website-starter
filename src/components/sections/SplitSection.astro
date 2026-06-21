@@ -18,7 +18,7 @@
  * @example
  * <SplitSection image={img} imageAlt="…" imagePosition="top">
  *   <Heading tag="h2" variant="h4" maxWidth="30ch" data-splittext data-prevent-flicker="true">
- *     A Web Designer Who Has Actually Pastored a Church
+ *     Lorem ipsum dolor sit amet consectetur
  *   </Heading>
  *   <div data-fade-in class="split_body u-rich-text">
  *     <p>…</p>
@@ -45,8 +45,8 @@ interface Props {
    * - `imageRatio` — Visual aspect ratio, e.g. `'square'`, `'portrait'` (default `'square'`)
    * - `imagePosition` — focal point, e.g. `'top'` (default centered)
    * - `gap` — column gap. Number = `--space-N` scale (0–8), e.g. `gap={8}`, or any CSS length string (default `--site-gutter`)
-   * - `buttonText` — CTA label (default `'Book a Strategy Call'`; pass `null` to hide)
-   * - `buttonHref` — CTA link (default `'/book-a-call'`)
+   * - `buttonText` — CTA label (default `'Get Started'`; pass `null` to hide)
+   * - `buttonHref` — CTA link (default `'/contact'`)
    * - `buttonAriaLabel` — CTA aria-label (falls back to `buttonText`)
    * - `class` — extra classes on the Section
    * - plus any HTML attribute (`id`, `data-*`, …) — forwarded to the Section
@@ -85,9 +85,9 @@ interface Props {
    * @example gap="var(--gap-8)"
    */
   gap?: GapScale | string;
-  /** CTA button label. `null` hides the button. @default 'Book a Strategy Call' */
+  /** CTA button label. `null` hides the button. @default 'Get Started' */
   buttonText?: string | null;
-  /** CTA button link. @default '/book-a-call' */
+  /** CTA button link. @default '/contact' */
   buttonHref?: string;
   /** CTA aria-label (falls back to `buttonText`). */
   buttonAriaLabel?: string;
@@ -105,8 +105,8 @@ const {
   imageRatio = "square",
   imagePosition,
   gap,
-  buttonText = "Book a Strategy Call",
-  buttonHref = "/book-a-call",
+  buttonText = "Get Started",
+  buttonHref = "/contact",
   buttonAriaLabel,
   class: className,
   ...rest

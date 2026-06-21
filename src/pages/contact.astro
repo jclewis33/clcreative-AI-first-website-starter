@@ -3,48 +3,37 @@
  * Contact Page
  *
  * Structure:
- *   1. Hero section — background image + overlay, title + description
+ *   1. Hero section — title + description + image
  *   2. Contact info + form — two-column layout (info left, form right)
  *   3. CTA section — reusable call-to-action
  */
 
 import BaseLayout from "../layouts/BaseLayout.astro";
 import CTASection from "../components/sections/CTASection.astro";
-import TestimonialShowcase from "../components/sections/TestimonialShowcase.astro";
 import Section from "../components/ui/Section.astro";
 import Layout from "../components/ui/Layout.astro";
 import Col from "../components/ui/Col.astro";
 import Heading from "../components/ui/Heading.astro";
 import Text from "../components/ui/Text.astro";
 import Visual from "../components/ui/Visual.astro";
-import HoneyBookEmbed from "../components/ui/HoneyBookEmbed.astro";
-import { getTestimonialByName } from "../sanity/lib/testimonials";
-import { getDraftModeProps } from "../sanity/lib/draft-mode";
 import Button from "../components/ui/Button.astro";
+import Form from "../components/form/Form.astro";
+import FormField from "../components/form/FormField.astro";
+import FormTextarea from "../components/form/FormTextarea.astro";
 import { SITE } from "../config/site";
 
 import "../styles/pages/contact.css";
 
 import contactHero from "../assets/contact/contact-hero-2.webp";
-import happensNextImg from "../assets/contact/contact-happens-next-1.webp";
-
-const draftProps = getDraftModeProps(Astro);
-const [patrick, tom] = await Promise.all([
-  getTestimonialByName("Patrick Payne", draftProps),
-  getTestimonialByName("Tom Connally", draftProps),
-]);
-const contactTestimonials = [patrick, tom].filter(
-  (t): t is NonNullable<typeof t> => !!t,
-);
 ---
 
 <BaseLayout
-  title="Contact | CL Creative"
-  description="Get in touch with CL Creative. Book a free strategy meeting to discuss your next web design, development, or SEO project."
+  title="Contact | Astro Starter"
+  description="Get in touch."
 >
   {
     /* ================================================================
-      HERO — background image + overlay + centered text
+      HERO — title + description + image
       ================================================================ */
   }
   <Section paddingBottom="small" class="contact_hero_wrap">
@@ -56,11 +45,10 @@ const contactTestimonials = [patrick, tom].filter(
     >
       <Col slot="col1">
         <Heading tag="h1" variant="eyebrow"> Contact us </Heading>
-        <Heading variant="h1"> Send Me a Quick Note </Heading>
+        <Heading variant="h1"> Send Us a Quick Note </Heading>
         <Text>
-          Have a question or not ready to book a strategy call yet? No problem.
-          Send me a note about what's going on, and I'll get back to you within
-          one business day.
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.
         </Text>
       </Col>
       <Visual
@@ -84,11 +72,11 @@ const contactTestimonials = [patrick, tom].filter(
           >What to Expect After You Send</Heading
         >
         <Text data-prevent-flicker="true" data-fade-up>
-          I read every message personally.
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
         </Text>
         <Text data-prevent-flicker="true" data-fade-up
-          >You'll hear back from me within one business day, usually sooner,
-          with thoughts on whether I can help and what your next step might be.</Text
+          >Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut
+          enim ad minim veniam.</Text
         >
 
         <div
@@ -181,44 +169,32 @@ const contactTestimonials = [patrick, tom].filter(
                   stroke-linejoin="round"></path>
               </svg>
             </div>
-            <span class="contact_info_text">M–F, 9 AM–5 PM CST</span>
+            <span class="contact_info_text">Mon–Fri, 9 AM–5 PM</span>
           </div>
         </div>
       </Col>
 
-      <HoneyBookEmbed
+      <Form
         data-prevent-flicker="true"
         data-fade-in
         slot="col2"
+        name="contact"
         class="contact_form_wrap"
-      />
+        successMessage="Thanks — we'll be in touch."
+        errorMessage="Something went wrong. Please try again."
+      >
+        <FormField label="Name" name="name" required />
+        <FormField label="Email" name="email" type="email" required />
+        <FormTextarea label="Message" name="message" rows={5} required />
+        <Button type="submit" ariaLabel="Send message">Send Message</Button>
+      </Form>
     </Layout>
   </Section>
 
   {
     /* ================================================================
-      TESTIMONIALS
+      CTA
       ================================================================ */
   }
-  <TestimonialShowcase paddingTop="small" testimonials={contactTestimonials} />
-
-  {
-    /* ================================================================
-      BOOK A STRATEGY CALL INSTEAD
-      ================================================================ */
-  }
-  <Section theme="brand" padding="small">
-    <Layout variant="stack">
-      <Col slot="col1">
-        <Heading tag="h2" variant="h3"> Ready to Pick a Time Instead? </Heading>
-        <Text
-          >If you'd rather just book a free 30-minute strategy call, you can
-          pick a time on my calendar here.</Text
-        >
-        <Button href="/book-a-call" arialabel="Book a Strategy Call"
-          >Book a Strategy Call</Button
-        >
-      </Col>
-    </Layout>
-  </Section>
+  <CTASection />
 </BaseLayout>

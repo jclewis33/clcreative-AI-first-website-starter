@@ -15,183 +15,29 @@ interface Room {
   questions: Question[];
 }
 
-const ROOMS: Room[] = [
-  {
-    id: "blueprint",
-    name: "The Blueprint",
-    subtitle: "Your Messaging Strategy",
-    icon: "📐",
+// Placeholder quiz content. Replace these 7 sections (3 questions each) with
+// your own. Keep the question ids unique — scoring is keyed off them.
+const LOREM_QUESTION =
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.";
+const LOREM_WHY =
+  "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+
+const ROOMS: Room[] = Array.from({ length: 7 }, (_, i) => {
+  const n = i + 1;
+  return {
+    id: `section-${n}`,
+    name: `Section ${n}`,
+    subtitle: "Lorem ipsum dolor",
+    icon: ["①", "②", "③", "④", "⑤", "⑥", "⑦"][i],
     description:
-      "Before you build anything, you need a plan. The blueprint is the messaging strategy that tells you who you're talking to and what to say.",
-    questions: [
-      {
-        id: "q1",
-        text: "I can describe my ideal customer in one specific sentence — who they are, what they struggle with, and what they want.",
-        why: "If you can't name the exact person you serve and the exact problem you solve, your marketing is talking to everyone and connecting with no one.",
-      },
-      {
-        id: "q2",
-        text: "My messaging is built around my customer's problem, not my list of services.",
-        why: "People don't buy features. They buy relief from a problem. Leading with their pain and your solution is the difference between a website that converts and one that gets ignored.",
-      },
-      {
-        id: "q3",
-        text: "I have a consistent message I use across my website, social media, and sales conversations.",
-        why: "If your website says one thing and your LinkedIn says another, you don't have a message. You have a collection of disconnected ideas.",
-      },
-    ],
-  },
-  {
-    id: "house",
-    name: "The House",
-    subtitle: "Your Website",
-    icon: "🏠",
-    description:
-      "This is where people come. It's your address. If the house isn't built on the blueprint, every room confuses the visitor.",
-    questions: [
-      {
-        id: "q4",
-        text: "When someone lands on my homepage, they can tell who I serve and what I do within 5 seconds.",
-        why: "Visitors decide whether to stay or leave in seconds. If your headline is vague or clever instead of clear, they're gone.",
-      },
-      {
-        id: "q5",
-        text: "My website is designed to guide visitors toward one clear action.",
-        why: "A website with six different buttons pointing in six directions creates decision paralysis. One clear path, one primary call to action.",
-      },
-      {
-        id: "q6",
-        text: "My website is built on a platform I can update myself without calling a developer for every small change.",
-        why: "If you can't update your own site, it becomes a static brochure that falls behind your business.",
-      },
-    ],
-  },
-  {
-    id: "porch",
-    name: "The Front Porch",
-    subtitle: "Your Content",
-    icon: "🪴",
-    description:
-      "The front porch is how people find you before they're ready to walk through the front door. Content that attracts the right visitors.",
-    questions: [
-      {
-        id: "q7",
-        text: "I have blog posts or content on my website that answers the questions my ideal customers are searching for.",
-        why: "When your ideal customer types a question into Google or asks ChatGPT, does your business show up? If you have zero content, you're invisible.",
-      },
-      {
-        id: "q8",
-        text: "I publish new content at least once a month.",
-        why: "A website with no fresh content tells search engines and visitors the same thing: nothing is happening here.",
-      },
-      {
-        id: "q9",
-        text: "My content is written for my ideal customer, not for my industry peers.",
-        why: "Writing content that impresses other people in your industry doesn't attract buyers. Writing content that answers your customer's real questions does.",
-      },
-    ],
-  },
-  {
-    id: "mat",
-    name: "The Welcome Mat",
-    subtitle: "Your Lead Magnet",
-    icon: "🪟",
-    description:
-      "The welcome mat is the reason someone gives you their email address. A simple offer that starts the relationship.",
-    questions: [
-      {
-        id: "q10",
-        text: "I have a free resource (checklist, guide, worksheet) that my ideal customer would actually want.",
-        why: "Most visitors aren't ready to buy on the first visit. A lead magnet gives them a reason to stay connected. Without one, they leave and you never hear from them again.",
-      },
-      {
-        id: "q11",
-        text: "My lead magnet is clearly visible on my website, not buried on a page nobody visits.",
-        why: "If your lead magnet exists but nobody can find it, it doesn't exist. Make it easy to find.",
-      },
-      {
-        id: "q12",
-        text: "My lead magnet directly relates to the problem I solve for my customers.",
-        why: "A lead magnet that attracts the wrong people fills your list with people who will never buy.",
-      },
-    ],
-  },
-  {
-    id: "mailbox",
-    name: "The Mailbox",
-    subtitle: "Your Newsletter & Email",
-    icon: "📬",
-    description:
-      "How you stay in front of people who aren't ready to buy yet. Most people need multiple touchpoints before they decide.",
-    questions: [
-      {
-        id: "q13",
-        text: "I have an email list and I actually send to it on a regular basis.",
-        why: "An email list you never send to is a list of people slowly forgetting you exist.",
-      },
-      {
-        id: "q14",
-        text: "I have a welcome email or short sequence that goes out automatically when someone joins my list.",
-        why: "The moment someone signs up is the moment they're most interested. If they hear nothing for weeks, you've wasted the warmest moment.",
-      },
-      {
-        id: "q15",
-        text: "I know how many subscribers I have and what my open rates look like.",
-        why: "If you can't answer those two questions, you're flying blind.",
-      },
-    ],
-  },
-  {
-    id: "door",
-    name: "The Front Door",
-    subtitle: "Your Booking System",
-    icon: "🚪",
-    description:
-      "When someone is ready to talk, the front door should be wide open. No friction. No back-and-forth emails.",
-    questions: [
-      {
-        id: "q16",
-        text: "A prospect can book a call or meeting with me directly from my website in under 30 seconds.",
-        why: "Every extra step between 'I want to talk to this person' and 'I'm on their calendar' is a chance for them to change their mind.",
-      },
-      {
-        id: "q17",
-        text: "My booking system is connected to my calendar so there are no double-bookings or back-and-forth.",
-        why: "If someone books a time and gets a 'sorry, that doesn't work' email, you've started the relationship with a bad experience.",
-      },
-      {
-        id: "q18",
-        text: "My booking page tells people what to expect after they book.",
-        why: "Uncertainty kills conversions. 'Book a call' is vague. Telling them the length, the format, and what they'll walk away with makes it feel safe.",
-      },
-    ],
-  },
-  {
-    id: "meter",
-    name: "The Meter Box",
-    subtitle: "Your Analytics",
-    icon: "📊",
-    description:
-      "Every house has utility meters. Analytics tell you what's working, who's visiting, and where they drop off.",
-    questions: [
-      {
-        id: "q19",
-        text: "I have analytics installed on my website (Google Analytics, Microsoft Clarity, or similar).",
-        why: "If you don't have analytics, you're making every marketing decision on gut feeling.",
-      },
-      {
-        id: "q20",
-        text: "I know how many visitors my website gets each month and where they come from.",
-        why: "'I think we get some traffic' isn't a growth strategy. Knowing your numbers is the difference between guessing and growing on purpose.",
-      },
-      {
-        id: "q21",
-        text: "I can tell which pages get the most attention and which ones people leave immediately.",
-        why: "Analytics shows you exactly where the leaks are so you can fix them instead of guessing.",
-      },
-    ],
-  },
-];
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    questions: Array.from({ length: 3 }, (_, j) => ({
+      id: `q${i * 3 + j + 1}`,
+      text: LOREM_QUESTION,
+      why: LOREM_WHY,
+    })),
+  };
+});
 
 const RATING_LABELS = [
   "Don't have this",
@@ -214,33 +60,33 @@ function getTier(score: number): Tier {
   if (score >= 85)
     return {
       key: "solid",
-      label: "Solid Foundation",
+      label: "Tier One",
       message:
-        "Your foundation is in good shape. You have the system in place. Now it's about optimizing and scaling what's working.",
-      next: "Consider a Marketing Partner to keep building on the foundation and compound your results month over month.",
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      next: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
     };
   if (score >= 60)
     return {
       key: "gaps",
-      label: "Gaps to Fill",
+      label: "Tier Two",
       message:
-        "You have some pieces, but real gaps are costing you leads and growth. The rooms that scored low are where opportunity is leaking out.",
-      next: "A few strategic fixes could change everything. This is exactly the kind of situation a Marketing Foundation engagement is built for.",
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      next: "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
     };
   if (score >= 35)
     return {
       key: "disconnected",
-      label: "Disconnected Pieces",
+      label: "Tier Three",
       message:
-        "Your marketing is a collection of disconnected pieces. Nothing is working together. Growth is happening by luck, not by design.",
-      next: "You don't need to fix individual pieces. You need a foundation where messaging, website, content, email, and analytics are all built on the same strategy.",
+        "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium totam rem.",
+      next: "Aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
     };
   return {
     key: "none",
-    label: "No Foundation",
+    label: "Tier Four",
     message:
-      "You're running a business without a marketing system. Every customer you've gotten has been through referrals, word of mouth, or luck. That's not sustainable.",
-    next: "You need a marketing foundation. Not a website. Not an ad campaign. A complete system built around your customer.",
+      "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores.",
+    next: "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit sed quia non numquam.",
   };
 }
 
@@ -508,21 +354,20 @@ export default function MarketingScorecard({
         <div className="scorecard_intro_wrap">
           <div className="scorecard_intro_header">
             <div className="scorecard_intro_icon" aria-hidden="true">
-              🏠
+              ☆
             </div>
             <h1 className="scorecard_intro_title u-text-style-h2">
-              The Marketing Foundation Scorecard
+              The Starter Scorecard
             </h1>
             <p className="scorecard_intro_text u-text-style-regular u-text-style-muted">
-              How solid is your marketing foundation? Score yourself across 7
-              areas in 5 minutes. You'll know exactly what's working, what's
-              missing, and what you need to fix first.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Score
+              yourself across 7 sections in 5 minutes and see your results.
             </p>
           </div>
 
           <div className="scorecard_rooms_card">
             <p className="scorecard_rooms_label u-text-style-eyebrow">
-              You'll score 7 rooms
+              You'll score 7 sections
             </p>
             <ul className="scorecard_rooms_list">
               {ROOMS.map((r) => (
@@ -543,6 +388,7 @@ export default function MarketingScorecard({
             21 questions. 5 minutes. Be honest — the value is in seeing the real
             picture.
           </p>
+          {/* (Intro phase is skipped when the page passes skipIntro.) */}
 
           <button
             type="button"
@@ -588,7 +434,7 @@ export default function MarketingScorecard({
               {answeredCount} of {totalQuestions}
             </span>
             <span className="scorecard_progress_count u-text-style-tiny">
-              Room {currentRoom + 1} of 7
+              Section {currentRoom + 1} of 7
             </span>
           </div>
           <ProgressBar current={answeredCount} total={totalQuestions} />
@@ -657,8 +503,8 @@ export default function MarketingScorecard({
               Your scorecard is ready.
             </h2>
             <p className="scorecard_email_text u-text-style-regular u-text-style-muted">
-              Enter your email to see your score, a room-by-room breakdown, and
-              what to focus on first.
+              Enter your email to see your score, a section-by-section
+              breakdown, and what to focus on first.
             </p>
           </div>
 
@@ -775,7 +621,7 @@ export default function MarketingScorecard({
         <div className={`scorecard_results_wrap is-tier-${tier.key}`}>
           <div className="scorecard_score_header">
             <p className="scorecard_score_label u-text-style-eyebrow">
-              Your Marketing Foundation Score
+              Your Score
             </p>
             <div className="scorecard_score_number">{totalScore}</div>
             <p className="scorecard_score_max u-text-style-small u-text-style-muted">
@@ -789,10 +635,10 @@ export default function MarketingScorecard({
 
           <div className="scorecard_breakdown_wrap">
             <h3 className="scorecard_section_heading u-text-style-h5">
-              Room-by-Room Breakdown
+              Section-by-Section Breakdown
             </h3>
             <p className="scorecard_breakdown_hint u-text-style-small u-text-style-muted">
-              Tap a room to see how you scored on each question.
+              Tap a section to see how you scored on each question.
             </p>
             <ul className="scorecard_breakdown_list">
               {roomScores.map((r) => {
@@ -882,8 +728,7 @@ export default function MarketingScorecard({
               Where to focus first
             </h3>
             <p className="scorecard_focus_intro u-text-style-small u-text-style-muted">
-              Your three weakest rooms. These are where leads and growth are
-              leaking out:
+              Your three weakest sections — start here:
             </p>
             <ol className="scorecard_focus_list">
               {top3Weak.map((r, i) => (
@@ -911,36 +756,31 @@ export default function MarketingScorecard({
 
           <blockquote className="scorecard_insight">
             <p className="scorecard_insight_pull">
-              Fixing one room at a time doesn't work. The rooms work together or
-              they don't work at all.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
             </p>
             <p className="scorecard_insight_text u-text-style-small u-text-style-muted">
-              A great website with no content, no lead magnet, and no email
-              follow-up is a house with no front porch and no mailbox. People
-              might find it, but they won't stick around. That's why we build
-              the whole foundation in one engagement.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
+              ut enim ad minim veniam, quis nostrud exercitation ullamco
+              laboris nisi ut aliquip ex ea commodo consequat.
             </p>
           </blockquote>
 
           <div className="scorecard_cta_card">
             <p className="scorecard_cta_eyebrow u-text-style-eyebrow">
-              What's next for you
+              What's next
             </p>
             <h3 className="scorecard_cta_heading u-text-style-h4">
-              Ready to build the foundation?
+              Ready to take the next step?
             </h3>
             <p className="scorecard_cta_text u-text-style-regular">
               {tier.next}
             </p>
-            <a
-              href="/book-a-call"
-              className="scorecard_cta_btn"
-            >
-              Book a Free Strategy Call
+            <a href="/contact" className="scorecard_cta_btn">
+              Get in Touch
             </a>
             <p className="scorecard_cta_meta u-text-style-tiny">
-              One call. We'll review your scorecard, identify the biggest gaps,
-              and map out what your foundation needs.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do
+              eiusmod.
             </p>
           </div>
 

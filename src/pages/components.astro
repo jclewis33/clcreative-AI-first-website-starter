@@ -45,9 +45,11 @@ import PricingItem from "../components/ui/PricingItem.astro";
 import Marquee from "../components/ui/Marquee.astro";
 import ScrollReveal from "../components/ui/ScrollReveal.astro";
 
-/* ── Fetch testimonials from Sanity ── */
+/* ── Fetch testimonials from Sanity (tolerate an empty/unreachable dataset) ── */
 import { getDraftModeProps } from "../sanity/lib/draft-mode";
-const testimonials = await getTestimonials(getDraftModeProps(Astro));
+const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
+  () => [],
+);
 ---
 
 <BaseLayout
@@ -534,7 +536,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro));
           },
           {
             seed: "cover-c2",
-            title: "CL Creative",
+            title: "Astro Starter",
             text: "Always-on recruiting automation.",
           },
           {

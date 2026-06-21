@@ -49,9 +49,9 @@ interface Props {
   /** Right column bullet list. */
   rightItems?: string[];
 
-  /** CTA button label. @default 'Book a Strategy Call' */
+  /** CTA button label. @default 'Get Started' */
   buttonText?: string;
-  /** CTA button link. @default '/book-a-call' */
+  /** CTA button link. @default '/contact' */
   buttonHref?: string;
 
   [key: string]: any;
@@ -59,28 +59,28 @@ interface Props {
 
 const {
   docs,
-  title = "Same Designer Hours. Two Very Different Websites.",
+  title = "Lorem ipsum dolor sit amet consectetur.",
   leftImage,
-  leftAlt = "A website built on looks alone",
-  leftHeading = "A website built on looks alone",
-  leftTagline = "You paid for art, not a sales tool.",
+  leftAlt = "Comparison option one",
+  leftHeading = "Lorem ipsum dolor sit amet",
+  leftTagline = "Consectetur adipiscing elit sed do.",
   leftItems = [
-    "It might win compliments, but it doesn't bring in leads",
-    'Visitors land, think "nice," and leave, because nothing told them it was for them',
-    "Six months later you're back at the same problem with the same budget",
+    "Lorem ipsum dolor sit amet consectetur adipiscing elit",
+    "Sed do eiusmod tempor incididunt ut labore et dolore magna",
+    "Ut enim ad minim veniam quis nostrud exercitation ullamco",
   ],
   rightImage,
-  rightAlt = "A website built on a clear message",
-  rightHeading = "A website built on a clear message",
-  rightTagline = "It works like your best salesperson.",
+  rightAlt = "Comparison option two",
+  rightHeading = "Duis aute irure dolor in",
+  rightTagline = "Reprehenderit in voluptate velit esse.",
   rightItems = [
-    "The right customer knows they're in the right place in the first scroll",
-    "The headline names their problem in their own words",
-    "The page follows their decision, not your feature list",
-    'Every photo and choice tells the right buyer "this is for you"',
+    "Excepteur sint occaecat cupidatat non proident sunt",
+    "In culpa qui officia deserunt mollit anim id est laborum",
+    "Sed ut perspiciatis unde omnis iste natus error sit",
+    "Voluptatem accusantium doloremque laudantium totam rem",
   ],
-  buttonText = "Book a Strategy Call",
-  buttonHref = "/book-a-call",
+  buttonText = "Get Started",
+  buttonHref = "/contact",
   ...rest
 } = Astro.props;
 ---
