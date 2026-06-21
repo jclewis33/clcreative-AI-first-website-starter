@@ -13,12 +13,12 @@ import type { ImageMetadata } from "astro";
 import type { ContentBlock } from "../components/case-study/types";
 
 // Images — replace with CMS image fields when connecting a headless CMS
-import projectImage1 from "../assets/placeholder-1.avif";
-import projectImage2 from "../assets/placeholder-3.avif";
-import projectImage3 from "../assets/placeholder-4.avif";
-import projectImage4 from "../assets/placeholder-5.avif";
-import projectImage5 from "../assets/placeholder-2.avif";
-import heroImage from "../assets/placeholder-6.avif";
+import projectImage1 from "../assets/placeholders/placeholder-1.avif";
+import projectImage2 from "../assets/placeholders/placeholder-3.avif";
+import projectImage3 from "../assets/placeholders/placeholder-4.avif";
+import projectImage4 from "../assets/placeholders/placeholder-5.avif";
+import projectImage5 from "../assets/placeholders/placeholder-2.avif";
+import heroImage from "../assets/placeholders/placeholder-6.avif";
 
 /* ── Data types ─────────────────────────────────────────────────────────── */
 

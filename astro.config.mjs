@@ -129,6 +129,8 @@ function excludeDevOnlyPages() {
  * routes so existing index entries and external backlinks don't 404, e.g.:
  *   const redirects = { "/portfolio": "/case-studies" };
  * (Wildcard/splat redirects go in public/_redirects instead.)
+ *
+ * @type {Record<string, string>}
  */
 const redirects = {};
 
