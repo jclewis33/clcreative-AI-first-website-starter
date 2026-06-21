@@ -1,0 +1,108 @@
+---
+/**
+ * HowWeWorkPromo — brand-themed promo card that drives visitors to the
+ * How We Work page. Used in place of inline pricing on service pages.
+ *
+ * @example Default usage
+ * ```astro
+ * <HowWeWorkPromo />
+ * ```
+ *
+ * @example Custom padding
+ * ```astro
+ * <HowWeWorkPromo paddingTop="none" />
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Visual from "../ui/Visual.astro";
+import Button from "../ui/Button.astro";
+
+import howWeWorkHomepageImg from "../../assets/how-we-work/how-we-work-homepage.webp";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **HowWeWorkPromo props:**
+   * - `padding` — sets both paddingTop and paddingBottom (default `'main'`)
+   * - `paddingTop` — override top padding only
+   * - `paddingBottom` — override bottom padding only
+   * - `image` — override the promo image
+   * - `imageAlt` — alt text for the promo image
+   * - `imageRatio` — when set, the image renders as a contained `columns` layout
+   *   at this aspect ratio (e.g. `'3/2'`) instead of the default filled `contain` card
+   * - `class` — extra classes on outer Section
+   */
+  docs?: string;
+
+  /** Sets both paddingTop and paddingBottom @default 'main' */
+  padding?: PaddingValue;
+  /** Override top padding only */
+  paddingTop?: PaddingValue;
+  /** Override bottom padding only */
+  paddingBottom?: PaddingValue;
+  /** Override the section heading. @default "We Build You a Marketing Plan and a Website That Brings in the Right Customers" */
+  heading?: string;
+  /** Override the promo image. @default how-we-work-homepage.webp */
+  image?: ImageMetadata | string;
+  /** Alt text for the promo image. */
+  imageAlt?: string;
+  /**
+   * When provided, the image renders as a contained `columns` layout at this
+   * aspect ratio (e.g. `'3/2'`, `'landscape'`) instead of the default filled
+   * `contain` card. Use to match a different image crop.
+   */
+  imageRatio?: string;
+  /** Extra classes on the outer Section */
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  docs,
+  class: className,
+  heading = "We Build You a Marketing Plan and a Website That Brings in the Right Customers",
+  image = howWeWorkHomepageImg,
+  imageAlt = "A business owner reviewing their site and strategy",
+  imageRatio,
+  ...rest
+} = Astro.props;
+---
+
+<Section theme="brand" class={className} {...rest}>
+  <Layout variant={imageRatio ? "columns" : "contain"} verticalAlign="center">
+    <Col slot="col1">
+      <Heading data-fade-in variant="eyebrow">How We Work</Heading>
+      <Heading data-split-text tag="h2" variant="h3">
+        {heading}
+      </Heading>
+      <Text data-fade-in variant="large">
+        Some clients already have a website but need to fix the message first.
+        Others need the full marketing foundation — strategy, site, content,
+        and the tools to grow. Either way, we have you covered.
+      </Text>
+      <Text data-fade-in>
+        Every engagement starts with strategy, and you'll know exactly what
+        you're investing in before we start.
+      </Text>
+      <Text data-fade-in>
+        Learn more about how we work and how much you can expect to invest.
+      </Text>
+      <div data-fade-in class="u-button-wrapper">
+        <Button
+          variant="secondary"
+          href="/how-we-work"
+          ariaLabel="See how we work"
+        >
+          See How We Work
+        </Button>
+      </div>
+    </Col>
+    <Visual slot="col2" src={image} alt={imageAlt} ratio={imageRatio} />
+  </Layout>
+</Section>

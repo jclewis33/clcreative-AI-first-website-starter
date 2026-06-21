@@ -1,0 +1,126 @@
+/* ==========================================================================
+   SCROLL REVEAL
+   Two-column scroll-linked reveal: text blocks fade in/out on the left,
+   sticky image cross-fades on the right. Collapses to inline images on
+   mobile (< 768px).
+
+   Animation powered by GSAP + ScrollTrigger (see ScrollReveal.astro script).
+   Uses @media (not @container) to stay in sync with gsap.matchMedia.
+   ========================================================================== */
+
+/* ── Base wrapper — two-column grid ── */
+
+.scroll_reveal_wrap {
+  display: grid;
+  grid-template-columns: minmax(0, var(--sr-col-1, 5fr)) minmax(0, var(--sr-col-2, 7fr));
+  gap: var(--site-gutter);
+  width: 100%;
+  position: relative;
+}
+
+/* ── Content column (left) ── */
+
+.scroll_reveal_content {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ── Text block ── */
+
+.scroll_reveal_block {
+  min-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: var(--space-6);
+}
+
+/* First block starts vertically centered */
+.scroll_reveal_block.is-first {
+  justify-content: center;
+}
+
+/* Last block aligns with section bottom */
+.scroll_reveal_block:last-child {
+  padding-bottom: 0;
+}
+
+.scroll_reveal_block_content {
+  max-width: 40ch;
+}
+
+/* ── Mobile image (inside each block, hidden on desktop) ── */
+
+.scroll_reveal_mobile_visual {
+  display: none;
+  margin-bottom: var(--space-5);
+}
+
+/* ── Sticky image track (right column, hidden on mobile) ── */
+
+.scroll_reveal_track {
+  position: sticky;
+  top: calc(var(--nav-height-total) + var(--space-3));
+  align-self: start;
+  height: calc(100vh - var(--nav-height-total) - var(--space-3) * 2);
+  display: flex;
+  align-items: center;
+}
+
+/* ── Panels — stacked, cross-fade via opacity ── */
+
+.scroll_reveal_panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.scroll_reveal_panel.is-active {
+  opacity: 1;
+}
+
+/* Images fill available panel width */
+.scroll_reveal_panel .u-image-wrapper {
+  width: 100%;
+}
+
+/* ==========================================================================
+   RESPONSIVE — @media at 768px
+   Synced with gsap.matchMedia('(min-width: 768px)') in JS.
+   ========================================================================== */
+
+@media (max-width: 767px) {
+  .scroll_reveal_wrap {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Hide the desktop sticky track */
+  .scroll_reveal_track {
+    display: none;
+  }
+
+  /* Show mobile images inline */
+  .scroll_reveal_mobile_visual {
+    display: block;
+  }
+
+  /* Remove scroll-zone sizing, ensure visible */
+  .scroll_reveal_block {
+    min-height: unset;
+    padding-block: var(--space-5);
+    opacity: 1 !important;
+  }
+
+  .scroll_reveal_block.is-first {
+    padding-top: 0;
+  }
+
+  .scroll_reveal_block_content {
+    max-width: none;
+  }
+}

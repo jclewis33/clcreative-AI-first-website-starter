@@ -1,0 +1,71 @@
+---
+import type { TocItem } from "../../lib/toc";
+
+interface Props {
+  items: TocItem[];
+  title?: string;
+  class?: string;
+}
+
+const { items, title = "Table of contents", class: className = "" } =
+  Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <nav class:list={["toc_wrap", className]} data-toc aria-label={title}>
+      <p class="toc_title">{title}</p>
+      <ul class="toc_list">
+        {items.map((item) => (
+          <li>
+            <a
+              href={`#${item.slug}`}
+              data-toc-link
+              data-scroll-target={item.slug}
+            >
+              {item.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const toc = document.querySelector<HTMLElement>("[data-toc]");
+    if (!toc) return;
+
+    const links = Array.from(
+      toc.querySelectorAll<HTMLAnchorElement>("[data-toc-link]"),
+    );
+    if (!links.length) return;
+
+    const linkBySlug = new Map(
+      links.map((l) => [l.dataset.scrollTarget!, l]),
+    );
+
+    const headings = links
+      .map((l) => document.getElementById(l.dataset.scrollTarget!))
+      .filter((el): el is HTMLElement => !!el);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const link = linkBySlug.get(entry.target.id);
+          if (!link || !entry.isIntersecting) return;
+          links.forEach((l) => {
+            l.removeAttribute("data-toc-active");
+            l.removeAttribute("aria-current");
+          });
+          link.setAttribute("data-toc-active", "");
+          link.setAttribute("aria-current", "true");
+        });
+      },
+      { root: null, rootMargin: "-120px 0px -60% 0px", threshold: 0 },
+    );
+
+    headings.forEach((h) => observer.observe(h));
+  });
+</script>

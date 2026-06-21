@@ -1,0 +1,80 @@
+/* ==========================================================================
+   CASE STUDY CARD COMPONENT
+   ==========================================================================
+   Custom classes for the CaseStudyCard component (case-study_card_*).
+   Imported globally so the card renders consistently on any page
+   (listing grid, detail page "Up Next", etc.).
+   ========================================================================== */
+
+/* Remove card background and border for clean portfolio look */
+.case-study_card_wrap .card_primary_element {
+  border: none;
+  background: transparent;
+}
+
+/* Remove default content padding — image stands alone, text sits below */
+.case-study_card_wrap .card_primary_content {
+  padding: var(--space-3) 0 0;
+}
+
+/* Title + arrow row */
+.case-study_card_title_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+/* Override .u-text min-width so heading shares row with arrow */
+.case-study_card_title_row > .u-text {
+  min-width: 0;
+  flex: 1 1 0%;
+}
+
+/* Title 2-line clamp */
+.case-study_card_title_clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Arrow icon */
+.case-study_card_arrow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+
+/* Arrow rotates 45deg when a clickable card is hovered / focused.
+   [data-trigger] marks the card as clickable (set by Card.astro). */
+.case-study_card_wrap [data-trigger]:hover .case-study_card_arrow,
+.case-study_card_wrap [data-trigger]:has(:focus-visible) .case-study_card_arrow {
+  transform: rotate(45deg);
+}
+
+/* Image zooms in slightly on hover — scale from 1 → 1.04 */
+.case-study_card_wrap .card_primary_visual {
+  overflow: hidden;
+}
+
+.case-study_card_wrap [data-trigger] .card_primary_visual img {
+  transition: transform 0.4s ease;
+}
+
+.case-study_card_wrap [data-trigger]:hover .card_primary_visual img,
+.case-study_card_wrap [data-trigger]:has(:focus-visible) .card_primary_visual img {
+  transform: scale(1.04);
+}
+
+/* Text fades slightly on hover — opacity from 1 → 0.8 */
+.case-study_card_wrap [data-trigger] .card_primary_content {
+  transition: opacity 0.3s ease;
+}
+
+.case-study_card_wrap [data-trigger]:hover .card_primary_content,
+.case-study_card_wrap [data-trigger]:has(:focus-visible) .card_primary_content {
+  opacity: 0.8;
+}

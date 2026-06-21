@@ -1,0 +1,337 @@
+---
+/**
+ * ScrollReveal — scroll-linked reveal with sticky image cross-fade.
+ *
+ * Two-column layout: text blocks on the left fade in/out as the user scrolls,
+ * while a sticky image on the right cross-fades to match the active text block.
+ * On mobile (< 768px), collapses to a single column with images inline.
+ *
+ * Uses GSAP + ScrollTrigger (loaded globally via CDN in Head.astro).
+ *
+ * @example
+ * ```astro
+ * <ScrollReveal items={[
+ *   {
+ *     eyebrow: "Platform",
+ *     heading: "Powerful analytics",
+ *     text: "Track every metric that matters.",
+ *     image: analyticsImg,
+ *     imageAlt: "Analytics dashboard",
+ *   },
+ *   {
+ *     heading: "Automated workflows",
+ *     text: "Set it and forget it.",
+ *     image: workflowImg,
+ *     imageAlt: "Workflow builder",
+ *     buttonHref: "/workflows",
+ *     buttonText: "Learn more",
+ *   },
+ * ]} />
+ * ```
+ */
+
+import type { ImageMetadata } from 'astro';
+import Visual from './Visual.astro';
+import Heading from './Heading.astro';
+import Text from './Text.astro';
+import Button from './Button.astro';
+
+/** A single scroll-reveal content block. */
+interface ScrollRevealItem {
+  /** Image source for this block. */
+  image: ImageMetadata | string;
+  /** Alt text for the image. */
+  imageAlt: string;
+  /** Optional eyebrow text above the heading. */
+  eyebrow?: string;
+  /** Heading text (required). */
+  heading: string;
+  /** Body text (required). */
+  text: string;
+  /** Optional CTA button link. Omit to hide button. */
+  buttonHref?: string;
+  /** Optional CTA button label. @default 'Learn more' */
+  buttonText?: string;
+  /** Optional CTA button aria-label. Falls back to "Learn more about {heading}". */
+  buttonAriaLabel?: string;
+}
+
+/**
+ * ScrollReveal — scroll-linked reveal with sticky image cross-fade.
+ *
+ * **Props:**
+ * - `items` — array of content blocks (image, heading, text, optional eyebrow/button)
+ * - `imageRatio` — aspect ratio for images (default: `'landscape'`)
+ * - `imageRadius` — border radius for images (default: `'main'`)
+ * - `ratio` — column ratio as `"N-M"` e.g. `"5-7"` (default: `'5-7'`)
+ * - `class` — extra classes on wrapper
+ *
+ * **Slot:** none — content is driven by the `items` array
+ */
+interface Props {
+  /**
+   * **ScrollReveal props:**
+   * - `items` — array of { image, imageAlt, heading, text, eyebrow?, buttonHref?, buttonText? }
+   * - `imageRatio` — aspect ratio for all images (default 'landscape')
+   * - `imageRadius` — border radius for all images (default 'main')
+   * - `ratio` — column ratio "N-M" (default '5-7')
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.)
+   */
+  docs?: string;
+
+  /** Array of content blocks. Minimum 2 recommended. */
+  items: ScrollRevealItem[];
+
+  /**
+   * Aspect ratio for the sticky images (forwarded to Visual).
+   * @default 'landscape'
+   */
+  imageRatio?: 'wide' | 'widescreen' | 'landscape' | 'square' | 'portrait' | 'tall' | string;
+
+  /**
+   * Border radius for the sticky images (forwarded to Visual).
+   * @default 'main'
+   */
+  imageRadius?: 'none' | 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'main' | 'full' | 'section';
+
+  /**
+   * Column ratio as `"N-M"`. Left = content column, right = image column.
+   * Numbers become `fr` units.
+   * @default '5-7'
+   * @example ratio="4-8"
+   */
+  ratio?: string;
+
+  /** Extra utility classes on the `.scroll_reveal_wrap` element. */
+  class?: string;
+
+  /** Any additional HTML attributes forwarded to root element. */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  items,
+  imageRatio  = 'landscape',
+  imageRadius = 'main',
+  ratio       = '5-7',
+  class: className,
+  ...rest
+} = Astro.props as Props;
+
+// Parse ratio into CSS custom properties
+const [left, right] = ratio.split('-').map(Number);
+const ratioStyle = (left > 0 && right > 0)
+  ? `--sr-col-1: ${left}fr; --sr-col-2: ${right}fr`
+  : undefined;
+---
+
+<div
+  class:list={['scroll_reveal_wrap', className]}
+  data-scroll-reveal="component"
+  style={ratioStyle}
+  {...rest}
+>
+  {/* ── Content column (left) ── */}
+  <div class="scroll_reveal_content">
+    {items.map((item, index) => (
+      <div
+        class:list={['scroll_reveal_block', index === 0 && 'is-first']}
+        data-scroll-reveal="block"
+        data-scroll-reveal-index={String(index)}
+      >
+        {/* Mobile-only image (hidden on desktop via media query) */}
+        <div class="scroll_reveal_mobile_visual">
+          <Visual
+            src={item.image}
+            alt={item.imageAlt}
+            ratio={imageRatio}
+            radius={imageRadius}
+          />
+        </div>
+
+        {/* Text content */}
+        <div class="scroll_reveal_block_content">
+          {item.eyebrow && (
+            <Heading variant="eyebrow">{item.eyebrow}</Heading>
+          )}
+          <Heading tag="h3" variant="h3">{item.heading}</Heading>
+          <Text variant="regular">{item.text}</Text>
+          {item.buttonHref && (
+            <div class="u-button-wrapper">
+              <Button
+                href={item.buttonHref}
+                ariaLabel={item.buttonAriaLabel ?? `Learn more about ${item.heading}`}
+              >
+                {item.buttonText ?? 'Learn more'}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {/* ── Sticky image track (right, desktop only) ── */}
+  <div class="scroll_reveal_track">
+    {items.map((item, index) => (
+      <div
+        class:list={['scroll_reveal_panel', index === 0 && 'is-active']}
+        data-scroll-reveal="panel"
+        data-scroll-reveal-index={String(index)}
+      >
+        <Visual
+          src={item.image}
+          alt={item.imageAlt}
+          ratio={imageRatio}
+          radius={imageRadius}
+        />
+      </div>
+    ))}
+  </div>
+</div>
+
+<script>
+  /**
+   * ScrollReveal JavaScript — GSAP ScrollTrigger scroll-linked animations
+   *
+   * Desktop (>= 768px via matchMedia):
+   *   - Each text block gets a ScrollTrigger that controls its opacity
+   *   - scrub: 0.3 links opacity to scroll position
+   *   - When a block passes 50% visibility, its paired image panel
+   *     gets the is-active class (cross-fade)
+   *   - First block starts at opacity 1, last block doesn't fade out
+   *
+   * Mobile (< 768px):
+   *   - No animations — all blocks visible, images shown inline
+   *   - ScrollTriggers are killed on resize below breakpoint
+   *
+   * Data attributes:
+   *   data-scroll-reveal="component" — root wrapper
+   *   data-scroll-reveal="block"     — text content block
+   *   data-scroll-reveal="panel"     — image panel in sticky track
+   *   data-scroll-reveal-index       — pairs blocks with panels (0-based)
+   */
+
+  function initScrollReveal() {
+    const gsap = (window as any).gsap;
+    const ScrollTrigger = (window as any).ScrollTrigger;
+
+    if (!gsap || !ScrollTrigger) {
+      console.warn('ScrollReveal: GSAP + ScrollTrigger required.');
+      return;
+    }
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Respect reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    document.querySelectorAll<HTMLElement>('[data-scroll-reveal="component"]').forEach((wrap) => {
+      // Guard against double-init
+      if (wrap.dataset.scrollRevealInit) return;
+      wrap.dataset.scrollRevealInit = 'true';
+
+      const blocks = wrap.querySelectorAll<HTMLElement>('[data-scroll-reveal="block"]');
+      const panels = wrap.querySelectorAll<HTMLElement>('[data-scroll-reveal="panel"]');
+
+      if (blocks.length === 0 || panels.length === 0) return;
+
+      // Build index map: index → panel element
+      const panelMap = new Map<number, HTMLElement>();
+      panels.forEach((panel) => {
+        const idx = parseInt(panel.dataset.scrollRevealIndex ?? '0', 10);
+        panelMap.set(idx, panel);
+      });
+
+      let activeIndex = 0;
+
+      function setActivePanel(index: number) {
+        if (index === activeIndex) return;
+        const current = panelMap.get(activeIndex);
+        if (current) current.classList.remove('is-active');
+        const next = panelMap.get(index);
+        if (next) next.classList.add('is-active');
+        activeIndex = index;
+      }
+
+      // gsap.matchMedia (gsap-core; replaces the deprecated ScrollTrigger.matchMedia)
+      // — synced with CSS @media (max-width: 767px). Auto-reverts the ScrollTriggers
+      // created inside when the query stops matching, then re-runs the cleanup below.
+      const mm = gsap.matchMedia();
+      mm.add('(min-width: 768px)', function () {
+          // Set initial state
+          blocks.forEach((block, i) => {
+            gsap.set(block, { opacity: i === 0 ? 1 : 0.15 });
+          });
+
+          blocks.forEach((block, i) => {
+            const index = parseInt(block.dataset.scrollRevealIndex ?? String(i), 10);
+            const isFirst = i === 0;
+            const isLast = i === blocks.length - 1;
+
+            ScrollTrigger.create({
+              trigger: block,
+              start: 'top 80%',
+              end: 'bottom 20%',
+              scrub: 0.3,
+              onUpdate: (self: any) => {
+                const progress = self.progress;
+                let opacity: number;
+
+                if (isFirst) {
+                  // First block: starts visible, fades out in second half
+                  opacity = progress <= 0.5
+                    ? 1
+                    : gsap.utils.mapRange(0.5, 1, 1, 0.15, progress);
+                } else if (isLast) {
+                  // Last block: fades in, never fades out
+                  opacity = gsap.utils.clamp(0.15, 1, gsap.utils.mapRange(0, 0.5, 0.15, 1, progress));
+                } else {
+                  // Middle blocks: fade in first half, fade out second half
+                  opacity = progress <= 0.5
+                    ? gsap.utils.mapRange(0, 0.5, 0.15, 1, progress)
+                    : gsap.utils.mapRange(0.5, 1, 1, 0.15, progress);
+                }
+
+                gsap.set(block, { opacity });
+
+                // Switch image when block is in the center zone
+                if (progress >= 0.3 && progress <= 0.7) {
+                  setActivePanel(index);
+                }
+              },
+            });
+          });
+
+          // Cleanup function — called when viewport drops below 768px
+          return function () {
+            blocks.forEach((block) => gsap.set(block, { opacity: 1 }));
+            panels.forEach((panel, i) => {
+              panel.classList.toggle('is-active', i === 0);
+            });
+            activeIndex = 0;
+          };
+        }
+      );
+
+      ScrollTrigger.refresh();
+    });
+  }
+
+  // Poll for GSAP + ScrollTrigger (CDN may load after DOMContentLoaded)
+  function waitForGsap(retries = 15) {
+    if ((window as any).gsap && (window as any).ScrollTrigger) {
+      initScrollReveal();
+    } else if (retries > 0) {
+      setTimeout(() => waitForGsap(retries - 1), 100);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => waitForGsap());
+  } else {
+    waitForGsap();
+  }
+</script>

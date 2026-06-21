@@ -1,0 +1,326 @@
+/* ==========================================================================
+   FOOTER COMPONENT STYLES
+   ==========================================================================
+   Theme: The footer uses its own set of CSS variables (--footer-background,
+   --footer-text, --footer-border) defined per theme in variables/themes.css.
+   This lets you control the footer's look independently per theme — e.g. keep
+   it dark across all themes by setting the same dark values in each theme block.
+
+   .footer_wrap remaps these onto the standard theme aliases (--background,
+   --text, --border) and derives link variables (--link-text, --link-border,
+   --link-text-hover, --link-border-hover) from --footer-text via color-mix().
+   This ensures all descendants resolve to the footer palette, not the page's.
+
+   Outer wrapper: footer_wrap
+   Section padding: footer_contain (u-container)
+   Grid layout: footer_layout (u-grid-custom, 12-col → stacks at medium)
+     Left: footer_content (spans 4 cols — logo + social)
+       Logo: footer_logo_wrap (8rem)
+       Social: footer_social_wrap > footer_social_list > footer_social_link
+     Right: footer_links_wrap (spans 8 cols — link groups grid)
+       Groups: footer_group_wrap > footer_group_title + footer_group_list
+         Links: footer_group_item > footer_link_wrap > footer_link_text
+   Bottom bar: footer_bottom_wrap > footer_bottom_contain (u-container)
+     Footer bottom: footer_bottom_layout
+       Text: footer_bottom_text
+       Links: footer_bottom_list > footer_bottom_item > footer_bottom_link_wrap
+
+   Footer links render at full opacity. (The prior trigger-based group-hover
+   dim was inert — the markup had no hovered "hover"/"focus" sibling marker for
+   the group rule to key on — so it was removed. To add a real dim, use:
+     .footer_group_wrap:has(.footer_group_item:hover) .footer_group_item:not(:hover)
+       { opacity: 0.5; })
+   ========================================================================== */
+
+.footer_wrap {
+  /* Map footer theme variables onto the standard theme aliases so that
+     all descendants (buttons, links, borders, utility classes) resolve
+     to the footer's palette instead of the page's. */
+  --background: var(--footer-background);
+  /* --background-2 is also remapped so any child using u-background-2
+     resolves to the footer's color instead of the page's elevated
+     background. Set to a different value in themes.css if you need a
+     subtle contrast layer (e.g. cards) inside the footer. */
+  --background-2: var(--footer-background);
+  --text: var(--footer-text);
+  --border: var(--footer-border);
+
+  /* Link variables — derived from --footer-text so they stay in palette */
+  --link-text: color-mix(in srgb, var(--footer-text) 75%, transparent);
+  --link-border: var(--footer-border);
+  --link-text-hover: var(--footer-text);
+  --link-border-hover: var(--footer-text);
+
+  font-family: var(--font-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-tight);
+  background-color: var(--footer-background);
+  color: var(--footer-text);
+  flex-flow: column;
+  width: 100%;
+  display: flex;
+  position: relative;
+}
+
+/* Section-level vertical padding */
+.footer_contain {
+  padding-top: var(--section-space-main);
+  padding-bottom: var(--section-space-main);
+}
+
+/* 12-column grid — left (4) + right (8).
+   data-medium-columns="1" on the element collapses to flex at ≤ 928px. */
+.footer_layout {
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--site-gutter);
+  row-gap: var(--space-8);
+  flex-flow: column;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+/* ── Left column: logo + social (4 of 12) ─────────────────── */
+
+.footer_content {
+  column-gap: var(--site-gutter);
+  row-gap: var(--space-5);
+  flex: auto;
+  grid-column: span 4;
+  grid-template-rows: auto;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  grid-auto-columns: 1fr;
+  height: 100%;
+  display: var(--flex-medium, grid);
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Logo */
+.footer_logo_wrap {
+  align-self: start;
+  max-width: 14rem;
+}
+
+/* Contact info — sits between the logo and the social block */
+.footer_contact_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  /* margin-top: var(--space-4); */
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.footer_contact_item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.footer_contact_icon {
+  flex-shrink: 0;
+}
+
+.footer_contact_link {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 300ms;
+}
+
+.footer_contact_link:hover {
+  opacity: 0.75;
+}
+
+.footer_contact_text {
+  font-size: var(--text-small-size);
+}
+
+/* Social section — pushed to bottom of the logo column */
+.footer_social_wrap {
+  margin-top: auto;
+}
+
+/* Social title uses u-text-style-h6 + u-margin-bottom-4 via HTML */
+.footer_social_title {
+  /* Custom class anchor — styled by utilities */
+}
+
+/* Negative-margin flush trick for social icon row */
+.footer_social_list {
+  flex-flow: wrap;
+  place-content: center flex-start;
+  align-items: center;
+  margin: -0.5rem;
+  display: flex;
+}
+
+.footer_social_item {
+  display: flex;
+}
+
+/* Social icon link — 2.5rem square with inner padding */
+.footer_social_link {
+  width: 2.5rem;
+  padding: 0.5rem;
+  display: block;
+}
+
+/* ── Right column: link groups (8 of 12) ──────────────────── */
+
+.footer_links_wrap {
+  grid-column: span 8;
+}
+
+/* Each link group section */
+.footer_group_wrap {
+  flex-flow: column;
+  align-items: flex-start;
+  display: flex;
+}
+
+/* Group title uses u-text-style-h6 + u-margin-bottom-4 via HTML */
+.footer_group_title {
+  /* Custom class anchor — styled by utilities */
+}
+
+/* Nav link list */
+.footer_group_list {
+  flex-flow: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: flex;
+}
+
+.footer_group_item {
+  display: flex;
+}
+
+/* Link row — padding + group-hover opacity */
+.footer_link_wrap {
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-1);
+  opacity: 1;
+  transition-property: opacity;
+  transition-duration: 0.1s;
+  transition-timing-function: ease;
+}
+
+/* Link text uses u-text-style-small via HTML */
+.footer_link_text {
+  /* Custom class anchor — size styled by utilities */
+  margin-bottom: 0;
+}
+
+/* ── Locations Served dropdown ─────────────────────────────── */
+/* Uses the global .accordion_wrap system. Overrides below shrink
+   the toggle to match footer link sizing and remove the accordion
+   border so it sits cleanly inside the Company link list. */
+
+.footer_locations_item {
+  width: 100%;
+}
+
+.footer_locations_wrap {
+  padding-top: 0;
+}
+
+.footer_locations_wrap .accordion_list {
+  margin-top: 0;
+}
+
+.footer_locations_accordion_item {
+  border-bottom: none;
+}
+
+/* Enable the accordion content-wrap transition for the footer dropdown.
+   The .accordion_wrap version of this rule lives in accordion.css but we
+   intentionally don't carry that class on the footer wrap (it would make
+   the global Accordion JS double-bind a click handler on top of ours). */
+.footer_locations_wrap.is-ready .accordion_content_wrap {
+  transition: grid-template-rows 0.3s ease;
+}
+
+.footer_locations_button {
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-1);
+  gap: var(--space-2);
+  align-items: center;
+  color: var(--link-text);
+  font-family: var(--text-small-font-family);
+  font-size: var(--text-small-size);
+  font-weight: var(--text-small-weight);
+  line-height: var(--text-small-line-height);
+  text-transform: var(--text-small-text-transform);
+  opacity: 1;
+  transition: color 0.3s ease, opacity 0.1s ease;
+}
+
+.footer_locations_button:hover,
+.footer_locations_button:focus-visible {
+  color: var(--link-text-hover);
+}
+
+.footer_locations_icon {
+  width: 1rem;
+}
+
+.footer_locations_panel {
+  padding-left: var(--space-3);
+}
+
+.footer_locations_list {
+  flex-flow: column;
+  align-items: flex-start;
+  display: flex;
+}
+
+/* ── Bottom bar ────────────────────────────────────────────── */
+
+.footer_bottom_wrap {
+  /* Structural wrapper — no styling needed */
+}
+
+.footer_bottom_layout {
+  column-gap: var(--space-4);
+  row-gap: var(--space-4);
+  border-top: var(--border-width-main) solid var(--footer-border);
+  flex-flow: wrap;
+  place-content: center space-between;
+  align-items: center;
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+  display: flex;
+}
+
+.footer_bottom_text {
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+  margin: 0;
+}
+
+/* Bottom link list (same flush trick as social) */
+.footer_bottom_list {
+  flex-flow: wrap;
+  place-content: center flex-start;
+  align-items: center;
+  margin: -0.5rem;
+  display: flex;
+}
+
+.footer_bottom_item {
+  display: flex;
+}
+
+/* Bottom link — padding + group-hover opacity */
+.footer_bottom_link_wrap {
+  opacity: 1;
+  padding: 0.5rem;
+  transition-property: opacity;
+  transition-duration: 0.1s;
+  transition-timing-function: ease;
+}
+
+/* Bottom link text uses u-text-style-small via HTML */
+.footer_bottom_link_text {
+  /* Custom class anchor — styled by utilities */
+  margin-bottom: 0rem; /*removed bottom margin applied by text utility*/
+}

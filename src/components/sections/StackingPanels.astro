@@ -1,0 +1,149 @@
+---
+/**
+ * StackingPanels — scroll-stacking card section (any number of panels).
+ *
+ * On desktop (container ≥ 50em) each panel is `position: sticky` and GSAP
+ * ScrollTrigger scales the outgoing card down as the next one scrolls up,
+ * creating the stack effect. Below 50em the sticky + animation are dropped:
+ * panels flow normally in a single column with the image on top. The script
+ * is count-agnostic (it scales every panel but the last in each list), so it
+ * works for 2, 3, or N panels.
+ *
+ * Pair with `<StackingPanel>` children. Put the section heading in the
+ * `heading` slot.
+ *
+ * @example
+ * <StackingPanels paddingTop="small">
+ *   <Heading slot="heading" tag="h2" variant="h2">Section title</Heading>
+ *   <StackingPanel>
+ *     <Heading tag="h3" variant="h4">Card one</Heading>
+ *     <Text>…</Text>
+ *     <Visual slot="visual" src={img1} alt="…" ratio="landscape" />
+ *   </StackingPanel>
+ *   <StackingPanel reversed>
+ *     <Heading tag="h3" variant="h4">Card two</Heading>
+ *     <Text>…</Text>
+ *     <Visual slot="visual" src={img2} alt="…" ratio="landscape" />
+ *   </StackingPanel>
+ * </StackingPanels>
+ */
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **StackingPanels** — scroll-stacking card section.
+   *
+   * **What you can change:**
+   * - `theme` — `'light'` | `'dark'` | `'brand'` (passed to the Section)
+   * - `padding` / `paddingTop` / `paddingBottom` — Section vertical padding
+   *   (omit for the Section default `'main'`; the industry pages use
+   *   `paddingTop="small"`)
+   * - `class` — extra classes on the Section
+   * - plus any HTML attribute (`id`, `data-*`, …) — forwarded to the Section
+   *
+   * **Slots:**
+   * - `heading` — the section heading block (rendered in a centered Layout)
+   * - default — the `<StackingPanel>` children (any number)
+   */
+  docs?: string;
+
+  /** Section theme. */
+  theme?: "light" | "dark" | "brand";
+  /** Equal top + bottom Section padding. */
+  padding?: PaddingValue;
+  /** Top-only Section padding. */
+  paddingTop?: PaddingValue;
+  /** Bottom-only Section padding. */
+  paddingBottom?: PaddingValue;
+  /** Extra classes on the Section. */
+  class?: string;
+
+  [key: string]: any;
+}
+
+const {
+  docs,
+  theme,
+  padding,
+  paddingTop,
+  paddingBottom,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<Section
+  theme={theme}
+  padding={padding}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  class:list={[className]}
+  {...rest}
+>
+  <Layout variant="stack-centered">
+    <Col slot="col1">
+      <slot name="heading" />
+    </Col>
+  </Layout>
+  <div class="stacking-panels_wrap">
+    <div class="stacking-panels_list">
+      <slot />
+    </div>
+  </div>
+</Section>
+
+<script>
+  // Scroll-stacking effect (desktop only). Each panel but the last in a list
+  // scales down as the next panel scrolls up. Scoped per `.stacking-panels_list`
+  // so multiple sections on one page don't chain into each other. Count-agnostic.
+  function initStackingPanels() {
+    const gsap = (window as any).gsap;
+    const ScrollTrigger = (window as any).ScrollTrigger;
+    if (!gsap || !ScrollTrigger) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    const lists = document.querySelectorAll<HTMLElement>(".stacking-panels_list");
+    if (!lists.length) return;
+
+    // Animate only on desktop (≥ 50em / 800px) AND only when the user hasn't
+    // requested reduced motion; otherwise cards just stack in flow. The combined
+    // query means reduced-motion users never get the scrubbed scale. gsap.matchMedia()
+    // (gsap-core; replaces the deprecated ScrollTrigger.matchMedia) auto-reverts
+    // its tweens + ScrollTriggers when the query stops matching.
+    const mm = gsap.matchMedia();
+    mm.add(
+      "(min-width: 800px) and (prefers-reduced-motion: no-preference)",
+      () => {
+        lists.forEach((list) => {
+          const items = list.querySelectorAll<HTMLElement>(".stacking-panels_item");
+          items.forEach((item, i) => {
+            const card = item.querySelector<HTMLElement>(".stacking-panels_card");
+            if (!card || i === items.length - 1) return;
+
+            gsap.to(card, {
+              scale: 0.9,
+              scrollTrigger: {
+                trigger: items[i + 1],
+                start: "top bottom",
+                end: "top 15%",
+                scrub: 0.3,
+              },
+            });
+          });
+        });
+      },
+    );
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () =>
+      setTimeout(initStackingPanels, 100),
+    );
+  } else {
+    setTimeout(initStackingPanels, 100);
+  }
+</script>

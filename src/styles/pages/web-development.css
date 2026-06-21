@@ -1,0 +1,133 @@
+/* Web Development page — component custom classes */
+
+/* Hero — orange accent box behind image */
+.web-dev_hero_visual_wrap {
+  position: relative;
+}
+
+.web-dev_hero_accent {
+  position: absolute;
+  /* Extends to the viewport's right edge, even when the page is wider than
+     the container max-width. The max() collapses to 0 below the breakpoint
+     so behavior stays unchanged on narrower screens. */
+  right: calc(
+    -1 * var(--site-margin) - max(0px, (100vw - var(--max-width-main)) / 2)
+  );
+  top: calc(-1 * var(--space-4));
+  bottom: calc(-1 * var(--section-space-main));
+  width: 40%;
+  background-color: var(--heading-accent);
+  z-index: 0;
+}
+
+.web-dev_hero_visual_wrap .visual_wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* System section — reorder text below image when stacked */
+.system-content_research .u-layout-column-1 {
+  order: calc(1 - var(--responsive-large, 1));
+}
+
+/* ── Webflow Site Foundation ── */
+.web-dev_foundation_content {
+  padding-block: var(--section-space-large);
+}
+
+.web-dev_foundation_body {
+  border-top: var(--border-width-main) solid var(--border);
+  padding-top: var(--space-5);
+}
+
+@media (width < 50em) {
+  .web-dev_foundation_content {
+    padding-block: var(--section-space-main);
+  }
+}
+
+/* ── Three Things — accordion + cross-fading image ── */
+.web-dev_three_wrap {
+  display: var(--flex-medium, grid);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  flex-direction: column;
+  gap: var(--space-8);
+  align-items: center;
+  margin-top: var(--space-7);
+}
+
+.web-dev_three_visual_wrap {
+  position: var(--relative-medium, sticky);
+  top: calc(var(--nav-height-total) + var(--space-4));
+}
+
+.web-dev_three_visual {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* First visual establishes the aspect ratio */
+.web-dev_three_visual:first-child {
+  position: relative;
+}
+
+.web-dev_three_visual[data-accordion-active] {
+  opacity: 1;
+}
+
+.web-dev_three_inline_visual {
+  display: none;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-7);
+}
+
+/* Matches --flex-medium breakpoint (58em) — the same point at which
+   .web-dev_three_wrap collapses to a single stacked column. */
+@container (width < 58em) {
+  /* Hide the sticky cross-fading image stack — mobile gets inline images */
+  .web-dev_three_visual_wrap {
+    display: none;
+  }
+
+  /* Show the inline image inside each accordion item */
+  .web-dev_three_inline_visual {
+    display: block;
+  }
+
+  /* Force every item open and disable the toggle interaction —
+     mobile is a scrollable stacked list, not an accordion */
+  .web-dev_three_accordion .accordion_content_wrap {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .web-dev_three_accordion .accordion_toggle_button {
+    cursor: default;
+    pointer-events: none;
+    /* Match the inline image's margin-bottom so titles sit symmetrically
+       between dividers when the section becomes a scrollable stack */
+    padding-top: var(--space-7);
+  }
+
+  .web-dev_three_accordion .accordion_toggle_icon {
+    display: none;
+  }
+
+  /* Last item closes off the section — no divider beneath it */
+  .web-dev_three_accordion .accordion_item:last-child {
+    border-bottom: none;
+  }
+}
+
+.web-dev_three_accordion .accordion_toggle_button {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+.web-dev_three_accordion .accordion_toggle_text {
+  font-size: var(--h5-size);
+  line-height: var(--h5-line-height);
+  font-weight: var(--h5-weight);
+}
+

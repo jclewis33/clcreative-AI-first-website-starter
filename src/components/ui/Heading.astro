@@ -1,0 +1,253 @@
+---
+/**
+ * Heading — separates semantic tag (`h1`–`h6`, `p`) from visual style.
+ *
+ * Pick the correct `tag` for the document outline, then optionally
+ * set `variant` to override the visual size. Omit `variant` to use
+ * the semantic tag's default styles. Use `tag="p"` when you need
+ * heading typography on non-heading content (e.g. prices, stats).
+ *
+ * Renders a `.u-text` wrapper div around the heading tag. The wrapper
+ * stays full-width while the child heading inherits `max-width`.
+ *
+ * @example Display heading with balance
+ * ```astro
+ * <Heading tag="h2" variant="display-lg" balance>
+ *   Build <strong>faster</strong>
+ * </Heading>
+ * ```
+ *
+ * @example Eyebrow label
+ * ```astro
+ * <Heading variant="eyebrow">Our Services</Heading>
+ * ```
+ *
+ * @example h3 tag that looks like h1, with accent keyword
+ * ```astro
+ * <Heading tag="h3" variant="h1" accent>
+ *   The <strong>smart</strong> choice
+ * </Heading>
+ * ```
+ */
+
+type HeadingTag = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p";
+
+type HeadingVariant =
+  /** Extra-large display — hero / feature introductions (6rem max) */
+  | "display-xl"
+  /** Large display — major section openings (5rem max) */
+  | "display-lg"
+  /** Medium display — feature callouts (4.5rem max) */
+  | "display-md"
+  /** Small display — section headers, slightly larger than h1 (4rem max) */
+  | "display-sm"
+  /** Heading level 1 — primary page heading (4rem max) */
+  | "h1"
+  /** Heading level 2 — section heading (3rem max) */
+  | "h2"
+  /** Heading level 3 — subsection heading (2.5rem max) */
+  | "h3"
+  /** Heading level 4 — card/list heading (2rem max) */
+  | "h4"
+  /** Heading level 5 — small heading (1.5rem max) */
+  | "h5"
+  /** Heading level 6 — smallest heading (1.25rem max) */
+  | "h6"
+  /** Eyebrow — small uppercase label above a heading */
+  | "eyebrow";
+
+/**
+ * Heading — separates semantic tag (`h1`–`h6`, `p`) from visual style.
+ *
+ * Pick the correct `tag` for the document outline, then optionally
+ * set `variant` to override the visual size.
+ *
+ * **Props:**
+ * - `tag` — HTML tag: h1–h6 or p (default: `'h2'`)
+ * - `variant` — visual style: display-xl, display-lg, display-md, display-sm, h1–h6, eyebrow (default: `'h2'`)
+ * - `balance` — even line breaks via `text-wrap: balance` (default: `true`)
+ * - `accent` — color `<strong>` text with the theme accent color (default: `false`)
+ * - `marginTop` — override margin-top: `0`–`8` (space scale), `'auto'` to push down in flex (default: none)
+ * - `marginBottom` — override margin-bottom: `0`–`8` (space scale) (default: none)
+ * - `maxWidth` — max-width of heading content with units (default: `'30ch'`; eyebrow: none)
+ * - `class` — extra utility classes
+ *
+ * **Slot:** default — heading text content (supports `<strong>` for accent).
+ */
+interface Props {
+  /**
+   * **Heading props:**
+   * - `tag` — h1-h6 or p (default 'h2') semantic level
+   * - `variant` — display-xl/lg/md/sm, h1-h6, eyebrow
+   * - `balance` — text-wrap: balance for even line breaks
+   * - `accent` — accent color on `<strong>` children
+   * - `marginTop` — 0-8 (space scale) or 'auto' to push down in flex
+   * - `marginBottom` — 0-8 (space scale)
+   * - `maxWidth` — max-width with units (default '30ch')
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — `style` is merged with computed styles
+   *
+   * **Slot:** default — heading text (supports `<strong>`)
+   */
+  docs?: string;
+  /**
+   * HTML tag — sets the semantic level for the document outline.
+   * Use `p` when you want heading styles on non-heading content (e.g. prices).
+   * @default 'h2'
+   * @example tag="h1"
+   * @example tag="p"
+   */
+  tag?: HeadingTag;
+
+  /**
+   * Visual style — overrides the tag's default size.
+   *
+   * Display sizes: `display-xl` (6rem), `display-lg` (5rem),
+   * `display-md` (4.5rem), `display-sm` (4rem).
+   * Heading sizes: `h1`–`h6`. Label: `eyebrow`.
+   *
+   * @default 'h2'
+   * @example variant="display-lg"
+   * @example variant="eyebrow"
+   */
+  variant?: HeadingVariant;
+
+  /**
+   * Even line breaks via `text-wrap: balance`. Best for 2–3 line headings.
+   * @default true
+   * @example balance
+   */
+  balance?: boolean;
+
+  /**
+   * Color `<strong>` text with the theme accent color.
+   * Wrap keywords in `<strong>` inside the slot.
+   * @default false
+   * @example accent
+   */
+  accent?: boolean;
+
+  /**
+   * Override margin-top on the `.u-text` wrapper.
+   * - `0`–`8` — maps to `u-margin-top-N` (space scale: 6px–64px fluid)
+   * - `'auto'` — push element down in flex containers (align bottom edges across columns)
+   * @example marginTop={0}
+   * @example marginTop={4}
+   * @example marginTop="auto"
+   */
+  marginTop?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "auto";
+
+  /**
+   * Override margin-bottom on the `.u-text` wrapper.
+   * Maps to `u-margin-bottom-N` (space scale: 6px–64px fluid).
+   * Use `0` for tight layouts, higher values for extra breathing room.
+   *
+   * | Value | Size (min → max)   |
+   * |-------|--------------------|
+   * | `0`   | 0px                |
+   * | `1`   | 6px → 8px          |
+   * | `2`   | 10px → 12px        |
+   * | `3`   | 14px → 16px        |
+   * | `4`   | 20px → 24px        |
+   * | `5`   | 28px → 32px        |
+   * | `6`   | 32px → 40px        |
+   * | `7`   | 36px → 48px        |
+   * | `8`   | 40px → 64px        |
+   *
+   * NOTE: `marginBottom={0}` is **usually redundant**. Margin-trim already
+   * zeroes the bottom margin of the LAST child of a trimmed wrapper — a
+   * `<Section>` container, a `<Layout>` column, `<ContentWrapper>`, `<Col>`,
+   * `u-rich-text`, or any `u-margin-trim`/`u-container*` element. Only set it
+   * when this is the last child of a *custom* `<div>` that isn't auto-trimmed
+   * (e.g. a card body); even then, prefer `u-margin-trim` on that wrapper.
+   *
+   * @example marginBottom={0}
+   * @example marginBottom={4}
+   */
+  marginBottom?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+  /**
+   * Max-width of heading content (include units).
+   * @default '30ch'
+   * @example maxWidth="30ch"
+   * @example maxWidth="40rem"
+   */
+  maxWidth?: string;
+
+  /**
+   * Extra utility classes.
+   * @example class="u-margin-bottom-4"
+   */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
+   * are forwarded to the root `.u-text` wrapper element.
+   * User-provided `style` is merged with computed max-width styles.
+   * @example data-animate="fade" style="--custom: value"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  tag: Tag = "h2",
+  variant = "h2",
+  balance = true,
+  accent = false,
+  marginTop,
+  marginBottom,
+  maxWidth,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* Default max-width — eyebrow has no default constraint. */
+const resolvedMaxWidth =
+  maxWidth ?? (variant === "eyebrow" ? undefined : "30ch");
+
+/* Map variant → CSS class */
+const variantClassMap: Record<NonNullable<HeadingVariant>, string> = {
+  "display-xl": "u-display-xl",
+  "display-lg": "u-display-lg",
+  "display-md": "u-display-md",
+  "display-sm": "u-display-sm",
+  h1: "u-text-style-h1",
+  h2: "u-text-style-h2",
+  h3: "u-text-style-h3",
+  h4: "u-text-style-h4",
+  h5: "u-text-style-h5",
+  h6: "u-text-style-h6",
+  eyebrow: "u-text-style-eyebrow",
+};
+
+/* Wrapper classes — typography, balance, accent, margin overrides, and user extras */
+const wrapperClasses = [
+  "u-text",
+  variant ? variantClassMap[variant] : null,
+  balance && "u-text-wrap-balance",
+  accent && "u-heading-accent",
+  marginTop === "auto"
+    ? "u-margin-top-auto"
+    : marginTop !== undefined && `u-margin-top-${marginTop}`,
+  marginBottom !== undefined && `u-margin-bottom-${marginBottom}`,
+  className,
+]
+  .filter(Boolean)
+  .join(" ");
+
+/* Merge user-provided style with computed max-width */
+const { style: userStyle, ...attrs } = rest;
+const mergedStyle = [
+  resolvedMaxWidth ? `max-width: ${resolvedMaxWidth}` : null,
+  userStyle,
+]
+  .filter(Boolean)
+  .join("; ");
+---
+
+<div class={wrapperClasses} style={mergedStyle} {...attrs}>
+  <Tag>
+    <slot />
+  </Tag>
+</div>

@@ -1,0 +1,170 @@
+---
+/**
+ * FormField — label + input for standard form fields.
+ *
+ * Supports text, email, tel, url, password, number, date, and other
+ * native input types. The field border transitions to --text on :focus-within.
+ *
+ * @example
+ * ```astro
+ * <!-- Default label above the input -->
+ * <FormField label="Email" name="email" type="email" required
+ *   placeholder="you@company.com" autocomplete="email" />
+ *
+ * <!-- Hidden label (screen-reader only) -->
+ * <FormField label="Phone" name="phone" type="tel"
+ *   labelVariant="hidden" placeholder="000-000-0000" />
+ *
+ * <!-- Floating label (sits inside field, floats up on focus/value) -->
+ * <FormField label="Email Address" name="email" type="email"
+ *   labelVariant="floating" />
+ * ```
+ */
+
+type InputType =
+  | 'text'
+  | 'email'
+  | 'password'
+  | 'tel'
+  | 'url'
+  | 'number'
+  | 'date'
+  | 'datetime-local'
+  | 'search'
+  | 'hidden';
+
+interface Props {
+  /** Label text for the field. Always rendered for accessibility. */
+  label: string;
+
+  /** HTML `name` attribute on the input. Required for form submission. */
+  name: string;
+
+  /**
+   * Input type.
+   * @default 'text'
+   */
+  type?: InputType;
+
+  /** Placeholder text. */
+  placeholder?: string;
+
+  /**
+   * Whether the field is required.
+   * @default false
+   */
+  required?: boolean;
+
+  /**
+   * Disabled state.
+   * @default false
+   */
+  disabled?: boolean;
+
+  /**
+   * Label display variant.
+   * - `'default'` — Label shows above the input field
+   * - `'hidden'` — Label is visually hidden (still accessible to screen readers)
+   * - `'floating'` — Label sits inside the field as a placeholder, then floats
+   *   up above the border when the field is focused or contains a value
+   * @default 'default'
+   */
+  labelVariant?: 'default' | 'hidden' | 'floating';
+
+  /** Default value for the input. */
+  value?: string;
+
+  /** HTML `autocomplete` attribute (e.g. `'given-name'`, `'email'`). */
+  autocomplete?: string;
+
+  /** HTML `inputmode` attribute (e.g. `'numeric'`, `'tel'`). */
+  inputmode?:
+    | "none"
+    | "text"
+    | "tel"
+    | "url"
+    | "email"
+    | "numeric"
+    | "decimal"
+    | "search";
+
+  /** HTML `id` attribute. Auto-generated if not provided. */
+  id?: string;
+
+  /** Helper text displayed below the input. */
+  helperText?: string;
+
+  /** Error text displayed below the input (overrides helperText visually). */
+  errorText?: string;
+
+  /** Extra classes on the outer `.form_label_wrap` element. */
+  class?: string;
+
+  /** Catch-all for extra attributes spread onto the `<input>`. */
+  [key: string]: any;
+}
+
+const {
+  label,
+  name,
+  type = 'text',
+  placeholder,
+  required = false,
+  disabled = false,
+  labelVariant = 'default',
+  value,
+  autocomplete,
+  inputmode,
+  id,
+  helperText,
+  errorText,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const fieldId = id || `field-${name}`;
+const describedById = (helperText || errorText) ? `${fieldId}-hint` : undefined;
+const isFloating = labelVariant === 'floating';
+const resolvedPlaceholder = isFloating ? (placeholder || ' ') : placeholder;
+---
+
+{type === 'hidden' ? (
+  <input type="hidden" name={name} value={value} id={fieldId} />
+) : (
+  <div
+    class:list={['form_label_wrap', isFloating && 'is-floating', className]}
+  >
+    <label
+      class:list={['form_label_text', labelVariant === 'hidden' && 'u-sr-only']}
+      for={fieldId}
+    >
+      {label}
+      {required && <span class="form_required" aria-hidden="true">*</span>}
+    </label>
+
+    <input
+      class="form_field"
+      type={type}
+      name={name}
+      id={fieldId}
+      placeholder={resolvedPlaceholder}
+      required={required}
+      disabled={disabled}
+      value={value}
+      autocomplete={autocomplete}
+      inputmode={inputmode}
+      aria-describedby={describedById}
+      aria-invalid={errorText ? 'true' : undefined}
+      {...rest}
+    />
+
+    {(helperText || errorText) && (
+      <p
+        class:list={['form_helper_text', errorText && 'is-error']}
+        id={describedById}
+      >
+        {errorText || helperText}
+      </p>
+    )}
+  </div>
+)}

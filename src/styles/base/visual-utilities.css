@@ -1,0 +1,459 @@
+/* +======================================================
+       TEXT COLOR UTILITIES
+   ======================================================= */
+
+/* Loaded after base/typography.css so these override text-style color
+   defaults at equal specificity — e.g. recolor an eyebrow (which defaults
+   to `var(--heading-accent)`) on a dark section.
+   - u-color-inherit → inherit the theme text color (white on dark, etc.)
+   - u-color-brand   → force the brand accent color
+   - u-color-faded   → 75% opacity */
+.u-color-inherit { color: inherit; }
+.u-color-brand   { color: var(--heading-accent); }
+.u-color-faded   { opacity: 0.75; }
+
+/* +======================================================
+       BACKGROUND COLOR UTILITIES
+   ======================================================= */
+
+/* Theme-aware background utilities — adapt to data-theme on ancestors */
+.u-background-1 {
+  background-color: var(--background);
+}
+.u-background-2 {
+  background-color: var(--background-2);
+}
+.u-background-skeleton {
+  background-color: var(--background-skeleton);
+}
+
+/* =======================================================
+             IMAGE UTILITIES
+   ======================================================= */
+
+/* Wrapper for images — controls dimensions, radius, and overflow.
+   Set aspect-ratio inline or via a u-ratio-* utility as needed. */
+.u-image-wrapper {
+  position: relative;
+  overflow: clip;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-color: var(--background-skeleton, transparent);
+}
+
+/* Absolute-fill image inside .u-image-wrapper.
+   Inherits object-fit from wrapper. Focal-point positioning via
+   --x and --y custom properties (0–100, default 50/50 = center). */
+.u-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: inherit;
+  object-position: calc(var(--x, 50) * 1%) calc(var(--y, 50) * 1%);
+}
+
+/* Background variant — makes wrapper itself absolute-fill.
+   Use inside a Section background slot or any position: relative parent. */
+.u-image-wrapper.is-background {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: unset;
+}
+
+/* =======================================================
+         OVERLAY UTILITIES
+   ======================================================= */
+
+/* Dark scrim overlay — absolute-fill, sits on top of media.
+   Strength: set --overlay-strength (0–100) to control darkness.
+   Default: 70. */
+.u-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-color: color-mix(in srgb, black calc(var(--overlay-strength, 70) * 1%), transparent);
+}
+
+/* Gradient variant — vertical top-to-bottom gradient.
+   Control each end independently via --overlay-strength-top / --overlay-strength-bottom (0–100).
+   Add .has-middle + --overlay-strength-middle to insert a midpoint color stop at 50%. */
+.u-overlay.is-gradient {
+  background-color: transparent;
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, black calc(var(--overlay-strength-top, 0) * 1%), transparent) 0%,
+    color-mix(in srgb, black calc(var(--overlay-strength-bottom, 70) * 1%), transparent) 100%
+  );
+}
+
+.u-overlay.is-gradient.has-middle {
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, black calc(var(--overlay-strength-top, 0) * 1%), transparent) 0%,
+    color-mix(in srgb, black calc(var(--overlay-strength-middle, 35) * 1%), transparent) 50%,
+    color-mix(in srgb, black calc(var(--overlay-strength-bottom, 70) * 1%), transparent) 100%
+  );
+}
+
+/* =======================================================
+         BOX SHADOW UTILITIES
+   ======================================================= */
+
+.u-box-shadow-xxsmall {
+  box-shadow: var(--box-shadow-xxsmall);
+}
+
+.u-box-shadow-xsmall {
+  box-shadow: var(--box-shadow-xsmall);
+}
+
+.u-box-shadow-small {
+  box-shadow: var(--box-shadow-small);
+}
+
+.u-box-shadow-medium {
+  box-shadow: var(--box-shadow-medium);
+}
+
+.u-box-shadow-large {
+  box-shadow: var(--box-shadow-large);
+}
+
+.u-box-shadow-xlarge {
+  box-shadow: var(--box-shadow-xlarge);
+}
+
+.u-box-shadow-xxlarge {
+  box-shadow: var(--box-shadow-xxlarge);
+}
+
+/* ===========================================================
+         GRADIENT UTILITIES
+   ========================================================
+  When creating these make sure to use background-image */
+
+/* Gradient to add to text */
+.u-gradient-text {
+  background-image: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-repeat: no-repeat;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+/* Gradient text + GSAP SplitText support */
+.u-gradient-text .line-mask,
+.u-gradient-text .line,
+.u-gradient-text .line > *,
+.u-gradient-text span,
+.u-gradient-text .word,
+.u-gradient-text .char {
+  background-image: inherit; /* pull gradient from parent */
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-repeat: no-repeat;
+  -webkit-text-fill-color: transparent; /* Safari/iOS */
+  color: transparent;
+  display: inline-block; /* reliable clipping */
+}
+
+/* Color Gradients - Change out the variable and name. Here as an example. */
+.u-gradient-light-blue {
+  background-image: var(--gradient-light-blue);
+  background-repeat: no-repeat;
+}
+
+.u-gradient-light-blue-reverse {
+  background-image: var(--gradient-light-blue-reverse);
+  background-repeat: no-repeat;
+}
+
+/* Based on Gradients Start and End colors in Variables File */
+[gradient="1"],
+.u-gradient-1 {
+  background-image: linear-gradient(
+    135deg,
+    var(--gradient-primary-start) 0%,
+    var(--gradient-primary-end) 100%
+  );
+}
+
+/* Based on Gradients Start and End colors in Variables File */
+[gradient="2"] {
+  background-image: linear-gradient(
+    135deg,
+    var(--gradient-secondary-start) 0%,
+    var(--gradient-secondary-end) 100%
+  );
+}
+
+/* ======================================================
+       DISPLAY UTILITIES
+   ====================================================== */
+
+.u-display-block        { display: block; }
+.u-display-inline       { display: inline; }
+.u-display-inline-block { display: inline-block; }
+.u-display-inline-flex  { display: inline-flex; }
+.u-display-inline-grid  { display: inline-grid; }
+.u-display-contents {
+  align-items: inherit;
+  justify-content: inherit;
+  text-align: inherit;
+  display: contents;
+}
+.u-display-none { display: none; }
+
+/* =======================================================
+         VISIBILITY UTILITIES
+   ======================================================= */
+
+.u-visible {
+  visibility: visible;
+}
+
+.u-invisible {
+  visibility: hidden;
+}
+
+/* =======================================================
+         HIDE UTILITIES
+   ======================================================= */
+
+/* Always hidden */
+.u-hide {
+  display: none !important;
+}
+
+/* Hide at container-query breakpoints (must be inside a .u-container ancestor).
+   Each class hides at the named size AND below.
+   Breakpoints: xsmall ≤ 20em, small ≤ 35em, medium ≤ 62em, large = always */
+@container (max-width: 20em) {
+  .u-hide-on-xsmall {
+    display: none !important;
+  }
+}
+
+@container (max-width: 35em) {
+  .u-hide-on-small {
+    display: none !important;
+  }
+}
+
+@container (max-width: 62em) {
+  .u-hide-on-medium {
+    display: none !important;
+  }
+}
+
+@container (min-width: 62.0625em) {
+  .u-hide-on-large {
+    display: none !important;
+  }
+}
+
+/* =====================================================
+           OVERFLOW UTILITIES
+   ===================================================== */
+
+.u-overflow-visible { overflow: visible; }
+.u-overflow-hidden  { overflow: hidden; }
+.u-overflow-clip    { overflow: clip; }
+.u-overflow-x-auto  { overflow: auto clip; }
+.u-overflow-y-auto  { overflow: clip auto; }
+
+/* Clip content that overflows to the right only (left edge stays sharp) */
+.u-overflow-hidden-left {
+  clip-path: polygon(0 0, calc(100% + 100vw) 0, calc(100% + 100vw) 100%, 0% 100%);
+}
+
+/* ======================================================
+         DIMENSION UTILITIES
+   ====================================================== */
+
+.u-height-full    { height: 100%; }
+.u-height-auto    { height: auto; }
+.u-width-full     { width: 100%; }
+.u-width-auto     { width: auto; }
+.u-min-width-auto { min-width: auto; }
+
+/* Fills parent in both dimensions */
+.u-cover { width: 100%; height: 100%; }
+
+/* Fills parent absolutely — parent must be position: relative */
+.u-cover-absolute {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0%;
+}
+
+/* ======================================================
+       POINTER EVENTS
+   ====================================================== */
+
+.u-pointer-on  { pointer-events: auto; }
+.u-pointer-off { pointer-events: none; }
+
+/* ====================================================
+           Z-INDEX UTILITIES
+   =================================================== */
+
+.u-zindex-negative { z-index: -1;   position: relative; }
+.u-zindex-0        { z-index: 0;    position: relative; }
+.u-zindex-unset    { z-index: unset; position: relative; }
+.u-zindex-1        { z-index: 1;    position: relative; }
+.u-zindex-2        { z-index: 2;    position: relative; }
+.u-zindex-3        { z-index: 3;    position: relative; }
+
+/* ======================================================
+       POSITION UTILITIES
+   ====================================================== */
+
+.u-position-static   { position: static; }
+.u-position-relative { position: relative; }
+.u-position-absolute { position: absolute; }
+.u-position-sticky   { position: sticky; top: 0; }
+.u-position-fixed    { position: fixed; }
+
+/* =====================================================
+         RADIUS UTILITIES
+   =====================================================
+  apply as classes when wanting to change the radius. Pair with an overflow class ex: .u-overflow-hidden */
+
+/* Standard radius values */
+.u-radius-none    { border-radius: 0; }
+.u-radius-inherit { border-radius: inherit; }
+
+.u-radius-xsmall {
+  border-radius: var(--radius-xsmall);
+}
+
+.u-radius-small {
+  border-radius: var(--radius-small);
+}
+
+.u-radius-medium {
+  border-radius: var(--radius-medium);
+}
+
+.u-radius-large {
+  border-radius: var(--radius-large);
+}
+
+.u-radius-xlarge {
+  border-radius: var(--radius-xlarge);
+}
+
+/* Special-purpose radii */
+/* Default radius for most elements */
+.u-radius-main {
+  border-radius: var(--radius-main);
+}
+
+/* Fully rounded (circle or pill shape) */
+.u-radius-full  { border-radius: var(--radius-full); }
+.u-radius-round { border-radius: var(--radius-full); }
+
+/* Responsive section radius */
+.u-radius-section {
+  border-radius: var(--radius-section);
+}
+
+/* =======================================================
+         ASPECT RATIO UTILITIES
+  ======================================================== */
+
+.u-ratio-1-1  { aspect-ratio: 1; }
+.u-ratio-16-9 { aspect-ratio: 16 / 9; }
+.u-ratio-3-2  { aspect-ratio: 3 / 2; }
+.u-ratio-2-3  { aspect-ratio: 2 / 3; }
+.u-ratio-2-1  { aspect-ratio: 2; }
+.u-ratio-5-4  { aspect-ratio: 5 / 4; }
+.u-ratio-4-5  { aspect-ratio: 4 / 5; }
+
+/* =======================================================
+       OBJECT FIT
+   ======================================================= */
+
+.u-object-fit-cover   { object-fit: cover; }
+.u-object-fit-contain { object-fit: contain; }
+
+/* =======================================================
+       MAX WIDTH UTILITIES
+   ======================================================= */
+
+.u-max-width-xlarge {
+  max-width: 64rem;
+}
+.u-max-width-large {
+  max-width: 48rem;
+}
+.u-max-width-medium {
+  max-width: 32rem;
+}
+.u-max-width-small {
+  max-width: 20rem;
+}
+.u-max-width-xsmall {
+  max-width: 16rem;
+}
+.u-max-width-xxsmall {
+  max-width: 12rem;
+}
+.u-max-width-full { max-width: 100%; }
+.u-max-width-none { max-width: none; }
+
+/* .u-text > * rule lives in base/typography.css (single source of truth) */
+
+/* =======================================================
+       ICON UTILITIES
+   ======================================================= */
+.u-icon-16 {
+  width: 1rem;
+  height: 1rem;
+}
+
+.u-icon-24 {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.u-icon-32 {
+  width: 2rem;
+  height: 2rem;
+}
+
+.u-icon-48 {
+  width: 3rem;
+  height: 3rem;
+}
+
+.u-icon-64 {
+  width: 4rem;
+  height: 4rem;
+}
+
+/* =======================================================
+   BUTTON WRAPPER UTILITIES
+   ======================================================= */
+
+.u-button-wrapper {
+  column-gap: var(--space-2);
+  row-gap: var(--space-2);
+  align-content: center;
+  align-items: center;
+  justify-content: inherit;
+  flex-flow: wrap;
+  display: flex;
+}
+
+/* Default margin — :where() gives zero specificity so any utility class wins */
+:where(.u-button-wrapper) {
+  margin-top: var(--space-6);
+}

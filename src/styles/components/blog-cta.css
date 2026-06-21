@@ -1,0 +1,166 @@
+/* ==========================================================================
+   BLOG CTA
+   Clickable image + text + link block. Used at end of body (auto-rendered),
+   as a per-post override, or inline inside the rich text.
+
+   Layout strategy: the wrap is the colored panel. The image is absolutely
+   positioned and uses `top` (not `bottom`) so exactly half its height sits
+   above the panel regardless of aspect ratio. `--bcta-image-height` is
+   derived from `--bcta-image-width` × the inverse aspect ratio, so all the
+   bleed math falls out automatically.
+   ========================================================================== */
+
+.blog-cta_wrap {
+  --bcta-image-width: clamp(9rem, 18vw, 16rem);
+  --bcta-image-height: var(--bcta-image-width); /* square fallback */
+  --bcta-gap: var(--space-5);
+  --bcta-bleed: calc(var(--bcta-image-height) * 0.27); /* quarter of image */
+
+  position: relative;
+  display: block;
+  padding: var(--space-4);
+  padding-left: calc(
+    var(--bcta-image-width) + var(--space-5) + var(--bcta-gap)
+  );
+  /* Min height ensures the bottom half of the image is fully inside the panel. */
+  min-height: calc(var(--bcta-bleed) + var(--space-5) * 2);
+  /* Clearance above for the bleeding upper half of the image. */
+  margin-top: calc(var(--bcta-bleed) + var(--space-5));
+  margin-bottom: var(--space-6);
+  background-color: var(--background-2);
+  color: var(--text);
+  text-decoration: none;
+  border-radius: var(--radius-large);
+}
+
+/* When rendered inline inside .u-rich-text, undo the rich-text rhythm and
+   anchor styles that would otherwise paint across the CTA panel.
+   .u-rich-text targets bare h3 / p / a (specificity 0,1,1) and outranks the
+   component's own class-only rules (0,1,0). These selectors restore the
+   component's typography and color so the inline CTA matches the end-of-post
+   CTA exactly. */
+.u-rich-text .blog-cta_wrap,
+.u-rich-text .blog-cta_wrap:hover,
+.u-rich-text .blog-cta_wrap:focus {
+  color: var(--text);
+  text-decoration: none;
+}
+.u-rich-text .blog-cta_heading {
+  margin-top: 0;
+  margin-bottom: var(--space-2);
+}
+.u-rich-text .blog-cta_text {
+  margin-top: 0;
+  margin-bottom: var(--space-3);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-line-height);
+}
+
+/* Per-aspect-ratio image height — drives every other bleed value. */
+.blog-cta_wrap[data-aspect="square"] {
+  --bcta-image-height: var(--bcta-image-width);
+}
+.blog-cta_wrap[data-aspect="portrait"] {
+  --bcta-image-height: calc(var(--bcta-image-width) * 4 / 3);
+}
+.blog-cta_wrap[data-aspect="landscape"] {
+  --bcta-image-height: calc(var(--bcta-image-width) * 2 / 3);
+}
+
+.blog-cta_visual_wrap {
+  position: absolute;
+  left: var(--space-5);
+  top: calc(-1 * var(--bcta-bleed));
+  width: var(--bcta-image-width);
+  /* drop-shadow (not box-shadow) follows the rounded corners of the inner
+     .u-image-wrapper, which has `overflow: clip` and would itself crop a
+     direct box-shadow. */
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.1))
+    drop-shadow(0 2px 6px rgba(0, 0, 0, 0.04));
+}
+
+.blog-cta_content {
+  display: block;
+}
+
+.blog-cta_heading {
+  margin-top: 0;
+  margin-bottom: var(--space-2);
+  color: var(--color-brand-500);
+}
+
+.blog-cta_text {
+  margin-top: 0;
+  margin-bottom: var(--space-3);
+}
+
+/* Link styled to mimic the Button text variant — span, not <a>, so the outer
+   wrap stays the only clickable element. */
+.blog-cta_link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: max-content;
+  padding-bottom: 2px;
+  /* border-bottom: var(--border-width-main) solid currentColor; */
+  color: var(--link-text-hover);
+  transition: color 0.2s ease;
+}
+
+/* On hover/focus of the card, the link shifts to the base link color */
+.blog-cta_wrap:hover .blog-cta_link,
+.blog-cta_wrap:focus-visible .blog-cta_link {
+  color: var(--link-text);
+}
+
+.blog-cta_link_label {
+  font-weight: var(--weight-medium, 500);
+}
+
+.blog-cta_link_icon {
+  width: 0.65em;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--border-width-main);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translateX(var(--space-1));
+  transition: transform 0.2s ease;
+}
+
+/* Arrow slides back to baseline on hover/focus */
+.blog-cta_wrap:hover .blog-cta_link_icon,
+.blog-cta_wrap:focus-visible .blog-cta_link_icon {
+  transform: translateX(0);
+}
+
+/* Single-column on narrower containers (~800px).
+   Image centers above the content; padding-top reserves space for the lower
+   half of the image inside the panel. Same half-height bleed math applies. */
+@container (width <48em) {
+  .blog-cta_wrap {
+    --bcta-image-width: clamp(11rem, 42vw, 16rem);
+
+    padding-left: var(--space-5);
+    /* Reserve the portion of the image that sits *inside* the panel
+       (image height minus the part bleeding above) so content never
+       overlaps the image. */
+    padding-top: calc(
+      var(--bcta-image-height) - var(--bcta-bleed) + var(--space-4)
+    );
+    text-align: center;
+  }
+
+  .blog-cta_visual_wrap {
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--bcta-image-width);
+  }
+
+  .blog-cta_link {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

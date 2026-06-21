@@ -1,0 +1,297 @@
+/* ==========================================================================
+   BLOG POST PAGE STYLES
+   ==========================================================================
+   Custom classes for the blog post template:
+     - Header: author row, share icons
+     - Prose: sidebar CTA, rich-text wrapper
+   ========================================================================== */
+
+/* ---- Back to blog index link ---- */
+
+.blog_post_back_wrap {
+  margin-bottom: var(--space-5);
+}
+
+.blog_post_back_link .button_main_element {
+  flex-direction: row-reverse;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-small-size);
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  width: fit-content;
+}
+
+/* Fade on hover / keyboard focus (the wrapper carries the interaction) */
+.blog_post_back_link:hover .button_main_element,
+.blog_post_back_link:has(:focus-visible) .button_main_element {
+  opacity: 0.6;
+}
+
+/* ---- Author details row ---- */
+
+.blog_post_author_wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.blog_post_avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.blog_post_avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.blog_post_read_time {
+  text-align: center;
+  color: color-mix(in hsl, currentColor 70%, transparent);
+}
+
+/* ---- Share icons ---- */
+
+.blog_post_share_wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.blog_post_share_icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-full);
+  border: var(--border-width-main) solid var(--border);
+  color: var(--text);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+  text-decoration: none;
+  padding: 0;
+}
+
+.blog_post_share_icon:hover {
+  border-color: var(--text);
+}
+
+.blog_post_share_icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* ---- Video embed ---- */
+
+.blog_post_video_wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+}
+
+/* ---- Sidebar CTA ---- */
+
+.blog_post_sidebar {
+  /* Hide at medium using the responsive flag (--none-medium resolves
+     to "none" at < 62em; above that it's undefined → fallback "block"). */
+  display: var(--none-medium, block);
+}
+/* Hide the wrapping layout column too, so the collapsed flex stack
+   doesn't reserve a row + row-gap above the prose (which pushed the
+   content away from the hero image on mobile). */
+.blog_post_content_layout .u-layout-column-1 {
+  display: var(--none-medium, block);
+}
+.blog_post_sidebar_card .card_primary_content {
+  padding: var(--space-4) var(--space-2);
+}
+
+/* ---- Prose area ---- */
+
+/*.blog_post_prose {
+   Rich text rhythm inherited from u-rich-text 
+} */
+
+/* ---- FAQ block (lives inside the prose column) ---- */
+
+.blog_post_faq_wrap {
+  margin-block-start: var(--space-6);
+}
+
+.blog_post_faq_heading {
+  margin-block-end: var(--space-4);
+}
+
+/* ---- Callouts ----
+   Tune callout colors here. Each type maps to three vars: accent (border +
+   icon), background (tinted fill), text (body copy). */
+
+:root {
+  /* Tip */
+  --callout-tip-accent: var(--color-success-green-dark);
+  --callout-tip-background: var(--color-success-green);
+  --callout-tip-text: var(--color-success-green-dark);
+
+  /* Warning */
+  --callout-warning-accent: var(--color-warning-yellow-dark);
+  --callout-warning-background: var(--color-warning-yellow);
+  --callout-warning-text: var(--color-warning-yellow-dark);
+
+  /* Info */
+  --callout-info-accent: var(--text);
+  --callout-info-background: var(--color-info-grey);
+  --callout-info-text: var(--text);
+}
+
+.callout_wrap {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-4);
+  margin-block: var(--space-5);
+  border-radius: var(--radius-medium);
+  border: var(--border-width-main) solid
+    color-mix(in hsl, var(--callout-accent, currentColor) 25%, transparent);
+  background: var(--callout-background, var(--background-2));
+  color: var(--callout-text, var(--text));
+}
+
+.callout_wrap.is-tip {
+  --callout-accent: var(--callout-tip-accent);
+  --callout-background: var(--callout-tip-background);
+  --callout-text: var(--callout-tip-text);
+}
+
+.callout_wrap.is-warning {
+  --callout-accent: var(--callout-warning-accent);
+  --callout-background: var(--callout-warning-background);
+  --callout-text: var(--callout-warning-text);
+}
+
+.callout_wrap.is-info {
+  --callout-accent: var(--callout-info-accent);
+  --callout-background: var(--callout-info-background);
+  --callout-text: var(--callout-info-text);
+}
+
+.callout_icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  color: var(--callout-accent);
+}
+
+.callout_icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.callout_content > :last-child {
+  margin-bottom: 0;
+}
+
+/* ---- Code blocks ---- */
+
+.code_block_wrap {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-small);
+  overflow: hidden;
+}
+
+.code_block_filename {
+  padding: var(--space-2) var(--space-3);
+  background: #1a1a2e;
+  color: #a0a0b8;
+  font-size: 0.8125rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  border-bottom: 1px solid #2a2a3e;
+}
+
+.code_block_wrap pre {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.code_block_wrap code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  background: none;
+  padding: 0;
+  border: none;
+  font-size: inherit;
+}
+
+/* ---- Table of contents (above sidebar CTA) ---- */
+
+.toc_wrap {
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-medium);
+}
+
+.toc_title {
+  font-size: var(--text-small-size);
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 var(--space-3) 0;
+  color: var(--text);
+}
+
+.toc_list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.toc_list a {
+  display: block;
+  font-size: var(--text-small-size);
+  line-height: 1.4;
+  color: color-mix(in hsl, currentColor 65%, transparent);
+  text-decoration: none;
+  border-left: var(--border-width-main) solid var(--border);
+  padding-left: var(--space-2);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.toc_list a:hover,
+.toc_list a:focus-visible,
+.toc_list a[data-toc-active] {
+  color: var(--heading-accent);
+  border-left-color: var(--heading-accent);
+}
+
+/* ---- Scroll-margin for TOC targets (matches style-guide/glossary pattern) ---- */
+
+.blog_post_prose h2[id] {
+  scroll-margin-top: calc(var(--nav-height-total) + 1.5rem);
+}

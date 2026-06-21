@@ -1,0 +1,121 @@
+/* ==========================================================================
+   HOME PAGE STYLES
+   ========================================================================== */
+
+/* ==========================================================================
+   HERO — custom CSS entrance (no JS, fires at first paint)
+
+   The site-wide data-fade-list / data-fade-in system runs on window.load,
+   which waits for the Swiper slider's 6 images to finish before the hero
+   content appears. That creates a visible flash. Pure CSS animations
+   start at stylesheet parse time — no wait, no FOUC.
+   ========================================================================== */
+
+.home-hero_text > *,
+.home-hero_content .video-embed_frame,
+.home-hero_slider {
+  opacity: 0;
+  animation: home-hero-fade 0.6s ease-out forwards;
+}
+
+.home-hero_text > * {
+  transform: translateY(20px);
+}
+
+/* Stagger the content column: eyebrow → heading → text → buttons */
+.home-hero_text > *:nth-child(1) {
+  animation-delay: 0s;
+}
+.home-hero_text > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.home-hero_text > *:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.home-hero_text > *:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.home-hero_content .video-embed_frame {
+  animation-delay: 0.2s;
+}
+
+@container (width < 62.125rem) {
+  .home-hero_layout .u-layout {
+    display: flex;
+  }
+}
+
+.home-hero_slider {
+  animation-delay: 0.4s;
+}
+
+@keyframes home-hero-fade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero_text > *,
+  .home-hero_content .video-embed_frame,
+  .home-hero_slider {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   PROBLEM SECTION — two-column statement + full-width image
+   ========================================================================== */
+
+/* Section needs to be the positioning context for the orange strip */
+.problem_section {
+  position: relative;
+}
+
+/* Orange strip sits behind the bottom ~1/3 of the image and extends to the
+   section edge, creating a bleed effect into the M2M section that follows */
+.problem_section::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* Approximates 1/3 of a widescreen (16:9) image height, scales with viewport */
+  height: clamp(3rem, 18vw, 16rem);
+  background-color: var(--color-brand-500);
+  z-index: 0;
+}
+
+/* Image sits above the orange strip */
+.problem_feature_img {
+  position: relative;
+  z-index: 1;
+  margin-top: var(--space-8);
+}
+
+/* ==========================================================================
+   Not Fixing Sextion
+   ========================================================================== */
+.not-fixing_content {
+  margin-inline: auto;
+  max-width: 53rem;
+}
+
+/* ==========================================================================
+   FUTURE SECTION — brand-themed card with text + 3x2 image grid
+   ========================================================================== */
+.future_card {
+  border-radius: var(--radius-main);
+  padding: var(--space-8);
+}
+
+/* Collapse the inner Layout earlier (default is 50em / 800px) */
+@container (width < 62em) {
+  .future_card .u-layout {
+    display: flex;
+  }
+}

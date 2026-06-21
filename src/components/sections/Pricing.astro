@@ -1,0 +1,143 @@
+---
+/**
+ * Pricing — section with two-column intro, checklist, and full-width image.
+ *
+ * Left column: eyebrow + heading. Right column: body text, check-list items,
+ * and a text-link CTA. Full-width image below.
+ *
+ * @example Default usage
+ * ```astro
+ * <Pricing />
+ * ```
+ *
+ * @example Custom padding
+ * ```astro
+ * <Pricing paddingBottom="small" />
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Visual from "../ui/Visual.astro";
+import Button from "../ui/Button.astro";
+import ContentWrapper from "../ui/ContentWrapper.astro";
+import PricingCard from "../ui/PricingCard.astro";
+import PricingItem from "../ui/PricingItem.astro";
+
+import afterLaunchImg from "../../assets/web-development/after-launch.avif";
+import Grid from "../ui/Grid.astro";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **Pricing props:**
+   * - `theme` — 'light' | 'dark' | 'brand'
+   * - `padding` / `paddingTop` / `paddingBottom` — section padding
+   * - `class` — extra classes
+   */
+  docs?: string;
+
+  theme?: "light" | "dark" | "brand";
+  padding?: PaddingValue;
+  paddingTop?: PaddingValue;
+  paddingBottom?: PaddingValue;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  docs,
+  theme = "brand",
+  padding = "main",
+  paddingTop = padding,
+  paddingBottom = padding,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<Section
+  theme={theme}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  class={className}
+  {...rest}
+>
+  {/* ---- General pricing card ---- */}
+  <Layout verticalAlign="start" variant="columns">
+    <Col slot="col1">
+      <Heading variant="eyebrow"> Investment</Heading>
+      <Heading tag="h3" variant="h2">Built as an asset. Not a brochure.</Heading
+      >
+      <Text
+        >Most agencies hand over a pretty site and call it done. We hand over a
+        strategic asset, grounded in customer research, built to convert, and
+        structured to scale with your business.</Text
+      >
+    </Col>
+    <Layout rowGap="var(--space-5)" slot="col2" variant="stack">
+      <PricingCard
+        slot="col1"
+        theme="light"
+        variant="general"
+        price="$5,000"
+        priceLabel="Starting at"
+        description="Typical projects range from $7K–$15K+ depending on scope, page count, and custom development needs."
+        href="/contact"
+        buttonText="Let's Fix Your Site"
+        buttonSupportText="One call. We'll confirm fit, scope your project, and give you a real number."
+        itemsLabel="Your Investment Includes:"
+        class="u-box-shadow-small"
+      >
+        <PricingItem
+          >ICP discovery and strategic positioning with the M2M Framework</PricingItem
+        >
+        <PricingItem>Custom Webflow design and development</PricingItem>
+        <PricingItem
+          >Conversion-optimized copy writing for aligned messaging and structure</PricingItem
+        >
+        <PricingItem>SEO foundation (technical + on-page)</PricingItem>
+        <PricingItem>Team training and documentation</PricingItem>
+        <PricingItem>30 days of post-launch support</PricingItem>
+      </PricingCard>
+      <ContentWrapper slot="col2">
+        <Text variant="h5">Already have a site?</Text>
+        <!-- Add-on cards -->
+        <Grid largeColumns={2} mediumColumns={2} smallColumns={1} rowGap={3}>
+          <PricingCard
+            variant="compact"
+            name="SEO & AEO"
+            description="Get found by the right buyers in search and AI tools."
+            href="/services/seo"
+            buttonText="Explore SEO"
+            buttonVariant="text"
+            class="u-box-shadow-medium"
+          />
+          <PricingCard
+            variant="compact"
+            name="Website Support"
+            description="Ongoing updates, optimization, and improvements."
+            href="/services/webflow-website-support"
+            buttonText="Explore Support"
+            buttonVariant="text"
+            class="u-box-shadow-medium"
+          />
+          <PricingCard
+            variant="compact"
+            name="Marketing Partner"
+            description="Marketing run for you giving you the freedom to live yoru life and focus on your business."
+            href="/services/marketing-partner"
+            buttonText="Explore Marketing Partner"
+            buttonVariant="text"
+            class="u-box-shadow-medium"
+            style="grid-column: 1 / -1;"
+          /></Grid
+        >
+      </ContentWrapper>
+    </Layout>
+  </Layout>
+</Section>

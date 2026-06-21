@@ -1,0 +1,642 @@
+/* ============================================================
+     CONTAINER CLASS & UTILITIES
+   ============================================================
+   Gutter is applied via width: calc(100% - var(--site-margin) * 2)
+   rather than padding, so child elements that span 100% of the
+   container never bleed into the gutter, and container-type:
+   inline-size measures content width only.
+
+   RESPONSIVE STRATEGY:
+   Grid utilities inside .u-container use @container queries so
+   they respond to the container's width, not the viewport. This
+   means a 3-col grid inside a narrow sidebar will collapse
+   correctly without extra breakpoint logic.
+
+   Breakpoints:
+     62em (~992px) — medium: 3+4-col → 2-col
+     35em (~560px) — small:  all multi-col → 1-col
+
+   Note: grid gap uses --site-gutter (fluid via clamp).
+   ============================================================ */
+
+.u-container {
+  width: calc(100% - var(--site-margin) * 2);
+  max-width: var(--max-width-main);
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  gap: var(--space-8);
+  container-type: inline-size;
+}
+
+/* Container Width Variants
+   Stack on top of .u-container to override max-width only */
+
+.u-container-narrow {
+  max-width: var(--max-width-narrow); /* 48rem / 768px  */
+}
+
+.u-container-wide {
+  width: 100%;
+  max-width: var(--max-width-wide); /* 120rem / 1920px */
+}
+
+/* Full-width override — removes both the width calc and max-width cap,
+   expanding the element edge-to-edge within its parent */
+.u-container-full {
+  width: 100%;
+  max-width: none;
+}
+
+/* =================================================
+       CONTENT WRAPPER
+   =================================================
+   Block-level wrapper that controls text alignment and
+   cascades alignment properties down to child flex/grid
+   containers (e.g. .u-text uses align-items: inherit).
+
+   Base class inherits alignment from its parent. Use combo
+   classes to override:
+     .is-center-align        — center everything
+     .is-left-align          — left/start align
+     .is-right-align         — right/end align
+     .is-center-align-mobile — center at medium breakpoint (< 62em),
+                                inherits start alignment above that
+
+   Margin-trim is applied automatically (see utilities.css).
+   ================================================= */
+
+.u-content-wrapper {
+  text-align: inherit;
+  align-items: inherit;
+  justify-content: inherit;
+  width: 100%;
+}
+
+.u-content-wrapper.is-center-align {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.u-content-wrapper.is-left-align {
+  text-align: start;
+  justify-content: start;
+  align-items: start;
+}
+
+.u-content-wrapper.is-right-align {
+  text-align: end;
+  justify-content: end;
+  align-items: end;
+}
+
+/* Uses the --center-medium responsive flag from responsive-columns.css.
+   At container < 62em the flag resolves to "center"; above that it is
+   undefined and the fallback "start" applies. */
+.u-content-wrapper.is-center-align-mobile {
+  text-align: var(--center-medium, start);
+  align-items: var(--center-medium, start);
+  justify-content: var(--center-medium, start);
+}
+
+/* Inner wrapper rendered when maxWidth is set on ContentWrapper.
+   Must forward alignment from the outer wrapper so .u-text children
+   (which use `align-items: inherit`) still see the centering. */
+.u-content-wrapper_inner {
+  display: flex;
+  flex-direction: column;
+  align-items: inherit;
+  justify-content: inherit;
+  text-align: inherit;
+  width: 100%;
+}
+
+.u-content-wrapper.is-center-align > .u-content-wrapper_inner {
+  margin-inline: auto;
+}
+.u-content-wrapper.is-right-align > .u-content-wrapper_inner {
+  margin-inline-start: auto;
+}
+
+/* =================================================
+       FLEXBOX UTILITIES
+   ================================================= */
+
+.u-flex {
+  display: flex;
+}
+.u-flex-row {
+  flex-direction: row;
+}
+.u-flex-column {
+  flex-direction: column;
+}
+.u-flex-wrap {
+  flex-wrap: wrap;
+}
+.u-flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+/* Justify */
+.u-justify-start {
+  justify-content: flex-start;
+}
+.u-justify-center {
+  justify-content: center;
+}
+.u-justify-end {
+  justify-content: flex-end;
+}
+.u-justify-between {
+  justify-content: space-between;
+}
+
+/* Align items */
+.u-align-start {
+  align-items: flex-start;
+}
+.u-align-center {
+  align-items: center;
+}
+.u-align-end {
+  align-items: flex-end;
+}
+.u-align-stretch {
+  align-items: stretch;
+}
+
+/* Align self */
+.u-align-self-start {
+  align-self: flex-start;
+}
+.u-align-self-center {
+  align-self: center;
+}
+.u-align-self-end {
+  align-self: flex-end;
+}
+.u-align-self-stretch {
+  align-self: stretch;
+}
+
+/* =====================================================
+       GRID UTILITIES
+   ================================================== */
+
+.u-grid-1 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-1);
+  display: grid;
+}
+
+.u-grid-2 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-2);
+  display: grid;
+}
+
+.u-grid-3 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-3);
+  display: grid;
+}
+
+.u-grid-4 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-4);
+  display: grid;
+}
+.u-grid-5 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-5);
+  display: grid;
+}
+.u-grid-6 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-6);
+  display: grid;
+}
+.u-grid-7 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-7);
+  display: grid;
+}
+.u-grid-8 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-8);
+  display: grid;
+}
+.u-grid-9 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-9);
+  display: grid;
+}
+.u-grid-10 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-10);
+  display: grid;
+}
+.u-grid-11 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-11);
+  display: grid;
+}
+.u-grid-12 {
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: 1fr;
+  grid-template-columns: var(--grid-12);
+  display: grid;
+}
+
+/* Medium — container ≤ 62em (~992px): 3+ col grids step down to 2 */
+@container (max-width: 62em) {
+  .u-grid-3,
+  .u-grid-4,
+  .u-grid-5,
+  .u-grid-6,
+  .u-grid-7,
+  .u-grid-8,
+  .u-grid-9,
+  .u-grid-10,
+  .u-grid-11,
+  .u-grid-12 {
+    grid-template-columns: var(--grid-2);
+  }
+}
+
+/* Small — container ≤ 35em (~560px): all multi-col grids collapse to 1 */
+@container (max-width: 35em) {
+  .u-grid-2,
+  .u-grid-3,
+  .u-grid-4,
+  .u-grid-5,
+  .u-grid-6,
+  .u-grid-7,
+  .u-grid-8,
+  .u-grid-9,
+  .u-grid-10,
+  .u-grid-11,
+  .u-grid-12 {
+    grid-template-columns: var(--grid-1);
+  }
+}
+
+/* Grid variants */
+
+/* Empty grid shell — define template-columns manually */
+.u-grid-custom {
+  display: grid;
+}
+
+/* Inherits column tracks from a parent grid — use inside .u-grid-* */
+.u-grid-subgrid {
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+/* Fills available space with as many columns as fit at the minimum size */
+.u-grid-autofit {
+  gap: var(--site-gutter);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--col-min, 200px), 1fr));
+}
+
+/* Preserves empty tracks — use when item count matters */
+.u-grid-autofill {
+  gap: var(--site-gutter);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--col-min, 200px), 1fr));
+}
+
+/* Full-bleed breakout layout — named-line grid spanning the viewport.
+   Children place themselves using named lines:
+     grid-column: content-start / content-end  → stays within container bounds
+     grid-column: content-start / full-end      → bleeds to right viewport edge
+     grid-column: full-start / content-end      → bleeds to left viewport edge
+     grid-column: full-start / full-end         → full viewport width
+   Do not change the gap — calculations depend on --site-gutter.
+*/
+.u-grid-breakout {
+  display: grid;
+  grid-template-columns: var(--grid-breakout);
+  gap: var(--site-gutter);
+  grid-template-rows: auto;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+/* Default child placement — sit in the content area */
+.u-grid-breakout > * {
+  grid-column: content-start / content-end;
+}
+
+/* =====================================================
+       COLUMN SPANS
+   ================================================= */
+
+.u-span-1 {
+  grid-column: span 1;
+}
+.u-span-2 {
+  grid-column: span 2;
+}
+.u-span-3 {
+  grid-column: span 3;
+}
+.u-span-4 {
+  grid-column: span 4;
+}
+.u-span-5 {
+  grid-column: span 5;
+}
+.u-span-6 {
+  grid-column: span 6;
+}
+.u-span-7 {
+  grid-column: span 7;
+}
+.u-span-8 {
+  grid-column: span 8;
+}
+.u-span-9 {
+  grid-column: span 9;
+}
+.u-span-10 {
+  grid-column: span 10;
+}
+.u-span-11 {
+  grid-column: span 11;
+}
+.u-span-12 {
+  grid-column: span 12;
+}
+.u-span-full {
+  grid-column: 1 / -1;
+}
+
+/* =====================================================
+       COLUMN START
+   ================================================= */
+
+.u-column-start-auto {
+  grid-column-start: auto;
+}
+.u-column-start-1 {
+  grid-column-start: 1;
+}
+.u-column-start-2 {
+  grid-column-start: 2;
+}
+.u-column-start-3 {
+  grid-column-start: 3;
+}
+.u-column-start-4 {
+  grid-column-start: 4;
+}
+.u-column-start-5 {
+  grid-column-start: 5;
+}
+.u-column-start-6 {
+  grid-column-start: 6;
+}
+.u-column-start-7 {
+  grid-column-start: 7;
+}
+.u-column-start-8 {
+  grid-column-start: 8;
+}
+.u-column-start-9 {
+  grid-column-start: 9;
+}
+.u-column-start-10 {
+  grid-column-start: 10;
+}
+.u-column-start-11 {
+  grid-column-start: 11;
+}
+.u-column-start-12 {
+  grid-column-start: 12;
+}
+
+/* =====================================================
+       ROW START
+   ================================================= */
+
+.u-row-start-auto {
+  grid-row-start: auto;
+}
+.u-row-start-1 {
+  grid-row-start: 1;
+}
+.u-row-start-2 {
+  grid-row-start: 2;
+}
+.u-row-start-3 {
+  grid-row-start: 3;
+}
+.u-row-start-4 {
+  grid-row-start: 4;
+}
+.u-row-start-5 {
+  grid-row-start: 5;
+}
+.u-row-start-6 {
+  grid-row-start: 6;
+}
+
+/* =====================================================
+       ROW SPANS
+   ================================================= */
+
+.u-row-span-1 {
+  grid-row-end: span 1;
+}
+.u-row-span-2 {
+  grid-row-end: span 2;
+}
+.u-row-span-3 {
+  grid-row-end: span 3;
+}
+.u-row-span-4 {
+  grid-row-end: span 4;
+}
+.u-row-span-5 {
+  grid-row-end: span 5;
+}
+.u-row-span-6 {
+  grid-row-end: span 6;
+}
+
+/* =================================================
+       GAP UTILITIES
+   ================================================= */
+
+.u-gap-0 {
+  gap: 0;
+}
+.u-gap-1 {
+  gap: var(--space-1);
+}
+.u-gap-2 {
+  gap: var(--space-2);
+}
+.u-gap-3 {
+  gap: var(--space-3);
+}
+.u-gap-4 {
+  gap: var(--space-4);
+}
+.u-gap-5 {
+  gap: var(--space-5);
+}
+.u-gap-6 {
+  gap: var(--space-6);
+}
+.u-gap-7 {
+  gap: var(--space-7);
+}
+.u-gap-8 {
+  gap: var(--space-8);
+}
+
+.u-gap-row-0 {
+  row-gap: 0;
+}
+.u-gap-row-1 {
+  row-gap: var(--space-1);
+}
+.u-gap-row-2 {
+  row-gap: var(--space-2);
+}
+.u-gap-row-3 {
+  row-gap: var(--space-3);
+}
+.u-gap-row-4 {
+  row-gap: var(--space-4);
+}
+.u-gap-row-5 {
+  row-gap: var(--space-5);
+}
+.u-gap-row-6 {
+  row-gap: var(--space-6);
+}
+.u-gap-row-7 {
+  row-gap: var(--space-7);
+}
+.u-gap-row-8 {
+  row-gap: var(--space-8);
+}
+
+.u-gap-column-0 {
+  column-gap: 0;
+}
+.u-gap-column-1 {
+  column-gap: var(--space-1);
+}
+.u-gap-column-2 {
+  column-gap: var(--space-2);
+}
+.u-gap-column-3 {
+  column-gap: var(--space-3);
+}
+.u-gap-column-4 {
+  column-gap: var(--space-4);
+}
+.u-gap-column-5 {
+  column-gap: var(--space-5);
+}
+.u-gap-column-6 {
+  column-gap: var(--space-6);
+}
+.u-gap-column-7 {
+  column-gap: var(--space-7);
+}
+.u-gap-column-8 {
+  column-gap: var(--space-8);
+}
+
+.u-gap-gutter {
+  gap: var(--site-gutter);
+}
+.u-gap-inherit {
+  gap: inherit;
+}
+
+/* Note: gap utilities live here (not spacing.css) because gap only applies to
+   flex/grid containers — it's part of the layout system. Padding/margin
+   utilities live in spacing.css. */
+
+/* =====================================================
+       TEXT COLUMNS (CSS multi-column)
+   =====================================================
+   Reusable responsive text column utilities using
+   CSS `columns` for multi-column text flow. Content
+   flows naturally across columns like a newspaper layout.
+
+   Collapses via the same container-query breakpoints as
+   the grid utilities:
+     62em (~992px) — medium: 3-col → 2-col
+     35em (~560px) — small:  all multi-col → 1-col
+   ================================================= */
+
+.u-text-columns-2 {
+  columns: 2;
+  column-gap: var(--site-gutter);
+}
+
+.u-text-columns-3 {
+  columns: 3;
+  column-gap: var(--site-gutter);
+}
+
+/* Medium — collapse 3-col to 2-col */
+@container (max-width: 62em) {
+  .u-text-columns-3 {
+    columns: 2;
+  }
+}
+
+/* Small — collapse all to single column */
+@container (max-width: 35em) {
+  .u-text-columns-2,
+  .u-text-columns-3 {
+    columns: 1;
+  }
+}
+
+/* =====================================================
+       ORDER UTILITIES
+   ================================================= */
+
+.u-order-first {
+  order: -1;
+}
+.u-order-last {
+  order: 1;
+}

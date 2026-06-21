@@ -1,0 +1,51 @@
+/* ==========================================================================
+   SPACING SCALE
+   ==========================================================================
+   A unified 8-step fluid spacing scale used for margins, padding, and gaps.
+   All values use clamp() for smooth scaling between 20em (320px) and 90em (1440px) viewports.
+
+   Step   Min      Max
+   ────────────────────
+   1      6px      8px
+   2      10px     12px
+   3      14px     16px
+   4      20px     24px
+   5      28px     32px
+   6      32px     40px
+   7      36px     48px
+   8      40px     64px
+   ========================================================================== */
+
+:root {
+  /* ========== SPACING SCALE ========= */
+
+  --space-1: clamp(0.375rem, 0.179vw + 0.339rem, 0.5rem);
+  --space-2: clamp(0.625rem, 0.179vw + 0.589rem, 0.75rem);
+  --space-3: clamp(0.875rem, 0.179vw + 0.839rem, 1rem);
+  --space-4: clamp(1.25rem,  0.357vw + 1.179rem, 1.5rem);
+  --space-5: clamp(1.75rem,  0.357vw + 1.679rem, 2rem);
+  --space-6: clamp(2rem,     0.714vw + 1.857rem, 2.5rem);
+  --space-7: clamp(2.25rem,  1.071vw + 2.036rem, 3rem);
+  --space-8: clamp(2.5rem,   2.143vw + 2.071rem, 4rem);
+
+  /* ========== SECTION SPACING ========= */
+  /* Fluid vertical padding for page sections */
+
+  --section-space-none:     0px;
+  --section-space-xsmall:   clamp(1.25rem, 1.071vw + 1.036rem, 2rem);
+  --section-space-small:    clamp(3rem,  2.857vw + 2.429rem, 5rem);
+  --section-space-main:     clamp(4rem,  4.286vw + 3.143rem, 7rem);
+  --section-space-large:    clamp(5.5rem, 6.429vw + 4.214rem, 10rem);
+  --section-space-page-top: clamp(10rem, 5.714vw + 8.857rem, 14rem);
+
+  /* ========== MARGIN VARIABLES ========= */
+  /* All reference the spacing scale above */
+
+  --margin-xxlarge:  var(--section-space-main);
+  --margin-xlarge:   var(--section-space-small);
+  --margin-large:    var(--space-8);
+  --margin-medium:   var(--space-6);
+  --margin-small:    var(--space-3);
+  --margin-xsmall:   var(--space-1);
+  --margin-xxsmall:  0.25rem;          /* below scale minimum, kept as fixed value */
+}

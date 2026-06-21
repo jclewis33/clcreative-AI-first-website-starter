@@ -1,0 +1,608 @@
+---
+/**
+ * BlogPostGrid — a full-section component that displays up to 3 blog post
+ * cards in a responsive grid, with filtering by variant.
+ *
+ * Composes `<Section>` for theming/padding and `<Grid>` for the responsive
+ * column layout. Each post renders as a `<BlogCard>`.
+ *
+ * **Variants:**
+ * - `related`  — same category as current post, excludes current post
+ * - `recent`   — most recent posts, optionally excludes current post
+ * - `category` — filter by a specific category
+ *
+ * All variants sort by date descending (newest first) and cap at 3 cards.
+ * If no posts match the filter, the entire section is hidden.
+ *
+ * CMS-ready: accepts a typed `BlogPost[]` array that maps directly to CMS
+ * collection fields. When connecting Sanity, Contentful, or another headless
+ * CMS, pass the query result as the `posts` prop.
+ *
+ * @example Related posts on a blog post page
+ * ```astro
+ * <BlogPostGrid
+ *   posts={allPosts}
+ *   variant="related"
+ *   currentSlug={post.slug}
+ *   currentCategory={post.category}
+ * />
+ * ```
+ *
+ * @example Recent posts on a landing page
+ * ```astro
+ * <BlogPostGrid posts={allPosts} variant="recent" heading="From the Blog" />
+ * ```
+ *
+ * @example Category-filtered posts
+ * ```astro
+ * <BlogPostGrid
+ *   posts={allPosts}
+ *   variant="category"
+ *   category="SEO"
+ *   heading="SEO Articles"
+ * />
+ * ```
+ *
+ * @example With custom heading slot
+ * ```astro
+ * <BlogPostGrid posts={allPosts} variant="recent">
+ *   <Fragment slot="heading">
+ *     <Heading variant="eyebrow">Blog</Heading>
+ *     <Heading tag="h2" variant="display-sm" accent>
+ *       Latest <strong>articles</strong>
+ *     </Heading>
+ *   </Fragment>
+ * </BlogPostGrid>
+ * ```
+ */
+
+import type { ImageMetadata } from "astro";
+import Section from "../ui/Section.astro";
+import Grid from "../ui/Grid.astro";
+import Heading from "../ui/Heading.astro";
+import BlogCard from "../ui/BlogCard.astro";
+import { displayCategory } from "../../lib/category-display";
+
+// Images — replace with CMS image fields when connecting a headless CMS
+import heroImage from "../../assets/placeholder-6.avif";
+import featuredImage from "../../assets/placeholder-1.avif";
+import avatarPlaceholder from "../../assets/placeholder-2.avif";
+import blogImage1 from "../../assets/placeholder-3.avif";
+import blogImage2 from "../../assets/placeholder-4.avif";
+import blogImage3 from "../../assets/placeholder-5.avif";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+
+/* ── Exported post type ────────────────────────────────────────────────────
+   Reusable across the project. When connecting a CMS, import this type
+   from BlogPostGrid and use it as your content schema.
+   ────────────────────────────────────────────────────────────────────── */
+
+/** Shape of a single blog post — CMS-ready with ImageMetadata | string. */
+export interface BlogPost {
+  /** Post title */
+  title: string;
+  /** URL slug — used for href and exclusion filtering */
+  slug: string;
+  /** Post excerpt / description */
+  description: string;
+  /** Category labels (e.g. ["Web Design", "SEO"]) */
+  categories: string[];
+  /** Featured image — imported ImageMetadata or URL string */
+  image: ImageMetadata | string;
+  /** Alt text for the featured image */
+  imageAlt: string;
+  /** Author name (optional — used for CMS sorting) */
+  author?: string;
+  /** Author avatar image (optional) */
+  authorAvatar?: ImageMetadata | string;
+  /** Publish date as ISO string for sorting (e.g. "2026-03-01") */
+  date?: string;
+  /** Whether this post is featured (optional) */
+  featured?: boolean;
+}
+
+/* ── Variant & shared types ── */
+
+type GridVariant = "related" | "recent" | "category" | "manual";
+type SectionTheme = "light" | "dark" | "brand";
+type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+/** Spacing-scale step (`--space-N`) for the gap props. `0` = no gap. */
+type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+/* ── Component props ── */
+
+/**
+ * BlogPostGrid — section component displaying up to 3 blog post cards
+ * in a responsive grid with filtering variants.
+ *
+ * **Props:**
+ * - `posts` — all available blog posts to filter from (**required**)
+ * - `variant` — filtering mode: related, recent, category (default: `'recent'`)
+ * - `currentSlug` — slug of the current post to exclude (required for `related`, optional for `recent`/`category`)
+ * - `currentCategory` — category of the current post (required for `related`)
+ * - `category` — category to filter by (required for `category` variant)
+ * - `heading` — section heading text (auto-generates per variant if omitted)
+ * - `eyebrow` — eyebrow text above the heading
+ * - `theme` — section color theme: light, dark, brand
+ * - `padding` — section vertical padding: none, small, main, large, page-top (default: `'large'`)
+ * - `paddingTop` — override top padding only
+ * - `paddingBottom` — override bottom padding only
+ * - `columnGap` — horizontal gap in inner Layout. Number = `--space-N` scale (0–8), or any CSS length string (default: `--site-gutter`, fluid 1-2rem)
+ * - `rowGap` — vertical gap between heading and card grid. Number = `--space-N` scale (0–8), or any CSS length string (default: `--space-8`, fluid 40-64px)
+ * - `id` — section anchor id
+ * - `class` — extra classes on Section
+ *
+ * **Slots:** `heading` — override heading area with custom markup
+ */
+interface Props {
+  /**
+   * **BlogPostGrid props:**
+   * - `posts` — BlogPost[] to filter from (required)
+   * - `variant` — related, recent, category (default 'recent')
+   * - `currentSlug` — current post slug to exclude
+   * - `currentCategory` — current post category (for related)
+   * - `category` — category filter (for category variant)
+   * - `heading` — section heading text (auto-generates if omitted)
+   * - `eyebrow` — eyebrow text above heading
+   * - `theme` — light, dark, brand
+   * - `padding` — none, small, main, large, page-top (default 'large')
+   * - `paddingTop` / `paddingBottom` — override individual padding
+   * - `columnGap` — horizontal gap in inner Layout. Number = `--space-N` scale (0–8), or any CSS length string (default: `--site-gutter`)
+   * - `rowGap` — vertical gap between heading and grid. Number = `--space-N` scale (0–8), or any CSS length string (default: `--space-8`)
+   * - `id` — section anchor id
+   * - `class` — extra classes
+   *
+   * **Slots:** `heading` — custom heading markup
+   */
+  docs?: string;
+
+  /**
+   * All available blog posts to filter from.
+   * Pass your full posts array — the component handles filtering and sorting.
+   * If omitted, uses built-in sample data for previewing.
+   *
+   * When connecting a CMS, pass the query result here:
+   * ```astro
+   * const allPosts = await sanity.fetch(postsQuery);
+   * <BlogPostGrid posts={allPosts} variant="recent" />
+   * ```
+   *
+   * @example posts={allPosts}
+   */
+  posts?: BlogPost[];
+
+  /**
+   * Filtering mode that determines which posts are displayed.
+   *
+   * | Value        | Behavior                                                    |
+   * |--------------|-------------------------------------------------------------|
+   * | `'related'`  | Same category as current post, excludes current post        |
+   * | `'recent'`   | Most recent posts, optionally excludes current post         |
+   * | `'category'` | Filter by a specific category via the `category` prop       |
+   *
+   * @default 'recent'
+   * @example variant="related"
+   */
+  variant?: GridVariant;
+
+  /**
+   * Slug of the current blog post to exclude from results.
+   * **Required** for `variant="related"` (prevents showing the post you're reading).
+   * Optional for `variant="recent"` and `variant="category"`.
+   *
+   * @example currentSlug={post.slug}
+   */
+  currentSlug?: string;
+
+  /**
+   * Categories of the current blog post.
+   * **Required** for `variant="related"` — used to find posts sharing any category.
+   *
+   * Comparison is case-insensitive — spelling must be exact.
+   *
+   * @example currentCategories={post.categories}
+   */
+  currentCategories?: string[];
+
+  /**
+   * Category to filter by when using `variant="category"`.
+   * Only posts matching this category will be shown.
+   *
+   * Comparison is case-insensitive — `"seo"`, `"SEO"`, and `"Seo"`
+   * all match posts with category `"SEO"`. Spelling must be exact.
+   *
+   * @example category="SEO"
+   * @example category="Web Design"
+   */
+  category?: string;
+
+  /**
+   * Slugs to exclude from results (in addition to `currentSlug`).
+   * Useful for preventing duplication between a manually curated
+   * related-posts section and the automatic category grid below it.
+   *
+   * @example excludeSlugs={post.relatedPosts.map(p => p.slug)}
+   */
+  excludeSlugs?: string[];
+
+  /**
+   * Section heading text. Renders as `<h2>` with `variant="h2"`.
+   * If omitted, a default heading is generated based on the variant:
+   *
+   * | Variant      | Default heading          |
+   * |--------------|--------------------------|
+   * | `'related'`  | "Related Posts"          |
+   * | `'recent'`   | "Recent Posts"           |
+   * | `'category'` | "More in {category}"     |
+   *
+   * For richer heading markup, use the `heading` slot instead.
+   *
+   * @example heading="From the Blog"
+   */
+  heading?: string;
+
+  /**
+   * Eyebrow text rendered above the heading (e.g. "Blog", "Read More").
+   * Only rendered when a heading prop or slot is present.
+   *
+   * @example eyebrow="Blog"
+   */
+  eyebrow?: string;
+
+  /**
+   * Section color theme — sets `data-theme` on the wrapping Section,
+   * cascading CSS color variables to all children.
+   *
+   * - `'light'` — light background, dark text
+   * - `'dark'`  — dark background, light text
+   * - `'brand'` — brand-colored background
+   *
+   * @example theme="dark"
+   * @example theme="light"
+   */
+  theme?: SectionTheme;
+
+  /**
+   * Section vertical padding (equal top and bottom).
+   *
+   * | Value        | Size              |
+   * |--------------|-------------------|
+   * | `'none'`     | 0                 |
+   * | `'small'`    | ~3–5rem fluid     |
+   * | `'main'`     | ~4–7rem fluid     |
+   * | `'large'`    | ~5.5–10rem fluid  |
+   * | `'page-top'` | ~10–14rem fluid   |
+   *
+   * @default 'large'
+   * @example padding="main"
+   */
+  padding?: PaddingSize;
+
+  /**
+   * Override top padding only. Accepts the same values as `padding`.
+   *
+   * @example paddingTop="page-top"
+   * @example paddingTop="none"
+   */
+  paddingTop?: PaddingSize;
+
+  /**
+   * Override bottom padding only. Accepts the same values as `padding`.
+   *
+   * @example paddingBottom="small"
+   * @example paddingBottom="none"
+   */
+  paddingBottom?: PaddingSize;
+
+  /**
+   * Section `id` for same-page anchor links.
+   *
+   * @example id="related-posts"
+   */
+  id?: string;
+
+  /**
+   * Horizontal gap between columns in the inner Layout.
+   * Pass a number for the fluid gap scale (`0`–`8`, maps to `--space-N`),
+   * or any CSS length string.
+   *
+   * | Number | Variable     | Size          |
+   * |--------|--------------|---------------|
+   * | `1`    | `--gap-1`    | 6 - 8px       |
+   * | `2`    | `--gap-2`    | 10 - 12px     |
+   * | `3`    | `--gap-3`    | 14 - 16px     |
+   * | `4`    | `--gap-4`    | 20 - 24px     |
+   * | `5`    | `--gap-5`    | 28 - 32px     |
+   * | `6`    | `--gap-6`    | 32 - 40px     |
+   * | `7`    | `--gap-7`    | 36 - 48px     |
+   * | `8`    | `--gap-8`    | 40 - 64px     |
+   *
+   * @default 'var(--site-gutter)' (fluid 1-2rem)
+   * @example columnGap={4}
+   * @example columnGap="var(--gap-4)"
+   * @example columnGap="0px"
+   */
+  columnGap?: GapScale | string;
+
+  /**
+   * Vertical gap between the heading area and the card grid.
+   * Pass a number for the fluid space scale (`0`–`8`, maps to `--space-N`),
+   * or any CSS length string.
+   *
+   * | Number | Variable     | Size          |
+   * |--------|--------------|---------------|
+   * | `1`    | `--space-1`  | 6 - 8px       |
+   * | `2`    | `--space-2`  | 10 - 12px     |
+   * | `3`    | `--space-3`  | 14 - 16px     |
+   * | `4`    | `--space-4`  | 20 - 24px     |
+   * | `5`    | `--space-5`  | 28 - 32px     |
+   * | `6`    | `--space-6`  | 32 - 40px     |
+   * | `7`    | `--space-7`  | 36 - 48px     |
+   * | `8`    | `--space-8`  | 40 - 64px     |
+   *
+   * @default 'var(--space-8)' (fluid 40-64px)
+   * @example rowGap={4}
+   * @example rowGap="var(--space-6)"
+   * @example rowGap="0px"
+   */
+  rowGap?: GapScale | string;
+
+  /**
+   * Extra classes on the outer Section element.
+   *
+   * @example class="u-margin-top-8"
+   */
+  class?: string;
+}
+
+const {
+  docs,
+  posts,
+  variant = "recent",
+  currentSlug,
+  currentCategories,
+  category,
+  excludeSlugs,
+  heading,
+  eyebrow,
+  theme,
+  padding = "large",
+  paddingTop,
+  paddingBottom,
+  columnGap,
+  rowGap: rowGapProp = "var(--space-8)",
+  id,
+  class: className,
+} = Astro.props;
+
+/* ═══════════════════════════════════════════════════
+   Sample data — used for previewing when no `posts` prop is passed.
+   Replace with CMS query results when connecting a headless CMS.
+   ═══════════════════════════════════════════════════ */
+
+const samplePosts: BlogPost[] = [
+  {
+    title: "How to Build a Conversion-Focused Landing Page",
+    slug: "conversion-focused-landing-page",
+    description:
+      "Learn the key principles behind designing landing pages that turn visitors into leads. We cover messaging, layout, and CTA placement strategies.",
+    categories: ["Web Design"],
+    image: featuredImage,
+    imageAlt: "Landing page design mockup",
+    author: "Casey Lewis",
+    authorAvatar: avatarPlaceholder,
+    date: "2026-03-01",
+    featured: true,
+  },
+  {
+    title: "SEO Fundamentals Every Developer Should Know",
+    slug: "seo-fundamentals-developers",
+    description:
+      "Technical SEO best practices for web developers, from semantic HTML and structured data to Core Web Vitals optimization.",
+    categories: ["SEO"],
+    image: blogImage1,
+    imageAlt: "SEO dashboard screenshot",
+    author: "Casey Lewis",
+    date: "2026-02-20",
+  },
+  {
+    title: "Why We Moved from WordPress to Webflow",
+    slug: "wordpress-to-webflow-migration",
+    description:
+      "The challenges and benefits of migrating client sites from WordPress to Webflow, and what we learned along the way.",
+    categories: ["Development"],
+    image: blogImage2,
+    imageAlt: "Webflow editor interface",
+    author: "Casey Lewis",
+    date: "2026-02-15",
+  },
+  {
+    title: "The Power of Strategic Copywriting for B2B",
+    slug: "strategic-copywriting-b2b",
+    description:
+      "How targeted messaging and ICP research can transform your website from a digital brochure into a lead generation machine.",
+    categories: ["Business"],
+    image: blogImage3,
+    imageAlt: "Business strategy session",
+    author: "Casey Lewis",
+    date: "2026-02-10",
+  },
+  {
+    title: "Designing Accessible Websites Without Sacrificing Aesthetics",
+    slug: "accessible-web-design",
+    description:
+      "Practical techniques for building beautiful websites that work for everyone, including keyboard navigation and screen reader optimization.",
+    categories: ["Web Design"],
+    image: heroImage,
+    imageAlt: "Accessible design components",
+    author: "Casey Lewis",
+    date: "2026-02-05",
+  },
+  {
+    title: "How to Increase Organic Traffic by 500% in 6 Months",
+    slug: "increase-organic-traffic",
+    description:
+      "A step-by-step breakdown of the SEO strategy we used to grow a client's organic traffic from 200 to over 1,200 monthly visitors.",
+    categories: ["SEO"],
+    image: blogImage1,
+    imageAlt: "Analytics dashboard showing traffic growth",
+    author: "Casey Lewis",
+    date: "2026-01-28",
+  },
+  {
+    title: "The Complete Guide to Webflow CMS Collections",
+    slug: "webflow-cms-collections-guide",
+    description:
+      "Everything you need to know about structuring CMS collections in Webflow for scalable, maintainable content management.",
+    categories: ["Development"],
+    image: blogImage2,
+    imageAlt: "Webflow CMS collection editor",
+    author: "Casey Lewis",
+    date: "2026-01-20",
+  },
+  {
+    title: "Brand Photography Tips for Small Business Websites",
+    slug: "brand-photography-tips",
+    description:
+      "How to plan, shoot, and edit brand photography that strengthens your website's visual identity and builds trust with visitors.",
+    categories: ["Business"],
+    image: blogImage3,
+    imageAlt: "Professional brand photography setup",
+    author: "Casey Lewis",
+    date: "2026-01-15",
+  },
+  {
+    title: "Building a Design System from Scratch",
+    slug: "design-system-from-scratch",
+    description:
+      "How we build scalable, consistent design systems that accelerate development and improve quality.",
+    categories: ["Web Design"],
+    image: featuredImage,
+    imageAlt: "Design system component library",
+    author: "Casey Lewis",
+    date: "2026-01-08",
+  },
+];
+
+/* ═══════════════════════════════════════════════════
+   Filter & sort posts
+   Use `posts` prop if provided, otherwise fall back to sample data.
+   ═══════════════════════════════════════════════════ */
+
+const allPosts = posts ?? samplePosts;
+const excludeSet = new Set(excludeSlugs ?? []);
+let filtered: BlogPost[] = [];
+
+switch (variant) {
+  case "related":
+    filtered = allPosts
+      .filter((p) => p.categories?.some((c: string) => currentCategories?.map((cc: string) => cc.toLowerCase()).includes(c.toLowerCase())) && p.slug !== currentSlug && !excludeSet.has(p.slug))
+      .sort(
+        (a, b) =>
+          new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
+      )
+      .slice(0, 3);
+    break;
+
+  case "recent":
+    filtered = allPosts
+      .filter((p) => (currentSlug ? p.slug !== currentSlug : true) && !excludeSet.has(p.slug))
+      .sort(
+        (a, b) =>
+          new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
+      )
+      .slice(0, 3);
+    break;
+
+  case "category":
+    filtered = allPosts
+      .filter(
+        (p) =>
+          p.categories?.some((c: string) => c.toLowerCase() === category?.toLowerCase()) &&
+          (currentSlug ? p.slug !== currentSlug : true) &&
+          !excludeSet.has(p.slug),
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
+      )
+      .slice(0, 3);
+    break;
+
+  case "manual":
+    filtered = allPosts
+      .filter((p) => (currentSlug ? p.slug !== currentSlug : true))
+      .slice(0, 3);
+    break;
+}
+
+/* ═══════════════════════════════════════════════════
+   Resolve heading text
+   ═══════════════════════════════════════════════════ */
+
+const hasHeadingSlot = Astro.slots.has("heading");
+
+const defaultHeadings: Record<GridVariant, string> = {
+  related: "Related Posts",
+  recent: "Recent Posts",
+  category: `More in ${displayCategory(category ?? "")}`,
+  manual: "Related Posts",
+};
+
+const resolvedHeading = heading ?? defaultHeadings[variant];
+const showHeading = hasHeadingSlot || resolvedHeading;
+---
+
+{
+  filtered.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      id={id}
+      class:list={["blog-post-grid_wrap", className]}
+    >
+      <Layout docs="" variant="stack" columnGap={columnGap} rowGap={rowGapProp}>
+        <Col slot="col1">
+          {/* Heading area */}
+          {showHeading &&
+            (hasHeadingSlot ? (
+              <slot name="heading" />
+            ) : (
+              <>
+                {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+                <Heading tag="h2" variant="h2">
+                  {resolvedHeading}
+                </Heading>
+              </>
+            ))}
+        </Col>
+
+        {/* Blog card grid — 3 → 2 → 1 responsive */}
+        <Grid
+          slot="col2"
+          largeColumns={3}
+          mediumColumns={2}
+          smallColumns={1}
+          rowGap={6}
+        >
+          {filtered.map((post) => (
+            <BlogCard
+              title={post.title}
+              description={post.description}
+              categories={post.categories}
+              href={`/blog/${post.slug}`}
+              image={post.image}
+              imageAlt={post.imageAlt}
+              author={post.author}
+              authorAvatar={post.authorAvatar}
+              date={post.date}
+            />
+          ))}
+        </Grid>
+      </Layout>
+    </Section>
+  )
+}

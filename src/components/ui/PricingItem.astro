@@ -1,0 +1,73 @@
+---
+/**
+ * PricingItem — feature line item for use inside PricingCard.
+ *
+ * Displays an icon (defaults to a checkmark) and text with a light
+ * bottom border. Stack multiple items inside a PricingCard's default
+ * slot to build a feature list.
+ *
+ * @example Basic item (default checkmark icon)
+ * ```astro
+ * <PricingItem>Custom Webflow design and development</PricingItem>
+ * ```
+ *
+ * @example Custom icon
+ * ```astro
+ * <PricingItem>
+ *   <svg slot="icon" aria-hidden="true" viewBox="0 0 24 24">…</svg>
+ *   Priority support included
+ * </PricingItem>
+ * ```
+ */
+
+/**
+ * PricingItem — feature line item with icon + text + light bottom border.
+ *
+ * **Props:**
+ * - `class` — extra classes on the outer wrapper
+ * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.)
+ *
+ * **Slots:** `icon` (defaults to checkmark SVG), `default` (text content)
+ */
+interface Props {
+  /**
+   * **PricingItem props:**
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute — forwarded to root element
+   *
+   * **Slots:** `icon` (checkmark default), `default` (text)
+   */
+  docs?: string;
+
+  /** Extra classes on the outer `.pricing_item_wrap` element. */
+  class?: string;
+
+  /** Any additional HTML attributes forwarded to root element. */
+  [key: string]: any;
+}
+
+const { docs, class: className, ...rest } = Astro.props;
+---
+
+<div class:list={["pricing_item_wrap", className]} {...rest}>
+  <div class="pricing_item_icon">
+    <slot name="icon">
+      <svg
+        aria-hidden="true"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </slot>
+  </div>
+  <div class="pricing_item_text">
+    <slot />
+  </div>
+</div>

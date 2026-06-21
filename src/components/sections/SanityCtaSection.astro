@@ -1,0 +1,128 @@
+---
+/**
+ * SanityCtaSection — Sanity-driven version of the bottom-of-page CTA, used only
+ * on SSR pages (blog posts, case studies, glossary terms).
+ *
+ * It is a deliberate duplicate of CTASection.astro's composition (same Section +
+ * Layout card + Heading/Text/Button/Visual/Overlay primitives and the same
+ * data-split-text / data-fade-in animation hooks), so it renders identically —
+ * but it sources its content + background image from a Sanity `ctaSection`
+ * document. The background is a `cdn.sanity.io` URL, which renders through
+ * Visual's remote `<img>` branch and so bypasses the runtime `/_image` Worker
+ * endpoint that fails on first load for locally-imported images on SSR routes.
+ *
+ * NOTE: every text value is stegaClean'd, including the visible heading + body.
+ * The heading runs through GSAP SplitText (data-split-text), which measures and
+ * re-wraps the text — and the invisible stega characters Sanity injects in draft
+ * mode break that measurement (heading renders full-width/left-aligned instead
+ * of wrapping centered at its max-width). Cleaning the text keeps the layout
+ * identical to CTASection at the cost of click-to-edit overlays on this section
+ * (the document is still editable from the Studio form panel).
+ *
+ * Keep this separate from CTASection.astro: CTASection stays the local-image
+ * component for static (industry/location) pages and can diverge independently.
+ */
+
+import { stegaClean } from "@sanity/client/stega";
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Visual from "../ui/Visual.astro";
+import Overlay from "../ui/Overlay.astro";
+import Button from "../ui/Button.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import { urlFor, hotspotPosition } from "../../sanity/lib/image";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Cta {
+  heading: string;
+  text: string;
+  primaryButtonLabel: string;
+  primaryButtonHref: string;
+  secondaryButtonLabel?: string;
+  secondaryButtonHref?: string;
+  backgroundImage: any;
+  imageAlt?: string;
+  overlayStrength?: number;
+}
+
+interface Props {
+  /** Resolved Sanity `ctaSection` document (override ?? site default). */
+  cta: Cta;
+  /** Section vertical padding. @default 'small' */
+  padding?: PaddingValue;
+  paddingTop?: PaddingValue;
+  paddingBottom?: PaddingValue;
+  [key: string]: any;
+}
+
+const {
+  cta,
+  padding = "small",
+  paddingTop,
+  paddingBottom,
+  ...rest
+} = Astro.props;
+
+// Everything is stegaClean'd. The image asset must be cleaned (draft-mode stega
+// chars break the URL builder and silently 404 the image inside Presentation),
+// and the visible heading/body must be cleaned too because GSAP SplitText
+// (data-split-text on the heading) mis-measures stega-laden text and breaks the
+// layout — see the file header note.
+const cleanImage = stegaClean(cta.backgroundImage);
+// 1920 matches the project's full-width image convention; urlFor applies dpr(2)
+// for retina, so the served asset is up to 3840px wide.
+const imageUrl = urlFor(cleanImage).width(1920).url();
+const imagePosition = hotspotPosition(cleanImage);
+const imageAlt = stegaClean(cta.imageAlt) ?? "";
+const overlayStrength = stegaClean(cta.overlayStrength) ?? 80;
+
+const heading = stegaClean(cta.heading);
+const text = stegaClean(cta.text);
+const primaryLabel = stegaClean(cta.primaryButtonLabel);
+const primaryHref = stegaClean(cta.primaryButtonHref);
+const secondaryLabel = stegaClean(cta.secondaryButtonLabel);
+const secondaryHref = stegaClean(cta.secondaryButtonHref);
+const hasSecondary = Boolean(secondaryLabel && secondaryHref);
+---
+
+<Section
+  padding={padding}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  {...rest}
+>
+  <Layout variant="card">
+    <Col slot="col1" class="u-theme-dark">
+      <Heading data-split-text maxWidth="30ch">{heading}</Heading>
+      <Text variant="large" data-fade-in data-delay="0.2">{text}</Text>
+      <div data-fade-in data-delay="0.3" class="u-button-wrapper">
+        <Button href={primaryHref} ariaLabel={primaryLabel}>
+          {primaryLabel}
+        </Button>
+        {
+          hasSecondary && (
+            <Button
+              variant="secondary"
+              href={secondaryHref}
+              ariaLabel={secondaryLabel}
+            >
+              {secondaryLabel}
+            </Button>
+          )
+        }
+      </div>
+    </Col>
+    <Col slot="col2">
+      <Visual
+        src={imageUrl}
+        alt={imageAlt}
+        variant="background"
+        position={imagePosition}
+      />
+      <Overlay strength={overlayStrength} />
+    </Col>
+  </Layout>
+</Section>

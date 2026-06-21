@@ -1,0 +1,59 @@
+{
+  "name": "clcreative",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "setup": "node scripts/setup.mjs",
+    "build": "astro build",
+    "prebuild": "node scripts/check-config-sync.mjs",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "check:schema": "node scripts/check-schema.mjs",
+    "check:config": "node scripts/check-config-sync.mjs",
+    "postinstall": "rm -rf node_modules/.vite"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^13.7.0",
+    "@astrojs/react": "^5.0.7",
+    "@astrojs/sitemap": "^3.7.3",
+    "@sanity/astro": "^3.4.1",
+    "@sanity/client": "^7.22.1",
+    "@sanity/code-input": "^7.1.2",
+    "@sanity/icons": "^3.7.4",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/preview-url-secret": "^4.0.7",
+    "@sanity/vision": "^5.31.1",
+    "@sanity/visual-editing": "^5.4.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "astro": "^6.4.6",
+    "astro-portabletext": "^0.13.0",
+    "gsap": "^3.15.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "sanity": "^5.31.1",
+    "sanity-plugin-media": "^4.3.1",
+    "styled-components": "^6.4.2",
+    "swiper": "^12.2.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "csv-parse": "^6.2.1",
+    "node-html-parser": "^7.1.0",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "ws": "^8.21.0",
+    "form-data": "^4.0.6",
+    "undici": "^7.28.0",
+    "miniflare": {
+      "undici": "^7.28.0"
+    },
+    "jsdom": {
+      "undici": "^7.28.0"
+    }
+  }
+}

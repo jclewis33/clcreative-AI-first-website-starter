@@ -1,0 +1,552 @@
+/* ==========================================================================
+   TYPOGRAPHY VARIABLES
+   ==========================================================================
+   Calculator used for fluid clamp values: https://geary.co/clamp-calculator/
+   Settings: 320px mobile (20em) → 1440px desktop (90em), root font size 100%
+   ========================================================================== */
+
+:root {
+  /* =====================================================
+     FONT FAMILIES
+     ===================================================== */
+
+  --font-primary:
+    var(--font-bdo-grotesk), "Helvetica Neue", Helvetica, sans-serif;
+  --font-secondary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;
+  --font-tertiary: var(--font-ibm-plex-mono), "Courier New", Courier, monospace;
+
+  /* =====================================================
+     FONT WEIGHTS
+     ===================================================== */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* =====================================================
+     LINE HEIGHT SCALE
+     ===================================================== */
+
+  --line-height-tight: 1; /* display / very large headings */
+  --line-height-medium: 1.1; /* large headings */
+  --line-height-large: 1.3; /* mid-size headings */
+  --line-height-normal: 1.5; /* body text */
+
+  /* =====================================================
+     LETTER SPACING
+     ===================================================== */
+
+  --letter-spacing-tight: -0.03em;
+  --letter-spacing-normal: 0em;
+  --letter-spacing-wide: 0.05em; /* eyebrow / allcaps labels */
+
+  /* =====================================================
+     TEXT TRANSFORMS
+     ===================================================== */
+
+  --text-transform-none: none;
+  --text-transform-uppercase: uppercase;
+  --text-transform-capitalize: capitalize;
+  --text-transform-lowercase: lowercase;
+  --text-transform-inherit: inherit;
+
+  /* =====================================================
+     TEXT WRAP
+     ===================================================== */
+
+  --text-wrap-balance: balance; /* headings — even line breaks */
+  --text-wrap-pretty: pretty; /* body text — avoids orphans */
+
+  /* =====================================================
+     DISPLAY HEADING VARIABLES
+     Hero headlines and major feature introductions
+     ===================================================== */
+
+  --display-xl-min: 3;
+  --display-xl-max: 6;
+  --display-xl-size: clamp(
+    var(--display-xl-min) * 1rem,
+    (
+      (
+          var(--display-xl-min) -
+            (
+              (var(--display-xl-max) - var(--display-xl-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--display-xl-max) - var(--display-xl-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--display-xl-max) * 1rem
+  );
+  --display-xl-font-family: var(--font-primary);
+  --display-xl-line-height: var(--line-height-tight);
+  --display-xl-weight: 800;
+  --display-xl-text-transform: inherit;
+  --display-xl-margin-top: 0;
+  --display-xl-margin-bottom: var(--space-6);
+
+  /* — Display LG — */
+  --display-lg-min: 3;
+  --display-lg-max: 5;
+  --display-lg-size: clamp(
+    var(--display-lg-min) * 1rem,
+    (
+      (
+          var(--display-lg-min) -
+            (
+              (var(--display-lg-max) - var(--display-lg-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--display-lg-max) - var(--display-lg-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--display-lg-max) * 1rem
+  );
+  --display-lg-font-family: var(--font-primary);
+  --display-lg-line-height: var(--line-height-tight);
+  --display-lg-weight: 800;
+  --display-lg-text-transform: inherit;
+  --display-lg-margin-top: 0;
+  --display-lg-margin-bottom: var(--space-6);
+
+  /* — Display MD — */
+  --display-md-min: 3;
+  --display-md-max: 4.5;
+  --display-md-size: clamp(
+    var(--display-md-min) * 1rem,
+    (
+      (
+          var(--display-md-min) -
+            (
+              (var(--display-md-max) - var(--display-md-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--display-md-max) - var(--display-md-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--display-md-max) * 1rem
+  );
+  --display-md-font-family: var(--font-primary);
+  --display-md-line-height: var(--line-height-tight);
+  --display-md-weight: 800;
+  --display-md-text-transform: inherit;
+  --display-md-margin-top: 0;
+  --display-md-margin-bottom: var(--space-6);
+
+  /* — Display SM — */
+  --display-sm-min: 2.75;
+  --display-sm-max: 4;
+  --display-sm-size: clamp(
+    var(--display-sm-min) * 1rem,
+    (
+      (
+          var(--display-sm-min) -
+            (
+              (var(--display-sm-max) - var(--display-sm-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--display-sm-max) - var(--display-sm-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--display-sm-max) * 1rem
+  );
+  --display-sm-font-family: var(--font-primary);
+  --display-sm-line-height: var(--line-height-tight);
+  --display-sm-weight: 800;
+  --display-sm-text-transform: inherit;
+  --display-sm-margin-top: 0;
+  --display-sm-margin-bottom: var(--space-6);
+
+  /* =====================================================
+     HEADING VARIABLES
+     ===================================================== */
+
+  --h1-min: 2.25;
+  --h1-max: 3.5;
+  --h1-size: clamp(
+    var(--h1-min) * 1rem,
+    (
+      (
+          var(--h1-min) -
+            (
+              (var(--h1-max) - var(--h1-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--h1-max) - var(--h1-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--h1-max) * 1rem
+  );
+  --h1-font-family: var(--font-primary);
+  --h1-line-height: var(--line-height-medium);
+  --h1-weight: 500;
+  --h1-text-transform: inherit;
+  --h1-margin-top: 0;
+  --h1-margin-bottom: var(--space-5);
+
+  /* — H2 — */
+  --h2-min: 2;
+  --h2-max: 3;
+  --h2-size: clamp(
+    var(--h2-min) * 1rem,
+    (
+      (
+          var(--h2-min) -
+            (
+              (var(--h2-max) - var(--h2-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--h2-max) - var(--h2-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--h2-max) * 1rem
+  );
+  --h2-font-family: var(--font-primary);
+  --h2-line-height: var(--line-height-medium);
+  --h2-weight: 500;
+  --h2-text-transform: inherit;
+  --h2-margin-top: 0;
+  --h2-margin-bottom: var(--space-5);
+
+  /* — H3 — */
+  --h3-min: 1.75;
+  --h3-max: 2.5;
+  --h3-size: clamp(
+    var(--h3-min) * 1rem,
+    (
+      (
+          var(--h3-min) -
+            (
+              (var(--h3-max) - var(--h3-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--h3-max) - var(--h3-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--h3-max) * 1rem
+  );
+  --h3-font-family: var(--font-primary);
+  --h3-line-height: var(--line-height-large);
+  --h3-weight: 500;
+  --h3-text-transform: inherit;
+  --h3-margin-top: 0;
+  --h3-margin-bottom: var(--space-5);
+
+  /* — H4 — */
+  --h4-min: 1.5;
+  --h4-max: 2;
+  --h4-size: clamp(
+    var(--h4-min) * 1rem,
+    (
+      (
+          var(--h4-min) -
+            (
+              (var(--h4-max) - var(--h4-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--h4-max) - var(--h4-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--h4-max) * 1rem
+  );
+  --h4-font-family: var(--font-primary);
+  --h4-line-height: var(--line-height-large);
+  --h4-weight: 500;
+  --h4-text-transform: inherit;
+  --h4-margin-top: 0;
+  --h4-margin-bottom: var(--space-4);
+
+  /* — H5 — */
+  --h5-min: 1.25;
+  --h5-max: 1.5;
+  --h5-size: clamp(
+    var(--h5-min) * 1rem,
+    (
+      (
+          var(--h5-min) -
+            (
+              (var(--h5-max) - var(--h5-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--h5-max) - var(--h5-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--h5-max) * 1rem
+  );
+  --h5-font-family: var(--font-primary);
+  --h5-line-height: var(--line-height-large);
+  --h5-weight: 500;
+  --h5-text-transform: inherit;
+  --h5-margin-top: 0;
+  --h5-margin-bottom: var(--space-4);
+
+  /* — H6 — */
+  --h6-min: 1.125;
+  --h6-max: 1.25;
+  --h6-size: clamp(
+    var(--h6-min) * 1rem,
+    (
+      (
+          var(--h6-min) -
+            (
+              (var(--h6-max) - var(--h6-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--h6-max) - var(--h6-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--h6-max) * 1rem
+  );
+  --h6-font-family: var(--font-primary);
+  --h6-line-height: var(--line-height-large);
+  --h6-weight: 500;
+  --h6-text-transform: inherit;
+  --h6-margin-top: 0;
+  --h6-margin-bottom: var(--space-4);
+
+  /* =====================================================
+     EYEBROW
+     ===================================================== */
+
+  --eyebrow-size: 1rem;
+  --eyebrow-font-family: var(--font-tertiary);
+  --eyebrow-line-height: var(--line-height-medium);
+  --eyebrow-weight: 400;
+  --eyebrow-text-transform: var(--text-transform-uppercase);
+  --eyebrow-letter-spacing: var(--letter-spacing-tight);
+  --eyebrow-margin-top: 0;
+  --eyebrow-margin-bottom: var(--space-3);
+
+  /* =====================================================
+     TEXT SIZE VARIABLES
+     ===================================================== */
+
+  --text-tiny-min: 0.75;
+  --text-tiny-max: 0.75;
+  --text-tiny-size: clamp(
+    var(--text-tiny-min) * 1rem,
+    (
+      (
+          var(--text-tiny-min) -
+            (
+              (var(--text-tiny-max) - var(--text-tiny-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--text-tiny-max) - var(--text-tiny-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--text-tiny-max) * 1rem
+  );
+  --text-tiny-font-family: var(--font-secondary);
+  --text-tiny-line-height: var(--line-height-normal);
+  --text-tiny-weight: var(--font-weight-normal);
+  --text-tiny-text-transform: inherit;
+  --text-tiny-margin-top: 0;
+  --text-tiny-margin-bottom: var(--space-4);
+
+  /* — Small — */
+  --text-small-min: 0.875;
+  --text-small-max: 0.875;
+  --text-small-size: clamp(
+    var(--text-small-min) * 1rem,
+    (
+      (
+          var(--text-small-min) -
+            (
+              (var(--text-small-max) - var(--text-small-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--text-small-max) - var(--text-small-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--text-small-max) * 1rem
+  );
+  --text-small-font-family: var(--font-secondary);
+  --text-small-line-height: var(--line-height-normal);
+  --text-small-weight: var(--font-weight-normal);
+  --text-small-text-transform: inherit;
+  --text-small-margin-top: 0;
+  --text-small-margin-bottom: var(--space-4);
+
+  /* — Regular (consolidates previous "medium" size) — */
+  --text-regular-min: 1;
+  --text-regular-max: 1.125;
+  --text-regular-size: clamp(
+    var(--text-regular-min) * 1rem,
+    (
+      (
+          var(--text-regular-min) -
+            (
+              (var(--text-regular-max) - var(--text-regular-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--text-regular-max) - var(--text-regular-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--text-regular-max) * 1rem
+  );
+  --text-regular-font-family: var(--font-secondary);
+  --text-regular-line-height: var(--line-height-normal);
+  --text-regular-weight: var(--font-weight-normal);
+  --text-regular-text-transform: inherit;
+  --text-regular-margin-top: 0;
+  --text-regular-margin-bottom: var(--space-4);
+
+  /* — Large — */
+  --text-large-min: 1.125;
+  --text-large-max: 1.25;
+  --text-large-size: clamp(
+    var(--text-large-min) * 1rem,
+    (
+      (
+          var(--text-large-min) -
+            (
+              (var(--text-large-max) - var(--text-large-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--text-large-max) - var(--text-large-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--text-large-max) * 1rem
+  );
+  --text-large-font-family: var(--font-secondary);
+  --text-large-line-height: var(--line-height-normal);
+  --text-large-weight: var(--font-weight-normal);
+  --text-large-text-transform: inherit;
+  --text-large-margin-top: 0;
+  --text-large-margin-bottom: var(--space-4);
+
+  /* — XLarge — */
+  --text-xlarge-min: 1.25;
+  --text-xlarge-max: 1.5;
+  --text-xlarge-size: clamp(
+    var(--text-xlarge-min) * 1rem,
+    (
+      (
+          var(--text-xlarge-min) -
+            (
+              (var(--text-xlarge-max) - var(--text-xlarge-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--text-xlarge-max) - var(--text-xlarge-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--text-xlarge-max) * 1rem
+  );
+  --text-xlarge-font-family: var(--font-secondary);
+  --text-xlarge-line-height: var(--line-height-normal);
+  --text-xlarge-weight: var(--font-weight-normal);
+  --text-xlarge-text-transform: inherit;
+  --text-xlarge-margin-top: 0;
+  --text-xlarge-margin-bottom: var(--space-4);
+
+  /* =====================================================
+     TEXT MAX WIDTH
+     Maximum readable line width for prose / rich-text blocks.
+     ===================================================== */
+
+  --text-max-width: var(--max-width-narrow); /* 48rem / 768px */
+
+  /* =====================================================
+     SECONDARY HEADING SIZES
+     Optional alternate size scale for components that need
+     a larger type hierarchy than the default.
+     ===================================================== */
+
+  --h1-size-secondary: clamp(2.75rem, 2.5vw + 2.25rem, 4.5rem);
+  --h2-size-secondary: clamp(2.5rem, 2.143vw + 2.071rem, 4rem);
+  --h3-size-secondary: clamp(2.25rem, 1.071vw + 2.036rem, 3rem);
+  --h4-size-secondary: clamp(2rem, 0.714vw + 1.857rem, 2.5rem);
+  --h5-size-secondary: clamp(1.5rem, 0.714vw + 1.357rem, 2rem);
+  --h6-size-secondary: clamp(1.25rem, 0.357vw + 1.179rem, 1.5rem);
+}

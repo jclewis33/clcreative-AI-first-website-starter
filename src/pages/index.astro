@@ -1,0 +1,351 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/ui/Section.astro";
+import Heading from "../components/ui/Heading.astro";
+import Text from "../components/ui/Text.astro";
+import Layout from "../components/ui/Layout.astro";
+import Col from "../components/ui/Col.astro";
+
+import "../styles/pages/home.css";
+import HowItWorks from "../components/sections/HowItWorks.astro";
+import M2MFramework from "../components/sections/M2MFramework.astro";
+import TestimonialShowcase from "../components/sections/TestimonialShowcase.astro";
+import SingleTestimonial from "../components/sections/SingleTestimonial.astro";
+import ProjectImages from "../components/sections/ProjectImages.astro";
+import WhyWorkWithUs from "../components/sections/WhyWorkWithUs.astro";
+import Services from "../components/sections/Services.astro";
+import CTASection from "../components/sections/CTASection.astro";
+
+import CaseStudyFeatured from "../components/sections/CaseStudyFeatured.astro";
+import Visual from "../components/ui/Visual.astro";
+import ContentWrapper from "../components/ui/ContentWrapper.astro";
+import Grid from "../components/ui/Grid.astro";
+import Button from "../components/ui/Button.astro";
+import HowWeWorkPromo from "../components/sections/HowWeWorkPromo.astro";
+
+//images
+import problemImage from "../assets/home/website-costing-you-homepage.webp";
+import theFixImage from "../assets/home/website-marketing-hub-1.webp";
+import stakes1 from "../assets/home/stakes/stakes-1.webp";
+import stakes2 from "../assets/home/stakes/stakes-2.webp";
+import future1 from "../assets/home/future/future-1.webp";
+import future2 from "../assets/home/future/future-view-2.webp";
+import future3 from "../assets/home/future/future-view-3.webp";
+import future4 from "../assets/home/future/future-view-4.webp";
+import future5 from "../assets/home/future/future-5.webp";
+import future6 from "../assets/home/future/future-view-6.webp";
+---
+
+<BaseLayout
+  title="CL Creative | Webflow Websites & Marketing for Growth-Stage Businesses"
+  description="Growth-stage web design, development, and SEO for businesses ready to scale."
+  theme="light"
+>
+  <!-- Hero Section -->
+  <Section padding="main">
+    <Layout
+      docs=""
+      class="home-hero_layout home-hero_content"
+      variant="columns"
+    >
+      <Col docs="" slot="col1" class="home-hero_text">
+        <Heading tag="h1" maxWidth="none" variant="eyebrow"
+          >Webflow Websites & Marketing for Growth-Stage Businesses</Heading
+        >
+        <Heading variant="h2" maxWidth="40ch"
+          >Stop wasting money on a website and marketing that doesn't bring in
+          the leads you need to grow your business.</Heading
+        >
+        <Text variant="xlarge">
+          We build websites and a marketing system that brings in and nurtures
+          leads, so your business grows on purpose, not by accident.
+        </Text>
+
+        <div class="u-button-wrapper">
+          <Button
+            id="main-cta-home-hero"
+            href="/book-a-call"
+            ariaLabel="Book a Strategy Call">Book a Strategy Call</Button
+          >
+          <Button
+            variant="secondary"
+            href="/marketing-scorecard"
+            ariaLabel="Why's My Marketing Broken"
+            >Why's My Marketing Broken</Button
+          >
+        </div>
+      </Col>
+      <div slot="col2" class="video-embed_frame">
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/jmlnBbll7fw?si=vzjiEczOwbJ2nmro"
+          title="How CL Creative Fixes Your Website"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+          loading="lazy"></iframe>
+      </div>
+    </Layout>
+  </Section>
+
+  <!-- Problem / Two-Column Statement Section -->
+  <Section
+    theme="dark"
+    paddingTop="main"
+    paddingBottom="none"
+    class="problem_section"
+  >
+    <Layout variant="columns" verticalAlign="start">
+      <Heading
+        data-prevent-flicker="true"
+        data-split-text
+        slot="col1"
+        tag="h2"
+        variant="h2"
+        maxWidth="16ch"
+      >
+        We don't believe growth should feel like a coin flip.
+      </Heading>
+      <Col slot="col2">
+        <Heading
+          data-fade-in
+          data-prevent-flicker="true"
+          tag="h3"
+          variant="h4"
+          maxWidth="40ch"
+        >
+          You've worked hard. You've built a real business. Revenue is there.
+          Clients love working with you.
+        </Heading>
+        <Text data-fade-in data-prevent-flicker="true" size="regular">
+          But the people who should be finding you, aren't. And the ones who do
+          find you don't stick around long enough to understand what you do.
+        </Text>
+      </Col>
+    </Layout>
+    <Visual
+      src={problemImage}
+      alt="Growth-stage business digital presence"
+      ratio="12.80/6.86"
+      class="problem_feature_img u-radius-main"
+      position={{ x: 50, y: 20 }}
+      data-fade-up
+    />
+  </Section>
+
+  <!-- Agitation Section -->
+  <Section padding="small" theme="brand">
+    <ContentWrapper
+      data-prevent-flicker="true"
+      data-fade-list
+      align="left"
+      class="not-fixing_content"
+    >
+      <Heading variant="h3" maxWidth="none" marginBottom={3}
+        >It's not that your business isn't good enough. It's that your website
+        wasn't built to show it.
+      </Heading>
+      <Text
+        >You're not getting the leads, deals, or growth you need because
+        potential customers don't see you as the solution to their problem.
+      </Text>
+    </ContentWrapper>
+  </Section>
+
+  <!-- The Fix Section -->
+  <Section gap={8}>
+    <Layout variant="columns" ratio="6.5-5.5" rowGap="var(--space-4)">
+      <Heading maxWidth="none" slot="col1" data-fade-in tag="h2" variant="h3">
+        What you need is for your website and marketing to be built as a system
+        where everything works together.
+      </Heading>
+
+      <ContentWrapper slot="col2">
+        <Text data-fade-in>
+          That happens when your messaging, your website, your content, your
+          lead capture, your ads – all your marketing efforts, work as a system
+          to help potential clients understand what you do and how it benefits
+          them.
+        </Text>
+        <Text data-fade-in>
+          When that happens, the right person finds your business and instantly
+          thinks "this is exactly what I need," they don't bounce. They book.
+        </Text>
+      </ContentWrapper>
+    </Layout>
+    <Visual
+      src={theFixImage}
+      alt="mockup of a website that is the marketing hub of a business resulting in growth"
+      data-fade-in
+      ratio="landscape"
+    />
+    <ContentWrapper align="center">
+      <div class="u-button-wrapper">
+        <Button href="/book-a-call" ariaLabel="Book a Strategy Call"
+          >Book a Strategy Call</Button
+        >
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- M2M Framework Section -->
+  <M2MFramework paddingTop="none" />
+
+  <!--Stakes Section -->
+  <Section>
+    <ContentWrapper align="center">
+      <Heading tag="h2" variant="h2" maxWidth="25ch">
+        Six months is enough time to either fix this or keep paying for it
+      </Heading>
+    </ContentWrapper>
+
+    <Layout variant="columns" verticalAlign="center">
+      <Visual
+        slot="col1"
+        src={stakes1}
+        alt="Two professionals meeting at a cafe table with a laptop"
+        ratio="landscape"
+      />
+      <Col slot="col2">
+        <Heading tag="h3" variant="h3">
+          You can keep relying on referrals and luck to grow your business
+        </Heading>
+        <Text variant="xlarge">
+          and in six months you'll be having the same conversation.
+        </Text>
+        <Text>
+          Still wondering why the leads aren't landing. Still watching
+          less-experienced competitors get the call. Still hoping the phone
+          rings. Still growing by accident.
+        </Text>
+      </Col>
+    </Layout>
+
+    <Layout variant="columns-reversed" verticalAlign="center">
+      <Visual
+        slot="col1"
+        src={stakes2}
+        alt="Two colleagues collaborating over a laptop at a cafe"
+        ratio="landscape"
+      />
+      <Col slot="col2">
+        <Heading maxWidth="30ch" tag="h3" variant="h3">
+          Or you can build a website and a marketing foundation that works
+          together
+        </Heading>
+        <Text variant="xlarge">
+          and in six months your business will be growing on purpose rather than
+          by accident.
+        </Text>
+        <Text>
+          The leads that hit your inbox are warmer, more qualified, and already
+          half-sold on working with you. Your business is growing and you are
+          bringing in real sustainable revenue.
+        </Text>
+      </Col>
+    </Layout>
+
+    <ContentWrapper align="center">
+      <div class="u-button-wrapper">
+        <Button href="/how-we-work" ariaLabel="How We Fix Your Website & Marketing">How We Fix Your Website & Marketing</Button>
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- Case Study Featured Section -->
+  <CaseStudyFeatured theme="dark" />
+
+  <!-- Single Testimonial -->
+  <SingleTestimonial name="Tom Connally" />
+
+  <!-- How It Works Section -->
+  <HowItWorks />
+
+  <!-- Project Images -->
+  <ProjectImages />
+
+  <!-- Why Work With Us -->
+  <WhyWorkWithUs />
+
+  <!-- Services -->
+  <Services />
+
+  <!-- How We Work promo -->
+  <HowWeWorkPromo />
+
+  <!-- Testimonials Section -->
+  <TestimonialShowcase />
+
+  <!-- Future Section -->
+  <Section>
+    <div class="future_card u-theme-brand">
+      <Layout ratio="35-65" variant="columns" verticalAlign="center">
+        <Col slot="col1">
+          <Heading tag="h2" variant="h3">
+            Six months from now, your business is growing on purpose.
+          </Heading>
+          <Text variant="large">
+            A marketing foundation that works. Messaging that resonates. A
+            website your customer actually understands. Content that's pulling
+            people in. And growth you can point to — because it's happening on
+            purpose, not by accident.
+          </Text>
+
+          <div class="u-button-wrapper">
+            <Button
+              variant="primary"
+              href="/book-a-call"
+              ariaLabel="Book a Strategy Call">Book a Strategy Call</Button
+            >
+          </div>
+        </Col>
+        <Grid
+          slot="col2"
+          largeColumns={3}
+          mediumColumns={3}
+          smallColumns={2}
+          rowGap={4}
+        >
+          <Visual
+            src={future1}
+            alt="Laptop showing a redesigned website"
+            ratio="square"
+            radius="small"
+          />
+          <Visual
+            src={future2}
+            alt="Tablet displaying a website detail page"
+            ratio="square"
+            radius="small"
+          />
+          <Visual
+            src={future3}
+            alt="Phone showing a mobile-optimized landing page"
+            ratio="square"
+            radius="small"
+          />
+          <Visual
+            src={future4}
+            alt="Phone displaying a service page"
+            ratio="square"
+            radius="small"
+          />
+          <Visual
+            src={future5}
+            alt="Laptop showing a case study page"
+            ratio="square"
+            radius="small"
+          />
+          <Visual
+            src={future6}
+            alt="Laptop displaying a polished homepage"
+            ratio="square"
+            radius="small"
+          />
+        </Grid>
+      </Layout>
+    </div>
+  </Section>
+
+  <!-- CTA Section -->
+  <CTASection />
+</BaseLayout>

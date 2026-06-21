@@ -1,0 +1,37 @@
+---
+/**
+ * StatsBlock — case study content block.
+ * Renders stat callouts in a responsive grid.
+ */
+import Grid from "../../ui/Grid.astro";
+import Heading from "../../ui/Heading.astro";
+import Text from "../../ui/Text.astro";
+import ContentWrapper from "../../ui/ContentWrapper.astro";
+
+interface StatItem {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  items: StatItem[];
+}
+
+const { items } = Astro.props;
+const columns = Math.min(items.length, 4) as 1 | 2 | 3 | 4;
+---
+
+<Grid largeColumns={columns} mediumColumns={Math.min(columns, 2) as 1 | 2} smallColumns={Math.min(columns, 2) as 1 | 2} data-fade-list data-prevent-flicker="true">
+  {
+    items.map((stat) => (
+      <ContentWrapper align="center">
+        <Heading tag="p" variant="h1" marginBottom={0}>
+          {stat.value}
+        </Heading>
+        <Text variant="small" muted>
+          {stat.label}
+        </Text>
+      </ContentWrapper>
+    ))
+  }
+</Grid>

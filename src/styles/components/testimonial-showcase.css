@@ -1,0 +1,138 @@
+/* ==========================================================================
+   TESTIMONIAL SHOWCASE
+   — Single-slide carousel with heading left, slider right-aligned to edge
+   ========================================================================== */
+
+/* ── Main wrapper: one-column grid ── */
+.testimonial_showcase_wrap {
+  display: grid;
+  flex-direction: column;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: start;
+}
+
+/* ── Left column: heading ── */
+.testimonial_showcase_header {
+  align-self: end;
+  text-align: left;
+}
+
+/* ── Right column: counter + slider + arrows stacked vertically ── */
+.testimonial_showcase_slider_wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  /* Push content to the right edge of its column */
+  margin-left: auto;
+  max-width: 47.5rem; /* ~760px — matches Figma */
+  width: 100%;
+}
+
+/* ── Counter / meta ── */
+.testimonial_showcase_meta {
+  width: 100%;
+}
+
+/* Counter text — mono font with muted number, orange label */
+.testimonial_showcase_counter {
+  font-family: var(--font-tertiary);
+  font-size: var(--text-regular-size);
+  line-height: var(--line-height-normal);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+  margin: 0;
+}
+
+.testimonial_showcase_label {
+  color: var(--color-brand-500);
+}
+
+/* ── Swiper container ── */
+.testimonial_showcase_swiper {
+  width: 100%;
+  overflow: clip;
+}
+
+/* ── Card ── */
+.testimonial_showcase_card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Quote — h4-sized text, primary font */
+.testimonial_showcase_quote {
+  font-family: var(--font-primary);
+  font-size: var(--h4-size);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-large);
+  color: var(--text);
+  margin: 0;
+}
+
+/* Author row */
+.testimonial_showcase_author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.testimonial_showcase_avatar {
+  width: 3rem;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--text);
+}
+
+.testimonial_showcase_author_info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+/* ── Arrow buttons ── */
+.testimonial_showcase_arrows {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.testimonial_showcase_arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border-radius: var(--radius-full);
+  color: var(--text);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.testimonial_showcase_arrow:hover {
+  opacity: 0.6;
+}
+
+/* SVG icons inherit color */
+.testimonial_showcase_arrow svg {
+  flex-shrink: 0;
+  stroke: currentColor;
+  stroke-width: var(--border-width-main, 1.5px);
+}
+
+/* ── Small breakpoint — stack, full-width, hide arrows ── */
+@container (width < 35em) {
+  .testimonial_showcase_slider_wrap {
+    max-width: none;
+    margin-left: 0;
+  }
+
+  .testimonial_showcase_arrows {
+    display: none;
+  }
+}

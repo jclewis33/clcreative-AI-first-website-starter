@@ -1,0 +1,31 @@
+---
+/**
+ * Sanity Image — Portable Text custom type component
+ *
+ * Renders an inline image from Sanity's Portable Text body.
+ * Resolves the asset reference to a URL using the urlFor() builder.
+ *
+ * Node shape: { _type: "image", asset: { _ref: string }, alt?: string, caption?: string }
+ */
+
+import type { Props as PortableTextProps } from "astro-portabletext/types";
+import { urlFor } from "../../sanity/lib/image";
+
+interface SanityImageNode {
+  _type: "image";
+  asset: { _ref: string };
+  alt?: string;
+  caption?: string;
+}
+
+type Props = PortableTextProps<SanityImageNode>;
+
+const { node } = Astro.props;
+const src = urlFor(node).width(960).url();
+const alt = node.alt || "";
+---
+
+<figure>
+  <img src={src} alt={alt} loading="lazy" />
+  {node.caption && <figcaption>{node.caption}</figcaption>}
+</figure>

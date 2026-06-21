@@ -1,0 +1,112 @@
+---
+/**
+ * FAQ — two-column layout with heading left, accordion right.
+ *
+ * Pass `items` to control which questions appear. Defaults to
+ * photography + general FAQs when no items are provided.
+ *
+ * @example Default (photography + general)
+ * ```astro
+ * <FAQ />
+ * ```
+ *
+ * @example Web development page
+ * ```astro
+ * import { webDevFaqs, generalFaqs } from "../data/faqs";
+ * <FAQ items={[...webDevFaqs, ...generalFaqs]} />
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Accordion from "../ui/Accordion.astro";
+import AccordionItem from "../ui/AccordionItem.astro";
+
+import type { FAQItem } from "../../data/faqs";
+import { generalFaqs } from "../../data/faqs";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **FAQ props:**
+   * - `items` — array of `{ question, answer }` objects (default: general FAQs). Answers support inline HTML (`<br><br>`, `<strong>`, etc.)
+   * - `eyebrow` — optional small label rendered above the heading
+   * - `heading` — section heading (default: "Frequently Asked Questions")
+   * - `openByDefault` — 1-based index of item to open on load, `0` = all closed (default: `0`)
+   * - `theme` — 'light' | 'dark' | 'brand'
+   * - `padding` / `paddingTop` / `paddingBottom` — section padding
+   * - `id` — section id for anchor links (default: "faq")
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to Section
+   */
+  docs?: string;
+
+  items?: FAQItem[];
+  eyebrow?: string;
+  heading?: string;
+
+  /**
+   * 1-based index of the accordion item to open by default on load.
+   * `0` means all items start closed.
+   * @default 0
+   * @example openByDefault={1}
+   */
+  openByDefault?: number;
+
+  theme?: "light" | "dark" | "brand";
+  padding?: PaddingValue;
+  paddingTop?: PaddingValue;
+  paddingBottom?: PaddingValue;
+  id?: string;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  docs,
+  items = [...generalFaqs],
+  eyebrow,
+  heading = "Frequently Asked Questions",
+  openByDefault = 0,
+  theme,
+  padding = "main",
+  paddingTop = padding,
+  paddingBottom = padding,
+  id = "faq",
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<Section
+  theme={theme}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  id={id}
+  class={className}
+  {...rest}
+>
+  <Layout ratio="6-7" verticalAlign="start" variant="columns">
+    <Col slot="col1">
+      {eyebrow && <Heading variant="eyebrow" data-prevent-flicker="true" data-fade-in>{eyebrow}</Heading>}
+      <Heading data-splittext data-prevent-flicker="true">{heading}</Heading>
+    </Col>
+    <div slot="col2">
+      <Accordion openByDefault={openByDefault} closePrevious>
+        {
+          items.map((faq) => (
+            <AccordionItem data-fade-in question={faq.question}>
+              <Text>
+                <Fragment set:html={faq.answer} />
+              </Text>
+            </AccordionItem>
+          ))
+        }
+      </Accordion>
+    </div>
+  </Layout>
+</Section>

@@ -1,0 +1,107 @@
+---
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Visual from "../ui/Visual.astro";
+import Overlay from "../ui/Overlay.astro";
+import Button from "../ui/Button.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+
+import defaultCtaImage from "../../assets/cta/cta-background.avif";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **CTASection props:**
+   * - `heading` — Main heading text
+   * - `text` — Description text below heading
+   * - `buttonText` — CTA button label
+   * - `buttonHref` — CTA button link
+   * - `image` — Background image (defaults to cta-background.avif)
+   * - `overlayStrength` — Overlay darkness (0–100)
+   * - `padding` / `paddingTop` / `paddingBottom` — section padding
+   */
+  docs?: string;
+
+  /** Main heading text. */
+  heading?: string;
+
+  /** Description text below heading. */
+  text?: string;
+
+  /** CTA button label. @default 'Book a Strategy Call' */
+  buttonText?: string;
+
+  /** CTA button link. @default '/book-a-call' */
+  buttonHref?: string;
+
+  /** Optional secondary button label. Renders a second button when provided. */
+  secondaryButtonText?: string;
+
+  /** Optional secondary button link. */
+  secondaryButtonHref?: string;
+
+  /** Background image source. */
+  image?: ImageMetadata | string;
+
+  /** Overlay darkness 0–100. @default 80 */
+  overlayStrength?: number;
+
+  /** Section vertical padding. @default 'small' */
+  padding?: PaddingValue;
+  paddingTop?: PaddingValue;
+  paddingBottom?: PaddingValue;
+
+  [key: string]: any;
+}
+
+const {
+  docs,
+  heading = "Your website gets traffic but no leads? Let's figure out what's broken and fix it.",
+  text = "Book a FREE 30-Minute Strategy Session. You'll leave with a clearer picture of why your website and marketing aren't converting and how you can fix it, whether you hire us or not.",
+  buttonText = "Book a Strategy Call",
+  buttonHref = "/book-a-call",
+  secondaryButtonText = "Why's My Marketing Broken",
+  secondaryButtonHref = "/marketing-scorecard",
+  image = defaultCtaImage,
+  overlayStrength = 80,
+  padding = "small",
+  paddingTop,
+  paddingBottom,
+  ...rest
+} = Astro.props;
+---
+
+<Section
+  padding={padding}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  {...rest}
+>
+  <Layout variant="card">
+    <Col slot="col1" class="u-theme-dark">
+      <Heading data-split-text maxWidth="30ch">{heading}</Heading>
+      <Text variant="large" data-fade-in data-delay="0.2">{text}</Text>
+      <div data-fade-in data-delay="0.3" class="u-button-wrapper">
+        <Button href={buttonHref} ariaLabel={buttonText}>{buttonText}</Button>
+        {
+          secondaryButtonText && (
+            <Button
+              variant="secondary"
+              href={secondaryButtonHref}
+              ariaLabel={secondaryButtonText}
+            >
+              {secondaryButtonText}
+            </Button>
+          )
+        }
+      </div>
+    </Col>
+    <Col slot="col2">
+      <Visual src={image} alt="" variant="background" />
+      <Overlay strength={overlayStrength} />
+    </Col>
+  </Layout>
+</Section>

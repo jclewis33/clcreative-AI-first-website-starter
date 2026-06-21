@@ -1,0 +1,9 @@
+---
+import type { BlockProps } from "astro-portabletext/types";
+
+type Props = BlockProps & { node: { _slug?: string } };
+
+const { node } = Astro.props as Props;
+---
+
+<h2 id={node._slug}><slot /></h2>

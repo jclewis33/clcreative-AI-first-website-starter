@@ -1,0 +1,24 @@
+---
+/**
+ * Link Mark — Portable Text mark component
+ *
+ * Renders link annotations with support for the `newTab` field
+ * defined in the blog post schema.
+ *
+ * Mark shape: { _type: "link", href: string, newTab?: boolean }
+ */
+
+import type { MarkProps } from "astro-portabletext/types";
+
+type LinkDef = { href: string; newTab?: boolean };
+type Props = MarkProps<LinkDef>;
+
+const { node } = Astro.props;
+const { href, newTab } = node.markDef;
+---
+
+{newTab ? (
+  <a href={href} target="_blank" rel="noopener noreferrer"><slot /></a>
+) : (
+  <a href={href}><slot /></a>
+)}

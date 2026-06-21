@@ -1,0 +1,43 @@
+/* ==========================================================================
+   MARQUEE
+   Infinite horizontal scrolling ticker — text, logos, or any content.
+   Animation powered by GSAP (see Marquee.astro script).
+   ========================================================================== */
+
+.marquee_wrap {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.marquee_track {
+  display: inline-flex;
+  gap: var(--marquee-gap, var(--space-6));
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.marquee_inner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--marquee-gap, var(--space-6));
+  flex-shrink: 0;
+}
+
+/* ── Items ── */
+
+.marquee_item {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Logo images inside marquee items */
+.marquee_item img {
+  display: block;
+  height: auto;
+  max-height: 2.5rem;
+  width: auto;
+  object-fit: contain;
+}

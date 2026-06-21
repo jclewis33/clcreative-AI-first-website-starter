@@ -1,0 +1,131 @@
+---
+/**
+ * FormTextarea — label + textarea for multiline text input.
+ *
+ * The field border transitions to --text on :focus-within.
+ * The existing `.form_field.is-textarea` class handles height and resize.
+ *
+ * @example
+ * ```astro
+ * <!-- Default label above the textarea -->
+ * <FormTextarea label="Message" name="message" required
+ *   placeholder="Tell us about your project..." rows={6} />
+ *
+ * <!-- Floating label (sits inside field, floats up on focus/value) -->
+ * <FormTextarea label="Message" name="message"
+ *   labelVariant="floating" rows={6} />
+ * ```
+ */
+
+interface Props {
+  /** Label text for the textarea. */
+  label: string;
+
+  /** HTML `name` attribute. */
+  name: string;
+
+  /** Placeholder text. */
+  placeholder?: string;
+
+  /**
+   * Whether the field is required.
+   * @default false
+   */
+  required?: boolean;
+
+  /**
+   * Disabled state.
+   * @default false
+   */
+  disabled?: boolean;
+
+  /**
+   * Label display variant.
+   * - `'default'` — Label shows above the textarea
+   * - `'hidden'` — Label is visually hidden (still accessible to screen readers)
+   * - `'floating'` — Label sits inside the field as a placeholder, then floats
+   *   up above the border when the field is focused or contains a value
+   * @default 'default'
+   */
+  labelVariant?: 'default' | 'hidden' | 'floating';
+
+  /** Default value. */
+  value?: string;
+
+  /**
+   * Number of visible text rows.
+   * @default 5
+   */
+  rows?: number;
+
+  /** Helper text displayed below the textarea. */
+  helperText?: string;
+
+  /** Error text displayed below the textarea. */
+  errorText?: string;
+
+  /** HTML `id` attribute. Auto-generated if not provided. */
+  id?: string;
+
+  /** Extra classes on the outer `.form_label_wrap` element. */
+  class?: string;
+
+  /** Catch-all for extra attributes spread onto the `<textarea>`. */
+  [key: string]: any;
+}
+
+const {
+  label,
+  name,
+  placeholder,
+  required = false,
+  disabled = false,
+  labelVariant = 'default',
+  value,
+  rows = 5,
+  helperText,
+  errorText,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const fieldId = id || `field-${name}`;
+const describedById = (helperText || errorText) ? `${fieldId}-hint` : undefined;
+const isFloating = labelVariant === 'floating';
+const resolvedPlaceholder = isFloating ? (placeholder || ' ') : placeholder;
+---
+
+<div
+  class:list={['form_label_wrap', isFloating && 'is-floating', className]}
+>
+  <label
+    class:list={['form_label_text', labelVariant === 'hidden' && 'u-sr-only']}
+    for={fieldId}
+  >
+    {label}
+    {required && <span class="form_required" aria-hidden="true">*</span>}
+  </label>
+
+  <textarea
+    class="form_field is-textarea"
+    name={name}
+    id={fieldId}
+    placeholder={resolvedPlaceholder}
+    required={required}
+    disabled={disabled}
+    rows={rows}
+    aria-describedby={describedById}
+    aria-invalid={errorText ? 'true' : undefined}
+    {...rest}
+  >{value}</textarea>
+
+  {(helperText || errorText) && (
+    <p
+      class:list={['form_helper_text', errorText && 'is-error']}
+      id={describedById}
+    >
+      {errorText || helperText}
+    </p>
+  )}
+</div>

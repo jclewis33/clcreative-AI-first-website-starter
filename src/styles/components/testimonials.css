@@ -1,0 +1,88 @@
+/* ==========================================================================
+   TESTIMONIALS SECTION COMPONENT
+   ==========================================================================
+   A testimonial card carousel built on the Slider component.
+   Uses the Section component for theming and the Card component pattern
+   for individual testimonial cards.
+
+   Structure:
+     <Section>
+       <Heading />           (optional)
+       <Slider>
+         .swiper-slide
+           .testimonial_card
+             .testimonial_stars
+             .testimonial_quote
+             .testimonial_author
+               .testimonial_author_name
+               .testimonial_author_role
+       </Slider>
+     </Section>
+   ========================================================================== */
+
+/* Card — a contrasting "surface" that pops and stays readable on light/dark/
+   brand sections. The surface treatment is applied DIRECTLY on this component
+   class (not only via the shared .u-surface utility) so the text color can't
+   depend on a second class resolving — it remaps the standard semantic vars to
+   the --surface-* tier for itself + all descendants (quote, author, stars).
+   This mirrors how .card_primary_* carries its surface. Re-skin a fork by
+   editing --surface-* in src/styles/variables/themes.css. */
+.testimonial_card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+
+  /* Surface island — remap semantics so descendants follow the card surface */
+  --background: var(--surface-background);
+  --background-2: var(--surface-background);
+  --text: var(--surface-text);
+  --heading-accent: var(--surface-heading-accent);
+  --border: var(--surface-border);
+
+  background: var(--surface-background);
+  color: var(--surface-text);
+  border-radius: var(--radius-main);
+  height: 100%;
+}
+
+/* Stars row */
+.testimonial_stars {
+  display: flex;
+  gap: 0.25rem;
+  color: var(--heading-accent);
+}
+
+.testimonial_star {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
+/* Quote text */
+.testimonial_quote {
+  flex: 1;
+}
+
+/* Author block */
+.testimonial_author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.testimonial_author_avatar {
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-full, 100vmax);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Author metadata — tight stack.
+   Margin zeroing is handled by marginBottom={0} props on <Text> components. */
+.testimonial_author_info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}

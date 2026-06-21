@@ -1,0 +1,83 @@
+---
+/**
+ * Blog CTA — clickable image + text + link block.
+ *
+ * Whole block is an `<a>`. The visible "button" inside is a styled `<span>`
+ * (not a nested anchor). Image bleeds above the colored panel via a negative
+ * top margin on `.blog-cta_visual_wrap`. Theme-aware (uses --background-2 etc).
+ */
+
+import { stegaClean } from "@sanity/client/stega";
+import Visual from "../ui/Visual.astro";
+import { urlFor } from "../../sanity/lib/image";
+
+type AspectRatio = "square" | "landscape" | "portrait";
+
+interface Cta {
+  heading: string;
+  body: string;
+  image: any;
+  imageAlt: string;
+  aspectRatio: AspectRatio;
+  linkUrl: string;
+  linkLabel: string;
+}
+
+interface Props {
+  cta: Cta;
+  class?: string;
+}
+
+const { cta, class: className } = Astro.props;
+
+// stegaClean strips the invisible Unicode characters Sanity injects in draft
+// mode. Without this, the image asset _ref contains stega chars that break
+// the URL builder — the image silently 404s inside Presentation.
+const cleanImage = stegaClean(cta.image);
+const ratio = (stegaClean(cta.aspectRatio) ?? "portrait") as AspectRatio;
+const linkUrl = stegaClean(cta.linkUrl);
+const linkLabel = stegaClean(cta.linkLabel) ?? "Learn more";
+const imageAlt = stegaClean(cta.imageAlt) ?? "";
+
+const imageWidth = 800;
+const imageHeight =
+  ratio === "square" ? 800 : ratio === "landscape" ? 533 : 1067;
+
+const imageUrl = urlFor(cleanImage).width(imageWidth).height(imageHeight).url();
+---
+
+<a
+  class:list={["blog-cta_wrap", className]}
+  data-aspect={ratio}
+  href={linkUrl}
+  aria-label={linkLabel}
+>
+  <div class="blog-cta_visual_wrap">
+    <Visual
+      src={imageUrl}
+      alt={imageAlt}
+      ratio={ratio}
+      radius="medium"
+      width={imageWidth}
+      height={imageHeight}
+    />
+  </div>
+
+  <div class="blog-cta_content">
+    <h3 class="blog-cta_heading u-text-style-h5">{cta.heading}</h3>
+    <p class="blog-cta_text u-text-style-small">{cta.body}</p>
+
+    <span class="blog-cta_link" aria-hidden="true">
+      <span class="blog-cta_link_label">{linkLabel}</span>
+      <svg
+        class="blog-cta_link_icon"
+        viewBox="0 0 10 10"
+        fill="none"
+        aria-hidden="true"
+      >
+        <line x1="0" y1="5" x2="8" y2="5"></line>
+        <polyline points="5,2 8,5 5,8"></polyline>
+      </svg>
+    </span>
+  </div>
+</a>

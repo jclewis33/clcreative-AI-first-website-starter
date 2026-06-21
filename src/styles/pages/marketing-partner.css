@@ -1,0 +1,91 @@
+/* ── Marketing Partner page ─────────────────────────────────────────────── */
+
+/* "You don't need another tool" — 3-col list with vertical white divider on each item */
+.marketing-partner_need_item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-left: var(--space-3);
+  padding-block: var(--space-3);
+  border-left: var(--border-width-main) solid currentColor;
+}
+
+/* ── "Different from SEO retainer" — full-bleed image + content with rule */
+
+.marketing-partner_different_content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--section-space-xsmall);
+}
+
+@media (width < 50em) {
+  .marketing-partner_different_content {
+    padding-block: 0;
+  }
+
+  .marketing-partner_different_section {
+    padding-block: var(--section-space-small);
+  }
+}
+
+.marketing-partner_different_body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: var(--border-width-main) solid var(--border);
+}
+
+/* ── "Two versions of the next twelve months" — comparison cards ──────── */
+
+.marketing-partner_compare_card {
+  padding: var(--space-5);
+  border-radius: var(--radius-main);
+}
+
+.marketing-partner_compare_card_header {
+  display: inline-flex;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── "A year from now" — dark CTA card with background image ──────────── */
+
+.marketing-partner_year_content-wrapper {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+.marketing-partner_year_content {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  max-width: 36rem;
+  gap: var(--gap-4);
+  width: 100%;
+  align-self: center;
+}
+
+/* ── Pricing card — single-column items override on general variant ──── */
+
+.marketing-partner_pricing_card .pricing_card_items {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ── Monthly deliverables — list groups divided by top border ─────────── */
+
+.marketing-partner_deliverables_list {
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+}
+
+.marketing-partner_deliverables_group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-6);
+  border-top: var(--border-width-main) solid var(--border);
+}

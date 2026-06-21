@@ -1,0 +1,209 @@
+---
+/**
+ * TestimonialsSlider — a full-section testimonial carousel.
+ *
+ * Composes `<Section>` for theming/padding and `<Slider>` for the
+ * Swiper-powered carousel. Each testimonial renders as a card with
+ * optional star rating, quote, author name, role, and avatar.
+ *
+ * Usage:
+ * ```astro
+ * <TestimonialsSlider
+ *   theme="dark"
+ *   heading="What people say"
+ *   testimonials={[
+ *     { quote: "Amazing product!", name: "Jane Doe", role: "CEO", stars: 5 },
+ *     { quote: "Changed our workflow.", name: "John Smith", role: "CTO" },
+ *   ]}
+ * />
+ * ```
+ *
+ * Slots:
+ *   heading  — override the heading area with custom markup
+ */
+
+import Section from "../ui/Section.astro";
+import Heading from "../ui/Heading.astro";
+import Slider from "../ui/Slider.astro";
+import ContentWrapper from "../ui/ContentWrapper.astro";
+import TestimonialCard, { type Testimonial } from "../ui/TestimonialCard.astro";
+
+// Re-export the type from its new home so existing imports keep working.
+export type { Testimonial };
+
+type SectionTheme = "light" | "dark" | "brand";
+type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **TestimonialsSlider props:**
+   * - `testimonials` — array of { quote, name, role?, company?, avatar?, stars? }
+   * - `limit` — max testimonials to display (slices after Sanity ordering)
+   * - `heading` — simple heading text (or use `heading` slot for custom markup)
+   * - `eyebrow` — small label above heading (e.g. "Testimonials")
+   * - `theme` — 'light' | 'dark' | 'brand'
+   * - `padding` — 'none' | 'small' | 'main' | 'large' | 'page-top' (default 'large')
+   * - `paddingTop` / `paddingBottom` — override top/bottom padding independently
+   * - `id` — section id for anchor links
+   * - `sliderVariant` — 'crop-left' | 'crop-right' | 'crop-both' | 'overflow-visible' (default 'crop-left')
+   * - `slidesLg` — slides visible at desktop (default 2)
+   * - `slidesMd` — slides visible at tablet (default 2)
+   * - `slidesSm` — slides visible at mobile (default 1.2)
+   * - `showBullets` — show pagination dots (default true)
+   * - `showArrows` — show prev/next arrows (default true)
+   * - `class` — extra classes on outer Section
+   *
+   * **Slots:** `heading` — override the heading area with custom markup
+   *
+   * **Testimonial shape:** { quote, name, role?, company?, avatar?, stars? }
+   * - `avatar` accepts a URL string or Sanity image object
+   * - `stars` — 1–5 (omit to hide stars)
+   */
+  docs?: string;
+
+  /** Array of testimonial objects to render as slides */
+  testimonials: Testimonial[];
+
+  /**
+   * Max number of testimonials to display.
+   * Slices the array after any Sanity-side ordering.
+   */
+  limit?: number;
+
+  /**
+   * Simple heading text. Renders as h2 with `variant="h2"`.
+   * For richer heading markup, use the `heading` slot instead.
+   */
+  heading?: string;
+
+  /**
+   * Eyebrow text above the heading (e.g. "Testimonials").
+   * Only rendered when `heading` prop or slot is used.
+   */
+  eyebrow?: string;
+
+  /** Section color theme */
+  theme?: SectionTheme;
+
+  /** Section vertical padding */
+  padding?: PaddingSize;
+
+  /** Override top padding only */
+  paddingTop?: PaddingSize;
+
+  /** Override bottom padding only */
+  paddingBottom?: PaddingSize;
+
+  /** Section id for anchor links */
+  id?: string;
+
+  /**
+   * Slider variant — controls overflow clipping.
+   * @default 'crop-left'
+   */
+  sliderVariant?: "crop-left" | "crop-right" | "crop-both" | "overflow-visible";
+
+  /**
+   * Slides visible at desktop size.
+   * @default 2
+   */
+  slidesLg?: number;
+
+  /**
+   * Slides visible at tablet size.
+   * @default 2
+   */
+  slidesMd?: number;
+
+  /**
+   * Slides visible at mobile size.
+   * @default 1.2
+   */
+  slidesSm?: number;
+
+  /**
+   * Show bullet pagination.
+   * @default true
+   */
+  showBullets?: boolean;
+
+  /**
+   * Show prev/next arrow buttons.
+   * @default true
+   */
+  showArrows?: boolean;
+
+  /** Extra classes on the outer Section element */
+  class?: string;
+}
+
+const {
+  docs,
+  testimonials: rawTestimonials,
+  limit,
+  heading,
+  eyebrow,
+  theme,
+  padding = "large",
+  paddingTop,
+  paddingBottom,
+  id,
+  sliderVariant = "crop-left",
+  slidesLg = 2,
+  slidesMd = 2,
+  slidesSm = 1.2,
+  showBullets = true,
+  showArrows = true,
+  class: className,
+} = Astro.props;
+
+const testimonials = limit ? rawTestimonials.slice(0, limit) : rawTestimonials;
+
+const hasHeadingSlot = Astro.slots.has("heading");
+const showHeading = hasHeadingSlot || heading;
+---
+
+<Section
+  theme={theme}
+  padding={padding}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  id={id}
+  class={className}
+>
+  {/* Heading area */}
+  {
+    showHeading && (
+      <ContentWrapper class="testimonials_header ">
+        {hasHeadingSlot ? (
+          <slot name="heading" />
+        ) : (
+          <>
+            {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+            <Heading tag="h2" balance>
+              {heading}
+            </Heading>
+          </>
+        )}
+      </ContentWrapper>
+    )
+  }
+
+  {/* Slider */}
+  <Slider
+    variant={sliderVariant}
+    slidesLg={slidesLg}
+    slidesMd={slidesMd}
+    slidesSm={slidesSm}
+    showBullets={showBullets}
+    showArrows={showArrows}
+  >
+    {
+      testimonials.map((testimonial) => (
+        <div class="swiper-slide">
+          <TestimonialCard {...testimonial} />
+        </div>
+      ))
+    }
+  </Slider>
+</Section>

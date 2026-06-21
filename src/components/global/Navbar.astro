@@ -1,0 +1,1005 @@
+---
+/**
+ * Navbar — Sticky navigation bar (plain-CSS interactions).
+ *
+ * Uses container queries at 77em (1232px) for desktop/mobile switching.
+ * Desktop: full link list visible, hamburger hidden.
+ * Mobile: hamburger button toggles mobile menu with clip-path animation.
+ *
+ * The hamburger button's aria-expanded drives the X morph (via
+ * .nav_hamburger_wrap[aria-expanded="true"]) and the mobile menu visibility
+ * (via .nav_wrap:has(.nav_hamburger_wrap[aria-expanded="true"])).
+ *
+ * Link / toggle hover is plain CSS (:hover); the search field uses
+ * :focus-within.
+ *
+ * Dropdowns use data-state="expanded" on the dropdown_wrap with
+ * aria-expanded on the toggle button. CSS grid-template-rows animates
+ * the panel. On mobile, dropdowns nest inline inside the mobile menu.
+ *
+ * 3-TIER STRUCTURE:
+ *   Tier 1 — nav_wrap      sticky positioning, transparent background
+ *   Tier 2 — nav_inner     full-width background color, border-radius,
+ *                          side padding (--nav-spacing-inner-horizontal)
+ *   Tier 3 — nav_contain   max-width centering (--nav-max-width-inner),
+ *                          flex row: Logo | Links | Actions | Hamburger
+ *
+ * Full markup:
+ *   <div class="nav_banner_wrap" />   (fixed full-width, above nav)
+ *   <nav class="nav_wrap">
+ *     <div class="nav_inner">
+ *       <div class="nav_contain">
+ *         Logo | nav_menu_wrap (desktop links + dropdowns + mega menus)
+ *              | nav_actions_wrap (language picker, search, CTA)
+ *              | hamburger (mobile)
+ *       </div>
+ *     </div>
+ *     <div class="nav_mobile_menu">  ← position: absolute (out of flow —
+ *       Search (always visible) + Mobile links + dropdowns + CTA
+ *     </div>                           must not push content down)
+ *   </nav>
+ *   <div class="nav_menu_backdrop" />
+ *
+ * PILL ↔ FULL-WIDTH: controlled via variables in src/styles/variables/nav.css.
+ * Also set theme="dark|light|brand" on <Navbar> in BaseLayout.astro and
+ * update --nav-background in themes.css to match.
+ */
+
+import Logo from "./Logo.astro";
+import Button from "../ui/Button.astro";
+import { NAV_MENU, navLabel } from "../../data/site-structure";
+
+/** Simple navigation link */
+interface NavLinkSimple {
+  label: string;
+  href: string;
+}
+
+/** Navigation item with a dropdown sub-menu */
+interface NavLinkDropdown {
+  label: string;
+  children: NavLinkSimple[];
+}
+
+/** Navigation item with a mega menu (multi-column dropdown) */
+interface NavLinkMega {
+  label: string;
+  columns: NavLinkSimple[][];
+}
+
+/** A nav item is a simple link, dropdown, or mega menu */
+type NavItem = NavLinkSimple | NavLinkDropdown | NavLinkMega;
+
+/** Type guard: checks if item has children (= regular dropdown) */
+function isDropdown(item: NavItem): item is NavLinkDropdown {
+  return "children" in item;
+}
+
+/** Type guard: checks if item has columns (= mega menu) */
+function isMega(item: NavItem): item is NavLinkMega {
+  return "columns" in item;
+}
+
+/** Language option */
+interface LangOption {
+  code: string;
+  label: string;
+  href: string;
+}
+
+interface Props {
+  /** Override theme on the nav */
+  theme?: "light" | "dark" | "brand";
+  /** Extra classes on nav_wrap */
+  class?: string;
+  /** Announcement banner text (omit to hide banner) */
+  bannerText?: string;
+  /** Optional link for the banner text */
+  bannerHref?: string;
+  /** SessionStorage key to remember dismissal (defaults to "nav-banner-dismissed") */
+  bannerId?: string;
+}
+
+const {
+  theme,
+  class: className,
+  bannerText,
+  bannerHref,
+  bannerId = "nav-banner-dismissed",
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+
+// ── Feature Flags ──────────────────────────────────────────────────
+// Toggle these to show/hide nav features. When false, the markup is
+// not rendered to the DOM at all (so it has zero runtime cost), but
+// the source code stays in this file for future use.
+// ───────────────────────────────────────────────────────────────────
+const showSearch = false;
+const showLanguagePicker = false;
+const showMegaMenu = false;
+
+/** Nav items derived from the NAV_MENU registry (src/data/site-structure.ts).
+ *  Edit nav order/grouping there; labels resolve from each page's navLabel.
+ *  Simple entries → links; dropdown entries → child links resolved by path. */
+const navItems: NavItem[] = NAV_MENU.map((item) =>
+  "children" in item
+    ? {
+        label: item.label,
+        children: item.children.map((path) => ({
+          label: navLabel(path),
+          href: path,
+        })),
+      }
+    : { label: navLabel(item.path), href: item.path },
+);
+
+/** The placeholder "Work" mega menu — its links aren't real pages yet, so it
+ *  stays defined here (not in the registry) and only renders when showMegaMenu
+ *  is on. Inserted before "Case Studies" to preserve the original order. */
+const workMegaItem: NavLinkMega = {
+  label: "Work",
+  columns: [
+    [
+      { label: "Branding", href: "#" },
+      { label: "Website Design", href: "#" },
+      { label: "Development", href: "#" },
+    ],
+    [
+      { label: "Branding", href: "#" },
+      { label: "Website Design", href: "#" },
+      { label: "Development", href: "#" },
+    ],
+    [
+      { label: "Branding", href: "#" },
+      { label: "Website Design", href: "#" },
+      { label: "Development", href: "#" },
+    ],
+    [
+      { label: "Branding", href: "#" },
+      { label: "Website Design", href: "#" },
+      { label: "Development", href: "#" },
+    ],
+  ],
+};
+
+const visibleNavItems: NavItem[] = [...navItems];
+if (showMegaMenu) {
+  const beforeIdx = visibleNavItems.findIndex(
+    (item) => !isDropdown(item) && !isMega(item) && item.href === "/case-studies",
+  );
+  visibleNavItems.splice(
+    beforeIdx === -1 ? visibleNavItems.length : beforeIdx,
+    0,
+    workMegaItem,
+  );
+}
+
+/** Language options — edit to configure available locales */
+const languages: LangOption[] = [
+  { code: "EN", label: "English", href: "#" },
+  { code: "FR", label: "French", href: "#" },
+  { code: "ES", label: "Spanish", href: "#" },
+  { code: "DE", label: "German", href: "#" },
+];
+
+const currentLang = languages[0];
+
+/** Check if a link is the current page */
+function isCurrent(href: string): boolean {
+  return currentPath === href || currentPath === `${href}/`;
+}
+
+/** Chevron SVG (reused across dropdowns) */
+const chevronSvg = `<svg class="nav_dropdown_icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
+
+/** Search SVG icon */
+const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none"><circle cx="166.67" cy="166.67" r="133.33" stroke="currentColor" stroke-width="30" vector-effect="non-scaling-stroke"/><line x1="266.67" y1="266.67" x2="366.67" y2="366.67" stroke="currentColor" stroke-width="30" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
+---
+
+{/* Skip Link — visible only on keyboard focus */}
+<a class="nav_skip_wrap" href="#main-content">
+  <span class="nav_skip_text">Skip to main content</span>
+</a>
+
+<nav
+  class:list={["nav_wrap", className]}
+  {...theme ? { "data-theme": theme } : {}}
+>
+  {
+    /* Announcement Banner — lives inside nav_wrap as normal-flow sibling
+       of nav_inner. This keeps the sticky nav a single unit so the banner
+       height never has to offset nav positioning (prevents load-time shift). */
+  }
+  {
+    bannerText && (
+      <div
+        class="nav_banner_wrap"
+        aria-label="Announcement"
+        role="region"
+        data-banner-id={bannerId}
+      >
+        <div class="nav_banner_inner">
+          {bannerHref ? (
+            <a class="nav_banner_link" id="banner-link" href={bannerHref}>
+              <svg
+                class="nav_banner_dot"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 48 48"
+                fill="none"
+              >
+                <rect
+                  class="nav_banner_dot_outer"
+                  width="48"
+                  height="48"
+                  rx="24"
+                  fill="var(--color-brand-500)"
+                />
+                <rect
+                  class="nav_banner_dot_middle"
+                  x="10"
+                  y="10"
+                  width="28"
+                  height="28"
+                  rx="14"
+                  fill="var(--color-brand-500)"
+                />
+                <rect
+                  class="nav_banner_dot_inner"
+                  x="20"
+                  y="20"
+                  width="8"
+                  height="8"
+                  rx="4"
+                  fill="var(--color-brand-500)"
+                />
+              </svg>
+              <span class="nav_banner_text u-line-clamp-1">{bannerText}</span>
+              <svg
+                class="nav_banner_arrow"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 27 24"
+                fill="none"
+              >
+                <path
+                  d="M0 12L24 12"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  vector-effect="non-scaling-stroke"
+                />
+                <path
+                  d="M14 1.5L24.5 12L14 22.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  vector-effect="non-scaling-stroke"
+                />
+              </svg>
+            </a>
+          ) : (
+            <p class="nav_banner_text u-line-clamp-1">{bannerText}</p>
+          )}
+          <button class="nav_banner_close" aria-label="Dismiss banner">
+            <svg
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+            >
+              <path
+                d="M12 4L4 12M4 4L12 12"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  <div class="nav_inner">
+    <div class="nav_contain">
+      {/* Logo */}
+      <Logo variant="navbar" class="nav_logo_wrap" ariaLabel="Home" />
+
+      {/* Desktop Menu */}
+      {/* Links/labels/order come from NAV_MENU in src/data/site-structure.ts
+          (resolved into `visibleNavItems` in the frontmatter above). To change
+          what appears here, edit NAV_MENU there — not this markup. */}
+      <div class="nav_menu_wrap">
+        <ul class="nav_list">
+          {
+            visibleNavItems.map((item) =>
+              isMega(item) ? (
+                /* ── Mega Menu ── */
+                <li class="nav_link_item">
+                  <div class="nav_dropdown_wrap" data-state="expanded">
+                    <button
+                      class="nav_dropdown_toggle"
+                      aria-expanded="false"
+                      data-dropdown-type="mega"
+                    >
+                      <span>{item.label}</span>
+                      <svg
+                        class="nav_dropdown_icon"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      >
+                        <path
+                          d="M4 6L8 10L12 6"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </button>
+                    <div class="nav_mega_wrap">
+                      <div class="nav_mega_content">
+                        <div class="nav_mega_scroll">
+                          <div class="nav_mega_contain">
+                            <div class="nav_mega_layout">
+                              {item.columns.map((column) => (
+                                <ul class="nav_mega_list">
+                                  {column.map((link) => (
+                                    <li>
+                                      <a
+                                        class="nav_mega_link"
+                                        href={link.href}
+                                        {...(isCurrent(link.href)
+                                          ? { "aria-current": "page" }
+                                          : {})}
+                                      >
+                                        {link.label}
+                                      </a>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ) : isDropdown(item) ? (
+                /* ── Regular Dropdown ── */
+                <li class="nav_link_item">
+                  <div class="nav_dropdown_wrap" data-state="expanded">
+                    <button
+                      class="nav_dropdown_toggle"
+                      aria-expanded="false"
+                    >
+                      <span>{item.label}</span>
+                      <svg
+                        class="nav_dropdown_icon"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      >
+                        <path
+                          d="M4 6L8 10L12 6"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </button>
+                    <div class="nav_dropdown_list">
+                      <div class="nav_dropdown_inner">
+                        {item.children.map((child) => (
+                          <a
+                            class="nav_dropdown_link"
+                            href={child.href}
+                            {...(isCurrent(child.href)
+                              ? { "aria-current": "page" }
+                              : {})}
+                          >
+                            {child.label}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              ) : (
+                /* ── Simple Link ── */
+                <li class="nav_link_item">
+                  <a
+                    class="nav_link_element"
+                    href={item.href}
+                    {...(isCurrent(item.href)
+                      ? { "aria-current": "page" }
+                      : {})}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ),
+            )
+          }
+        </ul>
+      </div>
+
+      {/* Actions (desktop) — language picker, search, CTA */}
+      <div class="nav_actions_wrap">
+        <ul class="nav_actions_list">
+          {/* Language Picker */}
+          {
+            showLanguagePicker && (
+              <li class="nav_actions_item">
+                <div class="nav_dropdown_wrap" data-state="expanded">
+                  <button
+                    class="nav_language_toggle"
+                    aria-expanded="false"
+                  >
+                    <span>{currentLang.code}</span>
+                    <svg
+                      class="nav_dropdown_icon"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                    >
+                      <path
+                        d="M4 6L8 10L12 6"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <div class="nav_dropdown_list">
+                    <div class="nav_dropdown_inner">
+                      {languages.map((lang) => (
+                        <a
+                          class="nav_dropdown_link"
+                          href={lang.href}
+                          {...(lang.code === currentLang.code
+                            ? { "aria-current": "true" }
+                            : {})}
+                        >
+                          {lang.label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </li>
+            )
+          }
+
+          {/* Search */}
+          {
+            showSearch && (
+              <li class="nav_actions_item">
+                <div class="nav_dropdown_wrap" data-state="expanded">
+                  <button
+                    class="nav_search_trigger"
+                    aria-expanded="false"
+                    data-dropdown-type="mega"
+                  >
+                    <svg
+                      class="nav_search_icon"
+                      width="100%"
+                      height="100%"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span class="u-sr-only">Search</span>
+                  </button>
+                  <div class="nav_mega_wrap">
+                    <div class="nav_mega_content">
+                      <div class="nav_mega_scroll">
+                        <div class="nav_mega_contain">
+                          <div class="nav_search_form">
+                            <button
+                              class="nav_search_btn"
+                              type="button"
+                              tabindex="-1"
+                            >
+                              <svg
+                                class="nav_search_btn_icon"
+                                width="100%"
+                                height="100%"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                />
+                              </svg>
+
+                              <span class="u-sr-only">Search</span>
+                            </button>
+                            <label class="nav_search_label">
+                              <span class="u-sr-only">Search</span>
+                              <input
+                                class="nav_search_field"
+                                type="search"
+                                placeholder="Search..."
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            )
+          }
+        </ul>
+
+        {/* CTA (desktop) */}
+        <div class="nav_actions_cta">
+          <Button
+            id="main-cta-navbar"
+            size="small"
+            href="/book-a-call"
+            ariaLabel="Book a Free Strategy Call"
+            >Free Strategy Call
+          </Button>
+        </div>
+      </div>
+
+      {
+        /* Hamburger (mobile) — state wrapper scopes --state-false to hamburger only */
+      }
+      <div class="nav_hamburger_state">
+        <button
+          class="nav_hamburger_wrap"
+          aria-expanded="false"
+          aria-label="Toggle menu"
+        >
+          <span class="nav_hamburger_line_1"></span>
+          <span class="nav_hamburger_line_2"></span>
+          <span class="nav_hamburger_line_3"></span>
+        </button>
+      </div>
+    </div>{/* end nav_contain */}
+  </div>
+
+  {/* Mobile Menu */}
+  <div class="nav_mobile_menu">
+    {/* Mobile Search — always visible at top */}
+    {
+      showSearch && (
+        <div class="nav_mobile_search">
+          <div class="nav_search_form">
+            <button class="nav_search_btn" type="button" tabindex="-1">
+              <svg
+                class="nav_search_btn_icon"
+                width="100%"
+                height="100%"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+
+              <span class="u-sr-only">Search</span>
+            </button>
+            <label class="nav_search_label">
+              <span class="u-sr-only">Search</span>
+              <input
+                class="nav_search_field"
+                type="search"
+                placeholder="Search..."
+              />
+            </label>
+          </div>
+        </div>
+      )
+    }
+
+    {/* Mobile menu renders the SAME `visibleNavItems` (from NAV_MENU in
+        src/data/site-structure.ts) as the desktop menu above — edit NAV_MENU
+        there and both update together. */}
+    <ul class="nav_mobile_list">
+      {
+        visibleNavItems.map((item) =>
+          isMega(item) ? (
+            /* ── Mobile Mega (renders as regular dropdown) ── */
+            <li class="nav_mobile_link_item is-dropdown">
+              <div class="nav_mobile_dropdown_wrap" data-state="expanded">
+                <button
+                  class="nav_mobile_dropdown_toggle"
+                  aria-expanded="false"
+                >
+                  <span>{item.label}</span>
+                  <svg
+                    class="nav_mobile_dropdown_icon"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                  >
+                    <path
+                      d="M4 6L8 10L12 6"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+                <div class="nav_mobile_dropdown_list">
+                  <div class="nav_mobile_dropdown_inner">
+                    {item.columns.flat().map((link) => (
+                      <a
+                        class="nav_mobile_dropdown_link"
+                        href={link.href}
+                        {...(isCurrent(link.href)
+                          ? { "aria-current": "page" }
+                          : {})}
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </li>
+          ) : isDropdown(item) ? (
+            <li class="nav_mobile_link_item is-dropdown">
+              <div class="nav_mobile_dropdown_wrap" data-state="expanded">
+                <button
+                  class="nav_mobile_dropdown_toggle"
+                  aria-expanded="false"
+                >
+                  <span>{item.label}</span>
+                  <svg
+                    class="nav_mobile_dropdown_icon"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                  >
+                    <path
+                      d="M4 6L8 10L12 6"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+                <div class="nav_mobile_dropdown_list">
+                  <div class="nav_mobile_dropdown_inner">
+                    {item.children.map((child) => (
+                      <a
+                        class="nav_mobile_dropdown_link"
+                        href={child.href}
+                        {...(isCurrent(child.href)
+                          ? { "aria-current": "page" }
+                          : {})}
+                      >
+                        {child.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </li>
+          ) : (
+            <li class="nav_mobile_link_item">
+              <a
+                class="nav_mobile_link_element"
+                href={item.href}
+                {...(isCurrent(item.href) ? { "aria-current": "page" } : {})}
+              >
+                {item.label}
+              </a>
+            </li>
+          ),
+        )
+      }
+
+      {/* Mobile Language Picker */}
+      {
+        showLanguagePicker && (
+          <li class="nav_mobile_link_item is-dropdown">
+            <div class="nav_mobile_dropdown_wrap" data-state="expanded">
+              <button class="nav_mobile_dropdown_toggle" aria-expanded="false">
+                <span>{currentLang.code}</span>
+                <svg
+                  class="nav_mobile_dropdown_icon"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                >
+                  <path
+                    d="M4 6L8 10L12 6"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <div class="nav_mobile_dropdown_list">
+                <div class="nav_mobile_dropdown_inner">
+                  {languages.map((lang) => (
+                    <a
+                      class="nav_mobile_dropdown_link"
+                      href={lang.href}
+                      {...(lang.code === currentLang.code
+                        ? { "aria-current": "true" }
+                        : {})}
+                    >
+                      {lang.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </li>
+        )
+      }
+    </ul>
+
+    <div class="nav_mobile_cta">
+      <Button id="main-cta-navbar" href="/book-a-call" ariaLabel="Book a Free Strategy Call">
+        Free Strategy Call
+      </Button>
+    </div>
+  </div>
+</nav>
+
+{/* Menu Backdrop — dims page behind open mobile menu */}
+<div class="nav_menu_backdrop"></div>
+
+<script>
+  function initNavbar() {
+    const nav = document.querySelector<HTMLElement>(".nav_wrap");
+    if (!nav) return;
+
+    const hamburger = nav.querySelector<HTMLButtonElement>(
+      ".nav_hamburger_wrap",
+    );
+    const backdrop = document.querySelector<HTMLElement>(".nav_menu_backdrop");
+    if (!hamburger) return;
+
+    // =====================================================
+    //  MOBILE MENU
+    // =====================================================
+
+    function isOpen(): boolean {
+      return hamburger!.getAttribute("aria-expanded") === "true";
+    }
+
+    function openMenu() {
+      hamburger!.setAttribute("aria-expanded", "true");
+      backdrop?.classList.add("is-active");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeMenu() {
+      hamburger!.setAttribute("aria-expanded", "false");
+      backdrop?.classList.remove("is-active");
+      document.body.style.overflow = "";
+      // Close any open mobile dropdowns when closing the menu
+      closeMobileDropdowns();
+    }
+
+    function toggleMenu() {
+      isOpen() ? closeMenu() : openMenu();
+    }
+
+    hamburger.addEventListener("click", toggleMenu);
+    backdrop?.addEventListener("click", closeMenu);
+
+    // Close menu when a mobile link is clicked
+    nav
+      .querySelectorAll(".nav_mobile_link_element, .nav_mobile_dropdown_link")
+      .forEach((link) => {
+        link.addEventListener("click", closeMenu);
+      });
+
+    // =====================================================
+    //  DESKTOP DROPDOWNS (regular + mega + search + language)
+    //  All use .nav_dropdown_wrap with aria-expanded toggles.
+    // =====================================================
+
+    const desktopToggles = nav.querySelectorAll<HTMLButtonElement>(
+      ".nav_dropdown_toggle, .nav_language_toggle, .nav_search_trigger",
+    );
+
+    /** Close all desktop dropdowns */
+    function closeDesktopDropdowns() {
+      desktopToggles.forEach((toggle) => {
+        toggle.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    /** Toggle a specific desktop dropdown */
+    function toggleDesktopDropdown(toggle: HTMLButtonElement) {
+      const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+      // Close all others first
+      closeDesktopDropdowns();
+      // If it was closed, open it
+      if (!isExpanded) {
+        toggle.setAttribute("aria-expanded", "true");
+        // Auto-focus search input when search dropdown opens
+        if (toggle.classList.contains("nav_search_trigger")) {
+          const searchInput = toggle
+            .closest(".nav_dropdown_wrap")
+            ?.querySelector<HTMLInputElement>(".nav_search_field");
+          if (searchInput) {
+            // Small delay to allow the panel to animate open
+            setTimeout(() => searchInput.focus(), 100);
+          }
+        }
+      }
+    }
+
+    desktopToggles.forEach((toggle) => {
+      toggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleDesktopDropdown(toggle);
+      });
+    });
+
+    // Close desktop dropdowns when clicking outside
+    document.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".nav_dropdown_wrap")) {
+        closeDesktopDropdowns();
+      }
+    });
+
+    // =====================================================
+    //  MOBILE DROPDOWNS
+    // =====================================================
+
+    const mobileToggles = nav.querySelectorAll<HTMLButtonElement>(
+      ".nav_mobile_dropdown_toggle",
+    );
+
+    /** Close all mobile dropdowns */
+    function closeMobileDropdowns() {
+      mobileToggles.forEach((toggle) => {
+        toggle.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    /** Toggle a specific mobile dropdown */
+    function toggleMobileDropdown(toggle: HTMLButtonElement) {
+      const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+    }
+
+    mobileToggles.forEach((toggle) => {
+      toggle.addEventListener("click", () => {
+        toggleMobileDropdown(toggle);
+      });
+    });
+
+    // =====================================================
+    //  BANNER — full-width bar above nav, dismissible
+    //  Uses html.is-has-banner to control visibility +
+    //  --nav-banner-height offset. sessionStorage persists.
+    // =====================================================
+
+    const bannerEl = document.querySelector<HTMLElement>(".nav_banner_wrap");
+    if (bannerEl) {
+      const bannerWrap = bannerEl;
+      const bannerId = bannerWrap.dataset.bannerId || "nav-banner-dismissed";
+      const closeBtn =
+        bannerWrap.querySelector<HTMLButtonElement>(".nav_banner_close");
+
+      // Check if banner was previously dismissed (head script already removed the class,
+      // so just clean up the DOM element here)
+      if (sessionStorage.getItem(bannerId)) {
+        bannerWrap.remove();
+        document.documentElement.classList.remove("is-has-banner");
+      } else {
+        // Measure actual banner height and update the CSS variable so the nav
+        // offsets correctly even when banner text wraps to multiple lines.
+        function syncBannerHeight() {
+          const h = bannerWrap.getBoundingClientRect().height;
+          document.documentElement.style.setProperty(
+            "--nav-banner-height",
+            h + "px",
+          );
+        }
+        syncBannerHeight();
+        window.addEventListener("resize", syncBannerHeight);
+
+        if (closeBtn) {
+          closeBtn.addEventListener("click", () => {
+            sessionStorage.setItem(bannerId, "true");
+            window.removeEventListener("resize", syncBannerHeight);
+            // Animate to 0 — set variable to 0 then remove html class
+            document.documentElement.style.setProperty(
+              "--nav-banner-height",
+              "0px",
+            );
+            document.documentElement.classList.remove("is-has-banner");
+            // Remove from DOM after transition completes (300ms + buffer)
+            setTimeout(() => {
+              bannerWrap.remove();
+              document.documentElement.style.removeProperty(
+                "--nav-banner-height",
+              );
+            }, 350);
+          });
+        }
+      }
+    }
+
+    // =====================================================
+    //  ESCAPE KEY — closes dropdowns and mobile menu
+    // =====================================================
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        // Check if any desktop dropdown is open
+        const openDesktop = nav.querySelector(
+          '.nav_dropdown_toggle[aria-expanded="true"], .nav_language_toggle[aria-expanded="true"], .nav_search_trigger[aria-expanded="true"]',
+        );
+        if (openDesktop) {
+          closeDesktopDropdowns();
+          return;
+        }
+        // Check if mobile menu is open
+        if (isOpen()) {
+          closeMenu();
+        }
+      }
+    });
+  }
+
+  // Run on DOMContentLoaded
+  document.addEventListener("DOMContentLoaded", initNavbar);
+
+  // Also run on Astro page transitions (View Transitions)
+  document.addEventListener("astro:page-load", initNavbar);
+</script>

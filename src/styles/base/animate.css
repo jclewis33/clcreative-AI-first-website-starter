@@ -1,0 +1,138 @@
+/* ==========================================================================
+   CSS Scroll-Triggered Animations
+   Hybrid CSS + IntersectionObserver approach for GSAP-like viewport animations.
+
+   Usage:
+     <div data-animate-in>         Fades from 0 → 1 opacity
+     <div data-animate-up>         Fades in + translates up 1.25rem → 0
+
+   How it works:
+     1. CSS sets the initial hidden state immediately (render-blocking) —
+        this eliminates FOUC because elements are hidden before first paint.
+     2. A tiny IntersectionObserver script (animate-observer.js) watches for
+        elements entering the viewport and adds the .is-visible class.
+     3. CSS transitions handle the actual timed animation (500ms default).
+
+   Why not pure scroll-driven animations?
+     animation-timeline: view() ties progress to scroll position (scrub-based).
+     At normal scroll speeds, the full transition completes in a fraction of a
+     second — effectively invisible. This hybrid approach gives true timed
+     animations like GSAP while keeping the FOUC-free benefit of CSS initial state.
+
+   No-JS fallback:
+     If JS fails to load, elements stay hidden. The observer script includes
+     a fallback that reveals all elements after 3s.
+
+   Browser support:
+     IntersectionObserver: 97%+ global (all modern browsers)
+     CSS transitions: 98%+ global
+   ========================================================================== */
+
+/* ---- Initial hidden state ----
+   Applied immediately by the stylesheet — no JS timing needed.
+   This is what prevents FOUC: elements are hidden before first paint. */
+
+[data-animate-in] {
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+[data-animate-up] {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition:
+    opacity 500ms ease,
+    transform 500ms ease;
+}
+
+/* ---- Visible state ----
+   Added by IntersectionObserver when element enters viewport.
+   Elements already in viewport on page load get this immediately. */
+
+[data-animate-in].is-visible {
+  opacity: 1;
+}
+
+[data-animate-up].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- Prevent-flicker opt-in ----
+   Add `data-prevent-flicker="true"` to any GSAP-animated element that's
+   in the viewport on page load (hero images, above-the-fold headings,
+   etc.). This hides it via CSS from first paint so there's no flash
+   between the initial render and when GSAP starts the fade-in.
+
+   GSAP's animation.js does `tl.set(el, { visibility: "visible", opacity: 0 })`
+   for these elements before running the fromTo, so the element transitions
+   from CSS-hidden → GSAP-hidden → fade in.
+
+   Fallbacks: if GSAP fails to load (or JS is disabled entirely), the
+   .gsap-not-found and <noscript> rules in Head.astro force these back
+   to visible so content is never stuck invisible. */
+
+[data-prevent-flicker="true"] {
+  visibility: hidden;
+}
+
+/* ---- Reduced motion ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  [data-animate-in],
+  [data-animate-up] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  [data-prevent-flicker="true"] {
+    visibility: visible;
+  }
+}
+
+/* ==========================================================================
+   Hero entrance — pure CSS, fires at first paint (no JS, no scroll)
+
+   The GSAP / IntersectionObserver systems above wait for window.load or
+   viewport entry before revealing content. For above-the-fold hero content
+   that leaves the headline hidden until the user scrolls — a bad first
+   impression. A pure-CSS staggered fade-up starts at stylesheet parse time,
+   so the hero is always visible on load (mirrors the home page hero).
+
+   Apply `u-hero-fade` to the hero content wrapper; its direct children
+   animate in sequence.
+   ========================================================================== */
+
+.u-hero-fade > * {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  animation: u-hero-fade-in 0.6s ease-out forwards;
+}
+
+.u-hero-fade > *:nth-child(1) {
+  animation-delay: 0s;
+}
+.u-hero-fade > *:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.u-hero-fade > *:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.u-hero-fade > *:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+@keyframes u-hero-fade-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .u-hero-fade > * {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}

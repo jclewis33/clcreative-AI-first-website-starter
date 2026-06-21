@@ -1,0 +1,166 @@
+/* ── Why Webflow ── */
+
+.why-webflow_hero_badge {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+}
+
+.why-webflow_hero_badge img {
+  width: 164px;
+  aspect-ratio: 164 / 25;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* ── Check list ── */
+
+.why-webflow_check_list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.why-webflow_check_item {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.why-webflow_check_icon {
+  width: 20px;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  color: var(--color-brand-500);
+  margin-top: 0.2em;
+}
+
+/* ── Comparison Table ── */
+
+.comparison_table_wrap {
+  margin-top: var(--space-7);
+  margin-bottom: var(--space-7);
+  max-width: 64rem;
+  margin-inline: auto;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.comparison_table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 48rem;
+}
+
+.comparison_table th,
+.comparison_table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--border-width-main) solid rgba(255, 255, 255, 0.2);
+  font-size: var(--text-regular-size);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.comparison_table thead th {
+  border-bottom: var(--border-width-main) solid rgba(255, 255, 255, 0.2);
+}
+
+.comparison_table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.comparison_table_header {
+  font-weight: 700;
+  font-size: var(--text-large-size);
+  text-align: center;
+  padding: var(--space-4);
+}
+
+.comparison_table_label {
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.comparison_table_webflow {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.comparison_table_webflow.comparison_table_header {
+  border-radius: var(--radius-small) var(--radius-small) 0 0;
+}
+
+.comparison_table tbody tr:last-child .comparison_table_webflow {
+  border-radius: 0 0 var(--radius-small) var(--radius-small);
+}
+
+.comparison_table_wordpress {
+  text-align: center;
+}
+
+/* ── Right Fit Cards ── */
+
+.right-fit_grid {
+  margin-top: var(--space-7);
+}
+
+.right-fit_card {
+  padding: var(--space-5);
+  border-radius: var(--radius-main);
+  background: var(--background);
+  color: var(--text);
+}
+
+.right-fit_card_header {
+  display: inline-flex;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.right-fit_list {
+  list-style: disc;
+  padding-left: var(--space-4);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--text-regular-size);
+  line-height: 1.5;
+}
+
+/* ── Professional Partner ── */
+
+.why-webflow_partner_content {
+  padding-block: var(--section-space-xsmall);
+}
+
+.why-webflow_partner_badge {
+  margin-bottom: var(--space-5);
+}
+
+.why-webflow_partner_badge img {
+  width: 164px;
+  aspect-ratio: 164 / 25;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.why-webflow_partner_body {
+  border-top: var(--border-width-main) solid var(--border);
+  padding-top: var(--space-5);
+}
+
+@media (width < 50em) {
+  .why-webflow_partner_content {
+    padding-block: 0;
+  }
+}

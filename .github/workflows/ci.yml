@@ -1,0 +1,42 @@
+# Checks-only CI — deploys are handled by Cloudflare Workers Builds, not
+# Actions. The build step fetches Sanity slugs over the network (the sitemap
+# customPages query in astro.config.mjs), which works on GitHub runners.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, development]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check:config
+      - run: npm run check
+      - run: npm run build
+
+  # Fails on any new high/critical advisory in production dependencies.
+  # The tree was brought to 0 high / 0 critical when this gate was added;
+  # if a new transitive CVE blocks merges and can't be fixed promptly,
+  # the documented loosening is --audit-level=critical.
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high

@@ -1,0 +1,271 @@
+---
+/**
+ * TestimonialShowcase — single-slide testimonial carousel with heading + counter.
+ *
+ * Two-column layout: heading left, slider right (pushed to the edge).
+ * Counter shows "1/N WHAT OUR CLIENTS SAY" and updates on slide change.
+ * Swiper loops infinitely with prev/next arrows.
+ *
+ * Self-fetches featured testimonials from Sanity by default.
+ * Pass `testimonials` prop to override with pre-fetched data.
+ *
+ * Usage:
+ * ```astro
+ * <!-- Self-fetching (recommended) -->
+ * <TestimonialShowcase />
+ *
+ * <!-- With pre-fetched data -->
+ * <TestimonialShowcase testimonials={myTestimonials} />
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import { urlFor } from "../../sanity/lib/image";
+import { getTestimonials as fetchTestimonials } from "../../sanity/lib/testimonials";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+
+export interface Testimonial {
+  quote: string;
+  name: string;
+  role?: string;
+  company?: string;
+  avatar?: any;
+}
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **TestimonialShowcase props:**
+   * - `testimonials` — array of `{ quote, name, role?, company?, avatar? }`
+   *   Fetch with `getTestimonials()` or `getTestimonials({ featured: true })`
+   * - `limit` — max testimonials to display (slices after Sanity ordering)
+   * - `heading` — section heading text (default `"Partner with Us and You'll be in Good Hands"`)
+   * - `theme` — `'light'` | `'dark'` | `'brand'` (default `'light'`)
+   * - `padding` — sets both paddingTop and paddingBottom (default `'main'`)
+   * - `paddingTop` — override top padding only
+   * - `paddingBottom` — override bottom padding only
+   * - `id` — section id for anchor links
+   * - `class` — extra classes on outer Section
+   */
+  docs?: string;
+
+  /** Array of testimonial objects. Omit to self-fetch featured testimonials. */
+  testimonials?: Testimonial[];
+  /** Max testimonials to show (slices after Sanity ordering) */
+  limit?: number;
+  /** Section heading text */
+  heading?: string;
+  /** Section color theme */
+  theme?: "light" | "dark" | "brand";
+  /** Sets both paddingTop and paddingBottom @default 'main' */
+  padding?: PaddingValue;
+  /** Override top padding only */
+  paddingTop?: PaddingValue;
+  /** Override bottom padding only */
+  paddingBottom?: PaddingValue;
+  /** Section id for anchor links */
+  id?: string;
+  /** Extra classes on the outer Section */
+  class?: string;
+}
+
+const {
+  docs,
+  testimonials: rawTestimonials,
+  limit,
+  heading = "Partner with Us and You'll be in Good Hands",
+  theme = "light",
+  padding = "small",
+  paddingTop = padding,
+  paddingBottom = padding,
+  id,
+  class: className,
+} = Astro.props;
+
+const resolved =
+  rawTestimonials ??
+  (await fetchTestimonials({
+    featured: true,
+    ...getDraftModeProps(Astro),
+  }).catch(() => []));
+const testimonials = limit ? resolved.slice(0, limit) : resolved;
+const total = testimonials.length;
+const sliderId = `tsc-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<Section
+  theme={theme}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  id={id}
+  class:list={["testimonial_showcase_section", className]}
+>
+  <div class="testimonial_showcase_wrap" data-testimonial-showcase={sliderId}>
+    {/* ── Left column: heading ── */}
+    <div class="testimonial_showcase_header">
+      <Heading variant="h3" maxWidth="18ch">
+        {heading}
+      </Heading>
+    </div>
+
+    {/* ── Right column: counter + slider + arrows ── */}
+    <div class="testimonial_showcase_slider_wrap">
+      <div class="testimonial_showcase_meta">
+        <p class="testimonial_showcase_counter u-font-mono">
+          <span class="testimonial_showcase_current">1</span>/{total}
+          {" "}<span class="testimonial_showcase_label"
+            >What our clients say</span
+          >
+        </p>
+      </div>
+      <div class="swiper testimonial_showcase_swiper" data-tsc-swiper>
+        <div class="swiper-wrapper">
+          {
+            testimonials.map(({ quote, name, role, company, avatar }) => {
+              const avatarUrl = avatar
+                ? typeof avatar === "string"
+                  ? avatar
+                  : urlFor(avatar).width(96).height(96).url()
+                : undefined;
+              const subtitle = [role, company].filter(Boolean).join(", ");
+              return (
+                <div class="swiper-slide">
+                  <div class="testimonial_showcase_card">
+                    <p class="testimonial_showcase_quote">{quote}</p>
+                    <div class="testimonial_showcase_author">
+                      {avatarUrl && (
+                        <img
+                          class="testimonial_showcase_avatar"
+                          src={avatarUrl}
+                          alt={name}
+                          loading="lazy"
+                          width="48"
+                          height="48"
+                        />
+                      )}
+                      <div class="testimonial_showcase_author_info">
+                        <Text
+                          tag="span"
+                          weight="bold"
+                          size="regular"
+                          marginBottom={0}
+                        >
+                          {name}
+                        </Text>
+                        {subtitle && (
+                          <Text tag="span" size="regular" marginBottom={0}>
+                            {subtitle}
+                          </Text>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          }
+        </div>
+      </div>
+
+      {/* ── Arrows: bottom-right aligned ── */}
+      <div class="testimonial_showcase_arrows">
+        <button
+          class="testimonial_showcase_arrow u-button-reset"
+          data-tsc-prev
+          aria-label="Previous testimonial"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <button
+          class="testimonial_showcase_arrow u-button-reset"
+          data-tsc-next
+          aria-label="Next testimonial"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<script>
+  function initTestimonialShowcase() {
+    const Swiper = (window as any).Swiper;
+    if (!Swiper) return;
+
+    document
+      .querySelectorAll<HTMLElement>("[data-testimonial-showcase]")
+      .forEach((wrap) => {
+        const swiperEl = wrap.querySelector<HTMLElement>("[data-tsc-swiper]");
+        const prevBtn = wrap.querySelector<HTMLElement>("[data-tsc-prev]");
+        const nextBtn = wrap.querySelector<HTMLElement>("[data-tsc-next]");
+        const counterEl = wrap.querySelector<HTMLElement>(
+          ".testimonial_showcase_current",
+        );
+
+        if (!swiperEl) return;
+
+        const swiper = new Swiper(swiperEl, {
+          slidesPerView: 1,
+          spaceBetween: 0,
+          loop: true,
+          speed: 500,
+          grabCursor: true,
+          navigation: {
+            prevEl: prevBtn,
+            nextEl: nextBtn,
+          },
+        });
+
+        // Update counter on slide change
+        if (counterEl) {
+          swiper.on("slideChange", () => {
+            counterEl.textContent = String(swiper.realIndex + 1);
+          });
+        }
+      });
+  }
+
+  function waitForSwiper(retries = 15) {
+    if ((window as any).Swiper) {
+      initTestimonialShowcase();
+    } else if (retries > 0) {
+      setTimeout(() => waitForSwiper(retries - 1), 100);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => waitForSwiper());
+  } else {
+    waitForSwiper();
+  }
+</script>

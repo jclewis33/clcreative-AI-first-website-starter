@@ -1,0 +1,97 @@
+---
+/**
+ * Overlay — dark scrim that sits over media or background content.
+ *
+ * Uses color-mix() with a 0–100 strength scale (capped at 80% max opacity).
+ * Place inside a position: relative parent or the Section background slot.
+ *
+ * @example
+ * <!-- Default strength (70) -->
+ * <Overlay />
+ *
+ * <!-- Lighter scrim -->
+ * <Overlay strength={40} />
+ *
+ * <!-- Top-to-bottom gradient: transparent at top, dark at bottom -->
+ * <Overlay variant="gradient" strengthTop={0} strengthBottom={80} />
+ *
+ * <!-- Reverse gradient: dark at top, transparent at bottom -->
+ * <Overlay variant="gradient" strengthTop={70} strengthBottom={0} />
+ *
+ * <!-- Inside a Section background slot -->
+ * <Fragment slot="background">
+ *   <Image src={bg} alt="" class="u-image" />
+ *   <Overlay strength={60} />
+ * </Fragment>
+ */
+
+interface Props {
+  /**
+   * **Overlay props:**
+   * - `variant` — `'solid'` (default) or `'gradient'` (top-to-bottom)
+   * - `strength` — 0-100 darkness for solid variant (default 70)
+   * - `strengthTop` — 0-100 darkness at the top of the gradient (default 0)
+   * - `strengthMiddle` — 0-100 darkness at the midpoint of the gradient (optional; adds a middle color stop when provided)
+   * - `strengthBottom` — 0-100 darkness at the bottom of the gradient (default 70)
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — `style` is merged with computed styles
+   */
+  docs?: string;
+
+  /** Overlay style. `'solid'` = even scrim; `'gradient'` = vertical top-to-bottom fade. Default: `'solid'`. */
+  variant?: 'solid' | 'gradient';
+  /** Solid-variant darkness from 0–100. Default: 70. */
+  strength?: number;
+  /** Gradient top-edge darkness from 0–100. Default: 0 (transparent at top). */
+  strengthTop?: number;
+  /** Optional gradient midpoint darkness from 0–100. When provided, adds a middle color stop at 50%. */
+  strengthMiddle?: number;
+  /** Gradient bottom-edge darkness from 0–100. Default: 70. */
+  strengthBottom?: number;
+  /** Extra classes on the overlay div. */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
+   * are forwarded to the overlay `div` element.
+   * User-provided `style` is merged with computed overlay styles.
+   * @example data-animate="fade"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  variant = 'solid',
+  strength = 70,
+  strengthTop = 0,
+  strengthMiddle,
+  strengthBottom = 70,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const isGradient = variant === 'gradient';
+const hasMiddle = isGradient && typeof strengthMiddle === 'number';
+
+const styleParts = isGradient
+  ? [
+      strengthTop !== 0 ? `--overlay-strength-top: ${strengthTop}` : null,
+      hasMiddle ? `--overlay-strength-middle: ${strengthMiddle}` : null,
+      strengthBottom !== 70 ? `--overlay-strength-bottom: ${strengthBottom}` : null,
+    ]
+  : [strength !== 70 ? `--overlay-strength: ${strength}` : null];
+
+const computedStyle = styleParts.filter(Boolean).join('; ') || undefined;
+
+/* Merge user-provided style with computed overlay styles */
+const { style: userStyle, ...attrs } = rest;
+const mergedStyle = [computedStyle, userStyle].filter(Boolean).join('; ') || undefined;
+---
+
+<div
+  class:list={['u-overlay', isGradient && 'is-gradient', hasMiddle && 'has-middle', className]}
+  style={mergedStyle}
+  aria-hidden="true"
+  {...attrs}
+/>

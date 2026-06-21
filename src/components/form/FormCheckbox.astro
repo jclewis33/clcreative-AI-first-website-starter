@@ -1,0 +1,109 @@
+---
+/**
+ * FormCheckbox — custom checkbox (native input + plain CSS).
+ *
+ * When the native `<input>` is `:checked`, `.form_ui_item:has(:checked)`
+ * styles the border, background, and checkmark icon transitions — plain CSS, no variables.
+ *
+ * @example
+ * ```astro
+ * <FormCheckbox label="I agree to the terms" name="terms" required />
+ *
+ * <!-- Multiple checkboxes in a flex row -->
+ * <div class="u-flex u-flex-wrap u-gap-4">
+ *   <FormCheckbox label="Design" name="interests" value="design" />
+ *   <FormCheckbox label="Development" name="interests" value="dev" />
+ * </div>
+ * ```
+ */
+
+interface Props {
+  /** Label text displayed next to the checkbox. */
+  label: string;
+
+  /** HTML `name` attribute. */
+  name: string;
+
+  /**
+   * Form value when checked.
+   * @default 'on'
+   */
+  value?: string;
+
+  /**
+   * Whether the checkbox starts checked.
+   * @default false
+   */
+  checked?: boolean;
+
+  /**
+   * Whether the field is required.
+   * @default false
+   */
+  required?: boolean;
+
+  /**
+   * Disabled state.
+   * @default false
+   */
+  disabled?: boolean;
+
+  /** HTML `id` attribute. Auto-generated if not provided. */
+  id?: string;
+
+  /** Extra classes on the outer `.form_ui_item` wrapper. */
+  class?: string;
+
+  /** Catch-all for extra attributes spread onto the `<input>`. */
+  [key: string]: any;
+}
+
+const {
+  label,
+  name,
+  value = 'on',
+  checked = false,
+  required = false,
+  disabled = false,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const fieldId = id || `field-${name}-${value}`;
+---
+
+<div
+  class:list={['form_ui_item', className]}
+>
+  <label class="form_ui_label" for={fieldId}>
+    <input
+      class="form_ui_input u-sr-only"
+      type="checkbox"
+      name={name}
+      id={fieldId}
+      value={value}
+      checked={checked}
+      required={required}
+      disabled={disabled}
+      {...rest}
+    />
+
+    <span class="form_ui_visual_wrap" aria-hidden="true">
+      <svg
+        class="form_ui_visual_icon"
+        viewBox="0 0 11 8"
+        fill="none"
+      >
+        <path
+          d="M1 4L4 7L10 1"
+          stroke="currentColor"
+          vector-effect="non-scaling-stroke"
+          stroke-width="0.125rem"
+        />
+      </svg>
+    </span>
+
+    <span class="form_ui_text">{label}</span>
+  </label>
+</div>

@@ -1,0 +1,79 @@
+---
+/**
+ * Col — the standard wrapper for placing multiple loose elements into a single
+ * `<Layout>` column slot.
+ *
+ * **What it does:** renders `<div class="u-display-contents">`. The CSS
+ * `display: contents` makes this `<div>` disappear from the box tree entirely —
+ * the browser renders its children *as if the wrapper weren't there*. So the
+ * Heading / Text / Button inside become **direct children of the Layout
+ * column**, participating in the column's grid/flex flow, alignment, and gap.
+ *
+ * **Why you need it:** a Layout slot (`col1` / `col2`) positions exactly one
+ * element. When a column holds several loose elements (Heading + Text + Button,
+ * or Visual + Overlay), they must share one slotted parent. A *plain* `<div>`
+ * would itself become the grid/flex child — collapsing all your elements into
+ * one box and breaking `verticalAlign`, `rowGap`, and margin flow. `<Col>`
+ * wraps them for slotting **without** becoming a layout box, so the column
+ * behaves exactly as if each element were a direct child. It bakes in
+ * `u-display-contents` so that load-bearing class can never be forgotten.
+ *
+ * **When NOT to use it:** a single self-contained component (Visual, Grid,
+ * Card) is already one element — give it `slot="col1"` / `slot="col2"`
+ * directly. `<Col>` is only for grouping *two or more* loose elements.
+ *
+ * @example Multiple loose elements in a column
+ * ```astro
+ * <Layout variant="columns" verticalAlign="center">
+ *   <Col slot="col1">
+ *     <Heading tag="h2" variant="h3">Title</Heading>
+ *     <Text variant="large">Body.</Text>
+ *     <div class="u-button-wrapper"><Button href="#" ariaLabel="CTA">Go</Button></div>
+ *   </Col>
+ *   <Visual slot="col2" src={img} alt="" />
+ * </Layout>
+ * ```
+ *
+ * @example With an extra custom/utility class (merged on top of u-display-contents)
+ * ```astro
+ * <Col slot="col1" class="home-hero_text">
+ *   <Heading tag="h1" variant="h1">Hero</Heading>
+ *   <Text variant="large">Subhead.</Text>
+ * </Col>
+ * ```
+ */
+interface Props {
+  /**
+   * **Col** — wraps multiple loose elements so they can share one `<Layout>`
+   * column slot. Renders `<div class="u-display-contents">`: `display: contents`
+   * removes the wrapper from the box tree, so the children become direct
+   * children of the Layout column (correct alignment, gap, and margin flow).
+   * Use it instead of a plain `<div slot="col1" class="u-display-contents">` —
+   * the class is baked in so it can't be omitted. A single component (Visual,
+   * Grid, Card) takes `slot` directly and does NOT need `<Col>`.
+   *
+   * **Props:**
+   * - `class` — extra custom/utility classes, merged on top of `u-display-contents`
+   * - Also accepts any HTML attribute (`slot`, `style`, `data-*`, `aria-*`, etc.)
+   *   — forwarded to the root element
+   *
+   * **Slot:** default — the loose elements to place into the Layout column
+   */
+  docs?: string;
+
+  /** Extra custom/utility classes, merged on top of `u-display-contents`. */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`slot="col1"`, `style`, `data-*`, `data-animate-in`,
+   * `aria-*`, etc.) are forwarded to the root `.u-display-contents` element.
+   */
+  [key: string]: any;
+}
+
+const { docs, class: className, ...rest } = Astro.props;
+---
+
+<div class:list={["u-display-contents", className]} {...rest}>
+  <slot />
+</div>

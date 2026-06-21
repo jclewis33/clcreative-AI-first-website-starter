@@ -1,0 +1,822 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { serviceFaqJsonLd } from "../../lib/jsonld";
+import { SITE } from "../../config/site";
+import Section from "../../components/ui/Section.astro";
+import Layout from "../../components/ui/Layout.astro";
+import Col from "../../components/ui/Col.astro";
+import Heading from "../../components/ui/Heading.astro";
+import Text from "../../components/ui/Text.astro";
+import Button from "../../components/ui/Button.astro";
+import ContentWrapper from "../../components/ui/ContentWrapper.astro";
+import Visual from "../../components/ui/Visual.astro";
+import Grid from "../../components/ui/Grid.astro";
+import PricingCard from "../../components/ui/PricingCard.astro";
+import PricingItem from "../../components/ui/PricingItem.astro";
+import FAQ from "../../components/sections/FAQ.astro";
+import { seoFaqs } from "../../data/faqs";
+import Services from "../../components/sections/Services.astro";
+import CTASection from "../../components/sections/CTASection.astro";
+import SplitSection from "../../components/sections/SplitSection.astro";
+
+import getTrafficImg from "../../assets/seo/traffic.avif";
+import seoAuditImg from "../../assets/seo/seo-audit.avif";
+import whoForImg from "../../assets/seo/what-changes.webp";
+import whyWork from "../../assets/seo/why-works.webp";
+import whatNeed from "../../assets/seo/get-found-ideal-client.avif";
+
+// Styles
+import "../../styles/pages/seo.css";
+
+const pageUrl = `${SITE.url}/services/seo`;
+
+// Per-page Service + FAQPage schema. LocalBusiness lives sitewide in
+// BaseLayout; referenced here via provider.@id.
+const schemaGraph = serviceFaqJsonLd({
+  pageUrl,
+  serviceType: "SEO",
+  name: "SEO & AEO Services",
+  description:
+    "Strategy-led SEO and AI Optimization built on the M2M Framework. Get cited by AI, and found by your next customer. Monthly retainers from $1,500.",
+  audience: { audienceType: "Growth-stage businesses ready to scale" },
+  faqs: seoFaqs,
+});
+---
+
+<BaseLayout
+  title="SEO & AEO Services | CL Creative"
+  description="Strategy-led SEO and AI Optimization built on the M2M Framework. Get cited by AI, and found by your next customer. Monthly retainers from $1,500."
+  canonical={pageUrl}
+  theme="light"
+  schema={schemaGraph}
+>
+  <!-- ==================== Hero Section ==================== -->
+
+  <Section paddingBottom="small" theme="light">
+    <Layout
+      data-prevent-flicker="true"
+      data-fade-list
+      variant="columns"
+      verticalAlign="center"
+    >
+      <Col slot="col1">
+        <Heading maxWidth="none" tag="h1" variant="eyebrow"
+          >SEO & AEO for Growth-Stage Companies</Heading
+        >
+        <Heading variant="h3" maxWidth="none">
+          Your Next Customer Is Searching Right Now. Can They Find You?
+        </Heading>
+        <Text>
+          They're using ChatGPT, Perplexity, and Google AI Overviews to decide
+          who to trust before they ever click a link. If your site is not built
+          to be cited by those tools, you are invisible to a growing share of
+          your market.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="/book-a-call" ariaLabel="Get started with SEO services"
+            >Rank Your Site</Button
+          >
+        </div>
+      </Col>
+      <div slot="col2" class="video-embed_frame">
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/MvLukOgJl6g?si=UjJFis-NXZgi0_gk"
+          title="CL Creative SEO and AEO Service"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+          loading="lazy"></iframe>
+      </div>
+    </Layout>
+  </Section>
+
+  <!-- ==================== Agitate Section ==================== -->
+  <SplitSection
+    image={getTrafficImg}
+    imageAlt="Laptop showing a website getting the right traffic"
+    gap="var(--gap-8)"
+    buttonText="Rank Your Site"
+    buttonAriaLabel="Get started with SEO services"
+  >
+    <Heading data-split-text tag="h2" variant="h3" maxWidth="40ch">
+      Sound Like You?
+    </Heading>
+
+    <div data-fade-in class="split_body u-rich-text">
+      <p>
+        You launched your site, hoped it would do its job, and then you stopped
+        expecting anything from it.
+      </p>
+      <ul>
+        <li>You see traffic in your analytics but not in your inbox.</li>
+        <li>
+          You hired an SEO agency and got a content calendar, not customers.
+        </li>
+        <li>
+          You know AI is changing how buyers find you, but you do not know what
+          to do about it.
+        </li>
+        <li>
+          Your competitors publish every week. You have not published in months.
+        </li>
+        <li>
+          When you ask ChatGPT about your industry, your name does not come up.
+        </li>
+      </ul>
+      <p>
+        The longer this drags on, the harder the gap is to close. Authority
+        compounds. So does invisibility.
+      </p>
+    </div>
+  </SplitSection>
+
+  <!-- ==================== Thesis Section ==================== -->
+  <Section padding="small">
+    <Layout variant="columns" verticalAlign="center">
+      <Col slot="col1">
+        <Heading data-fade-in tag="h2" variant="h3" maxWidth="30ch">
+          Here's What You Actually Need
+        </Heading>
+        <Text data-fade-in>
+          You do not need more keywords. You need content that answers the real
+          questions your buyers ask, in their words, structured so search
+          engines and AI tools both understand and recommend you.
+        </Text>
+        <Text data-fade-in>
+          That means starting with your customer, not a keyword list. Building a
+          content system, not a content calendar. And treating AI visibility as
+          a strategy, not an afterthought.
+        </Text>
+      </Col>
+      <Visual
+        transparent
+        slot="col2"
+        src={whatNeed}
+        alt="mockup of a website stats going up"
+        data-fade-in
+        ratio="10.43/5.97"
+      />
+    </Layout>
+  </Section>
+
+  <!-- ==================== How It Works Section ==================== -->
+  <Section gap={4} theme="dark">
+    <ContentWrapper>
+      <Heading data-fade-in variant="eyebrow">How it Works</Heading>
+      <Heading data-fade-in variant="h3" maxWidth="30ch">
+        How We Get You Found by Google and AI
+      </Heading>
+      <Text maxWidth="44ch" data-fade-in>
+        Every client we take on goes through the same strategic process before
+        we produce a single piece of content.
+      </Text>
+    </ContentWrapper>
+
+    <div class="seo-pillars_list">
+      <div class="seo-pillars_row">
+        <div data-fade-in class="seo-pillars_item">
+          <p class="seo-pillars_number">01</p>
+          <div class="seo-pillars_item_content">
+            <Heading maxWidth="30ch" tag="h3" variant="h4" marginBottom={0}>
+              M2M Research
+            </Heading>
+            <Text marginBottom={0}>
+              We start with the Market to Message Framework. Who are you trying
+              to reach? What questions do they ask before they buy? What
+              language do they use to describe their problem? This becomes the
+              foundation for everything that follows.
+            </Text>
+          </div>
+        </div>
+        <div data-fade-in class="seo-pillars_item">
+          <p class="seo-pillars_number">02</p>
+          <div class="seo-pillars_item_content">
+            <Heading maxWidth="30ch" tag="h3" variant="h4" marginBottom={0}>
+              Content Gap Audit
+            </Heading>
+            <Text marginBottom={0}>
+              We audit your site against what your ideal customers are actually
+              searching for in AI tools. The output is a prioritized list of
+              content opportunities ranked by impact. You see exactly what to
+              write, in what order, and why it matters.
+            </Text>
+          </div>
+        </div>
+      </div>
+      <div class="seo-pillars_row">
+        <div data-fade-in class="seo-pillars_item">
+          <p class="seo-pillars_number">03</p>
+          <div class="seo-pillars_item_content">
+            <Heading maxWidth="30ch" tag="h3" variant="h4" marginBottom={0}>
+              AEO Content Production
+            </Heading>
+            <Text marginBottom={0}>
+              We produce long-form Q&A content structured to be cited by AI
+              tools. Each page answers a specific buyer question, uses the
+              language your ICP uses, and gets published with proper structured
+              data so search engines and AI crawlers understand it correctly.
+            </Text>
+          </div>
+        </div>
+        <div data-fade-in class="seo-pillars_item">
+          <p class="seo-pillars_number">04</p>
+          <div class="seo-pillars_item_content">
+            <Heading maxWidth="30ch" tag="h3" variant="h4" marginBottom={0}>
+              Schema Markup
+            </Heading>
+            <Text marginBottom={0}>
+              Every page gets production-ready JSON-LD schema (FAQPage, Service,
+              Article, breadcrumbs). This is the technical layer most content
+              agencies skip, and it's one of the biggest factors in whether AI
+              tools cite you or ignore you.
+            </Text>
+          </div>
+        </div>
+      </div>
+      <div class="seo-pillars_row">
+        <div data-fade-in class="seo-pillars_item">
+          <p class="seo-pillars_number">05</p>
+          <div class="seo-pillars_item_content">
+            <Heading maxWidth="30ch" tag="h3" variant="h4" marginBottom={0}>
+              Re-Audit and Adjust
+            </Heading>
+            <Text marginBottom={0}>
+              AI search changes fast. We re-run the content gap audit every
+              quarter to see what's shifted, what competitors have published,
+              and where your priorities should adjust.
+            </Text>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- ==================== CTA Section - Mid Page ==================== -->
+
+  <Section padding="small" theme="brand">
+    <ContentWrapper align="left">
+      <Heading variant="h3" maxWidth="35ch" marginBottom={3}
+        >Stop Publishing Content Nobody Finds</Heading
+      >
+      <Text
+        >Let's talk about where your visibility gaps are and your growth goals,
+        so we can start getting you found.</Text
+      >
+      <div class="u-button-wrapper">
+        <Button href="/book-a-call">Rank Your Site</Button>
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- ==================== Stakes Section ==================== -->
+  <Section theme="dark">
+    <ContentWrapper align="center">
+      <Heading data-fade-in maxWidth="30ch"
+        >What Changes (and What Doesn't, If You Wait)</Heading
+      ></ContentWrapper
+    >
+    <Layout variant="columns" verticalAlign="start">
+      <Col slot="col1">
+        <Heading data-fade-in maxWidth="50ch" tag="h3" variant="h6">
+          Without an SEO + AIO Strategy
+        </Heading>
+
+        <ul data-fade-list class="who-for_list">
+          {
+            [
+              "AI tools recommend your competitors when buyers ask for solutions.",
+              "Your traffic stays flat or declines as Google deprioritizes stale content.",
+              "Every month of delay widens the gap between you and businesses publishing now.",
+              "You keep paying for marketing tactics that do not compound.",
+            ].map((item) => (
+              <li class="who-for_item u-text-shrink">
+                <svg
+                  class="who-for_icon"
+                  aria-hidden="true"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                >
+                  <path
+                    d="M6.25 10L8.75 12.5L13.75 7.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <circle
+                    cx="10"
+                    cy="10"
+                    r="8.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-dasharray="2 2.5"
+                  />
+                </svg>
+                <Text tag="span" marginBottom={0}>
+                  {item}
+                </Text>
+              </li>
+            ))
+          }
+        </ul>
+      </Col>
+      <Col slot="col2">
+        <Heading data-fade-in maxWidth="50ch" tag="h3" variant="h6">
+          With an SEO + AIO Strategy
+        </Heading>
+
+        <ul data-fade-list class="who-for_list">
+          {
+            [
+              "Your business gets cited in ChatGPT and Perplexity for the questions your buyers actually ask.",
+              "Your site becomes a lead engine, bringing qualified prospects to your inbox.",
+              "Every page you publish builds authority competitors cannot match overnight.",
+              "Marketing spend stops being an expense and starts being an asset.",
+            ].map((item) => (
+              <li class="who-for_item u-text-shrink">
+                <svg
+                  class="who-for_icon"
+                  aria-hidden="true"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                >
+                  <path
+                    d="M6.25 10L8.75 12.5L13.75 7.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <circle
+                    cx="10"
+                    cy="10"
+                    r="8.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-dasharray="2 2.5"
+                  />
+                </svg>
+                <Text tag="span" marginBottom={0}>
+                  {item}
+                </Text>
+              </li>
+            ))
+          }
+        </ul>
+      </Col>
+    </Layout>
+    <Visual
+      src={whoForImg}
+      alt="Growth-stage team reviewing search visibility"
+      ratio="16/9"
+      radius="main"
+      data-fade-in
+    />
+  </Section>
+
+  <!-- ================== Why Works Section ================== -->
+
+  <Section padding="small">
+    <Layout variant="columns-reversed" verticalAlign="center">
+      <Col slot="col1">
+        <Heading data-fade-in tag="h2" variant="h3" maxWidth="30ch">
+          Why M2M + AIO Beats Traditional SEO Alone
+        </Heading>
+        <Text data-fade-in variant="xlarge">
+          Traditional SEO chases keywords. The M2M Framework targets customers.
+          That's the difference.
+        </Text>
+        <Text data-fade-in>
+          When we know exactly who you're trying to reach and what questions
+          they actually ask, we're not guessing what to write. We're answering
+          the real questions your buyers are asking AI tools every day, in the
+          language they use, with the technical markup that makes AI recommend
+          you.
+        </Text>
+        <Text data-fade-in>
+          The result is content that doesn't just rank. It converts. Traffic
+          that arrives on your site is already qualified, because the content
+          was written to speak to the exact person you want to reach.
+        </Text>
+        <Text data-fade-in>
+          And because AI search rewards consistency, the work compounds. Your
+          fifth AIO page performs better than your first. Your twentieth
+          performs better than your fifth. The businesses showing up in AI
+          search results a year from now are the ones who start publishing now.
+        </Text>
+      </Col>
+      <Visual
+        slot="col2"
+        src={whyWork}
+        alt="mockup of a website that is being fixed and working for the business owner"
+        data-fade-in
+        ratio="square"
+      />
+    </Layout>
+  </Section>
+
+  <!-- ==================== Pricing Section ==================== -->
+  <Section paddingTop="small" gap={6} theme="light">
+    <Layout variant="columns" verticalAlign="start">
+      <Col slot="col1">
+        <Heading
+          data-split-text
+          data-prevent-flicker="true"
+          tag="h2"
+          variant="h3"
+          maxWidth="30ch"
+        >
+          One Plan. Built to Compound.
+        </Heading>
+        <Text
+          data-fade-up
+          data-prevent-flicker="true"
+          data-delay="0.2"
+          variant="large"
+        >
+          No tiers to compare. No feature gating. Every client gets the same
+          strategic foundation and the same monthly execution. The only question
+          is whether you're ready to start.
+        </Text>
+      </Col>
+      <PricingCard
+        data-fade-up
+        data-prevent-flicker="true"
+        slot="col2"
+        variant="general"
+        priceLabel="SEO & AEO Retainer"
+        price="$2,000"
+        priceSuffix="/month"
+        description="Best for businesses that want to be found organically in Google and AI search tools like ChatGPT, Perplexity, and Google AI Overviews."
+        href="/book-a-call"
+        buttonText="Rank Your Site"
+        ariaLabel="Start the SEO and AEO retainer"
+        class="seo-retainer_card u-box-shadow-medium"
+      >
+        <PricingItem>
+          Month-to-month after a 90-day initial commitment.
+        </PricingItem>
+        <PricingItem>Cancel with 30 days' notice.</PricingItem>
+      </PricingCard>
+    </Layout>
+
+    <!-- Add-on cards -->
+    <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={5}>
+      <PricingCard
+        variant="compact"
+        name="SEO Audit"
+        price="$1,200"
+        description="A thorough technical audit of your website's performance paired with an actionable plan to improve your on-page SEO."
+        class="u-box-shadow-medium"
+      >
+        <svg
+          slot="icon"
+          aria-hidden="true"
+          width="24"
+          height="24"
+          viewBox="0 981 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><path
+            d="M11.5 986H11.9344C14.9816 986 16.5053 986 17.0836 986.547C17.5836 987.02 17.8051 987.717 17.6702 988.392C17.514 989.173 16.2701 990.053 13.7823 991.813L9.71772 994.687C7.2299 996.447 5.98599 997.327 5.82984 998.108C5.69486 998.783 5.91642 999.48 6.41636 999.953C6.99474 1000.5 8.51836 1000.5 11.5656 1000.5H12.5M8 986C8 987.657 6.65685 989 5 989C3.34315 989 2 987.657 2 986C2 984.343 3.34315 983 5 983C6.65685 983 8 984.343 8 986ZM22 1000C22 1001.66 20.6569 1003 19 1003C17.3431 1003 16 1001.66 16 1000C16 998.343 17.3431 997 19 997C20.6569 997 22 998.343 22 1000Z"
+          ></path></svg
+        >
+      </PricingCard>
+      <PricingCard
+        variant="compact"
+        name="M2M Messaging Audit"
+        price="$1,500"
+        description="Strategic foundation work to ensure your content speaks to the right people with the right message."
+        class="u-box-shadow-medium"
+      >
+        <svg
+          slot="icon"
+          aria-hidden="true"
+          width="24"
+          height="24"
+          viewBox="387 981 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><path
+            d="M390.666 1002.82C391.269 1003 392.083 1003 393.466 1003H403.866C405.25 1003 406.063 1003 406.666 1002.82M390.666 1002.82C390.537 1002.78 390.417 1002.73 390.304 1002.67C389.74 1002.39 389.281 1001.93 388.993 1001.36C388.666 1000.72 388.666 999.88 388.666 998.2V987.8C388.666 986.12 388.666 985.28 388.993 984.638C389.281 984.074 389.74 983.615 390.304 983.327C390.946 983 391.786 983 393.466 983H403.866C405.546 983 406.386 983 407.028 983.327C407.592 983.615 408.051 984.074 408.339 984.638C408.666 985.28 408.666 986.12 408.666 987.8V998.2C408.666 999.88 408.666 1000.72 408.339 1001.36C408.051 1001.93 407.592 1002.39 407.028 1002.67C406.915 1002.73 406.795 1002.78 406.666 1002.82M390.666 1002.82C390.666 1002.01 390.671 1001.58 390.743 1001.22C391.059 999.633 392.299 998.392 393.886 998.077C394.272 998 394.737 998 395.666 998H401.666C402.595 998 403.06 998 403.446 998.077C405.033 998.392 406.274 999.633 406.589 1001.22C406.661 1001.58 406.666 1002.01 406.666 1002.82M402.666 990.5C402.666 992.709 400.875 994.5 398.666 994.5C396.457 994.5 394.666 992.709 394.666 990.5C394.666 988.291 396.457 986.5 398.666 986.5C400.875 986.5 402.666 988.291 402.666 990.5Z"
+          ></path></svg
+        >
+      </PricingCard>
+      <PricingCard
+        variant="compact"
+        name="A-La-Carte Backlinks"
+        price="Starting at $275/link"
+        description="Build backlinks on a month-to-month basis."
+        class="u-box-shadow-medium"
+      >
+        <svg
+          slot="icon"
+          aria-hidden="true"
+          width="24"
+          height="24"
+          viewBox="774 981 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><path
+            d="M786.042 999.364L784.627 1000.78C782.675 1002.73 779.509 1002.73 777.556 1000.78C775.604 998.826 775.604 995.66 777.556 993.708L778.97 992.293M791.698 993.708L793.113 992.293C795.065 990.341 795.065 987.175 793.113 985.222C791.16 983.27 787.994 983.27 786.042 985.222L784.627 986.636M781.834 996.5L788.834 989.5"
+          ></path></svg
+        >
+      </PricingCard>
+    </Grid>
+
+    <div class="u-button-wrapper" style="justify-content: center;">
+      <Button
+        variant="secondary"
+        href="#faq"
+        ariaLabel="View frequently asked questions"
+      >
+        Frequently Asked Questions
+      </Button>
+    </div>
+  </Section>
+
+  <!-- ==================== M2M Audit Section ==================== -->
+  <Section paddingTop="none" paddingBottom="small" theme="light">
+    <ContentWrapper align="center">
+      <Heading data-fade-in variant="eyebrow">M2M Audit</Heading>
+      <Heading data-split-text maxWidth="25ch">
+        Not Ready for a Monthly Engagement? Start With the Audit.
+      </Heading>
+      <Text data-fade-in>
+        The M2M Audit is available as a standalone service for businesses that
+        want the strategic roadmap without committing to monthly production yet.
+      </Text>
+    </ContentWrapper>
+  </Section>
+
+  <Section
+    theme="light"
+    paddingTop="none"
+    paddingBottom="small"
+    class="seo-audit_section"
+  >
+    <Layout
+      data-fade-list
+      class="m2m-audit_fail_wrapper"
+      variant="full"
+      verticalAlign="center"
+    >
+      <Col slot="col1">
+        <Heading tag="h3" variant="h5" marginBottom={3}
+          >What's Included:</Heading
+        >
+        <div class="seo-audit_list u-rich-text">
+          <ul>
+            <li>
+              Full M2M research report (ICP, pain points, language, buyer
+              questions)
+            </li>
+            <li>Content gap audit with prioritized recommendations</li>
+            <li>Message-market fit assessment</li>
+            <li>AI visibility assessment across your key topics</li>
+            <li>
+              Content cluster plan you can execute yourself or hand to another
+              team
+            </li>
+          </ul>
+        </div>
+        <Text variant="large" weight="bold" marginTop={5} marginBottom={2}>
+          Investment: $1,500 (one-time)
+        </Text>
+        <Text maxWidth="80ch" variant="tiny"
+          >If you sign up for a monthly retainer within 30 days of the audit,
+          the $1,500 credits toward your first month. So you're not paying twice
+          if you decide to continue with us.</Text
+        >
+        <Button href="/book-a-call" ariaLabel="Start your M2M audit">
+          Start Your Audit
+        </Button>
+      </Col>
+      <div slot="col2">
+        <Visual
+          src={seoAuditImg}
+          alt="Person browsing SEO results on a phone"
+          ratio="landscape"
+          transparent
+        />
+      </div>
+    </Layout>
+  </Section>
+
+  <!-- ==================== Deliverables Section ==================== -->
+  <Section theme="dark">
+    <ContentWrapper align="center">
+      <Heading data-fade-in data-prevent-flicker="true" variant="eyebrow"
+        >Deliverables</Heading
+      >
+      <Heading data-split-text data-prevent-flicker="true" tag="h2" variant="h2"
+        >What You Get Every Month</Heading
+      >
+      <Text
+        data-fade-up
+        data-prevent-flicker="true"
+        data-delay="0.2"
+        align="center"
+        maxWidth="48rem"
+        >Here's the working scope of the retainer. If something falls outside of
+        it, we'll talk about it as a separate engagement. No surprises.</Text
+      >
+    </ContentWrapper>
+
+    <div
+      data-fade-list
+      data-prevent-flicker="true"
+      class="seo_deliverables_list"
+    >
+      <div class="seo_deliverables_group">
+        <Heading tag="h3" variant="h4" marginBottom={0}
+          >At Kickoff (Month 1)</Heading
+        >
+        <Text marginBottom={0}>
+          <strong>M2M Content Gap Audit.</strong> We start with the Market to Message
+          Framework.
+        </Text>
+        <ul class="u-list">
+          <li>Who are you trying to reach?</li>
+          <li>What questions do they ask before they buy?</li>
+          <li>What language do they use?</li>
+        </ul>
+        <Text marginBottom={0}>
+          We audit your site against what your ideal customers are actually
+          searching for, in Google and in AI tools. The output is a prioritized
+          content roadmap that tells us exactly what to build, in what order,
+          and why it matters.
+        </Text>
+        <Text marginBottom={0}>
+          If you've already completed the M2M Audit as a standalone engagement,
+          we skip the audit and start executing the roadmap in Month 1.
+        </Text>
+      </div>
+
+      <div class="seo_deliverables_group">
+        <Heading tag="h3" variant="h4" marginBottom={0}>Every Month</Heading>
+        <ul class="u-list">
+          <li>
+            <strong>3-4 AIO pages with schema markup.</strong> Long-form Q&amp;A content
+            structured to be cited by AI tools and ranked by Google. Each page answers
+            a specific buyer question, uses the language your ICP uses, and gets published
+            with production-ready JSON-LD schema.
+          </li>
+          <li>
+            <strong>On-page SEO optimization.</strong> Existing high-value pages get
+            sharper. Title tags, meta descriptions, heading structure, internal links.
+            The site you already have starts working harder alongside the new content.
+          </li>
+          <li>
+            <strong>Prioritized content roadmap.</strong> Not a static document. The
+            roadmap updates monthly based on what's performing, what's shifted in
+            AI search, and where the next best opportunity is.
+          </li>
+          <li>
+            <strong>Monthly progress report.</strong> Rankings, organic traffic, and
+            AI citation tracking pulled together into one report. Plain English. What
+            worked, what didn't, what we're changing next month.
+          </li>
+        </ul>
+      </div>
+
+      <div class="seo_deliverables_group">
+        <Heading tag="h3" variant="h4" marginBottom={0}>Every Quarter</Heading>
+        <ul class="u-list">
+          <li>
+            <strong>Content gap re-audit.</strong> AI search changes fast. We re-run
+            the gap audit every quarter to see what's shifted, what competitors have
+            published, and where your priorities should adjust. The roadmap updates
+            accordingly.
+          </li>
+        </ul>
+      </div>
+
+      <div class="seo_deliverables_group">
+        <Heading tag="h3" variant="h4" marginBottom={0}>Always on</Heading>
+        <ul class="u-list">
+          <li>
+            <strong>Schema maintenance.</strong> Structured data stays current as
+            new content publishes and as schema standards evolve.
+          </li>
+          <li>
+            <strong>Internal linking optimization.</strong> As your content library
+            grows, we connect the pieces so search engines and AI tools understand
+            how your pages relate to each other.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <ContentWrapper align="center">
+      <div data-fade-up data-prevent-flicker="true" class="u-button-wrapper">
+        <Button href="/book-a-call" ariaLabel="Rank your site">
+          Rank Your Site
+        </Button>
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- ==================== CTA Section ==================== -->
+  <CTASection
+    heading="If you are tired of being invisible to your customers, beginning an SEO campaign is the right next step."
+    text="A 30-minute strategy call. We'll look at where the gaps are, and whether an SEO Campaign is the right fit. If it's not, we'll tell you. If it is, you'll leave the call with a clear next step."
+    buttonText="Start Your SEO Campaign"
+    secondaryButtonText=""
+  />
+
+  <!-- ================== What to Expect Section ================== -->
+  <Section theme="dark">
+    <ContentWrapper>
+      <Heading data-split-text maxWidth="29ch">
+        What to Expect from an SEO Campaign
+      </Heading>
+      <Text
+        >This is a long game by design. If you're looking for something faster,
+        paid ads are a better fit. If you're ready to invest in visibility that
+        lasts, this is the work. SEO and AIO don't stop working when you stop
+        paying. The content stays indexed. The authority keeps building.
+      </Text>
+    </ContentWrapper>
+
+    <Grid
+      data-fade-list
+      largeColumns={3}
+      mediumColumns={1}
+      smallColumns={1}
+      rowGap={5}
+    >
+      <div class="seo-expect_stat">
+        <Heading maxWidth="none" tag="h3" variant="h5">
+          3-4 Months: Initial Movement
+        </Heading>
+        <Text marginBottom={0}>
+          Your first AIO pages get indexed. AI tools start picking them up. You
+          may see your business mentioned in ChatGPT or Perplexity responses for
+          specific questions.
+        </Text>
+      </div>
+      <div class="seo-expect_stat">
+        <Heading maxWidth="none" tag="h3" variant="h5">
+          6-7 Months: Real Traction
+        </Heading>
+        <Text marginBottom={0}>
+          The compounding effect starts showing up. More pages ranking. More AI
+          citations. Traffic from search tools becomes a meaningful source of
+          leads.
+        </Text>
+      </div>
+      <div class="seo-expect_stat">
+        <Heading maxWidth="none" tag="h3" variant="h5">
+          12+ Months: Compounding Returns
+        </Heading>
+        <Text marginBottom={0}>
+          Businesses who commit to 12 months build a moat that competitors can't
+          match with short-term tactics.
+        </Text>
+      </div>
+    </Grid>
+
+    <div class="u-button-wrapper">
+      <Button href="/book-a-call" ariaLabel="Start your SEO campaign">
+        Start Your Campaign
+      </Button>
+    </div>
+  </Section>
+
+  <!-- ================== FAQ Section ================== -->
+  <FAQ items={seoFaqs} />
+
+  <!-- ==================== CTA For Website Support Section ==================== -->
+
+  <Section padding="small" theme="brand">
+    <ContentWrapper align="left">
+      <Heading variant="h3" maxWidth="35ch" marginBottom={3}
+        >Pairs Well With Website Support</Heading
+      >
+      <Text
+        >If you also need hands-on Webflow site maintenance (design updates, new
+        landing pages, CMS adjustments, bug fixes), our Website Support Service
+        stacks cleanly with SEO.</Text
+      >
+      <div class="u-button-wrapper">
+        <Button href="/services/webflow-website-support"
+          >Explore Website Support</Button
+        >
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- ==================== Services Section ==================== -->
+
+  <Services />
+</BaseLayout>

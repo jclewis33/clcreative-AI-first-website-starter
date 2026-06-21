@@ -1,0 +1,69 @@
+/* ==========================================================================
+   WHY WORK WITH US
+   Breakout-reversed section with numbered value props list.
+   ========================================================================== */
+
+/* ── Eyebrow — mono font, accent color ──────────────────────────────────── */
+
+/* ── Content column — vertical padding when section padding is none ───── */
+
+.why-work_content {
+  padding-block: var(--section-space-xsmall);
+}
+
+@media (width < 50em) {
+  .why-work_content {
+    padding-block: 0;
+  }
+
+  .why-work_section {
+    padding-block: var(--section-space-small);
+  }
+}
+
+/* ── List ────────────────────────────────────────────────────────────────── */
+
+.why-work_list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border-top: var(--border-width-main) solid var(--border);
+  padding-top: var(--space-4);
+}
+
+.why-work_row {
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+
+/* ── Number — tagline style (mono, small, uppercase) ────────────────────── */
+
+.why-work_number {
+  font-family: var(--font-tertiary);
+  font-size: 1rem;
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-tight);
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+/* ── Item content ───────────────────────────────────────────────────────── */
+
+.why-work_item_content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* ── Responsive — collapse list rows on small ───────────────────────────── */
+
+@container (width < 35em) {
+  .why-work_row {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+}

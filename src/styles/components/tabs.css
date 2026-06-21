@@ -1,0 +1,287 @@
+/* ==========================================================================
+   TAB COMPONENT STYLES
+   ==========================================================================
+   Tab interface with four variants: top (default), side, slider, fade.
+   The active tab/panel is marked with .is-active (toggled by JS); panel
+   transitions use GSAP.
+
+   STRUCTURE
+     .tab_wrap[data-tab-variant]
+       .tab_left
+         .tab_heading_wrap          (optional heading slot)
+         .tab_button_list           [role="tablist"]
+           button.tab_button_item   [role="tab"]
+             span.tab_button_text
+             span.tab_button_line   (underline / progress indicator)
+       .tab_right
+         .tab_content_wrap
+           .tab_content_list
+             .tab_panel_item        [role="tabpanel"]
+         .tab_control_wrap          (slider variant only)
+           .tab_arrow_wrap
+           .button_toggle_wrap
+
+   VARIANTS
+     data-tab-variant="top"     — default, horizontal tabs + fade
+     data-tab-variant="side"    — vertical tabs in 12-col grid + fade
+     data-tab-variant="slider"  — horizontal tabs + slide + autoplay controls
+     data-tab-variant="fade"    — horizontal tabs + fade, no controls
+
+   ACTIVE STATE
+     JS toggles .is-active on the active tab_button_item / tab_panel_item.
+     Active button text = full opacity + bold weight; the progress/underline
+     line shows only on the active button. Styled directly off .is-active.
+   ========================================================================== */
+
+
+/* =====================================================
+   TAB WRAPPER — base layout
+   ===================================================== */
+
+.tab_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--site-gutter);
+  width: 100%;
+  position: relative;
+}
+
+
+/* =====================================================
+   TAB LEFT — heading + button list container
+   ===================================================== */
+
+.tab_left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+
+/* =====================================================
+   TAB BUTTON LIST — horizontal row of tab triggers
+   ===================================================== */
+
+.tab_button_list {
+  display: flex;
+  gap: 0;
+  overflow: auto hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tab_button_list::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* =====================================================
+   TAB BUTTON ITEM — base (link-style / underline)
+   Used by top, slider, fade variants.
+   ===================================================== */
+
+.tab_button_item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  flex: 1 0 auto;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-bottom: var(--border-width-main) solid var(--border);
+  color: inherit;
+  text-align: center;
+  outline-offset: var(--focus-offset-inner);
+  outline-width: var(--focus-width);
+}
+
+
+/* =====================================================
+   TAB BUTTON TEXT — opacity + weight driven by state
+   ===================================================== */
+
+.tab_button_text {
+  font-weight: var(--font-weight-normal);
+  opacity: 0.7;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Active tab: full opacity + bold weight */
+.tab_button_item.is-active .tab_button_text {
+  font-weight: var(--font-weight-bold);
+  opacity: 1;
+}
+
+
+/* =====================================================
+   TAB BUTTON LINE — underline / progress indicator
+   Sits at the bottom of the button, overlapping the
+   border-bottom. Full width when active (no autoplay),
+   or animated 0→1 via --progress when autoplay is on.
+   ===================================================== */
+
+.tab_button_line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: calc(100% * var(--progress, 1));
+  height: var(--border-width-main);
+  background-color: currentColor;
+  opacity: 0;
+  padding: 0;
+  pointer-events: none;
+  transform: translateY(50%);
+}
+
+/* Active tab shows its progress / underline line */
+.tab_button_item.is-active .tab_button_line {
+  opacity: 1;
+}
+
+
+/* =====================================================
+   TAB RIGHT — content + controls area
+   ===================================================== */
+
+.tab_right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+}
+
+
+/* =====================================================
+   TAB CONTENT WRAP & LIST
+   ===================================================== */
+
+.tab_content_wrap {
+  position: relative;
+  overflow-x: clip;
+  width: 100%;
+}
+
+.tab_content_list {
+  position: relative;
+  width: 100%;
+}
+
+
+/* =====================================================
+   TAB PANEL ITEM
+   Hidden by default; JS manages display/visibility
+   via GSAP or instant toggle.
+   ===================================================== */
+
+.tab_panel_item {
+  width: 100%;
+}
+
+
+/* =====================================================
+   TAB CONTROL WRAP — slider arrows + play/pause
+   ===================================================== */
+
+.tab_control_wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.tab_arrow_wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+
+/* =====================================================
+   SIDE VARIANT — 12-column grid layout
+   ===================================================== */
+
+[data-tab-variant="side"] {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--site-gutter);
+}
+
+[data-tab-variant="side"] > .tab_left {
+  grid-column: span 3;
+}
+
+[data-tab-variant="side"] > .tab_right {
+  grid-column: span 9;
+}
+
+/* Side: button list is vertical, no bottom border on individual buttons */
+[data-tab-variant="side"] .tab_button_list {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+/* Side: button items are bordered / pill style */
+[data-tab-variant="side"] .tab_button_item {
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-full);
+  width: auto;
+  min-width: auto;
+  flex: none;
+  background-color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Side: active button gets filled */
+[data-tab-variant="side"] .tab_button_item.is-active {
+  background-color: var(--text);
+  color: var(--background);
+}
+
+/* Side: hide the underline progress line */
+[data-tab-variant="side"] .tab_button_line {
+  display: none;
+}
+
+
+/* =====================================================
+   SIDE VARIANT — responsive collapse to stacked
+   ===================================================== */
+
+@media (max-width: 47.9375em) {
+  [data-tab-variant="side"] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  [data-tab-variant="side"] > .tab_left,
+  [data-tab-variant="side"] > .tab_right {
+    grid-column: unset;
+  }
+
+  [data-tab-variant="side"] .tab_button_list {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow: auto hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-left: var(--site-margin);
+    padding-right: var(--site-margin);
+    margin-left: calc(var(--site-margin) * -1);
+    margin-right: calc(var(--site-margin) * -1);
+  }
+}
+
+
+/* =====================================================
+   SLIDER VARIANT — progress line uses GSAP animation
+   ===================================================== */
+
+[data-tab-variant="slider"] .tab_button_line {
+  transition: none;
+}

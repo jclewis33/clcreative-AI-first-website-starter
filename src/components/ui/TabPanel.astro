@@ -1,0 +1,63 @@
+---
+/**
+ * TabPanel — an individual tab content panel inside `<Tab>`.
+ *
+ * Renders `hidden` by default. The parent `<Tab>` script wires up
+ * ARIA attributes and manages visibility based on DOM order (1st
+ * panel matches 1st TabButton, etc.).
+ *
+ * Place any content inside — Layout, Grid, Card, text, images, etc.
+ *
+ * @example Panel with rich layout
+ * ```astro
+ * <Tab>
+ *   <TabButton slot="buttons" label="Features" />
+ *   <TabButton slot="buttons" label="Pricing" />
+ *
+ *   <TabPanel>
+ *     <Heading tag="h3">Features</Heading>
+ *     <Text>Features content here.</Text>
+ *   </TabPanel>
+ *   <TabPanel>
+ *     <Heading tag="h3">Pricing</Heading>
+ *     <Text>Pricing content here.</Text>
+ *   </TabPanel>
+ * </Tab>
+ * ```
+ */
+
+/**
+ * TabPanel — an individual tab content panel inside `<Tab>`.
+ *
+ * Hidden by default; the parent `<Tab>` manages visibility via ARIA and GSAP transitions.
+ *
+ * **Props:**
+ * - `class` — extra utility classes on the panel element
+ *
+ * **Slot:** default — panel content (Layout, Grid, Card, text, images, etc.)
+ */
+interface Props {
+  /**
+   * **TabPanel props:**
+   * - `class` — extra classes
+   *
+   * **Slot:** default — panel content (Layout, Grid, Card, text, images, etc.)
+   */
+  docs?: string;
+
+  /** Extra utility classes on the `.tab_panel_item` element. */
+  class?: string;
+}
+
+const {
+  class: className,
+} = Astro.props;
+---
+
+<div
+  class:list={['tab_panel_item', className]}
+  role="tabpanel"
+  hidden
+>
+  <slot />
+</div>

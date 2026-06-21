@@ -1,0 +1,1068 @@
+/* ==========================================================================
+   MARKETING SCORECARD
+   ==========================================================================
+   React island styles. Typography is handled by u-text-style-* utilities on
+   each element — this file only handles layout, bespoke colors, and the few
+   elements that don't map to a utility (huge score number, italic pull-quote).
+
+   Most text elements zero their margins because the scorecard's containers
+   use flex+gap for spacing. The u-text-style-* classes add a bottom margin
+   by default; that would double up with the gap.
+
+   Class structure:
+     scorecard_wrap                  outer island wrapper
+     scorecard_intro_*               intro phase
+     scorecard_progress_*            progress bar (quiz phase)
+     scorecard_room_*                room header (quiz phase)
+     scorecard_question_*            question card
+     scorecard_rating_*              1–5 rating buttons
+     scorecard_nav_*                 back / next bar
+     scorecard_email_*               email-gate phase
+     scorecard_input_*               form inputs
+     scorecard_results_*             results phase
+     scorecard_score_*               big score header
+     scorecard_tier_*                tier badge + message
+     scorecard_breakdown_*           room-by-room list
+     scorecard_focus_*               "where to focus" card
+     scorecard_insight               pull-quote callout
+     scorecard_cta_*                 results CTA card (brand-bg)
+     scorecard_phase_*               hero ↔ quiz fade transition wrappers
+     scorecard_back_btn              back chevron at top of quiz (after Q1)
+
+   Combo classes:
+     .is-selected                    rating button
+     .is-error                       input
+     .is-animating                   question transition
+     .is-good / .is-medium / .is-low room score tiers
+     .is-tier-{solid|gaps|disconnected|none}  results-wrap tier
+   ========================================================================== */
+
+.scorecard_wrap {
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================================
+   PHASE STACK
+   Hero and quiz live in the same Section and the same grid cell — they
+   cross-fade based on data-phase on the parent stack. Inactive phase is
+   set to inert via the pointer-events + opacity transition. Visibility
+   transitions in lockstep with opacity so the inactive phase is removed
+   from the a11y tree at the right moment.
+   ========================================================================= */
+
+.scorecard_phase_stack {
+  display: grid;
+  position: relative;
+}
+
+/* Both phases occupy the same grid cell. The active phase stays in flow
+   (relative) and drives the section's height; the hidden phase is absolute-
+   positioned so it doesn't contribute to layout size. */
+.scorecard_phase {
+  grid-column: 1;
+  grid-row: 1;
+  transition:
+    opacity 0.4s ease,
+    visibility 0s linear 0.4s;
+}
+
+/* Pin the quiz phase to a stable minimum height so the section doesn't
+   resize between questions — any height delta would cause the background
+   image's object-fit: cover crop to shift, producing a visible "jump"
+   on every click. Value covers the tallest quiz state (Q1 of rooms 2–7,
+   which renders: back chevron + room description + longest question text
+   + 5 rating buttons). Shorter questions sit at the top of the phase with
+   stable empty space below. */
+.scorecard_phase_quiz {
+  min-height: 52rem;
+}
+
+/* Hidden phase — pulled out of flow so the section sizes to the visible one. */
+.scorecard_phase_stack[data-phase="hero"] .scorecard_phase_quiz,
+.scorecard_phase_stack[data-phase="quiz"] .scorecard_phase_hero {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Active phase — visible, in flow, opacity fades in. */
+.scorecard_phase_stack[data-phase="hero"] .scorecard_phase_hero,
+.scorecard_phase_stack[data-phase="quiz"] .scorecard_phase_quiz {
+  position: relative;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 0.4s ease,
+    visibility 0s linear 0s;
+}
+
+/* Hide the section background image once the quiz starts so the question
+   card and rating list sit on the page background instead of the hero photo. */
+#scorecard-section:has(.scorecard_phase_stack[data-phase="quiz"])
+  .u-background-slot {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* =========================================================================
+   BACK CHEVRON (quiz phase, top-left of progress wrap)
+   Replaces the bottom "Back" button. Only renders after question 1 since
+   there's nothing to go back to from the first question.
+   ========================================================================= */
+
+.scorecard_back_btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+  font-family: inherit;
+  font-size: var(--text-small-size);
+  color: color-mix(in srgb, var(--text) 70%, transparent);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  transition: color 0.2s ease;
+}
+
+.scorecard_back_btn:hover {
+  color: var(--color-brand-500);
+}
+
+.scorecard_back_btn_chevron {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
+
+/* =========================================================================
+   HERO (Astro-rendered intro that lives on marketing-scorecard.astro —
+   sits ABOVE the React island and reuses the same scorecard_rooms_* classes
+   for the rooms preview card on the right.)
+   ========================================================================= */
+
+.scorecard_hero_eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+}
+
+.scorecard_hero_eyebrow_dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-500);
+  flex-shrink: 0;
+}
+
+/* Three benefit columns under the hero copy */
+.scorecard_hero_benefit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.scorecard_hero_benefit_icon {
+  width: 2rem;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-full);
+  background-color: color-mix(in srgb, var(--color-brand-500) 12%, transparent);
+  color: var(--color-brand-500);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-bold);
+}
+
+.scorecard_hero_benefit_title,
+.scorecard_hero_benefit_text {
+  margin: 0;
+}
+
+.scorecard_hero_btn_arrow {
+  width: 0.875rem;
+  height: 0.625rem;
+  stroke-width: 1.5;
+}
+
+.scorecard_hero_microcopy {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+}
+
+.scorecard_hero_dot {
+  opacity: 0.4;
+}
+
+/* Rooms preview card (right column). Reuses .scorecard_rooms_list +
+   .scorecard_rooms_item etc. from the quiz styles below. */
+.scorecard_hero_rooms_card {
+  background-color: var(--background-2);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-main);
+  padding: var(--space-6);
+}
+
+.scorecard_hero_rooms_label {
+  margin: 0 0 var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-width-main) solid var(--border);
+}
+
+/* Trust badges row — three columns under the hero on the page background */
+.scorecard_trust_card {
+  background-color: var(--background-2);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-main);
+  padding: var(--space-5) var(--space-6);
+}
+
+.scorecard_trust_item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.scorecard_trust_icon {
+  width: 2.5rem;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-full);
+  background-color: color-mix(in srgb, var(--color-brand-500) 12%, transparent);
+  color: var(--color-brand-500);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+}
+
+.scorecard_trust_title,
+.scorecard_trust_text {
+  margin: 0;
+}
+
+/* =========================================================================
+   INTRO
+   ========================================================================= */
+
+.scorecard_intro_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.scorecard_intro_header {
+  text-align: center;
+}
+
+.scorecard_intro_icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: var(--space-4);
+}
+
+.scorecard_intro_title {
+  max-width: 40ch;
+  margin-inline: auto;
+}
+
+.scorecard_intro_text {
+  max-width: 60ch;
+  margin: 0 auto;
+}
+
+.scorecard_rooms_card {
+  background-color: var(--background-2);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-main);
+  padding: var(--space-6);
+}
+
+.scorecard_rooms_list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.scorecard_rooms_item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.scorecard_rooms_icon {
+  font-size: 1.125rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Zero margins on row children — utility classes (u-text-style-small) add a
+   bottom margin that pushes the centered text upward inside the flex row. */
+.scorecard_rooms_name,
+.scorecard_rooms_sub {
+  margin: 0;
+  line-height: 1.3;
+}
+
+.scorecard_rooms_name {
+  font-weight: var(--font-weight-medium);
+}
+
+.scorecard_intro_meta {
+  text-align: center;
+  margin: 0;
+}
+
+/* =========================================================================
+   PRIMARY BUTTON
+   Used inside the email gate. Pulls from the site's button variables so the
+   hover treatment matches <Button>.
+   ========================================================================= */
+
+.scorecard_primary_btn {
+  font-family: inherit;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-regular-size);
+  border-radius: var(--radius-full);
+  padding: var(--space-3) var(--space-6);
+  border: var(--border-width-main) solid transparent;
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+  width: 100%;
+  background-color: var(--button-primary-background-hover);
+  border-color: var(--button-primary-border-hover);
+  color: var(--button-primary-text-hover);
+}
+
+/* Inverted hover: rests on the -hover tokens, reverts to base on hover/focus */
+.scorecard_primary_btn:hover,
+.scorecard_primary_btn:focus-visible {
+  background-color: var(--button-primary-background);
+  border-color: var(--button-primary-border);
+  color: var(--button-primary-text);
+}
+
+.scorecard_primary_btn:disabled {
+  background-color: color-mix(in srgb, var(--text) 15%, transparent);
+  border-color: transparent;
+  color: color-mix(in srgb, var(--text) 40%, transparent);
+  cursor: not-allowed;
+}
+
+/* =========================================================================
+   PROGRESS BAR
+   ========================================================================= */
+
+.scorecard_progress_wrap {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-5);
+}
+
+/* Asymmetric spacing — extra room below the reset link, count row sits
+   directly above the progress bar. */
+.scorecard_progress_meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.scorecard_progress_track {
+  width: 100%;
+  height: 4px;
+  background-color: color-mix(in srgb, var(--text) 10%, transparent);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.scorecard_progress_fill {
+  height: 100%;
+  background-color: var(--color-brand-500);
+  border-radius: inherit;
+  transition: width 0.4s ease;
+}
+
+/* =========================================================================
+   ROOM HEADER (quiz)
+   ========================================================================= */
+
+.scorecard_room_header {
+  display: flex;
+  flex-direction: column;
+
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.scorecard_room_header.is-animating,
+.scorecard_question_wrap.is-animating {
+  opacity: 0;
+  transform: translateX(1rem);
+}
+
+.scorecard_room_header_inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.scorecard_room_icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.scorecard_room_header_text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scorecard_room_name,
+.scorecard_room_description {
+  margin: 0;
+}
+
+/* =========================================================================
+   QUESTION + RATING
+   ========================================================================= */
+
+.scorecard_question_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.scorecard_question_card {
+  background-color: var(--background-2);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-main);
+  padding: var(--space-4);
+}
+
+.scorecard_question_text {
+  font-weight: var(--font-weight-medium);
+  margin: 0 0 var(--space-3);
+}
+
+.scorecard_question_why {
+  margin: 0;
+}
+
+.scorecard_rating_list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.scorecard_rating_btn {
+  width: 100%;
+  padding: var(--space-3);
+  background-color: var(--background-2);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-medium);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-regular-size);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.scorecard_rating_btn:not(.is-selected) {
+  border-color: color-mix(in hsl, var(--color-brand-500) 60%, transparent);
+}
+
+/* Inverted: a faint brand border at rest, neutral --border on hover/focus */
+.scorecard_rating_btn:not(.is-selected):hover,
+.scorecard_rating_btn:not(.is-selected):focus-visible {
+  border-color: var(--border);
+}
+
+.scorecard_rating_btn.is-selected {
+  border-color: var(--color-brand-500);
+  background-color: color-mix(
+    in srgb,
+    var(--color-brand-500) 8%,
+    var(--background-2)
+  );
+  font-weight: var(--font-weight-medium);
+}
+
+.scorecard_rating_dot {
+  width: 1.75rem;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-full);
+  border: var(--border-width-main) solid
+    color-mix(in srgb, var(--text) 25%, transparent);
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-tiny-size);
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.scorecard_rating_btn.is-selected .scorecard_rating_dot {
+  background-color: var(--color-brand-500);
+  border-color: var(--color-brand-500);
+  color: var(--color-brand-text);
+}
+
+.scorecard_rating_label {
+  flex: 1;
+}
+
+/* =========================================================================
+   QUIZ NAV
+   ========================================================================= */
+
+/* =========================================================================
+   EMAIL GATE
+   ========================================================================= */
+
+.scorecard_email_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.scorecard_email_header {
+  text-align: center;
+}
+
+.scorecard_email_icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: var(--space-4);
+}
+
+.scorecard_email_title {
+  max-width: 40ch;
+  margin: 0 auto var(--space-3);
+  text-wrap: balance;
+}
+
+.scorecard_email_text {
+  max-width: 60ch;
+  margin: 0 auto;
+}
+
+.scorecard_email_form {
+  max-width: 25rem;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.scorecard_email_fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.scorecard_input_label {
+  display: block;
+}
+
+.scorecard_input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--background-2);
+  border: var(--border-width-main) solid
+    color-mix(in hsl, var(--color-brand-500) 80%, transparent);
+  border-radius: var(--radius-medium);
+  font-family: inherit;
+  font-size: 1rem; /* ≥ 1rem prevents iOS auto-zoom */
+  color: var(--text);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+/* Focus reverts the border to neutral --border (preserves the original
+   inverted trigger behavior). The .is-error rule below still wins on
+   errored inputs because it comes later in source order. */
+.scorecard_input:focus-visible {
+  border-color: var(--border);
+}
+
+.scorecard_input::placeholder {
+  color: color-mix(in srgb, var(--text) 45%, transparent);
+}
+
+.scorecard_input.is-error {
+  border-color: var(--color-error-red-dark);
+}
+
+.scorecard_input_error {
+  color: var(--color-error-red-dark);
+  margin: 0;
+}
+
+/* Honeypot — moved off-screen rather than display:none so naive bots still
+   fill it; humans never see or tab into it (tabindex=-1, aria-hidden). */
+.scorecard_hp_field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scorecard_email_meta {
+  text-align: center;
+  margin: 0;
+}
+
+/* =========================================================================
+   RESULTS
+   ========================================================================= */
+
+.scorecard_results_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  --scorecard-tier-color: var(--color-brand-500);
+  --scorecard-tier-bg: color-mix(
+    in srgb,
+    var(--color-brand-500) 12%,
+    var(--background)
+  );
+}
+
+.scorecard_results_wrap.is-tier-solid {
+  --scorecard-tier-color: var(--color-success-green-dark);
+  --scorecard-tier-bg: var(--color-success-green);
+}
+
+.scorecard_results_wrap.is-tier-gaps {
+  --scorecard-tier-color: var(--color-warning-yellow-dark);
+  --scorecard-tier-bg: var(--color-warning-yellow);
+}
+
+.scorecard_results_wrap.is-tier-disconnected {
+  --scorecard-tier-color: var(--color-brand-500);
+  --scorecard-tier-bg: color-mix(
+    in srgb,
+    var(--color-brand-500) 15%,
+    var(--background)
+  );
+}
+
+.scorecard_results_wrap.is-tier-none {
+  --scorecard-tier-color: var(--color-error-red-dark);
+  --scorecard-tier-bg: color-mix(
+    in srgb,
+    var(--color-error-red-dark) 12%,
+    var(--background)
+  );
+}
+
+.scorecard_score_header {
+  text-align: center;
+}
+
+.scorecard_score_number {
+  font-family: var(--font-primary);
+  font-size: clamp(4.5rem, 8vw + 2rem, 6.5rem);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  color: var(--scorecard-tier-color);
+}
+
+.scorecard_score_max {
+  margin: var(--space-1) 0 var(--space-4);
+}
+
+.scorecard_tier_badge {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background-color: var(--scorecard-tier-bg);
+  color: var(--scorecard-tier-color);
+  font-size: var(--text-small-size);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-4);
+}
+
+.scorecard_tier_message {
+  max-width: 60ch;
+  margin: 0 auto;
+}
+
+.scorecard_section_heading {
+  margin: 0 0 var(--space-3);
+}
+
+/* =========================================================================
+   ROOM-BY-ROOM BREAKDOWN
+   ========================================================================= */
+
+.scorecard_breakdown_list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.scorecard_breakdown_hint {
+  margin: 0 0 var(--space-3);
+}
+
+.scorecard_breakdown_item {
+  background-color: var(--background-2);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-medium);
+  overflow: hidden;
+}
+
+/* The item's clickable header — replaces the previous flex container.
+   Resets default button styles and reuses the same horizontal flex layout. */
+.scorecard_breakdown_toggle {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  transition: background-color 0.2s ease;
+}
+
+.scorecard_breakdown_toggle:hover {
+  background-color: color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.scorecard_breakdown_caret {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: color-mix(in srgb, var(--text) 50%, transparent);
+  transition: transform 0.2s ease;
+}
+
+.scorecard_breakdown_item.is-expanded .scorecard_breakdown_caret {
+  transform: rotate(180deg);
+}
+
+.scorecard_breakdown_icon {
+  font-size: 1.375rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.scorecard_breakdown_body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* Expanded question list */
+.scorecard_breakdown_questions {
+  list-style: none;
+  padding: 0 var(--space-4) var(--space-4);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-top: var(--border-width-main) solid var(--border);
+  padding-top: var(--space-4);
+}
+
+.scorecard_breakdown_question_text {
+  margin: 0 0 var(--space-1);
+}
+
+.scorecard_breakdown_question_index {
+  font-weight: var(--font-weight-bold);
+}
+
+.scorecard_breakdown_question_answer {
+  margin: 0;
+}
+
+.scorecard_breakdown_question_label {
+  font-weight: var(--font-weight-bold);
+  color: var(--text);
+}
+
+.scorecard_breakdown_meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.scorecard_breakdown_score {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+.scorecard_breakdown_item.is-good .scorecard_breakdown_score {
+  background-color: var(--color-success-green);
+  color: var(--color-success-green-dark);
+}
+
+.scorecard_breakdown_item.is-medium .scorecard_breakdown_score {
+  background-color: var(--color-warning-yellow);
+  color: var(--color-warning-yellow-dark);
+}
+
+.scorecard_breakdown_item.is-low .scorecard_breakdown_score {
+  background-color: color-mix(
+    in srgb,
+    var(--color-error-red-dark) 10%,
+    var(--background)
+  );
+  color: var(--color-error-red-dark);
+}
+
+.scorecard_breakdown_bar_track {
+  height: 4px;
+  background-color: color-mix(in srgb, var(--text) 8%, transparent);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.scorecard_breakdown_bar_fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.6s ease;
+}
+
+.scorecard_breakdown_item.is-good .scorecard_breakdown_bar_fill {
+  background-color: var(--color-success-green-dark);
+}
+
+.scorecard_breakdown_item.is-medium .scorecard_breakdown_bar_fill {
+  background-color: var(--color-warning-yellow-dark);
+}
+
+.scorecard_breakdown_item.is-low .scorecard_breakdown_bar_fill {
+  background-color: var(--color-error-red-dark);
+}
+
+/* =========================================================================
+   FOCUS CARD
+   ========================================================================= */
+
+.scorecard_focus_card {
+  background-color: var(--background-2);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-main);
+  padding: var(--space-5);
+}
+
+.scorecard_focus_intro {
+  margin: 0 0 var(--space-4);
+}
+
+.scorecard_focus_list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.scorecard_focus_item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.scorecard_focus_number {
+  width: 1.5rem;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-500);
+  color: var(--color-brand-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-tiny-size);
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.scorecard_focus_body {
+  flex: 1;
+  min-width: 0;
+}
+
+.scorecard_focus_name {
+  margin: 0 0 var(--space-1);
+}
+
+.scorecard_focus_score {
+  font-weight: var(--font-weight-normal);
+}
+
+.scorecard_focus_description {
+  margin: 0;
+}
+
+/* =========================================================================
+   INSIGHT PULL-QUOTE
+   ========================================================================= */
+
+.scorecard_insight {
+  border-left: 3px solid var(--color-brand-500);
+  padding-left: var(--space-4);
+  margin: 0;
+}
+
+.scorecard_insight_pull {
+  font-family: var(--font-primary);
+  font-size: var(--text-large-size);
+  font-style: italic;
+  color: var(--color-brand-500);
+  line-height: 1.4;
+  margin: 0 0 var(--space-2);
+}
+
+.scorecard_insight_text {
+  margin: 0;
+}
+
+/* =========================================================================
+   RESULTS CTA CARD
+   Brand-orange themed. Text colors override utility defaults — the eyebrow
+   utility would otherwise force brand-orange text (invisible on brand-bg).
+   ========================================================================= */
+
+.scorecard_cta_card {
+  background-color: var(--color-brand-500);
+  color: var(--color-brand-text);
+  border-radius: var(--radius-main);
+  padding: var(--space-7) var(--space-6);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.scorecard_cta_eyebrow {
+  color: var(--color-brand-text-o75);
+  margin: 0;
+}
+
+.scorecard_cta_heading {
+  color: var(--color-brand-text);
+  max-width: 40ch;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.scorecard_cta_text {
+  color: var(--color-brand-text-o75);
+  max-width: 60ch;
+  margin: 0;
+}
+
+.scorecard_cta_btn {
+  display: inline-block;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  border: var(--border-width-main) solid var(--color-brand-text);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+  cursor: pointer;
+  margin-top: var(--space-2);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+  background-color: transparent;
+  color: var(--color-brand-text);
+}
+
+/* Outlined → filled on hover/focus */
+.scorecard_cta_btn:hover,
+.scorecard_cta_btn:focus-visible {
+  background-color: var(--color-brand-text);
+  color: var(--color-brand-500);
+}
+
+.scorecard_cta_meta {
+  color: var(--color-brand-text-o75);
+  max-width: 60ch;
+  margin: 0;
+}
+
+/* =========================================================================
+   RESET / "START OVER" LINK
+   Only used on the results phase ("↻ Take the scorecard again"). The quiz
+   phase uses .scorecard_back_btn for navigation; auto-advance handles next.
+   ========================================================================= */
+
+.scorecard_reset_link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: var(--space-2) 0 0;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  transition: color 0.2s ease;
+  align-self: center;
+}
+
+.scorecard_reset_link:hover {
+  color: var(--color-brand-500);
+}

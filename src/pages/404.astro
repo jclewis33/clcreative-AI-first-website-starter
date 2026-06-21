@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/ui/Section.astro";
+import Layout from "../components/ui/Layout.astro";
+import Col from "../components/ui/Col.astro";
+import Heading from "../components/ui/Heading.astro";
+import Text from "../components/ui/Text.astro";
+import Button from "../components/ui/Button.astro";
+---
+
+<BaseLayout
+  title="Page Not Found | CL Creative"
+  description="The page you're looking for doesn't exist."
+>
+  <Section minHeight>
+    <Layout variant="stack-centered">
+      <Col slot="col1">
+        <Heading tag="h1" variant="display-lg">404</Heading>
+        <Text size="large" align="center">
+          The page you're looking for doesn't exist or has been moved.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="/" ariaLabel="Go back to the homepage"
+            >Back to Home</Button
+          >
+        </div>
+      </Col>
+    </Layout>
+  </Section>
+</BaseLayout>

@@ -1,0 +1,238 @@
+/* ==========================================================================
+   HOW IT WORKS SECTION
+   — Image cluster + alternating timeline with GSAP scrub progress line
+   ========================================================================== */
+
+/* ==========================================================================
+   IMAGE CLUSTER
+   Three overlapping images: large center + top-right square + bottom-left portrait.
+   Container uses aspect-ratio so all percentage positions scale correctly.
+   ========================================================================== */
+
+.how_it_works_images {
+  position: relative;
+  width: 100%;
+  /* Preserves the Figma container proportions (1280 × 855) */
+  aspect-ratio: 1280 / 855;
+}
+
+/* Large background image — ~82.5% wide, anchored top, slight inset on sides */
+.how_it_works_img_center {
+  position: absolute;
+  inset: 0 8.75% 14.97% 8.75%; /* bottom ≈ (855−727)/855 */
+  border-radius: var(--radius-main);
+  overflow: clip;
+}
+
+/* Top-right square overlay */
+.how_it_works_img_right {
+  position: absolute;
+  top: 9.36%; /* ~80px / 855px */
+  right: 0;
+  width: 30%;
+  aspect-ratio: 1 / 1;
+  overflow: clip;
+  border-radius: var(--radius-main);
+  z-index: 1;
+}
+
+/* Bottom-left portrait overlay */
+.how_it_works_img_left {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-main);
+  overflow: clip;
+  z-index: 2;
+}
+
+/* Images fill their wrapper — equivalent to u-image */
+.how_it_works_img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ==========================================================================
+   SECTION HEADER
+   ========================================================================== */
+
+.how_it_works_header {
+  margin-top: var(--space-8);
+}
+
+/* ==========================================================================
+   TIMELINE WRAPPER
+   ========================================================================== */
+
+.how_it_works_timeline {
+  position: relative;
+  margin-top: var(--space-8);
+  /* Inactive dot / line color. Single source for both the CSS rules below and
+     the GSAP script (HowItWorks.astro reads it via getComputedStyle). */
+  --how-it-works-dot-inactive: #172138;
+}
+
+/* ==========================================================================
+   VERTICAL LINE TRACK
+   Absolutely positioned behind all steps.
+   Top / height / left are set by JavaScript after measuring dot positions.
+   ========================================================================== */
+
+.how_it_works_line_track {
+  position: absolute;
+  width: 3px;
+  /* JS sets: top, height, left */
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.how_it_works_line_bg {
+  position: absolute;
+  inset: 0;
+  background-color: var(--how-it-works-dot-inactive);
+}
+
+/* Orange fill — GSAP scrubs scaleY from 0 → 1 */
+.how_it_works_line_fill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-brand-500);
+  transform: scaleY(0);
+  transform-origin: top center;
+}
+
+/* ==========================================================================
+   STEP ROWS
+   Three-column grid: [content/space] [dot column] [content/space]
+   Odd steps: space | dot | content
+   Even step: content (right-aligned) | dot | space
+   ========================================================================== */
+
+.how_it_works_step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2rem minmax(0, 1fr);
+  column-gap: var(--space-8);
+  min-height: 14rem;
+}
+
+/* Space placeholder — fills the empty side of each step */
+.how_it_works_step_space {
+  min-height: 1px;
+}
+
+/* Content column — flex column, padded from top to align with dot */
+.how_it_works_step_content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+}
+
+/* Step 2: content is right-aligned (left column, text aligned right) */
+.how_it_works_step_content.is-reversed {
+  text-align: right;
+}
+
+/* ==========================================================================
+   DOT + DOT WRAP
+   ========================================================================== */
+
+/* Centers the dot in its 2rem column and aligns it to the content top */
+.how_it_works_dot_wrap {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-5); /* matches content padding-top */
+  position: relative;
+  z-index: 1;
+}
+
+/* The dot circle */
+.how_it_works_dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: var(--how-it-works-dot-inactive);
+  outline: 2px solid var(--how-it-works-dot-inactive);
+  outline-offset: 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2; /* sits above the line track */
+  /* Smooth color transition for GSAP (used as CSS fallback, GSAP overrides) */
+  transition:
+    background-color 0.15s ease,
+    outline-color 0.15s ease;
+}
+
+/* First dot starts orange — already active on load */
+.how_it_works_dot[data-dot="1"] {
+  background-color: var(--color-brand-500);
+  outline-color: var(--color-brand-500);
+}
+
+/* ==========================================================================
+   STEP TITLE
+   Number in mono font, title text in primary font — mixed within one <h3>
+   ========================================================================== */
+
+.how_it_works_step_title {
+  font-size: var(--h3-size);
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-large);
+  color: var(--text);
+  margin: 0;
+  text-transform: none;
+}
+
+/* Number portion uses the mono typeface */
+.how_it_works_step_num {
+  font-family: var(--font-tertiary);
+  color: var(--text);
+}
+
+/* ==========================================================================
+   SMALL BREAKPOINT — line moves to left, all content moves to right
+   Triggers at container width < 35em (~560px)
+   ========================================================================== */
+
+@container (width < 35em) {
+  /* Collapse to 2-column: dot col (left) | content col (right) */
+  .how_it_works_step {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    min-height: auto;
+    row-gap: 0;
+  }
+
+  /* Hide spacers — no longer needed */
+  .how_it_works_step_space {
+    display: none;
+  }
+
+  /* Force dot wrap always to column 1 */
+  .how_it_works_dot_wrap {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* Force all content always to column 2 */
+  .how_it_works_step_content {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  /* Reset reversed alignment */
+  .how_it_works_step_content.is-reversed {
+    text-align: left;
+  }
+
+  /* Tighten step spacing on mobile */
+  .how_it_works_step {
+    margin-bottom: var(--space-7);
+  }
+}

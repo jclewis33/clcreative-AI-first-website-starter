@@ -1,0 +1,136 @@
+/* ==========================================================================
+   CASE STUDY FEATURED — interactive 3-card showcase
+   ==========================================================================
+   First card starts wider; on hover any card expands while siblings
+   narrow. Below the collapse point all cards stack at equal width.
+   ========================================================================== */
+
+/* ── Inner container ──────────────────────────────────────────────────── */
+
+.case-study-featured_inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+/* ── Heading area ─────────────────────────────────────────────────────── */
+
+.case-study-featured_heading {
+  display: block;
+}
+
+/* Orange eyebrow color */
+.case-study-featured_heading .u-text-style-eyebrow {
+  color: var(--color-brand-500);
+}
+
+/* On brand-themed sections the orange eyebrow disappears into the orange
+   background — fall back to the theme's text color (white). */
+[data-theme="brand"] .case-study-featured_heading .u-text-style-eyebrow {
+  color: var(--text);
+}
+
+/* ── Card row ─────────────────────────────────────────────────────────── */
+
+.case-study-featured_cards {
+  display: flex;
+  gap: var(--space-3);
+  flex-direction: column;
+}
+
+/* ── Individual card ──────────────────────────────────────────────────── */
+
+.case-study-featured_card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  text-decoration: none;
+  color: inherit;
+  flex: 1 1 0%;
+  min-width: 0;
+  transition: flex 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Card image ───────────────────────────────────────────────────────── */
+
+.case-study-featured_card_visual {
+  overflow: hidden;
+  border-radius: var(--radius-main);
+}
+
+/* Fixed image height — text flows below without pushing image up */
+.case-study-featured_card_visual .u-image-wrapper {
+  aspect-ratio: unset;
+  height: 25rem;
+}
+
+.case-study-featured_card_visual img {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.case-study-featured_card:hover .case-study-featured_card_visual img {
+  transform: scale(1.03);
+}
+
+/* ── Card content ─────────────────────────────────────────────────────── */
+
+.case-study-featured_card_content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ── Desktop: flex row with hover expand ──────────────────────────────── */
+
+@container (width >= 50em) {
+  .case-study-featured_cards {
+    flex-direction: row;
+  }
+
+  /* Default state: first card is wider */
+  .case-study-featured_card {
+    flex: 1 1 0%;
+  }
+
+  .case-study-featured_card.is-expanded {
+    flex: 1.66 1 0%;
+  }
+
+  /* When the card row is hovered, reset all to equal first */
+  .case-study-featured_cards:hover .case-study-featured_card {
+    flex: 1 1 0%;
+  }
+
+  /* Then the hovered card expands */
+  .case-study-featured_cards:hover .case-study-featured_card:hover {
+    flex: 1.66 1 0%;
+  }
+}
+
+/* ── Small: collapsed to single column — switch to landscape ratio ────── */
+
+@container (width < 35em) {
+  .case-study-featured_card_visual .u-image-wrapper {
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* ── Medium: keep row but all same size ───────────────────────────────── */
+
+@container (width >= 35em) and (width < 50em) {
+  .case-study-featured_cards {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  /* First card takes full width */
+  .case-study-featured_card.is-expanded {
+    flex: 1 1 100%;
+  }
+
+  /* Other two share the row */
+  .case-study-featured_card:not(.is-expanded) {
+    flex: 1 1 0%;
+  }
+}

@@ -1,0 +1,1560 @@
+---
+/**
+ * Component Examples — a living showcase of every UI component and variant.
+ *
+ * Built entirely with system components and utility classes — zero custom CSS.
+ * Visit /components to view it.
+ */
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/ui/Section.astro";
+import Heading from "../components/ui/Heading.astro";
+import Text from "../components/ui/Text.astro";
+import Layout from "../components/ui/Layout.astro";
+import Col from "../components/ui/Col.astro";
+import Grid from "../components/ui/Grid.astro";
+import Card from "../components/ui/Card.astro";
+import Accordion from "../components/ui/Accordion.astro";
+import AccordionItem from "../components/ui/AccordionItem.astro";
+import Modal from "../components/ui/Modal.astro";
+import Slider from "../components/ui/Slider.astro";
+import Tab from "../components/ui/Tab.astro";
+import TabButton from "../components/ui/TabButton.astro";
+import TabPanel from "../components/ui/TabPanel.astro";
+import Button from "../components/ui/Button.astro";
+import TestimonialsSlider from "../components/sections/TestimonialsSlider.astro";
+import TestimonialsGrid from "../components/sections/TestimonialsGrid.astro";
+import { getTestimonials } from "../sanity/lib/testimonials";
+import Form from "../components/form/Form.astro";
+import FormField from "../components/form/FormField.astro";
+import FormFieldset from "../components/form/FormFieldset.astro";
+import FormTextarea from "../components/form/FormTextarea.astro";
+import FormSelect from "../components/form/FormSelect.astro";
+import FormCheckbox from "../components/form/FormCheckbox.astro";
+import FormRadio from "../components/form/FormRadio.astro";
+import FormRange from "../components/form/FormRange.astro";
+import Visual from "../components/ui/Visual.astro";
+import BlogPostGrid from "../components/sections/BlogPostGrid.astro";
+
+import humanTouch from "../assets/placeholder-2.avif";
+import manCouch from "../assets/placeholder-3.avif";
+import CaseStudyGrid from "../components/sections/CaseStudyGrid.astro";
+import ContentWrapper from "../components/ui/ContentWrapper.astro";
+import PricingCard from "../components/ui/PricingCard.astro";
+import PricingItem from "../components/ui/PricingItem.astro";
+import Marquee from "../components/ui/Marquee.astro";
+import ScrollReveal from "../components/ui/ScrollReveal.astro";
+
+/* ── Fetch testimonials from Sanity ── */
+import { getDraftModeProps } from "../sanity/lib/draft-mode";
+const testimonials = await getTestimonials(getDraftModeProps(Astro));
+---
+
+<BaseLayout
+  title="Component Examples | Design System"
+  description="Real-world component patterns built with this design system. Composable, accessible, and ready to use."
+>
+  <!-- ============================================================
+       1. HERO
+       ============================================================ -->
+  <Section
+    docs=""
+    paddingTop="page-top"
+    paddingBottom="large"
+    theme="brand"
+    id="hero"
+  >
+    <Layout docs="" variant="stack-centered">
+      <Col slot="col1">
+        <Heading variant="eyebrow">Component Library</Heading>
+        <Heading tag="h1" variant="display-lg" balance accent>
+          Build faster with <strong>reusable components</strong>
+        </Heading>
+        <Text variant="large" align="center" muted maxWidth="32rem">
+          Every component in this library is built with Astro and styled with
+          the design system. Composable, accessible, and ready to ship.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button
+            href="/style-guide"
+            size="large"
+            ariaLabel="Browse style guide">Browse Style Guide</Button
+          >
+          <Button
+            variant="secondary"
+            size="large"
+            data-modal-trigger="comp-modal-small"
+            ariaLabel="Open a modal"
+          >
+            Open a Modal
+          </Button>
+        </div>
+      </Col>
+    </Layout>
+  </Section>
+
+  <Section docs="" minHeight>
+    <Layout docs="">
+      <Col slot="col1">
+        <Heading docs="" variant="h2"
+          >Build faster with reusable components</Heading
+        >
+        <Text docs="">
+          Every component in this library is built with Astro and styled with
+          the design system. Composable, accessible, and ready to ship.</Text
+        >
+        <div class="u-button-wrapper">
+          <Button docs="" href="#">Sign Up Now</Button>
+        </div>
+      </Col>
+      <Visual
+        slot="col2"
+        docs=""
+        src={manCouch}
+        alt="man on couch looking at computer"
+        ratio="square"
+      />
+    </Layout>
+  </Section>
+
+  <!-- ============================================================
+       2. LAYOUT VARIANTS
+       ============================================================ -->
+  <Section padding="large" theme="light" id="layout">
+    <ContentWrapper>
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Layout</Heading>
+      <Heading tag="h2" balance>Flexible two-column layouts</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The Layout component provides 13 named two-column variants. Use col1 and
+        col2 named slots to fill each column. All variants collapse to a single
+        column on mobile.
+      </Text>
+    </ContentWrapper>
+
+    <!-- ── columns ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >columns</Heading
+    >
+    <Layout variant="columns" verticalAlign="center">
+      <Col slot="col1">
+        <Heading variant="eyebrow" class="u-margin-bottom-3"
+          >50 / 50 split</Heading
+        >
+        <Heading tag="h3" variant="h2" balance>
+          Equal columns, side by side
+        </Heading>
+        <Heading tag="h3" variant="h2" balance>
+          Equal columns, side by side
+        </Heading>
+        <Text muted>
+          Use variant="columns" for a balanced split. Great for feature sections
+          where text and visuals share equal weight.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="#" ariaLabel="Get started">Get started</Button>
+          <Button variant="secondary" href="#" ariaLabel="Learn more"
+            >Learn more</Button
+          >
+        </div>
+      </Col>
+      <img
+        slot="col2"
+        src="https://picsum.photos/seed/layout-col/800/600"
+        alt="Placeholder image"
+        loading="lazy"
+        style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; border-radius: var(--radius-large);"
+      />
+    </Layout>
+
+    <!-- ── columns-reversed ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >columns-reversed</Heading
+    >
+    <Layout variant="columns-reversed" verticalAlign="center">
+      <Col slot="col1">
+        <Heading variant="eyebrow" class="u-margin-bottom-3"
+          >Reversed order</Heading
+        >
+        <Heading tag="h3" variant="h2" balance>
+          Image left, content right
+        </Heading>
+        <Text muted>
+          Use variant="columns-reversed" to visually flip the columns on
+          desktop. Column 2 appears on the left. Great for alternating feature
+          sections.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="#" ariaLabel="Explore">Explore</Button>
+        </div>
+      </Col>
+      <img
+        slot="col2"
+        src="https://picsum.photos/seed/layout-rev/800/600"
+        alt="Placeholder image"
+        loading="lazy"
+        style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; border-radius: var(--radius-large);"
+      />
+    </Layout>
+
+    <!-- ── breakout ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >breakout</Heading
+    >
+    <Layout variant="breakout" verticalAlign="center">
+      <Col slot="col1">
+        <Heading variant="eyebrow" class="u-margin-bottom-3">Edge bleed</Heading
+        >
+        <Heading tag="h3" variant="h2" balance>
+          Narrow accent, wide content
+        </Heading>
+        <Text muted>
+          Use variant="breakout" when you want a narrow left accent panel with a
+          wide right content area — great for feature callouts. The image column
+          bleeds to the viewport edge.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="#" ariaLabel="Explore">Explore</Button>
+        </div>
+      </Col>
+
+      <Visual
+        src={"https://picsum.photos/seed/layout-bk/800/1000"}
+        ratio="16/9"
+        alt="layout image"
+        slot="col2"
+        width={1200}
+        height={900}
+      />
+    </Layout>
+
+    <!-- ── contain (card layout) ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >contain</Heading
+    >
+    <Layout variant="contain">
+      <Col slot="col1">
+        <Heading variant="eyebrow" class="u-margin-bottom-3"
+          >Card layout</Heading
+        >
+        <Heading tag="h3" variant="h2" balance>
+          Content and image in a card
+        </Heading>
+        <Text muted>
+          Use variant="contain" to wrap both columns in a rounded card with a
+          background color. The left column is padded content; the right clips
+          an image to the card shape.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="#" ariaLabel="Learn more">Learn more</Button>
+        </div>
+      </Col>
+      <img
+        slot="col2"
+        src="https://picsum.photos/seed/layout-contain/800/600"
+        alt="Placeholder image"
+        loading="lazy"
+        style="width: 100%; height: 100%; object-fit: cover; display: block;"
+      />
+    </Layout>
+
+    <!-- ── contain-reversed ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >contain-reversed</Heading
+    >
+    <Layout variant="contain-reversed">
+      <img
+        slot="col1"
+        src="https://picsum.photos/seed/layout-contain-rev/800/600"
+        alt="Placeholder image"
+        loading="lazy"
+        style="width: 100%; height: 100%; object-fit: cover; display: block;"
+      />
+      <Col slot="col2">
+        <Heading variant="eyebrow" class="u-margin-bottom-3"
+          >Reversed card</Heading
+        >
+        <Heading tag="h3" variant="h2" balance>
+          Image left, content right
+        </Heading>
+        <Text muted>
+          Use variant="contain-reversed" to flip the card layout. The image
+          clips to the left side and the padded content sits on the right.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="#" ariaLabel="Explore">Explore</Button>
+        </div>
+      </Col>
+    </Layout>
+
+    <!-- ── sticky-left ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >sticky-left</Heading
+    >
+    <Layout variant="sticky-left" verticalAlign="start">
+      <Col slot="col1">
+        <Heading variant="eyebrow" class="u-margin-bottom-3"
+          >Sticky column</Heading
+        >
+        <Heading tag="h3" variant="h2" balance>
+          Left column stays fixed
+        </Heading>
+        <Text muted>
+          Use variant="sticky-left" when the left column should stay visible
+          while the right column scrolls. Perfect for table of contents, labels,
+          or navigation.
+        </Text>
+      </Col>
+      <Col slot="col2">
+        <Text class="u-margin-bottom-5">
+          Scroll this column to see the left side stay in place. This pattern
+          works great for FAQ layouts, documentation sidebars, and feature
+          comparison sections.
+        </Text>
+        <Text class="u-margin-bottom-5">
+          The sticky behavior activates on desktop viewports and collapses to a
+          standard stacked layout on mobile — so there's no accessibility
+          concern.
+        </Text>
+        <Text>
+          You can combine this with the ratio prop for asymmetric splits, like
+          ratio="4-8" for a narrow label column and wide content area.
+        </Text>
+      </Col>
+    </Layout>
+
+    <!-- ── columns + ratio ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >columns + ratio</Heading
+    >
+    <Layout variant="columns" ratio="5-7" verticalAlign="start">
+      <Col slot="col1">
+        <Heading variant="eyebrow" class="u-margin-bottom-3"
+          >Custom ratio</Heading
+        >
+        <Heading tag="h3" variant="h2" balance>
+          Label left, content right
+        </Heading>
+        <Text muted>
+          Add ratio="5-7" to any two-column variant for a custom split. Works
+          with columns, columns-reversed, sticky-left, and contain.
+        </Text>
+      </Col>
+      <Grid slot="col2" variant="autofit" minColWidth="12rem" rowGap={4}>
+        <Card variant="stacked" title="01">
+          <Text weight="bold">Discovery</Text>
+          <Text muted
+            >Understand your audience, goals, and competitive landscape.</Text
+          >
+        </Card>
+        <Card variant="stacked" title="02">
+          <Text weight="bold">Design</Text>
+          <Text muted
+            >Build a pixel-perfect system grounded in your brand identity.</Text
+          >
+        </Card>
+        <Card variant="stacked" title="03">
+          <Text weight="bold">Develop</Text>
+          <Text muted
+            >Ship production-ready Astro code that's fast and maintainable.</Text
+          >
+        </Card>
+      </Grid>
+    </Layout>
+
+    <!-- ── stack ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >stack</Heading
+    >
+    <Layout variant="stack">
+      <Col slot="col1">
+        <Heading tag="h3" variant="h2" balance
+          >Single column, left-aligned</Heading
+        >
+        <Text muted>
+          Use variant="stack" for a single-column layout that aligns content to
+          the left. Great for article content or simple text sections.
+        </Text>
+      </Col>
+    </Layout>
+
+    <!-- ── stack-centered ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >stack-centered</Heading
+    >
+    <Layout variant="stack-centered">
+      <Col slot="col1">
+        <Heading tag="h3" variant="h2" balance>Single column, centered</Heading>
+        <Text align="center" muted>
+          Use variant="stack-centered" for a centered single-column layout.
+          Perfect for hero sections, CTAs, and centered introductions.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="#" ariaLabel="Get started">Get started</Button>
+        </div>
+      </Col>
+      <Visual
+        slot="col2"
+        src={humanTouch}
+        alt="human touch image"
+        ratio="wide"
+      />
+    </Layout>
+
+    <!-- ── auto-width ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >auto-width</Heading
+    >
+    <Layout variant="auto-width" verticalAlign="center">
+      <Heading slot="col1" tag="h3" variant="h4">Auto-sized</Heading>
+      <Text slot="col2" muted
+        >Both columns size to their content — neither stretches to fill.</Text
+      >
+    </Layout>
+
+    <!-- ── card ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >card (centered card with background)</Heading
+    >
+    <Layout variant="card">
+      <Col slot="col1">
+        <Heading tag="h3" variant="h3">Centered card layout</Heading>
+        <Text>
+          Use variant="card" for a rounded, clipped card. Content in col1 is
+          centered with padding. Col2 is positioned absolutely as the background
+          — place a Visual and Overlay there for a background image CTA.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="#" ariaLabel="Example button">Example CTA</Button>
+        </div>
+      </Col>
+    </Layout>
+  </Section>
+
+  <!-- ============================================================
+       3. CARDS
+       ============================================================ -->
+  <Section padding="large" theme="dark" id="cards">
+    <ContentWrapper data-animate-in>
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Card</Heading>
+      <Heading tag="h2" balance>Three card variants</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The Card component supports default, stacked, and cover variants. Use
+        href to make the entire card surface a clickable link.
+      </Text>
+    </ContentWrapper>
+
+    <!-- default cards -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-5"
+      >default — visual on top, content below</Heading
+    >
+    <Grid largeColumns={3} mediumColumns={2} smallColumns={1} data-animate-up>
+      {
+        [
+          {
+            seed: "card-d1",
+            title: "Strategic Web Design",
+            text: "Every pixel serves a purpose. We build interfaces that convert visitors into customers.",
+          },
+          {
+            seed: "card-d2",
+            title: "Custom Development",
+            text: "Clean, maintainable Astro code that performs at the highest level on any device.",
+          },
+          {
+            seed: "card-d3",
+            title: "SEO Architecture",
+            text: "Sites built with a crawl-first mindset — structured data, performance, and authority.",
+          },
+        ].map(({ seed, title, text }) => (
+          <Card variant="default" title={title} href="#">
+            <img
+              slot="visual"
+              src={`https://picsum.photos/seed/${seed}/800/500`}
+              alt={title}
+              loading="lazy"
+              style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;"
+            />
+            <Text muted clamp={3}>
+              {text}
+            </Text>
+            <div slot="footer">
+              <Button variant="text" href="#" ariaLabel="Read more">
+                Read more →
+              </Button>
+            </div>
+          </Card>
+        ))
+      }
+    </Grid>
+
+    <!-- stacked cards -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-5"
+      >stacked — text-only, no visual</Heading
+    >
+    <Grid largeColumns={3} mediumColumns={2} smallColumns={1} data-animate-up>
+      {
+        [
+          {
+            title: "Zero JS by Default",
+            text: "Astro ships no client-side JS unless you opt in — pages load instantly.",
+            tag: "Performance",
+          },
+          {
+            title: "TypeScript Props",
+            text: "Every component is typed. Editor autocomplete and type safety everywhere.",
+            tag: "DX",
+          },
+          {
+            title: "Accessible Patterns",
+            text: "ARIA, keyboard navigation, and semantic HTML are baked in from day one.",
+            tag: "A11y",
+          },
+        ].map(({ title, text, tag }) => (
+          <Card variant="stacked" title={title}>
+            <Text muted>{text}</Text>
+            <div slot="footer">
+              <Heading variant="eyebrow">{tag}</Heading>
+            </div>
+          </Card>
+        ))
+      }
+    </Grid>
+
+    <!-- cover cards -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-5"
+      >cover — image fills card, content overlays</Heading
+    >
+    <Grid largeColumns={3} mediumColumns={2} smallColumns={1} data-animate-up>
+      {
+        [
+          {
+            seed: "cover-c1",
+            title: "Wizard Perks",
+            text: "Loyalty platform for retail brands.",
+          },
+          {
+            seed: "cover-c2",
+            title: "CL Creative",
+            text: "Always-on recruiting automation.",
+          },
+          {
+            seed: "cover-c3",
+            title: "TreeRing",
+            text: "Custom school yearbooks, reimagined.",
+          },
+        ].map(({ seed, title, text }) => (
+          <Card variant="cover" title={title} href="#">
+            <img
+              slot="visual"
+              src={`https://picsum.photos/seed/${seed}/800/1000`}
+              alt={title}
+              loading="lazy"
+              style="width:100%; height:100%; object-fit:cover; display:block;"
+            />
+            <Text muted>{text}</Text>
+          </Card>
+        ))
+      }
+    </Grid>
+  </Section>
+
+  <!-- cover cards -->
+  <CaseStudyGrid docs="" limit={6} />
+
+  <!-- ============================================================
+       4. SLIDER
+       ============================================================ -->
+  <Section padding="large" theme="dark" id="slider">
+    <ContentWrapper>
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Slider</Heading>
+      <Heading tag="h2" balance>Touch-friendly card carousel</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The Slider component wraps Swiper v8. Each slide must be a .swiper-slide
+        div. Control per-breakpoint slide counts with slidesLg, slidesMd, and
+        slidesSm.
+      </Text>
+    </ContentWrapper>
+
+    <div class="u-margin-top-8">
+      <Slider
+        slidesLg={3}
+        slidesMd={2}
+        slidesSm={1.2}
+        showBullets={true}
+        showArrows={true}
+      >
+        {
+          [
+            {
+              seed: "sl-1",
+              title: "Web Design",
+              text: "High-converting pages built on this design system.",
+            },
+            {
+              seed: "sl-2",
+              title: "Development",
+              text: "Astro + clean code that scales with your business.",
+            },
+            {
+              seed: "sl-3",
+              title: "Brand Identity",
+              text: "Visual systems that make your brand unmistakable.",
+            },
+            {
+              seed: "sl-4",
+              title: "SEO Strategy",
+              text: "Authority architecture that earns traffic and trust.",
+            },
+            {
+              seed: "sl-5",
+              title: "Analytics",
+              text: "Data-informed decisions from day one of launch.",
+            },
+            {
+              seed: "sl-6",
+              title: "Conversion Rate",
+              text: "A/B testing and UX audit to maximise every visit.",
+            },
+          ].map(({ seed, title, text }) => (
+            <div class="swiper-slide">
+              <Card variant="default" title={title} href="#">
+                <img
+                  slot="visual"
+                  src={`https://picsum.photos/seed/${seed}/800/500`}
+                  alt={title}
+                  loading="lazy"
+                  style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;"
+                />
+                <Text muted clamp={2}>
+                  {text}
+                </Text>
+              </Card>
+            </div>
+          ))
+        }
+      </Slider>
+    </div>
+  </Section>
+
+  <!-- ============================================================
+       MARQUEE
+       ============================================================ -->
+  <Section padding="large" theme="dark" id="marquee">
+    <ContentWrapper>
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Marquee</Heading>
+      <Heading tag="h2" balance>Infinite scrolling ticker</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The Marquee component uses GSAP for smooth infinite horizontal
+        scrolling. Drop in text, logos, or any content. Pauses on hover.
+      </Text>
+    </ContentWrapper>
+
+    <div class="u-margin-top-8">
+      <Marquee>
+        <span class="marquee_item u-text-style-h3">Design</span>
+        <span class="marquee_item u-text-style-h3">Develop</span>
+        <span class="marquee_item u-text-style-h3">Deploy</span>
+        <span class="marquee_item u-text-style-h3">Iterate</span>
+        <span class="marquee_item u-text-style-h3">Scale</span>
+        <span class="marquee_item u-text-style-h3">Optimize</span>
+      </Marquee>
+    </div>
+
+    <div class="u-margin-top-8">
+      <Marquee direction="right" speed={30} gap={8}>
+        <span class="marquee_item u-text-style-large u-text-style-muted"
+          >Webflow</span
+        >
+        <span class="marquee_item u-text-style-large u-text-style-muted"
+          >Astro</span
+        >
+        <span class="marquee_item u-text-style-large u-text-style-muted"
+          >GSAP</span
+        >
+        <span class="marquee_item u-text-style-large u-text-style-muted"
+          >Figma</span
+        >
+        <span class="marquee_item u-text-style-large u-text-style-muted"
+          >TypeScript</span
+        >
+        <span class="marquee_item u-text-style-large u-text-style-muted"
+          >Sanity</span
+        >
+      </Marquee>
+    </div>
+  </Section>
+
+  <!-- ============================================================
+       SCROLL REVEAL
+       ============================================================ -->
+  <Section padding="large" theme="dark" id="scroll-reveal">
+    <ContentWrapper>
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >Scroll Reveal</Heading
+      >
+      <Heading tag="h2" balance>Scroll-linked sticky image reveal</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Text blocks fade in and out on the left while a sticky image on the
+        right cross-fades to match the active block. Collapses to inline images
+        on mobile.
+      </Text>
+    </ContentWrapper>
+
+    <div class="u-margin-top-8">
+      <ScrollReveal
+        items={[
+          {
+            eyebrow: "Platform",
+            heading: "Powerful analytics dashboard",
+            text: "Track every metric that matters to your business with real-time dashboards and custom reports.",
+            image: humanTouch,
+            imageAlt: "Analytics dashboard screenshot",
+          },
+          {
+            heading: "Automated workflows",
+            text: "Set it and forget it. Our automation engine handles repetitive tasks so your team can focus on what matters.",
+            image: manCouch,
+            imageAlt: "Workflow builder interface",
+            buttonHref: "#",
+            buttonText: "Learn more",
+          },
+          {
+            heading: "Real-time collaboration",
+            text: "Work together seamlessly, no matter where your team is located. Changes sync instantly across all devices.",
+            image: humanTouch,
+            imageAlt: "Team collaboration view",
+          },
+          {
+            eyebrow: "Security",
+            heading: "Enterprise-grade security",
+            text: "Your data is protected with bank-level encryption, SSO, and compliance certifications your security team will love.",
+            image: manCouch,
+            imageAlt: "Security settings panel",
+          },
+        ]}
+      />
+    </div>
+  </Section>
+
+  <!-- ============================================================
+       5. TABS
+       ============================================================ -->
+  <Section padding="large" theme="light" id="tabs">
+    <ContentWrapper>
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Tab</Heading>
+      <Heading tag="h2" balance>Four tab variants</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The Tab component supports top, side, slider, and fade variants. Compose
+        with TabButton and TabPanel.
+      </Text>
+    </ContentWrapper>
+
+    <!-- ── Top Tabs (default) ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >top</Heading
+    >
+    <Tab variant="top">
+      <TabButton slot="buttons" label="Features" />
+      <TabButton slot="buttons" label="Pricing" />
+      <TabButton slot="buttons" label="Support" />
+
+      <TabPanel>
+        <Layout variant="columns" verticalAlign="center">
+          <Col slot="col1">
+            <Heading tag="h3" variant="h3">Powerful features</Heading>
+            <Text muted>
+              Every component is typed with TypeScript. Editor autocomplete and
+              inline docs are built in so you never have to guess a prop name or
+              variant.
+            </Text>
+          </Col>
+          <img
+            slot="col2"
+            src="https://picsum.photos/seed/tab-feat/800/500"
+            alt="Features"
+            loading="lazy"
+            style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
+          />
+        </Layout>
+      </TabPanel>
+
+      <TabPanel>
+        <Layout variant="columns" verticalAlign="center">
+          <Col slot="col1">
+            <Heading tag="h3" variant="h3">Simple pricing</Heading>
+            <Text muted>
+              One plan, unlimited projects. No per-seat fees, no hidden costs.
+              Start building today and scale as your team grows.
+            </Text>
+          </Col>
+          <img
+            slot="col2"
+            src="https://picsum.photos/seed/tab-price/800/500"
+            alt="Pricing"
+            loading="lazy"
+            style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
+          />
+        </Layout>
+      </TabPanel>
+
+      <TabPanel>
+        <Layout variant="columns" verticalAlign="center">
+          <Col slot="col1">
+            <Heading tag="h3" variant="h3">Dedicated support</Heading>
+            <Text muted>
+              Our team is available around the clock to help you ship faster.
+              Reach out through Slack, email, or schedule a call anytime.
+            </Text>
+          </Col>
+          <img
+            slot="col2"
+            src="https://picsum.photos/seed/tab-supp/800/500"
+            alt="Support"
+            loading="lazy"
+            style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
+          />
+        </Layout>
+      </TabPanel>
+    </Tab>
+
+    <!-- ── Side Tabs ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >side</Heading
+    >
+    <Tab variant="side">
+      <Heading slot="heading" tag="h3" variant="h3">Our Services</Heading>
+      <TabButton slot="buttons" label="Web Design" />
+      <TabButton slot="buttons" label="Development" />
+      <TabButton slot="buttons" label="SEO Strategy" />
+
+      <TabPanel>
+        <Heading tag="h4" variant="h4">Web Design</Heading>
+        <Text muted>
+          High-converting websites built on a structured design system. Every
+          pixel serves a purpose — from typography and spacing to colour and
+          interaction.
+        </Text>
+        <img
+          src="https://picsum.photos/seed/tab-design/800/400"
+          alt="Web design services"
+          loading="lazy"
+          class="u-margin-top-4"
+          style="width: 100%; aspect-ratio: 2/1; object-fit: cover; display: block; border-radius: var(--radius-large);"
+        />
+      </TabPanel>
+
+      <TabPanel>
+        <Heading tag="h4" variant="h4">Development</Heading>
+        <Text muted>
+          Clean, maintainable Astro code that ships zero JavaScript by default.
+          Performance is a feature, not an afterthought.
+        </Text>
+        <img
+          src="https://picsum.photos/seed/tab-dev/800/400"
+          alt="Development services"
+          loading="lazy"
+          class="u-margin-top-4"
+          style="width: 100%; aspect-ratio: 2/1; object-fit: cover; display: block; border-radius: var(--radius-large);"
+        />
+      </TabPanel>
+
+      <TabPanel>
+        <Heading tag="h4" variant="h4">SEO Strategy</Heading>
+        <Text muted>
+          Authority architecture that earns traffic and trust. Structured data,
+          crawl-first markup, and performance optimisation from the ground up.
+        </Text>
+        <img
+          src="https://picsum.photos/seed/tab-seo/800/400"
+          alt="SEO strategy services"
+          loading="lazy"
+          class="u-margin-top-4"
+          style="width: 100%; aspect-ratio: 2/1; object-fit: cover; display: block; border-radius: var(--radius-large);"
+        />
+      </TabPanel>
+    </Tab>
+
+    <!-- ── Slider Tabs (autoplay + controls) ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >slider</Heading
+    >
+    <Tab variant="slider" autoplayDuration={8} duration={0.6}>
+      <TabButton slot="buttons" label="Step 1" />
+      <TabButton slot="buttons" label="Step 2" />
+      <TabButton slot="buttons" label="Step 3" />
+      <TabButton slot="buttons" label="Step 4" />
+
+      <TabPanel>
+        <Layout variant="columns" verticalAlign="center">
+          <Col slot="col1">
+            <Heading tag="h3" variant="h3">Discovery</Heading>
+            <Text muted>
+              We start by understanding your audience, goals, and competitive
+              landscape. Research-driven strategy sets the foundation for
+              everything that follows.
+            </Text>
+          </Col>
+          <img
+            slot="col2"
+            src="https://picsum.photos/seed/tab-s1/800/500"
+            alt="Discovery phase"
+            loading="lazy"
+            style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
+          />
+        </Layout>
+      </TabPanel>
+
+      <TabPanel>
+        <Layout variant="columns" verticalAlign="center">
+          <Col slot="col1">
+            <Heading tag="h3" variant="h3">Design</Heading>
+            <Text muted>
+              Pixel-perfect layouts grounded in your brand identity. We design
+              systems, not just screens — so every page feels cohesive and
+              intentional.
+            </Text>
+          </Col>
+          <img
+            slot="col2"
+            src="https://picsum.photos/seed/tab-s2/800/500"
+            alt="Design phase"
+            loading="lazy"
+            style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
+          />
+        </Layout>
+      </TabPanel>
+
+      <TabPanel>
+        <Layout variant="columns" verticalAlign="center">
+          <Col slot="col1">
+            <Heading tag="h3" variant="h3">Develop</Heading>
+            <Text muted>
+              Production-ready Astro code that's fast, accessible, and
+              maintainable. We ship with confidence because every component is
+              tested and typed.
+            </Text>
+          </Col>
+          <img
+            slot="col2"
+            src="https://picsum.photos/seed/tab-s3/800/500"
+            alt="Development phase"
+            loading="lazy"
+            style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
+          />
+        </Layout>
+      </TabPanel>
+
+      <TabPanel>
+        <Layout variant="columns" verticalAlign="center">
+          <Col slot="col1">
+            <Heading tag="h3" variant="h3">Launch</Heading>
+            <Text muted>
+              Go live with performance monitoring, analytics, and ongoing
+              support. We stay with you post-launch to iterate and optimise
+              based on real data.
+            </Text>
+          </Col>
+          <img
+            slot="col2"
+            src="https://picsum.photos/seed/tab-s4/800/500"
+            alt="Launch phase"
+            loading="lazy"
+            style="width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-radius: var(--radius-large);"
+          />
+        </Layout>
+      </TabPanel>
+    </Tab>
+
+    <!-- ── Fade Tabs ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >fade</Heading
+    >
+    <Tab variant="fade">
+      <TabButton slot="buttons" label="Overview" />
+      <TabButton slot="buttons" label="Details" />
+      <TabButton slot="buttons" label="Specs" />
+
+      <TabPanel>
+        <Heading tag="h3" variant="h3">Product overview</Heading>
+        <Text muted>
+          A high-level look at what makes this product unique. Designed for
+          clarity, built for performance, and shipped with confidence.
+        </Text>
+      </TabPanel>
+
+      <TabPanel>
+        <Heading tag="h3" variant="h3">In-depth details</Heading>
+        <Text muted>
+          Dive deeper into the architecture, patterns, and decisions behind
+          every component. Every choice is documented and intentional.
+        </Text>
+      </TabPanel>
+
+      <TabPanel>
+        <Heading tag="h3" variant="h3">Technical specs</Heading>
+        <Text muted>
+          Zero JS by default, sub-second load times, perfect Lighthouse scores.
+          Built with Astro 5, GSAP 3.12, and the CSS variable system.
+        </Text>
+      </TabPanel>
+    </Tab>
+  </Section>
+
+  <!-- ============================================================
+       6. TESTIMONIALS
+       ============================================================ -->
+  <TestimonialsSlider
+    theme="brand"
+    padding="main"
+    id="testimonials"
+    eyebrow="Testimonials"
+    heading="What our clients say"
+    showArrows={true}
+    slidesLg={3}
+    slidesMd={2}
+    slidesSm={1.2}
+    testimonials={testimonials}
+  />
+
+  <TestimonialsGrid
+    theme="dark"
+    padding="main"
+    id="testimonials-grid"
+    eyebrow="Testimonials"
+    heading="Client feedback"
+    columns={3}
+    columnsMd={2}
+    columnsSm={1}
+    limit={6}
+    testimonials={testimonials}
+  />
+
+  <!-- ============================================================
+       7. ACCORDION
+       ============================================================ -->
+  <Section padding="large" theme="brand" id="accordion">
+    <Layout variant="sticky-left" verticalAlign="start">
+      <Col slot="col1">
+        <Heading variant="eyebrow" class="u-margin-bottom-3">Accordion</Heading>
+        <Heading tag="h2" variant="h1" balance accent>
+          Common questions, <strong>answered</strong>
+        </Heading>
+        <Text variant="regular">
+          The Accordion and AccordionItem components animate with GSAP for
+          smooth height transitions. Set openByDefault to pre-expand an item on
+          load.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="/style-guide" ariaLabel="View style guide"
+            >View style guide</Button
+          >
+        </div>
+      </Col>
+
+      <Accordion docs="" slot="col2" openByDefault={1}>
+        <AccordionItem question="What is the design system?">
+          <Text>
+            A structured CSS and component system. It
+            uses CSS custom properties, a u- utility class layer, and an Astro
+            component layer to give you total design control with fast
+            development speed.
+          </Text>
+        </AccordionItem>
+
+        <AccordionItem question="How do I use the Section component?">
+          <Text>
+            Wrap any page section in a Section component and pass a theme
+            (light, dark, or brand), a padding size, and optionally a container
+            width. The component handles spacing tokens and theme cascading
+            automatically.
+          </Text>
+        </AccordionItem>
+
+        <AccordionItem question="Can I mix layout variants on the same page?">
+          <Text>
+            Yes. Each Layout instance is fully independent. Mix columns for
+            balanced sections, breakout for accent panels, and sticky-left for
+            FAQ or feature-detail patterns all on the same page.
+          </Text>
+        </AccordionItem>
+
+        <AccordionItem
+          question="Is JavaScript required for components to work?"
+        >
+          <Text>
+            Accordion and Slider require GSAP and Swiper v8 respectively — both
+            are loaded via CDN. The Modal uses a native dialog element with a
+            lightweight controller. All other components are pure HTML and CSS.
+          </Text>
+        </AccordionItem>
+
+        <AccordionItem question="How do I trigger a modal from a button?">
+          <Text>
+            Add data-modal-trigger="your-id" to any button or link. Render a
+            Modal with id="your-id" anywhere on the page — the JS controller
+            wires them up automatically on DOMContentLoaded.
+          </Text>
+        </AccordionItem>
+      </Accordion>
+    </Layout>
+  </Section>
+
+  <!-- ============================================================
+       8. FORMS
+       ============================================================ -->
+  <Section padding="large" theme="light" id="forms">
+    <ContentWrapper>
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >Form Components</Heading
+      >
+      <Heading tag="h2" balance>Eight form components</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Form, FormField, FormFieldset, FormTextarea, FormSelect, FormCheckbox,
+        FormRadio, and FormRange. All support label variants and validation
+        states.
+      </Text>
+    </ContentWrapper>
+
+    <!-- Default label variant -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >Default labels</Heading
+    >
+    <Form name="demo-default">
+      <FormFieldset columns={2}>
+        <FormField
+          label="Full Name"
+          name="name"
+          placeholder="John Doe"
+          required
+        />
+        <FormField
+          label="Email"
+          name="email"
+          type="email"
+          placeholder="john@example.com"
+          required
+        />
+      </FormFieldset>
+      <FormFieldset columns={2}>
+        <FormField
+          label="Phone"
+          name="phone"
+          type="tel"
+          placeholder="+1 (555) 000-0000"
+        />
+        <FormSelect
+          label="Subject"
+          name="subject"
+          placeholderOption="Choose a topic"
+          options={[
+            { label: "General Inquiry", value: "general" },
+            { label: "Project Quote", value: "quote" },
+            { label: "Support", value: "support" },
+            { label: "Partnership", value: "partnership" },
+          ]}
+        />
+      </FormFieldset>
+      <FormTextarea
+        label="Message"
+        name="message"
+        placeholder="Tell us about your project..."
+        rows={4}
+      />
+    </Form>
+
+    <!-- Floating label variant -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >Floating labels</Heading
+    >
+    <Form name="demo-floating">
+      <FormFieldset columns={2}>
+        <FormField
+          label="Full Name"
+          name="name-float"
+          labelVariant="floating"
+          required
+        />
+        <FormField
+          label="Email Address"
+          name="email-float"
+          type="email"
+          labelVariant="floating"
+          required
+        />
+      </FormFieldset>
+      <FormFieldset columns={2}>
+        <FormField
+          label="Phone Number"
+          name="phone-float"
+          type="tel"
+          labelVariant="floating"
+        />
+        <FormSelect
+          label="Subject"
+          name="subject-float"
+          labelVariant="floating"
+          options={[
+            { label: "General Inquiry", value: "general" },
+            { label: "Project Quote", value: "quote" },
+            { label: "Support", value: "support" },
+          ]}
+        />
+      </FormFieldset>
+      <FormTextarea
+        label="Your Message"
+        name="message-float"
+        labelVariant="floating"
+        rows={4}
+      />
+    </Form>
+
+    <!-- Checkboxes, Radios, Range -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >Checkboxes, Radios, and Range</Heading
+    >
+    <Form name="demo-controls">
+      <FormFieldset columns={2}>
+        <div>
+          <Text weight="bold" class="u-margin-bottom-3">Checkboxes</Text>
+          <FormCheckbox
+            label="Email notifications"
+            name="notify-email"
+            checked
+          />
+          <FormCheckbox label="SMS notifications" name="notify-sms" />
+          <FormCheckbox label="Marketing updates" name="notify-marketing" />
+        </div>
+        <div>
+          <Text weight="bold" class="u-margin-bottom-3">Radio buttons</Text>
+          <FormRadio label="Starter plan" name="plan" value="starter" checked />
+          <FormRadio label="Professional plan" name="plan" value="pro" />
+          <FormRadio label="Enterprise plan" name="plan" value="enterprise" />
+        </div>
+      </FormFieldset>
+      <FormRange
+        label="Budget range"
+        name="budget"
+        min={1000}
+        max={50000}
+        step={1000}
+        value={15000}
+        showValue
+        showMinMax
+        prefix="$"
+      />
+    </Form>
+  </Section>
+
+  <!-- ============================================================
+       9. MODALS
+       ============================================================ -->
+  <Section padding="large" theme="light" id="modals">
+    <ContentWrapper>
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Modal</Heading>
+      <Heading tag="h2" balance>Three modal variants</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Add data-modal-trigger="id" to any element to open a modal. ESC key and
+        backdrop click close it automatically. The side-panel variant slides in
+        from the right; full-screen fills the entire viewport.
+      </Text>
+    </ContentWrapper>
+    <Grid
+      largeColumns={3}
+      mediumColumns={1}
+      smallColumns={1}
+      class="u-margin-top-8"
+    >
+      <Card variant="stacked" title="Small">
+        <Text muted
+          >Centered panel, max 800px wide. Use for confirmations, previews, or
+          short forms.</Text
+        >
+        <div slot="footer">
+          <Button
+            data-modal-trigger="comp-modal-small"
+            ariaLabel="Open small modal">Open small modal</Button
+          >
+        </div>
+      </Card>
+      <Card variant="stacked" title="Side Panel">
+        <Text muted
+          >Slides in from the right edge. Use for filters, settings, or detail
+          drawers.</Text
+        >
+        <div slot="footer">
+          <Button
+            variant="secondary"
+            data-modal-trigger="comp-modal-side"
+            ariaLabel="Open side panel">Open side panel</Button
+          >
+        </div>
+      </Card>
+      <Card variant="stacked" title="Full Screen">
+        <Text muted
+          >Covers the entire viewport. Use for image viewers or immersive flows.</Text
+        >
+        <div slot="footer">
+          <Button
+            variant="secondary"
+            data-modal-trigger="comp-modal-full"
+            ariaLabel="Open full screen">Open full screen</Button
+          >
+        </div>
+      </Card>
+    </Grid>
+  </Section>
+
+  <!-- ============================================================
+       10. CTA
+       ============================================================ -->
+  <Section padding="large" theme="dark" id="cta">
+    <Layout variant="stack-centered">
+      <Col slot="col1">
+        <Heading variant="eyebrow">Get Started</Heading>
+        <Heading tag="h2" variant="display-md" balance accent>
+          Ready to build something <strong>exceptional?</strong>
+        </Heading>
+        <Text variant="large" align="center" muted maxWidth="32rem">
+          This design system gives you everything you need to ship high-quality
+          Astro sites faster than ever before.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button
+            href="/style-guide"
+            size="large"
+            ariaLabel="Browse style guide">Browse style guide</Button
+          >
+          <Button
+            variant="secondary"
+            href="/"
+            size="large"
+            ariaLabel="Back to home">Back to home</Button
+          >
+        </div>
+      </Col>
+    </Layout>
+  </Section>
+
+  <!-- ============================================================
+       Blog Post Grid - Recent
+       ============================================================ -->
+  <Section id="blogpostgrid">
+    <ContentWrapper>
+      <Heading variant="eyebrow">Blog</Heading>
+      <Heading tag="h2">Blog Post Grid Variants</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Variants for the blog post grid that can show on different pages. These
+        are individual sections that can be placed directly on the page.
+      </Text>
+    </ContentWrapper>
+    <BlogPostGrid docs="" paddingTop="none" variant="recent" />
+
+    <!-- ============================================================
+       Blog Post Grid - Category
+       ============================================================ -->
+
+    <BlogPostGrid
+      docs=""
+      paddingTop="none"
+      variant="category"
+      category="Development"
+    />
+
+    <!-- ============================================================
+       MODALS — rendered once at end of body
+       ============================================================ -->
+
+    <Modal
+      id="comp-modal-small"
+      variant="small"
+      ariaLabel="Component example — small modal"
+    >
+      <Heading tag="h2" variant="h3">Small Modal</Heading>
+      <Text>
+        This is the <strong>small</strong> variant — a centered dialog panel constrained
+        to 800px wide. Use it for confirmations, previews, short forms, or supplementary
+        content.
+      </Text>
+      <Text muted>
+        Close with the × button, the backdrop overlay, or the ESC key.
+      </Text>
+      <div class="u-margin-top-6">
+        <Button data-modal-close ariaLabel="Close modal">Got it</Button>
+      </div>
+    </Modal>
+
+    <Modal
+      id="comp-modal-side"
+      variant="side-panel"
+      ariaLabel="Component example — side panel"
+    >
+      <Heading tag="h2" variant="h3">Side Panel</Heading>
+      <Text>
+        The <strong>side-panel</strong> variant slides in from the right edge of the
+        screen. Use it for filters, settings drawers, or contextual detail panels.
+      </Text>
+      <Text muted>
+        Close with the × button, the backdrop overlay, or the ESC key.
+      </Text>
+      <div class="u-margin-top-6">
+        <Button data-modal-close ariaLabel="Close panel">Close panel</Button>
+      </div>
+    </Modal>
+
+    <Modal
+      id="comp-modal-full"
+      variant="full-screen"
+      ariaLabel="Component example — full screen modal"
+    >
+      <Layout variant="stack-centered">
+        <Col slot="col1">
+          <Heading tag="h2" variant="h3">Full Screen</Heading>
+          <Text align="center">
+            The <strong>full-screen</strong> variant covers the entire viewport. Use
+            it for image lightboxes, video players, or immersive onboarding flows.
+          </Text>
+          <Text muted align="center">
+            Close with the × button or the ESC key. (Backdrop click is disabled
+            at full screen.)
+          </Text>
+          <div class="u-button-wrapper u-margin-top-6">
+            <Button data-modal-close ariaLabel="Close modal">Close</Button>
+          </div>
+        </Col>
+      </Layout>
+    </Modal>
+  </Section>
+
+  <!-- ============================================================
+       PRICING CARDS
+       ============================================================ -->
+  <Section theme="light" padding="large" id="pricing-cards">
+    <Layout variant="stack">
+      <ContentWrapper>
+        <Heading variant="eyebrow">Pricing Cards</Heading>
+        <Heading tag="h2" variant="h2" balance>
+          PricingCard + PricingItem
+        </Heading>
+        <Text variant="regular" muted>
+          Three variants: detailed cards with feature items, compact quick-view
+          cards, and a general pricing card with 2-column items.
+        </Text>
+      </ContentWrapper>
+    </Layout>
+
+    {/* ---- Detailed cards (autofit grid) ---- */}
+    <Grid variant="autofit" minColWidth="18rem" rowGap={6}>
+      <PricingCard
+        name="Essentials Package"
+        price="$1,500"
+        priceSuffix="/month"
+        description="For businesses starting their organic journey."
+        href="/contact"
+        buttonText="Get started"
+        buttonVariant="secondary"
+        class="u-box-shadow-small"
+      >
+        <PricingItem>3 blog posts per month</PricingItem>
+        <PricingItem>Monthly technical SEO audit</PricingItem>
+        <PricingItem>Google Business Profile management</PricingItem>
+        <PricingItem>Monthly performance report</PricingItem>
+      </PricingCard>
+
+      <PricingCard
+        name="Growth Package"
+        price="$3,500"
+        priceSuffix="/month"
+        description="For businesses ready to scale their organic presence."
+        href="/contact"
+        buttonText="Get started"
+        featured
+        class="u-box-shadow-medium"
+      >
+        <span slot="label">Most Popular</span>
+        <PricingItem>6 blog posts per month</PricingItem>
+        <PricingItem>Bi-weekly technical SEO audit</PricingItem>
+        <PricingItem>8 social media posts per month</PricingItem>
+        <PricingItem>Link building outreach</PricingItem>
+        <PricingItem>Conversion rate optimization</PricingItem>
+        <PricingItem>Priority support</PricingItem>
+      </PricingCard>
+
+      <PricingCard
+        name="Enterprise Package"
+        price="$7,500"
+        priceSuffix="/month"
+        description="Full-service digital growth for established brands."
+        href="/contact"
+        buttonText="Get started"
+        buttonVariant="secondary"
+        class="u-box-shadow-small"
+      >
+        <PricingItem>12 blog posts per month</PricingItem>
+        <PricingItem>Weekly technical SEO audit</PricingItem>
+        <PricingItem>16 social media posts per month</PricingItem>
+        <PricingItem>Advanced link building</PricingItem>
+        <PricingItem>A/B testing and CRO</PricingItem>
+        <PricingItem>Dedicated account manager</PricingItem>
+        <PricingItem>Custom analytics dashboard</PricingItem>
+      </PricingCard>
+    </Grid>
+
+    {/* ---- General pricing card ---- */}
+    <Layout variant="stack" class="u-margin-top-8">
+      <ContentWrapper>
+        <Heading tag="h3" variant="h4">General pricing card</Heading>
+      </ContentWrapper>
+    </Layout>
+    <PricingCard
+      variant="general"
+      price="$5,000"
+      priceLabel="Starting at"
+      href="/book-a-call"
+      buttonText="Book Your Free Strategy Call"
+      itemsLabel="Your Investment Includes:"
+      class="u-box-shadow-small"
+    >
+      <PricingItem>ICP discovery and strategic positioning</PricingItem>
+      <PricingItem>Custom Webflow design and development</PricingItem>
+      <PricingItem>Conversion-optimized messaging and structure</PricingItem>
+      <PricingItem>SEO foundation (technical + on-page)</PricingItem>
+      <PricingItem>Team training and documentation</PricingItem>
+      <PricingItem>30 days of post-launch support</PricingItem>
+    </PricingCard>
+
+    {/* ---- Compact quick-view cards ---- */}
+    <Layout variant="stack" class="u-margin-top-8">
+      <ContentWrapper>
+        <Heading tag="h3" variant="h4">Compact quick-view cards</Heading>
+      </ContentWrapper>
+    </Layout>
+    <Grid variant="autofit" minColWidth="16rem" rowGap={6}>
+      <PricingCard
+        variant="compact"
+        name="SEO Audit"
+        price="$1,200"
+        description="One-time comprehensive technical and on-page audit."
+        href="/contact"
+        class="u-box-shadow-small"
+      />
+      <PricingCard
+        variant="compact"
+        name="Messaging Audit"
+        price="$1,500"
+        description="Full review of your brand messaging and positioning."
+        href="/contact"
+        class="u-box-shadow-small"
+      />
+      <PricingCard
+        variant="compact"
+        name="A-La-Carte Backlinks"
+        price="$275"
+        priceSuffix="/link"
+        priceLabel="Starting at"
+        description="High-quality backlinks from relevant, authoritative sites."
+        href="/contact"
+        class="u-box-shadow-small"
+      />
+    </Grid>
+  </Section>
+</BaseLayout>

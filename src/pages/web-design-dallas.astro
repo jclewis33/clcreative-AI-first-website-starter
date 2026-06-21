@@ -1,0 +1,263 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { serviceFaqJsonLd } from "../lib/jsonld";
+import { SITE } from "../config/site";
+import Section from "../components/ui/Section.astro";
+import Layout from "../components/ui/Layout.astro";
+import Col from "../components/ui/Col.astro";
+import Heading from "../components/ui/Heading.astro";
+import Text from "../components/ui/Text.astro";
+import Button from "../components/ui/Button.astro";
+import Visual from "../components/ui/Visual.astro";
+import ContentWrapper from "../components/ui/ContentWrapper.astro";
+
+// Section components
+import LocalDesignerIntro from "../components/sections/LocalDesignerIntro.astro";
+import ComparisonSection from "../components/sections/ComparisonSection.astro";
+import WebsiteGrowthPromo from "../components/sections/WebsiteGrowthPromo.astro";
+import CTASection from "../components/sections/CTASection.astro";
+import CaseStudyFeatured from "../components/sections/CaseStudyFeatured.astro";
+import HowWeWorkPromo from "../components/sections/HowWeWorkPromo.astro";
+import TestimonialShowcase from "../components/sections/TestimonialShowcase.astro";
+import HowItWorks from "../components/sections/HowItWorks.astro";
+import FAQ from "../components/sections/FAQ.astro";
+import NotReadyToBook from "../components/sections/NotReadyToBook.astro";
+
+// Data
+import { webDesignDallasFaqs } from "../data/faqs";
+
+// Images
+import heroImg from "../assets/local-web-designer/local-web-designer-dallas-hero.webp";
+import portraitImg from "../assets/local-web-designer/local-web-designer.webp";
+import m2mImg from "../assets/local-web-designer/local-web-designer-m2m.webp";
+import artImg from "../assets/local-web-designer/local-web-designer-art.webp";
+import clearMessageImg from "../assets/local-web-designer/local-web-designer-clear-message.webp";
+import websiteHelpsGrowImg from "../assets/local-web-designer/local-web-designer-dallas-website-helps-grow.webp";
+
+const pageUrl = `${SITE.url}/web-design-dallas`;
+
+// Per-page structured data — Service + FAQPage combined into a single @graph.
+// LocalBusiness lives sitewide in BaseLayout; referenced here via provider.@id.
+const schemaGraph = serviceFaqJsonLd({
+  pageUrl,
+  serviceType: "Web Design",
+  name: "Web Design in Dallas, TX",
+  description:
+    "Strategy-first Webflow web design for Dallas, TX companies. Clear, conversion-focused websites built on the M2M Framework.",
+  areaServed: [
+    { type: "City", name: "Dallas" },
+    { type: "AdministrativeArea", name: "Dallas-Fort Worth Metroplex" },
+  ],
+  audience: {
+    audienceType: "Businesses in Dallas and the Dallas-Fort Worth Metroplex",
+  },
+  faqs: webDesignDallasFaqs,
+});
+---
+
+<BaseLayout
+  title="Web Design in Dallas, TX | CL Creative"
+  description="Web design in Dallas, TX, trusted by companies from Highland Park to Downtown. Clear Webflow sites that bring in the right customers. Book a free call."
+  canonical={pageUrl}
+  theme="light"
+  schema={schemaGraph}
+>
+  <!-- ==================== HERO ==================== -->
+  <Section id="dallas-hero">
+    <Layout variant="stack">
+      <Col slot="col1">
+        <Heading
+          tag="h1"
+          variant="h1"
+          data-splittext
+          data-prevent-flicker="true"
+        >
+          Dallas Web Design, Trusted by Companies From Highland Park to Downtown
+        </Heading>
+        <Text
+          variant="xlarge"
+          maxWidth="60ch"
+          data-fade-up
+          data-prevent-flicker="true"
+        >
+          In a market the size of Dallas, your website is doing the talking
+          before you ever get the chance.
+        </Text>
+        <Text maxWidth="70ch" data-fade-up data-prevent-flicker="true">
+          If it's confusing, dated, or built around your services instead of
+          your customer, people click away and you never even know it happened.
+          Most business websites are confusing. The visitor can't tell who it's
+          for or what to do next, so they leave.
+        </Text>
+        <Text maxWidth="60ch" data-fade-up data-prevent-flicker="true">
+          A good business shouldn't be held back by a confusing website.
+        </Text>
+        <div
+          class="u-button-wrapper"
+          data-fade-up
+          data-prevent-flicker="true"
+          data-duration="0.6"
+        >
+          <Button href="/book-a-call" ariaLabel="Book a Strategy Call"
+            >Book a Strategy Call</Button
+          >
+          <Button
+            variant="secondary"
+            href="/marketing-scorecard"
+            ariaLabel="Free Marketing Health Quiz"
+          >
+            Free Marketing Health Quiz
+          </Button>
+        </div>
+      </Col>
+    </Layout>
+    <Visual
+      data-prevent-flicker
+      data-fade-in
+      data-delay="0.6"
+      ratio="1440/640"
+      radius="main"
+      src={heroImg}
+      alt="CL Creative web designer serving Dallas, TX"
+      style="width: calc(100% - 11% * var(--responsive-large, 0)); margin-left: auto;"
+    />
+  </Section>
+
+  <!-- ==================== BRAND CALLOUT ==================== -->
+  <Section theme="brand" container="narrow" padding="small">
+    <ContentWrapper>
+      <Heading tag="h2" variant="h3">
+        A beautiful website that confuses people is still a confusing website.
+      </Heading>
+      <Text variant="large">
+        The reason a website doesn't bring in customers usually has nothing to
+        do with how it looks. It's that the website doesn't clearly tell the
+        right person what you do, who it's for, and why they should pick you
+        over the dozen competitors a click away.
+      </Text>
+      <Text variant="large">
+        A website that works clearly communicates your offer to the right
+        person, so they buy from you and not your competition. That's what we
+        build.
+      </Text>
+    </ContentWrapper>
+  </Section>
+
+  <!-- ==================== DALLAS WEB DESIGNER ==================== -->
+  <LocalDesignerIntro
+    heading="A Web Designer Dallas Businesses Already Trust"
+    portraitImage={portraitImg}
+    portraitAlt="Casey Lewis, CL Creative founder and Dallas web designer"
+    m2mImage={m2mImg}
+    m2mAlt="The M2M Framework — research-driven website strategy"
+  >
+    <Fragment slot="intro">
+      <Text variant="large">
+        CL Creative is based in the Dallas-Fort Worth Metroplex, and we've built
+        websites for Dallas companies across just about every kind of business
+        there is.
+      </Text>
+      <Text variant="large">
+        Recruiting firms, software companies, multi-location retailers,
+        professional services, salons, local shops.
+      </Text>
+      <Text variant="large">
+        Clients like Synergy Sparq, DailyStory, LiquorDepot, and <a
+          href="/case-studies/leverture-web-design-and-development-for-an-agency"
+          class="u-text-style-underline">Leverture</a
+        >, among others.
+      </Text>
+    </Fragment>
+    <Fragment slot="m2m">
+      <p>
+        Different industries, same problem underneath: a website that wasn't
+        clearly telling the right customer they were in the right place.
+      </p>
+      <p>
+        So before we design a single page, we use a framework we created called
+        <a href="/m2m-framework" class="u-text-style-underline">M2M</a> to figure
+        out who your customer is and what they need to hear. Then the whole site
+        gets built around that:
+      </p>
+      <ul>
+        <li>The words your customer reads first</li>
+        <li>The order of the page, built around how they actually decide</li>
+        <li>The buttons and calls to action that get them to book or buy</li>
+        <li>The questions and objections we answer, and where</li>
+      </ul>
+      <p>
+        That's why the sites we build bring in customers instead of just
+        compliments.
+      </p>
+    </Fragment>
+  </LocalDesignerIntro>
+
+  <!-- ==================== SAME DESIGNER HOURS ==================== -->
+  <ComparisonSection leftImage={artImg} rightImage={clearMessageImg} />
+
+  <!-- ==================== CTA SECTION ==================== -->
+  <CTASection
+    heading="If Your Website Isn't Helping You Grow Your Business, We Need to Talk."
+    text="Book a 30-minute strategy call. We'll look at your business and your current site, figure out what's working and what isn't, and you'll walk away with a clear picture of what your website needs to do, plus a rough budget range. Whether you hire us or not."
+    secondaryButtonText=""
+  />
+
+  <!-- ==================== WEBSITE HELPS GROW ==================== -->
+  <WebsiteGrowthPromo
+    heading="A Website That Helps Your Dallas Business Grow on Purpose"
+    image={websiteHelpsGrowImg}
+    imageAlt="A clear, conversion-focused website built for a Dallas business"
+  >
+    <Fragment slot="body">
+      <Text>
+        The website is clear. It says what you do, who it's for, and why you're
+        the one to call. They don't click away to a competitor. They book.
+      </Text>
+      <Text>
+        And you stop wondering how many deals your website is quietly costing
+        you.
+      </Text>
+      <Text>
+        That's what we build on <a
+          href="/why-webflow"
+          class="u-text-style-underline">Webflow</a
+        >. Across the Dallas Metroplex, clear by design, made to bring in the
+        right customer. Whether you're in Dallas, just up the road in <a
+          href="/web-design-midlothian"
+          class="u-text-style-underline">Midlothian</a
+        >, or over in <a
+          href="/web-design-waxahachie"
+          class="u-text-style-underline">Waxahachie</a
+        >.
+      </Text>
+      <Text>
+        So your business grows on purpose, not by accident.
+      </Text>
+    </Fragment>
+  </WebsiteGrowthPromo>
+
+  <!-- How We Work promo -->
+  <HowWeWorkPromo padding="small" />
+
+  <!-- ==================== FEATURED CASE STUDY ==================== -->
+  <CaseStudyFeatured
+    theme="brand"
+    slugs={[
+      "synergy-sparq-web-design-and-seo-for-a-staffing-firm",
+      "leverture-web-design-and-development-for-an-agency",
+      "connally-consulting-designing-a-website-for-a-leadership-coach",
+    ]}
+  />
+
+  <!-- ==================== TESTIMONIALS ==================== -->
+  <TestimonialShowcase />
+
+  <!-- ==================== HOW IT WORKS ==================== -->
+  <HowItWorks />
+
+  <!-- ==================== FAQ ==================== -->
+  <FAQ items={webDesignDallasFaqs} />
+
+  {/* Send-me-a-quick-note fallback */}
+  <NotReadyToBook />
+</BaseLayout>

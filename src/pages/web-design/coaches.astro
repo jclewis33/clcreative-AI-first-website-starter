@@ -1,0 +1,394 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { serviceFaqJsonLd } from "../../lib/jsonld";
+import { SITE } from "../../config/site";
+import Section from "../../components/ui/Section.astro";
+import Layout from "../../components/ui/Layout.astro";
+import Col from "../../components/ui/Col.astro";
+import Heading from "../../components/ui/Heading.astro";
+import Text from "../../components/ui/Text.astro";
+import Button from "../../components/ui/Button.astro";
+import Visual from "../../components/ui/Visual.astro";
+import Overlay from "../../components/ui/Overlay.astro";
+import ContentWrapper from "../../components/ui/ContentWrapper.astro";
+import Grid from "../../components/ui/Grid.astro";
+
+// Section components
+import SplitSection from "../../components/sections/SplitSection.astro";
+import StackingPanels from "../../components/sections/StackingPanels.astro";
+import StackingPanel from "../../components/sections/StackingPanel.astro";
+import M2MFramework from "../../components/sections/M2MFramework.astro";
+import CTASection from "../../components/sections/CTASection.astro";
+import CaseStudyFeatured from "../../components/sections/CaseStudyFeatured.astro";
+import HowWeWorkPromo from "../../components/sections/HowWeWorkPromo.astro";
+import TestimonialShowcase from "../../components/sections/TestimonialShowcase.astro";
+import HowItWorks from "../../components/sections/HowItWorks.astro";
+import FAQ from "../../components/sections/FAQ.astro";
+import NotReadyToBook from "../../components/sections/NotReadyToBook.astro";
+
+// Data
+import { webDesignCoachesFaqs } from "../../data/faqs";
+
+// Images
+import heroImg from "../../assets/industries/coaches/coaching-hero.webp";
+import site1Img from "../../assets/industries/coaches/coaching-site-1.webp";
+import site2Img from "../../assets/industries/coaches/coaching-site-2.webp";
+import businessImg from "../../assets/industries/coaches/coaching-business-1.webp";
+import connectionImg from "../../assets/industries/coaches/coaching-website-connection.webp";
+import workHardImg from "../../assets/industries/coaches/coaching-website-work-hard.webp";
+import marketingPlanImg from "../../assets/industries/coaches/coaching-marketing-plan.webp";
+
+// Styles
+import "../../styles/pages/coaches.css";
+
+const pageUrl = `${SITE.url}/web-design/coaches`;
+
+// Per-page structured data — Service + FAQPage combined into a single @graph.
+// LocalBusiness lives sitewide in BaseLayout; referenced here via provider.@id.
+// Industry-scoped: audience (not a geographic areaServed).
+const schemaGraph = serviceFaqJsonLd({
+  pageUrl,
+  serviceType: "Web Design",
+  name: "Web Design for Coaches",
+  description:
+    "Strategy-first Webflow web design for business and executive coaches. Clear, client-focused sites that build trust and turn the right visitors into booked calls, built on the M2M Framework.",
+  audience: {
+    audienceType: "Business and executive coaches",
+  },
+  faqs: webDesignCoachesFaqs,
+});
+---
+
+<BaseLayout
+  title="Web Design for Coaches | CL Creative"
+  description="Web design for business and executive coaches. Clear, client-focused sites that build trust and turn visitors into booked calls. Book a free strategy call."
+  canonical={pageUrl}
+  theme="light"
+  schema={schemaGraph}
+>
+  <!-- ==================== HERO ==================== -->
+  <Section theme="dark" minHeight id="coaches-hero">
+    <Fragment slot="background">
+      <Visual
+        src={heroImg}
+        alt="CL Creative web design for business and executive coaches"
+        variant="background"
+        priority
+      />
+      <Overlay strength={50} />
+    </Fragment>
+    <Layout variant="stack">
+      <Col slot="col1" class="u-hero-fade">
+        <Heading tag="h1" variant="h1" maxWidth="24ch">
+          Web Design for Coaches That Turns Visitors Into Booked Calls
+        </Heading>
+        <Text variant="large" maxWidth="60ch">
+          When someone lands on your site, they can't try your coaching before
+          they commit to it. All they have to go on is whether your website
+          makes them believe you can actually help them. And most coaching
+          websites don't. They're vague about who the coach is for, heavy on
+          credentials and light on the client's problem, and they leave a
+          serious buyer unsure.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="/book-a-call" ariaLabel="Book a Strategy Call"
+            >Book a Strategy Call</Button
+          >
+          <Button
+            variant="secondary"
+            href="/marketing-scorecard"
+            ariaLabel="Free Marketing Health Quiz"
+          >
+            Free Marketing Health Quiz
+          </Button>
+        </div>
+      </Col>
+    </Layout>
+  </Section>
+
+  <!-- ==================== AGITATION — STACKING PANELS ==================== -->
+  <StackingPanels>
+    <Heading
+      slot="heading"
+      data-splittext
+      data-prevent-flicker="true"
+      tag="h2"
+      variant="h2"
+      >A beautiful coaching website that doesn't make the visitor feel
+      understood is still a confusing website</Heading
+    >
+    <StackingPanel>
+      <Heading tag="h3" variant="h3"
+        >The reason most coaching sites underperform isn't the design.</Heading
+      >
+      <Text marginBottom={0}>
+        It's that they talk about the coach instead of the client. The page
+        leads with certifications, methodology, and years of experience, when
+        the visitor only cares about one thing: does this person understand the
+        problem I'm trying to solve, and can they get me out of it?
+      </Text>
+      <Visual
+        slot="visual"
+        src={site1Img}
+        alt="A coaching website that leads with the coach's credentials instead of the client's problem"
+        ratio="landscape"
+      />
+    </StackingPanel>
+
+    <StackingPanel reversed>
+      <Heading tag="h3" variant="h3"
+        >A coaching website that works reassures the client they can help them
+        solve their problem</Heading
+      >
+      <Text marginBottom={0}>
+        It names the client's problem clearly, shows you understand where
+        they're stuck, and makes the path to working with you obvious. Trust
+        comes from clarity, not from a longer list of credentials. That is what
+        we build.
+      </Text>
+      <Visual
+        slot="visual"
+        src={site2Img}
+        alt="A coaching website that names the client's problem and makes the next step obvious"
+        ratio="landscape"
+      />
+    </StackingPanel>
+  </StackingPanels>
+
+  <!-- ==================== EXPERIENCE ==================== -->
+  <SplitSection
+    image={businessImg}
+    imageAlt="A business coach leading a working session with clients"
+  >
+    <Heading
+      data-splittext
+      data-prevent-flicker="true"
+      tag="h2"
+      variant="h4"
+      maxWidth="30ch"
+    >
+      A Web Designer Who Knows How to Sell Something You Can't Put in a Box
+    </Heading>
+    <div data-fade-in class="split_body u-rich-text">
+      <p>
+        CL Creative builds websites for business and executive coaches, and the
+        challenge we focus on first is the hard one: making a stranger believe
+        in a result they can't see yet.
+      </p>
+      <p>We've done this work directly.</p>
+      <p>
+        We built the website for an <a
+          href="/case-studies/connally-consulting-designing-a-website-for-a-leadership-coach"
+          >executive leadership coach</a
+        >, where the entire job was turning a credential-led website into one
+        that names the client's problem first and makes the case for the coach
+        as the person to solve it.
+      </p>
+      <p>
+        That's the difference between a site that collects compliments and one
+        that books calls.
+      </p>
+    </div>
+  </SplitSection>
+
+  <!-- ==================== M2M FRAMEWORK ==================== -->
+  <M2MFramework paddingTop="none">
+    <Fragment slot="intro">
+      <Text data-fade-in maxWidth="60ch">
+        We use a framework we created called <a href="/m2m-framework">M2M</a> to figure
+        out exactly who your ideal client is, what they're struggling with, and the
+        words they use for it. Then the whole site gets built around that:
+      </Text>
+      <ul data-fade-in class="u-list">
+        <li>
+          The message your ideal client reads first, about their problem, not
+          your resume
+        </li>
+        <li>
+          The order of the page, built around how a serious buyer actually
+          decides
+        </li>
+        <li>
+          The proof and authority that build trust without burying the visitor
+          in credentials
+        </li>
+        <li>
+          The calls to action that turn a curious visitor into a booked call
+        </li>
+      </ul>
+      <Text data-fade-in maxWidth="60ch" marginBottom={0}>
+        That's why the sites we build bring in clients instead of just
+        compliments.
+      </Text>
+    </Fragment>
+    <Fragment slot="card2Body">
+      We turn that research into conversion copy. Potential clients will see
+      their problem and your solution. And they'll immediately know you're the
+      right fit for them.
+    </Fragment>
+    <Fragment slot="card3Body">
+      We then design and build you a custom <a href="/why-webflow"
+        >Webflow site</a
+      >
+      that's easy to update and ready to scale as your business grows.
+    </Fragment>
+  </M2MFramework>
+
+  <!-- ==================== COMPARISON / STAKES ==================== -->
+  <Section gap={6}>
+    <Visual
+      data-fade-up
+      data-prevent-flicker="true"
+      src={connectionImg}
+      alt="A coaching website that connects the right client to a clear next step"
+      ratio="16/9"
+      radius="large"
+    />
+
+    <ContentWrapper align="center">
+      <Heading
+        data-splittext
+        data-prevent-flicker="true"
+        tag="h2"
+        maxWidth="24ch"
+      >
+        Depending on the Designer, You'll End up with Two Very Different
+        Websites
+      </Heading>
+    </ContentWrapper>
+
+    <Grid
+      data-fade-list
+      data-prevent-flicker="true"
+      largeColumns={2}
+      mediumColumns={1}
+      rowGap={6}
+    >
+      <div class="coaching-compare_card u-theme-brand">
+        <div class="coaching-compare_card_header">
+          <Heading tag="h3" variant="h4" maxWidth="none" marginBottom={0}>
+            A site built around the coach
+          </Heading>
+        </div>
+        <Text variant="large">You list what you've done and hope it lands.</Text
+        >
+        <ul class="u-list">
+          <li>Leads with credentials, methodology, and bio</li>
+          <li>
+            The visitor can't tell if you understand their specific problem
+          </li>
+          <li>
+            It looks credible and still leaves serious buyers unsure, so they
+            don't book
+          </li>
+        </ul>
+      </div>
+
+      <div class="coaching-compare_card u-theme-dark">
+        <div class="coaching-compare_card_header">
+          <Heading tag="h3" variant="h4" maxWidth="none" marginBottom={0}>
+            A site built around the client
+          </Heading>
+        </div>
+        <Text variant="large">
+          It works like a referral from someone they trust.
+        </Text>
+        <ul class="u-list">
+          <li>Names the client's problem in the first scroll</li>
+          <li>Shows you understand exactly where they're stuck</li>
+          <li>Builds authority through clarity, not a wall of credentials</li>
+          <li>
+            Makes the next step obvious, so the right client books the call
+          </li>
+        </ul>
+      </div>
+    </Grid>
+  </Section>
+
+  <!-- ==================== CTA ==================== -->
+  <CTASection
+    heading="If Your Website Isn't Turning Visitors Into Booked Calls, We Need to Talk"
+    text="Book a 30-minute strategy call. We'll look at your coaching business and your current site, figure out what's working and what isn't, and you'll walk away with a clear picture of what your website needs to do to earn trust and book the right clients, plus a rough budget range."
+  />
+
+  <!-- ==================== END RESULT ==================== -->
+  <Section theme="dark">
+    <ContentWrapper align="center">
+      <Heading
+        data-splittext
+        data-prevent-flicker="true"
+        tag="h2"
+        variant="h2"
+        maxWidth="26ch"
+      >
+        A Coaching Website That Books the Clients You Want
+      </Heading>
+    </ContentWrapper>
+
+    <Layout data-fade-list variant="columns" verticalAlign="center">
+      <Col slot="col1">
+        <Text variant="large">
+          Picture the version of your site where the right client lands, feels
+          understood in the first few lines, and books a call before they've
+          even finished reading. Not because the design dazzled them, but
+          because the site made them believe you can get them where they want to
+          go.
+        </Text>
+        <Text variant="large">
+          You stop losing serious prospects who visited, weren't sure, and left.
+        </Text>
+        <Heading variant="eyebrow" class="u-color-brand">
+          That's what we build
+        </Heading>
+        <Text variant="large">
+          Clear by design, focused on your client's problem, made to turn the
+          right visitor into a booked call. So your coaching business grows on
+          purpose, not by accident.
+        </Text>
+      </Col>
+      <Visual
+        slot="col2"
+        src={workHardImg}
+        alt="A coach and client working together, the relationship a clear website creates"
+        ratio="16/10"
+      />
+    </Layout>
+
+    <ContentWrapper align="center" data-fade-in>
+      <div class="u-button-wrapper">
+        <Button href="/book-a-call" ariaLabel="Book a Strategy Call"
+          >Book a Strategy Call</Button
+        >
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- ==================== TESTIMONIALS ==================== -->
+  <TestimonialShowcase />
+
+  <!-- ==================== PROCESS ==================== -->
+  <HowItWorks />
+
+  <!-- ==================== HOW WE WORK ==================== -->
+  <HowWeWorkPromo
+    image={marketingPlanImg}
+    imageAlt="A coaching marketing plan and website working together"
+    imageRatio="3/2"
+  />
+
+  <!-- ==================== FEATURED CASE STUDIES ==================== -->
+  <CaseStudyFeatured
+    theme="dark"
+    slugs={[
+      "connally-consulting-designing-a-website-for-a-leadership-coach",
+      "dynamic-home-repair-m2m-messaging-webflow-rebuild",
+      "consigliere-web-development-creative-growth-service-company",
+    ]}
+  />
+
+  <!-- ==================== FAQ ==================== -->
+  <FAQ items={webDesignCoachesFaqs} />
+
+  <!-- ==================== NOT READY TO BOOK ==================== -->
+  <NotReadyToBook />
+</BaseLayout>

@@ -1,0 +1,283 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { serviceFaqJsonLd } from "../lib/jsonld";
+import { SITE } from "../config/site";
+import Section from "../components/ui/Section.astro";
+import Layout from "../components/ui/Layout.astro";
+import Col from "../components/ui/Col.astro";
+import Heading from "../components/ui/Heading.astro";
+import Text from "../components/ui/Text.astro";
+import Button from "../components/ui/Button.astro";
+import Visual from "../components/ui/Visual.astro";
+import ContentWrapper from "../components/ui/ContentWrapper.astro";
+
+// Section components
+import LocalDesignerIntro from "../components/sections/LocalDesignerIntro.astro";
+import ComparisonSection from "../components/sections/ComparisonSection.astro";
+import WebsiteGrowthPromo from "../components/sections/WebsiteGrowthPromo.astro";
+import CTASection from "../components/sections/CTASection.astro";
+import CaseStudyFeatured from "../components/sections/CaseStudyFeatured.astro";
+import HowWeWorkPromo from "../components/sections/HowWeWorkPromo.astro";
+import TestimonialShowcase from "../components/sections/TestimonialShowcase.astro";
+import HowItWorks from "../components/sections/HowItWorks.astro";
+import FAQ from "../components/sections/FAQ.astro";
+import NotReadyToBook from "../components/sections/NotReadyToBook.astro";
+
+// Data
+import { webDesignWaxahachieFaqs } from "../data/faqs";
+
+// Images
+import heroImg from "../assets/local-web-designer/waxahachie-web-designer-hero.webp";
+import portraitImg from "../assets/local-web-designer/local-web-designer.webp";
+import m2mImg from "../assets/local-web-designer/local-web-designer-m2m.webp";
+import artImg from "../assets/local-web-designer/local-web-designer-art.webp";
+import bestSalespersonImg from "../assets/local-web-designer/local-web-designer-best-salesperson.webp";
+import websiteHelpsGrowImg from "../assets/local-web-designer/local-web-designer-website-helps-grow.webp";
+import chamberLogoImg from "../assets/local-web-designer/waxahachie-chamber-logo.webp";
+
+const pageUrl = `${SITE.url}/web-design-waxahachie`;
+
+// Per-page structured data — Service + FAQPage combined into a single @graph.
+// LocalBusiness lives sitewide in BaseLayout; referenced here via provider.@id.
+const schemaGraph = serviceFaqJsonLd({
+  pageUrl,
+  serviceType: "Web Design",
+  name: "Web Design in Waxahachie, TX",
+  description:
+    "Strategy-first Webflow web design for Waxahachie, TX businesses. Clear, conversion-focused websites built on the M2M Framework.",
+  areaServed: [
+    { type: "City", name: "Waxahachie" },
+    { type: "AdministrativeArea", name: "Ellis County" },
+  ],
+  audience: {
+    audienceType: "Local businesses in Waxahachie and Ellis County, TX",
+  },
+  faqs: webDesignWaxahachieFaqs,
+});
+---
+
+<BaseLayout
+  title="Web Design in Waxahachie, TX | CL Creative"
+  description="Web design in Waxahachie, TX from a website designer in your own Chamber of Commerce. Clear sites that bring in the right customers. Book a free strategy call."
+  canonical={pageUrl}
+  theme="light"
+  schema={schemaGraph}
+>
+  <!-- ==================== HERO ==================== -->
+  <Section id="waxahachie-hero">
+    <Layout variant="stack">
+      <Col slot="col1">
+        <Heading
+          tag="h1"
+          variant="h1"
+          data-splittext
+          data-prevent-flicker="true"
+        >
+          Web Design in Waxahachie for Local Businesses That Have Outgrown Their
+          Website
+        </Heading>
+        <Text
+          variant="xlarge"
+          maxWidth="60ch"
+          data-fade-up
+          data-prevent-flicker="true"
+        >
+          You've built something real in Waxahachie. But the website you threw
+          up a few years ago doesn't sound like the business you've become.
+        </Text>
+        <Text maxWidth="70ch" data-fade-up data-prevent-flicker="true">
+          And it isn't bringing in the customers you need to keep growing. Most
+          business websites are confusing. The visitor can't tell who it's for
+          or what to do next, so they leave.
+        </Text>
+        <Text maxWidth="60ch" data-fade-up data-prevent-flicker="true">
+          A good business shouldn't be held back by a confusing website.
+        </Text>
+        <div
+          class="u-button-wrapper"
+          data-fade-up
+          data-prevent-flicker="true"
+          data-duration="0.6"
+        >
+          <Button href="/book-a-call" ariaLabel="Book a Strategy Call"
+            >Book a Strategy Call</Button
+          >
+          <Button
+            variant="secondary"
+            href="/marketing-scorecard"
+            ariaLabel="Free Marketing Health Quiz"
+          >
+            Free Marketing Health Quiz
+          </Button>
+        </div>
+      </Col>
+    </Layout>
+    <Visual
+      data-prevent-flicker
+      data-fade-in
+      data-delay="0.6"
+      ratio="1440/640"
+      radius="main"
+      src={heroImg}
+      alt="CL Creative web designer serving Waxahachie, TX"
+      style="width: calc(100% - 11% * var(--responsive-large, 0)); margin-left: auto;"
+    />
+  </Section>
+
+  <!-- ==================== BRAND CALLOUT ==================== -->
+  <Section theme="brand" container="narrow" padding="small">
+    <ContentWrapper>
+      <Heading tag="h2" variant="h3">
+        A beautiful website that confuses people is still a confusing website.
+      </Heading>
+      <Text variant="large">
+        The reason a website doesn't bring in customers usually has nothing to
+        do with how it looks.
+      </Text>
+      <Text variant="large">
+        It's that the website doesn't clearly tell the right person what you do,
+        who it's for, and why they should pick you over the business down the
+        road.
+      </Text>
+      <Text variant="large">
+        The headline talks about you instead of them. The page is built around
+        your services instead of their decision. So they bounce.
+      </Text>
+    </ContentWrapper>
+  </Section>
+
+  <!-- ==================== WAXAHACHIE WEB DESIGNER ==================== -->
+  <LocalDesignerIntro
+    heading="A Web Designer Who's Part of the Same Community You're Selling To"
+    portraitImage={portraitImg}
+    portraitAlt="Casey Lewis, CL Creative founder and Waxahachie web designer"
+    m2mImage={m2mImg}
+    m2mAlt="The M2M Framework workbook — research-driven website strategy"
+  >
+    <Fragment slot="intro">
+      <Text variant="large">
+        CL Creative is based just up the road in <a
+          href="/web-design-midlothian"
+          class="u-text-style-underline">Midlothian</a
+        >, and we're a proud member of the <a
+          href="https://business.waxahachiechamber.com/list/member/cl-creative-6700"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="u-text-style-underline">Waxahachie Chamber of Commerce</a
+        >. This isn't a far-off agency that found your town on a map.
+      </Text>
+      <Text variant="large">
+        We're part of the same Ellis County business community you are, and
+        we've built websites for a lot of businesses in it. Therapists and
+        counselors. Coaches. Authors. Corporate trainers. Home-services
+        companies like landscaping and irrigation.
+      </Text>
+    </Fragment>
+    <Fragment slot="m2m">
+      <p>
+        Think about what makes the businesses around the courthouse square
+        work. The good ones are clear about who they serve and what they're
+        known for. Your website should do the same thing, just at a bigger
+        scale.
+      </p>
+      <p>
+        So before we design a single page, we use a framework we created called
+        <a href="/m2m-framework" class="u-text-style-underline">M2M</a> to figure
+        out who your customer is and what they need to hear. Then the whole site
+        gets built around that:
+      </p>
+      <ul>
+        <li>The words your customer reads first</li>
+        <li>The order of the page, built around how they actually decide</li>
+        <li>The buttons and calls to action that get them to book or buy</li>
+        <li>The questions and objections we answer, and where</li>
+      </ul>
+      <p>
+        That's why the websites we build bring in customers instead of just
+        compliments. And it's done by someone who's at the same Chamber events
+        you are.
+      </p>
+    </Fragment>
+  </LocalDesignerIntro>
+
+  <!-- ==================== SAME DESIGNER HOURS ==================== -->
+  <ComparisonSection leftImage={artImg} rightImage={bestSalespersonImg} />
+
+  <!-- ==================== WAXAHACHIE CHAMBER OF COMMERCE ==================== -->
+  <Section theme="dark" padding="small">
+    <Layout variant="columns" ratio="6-6" verticalAlign="center">
+      <Col slot="col1">
+        <Heading variant="eyebrow">Local & Connected</Heading>
+        <Heading tag="h2" variant="h2" maxWidth="20ch">
+          Proud Member of the Waxahachie Chamber of Commerce
+        </Heading>
+        <div class="u-button-wrapper">
+          <Button
+            variant="secondary"
+            href="https://business.waxahachiechamber.com/list/member/cl-creative-6700"
+            newTab
+            ariaLabel="View our Waxahachie Chamber of Commerce profile"
+          >
+            View our Chamber Profile
+          </Button>
+        </div>
+      </Col>
+      <Visual
+        slot="col2"
+        src={chamberLogoImg}
+        alt="Waxahachie Chamber of Commerce logo"
+        ratio="540/307"
+        transparent
+      />
+    </Layout>
+  </Section>
+
+  <!-- ==================== CTA SECTION ==================== -->
+  <CTASection
+    heading="If Your Website Isn't Helping You Grow Your Business, We Need to Talk."
+    text="Book a 30-minute strategy call. We'll look at your business and your current site, figure out what's working and what isn't, and you'll walk away with a clear picture of what your website needs to do, plus a rough budget range. Whether you hire us or not."
+  />
+
+  <!-- ==================== WEBSITE HELPS GROW ==================== -->
+  <WebsiteGrowthPromo
+    heading="A Website That Helps Your Waxahachie Business Grow on Purpose"
+    image={websiteHelpsGrowImg}
+    imageAlt="A clear, conversion-focused website built for a Waxahachie business"
+  >
+    <Fragment slot="body">
+      <Text>
+        The website is clear. It says what you do, who it's for, and why you're
+        the one to call. They don't leave. They book.
+      </Text>
+      <Text>
+        And your growth stops depending on whether the referrals happen to come
+        in this month.
+      </Text>
+      <Text>
+        That's what we build on <a
+          href="/why-webflow"
+          class="u-text-style-underline">Webflow</a
+        >. Local to Ellis County, clear by design, made to bring in the right
+        customer. So your business grows on purpose, not by accident.
+      </Text>
+    </Fragment>
+  </WebsiteGrowthPromo>
+
+  <!-- How We Work promo -->
+  <HowWeWorkPromo padding="small" />
+
+  <!-- ==================== FEATURED CASE STUDY ==================== -->
+  <CaseStudyFeatured theme="brand" />
+
+  <!-- ==================== TESTIMONIALS ==================== -->
+  <TestimonialShowcase />
+
+  <!-- ==================== HOW IT WORKS ==================== -->
+  <HowItWorks />
+
+  <!-- ==================== FAQ ==================== -->
+  <FAQ items={webDesignWaxahachieFaqs} />
+
+  {/* Send-me-a-quick-note fallback */}
+  <NotReadyToBook />
+</BaseLayout>

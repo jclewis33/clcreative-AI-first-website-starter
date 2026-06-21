@@ -1,0 +1,113 @@
+/* ==========================================================================
+   COLORS
+   ==========================================================================
+   Raw color swatches only. No semantic aliases here.
+   Semantic theme mappings → variables/themes.css
+
+   RE-SKINNING / FORKING — where each kind of color is changed:
+   • Brand hue ........ edit --color-brand-500 below (the whole brand scale is
+                        derived from it via color-mix). Also mirror the new hex
+                        into SITE.brand.color in src/config/site.ts (email +
+                        <meta theme-color> can't read CSS vars).
+   • Section themes ... --background / --text / --heading-accent / --border per
+                        theme → variables/themes.css ([data-theme] blocks).
+   • Contrasting cards  The "surface" colors a card uses to pop & stay readable
+     (testimonials,     on a themed section live in the --surface-* tier (one
+     primary Card) ...  group per theme) in variables/themes.css — NOT here.
+                        Those reference the swatches below (e.g. brand surface =
+                        --color-brand-400, light/dark surface = --color-light-100).
+                        Full how-to: docs/brand-color-guide.md ("contrasting card
+                        surface"); also the "Surface tier" section in CLAUDE.md.
+   ========================================================================== */
+
+:root {
+  /* =====================================================
+     DARK SWATCHES
+     ===================================================== */
+
+  --color-dark-900: #0c111d;
+  --color-dark-900-o20: color-mix(
+    in srgb,
+    var(--color-dark-900) 20%,
+    transparent
+  );
+  --color-dark-900-o50: color-mix(
+    in srgb,
+    var(--color-dark-900) 50%,
+    transparent
+  );
+  --color-dark-900-o75: color-mix(
+    in srgb,
+    var(--color-dark-900) 75%,
+    transparent
+  );
+
+  --color-dark-800: #2f2b2d;
+
+  /* =====================================================
+     LIGHT SWATCHES
+     ===================================================== */
+
+  --color-light-100: white;
+  --color-light-100-o20: color-mix(
+    in srgb,
+    var(--color-light-100) 20%,
+    transparent
+  );
+  --color-light-100-o50: color-mix(
+    in srgb,
+    var(--color-light-100) 50%,
+    transparent
+  );
+  --color-light-100-o75: color-mix(
+    in srgb,
+    var(--color-light-100) 75%,
+    transparent
+  );
+
+  --color-light-200: #f4f4f4;
+
+  /* =====================================================
+     BRAND SWATCHES
+     Scale derived from brand-500 via color-mix.
+     ===================================================== */
+
+  --color-brand-500: #f35423;
+
+  --color-brand-100: color-mix(in srgb, var(--color-brand-500), white 80%);
+  --color-brand-200: color-mix(in srgb, var(--color-brand-500), white 60%);
+  --color-brand-300: color-mix(in srgb, var(--color-brand-500), white 40%);
+  --color-brand-400: color-mix(in srgb, var(--color-brand-500), white 20%);
+  --color-brand-600: color-mix(in srgb, var(--color-brand-500), black 20%);
+  --color-brand-700: color-mix(in srgb, var(--color-brand-500), black 40%);
+  --color-brand-800: color-mix(in srgb, var(--color-brand-500), black 60%);
+  --color-brand-900: color-mix(in srgb, var(--color-brand-500), black 80%);
+
+  /* On-brand text color (light on orange) */
+  --color-brand-text: var(--color-light-100);
+  --color-brand-text-o20: color-mix(
+    in srgb,
+    var(--color-brand-text) 20%,
+    transparent
+  );
+  --color-brand-text-o75: color-mix(
+    in srgb,
+    var(--color-brand-text) 75%,
+    transparent
+  );
+
+  /* =====================================================
+     SYSTEM COLORS
+     ===================================================== */
+
+  --color-success-green: #e1f5e886;
+  --color-success-green-dark: #114e0b;
+  --color-warning-yellow: #fffcf5b9;
+  --color-warning-yellow-dark: #5e5515;
+  --color-error-red: #fffbfa;
+  --color-error-red-dark: #3b0b0b;
+  --color-info-grey: #f9f9f9;
+
+  /* Focus state — applied site-wide via reset.css */
+  --color-focus-state: var(--color-brand-500);
+}

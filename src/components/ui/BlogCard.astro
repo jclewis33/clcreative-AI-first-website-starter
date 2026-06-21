@@ -1,0 +1,179 @@
+---
+/**
+ * BlogCard — blog post card built on top of the Card component.
+ *
+ * Renders an image-top card with title (clamped at 2 lines), description
+ * (clamped at 2 lines), category label, and hidden author/date metadata
+ * for CMS sorting. The entire card surface is clickable.
+ *
+ * Designed to be CMS-ready — all content comes from typed props that map
+ * directly to CMS fields (Sanity, Contentful, etc.).
+ *
+ * @example Basic blog card
+ * ```astro
+ * <BlogCard
+ *   title="How to Build a Design System"
+ *   description="Learn how to create a scalable design system for your team."
+ *   category="Design"
+ *   href="/blog/design-system"
+ *   image={blogImage}
+ *   imageAlt="Design system components"
+ *   author="Casey Lewis"
+ *   date="2026-03-01"
+ * />
+ * ```
+ *
+ * @example With avatar and custom date format
+ * ```astro
+ * <BlogCard
+ *   title="SEO Fundamentals for Web Developers"
+ *   description="Technical SEO best practices every developer should know."
+ *   category="SEO"
+ *   href="/blog/seo-fundamentals"
+ *   image={seoImage}
+ *   imageAlt="SEO dashboard screenshot"
+ *   author="Casey Lewis"
+ *   authorAvatar={avatarImage}
+ *   date="2026-02-15"
+ * />
+ * ```
+ */
+
+import type { ImageMetadata } from "astro";
+import Card from "./Card.astro";
+import Visual from "./Visual.astro";
+import Heading from "./Heading.astro";
+import Text from "./Text.astro";
+import { displayCategory } from "../../lib/category-display";
+
+/**
+ * BlogCard — blog post card with image, title, description, category,
+ * and hidden author/date fields for CMS sorting.
+ *
+ * **Props:**
+ * - `title` — post title (clamped at 2 lines) (**required**)
+ * - `description` — post excerpt/description (clamped at 2 lines) (**required**)
+ * - `category` — category label displayed at the bottom (**required**)
+ * - `href` — link to the full blog post (**required**)
+ * - `image` — post featured image: imported `ImageMetadata` or URL string (**required**)
+ * - `imageAlt` — alt text for the featured image (**required**)
+ * - `author` — author name (hidden, used for CMS sorting)
+ * - `authorAvatar` — author avatar image (hidden on card, used in featured post)
+ * - `date` — publish date string (hidden, used for CMS sorting)
+ * - `class` — extra classes on the outer wrapper
+ *
+ * Uses Card component internally with `default` variant (image top, content below).
+ */
+interface Props {
+  /**
+   * **BlogCard props:**
+   * - `title` — post title, clamped at 2 lines (required)
+   * - `description` — post excerpt, clamped at 2 lines (required)
+   * - `category` — category label at bottom (required)
+   * - `href` — link to full post (required)
+   * - `image` — featured image source (required)
+   * - `imageAlt` — image alt text (required)
+   * - `author` — author name (hidden field for sorting)
+   * - `authorAvatar` — author avatar image
+   * - `date` — publish date (hidden field for sorting)
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to underlying Card
+   */
+  docs?: string;
+
+  /** Post title — clamped at 2 lines. */
+  title: string;
+
+  /** Post excerpt or description — clamped at 2 lines. */
+  description: string;
+
+  /** Category labels displayed at the bottom of the card. */
+  categories: string[];
+
+  /** Link to the full blog post. */
+  href: string;
+
+  /** Featured image — imported ImageMetadata or URL string. */
+  image: ImageMetadata | string;
+
+  /** Alt text for the featured image. */
+  imageAlt: string;
+
+  /** Author name — stored as data attribute for CMS sorting. */
+  author?: string;
+
+  /** Author avatar image — used in featured post layout. */
+  authorAvatar?: ImageMetadata | string;
+
+  /** Publish date — stored as data attribute for CMS sorting. */
+  date?: string;
+
+  /** Extra classes on the outer wrapper. */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
+   * are forwarded to the underlying `Card` component.
+   * @example style="--custom: value" data-animate="fade"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  title,
+  description,
+  categories,
+  href,
+  image,
+  imageAlt,
+  author,
+  authorAvatar,
+  date,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* Format date for display (if needed later) */
+const formattedDate = date
+  ? new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  : undefined;
+---
+
+<Card
+  docs=""
+  href={href}
+  ariaLabel={`Read ${title}`}
+  class:list={["blog_card_wrap", className]}
+  data-author={author}
+  data-date={date}
+  {...rest}
+>
+  <Visual slot="visual" src={image} alt={imageAlt} ratio="wide" radius="none" />
+
+  <div slot="title" class="blog_card_title_wrap">
+    <Heading tag="h3" variant="h5" marginBottom={0} maxWidth="100%">
+      <span class="blog_card_title_clamp u-line-clamp-2">{title}</span>
+    </Heading>
+  </div>
+
+  <Text variant="small" muted clamp={2}>{description}</Text>
+
+  <div slot="footer" class="blog_card_footer">
+    {categories?.map((cat: string) => (
+      <Text
+        tag="span"
+        variant="tiny"
+        weight="medium"
+        marginBottom={0}
+        class="blog_card_category"
+      >
+        {displayCategory(cat)}
+      </Text>
+    ))}
+  </div>
+</Card>

@@ -1,0 +1,53 @@
+{
+  // Cloudflare Worker built by @astrojs/cloudflare. The adapter compiles the
+  // SSR entry to ./dist/_worker.js/ and copies static assets to ./dist/. The
+  // `main` field below points at the adapter's bundled server entry, and the
+  // `assets` block tells Workers to serve prerendered/static files directly.
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "name": "clcreative",
+  "compatibility_date": "2026-04-16",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  // Public, non-secret runtime vars. Draft-mode perspective switching is
+  // handled at request time by the sanity-preview-mode cookie set by
+  // /api/draft-mode/enable, NOT by an env var. SANITY_API_READ_TOKEN must be
+  // added as a Cloudflare secret (encrypted, not a plain wrangler var) —
+  // /api/draft-mode/enable validates Presentation preview URLs with it, and
+  // loadQuery uses it to fetch drafts when the cookie is present. Public
+  // visitors never have the cookie so drafts never leak.
+  "vars": {
+    "PUBLIC_SANITY_PROJECT_ID": "2mcikzx3",
+    "PUBLIC_SANITY_DATASET": "production",
+  },
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist",
+    "html_handling": "drop-trailing-slash",
+  },
+  // Astro 6 sessions are enabled by default when SSR routes exist. The
+  // `@astrojs/cloudflare` adapter maps them to this KV namespace. Wrangler
+  // auto-provisioning creates one on first deploy, but re-runs fail with
+  // "namespace already exists" — so we pin the namespace ID here. Grab the
+  // ID from Cloudflare dashboard → Workers & Pages → Storage & databases →
+  // KV → `clcreative-session`.
+  "kv_namespaces": [
+    {
+      "binding": "SESSION",
+      "id": "c65eb7fc2bc44ec09b7b10de0bdbcb6b",
+    },
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true,
+    },
+    "traces": {
+      "enabled": true,
+      "persist": true,
+      "head_sampling_rate": 1,
+    },
+  },
+}

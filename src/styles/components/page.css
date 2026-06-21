@@ -1,0 +1,20 @@
+/* ==========================================================================
+   PAGE LAYOUT SHELL
+   ========================================================================== */
+
+.page_wrap {
+  flex-flow: column;
+  min-height: 100svh;
+  display: flex;
+  overflow: clip;
+}
+
+/* Main content area — flex: 1 pushes the footer to the bottom.
+   .page_wrap > main targets the <main> in BaseLayout automatically.
+   .page_main is available as an explicit class if needed elsewhere. */
+.page_wrap > main,
+.page_main {
+  flex-flow: column;
+  flex: 1;
+  display: flex;
+}

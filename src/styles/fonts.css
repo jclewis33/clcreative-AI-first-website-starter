@@ -1,0 +1,9 @@
+/* ==========================================================================
+   FONTS
+   ==========================================================================
+   All fonts are now managed via the Astro Fonts API (astro.config.mjs).
+   See the `fonts` array in the config for registered font families:
+   - BDO Grotesk (--font-bdo-grotesk) — primary
+   - Inter (--font-inter) — secondary
+   - IBM Plex Mono (--font-ibm-plex-mono) — tertiary
+   ========================================================================== */

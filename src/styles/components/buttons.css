@@ -1,0 +1,460 @@
+/* ==========================================================================
+   BUTTON COMPONENT STYLES
+   ==========================================================================
+   The Button component uses a wrapper → clickable overlay → visual element
+   pattern. The wrapper is the hover/focus target (the clickable overlay sits
+   on top of the visual element, so only the wrapper reliably receives :hover).
+
+   STRUCTURE
+     <div class="button_main_wrap" data-button-variant="primary" data-button>
+       <div class="clickable_wrap u-cover-absolute">
+         <a class="clickable_link" href="..." aria-label="…">       ← or <button class="clickable_btn">
+       </div>
+       <div class="button_main_element">
+         <span class="button_main_text" aria-hidden="true">Label</span>
+         <span class="button_main_icon">…</span>                    ← optional icon slot
+       </div>
+     </div>
+
+   VARIANT SELECTION
+     data-button-variant="primary"     (default — lime filled)
+     data-button-variant="secondary"   (outlined / ghost)
+     data-button-variant="text"        (text-link style, no bg/border)
+
+   SIZE SELECTION
+     data-button-size="small"          (compact)
+     data-button-size="large"          (prominent CTA)
+     (no attribute = default size)
+
+   HOVER / FOCUS
+     Rest colors are declared on the element; the hover colors are applied via
+     `.button_*_wrap:hover .button_*_element` and `…:has(:focus-visible) …`.
+     Those descendant selectors (0-3-0) out-specify the global `a:hover`
+     (0-1-1), so the button colors win even when the element renders as an <a>.
+   ========================================================================== */
+
+/* =====================================================
+   BUTTON WRAPPERS
+   Set border-radius (inherited by child elements).
+   All wrappers default to fully-rounded (pill / circle).
+   ===================================================== */
+
+.button_main_wrap {
+  border-radius: var(--radius-main);
+  display: inline-block;
+  position: relative;
+}
+
+.button_main_wrap--no-radius {
+  border-radius: 0;
+}
+
+.button_main_wrap--full-width {
+  display: block;
+  width: 100%;
+}
+
+/* ---- Support text wrapper ---- */
+.button_support_wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: inherit;
+}
+
+.button_support_text {
+  margin-top: var(--space-1);
+  margin-bottom: 0;
+}
+
+.button_toggle_wrap {
+  border-radius: var(--radius-full);
+  display: inline-block;
+  position: relative;
+}
+
+.button_arrow_wrap {
+  border-radius: var(--radius-full);
+  display: inline-block;
+  position: relative;
+}
+
+.button_close_wrap {
+  border-radius: var(--radius-full);
+  display: inline-block;
+  position: relative;
+}
+
+/* =====================================================
+   BUTTON MAIN — PRIMARY (default)
+   ===================================================== */
+
+.button_main_element {
+  font-family: var(--font-tertiary);
+  font-size: var(--text-small-size);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-tight);
+  gap: 0.5rem;
+  text-align: center;
+  vertical-align: middle;
+  color: var(--button-primary-text);
+  background-color: var(--button-primary-background);
+  border: var(--border-width-main) solid;
+  border-color: var(--button-primary-border);
+  border-radius: inherit;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 0.9rem 1.5rem;
+  line-height: 1;
+  transition: all 0.2s ease;
+  display: flex;
+  position: relative;
+}
+
+/* Scoped to the primary variant so the filled-background hover doesn't bleed
+   onto the secondary (outlined) or text (no-background) variants. */
+[data-button-variant="primary"]:hover > .button_main_element,
+[data-button-variant="primary"]:has(:focus-visible) > .button_main_element {
+  color: var(--button-primary-text-hover);
+  background-color: var(--button-primary-background-hover);
+  border-color: var(--button-primary-border-hover);
+}
+
+/* =====================================================
+   BUTTON MAIN — SECONDARY VARIANT
+   ===================================================== */
+
+[data-button-variant="secondary"] > .button_main_element {
+  color: var(--button-secondary-text);
+  background-color: var(--button-secondary-background);
+  border-color: var(--button-secondary-border);
+}
+
+[data-button-variant="secondary"]:hover > .button_main_element,
+[data-button-variant="secondary"]:has(:focus-visible) > .button_main_element {
+  color: var(--button-secondary-text-hover);
+  background-color: var(--button-secondary-background-hover);
+  border-color: var(--button-secondary-border-hover);
+}
+
+/* =====================================================
+   BUTTON MAIN — TEXT VARIANT
+   Text-link style: no background, no side borders,
+   bottom border only, compact padding.
+   ===================================================== */
+
+[data-button-variant="text"] > .button_main_element {
+  color: var(--link-text);
+  background-color: transparent;
+  border: none;
+  padding: 0.5rem 0;
+  gap: var(--space-1);
+  display: inline-flex;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+[data-button-variant="text"]:hover > .button_main_element,
+[data-button-variant="text"]:has(:focus-visible) > .button_main_element {
+  color: var(--link-text-hover);
+}
+
+/* Text variant wrapper: no pill radius, never full-width */
+[data-button-variant="text"].button_main_wrap {
+  border-radius: 0;
+  display: inline-block;
+  width: auto;
+}
+
+/* Default chevron icon for text variant */
+[data-button-variant="text"] > .button_main_element::after {
+  content: "\203A"; /* single right-pointing angle quotation mark */
+  font-size: 1.4em;
+  line-height: 0;
+  flex-shrink: 0;
+  margin-top: -0.15em;
+}
+
+/* Hide default chevron when a custom icon slot is provided */
+[data-button-variant="text"] > .button_main_element:has(.button_main_icon)::after {
+  display: none;
+}
+
+/* =====================================================
+   BUTTON MAIN — SIZE MODIFIERS
+   ===================================================== */
+
+[data-button-size="small"] > .button_main_element {
+  padding: 0.55rem 1.25rem;
+}
+
+[data-button-size="large"] > .button_main_element {
+  padding: 1rem 2rem;
+}
+
+/* Text variant sizes only change vertical padding */
+[data-button-variant="text"][data-button-size="small"] > .button_main_element {
+  padding: 0.25rem 0;
+}
+
+[data-button-variant="text"][data-button-size="large"] > .button_main_element {
+  padding: 0.75rem 0;
+}
+
+/* =====================================================
+   BUTTON MAIN — CHILD ELEMENTS
+   ===================================================== */
+
+.button_main_text {
+  line-height: inherit;
+  position: relative;
+}
+
+/* Icon inside button_main_element.
+   Negative vertical margins pull the icon into the button's
+   line-height so it doesn't inflate the overall height. */
+
+.button_main_icon {
+  aspect-ratio: 1;
+  flex-flow: column;
+  flex: none;
+  justify-content: center;
+  align-items: center;
+  width: 0.8rem;
+  margin-top: -0.5rem;
+  margin-bottom: -0.5rem;
+  display: flex;
+}
+
+/* Hide the icon wrapper when the slot is empty */
+.button_main_icon:empty {
+  display: none;
+}
+
+/* =====================================================
+   BUTTON TOGGLE — icon-only button (play/pause, etc.)
+   ===================================================== */
+
+.button_toggle_element {
+  width: var(--button-size-medium);
+  aspect-ratio: 1;
+  vertical-align: middle;
+  color: var(--button-primary-text);
+  background-color: var(--button-primary-background);
+  border: var(--border-width-main) solid;
+  border-color: var(--button-primary-border);
+  border-radius: inherit;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+  display: flex;
+  position: relative;
+}
+
+.button_toggle_wrap:hover .button_toggle_element,
+.button_toggle_wrap:has(:focus-visible) .button_toggle_element {
+  color: var(--button-primary-text-hover);
+  background-color: var(--button-primary-background-hover);
+  border-color: var(--button-primary-border-hover);
+}
+
+/* Play/pause icon visibility inside button_toggle_element.
+   Both icons sit absolutely on top of each other; only one shows at a time,
+   based on .is-active on the enclosing .button_toggle_wrap (toggled by JS). */
+
+.button_toggle_play {
+  opacity: 1;
+  width: 100%;
+  display: block;
+  position: absolute;
+  overflow: visible !important;
+  transition: opacity 0.2s ease;
+}
+
+.button_toggle_pause {
+  opacity: 0;
+  width: 100%;
+  display: block;
+  position: absolute;
+  overflow: visible !important;
+  transition: opacity 0.2s ease;
+}
+
+.button_toggle_wrap.is-active .button_toggle_play {
+  opacity: 0;
+}
+
+.button_toggle_wrap.is-active .button_toggle_pause {
+  opacity: 1;
+}
+
+.button_toggle_element--secondary {
+  color: var(--button-secondary-text);
+  background-color: var(--button-secondary-background);
+  border-color: var(--button-secondary-border);
+}
+
+.button_toggle_wrap:hover .button_toggle_element--secondary,
+.button_toggle_wrap:has(:focus-visible) .button_toggle_element--secondary {
+  color: var(--button-secondary-text-hover);
+  background-color: var(--button-secondary-background-hover);
+  border-color: var(--button-secondary-border-hover);
+}
+
+.button_toggle_icon {
+  aspect-ratio: 1;
+  width: 36%;
+  display: flex;
+  position: relative;
+}
+
+/* =====================================================
+   BUTTON ARROW — directional / pagination button
+   ===================================================== */
+
+.button_arrow_element {
+  width: var(--button-size-medium);
+  aspect-ratio: 1;
+  vertical-align: middle;
+  color: var(--button-primary-text);
+  background-color: var(--button-primary-background);
+  border: var(--border-width-main) solid;
+  border-color: var(--button-primary-border);
+  border-radius: inherit;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+  display: flex;
+  position: relative;
+}
+
+.button_arrow_wrap:hover .button_arrow_element,
+.button_arrow_wrap:has(:focus-visible) .button_arrow_element {
+  color: var(--button-primary-text-hover);
+  background-color: var(--button-primary-background-hover);
+  border-color: var(--button-primary-border-hover);
+}
+
+.button_arrow_element--secondary {
+  color: var(--button-secondary-text);
+  background-color: var(--button-secondary-background);
+  border-color: var(--button-secondary-border);
+}
+
+.button_arrow_wrap:hover .button_arrow_element--secondary,
+.button_arrow_wrap:has(:focus-visible) .button_arrow_element--secondary {
+  color: var(--button-secondary-text-hover);
+  background-color: var(--button-secondary-background-hover);
+  border-color: var(--button-secondary-border-hover);
+}
+
+.button_arrow_icon {
+  aspect-ratio: 1;
+  width: 36%;
+  display: flex;
+  position: relative;
+  overflow: visible !important;
+}
+
+/* =====================================================
+   BUTTON CLOSE — dismiss / close button
+   Default: primary, medium (width: --button-size-medium).
+   Modifiers:
+     --secondary  → secondary button colors
+     --large      → width: --button-size-large
+   Compose freely: class="button_close_element--secondary button_close_element--large"
+   ===================================================== */
+
+.button_close_element {
+  width: var(--button-size-medium);
+  aspect-ratio: 1;
+  color: var(--button-primary-text);
+  background-color: var(--button-primary-background);
+  border: var(--border-width-main) solid;
+  border-color: var(--button-primary-border);
+  border-radius: inherit;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+  display: flex;
+  position: relative;
+}
+
+.button_close_wrap:hover .button_close_element,
+.button_close_wrap:has(:focus-visible) .button_close_element {
+  color: var(--button-primary-text-hover);
+  background-color: var(--button-primary-background-hover);
+  border-color: var(--button-primary-border-hover);
+}
+
+.button_close_element--secondary {
+  color: var(--button-secondary-text);
+  background-color: var(--button-secondary-background);
+  border-color: var(--button-secondary-border);
+}
+
+.button_close_wrap:hover .button_close_element--secondary,
+.button_close_wrap:has(:focus-visible) .button_close_element--secondary {
+  color: var(--button-secondary-text-hover);
+  background-color: var(--button-secondary-background-hover);
+  border-color: var(--button-secondary-border-hover);
+}
+
+.button_close_element--large {
+  width: var(--button-size-large);
+}
+
+.button_close_icon {
+  flex: none;
+  width: 0.8rem;
+  display: block;
+  overflow: visible !important;
+}
+
+/* =====================================================
+   HOVER THEME OVERRIDES
+   data-button-hover="light|dark|brand" on the wrapper
+   remaps hover tokens so a button can hover as if it
+   were in a different theme context.
+   ===================================================== */
+
+/* Light hover — hover to dark */
+[data-button-hover="light"] {
+  --button-primary-background-hover: var(--color-dark-900);
+  --button-primary-border-hover: var(--color-dark-900);
+  --button-primary-text-hover: var(--color-light-200);
+
+  --button-secondary-background-hover: var(--color-dark-900);
+  --button-secondary-border-hover: var(--color-dark-900);
+  --button-secondary-text-hover: var(--color-light-200);
+}
+
+/* Dark hover — hover to white */
+[data-button-hover="dark"] {
+  --button-primary-background-hover: var(--color-light-100);
+  --button-primary-border-hover: var(--color-light-100);
+  --button-primary-text-hover: var(--color-dark-900);
+
+  --button-secondary-background-hover: var(--color-light-100);
+  --button-secondary-border-hover: var(--color-light-100);
+  --button-secondary-text-hover: var(--color-dark-900);
+}
+
+/* Brand hover — subtle darken */
+[data-button-hover="brand"] {
+  --button-primary-background-hover: color-mix(
+    in srgb,
+    var(--color-brand-text),
+    black 10%
+  );
+  --button-primary-border-hover: color-mix(
+    in srgb,
+    var(--color-brand-text),
+    black 10%
+  );
+  --button-primary-text-hover: var(--color-brand-500);
+
+  --button-secondary-background-hover: var(--color-brand-text);
+  --button-secondary-border-hover: var(--color-brand-text);
+  --button-secondary-text-hover: var(--color-brand-500);
+}

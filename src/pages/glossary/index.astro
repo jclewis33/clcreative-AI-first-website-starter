@@ -1,0 +1,346 @@
+---
+export const prerender = false;
+/**
+ * Glossary Listing Page
+ *
+ * Main glossary index with:
+ *   1. Hero section — title + description
+ *   2. Controls — A-Z letter nav, search input, category filters
+ *   3. Term grid — alphabetically grouped cards in responsive grid
+ *
+ * Content is fetched from Sanity CMS.
+ */
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SanityCtaSection from "../../components/sections/SanityCtaSection.astro";
+import Section from "../../components/ui/Section.astro";
+import Layout from "../../components/ui/Layout.astro";
+import Col from "../../components/ui/Col.astro";
+import Grid from "../../components/ui/Grid.astro";
+import Heading from "../../components/ui/Heading.astro";
+import Text from "../../components/ui/Text.astro";
+import Card from "../../components/ui/Card.astro";
+
+// Sanity
+import { loadQuery } from "../../sanity/lib/load-query";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import { GLOSSARY_TERMS_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
+
+// Styles
+import "../../styles/pages/glossary.css";
+
+// Category list (matches Sanity schema options)
+const glossaryCategories = [
+  "Development",
+  "SEO",
+  "CSS",
+  "Design",
+  "Business",
+  "Performance",
+] as const;
+
+/* ── Fetch and group terms ── */
+
+const { data: allTerms } = await loadQuery<any[]>({
+  query: GLOSSARY_TERMS_QUERY,
+  ...getDraftModeProps(Astro),
+});
+
+const { data: settings } = await loadQuery<any>({
+  query: SITE_SETTINGS_QUERY,
+  ...getDraftModeProps(Astro),
+});
+const defaultCtaSection = settings?.defaultCtaSection ?? null;
+
+// Helper: get unique first letters
+function getGlossaryLetters(terms: any[]): string[] {
+  const letters = new Set(terms.map((t: any) => t.term[0].toUpperCase()));
+  return [...letters].sort();
+}
+
+// Helper: group terms by first letter
+function groupTermsByLetter(terms: any[]): Record<string, any[]> {
+  return terms.reduce(
+    (groups: Record<string, any[]>, term: any) => {
+      const letter = term.term[0].toUpperCase();
+      (groups[letter] ??= []).push(term);
+      return groups;
+    },
+    {} as Record<string, any[]>,
+  );
+}
+
+const sortedTerms = [...allTerms].sort((a: any, b: any) =>
+  a.term.localeCompare(b.term),
+);
+const letters = getGlossaryLetters(sortedTerms);
+const groupedTerms = groupTermsByLetter(sortedTerms);
+---
+
+<BaseLayout
+  title="Glossary | CL Creative"
+  description="A comprehensive glossary of web design, development, and SEO terms to help you grow your knowledge."
+  theme="light"
+>
+  {
+    /* ================================================================
+      HERO SECTION
+      ================================================================ */
+  }
+  <Section theme="dark" class="glossary_hero_wrap">
+    <Layout variant="stack-centered">
+      <Col slot="col1">
+        <Heading tag="h1" variant="display-sm">Glossary</Heading>
+        <Text variant="large" align="center">
+          A comprehensive glossary of web design, development, and SEO terms.
+        </Text>
+      </Col>
+    </Layout>
+  </Section>
+
+  {
+    /* ================================================================
+      CONTROLS — letter nav, search, category filters
+      ================================================================ */
+  }
+  <Section
+    gap={7}
+    paddingTop="small"
+    paddingBottom="none"
+    class="glossary_controls_wrap"
+  >
+    {/* A-Z Letter Navigation */}
+    <nav class="glossary_letter_nav" aria-label="Jump to letter">
+      {
+        letters.map((letter) => (
+          <a
+            href={`#letter-${letter}`}
+            class="glossary_letter_link"
+            data-letter={letter}
+          >
+            {letter}
+          </a>
+        ))
+      }
+    </nav>
+
+    {/* Search input */}
+    <div class="glossary_search_wrap">
+      <svg
+        class="glossary_search_icon"
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="search"
+        class="glossary_search_input"
+        placeholder="Search terms..."
+        aria-label="Search glossary terms"
+        autocomplete="off"
+        data-glossary-search
+      />
+    </div>
+
+    {/* Category filter buttons */}
+    <div
+      class="glossary_filter_wrap"
+      role="group"
+      aria-label="Filter by category"
+    >
+      <button
+        class="glossary_filter_button is-active"
+        data-filter="all"
+        type="button"
+      >
+        All
+      </button>
+      {
+        glossaryCategories.map((cat) => (
+          <button
+            class="glossary_filter_button"
+            data-filter={cat}
+            type="button"
+          >
+            {cat}
+          </button>
+        ))
+      }
+    </div>
+  </Section>
+
+  {
+    /* ================================================================
+      TERM GRID — grouped by letter
+      ================================================================ */
+  }
+  <Section paddingTop="small" class="glossary_listing_wrap">
+    {
+      Object.entries(groupedTerms)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([letter, terms]) => (
+          <div class="glossary_letter_group" id={`letter-${letter}`}>
+            <Heading tag="h2" variant="h4" class="glossary_letter_heading">
+              {letter}
+            </Heading>
+            <Grid
+              largeColumns={3}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={4}
+              class="glossary_term_grid"
+            >
+              {terms
+                .sort((a, b) => a.term.localeCompare(b.term))
+                .map((term) => (
+                  <Card
+                    variant="stacked"
+                    href={`/glossary/${term.slug}`}
+                    ariaLabel={`Read definition of ${term.term}`}
+                    class="glossary_card_wrap"
+                    data-term={term.term.toLowerCase()}
+                    data-category={term.category}
+                  >
+                    <div slot="title" class="glossary_card_title_wrap">
+                      <Heading
+                        tag="h3"
+                        variant="h5"
+                        marginBottom={0}
+                        maxWidth="100%"
+                      >
+                        {term.term}
+                      </Heading>
+                    </div>
+                    <Text variant="small" muted clamp={2}>
+                      {term.shortDefinition}
+                    </Text>
+                    <div slot="footer" class="glossary_card_footer">
+                      <Text
+                        tag="span"
+                        variant="tiny"
+                        weight="medium"
+                        marginBottom={0}
+                        class="glossary_card_category"
+                      >
+                        {term.category}
+                      </Text>
+                    </div>
+                  </Card>
+                ))}
+            </Grid>
+          </div>
+        ))
+    }
+
+    {/* Empty state — shown by JS when search/filter has no results */}
+    <div class="glossary_empty_state u-display-none" data-glossary-empty>
+      <Text variant="regular" muted align="center">
+        No terms found. Try a different search or filter.
+      </Text>
+    </div>
+  </Section>
+
+  {defaultCtaSection && <SanityCtaSection cta={defaultCtaSection} />}
+</BaseLayout>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector<HTMLInputElement>(
+      "[data-glossary-search]",
+    );
+    const filterButtons =
+      document.querySelectorAll<HTMLButtonElement>("[data-filter]");
+    const cards = document.querySelectorAll<HTMLElement>(".glossary_card_wrap");
+    const letterGroups = document.querySelectorAll<HTMLElement>(
+      ".glossary_letter_group",
+    );
+    const emptyState = document.querySelector<HTMLElement>(
+      "[data-glossary-empty]",
+    );
+
+    let activeCategory = "all";
+
+    function filterCards() {
+      const query = searchInput?.value?.toLowerCase().trim() ?? "";
+      let visibleCount = 0;
+
+      cards.forEach((card) => {
+        const term = card.getAttribute("data-term") ?? "";
+        const category = card.getAttribute("data-category") ?? "";
+        const matchesSearch = term.includes(query);
+        const matchesCategory =
+          activeCategory === "all" || category === activeCategory;
+        const visible = matchesSearch && matchesCategory;
+
+        card.style.display = visible ? "" : "none";
+        if (visible) visibleCount++;
+      });
+
+      // Hide letter groups with no visible cards
+      letterGroups.forEach((group) => {
+        const visibleCards = group.querySelectorAll(
+          '.glossary_card_wrap:not([style*="display: none"])',
+        );
+        group.style.display = visibleCards.length > 0 ? "" : "none";
+      });
+
+      // Show/hide empty state
+      if (emptyState) {
+        emptyState.classList.toggle("u-display-none", visibleCount > 0);
+        emptyState.classList.toggle("u-display-block", visibleCount === 0);
+      }
+    }
+
+    // Search input
+    searchInput?.addEventListener("input", filterCards);
+
+    // Category filter buttons
+    filterButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        activeCategory = btn.getAttribute("data-filter") ?? "all";
+        filterCards();
+      });
+    });
+
+    // Smooth scroll for letter nav links (accounts for fixed nav + banner)
+    const letterLinks = document.querySelectorAll<HTMLAnchorElement>(
+      ".glossary_letter_link",
+    );
+
+    letterLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        const targetId = link.getAttribute("href")?.replace("#", "");
+        if (!targetId) return;
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        e.preventDefault();
+
+        // Resolve --nav-height-total + 1.5rem (matches CSS scroll-margin-top)
+        const probe = document.createElement("div");
+        probe.style.height = "calc(var(--nav-height-total) + 1.5rem)";
+        probe.style.position = "absolute";
+        probe.style.visibility = "hidden";
+        document.body.appendChild(probe);
+        const headerOffset = probe.offsetHeight;
+        document.body.removeChild(probe);
+
+        const top =
+          target.getBoundingClientRect().top + window.scrollY - headerOffset;
+        window.scrollTo({ top, behavior: "smooth" });
+      });
+    });
+  });
+</script>

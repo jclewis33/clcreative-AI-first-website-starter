@@ -1,0 +1,23 @@
+/* SplitSection — full-reversed content + image section.
+ * Shared styles for the recurring "experience" / "agitate" pattern that was
+ * previously duplicated per page as `*-experience_*`, `seo-traffic_*`,
+ * `web-dev_foundation_*`, etc. */
+
+.split_content {
+  padding-block: var(--section-space-xsmall);
+}
+
+.split_body {
+  border-top: var(--border-width-main) solid var(--border);
+  padding-top: var(--space-4);
+}
+
+@media (width < 62.5em) {
+  .split_content {
+    padding-block: 0;
+  }
+
+  .split_section {
+    padding-block: var(--section-space-small);
+  }
+}

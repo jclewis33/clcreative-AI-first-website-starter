@@ -1,0 +1,149 @@
+/* ==========================================================================
+   ACCORDION COMPONENT STYLES
+   ==========================================================================
+   Animated expand/collapse list, driven entirely by the `aria-expanded`
+   attribute that JS toggles on the toggle button — plain CSS, no variables.
+
+   How it works:
+     `:has(.accordion_toggle_button[aria-expanded="true"])` toggles
+     grid-template-rows from 0fr to 1fr on .accordion_content_wrap, which
+     animates the expand/collapse natively in CSS — no JS measurement or
+     GSAP timeline required. The chevron icon rotates off the same
+     attribute (see .accordion_toggle_icon below).
+
+   Example markup:
+     <div class="accordion_wrap">
+       <div class="accordion_list" role="list">
+         <div class="accordion_item" role="listitem">
+           <div class="accordion_component">
+             <h3 class="accordion_toggle_heading">
+               <button class="accordion_toggle_button" aria-expanded="false">
+                 <span class="accordion_toggle_text">Question?</span>
+                 <span class="accordion_toggle_icon">▼</span>
+               </button>
+             </h3>
+             <div class="accordion_content_wrap">
+               <div class="accordion_content_padding">Answer.</div>
+             </div>
+           </div>
+         </div>
+       </div>
+     </div>
+   ========================================================================== */
+
+.accordion_wrap {
+  padding-top: 1px;
+  flex-flow: column;
+  width: 100%;
+  display: flex;
+}
+
+.accordion_list {
+  flex-flow: column;
+  list-style: none;
+  width: 100%;
+  margin-top: calc(var(--space-4) * -1);
+  margin-bottom: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+  display: flex;
+}
+
+.accordion_item {
+  border-bottom: var(--border-width-main) solid var(--border);
+}
+
+.accordion_item:first-child {
+  border-top: none;
+}
+
+.accordion_component {
+  position: relative;
+}
+
+.accordion_toggle_button {
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
+  gap: var(--space-3);
+  color: inherit;
+  cursor: pointer;
+  outline-offset: var(--focus-offset-inner);
+  justify-content: space-between;
+  align-items: start;
+  width: 100%;
+  list-style: none;
+  display: flex;
+  /* Reset browser default button styles */
+  background: none;
+  border: none;
+  text-align: left;
+}
+
+/* Remove default browser disclosure arrow */
+.accordion_toggle_button::-webkit-details-marker {
+  display: none;
+}
+
+.accordion_toggle_heading {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-weight: inherit;
+}
+
+.accordion_toggle_icon {
+  aspect-ratio: 1;
+  flex: none;
+  width: 1.4rem;
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+  display: flex;
+  align-content: flex-start;
+  overflow: visible !important;
+}
+
+/* Flip the chevron when its toggle is expanded — keyed off the same
+   aria-expanded attribute that opens the panel below. */
+.accordion_toggle_button[aria-expanded="true"] .accordion_toggle_icon {
+  transform: rotate(-180deg);
+}
+
+.accordion_toggle_icon > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Content panel — collapses/expands via grid-template-rows: 0fr ↔ 1fr.
+   `minmax(0, ...)` forces the track minimum to 0 (bare 0fr defaults to
+   min-content, which lets the top of the content peek through when
+   collapsed). overflow: hidden on the wrap is a belt-and-suspenders
+   clip for any bleed during the transition. The inner padding element
+   also gets overflow: hidden so it can shrink to 0 along with the row. */
+.accordion_content_wrap {
+  width: 100%;
+  display: grid;
+  grid-template-rows: minmax(0, 0fr);
+  overflow: hidden;
+}
+
+/* JS adds .is-ready to .accordion_wrap after the initial state is painted
+   so the openByDefault item doesn't animate in on page load. */
+.accordion_wrap.is-ready .accordion_content_wrap {
+  transition: grid-template-rows 0.3s ease;
+}
+
+.accordion_item:has(.accordion_toggle_button[aria-expanded="true"]) .accordion_content_wrap {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accordion_wrap.is-ready .accordion_content_wrap {
+    transition: none;
+  }
+}
+
+.accordion_content_padding {
+  min-height: 0;
+  overflow: hidden;
+}

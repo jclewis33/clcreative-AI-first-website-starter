@@ -1,0 +1,319 @@
+---
+/**
+ * Case Study Template
+ *
+ * Renders a case study detail page given the study document and the full list
+ * of studies (used to compute prev/next). Used by the production route
+ * (`src/pages/case-studies/[slug].astro`).
+ */
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SanityCtaSection from "../sections/SanityCtaSection.astro";
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Grid from "../ui/Grid.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Visual from "../ui/Visual.astro";
+import Button from "../ui/Button.astro";
+import Slider from "../ui/Slider.astro";
+import CaseStudyCard from "../ui/CaseStudyCard.astro";
+import CaseStudyBlockRenderer from "../case-study/CaseStudyBlockRenderer.astro";
+
+import { urlFor, hotspotPosition } from "../../sanity/lib/image";
+import { stegaClean } from "@sanity/client/stega";
+import { portableTextToHtml } from "../../sanity/lib/portable-text";
+import { caseStudyJsonLd } from "../../lib/jsonld";
+import JsonLd from "../global/JsonLd.astro";
+
+import "../../styles/pages/case-study-detail.css";
+
+interface Props {
+  study: any;
+  allStudies: any[];
+  defaultCtaSection?: any;
+}
+
+const { study, allStudies, defaultCtaSection = null } = Astro.props;
+const resolvedCtaSection = study.ctaSectionOverride ?? defaultCtaSection ?? null;
+
+const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
+const jsonLd = caseStudyJsonLd(study, siteOrigin);
+
+const imageUrlFn = (ref: string) => urlFor({ _ref: ref }).width(1920).url();
+const hasImageSource = (value: any) =>
+  Boolean(value?.asset?._ref || value?._ref || value?.asset?._id);
+
+// stegaClean strips the invisible Unicode characters Sanity injects into
+// string fields in draft/preview mode. Without it, an aspect-ratio value like
+// "wide" arrives as "wide​…" — which is invalid CSS, collapses the image
+// wrapper to zero height, and makes the image vanish in the Presentation preview.
+const resolveAspectRatio = (block: any, fallback: string) => {
+  const custom = stegaClean(block.customAspectRatio);
+  if (custom) return custom;
+  const ratio = stegaClean(block.aspectRatio);
+  if (ratio === "auto") return undefined;
+  return ratio || fallback;
+};
+
+const contentBlocks = (study.content ?? [])
+  .map((block: any) => {
+    const spacingProps = {
+      sectionSpacing: block.sectionSpacing || undefined,
+      sectionSpacingTop: block.sectionSpacingTop || undefined,
+      sectionSpacingBottom: block.sectionSpacingBottom || undefined,
+    };
+
+    switch (block._type) {
+      case "richText":
+        return {
+          type: "richText",
+          html: portableTextToHtml(block.body, imageUrlFn),
+          maxWidth: block.maxWidth || undefined,
+          ...spacingProps,
+        };
+      case "richTextLeft":
+        return {
+          type: "richTextLeft",
+          html: portableTextToHtml(block.body, imageUrlFn),
+          maxWidth: block.maxWidth || undefined,
+          ...spacingProps,
+        };
+      case "richTextColumns":
+        return {
+          type: "richTextColumns",
+          html: portableTextToHtml(block.body, imageUrlFn),
+          ...spacingProps,
+        };
+      case "richTextWithImage":
+        if (!hasImageSource(block.image)) return null;
+        return {
+          type: "richTextWithImage",
+          html: portableTextToHtml(block.body, imageUrlFn),
+          image: urlFor(block.image).width(1600).url(),
+          imageAlt: block.imageAlt || "",
+          aspectRatio: resolveAspectRatio(block, "landscape"),
+          transparent: block.transparent || false,
+          objectFit: stegaClean(block.objectFit) || undefined,
+          position: hotspotPosition(block.image),
+          ...spacingProps,
+        };
+      case "fullWidthImage":
+        if (!hasImageSource(block.image)) return null;
+        return {
+          type: "fullWidthImage",
+          image: urlFor(block.image).width(2400).url(),
+          imageAlt: block.imageAlt || "",
+          aspectRatio: resolveAspectRatio(block, "wide"),
+          transparent: block.transparent || false,
+          position: hotspotPosition(block.image),
+          ...spacingProps,
+        };
+      case "imageGrid":
+        return {
+          type: "imageGrid",
+          images: (block.images ?? [])
+            .filter((img: any) => hasImageSource(img))
+            .map((img: any) => ({
+              src: urlFor(img).width(1400).url(),
+              alt: img.alt || block.defaultAlt || "",
+              transparent: img.transparent || false,
+              position: hotspotPosition(img),
+            })),
+          aspectRatio: resolveAspectRatio(block, "landscape"),
+          ...spacingProps,
+        };
+      case "stats":
+        return { type: "stats", items: block.items ?? [], ...spacingProps };
+      default:
+        return null;
+    }
+  })
+  .filter(
+    (block: any): block is NonNullable<typeof block> =>
+      Boolean(block) &&
+      (block.type !== "imageGrid" || block.images.length > 0),
+  );
+
+const siblingStudies = (allStudies ?? []).filter(
+  (entry: any) =>
+    entry?.slug &&
+    entry.slug !== study.slug &&
+    entry.title &&
+    hasImageSource(entry.image),
+);
+const upNextStudies = siblingStudies.slice(0, 2);
+const categories = Array.isArray(study.categories) ? study.categories : [];
+const galleryImages = (study.galleryImages ?? []).filter((img: any) =>
+  hasImageSource(img),
+);
+
+const seo = study.seo || {};
+const metaTitle = seo.metaTitle || study.title || "Case Study";
+const metaDescription =
+  seo.metaDescription || study.description || "Preview this case study draft.";
+const ogTitle = seo.ogTitle || metaTitle;
+const ogDescription = seo.ogDescription || metaDescription;
+const ogImageUrl = seo.ogImage
+  ? urlFor(seo.ogImage).width(1200).height(630).format("jpg").quality(90).url()
+  : hasImageSource(study.image)
+    ? urlFor(study.image).width(1200).height(630).format("jpg").quality(90).url()
+    : undefined;
+---
+
+<BaseLayout
+  docs=""
+  theme="light"
+  title={`${metaTitle} | CL Creative`}
+  description={metaDescription}
+  ogTitle={ogTitle}
+  ogDescription={ogDescription}
+  ogImage={ogImageUrl}
+>
+  <JsonLd data={jsonLd} />
+  <Section docs="" theme="dark" class="case-study_detail_hero_wrap">
+    <Layout variant="stack" verticalAlign="center">
+      <Col slot="col1">
+        <a href="/case-studies" class="case-study_detail_back_link">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M15 18L9 12L15 6"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+          All Case Studies
+        </a>
+
+        <Heading docs="" tag="h1" variant="h6" marginBottom={2} maxWidth="50ch">
+          {study.title || "Untitled Case Study"}
+        </Heading>
+
+        <Heading tag="h2" variant="h3" maxWidth="40ch">
+          {study.description || "This draft does not have a description yet."}
+        </Heading>
+
+        <div class="case-study_detail_meta">
+          <div class="case-study_detail_meta_item">
+            <Text tag="span" size="regular" weight="bold" marginBottom={0}>
+              Client:
+            </Text>
+            <Text tag="span" size="regular" weight="medium" marginBottom={0}>
+              {study.client || "Not set"}
+            </Text>
+          </div>
+          {
+            study.timeline && (
+              <div class="case-study_detail_meta_item">
+                <Text tag="span" size="regular" weight="bold" marginBottom={0}>
+                  Time:
+                </Text>
+                <Text
+                  tag="span"
+                  size="regular"
+                  weight="medium"
+                  marginBottom={0}
+                >
+                  {study.timeline}
+                </Text>
+              </div>
+            )
+          }
+          {
+            study.liveUrl && (
+              <div class="case-study_detail_meta_item">
+                <Button
+                  variant="text"
+                  href={study.liveUrl}
+                  newTab
+                  ariaLabel={`Visit ${study.client} website`}
+                >
+                  Visit Website
+                  <svg
+                    slot="icon"
+                    aria-hidden="true"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <line x1="0" y1="5" x2="8" y2="5" />
+                    <polyline points="5,2 8,5 5,8" />
+                  </svg>
+                </Button>
+              </div>
+            )
+          }
+        </div>
+
+        <div class="case-study_detail_categories">
+          {
+            categories.map((cat: string) => (
+              <span class="case-study_detail_category_tag">{cat}</span>
+            ))
+          }
+        </div>
+      </Col>
+
+      <div slot="col2" class="case-study_detail_slider">
+        <Slider
+          docs=""
+          slidesLg={2}
+          slidesMd={2}
+          slidesSm={1}
+          slidesXs={1}
+          showArrows
+          showBullets
+          loop
+        >
+          {
+            galleryImages.map((img: any) => (
+              <div class="swiper-slide">
+                <Visual
+                  docs=""
+                  src={urlFor(img).width(1400).url()}
+                  alt={img.alt || study.galleryImagesAlt || ""}
+                  position={hotspotPosition(img)}
+                />
+              </div>
+            ))
+          }
+        </Slider>
+      </div>
+    </Layout>
+  </Section>
+
+  {contentBlocks.map((block: any) => <CaseStudyBlockRenderer block={block} />)}
+
+  {resolvedCtaSection && <SanityCtaSection cta={resolvedCtaSection} />}
+
+  {
+    upNextStudies.length > 0 && (
+      <Section docs="" padding="large" class="case-study_detail_up_next_wrap">
+        <Heading tag="h2" variant="h3" marginBottom={0}>Up Next</Heading>
+        <Grid largeColumns={2} mediumColumns={2} smallColumns={1}>
+          {upNextStudies.map((entry: any) => (
+            <CaseStudyCard
+              title={entry.title}
+              description={entry.description}
+              categories={entry.categories ?? []}
+              href={`/case-studies/${entry.slug}`}
+              image={urlFor(entry.image).width(1200).url()}
+              imageAlt={entry.imageAlt}
+              imagePosition={hotspotPosition(entry.image)}
+              date={entry.date}
+            />
+          ))}
+        </Grid>
+      </Section>
+    )
+  }
+</BaseLayout>

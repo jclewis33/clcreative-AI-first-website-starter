@@ -1,0 +1,22 @@
+---
+/**
+ * ImageGrid — case study content block.
+ * Renders images in a responsive grid. Column count adapts to the number
+ * of images (up to 3). Collapses to 1 column at the small container breakpoint.
+ */
+import type { ImageEntry } from "../types";
+import Grid from "../../ui/Grid.astro";
+import Visual from "../../ui/Visual.astro";
+
+interface Props {
+  images: ImageEntry[];
+  aspectRatio?: string;
+}
+
+const { images, aspectRatio = "landscape" } = Astro.props;
+const columnCount = (images.length === 3 ? 3 : Math.min(images.length, 2)) as 1 | 2 | 3;
+---
+
+<Grid largeColumns={columnCount} mediumColumns={1} smallColumns={1} data-fade-list data-prevent-flicker="true">
+  {images.map((img) => <Visual docs="" src={img.src} alt={img.alt} ratio={aspectRatio} transparent={img.transparent} position={img.position} />)}
+</Grid>

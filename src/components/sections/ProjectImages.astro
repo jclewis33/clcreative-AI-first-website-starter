@@ -1,0 +1,88 @@
+---
+/**
+ * ProjectImages — scrolling marquee of project screenshots.
+ *
+ * Displays project images in an infinite horizontal scroll, each
+ * maintaining its natural aspect ratio at a consistent height.
+ * Built on top of the Marquee component.
+ */
+
+import Section from "../ui/Section.astro";
+import Marquee from "../ui/Marquee.astro";
+import { Image } from "astro:assets";
+
+import img1 from "../../assets/projects/projects-1.avif";
+import img2 from "../../assets/projects/projects-2.avif";
+import img3 from "../../assets/projects/projects-3.avif";
+import img4 from "../../assets/projects/projects-4.avif";
+import img5 from "../../assets/projects/projects-5.avif";
+
+interface Props {
+  /**
+   * **ProjectImages props:**
+   * - `theme` — 'light' | 'dark' | 'brand'
+   * - `padding` / `paddingTop` / `paddingBottom` — section padding
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute
+   */
+  docs?: string;
+
+  /** Color theme for the section. */
+  theme?: "light" | "dark" | "brand";
+
+  /** Section vertical padding. @default 'small' */
+  padding?: "none" | "small" | "main" | "large" | "page-top";
+  paddingTop?: "none" | "small" | "main" | "large" | "page-top";
+  paddingBottom?: "none" | "small" | "main" | "large" | "page-top";
+
+  /** Extra classes on the section. */
+  class?: string;
+
+  [key: string]: any;
+}
+
+const {
+  docs,
+  theme,
+  padding = "small",
+  paddingTop,
+  paddingBottom,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const images = [
+  { src: img1, alt: "Project screenshot 1" },
+  { src: img2, alt: "Project screenshot 2" },
+  { src: img3, alt: "Project screenshot 3" },
+  { src: img4, alt: "Project screenshot 4" },
+  { src: img5, alt: "Project screenshot 5" },
+];
+---
+
+<Section
+  theme={theme}
+  padding={padding}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  container="full"
+  class:list={["project-images_section", className]}
+  {...rest}
+>
+  <Marquee speed={90} gap={4} class="project-images_marquee">
+    {
+      [...images, ...images].map(({ src, alt }) => (
+        <div class="marquee_item project-images_item">
+          <Image
+            src={src}
+            alt={alt}
+            class="project-images_img"
+            loading="eager"
+            widths={[400, 600]}
+            sizes="400px"
+          />
+        </div>
+      ))
+    }
+  </Marquee>
+</Section>

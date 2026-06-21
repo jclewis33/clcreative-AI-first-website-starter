@@ -1,0 +1,159 @@
+---
+/**
+ * SingleTestimonial — centered brand-themed testimonial with large avatar.
+ *
+ * Displays one testimonial: avatar, name, role/company, and quote.
+ * Self-fetches from Sanity by name, or accepts pre-fetched data.
+ *
+ * @example Fetch by name (recommended)
+ * ```astro
+ * <SingleTestimonial name="Tom Connally" />
+ * ```
+ *
+ * @example Pre-fetched data
+ * ```astro
+ * <SingleTestimonial testimonial={testimonialObj} />
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import { urlFor } from "../../sanity/lib/image";
+import ContentWrapper from "../ui/ContentWrapper.astro";
+import { getTestimonialByName } from "../../sanity/lib/testimonials";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+
+interface TestimonialData {
+  name: string;
+  role?: string;
+  company?: string;
+  quote: string;
+  avatar?: any;
+}
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **SingleTestimonial props:**
+   * - `name` — testimonial person's name to fetch from Sanity (case-insensitive)
+   * - `testimonial` — pre-fetched testimonial object (skips Sanity fetch)
+   * - `theme` — `'light'` | `'dark'` | `'brand'` (default `'brand'`)
+   * - `padding` — sets both paddingTop and paddingBottom (default `'main'`)
+   * - `paddingTop` — override top padding only
+   * - `paddingBottom` — override bottom padding only
+   * - `id` — section id for anchor links
+   * - `class` — extra classes on outer Section
+   */
+  docs?: string;
+
+  /** Name to fetch from Sanity (case-insensitive) */
+  name?: string;
+
+  /** Pre-fetched testimonial data (skips Sanity fetch) */
+  testimonial?: TestimonialData;
+
+  /** Section color theme @default 'brand' */
+  theme?: "light" | "dark" | "brand";
+
+  /** Sets both paddingTop and paddingBottom @default 'main' */
+  padding?: PaddingValue;
+
+  /** Override top padding only */
+  paddingTop?: PaddingValue;
+
+  /** Override bottom padding only */
+  paddingBottom?: PaddingValue;
+
+  /** Section id for anchor links */
+  id?: string;
+
+  /** Extra classes on the outer Section */
+  class?: string;
+}
+
+const {
+  docs,
+  name: fetchName,
+  testimonial: rawTestimonial,
+  theme = "brand",
+  padding = "main",
+  paddingTop = padding,
+  paddingBottom = padding,
+  id,
+  class: className,
+} = Astro.props;
+
+const testimonial =
+  rawTestimonial ??
+  (fetchName
+    ? await getTestimonialByName(
+        fetchName,
+        getDraftModeProps(Astro),
+      ).catch(() => undefined)
+    : undefined);
+if (!testimonial) return;
+
+const { name, role, company, quote, avatar } = testimonial;
+
+const avatarUrl = avatar
+  ? typeof avatar === "string"
+    ? avatar
+    : urlFor(avatar).width(256).height(256).url()
+  : undefined;
+
+const subtitle = [role, company].filter(Boolean).join(", ");
+---
+
+<Section
+  theme={theme}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  id={id}
+  class:list={["single_testimonial_section", className]}
+>
+  <ContentWrapper align="center" maxWidth="48rem">
+    {/* Avatar + name block */}
+    <div class="single_testimonial_author">
+      {
+        avatarUrl && (
+          <img
+            class="single_testimonial_avatar"
+            src={avatarUrl}
+            alt={name}
+            loading="lazy"
+            width="128"
+            height="128"
+          />
+        )
+      }
+      <div class="single_testimonial_author_info">
+        <Text
+          align="center"
+          tag="span"
+          weight="bold"
+          variant="regular"
+          marginBottom={1}
+        >
+          {name}
+        </Text>
+        {
+          subtitle && (
+            <Text align="center" tag="span" variant="regular" marginBottom={0}>
+              {subtitle}
+            </Text>
+          )
+        }
+      </div>
+    </div>
+
+    {/* Quote */}
+    <Text
+      data-split-text
+      align="center"
+      variant="h3"
+      weight="regular">{quote}</Text
+    >
+  </ContentWrapper>
+</Section>

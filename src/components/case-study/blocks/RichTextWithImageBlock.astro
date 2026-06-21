@@ -1,0 +1,29 @@
+---
+/**
+ * RichTextWithImageBlock — two-column layout with rich text and image.
+ *
+ * Used for sections like "Challenges" or "Approach" where descriptive
+ * text sits alongside a supporting image. Col1 = portable text rendered
+ * as u-rich-text, Col2 = image via Visual component.
+ */
+import type { ImageMetadata } from "astro";
+import Layout from "../../ui/Layout.astro";
+import Visual from "../../ui/Visual.astro";
+
+interface Props {
+  html: string;
+  image: ImageMetadata | string;
+  imageAlt: string;
+  aspectRatio?: string;
+  transparent?: boolean;
+  objectFit?: "cover" | "contain";
+  position?: { x: number; y: number } | "center";
+}
+
+const { html, image, imageAlt, aspectRatio = "landscape", transparent, objectFit, position } = Astro.props;
+---
+
+<Layout docs="" variant="columns" verticalAlign="start">
+  <div slot="col1" class="u-rich-text" data-fade-in data-prevent-flicker="true" set:html={html} />
+  <Visual slot="col2" docs="" src={image} alt={imageAlt} ratio={aspectRatio} transparent={transparent} fit={objectFit} position={position} data-fade-in data-prevent-flicker="true" />
+</Layout>

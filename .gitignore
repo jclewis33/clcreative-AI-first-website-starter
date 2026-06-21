@@ -1,0 +1,50 @@
+# build output
+dist/
+preview/dist/
+
+# generated types
+.astro/
+preview/.astro/
+
+# sanity cli runtime cache
+.sanity/
+
+# wrangler local state / cache — never commit
+.wrangler/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+preview/.dev.vars
+preview/.env
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# sanity skills install — sources are managed by skills-lock.json
+.agents/
+# Ignore lock-managed/local skills, but DO commit the hand-authored gsap-* and
+# setup skills (no external source to reinstall from — they must live in the
+# repo so Claude Code web sessions get them).
+.claude/skills/*
+!.claude/skills/gsap-*
+!.claude/skills/setup
+
+# transient plan-mode artifact (personal, machine-generated)
+.claude/plan.md
+
+
+# ShipStudio metadata
+.shipstudio/

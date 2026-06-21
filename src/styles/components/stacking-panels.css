@@ -1,0 +1,72 @@
+/* StackingPanels — scroll-stacking card section.
+ * Shared styles for the pattern previously duplicated per page as
+ * `stacking-cards_*`, `*-stack_*`. The stack effect (sticky + GSAP scale)
+ * is desktop-only; below 50em panels flow single-column with the image on top.
+ * Requires a `container-type: inline-size` ancestor (the Section's u-container)
+ * for the @container query. */
+
+.stacking-panels_wrap {
+  margin-top: var(--space-7);
+}
+
+.stacking-panels_list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.stacking-panels_item {
+  position: sticky;
+  top: calc(var(--nav-height-total) + var(--space-4));
+}
+
+.stacking-panels_card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  flex-direction: column;
+  background: var(--background);
+  border-radius: var(--radius-large);
+  overflow: hidden;
+  box-shadow: var(--box-shadow-medium);
+  border: var(--border-width-main) solid rgba(255, 255, 255, 0.5);
+  transform-origin: center top;
+  will-change: transform, filter;
+}
+
+.stacking-panels_card.is-reversed .stacking-panels_visual {
+  order: -1;
+}
+
+.stacking-panels_content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-7);
+}
+
+.stacking-panels_visual {
+  min-height: 400px;
+}
+
+/* Medium and below: single-column cards, no sticky — stack in normal flow */
+@container (width < 50em) {
+  .stacking-panels_item {
+    position: relative;
+    top: 0;
+  }
+
+  .stacking-panels_card {
+    grid-template-columns: minmax(0, 1fr);
+    transform: none !important;
+  }
+
+  .stacking-panels_card .stacking-panels_visual {
+    order: -1;
+    min-height: 280px;
+  }
+
+  .stacking-panels_content {
+    padding-block: var(--space-5);
+    padding-inline: var(--space-4);
+  }
+}

@@ -1,0 +1,244 @@
+---
+/**
+ * BaseLayout — root page wrapper used by every page.
+ *
+ * Renders `<html>`, `<head>`, Navbar, `<main>` (slot), and Footer.
+ * Sets the site-wide default theme via `data-theme` on `<html>`.
+ *
+ * **Props:**
+ * - `title` — page `<title>` for SEO (**required**)
+ * - `description` — meta description for SEO
+ * - `canonical` — canonical URL (`<link rel="canonical">`)
+ * - `theme` — page-level color theme: `'light'`, `'dark'`, or `'brand'` (default: `'dark'`)
+ *
+ * **Theme cascade:**
+ * The `theme` prop sets `data-theme` on `<html>`, which cascades CSS
+ * color variables to all children. Individual `<Section theme="...">` props
+ * override the page-level default for that section only.
+ *
+ * To change the **site-wide default theme**, change the default value
+ * in the `Astro.props` destructuring below (the `theme = 'light'` default).
+ * Every page that doesn't pass an explicit `theme` prop will use this default.
+ *
+ * **Slot:** default — page content rendered inside `<main>`.
+ *
+ * **Footer theme:** The footer uses its own CSS variables
+ * (`--footer-background`, `--footer-text`, `--footer-border`) defined
+ * per theme in `src/styles/variables/themes.css`. Edit the values
+ * there to control the footer's look per theme.
+ *
+ * **Banner config:** the announcement banner is configured in the `BANNER`
+ * object in `src/data/site-structure.ts` (sitewide default + per-page
+ * overrides); this layout resolves it via `resolveBanner(Astro.url.pathname)`.
+ *
+ * @example Default dark page
+ * ```astro
+ * <BaseLayout title="Home | Site Name" description="Welcome to our site.">
+ *   <Section paddingTop="page-top">...</Section>
+ * </BaseLayout>
+ * ```
+ *
+ * @example Light-themed page
+ * ```astro
+ * <BaseLayout title="Blog | Site Name" description="Our blog." theme="light">
+ *   <Section paddingTop="page-top">...</Section>
+ * </BaseLayout>
+ * ```
+ *
+ * @example Mixed — light page with one dark hero section
+ * ```astro
+ * <BaseLayout title="About | Site Name" theme="light">
+ *   <Section theme="dark" paddingTop="page-top">Hero</Section>
+ *   <Section padding="large">Light content</Section>
+ * </BaseLayout>
+ * ```
+ */
+
+import "../../src/styles/global.css";
+import Head from "../components/global/Head.astro";
+import Navbar from "../components/global/Navbar.astro";
+import Footer from "../components/global/Footer.astro";
+import SanityVisualEditing from "../components/SanityVisualEditing";
+import DisableDraftMode from "../components/DisableDraftMode";
+import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
+import { SITE } from "../config/site";
+import { resolveBanner } from "../data/site-structure";
+import JsonLd from "../components/global/JsonLd.astro";
+import {
+  localBusinessJsonLd,
+  webPageJsonLd,
+  breadcrumbJsonLd,
+} from "../lib/jsonld";
+
+// Prerendered pages are baked at build time with no request, so cookies
+// aren't available. Short-circuit to avoid "Astro.request.headers was used"
+// build warnings. Draft mode only ever applies to SSR pages (blog,
+// case-studies, glossary, API routes).
+const draftMode = Astro.isPrerendered
+  ? false
+  : Astro.cookies.has(perspectiveCookieName);
+
+interface Props {
+  /**
+   * **BaseLayout props:**
+   * - `title` — page `<title>` for SEO (required)
+   * - `description` — meta description for SEO
+   * - `canonical` — canonical URL
+   * - `theme` — page-level theme: light, dark, brand (default 'dark')
+   *
+   * To change the site-wide default theme, update the default value below.
+   *
+   * **Slot:** default — page content inside `<main>`
+   */
+  docs?: string;
+
+  /** Page `<title>` — shown in browser tab and search results. */
+  title: string;
+
+  /** Meta description for SEO. */
+  description?: string;
+
+  /** Canonical URL for `<link rel="canonical">`. */
+  canonical?: string;
+
+  /** Open Graph image URL for social sharing. */
+  ogImage?: string;
+
+  /** Open Graph title override (falls back to title). */
+  ogTitle?: string;
+
+  /** Open Graph description override (falls back to description). */
+  ogDescription?: string;
+
+  /**
+   * Page-level color theme. Sets `data-theme` on `<html>`.
+   * Individual `<Section theme="...">` props override this for that section.
+   *
+   * To change the **site-wide default**, update the default value
+   * in the destructuring below.
+   *
+   * @default 'light'
+   */
+  theme?: 'light' | 'dark' | 'brand';
+
+  /**
+   * Optional per-page JSON-LD. Pass a plain object (or `@graph`) — typically
+   * built with `serviceFaqJsonLd()` — and it renders alongside the automatic
+   * baseline schema (LocalBusiness + WebPage + BreadcrumbList). Replaces the
+   * old per-page raw `<script type="application/ld+json">` blocks.
+   */
+  schema?: unknown;
+}
+
+const { docs, title, description, canonical, ogImage, ogTitle, ogDescription, theme = 'light', schema } = Astro.props;
+
+// ── Baseline JSON-LD (auto-emitted on every page) ──────────────────
+// Layer 1: sitewide LocalBusiness anchor + a per-page WebPage and (when
+// the path has depth) a BreadcrumbList. The canonical URL drives @id/url —
+// fall back to the request path when no explicit `canonical` is passed.
+// ───────────────────────────────────────────────────────────────────
+const canonicalPath = canonical
+  ? new URL(canonical).pathname.replace(/\/+$/, "")
+  : Astro.url.pathname.replace(/\/+$/, "");
+const canonicalUrl = `${SITE.url}${canonicalPath}`;
+
+const sitewideLocalBusiness = localBusinessJsonLd();
+const webPageSchema = webPageJsonLd({ url: canonicalUrl, title, description });
+const breadcrumbSchema = breadcrumbJsonLd(canonicalPath);
+
+// ── Banner Config ──────────────────────────────────────────────────
+// The announcement bar is configured in src/data/site-structure.ts (BANNER):
+// a sitewide default plus optional per-page overrides. resolveBanner() returns
+// the right one for the current route (or null to hide it here).
+// Dismiss persists via sessionStorage('nav-banner-dismissed').
+// Nav shape (pill vs full-width) is controlled in variables/nav.css.
+// ───────────────────────────────────────────────────────────────────
+const banner = resolveBanner(Astro.url.pathname);
+const bannerText = banner?.text ?? "";
+const bannerHref = banner?.href;
+---
+
+<!doctype html>
+<html lang="en" data-theme={theme} class:list={[bannerText && "is-has-banner"]}>
+  <head>
+    <Head title={title} description={description} canonical={canonical} ogImage={ogImage} ogTitle={ogTitle} ogDescription={ogDescription} />
+    {/* Synchronous check: hide banner before first paint if previously dismissed.
+        Adds a class that forces display:none on the banner, preventing any flicker
+        from the grid-template-rows transition. */}
+    {bannerText && (
+      <script is:inline>
+        if (sessionStorage.getItem('nav-banner-dismissed')) {
+          document.documentElement.classList.remove('is-has-banner');
+          document.documentElement.classList.add('is-banner-dismissed');
+        }
+      </script>
+    )}
+    {/* Keyboard vs mouse focus detection — used by major design systems
+        (Google Material, GitHub Primer) to show focus rings only on Tab.
+        Adds .using-keyboard on Tab keydown, removes on mousedown.
+        Focus outline in reset.css is scoped to html.using-keyboard. */}
+    <script is:inline>
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') document.documentElement.classList.add('using-keyboard');
+      });
+      document.addEventListener('mousedown', function() {
+        document.documentElement.classList.remove('using-keyboard');
+      });
+    </script>
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${SITE.integrations.gtmId}`} height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div class="page_wrap">
+      <!--Navbar appears at the top of every page -->
+      <Navbar theme="dark" bannerText={bannerText} bannerHref={bannerHref} />
+      <main id="main-content">
+        <!--Rest of page content -->
+        <slot />
+      </main>
+      <!--Footer appears at the bottom of every page -->
+      <Footer />
+    </div>
+    {/* Baseline JSON-LD — LocalBusiness anchor + per-page WebPage/Breadcrumb.
+        Per-page `schema` (Service/FAQ etc.) renders alongside when provided. */}
+    <JsonLd data={sitewideLocalBusiness} />
+    <JsonLd data={webPageSchema} />
+    {breadcrumbSchema && <JsonLd data={breadcrumbSchema} />}
+    {schema && <JsonLd data={schema} />}
+    <script>
+      // gsap-init MUST be imported first — it bundles GSAP/ScrollTrigger/SplitText
+      // from npm and assigns them to window.* so all downstream component scripts
+      // (animation.js, Marquee, Modal, Tab, Accordion, ScrollReveal, HowItWorks)
+      // that read (window as any).gsap keep working without per-file refactoring.
+      import "../scripts/gsap-init.js";
+      import "../scripts/swiper-init.js";
+      import "../scripts/animation.js";
+      import "../scripts/animate-observer.js";
+      import "../scripts/social-share.js";
+    </script>
+
+    <script is:inline>
+      // Cross-page anchor fix — split-text, lazy images, and ScrollTrigger all
+      // reflow after the browser's initial hash scroll, so we re-scroll once
+      // layout has settled and after all images finish loading.
+      (function () {
+        if (!window.location.hash) return;
+        const id = decodeURIComponent(window.location.hash.slice(1));
+        const scrollToTarget = () => {
+          const el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        };
+        window.addEventListener("load", () => {
+          requestAnimationFrame(() => setTimeout(scrollToTarget, 150));
+        });
+      })();
+    </script>
+    {draftMode && (
+      <>
+        <SanityVisualEditing client:only="react" />
+        <DisableDraftMode client:only="react" />
+      </>
+    )}
+  </body>
+</html>

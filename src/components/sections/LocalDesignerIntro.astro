@@ -1,0 +1,165 @@
+---
+/**
+ * LocalDesignerIntro — "A Web Designer Who's Part of the Community" block.
+ *
+ * Heading + a two-column intro (prose + portrait) + a two-column M2M block
+ * (image + rich text) + a 3-card grid (ICP messaging / conversion structure /
+ * visuals). The three cards are identical across the location pages, so they're
+ * baked in here. The per-page prose is passed via the `intro` and `m2m` slots.
+ *
+ * Slots:
+ * - `intro` — the intro paragraphs (Text components) shown beside the portrait
+ * - `m2m`   — the M2M rich-text content (rendered inside `.u-rich-text`)
+ */
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Heading from "../ui/Heading.astro";
+import Visual from "../ui/Visual.astro";
+import Grid from "../ui/Grid.astro";
+import Text from "../ui/Text.astro";
+
+// Card styles (.outgrown_grid / .outgrown_card) live in the web-design page CSS.
+import "../../styles/pages/web-design.css";
+
+interface Props {
+  /**
+   * **LocalDesignerIntro props:**
+   * - `heading` — main section heading (varies per city)
+   * - `portraitImage` / `portraitAlt` — founder portrait
+   * - `m2mImage` / `m2mAlt` — M2M Framework image
+   * - Slots: `intro` (prose beside portrait), `m2m` (rich text)
+   */
+  docs?: string;
+
+  /** Main section heading. */
+  heading: string;
+  /** Founder portrait image. */
+  portraitImage: ImageMetadata | string;
+  /** Founder portrait alt text. */
+  portraitAlt: string;
+  /** M2M Framework image. */
+  m2mImage: ImageMetadata | string;
+  /** M2M Framework image alt text. */
+  m2mAlt: string;
+
+  [key: string]: any;
+}
+
+const { docs, heading, portraitImage, portraitAlt, m2mImage, m2mAlt, ...rest } =
+  Astro.props;
+---
+
+<Section theme="dark" {...rest}>
+  <Layout variant="stack">
+    <Col slot="col1">
+      <Heading
+        data-split-text
+        data-prevent-flicker="true"
+        tag="h2"
+        variant="h2"
+        maxWidth="40ch"
+      >
+        {heading}
+      </Heading>
+    </Col>
+  </Layout>
+
+  <Layout data-fade-list variant="columns" ratio="4-8" verticalAlign="start">
+    <Col slot="col1">
+      <slot name="intro" />
+    </Col>
+    <Visual slot="col2" src={portraitImage} alt={portraitAlt} ratio="3/2" />
+  </Layout>
+
+  <Layout data-fade-list variant="columns" ratio="5-7" verticalAlign="center">
+    <Visual slot="col1" src={m2mImage} alt={m2mAlt} />
+    <div slot="col2" class="u-rich-text">
+      <slot name="m2m" />
+    </div>
+  </Layout>
+
+  <Grid
+    data-fade-in
+    largeColumns={3}
+    mediumColumns={1}
+    smallColumns={1}
+    rowGap={0}
+    class="outgrown_grid"
+  >
+    <div class="outgrown_card">
+      <svg
+        class="outgrown_card_icon"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <polyline points="16 11 18 13 22 9"></polyline>
+      </svg>
+      <Heading maxWidth="40ch" tag="h3" variant="h5" marginBottom={0}
+        >ICP-Aligned Messaging</Heading
+      >
+      <Text variant="regular" marginBottom={0}>
+        Every headline and CTA speaks to your buyer's actual pain points, not
+        generic benefits.
+      </Text>
+    </div>
+    <div class="outgrown_card">
+      <svg
+        class="outgrown_card_icon"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+        <polyline points="2 17 12 22 22 17"></polyline>
+        <polyline points="2 12 12 17 22 12"></polyline>
+      </svg>
+      <Heading maxWidth="40ch" tag="h3" variant="h5" marginBottom={0}
+        >Conversion-Focused Structure</Heading
+      >
+      <Text variant="regular" marginBottom={0}>
+        Page layouts ordered in the way your customer actually makes decisions
+        so they know if your product or service solves their problem.
+      </Text>
+    </div>
+    <div class="outgrown_card">
+      <svg
+        class="outgrown_card_icon"
+        aria-hidden="true"
+        viewBox="0 0 32 32"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M28.266 29.3327C28.6394 29.3327 28.8261 29.3327 28.9687 29.26C29.0941 29.1961 29.1961 29.0941 29.26 28.9687C29.3327 28.8261 29.3327 28.6394 29.3327 28.266V14.3993C29.3327 14.026 29.3327 13.8393 29.26 13.6967C29.1961 13.5712 29.0941 13.4693 28.9687 13.4053C28.8261 13.3327 28.6394 13.3327 28.266 13.3327L25.066 13.3327C24.6926 13.3327 24.506 13.3327 24.3634 13.4053C24.2379 13.4693 24.1359 13.5712 24.072 13.6967C23.9993 13.8393 23.9993 14.026 23.9993 14.3993V17.5993C23.9993 17.9727 23.9993 18.1594 23.9267 18.302C23.8628 18.4275 23.7608 18.5294 23.6353 18.5934C23.4927 18.666 23.306 18.666 22.9327 18.666H19.7327C19.3593 18.666 19.1726 18.666 19.03 18.7387C18.9046 18.8026 18.8026 18.9046 18.7387 19.03C18.666 19.1726 18.666 19.3593 18.666 19.7327V22.9327C18.666 23.306 18.666 23.4927 18.5934 23.6353C18.5294 23.7608 18.4275 23.8628 18.302 23.9267C18.1594 23.9993 17.9727 23.9993 17.5993 23.9993H14.3993C14.026 23.9993 13.8393 23.9993 13.6967 24.072C13.5712 24.1359 13.4693 24.2379 13.4053 24.3634C13.3327 24.506 13.3327 24.6926 13.3327 25.066V28.266C13.3327 28.6394 13.3327 28.8261 13.4053 28.9687C13.4693 29.0941 13.5712 29.1961 13.6967 29.26C13.8393 29.3327 14.026 29.3327 14.3993 29.3327L28.266 29.3327Z"
+          stroke-width="var(--border-width-main)"></path>
+        <path
+          d="M13.3327 9.06602C13.3327 8.69265 13.3327 8.50596 13.4053 8.36335C13.4693 8.23791 13.5712 8.13593 13.6967 8.07201C13.8393 7.99935 14.026 7.99935 14.3993 7.99935H17.5993C17.9727 7.99935 18.1594 7.99935 18.302 8.07201C18.4275 8.13593 18.5294 8.23791 18.5934 8.36335C18.666 8.50596 18.666 8.69265 18.666 9.06602V12.266C18.666 12.6394 18.666 12.8261 18.5934 12.9687C18.5294 13.0941 18.4275 13.1961 18.302 13.26C18.1594 13.3327 17.9727 13.3327 17.5993 13.3327H14.3993C14.026 13.3327 13.8393 13.3327 13.6967 13.26C13.5712 13.1961 13.4693 13.0941 13.4053 12.9687C13.3327 12.8261 13.3327 12.6394 13.3327 12.266V9.06602Z"
+          stroke-width="var(--border-width-main)"></path>
+        <path
+          d="M3.99935 17.066C3.99935 16.6926 3.99935 16.506 4.07201 16.3634C4.13593 16.2379 4.23791 16.1359 4.36336 16.072C4.50596 15.9993 4.69265 15.9993 5.06602 15.9993H8.26602C8.63938 15.9993 8.82607 15.9993 8.96868 16.072C9.09412 16.1359 9.1961 16.2379 9.26002 16.3634C9.33268 16.506 9.33268 16.6926 9.33268 17.066V20.266C9.33268 20.6394 9.33268 20.8261 9.26002 20.9687C9.1961 21.0941 9.09412 21.1961 8.96868 21.26C8.82607 21.3327 8.63938 21.3327 8.26602 21.3327H5.06602C4.69265 21.3327 4.50596 21.3327 4.36336 21.26C4.23791 21.1961 4.13593 21.0941 4.07201 20.9687C3.99935 20.8261 3.99935 20.6394 3.99935 20.266V17.066Z"
+          stroke-width="var(--border-width-main)"></path>
+        <path
+          d="M2.66602 3.73268C2.66602 3.35931 2.66602 3.17263 2.73868 3.03002C2.80259 2.90458 2.90458 2.80259 3.03002 2.73868C3.17263 2.66602 3.35931 2.66602 3.73268 2.66602H6.93268C7.30605 2.66602 7.49273 2.66602 7.63534 2.73868C7.76078 2.80259 7.86277 2.90458 7.92669 3.03002C7.99935 3.17263 7.99935 3.35931 7.99935 3.73268V6.93268C7.99935 7.30605 7.99935 7.49273 7.92669 7.63534C7.86277 7.76078 7.76078 7.86277 7.63534 7.92669C7.49273 7.99935 7.30605 7.99935 6.93268 7.99935H3.73268C3.35931 7.99935 3.17263 7.99935 3.03002 7.92669C2.90458 7.86277 2.80259 7.76078 2.73868 7.63534C2.66602 7.49273 2.66602 7.30605 2.66602 6.93268V3.73268Z"
+          stroke-width="var(--border-width-main)"></path>
+      </svg>
+      <Heading maxWidth="40ch" tag="h3" variant="h5" marginBottom={0}
+        >Visuals Designed for your ICP</Heading
+      >
+      <Text variant="regular" marginBottom={0}>
+        Images, illustrations, and color choices that signal "this is for you".
+      </Text>
+    </div>
+  </Grid>
+</Section>

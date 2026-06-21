@@ -1,0 +1,153 @@
+/* ==========================================================================
+   SECTION COMPONENT
+   ==========================================================================
+   Page section. Structure:
+
+     <section class="u-section" data-theme="dark"
+              data-padding-top="main" data-padding-bottom="main">
+       <div class="u-background-slot">...</div>
+       <div class="u-container">...</div>
+     </section>
+
+   - .u-background-slot  → absolutely positioned, sits behind the container
+   - data-padding-top /
+     data-padding-bottom → control the section's top/bottom padding
+   - .u-container        → constrains content width (defined in base/layout.css)
+   ========================================================================== */
+
+/* Section — position: relative already set on all <section> elements in utilities.css */
+.u-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+  overflow: clip;
+}
+
+/* Paint the section background when an explicit theme is applied.
+   Without this, data-theme only reassigns CSS variables but leaves
+   the section transparent — it would inherit the page background instead
+   of showing its own theme colour. */
+.u-section[data-theme] {
+  background-color: var(--background);
+  color: var(--text);
+}
+
+/* Background slot — absolutely fills the section, sits behind all content */
+.u-background-slot {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+
+/* Force all direct children of the background slot to fill it.
+   This ensures Visual components (and any other element) placed in
+   the slot stretch to cover the section without needing a variant. */
+.u-background-slot > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: unset !important;
+}
+
+/* Vertical padding — set via data-padding-top / data-padding-bottom.
+   Defaults to `main` on each side when the attribute is absent.
+
+   Wrapped in :where() so these rules carry ZERO specificity (the selector
+   collapses to 0,0,0). That lets any single page/component class — e.g.
+   `.split_section { padding-block: … }` — override section padding with a
+   plain (0,1,0) selector. The data-padding rules still win as
+   the default because they follow the base rule in source order. */
+:where(.u-section) {
+  padding-top: var(--section-space-main);
+  padding-bottom: var(--section-space-main);
+}
+
+:where(.u-section[data-padding-top="none"]) {
+  padding-top: 0;
+}
+:where(.u-section[data-padding-top="xsmall"]) {
+  padding-top: var(--section-space-xsmall);
+}
+:where(.u-section[data-padding-top="small"]) {
+  padding-top: var(--section-space-small);
+}
+:where(.u-section[data-padding-top="main"]) {
+  padding-top: var(--section-space-main);
+}
+:where(.u-section[data-padding-top="large"]) {
+  padding-top: var(--section-space-large);
+}
+:where(.u-section[data-padding-top="page-top"]) {
+  padding-top: var(--section-space-page-top);
+}
+
+:where(.u-section[data-padding-bottom="none"]) {
+  padding-bottom: 0;
+}
+:where(.u-section[data-padding-bottom="xsmall"]) {
+  padding-bottom: var(--section-space-xsmall);
+}
+:where(.u-section[data-padding-bottom="small"]) {
+  padding-bottom: var(--section-space-small);
+}
+:where(.u-section[data-padding-bottom="main"]) {
+  padding-bottom: var(--section-space-main);
+}
+:where(.u-section[data-padding-bottom="large"]) {
+  padding-bottom: var(--section-space-large);
+}
+:where(.u-section[data-padding-bottom="page-top"]) {
+  padding-bottom: var(--section-space-page-top);
+}
+
+/* Container — ensure content sits above the background slot */
+.u-section > .u-container,
+.u-section > .u-container-narrow,
+.u-section > .u-container-wide,
+.u-section > .u-container-full {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   MARGIN TRIM
+   ==========================================================================
+   Removes the first/last child's block margins to prevent double-spacing
+   at the edges of containers and layout columns. Applied automatically
+   to all content containers so text style margins don't create unwanted
+   space at the top/bottom of sections.
+   ========================================================================== */
+
+/* Native margin-trim (progressive enhancement — Safari 16.4+) */
+.u-container,
+.u-container-narrow,
+.u-container-wide,
+.u-container-full,
+.u-layout-column-1,
+.u-layout-column-2,
+.u-margin-trim {
+  margin-trim: block-end;
+}
+
+/* Fallback: zero last child's bottom margin in all browsers.
+   Also handles .u-display-contents slot wrappers — since display: contents
+   elements have no box, their children are the visual last children. */
+.u-container > :last-child,
+.u-container-narrow > :last-child,
+.u-container-wide > :last-child,
+.u-container-full > :last-child,
+.u-layout-column-1 > :last-child,
+.u-layout-column-2 > :last-child,
+.u-margin-trim > :last-child,
+.u-display-contents > :last-child {
+  margin-bottom: 0;
+}

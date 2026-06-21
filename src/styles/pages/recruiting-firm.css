@@ -1,0 +1,17 @@
+/* ========================
+   Web Design for Recruiting Firms
+   ======================== */
+
+/* ── Comparison / Stakes — themed cards (mirrors m2m-sprint compare) ───── */
+
+.recruiting-compare_card {
+  padding: var(--space-5);
+  border-radius: var(--radius-main);
+}
+
+.recruiting-compare_card_header {
+  display: inline-flex;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}

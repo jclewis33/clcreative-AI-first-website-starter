@@ -1,0 +1,247 @@
+---
+/**
+ * CaseStudyCard — portfolio/case study card built on top of the Card component.
+ *
+ * Renders an image-top card with a title+arrow row and description.
+ * No background or border — clean portfolio aesthetic. The arrow SVG
+ * rotates 45deg on hover using the trigger system.
+ *
+ * Designed to be CMS-ready — all content comes from typed props that map
+ * directly to CMS fields (Sanity, Contentful, etc.).
+ *
+ * @example Basic case study card
+ * ```astro
+ * <CaseStudyCard
+ *   title="Brand Redesign for Acme Corp"
+ *   description="A complete visual identity overhaul including logo, typography, and web presence."
+ *   categories={["Brand Strategy", "Web Design"]}
+ *   href="/case-studies/acme-corp"
+ *   image={projectImage}
+ *   imageAlt="Acme Corp website redesign"
+ *   date="2026-03-01"
+ * />
+ * ```
+ */
+
+import type { ImageMetadata } from "astro";
+import Card from "./Card.astro";
+import Visual from "./Visual.astro";
+import Heading from "./Heading.astro";
+import Text from "./Text.astro";
+import { stegaClean } from "@sanity/client/stega";
+
+/**
+ * CaseStudyCard — portfolio card with image, title+arrow row, description,
+ * and hidden category/date fields for CMS sorting and filtering.
+ *
+ * **Props:**
+ * - `title` — project title (clamped at 2 lines) (**required**)
+ * - `description` — short project excerpt (clamped at 3 lines) (**required**)
+ * - `categories` — array of category labels (hidden, for CMS filtering) (**required**)
+ * - `href` — link to the case study detail page (**required**)
+ * - `image` — featured image: imported `ImageMetadata` or URL string (**required**)
+ * - `imageAlt` — alt text for the featured image (**required**)
+ * - `date` — publish date string (hidden, used for CMS sorting)
+ * - `class` — extra classes on the outer wrapper
+ *
+ * Uses Card component internally with `default` variant (image top, content below).
+ */
+interface Props {
+  /**
+   * **CaseStudyCard props:**
+   * - `title` — project title, clamped at 2 lines (required)
+   * - `description` — project excerpt, clamped at 3 lines (required)
+   * - `categories` — category labels array, hidden (required)
+   * - `href` — link to case study (required)
+   * - `image` — featured image source (required)
+   * - `imageAlt` — image alt text (required)
+   * - `headingVariant` — visual style for the title heading (default `'h6'`). Overrides the Card's default `u-text-style-h5`. Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
+   * - `textVariant` — visual style for the description text (default `'small'`). Accepts: tiny, small, regular, large, xlarge, h1–h6, display-xl/lg/md/sm, eyebrow
+   * - `date` — publish date (hidden field for sorting)
+   * - `featured` — boolean flag (hidden, for CMS filtering)
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to underlying Card
+   */
+  docs?: string;
+
+  /** Project title — clamped at 2 lines. */
+  title: string;
+
+  /** Short project excerpt — clamped at 3 lines. */
+  description: string;
+
+  /** Category labels — stored as data attribute for CMS filtering. Supports multiple. */
+  categories: string[];
+
+  /** Industry labels — stored as data attribute for filter dropdown. Supports multiple. */
+  industries?: string[];
+
+  /** Client/company name — stored as data attribute for search matching. */
+  client?: string;
+
+  /** Link to the case study detail page. */
+  href: string;
+
+  /** Featured image — imported ImageMetadata or URL string. */
+  image: ImageMetadata | string;
+
+  /** Alt text for the featured image. */
+  imageAlt: string;
+
+  /** Publish date — stored as data attribute for CMS sorting. */
+  date?: string;
+
+  /** Featured flag — stored as data attribute for CMS filtering. */
+  featured?: boolean;
+
+  /**
+   * Coming Soon flag. When true, replaces the description with a
+   * "Case Study Coming Soon — Visit Website ↗" notice and links the
+   * card to `externalUrl` (opened in a new tab) instead of `href`.
+   */
+  comingSoon?: boolean;
+
+  /**
+   * External website URL used when `comingSoon` is true. The card links
+   * here in a new tab instead of to the internal case study `href`.
+   */
+  externalUrl?: string;
+
+  /**
+   * Visual style for the card's title heading. Controls the font size
+   * and weight of the title without changing the semantic `<h3>` tag.
+   *
+   * Accepts any Heading `variant` value:
+   * - `'display-xl'` | `'display-lg'` | `'display-md'` | `'display-sm'`
+   * - `'h1'` | `'h2'` | `'h3'` | `'h4'` | `'h5'` | `'h6'`
+   * - `'eyebrow'`
+   *
+   * @default 'h6'
+   * @example headingVariant="h4"
+   * @example headingVariant="h6"
+   */
+  headingVariant?: "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+
+  /**
+   * Visual style for the card's description text. Controls the font size
+   * without changing the element tag.
+   *
+   * Accepts any Text `variant` value:
+   * - `'tiny'` | `'small'` | `'regular'` | `'large'` | `'xlarge'`
+   * - `'h1'` | `'h2'` | `'h3'` | `'h4'` | `'h5'` | `'h6'`
+   * - `'display-xl'` | `'display-lg'` | `'display-md'` | `'display-sm'`
+   * - `'eyebrow'`
+   *
+   * @default 'small'
+   * @example textVariant="regular"
+   * @example textVariant="tiny"
+   */
+  textVariant?: "tiny" | "small" | "regular" | "large" | "xlarge" | "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+
+  /** Image width in pixels — required for remote URL sources. */
+  imageWidth?: number;
+
+  /** Image height in pixels — required for remote URL sources. */
+  imageHeight?: number;
+
+  /**
+   * Focal point for the cover-cropped image. Pass the Sanity hotspot via
+   * `hotspotPosition(study.image)` so the crop follows the editor's hotspot
+   * instead of defaulting to center.
+   */
+  imagePosition?: { x: number; y: number } | "center";
+
+  /** Extra classes on the outer wrapper. */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
+   * are forwarded to the underlying `Card` component.
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  title,
+  description,
+  categories,
+  industries,
+  client,
+  href,
+  image,
+  imageAlt,
+  imageWidth,
+  imageHeight,
+  imagePosition,
+  date,
+  featured,
+  comingSoon = false,
+  externalUrl,
+  headingVariant = "h6",
+  textVariant = "small",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const isComingSoon = comingSoon && Boolean(externalUrl);
+const resolvedHref = isComingSoon ? externalUrl! : href;
+const resolvedAriaLabel = isComingSoon
+  ? `Visit ${title} website (case study coming soon)`
+  : `View ${title} case study`;
+---
+
+<Card
+  docs=""
+  href={resolvedHref}
+  newTab={isComingSoon}
+  ariaLabel={resolvedAriaLabel}
+  class:list={["case-study_card_wrap", className]}
+  data-categories={categories.map((c) => stegaClean(c)).join(",")}
+  data-industries={(industries ?? []).map((i) => stegaClean(i)).join(",")}
+  data-title={stegaClean(title)}
+  data-description={stegaClean(description)}
+  data-client={client ? stegaClean(client) : undefined}
+  data-date={date}
+  data-featured={featured ? "true" : undefined}
+  data-coming-soon={isComingSoon ? "true" : undefined}
+  {...rest}
+>
+  <Visual
+    slot="visual"
+    src={image}
+    alt={imageAlt}
+    ratio="landscape"
+    width={imageWidth}
+    height={imageHeight}
+    position={imagePosition}
+  />
+
+  <div slot="title" class="case-study_card_title_row">
+    <Heading tag="h3" variant={headingVariant} marginBottom={0} maxWidth="100%">
+      <span class="case-study_card_title_clamp u-line-clamp-2">{title}</span>
+    </Heading>
+    <span class="case-study_card_arrow" aria-hidden="true">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <path
+          d="M7 17L17 7M17 7H7M17 7V17"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </span>
+  </div>
+
+  {isComingSoon ? (
+    <Text variant={textVariant} muted>Case Study Coming Soon — Visit Website ↗</Text>
+  ) : (
+    <Text variant={textVariant} muted clamp={3}>{description}</Text>
+  )}
+</Card>

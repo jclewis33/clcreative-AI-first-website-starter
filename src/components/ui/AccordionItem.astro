@@ -1,0 +1,123 @@
+---
+/**
+ * AccordionItem — a single expand/collapse row inside `<Accordion>`.
+ *
+ * Slots:
+ *   - `question` — rich text toggle label (alternative to the `question` prop)
+ *   - `default`  — answer content (revealed on expand)
+ *
+ * Accessibility: uses `aria-expanded` + `aria-controls` pattern.
+ * Animation: parent `<Accordion>` handles height animation via GSAP.
+ *
+ * @example Simple text question
+ * ```astro
+ * <AccordionItem question="What is this design system?">
+ *   <Text>A structured CSS and component system.</Text>
+ * </AccordionItem>
+ * ```
+ *
+ * @example Rich text question via slot
+ * ```astro
+ * <AccordionItem>
+ *   <span slot="question">What is this <strong>design system</strong>?</span>
+ *   <Text>A structured CSS and component system.</Text>
+ * </AccordionItem>
+ * ```
+ */
+
+/**
+ * AccordionItem — a single expand/collapse row inside `<Accordion>`.
+ *
+ * **Props:**
+ * - `question` — toggle button text (or use `question` slot for rich text)
+ * - `open` — start this item expanded (default: `false`)
+ * - `class` — extra classes on the item wrapper
+ *
+ * **Slots:** `question` (rich text toggle label), default (answer content).
+ */
+interface Props {
+  /**
+   * **AccordionItem props:**
+   * - `question` — toggle button text (or use `question` slot for rich text)
+   * - `open` — start expanded (default false)
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
+   *
+   * **Slots:** `question` (rich text toggle label), default (answer content)
+   */
+  docs?: string;
+
+  /**
+   * The question / label shown in the toggle button.
+   * If you need rich text (links, bold etc.) use `<slot name="question">` instead.
+   * @example question="What is this design system?"
+   */
+  question?: string;
+
+  /**
+   * Start this item open.
+   * Prefer using `openByDefault` on the parent Accordion for single-item control.
+   * @default false
+   */
+  open?: boolean;
+
+  /** Extra utility classes to add to the `.accordion_item` element. */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
+   * are forwarded to the root `.accordion_item` element.
+   * @example style="--custom: value" data-animate="fade"
+   */
+  [key: string]: any;
+}
+
+const { docs, question, open = false, class: className, ...rest } = Astro.props;
+
+const hasQuestion = Astro.slots.has("question");
+
+// Unique ID for aria-controls
+const id = `accordion-${Math.random().toString(36).slice(2, 8)}`;
+const contentId = `${id}-content`;
+---
+
+<div
+  class:list={["accordion_item", className]}
+  role="listitem"
+  {...rest}
+>
+  <div class="accordion_component">
+    <!-- Toggle button -->
+    <h3 class="accordion_toggle_heading">
+      <button
+        class="accordion_toggle_button"
+        aria-expanded={open ? "true" : "false"}
+        aria-controls={contentId}
+      >
+        <span class="accordion_toggle_text u-text-style-h5 u-margin-bottom-0">
+          {hasQuestion ? <slot name="question" /> : question}
+        </span>
+        <span class="accordion_toggle_icon" aria-hidden="true">
+          <!-- Chevron down SVG -->
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </button>
+    </h3>
+
+    <!-- Content panel — hidden by default, animated by JS -->
+    <div class="accordion_content_wrap" id={contentId} role="region">
+      <div class="accordion_content_padding">
+        <slot />
+      </div>
+    </div>
+  </div>
+</div>

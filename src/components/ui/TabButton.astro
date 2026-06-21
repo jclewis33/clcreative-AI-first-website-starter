@@ -1,0 +1,75 @@
+---
+/**
+ * TabButton — an individual tab trigger button.
+ *
+ * Must be placed inside a `<Tab>` component's `buttons` slot.
+ * The parent `<Tab>` script wires up ARIA attributes (`id`,
+ * `aria-controls`, `aria-selected`, `tabindex`) at runtime
+ * based on DOM order.
+ *
+ * ```astro
+ * <Tab>
+ *   <TabButton slot="buttons" label="Features" />
+ *   <TabButton slot="buttons" label="Pricing" />
+ *   <!-- panels … -->
+ * </Tab>
+ * ```
+ *
+ * For rich content instead of a plain label, use the default slot:
+ * ```astro
+ * <TabButton slot="buttons">
+ *   <span>Custom <strong>label</strong></span>
+ * </TabButton>
+ * ```
+ */
+
+/**
+ * TabButton — an individual tab trigger button inside `<Tab>`.
+ *
+ * Place in the `buttons` slot of `<Tab>`. ARIA attributes are wired up automatically.
+ *
+ * **Props:**
+ * - `label` — visible text label (or use default slot for rich text)
+ * - `class` — extra classes on the button element
+ *
+ * **Slot:** default — rich text content (alternative to `label` prop).
+ */
+interface Props {
+  /**
+   * **TabButton props:**
+   * - `label` — button text (or use default slot for rich text)
+   * - `class` — extra classes
+   *
+   * **Slot:** default — rich text content (alternative to `label`)
+   */
+  docs?: string;
+
+  /**
+   * The visible text label for this tab button.
+   * If you need rich text, use the default slot instead.
+   */
+  label?: string;
+
+  /** Extra utility classes on the `.tab_button_item` element. */
+  class?: string;
+}
+
+const {
+  label,
+  class: className,
+} = Astro.props;
+
+const hasSlot = Astro.slots.has('default');
+---
+
+<button
+  class:list={['tab_button_item', className]}
+  role="tab"
+  aria-selected="false"
+  tabindex="-1"
+>
+  <span class="tab_button_text">
+    {hasSlot ? <slot /> : label}
+  </span>
+  <span class="tab_button_line" aria-hidden="true"></span>
+</button>

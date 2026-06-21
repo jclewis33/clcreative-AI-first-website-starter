@@ -1,0 +1,17 @@
+---
+/**
+ * RichTextColumnsBlock — multi-column rich text flow.
+ *
+ * One continuous block of portable text that flows across 2 CSS columns.
+ * Uses the u-text-columns-2 utility for responsive column behavior:
+ * 2 columns at large viewports, collapses to 1 at small breakpoint.
+ */
+
+interface Props {
+  html: string;
+}
+
+const { html } = Astro.props;
+---
+
+<div class="u-rich-text u-text-columns-2" data-fade-in data-prevent-flicker="true" set:html={html} />

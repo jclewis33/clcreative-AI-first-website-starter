@@ -1,0 +1,61 @@
+/* ======================================================================
+     GRID & LAYOUT
+   ====================================================================== */
+
+:root {
+
+  /* ========== GRID COLUMNS ========== */
+
+  --grid-1:  repeat(1,  minmax(0, 1fr));
+  --grid-2:  repeat(2,  minmax(0, 1fr));
+  --grid-3:  repeat(3,  minmax(0, 1fr));
+  --grid-4:  repeat(4,  minmax(0, 1fr));
+  --grid-5:  repeat(5,  minmax(0, 1fr));
+  --grid-6:  repeat(6,  minmax(0, 1fr));
+  --grid-7:  repeat(7,  minmax(0, 1fr));
+  --grid-8:  repeat(8,  minmax(0, 1fr));
+  --grid-9:  repeat(9,  minmax(0, 1fr));
+  --grid-10: repeat(10, minmax(0, 1fr));
+  --grid-11: repeat(11, minmax(0, 1fr));
+  --grid-12: repeat(12, minmax(0, 1fr));
+
+  /* ========== NAMED GAP SCALE ========== */
+  /* References the fluid space scale in variables/spacing.css */
+
+  --gap-1: var(--space-1);   /*  6–8px   */
+  --gap-2: var(--space-2);   /* 10–12px  */
+  --gap-3: var(--space-3);   /* 14–16px  */
+  --gap-4: var(--space-4);   /* 20–24px  */
+  --gap-5: var(--space-5);   /* 28–32px  */
+  --gap-6: var(--space-6);   /* 32–40px  */
+  --gap-7: var(--space-7);   /* 36–48px  */
+  --gap-8: var(--space-8);   /* 40–64px  */
+
+  /* ========== BREAKOUT GRID ========== */
+  /* Named-line grid for full-bleed layouts.
+     Mirrors the 12-column site grid between content-start/content-end,
+     with gutters that extend to the viewport edge on each side.
+
+     Named lines: full-start | content-start | ... columns ... | content-end | full-end
+     Children use grid-column with named lines to control bleed:
+       content-start / content-end  → stays within container
+       content-start / full-end     → bleeds to right viewport edge
+       full-start / content-end     → bleeds to left viewport edge
+       full-start / full-end        → full viewport width
+  */
+
+  --grid-breakout:
+    [full-start] minmax(0, 1fr)
+    [content-start] repeat(var(--site-column-count), minmax(0, var(--column-width)))
+    [content-end] minmax(0, 1fr)
+    [full-end];
+
+  /* Single-column version for mobile — collapses the 12-col repeat to a single
+     fluid track while keeping the named lines intact */
+  --grid-breakout-single:
+    [full-start] minmax(var(--site-margin), 1fr)
+    [content-start] minmax(0, var(--max-width-main))
+    [content-end] minmax(var(--site-margin), 1fr)
+    [full-end];
+
+}

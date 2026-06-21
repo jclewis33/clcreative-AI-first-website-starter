@@ -1,0 +1,61 @@
+---
+/**
+ * Internal Link Mark — Portable Text mark component
+ *
+ * Renders internalLink annotations that point to another Sanity document
+ * (blog post, case study, or glossary term). Shows a hover/focus preview
+ * card with the target's image, title, and description on desktop.
+ *
+ * If the reference is missing (e.g. target was deleted), the span renders
+ * as plain text instead of a broken link.
+ */
+
+import type { MarkProps } from "astro-portabletext/types";
+import {
+  resolveInternalLinkHref,
+  type InternalLinkTarget,
+} from "../../sanity/lib/resolve";
+import { urlFor } from "../../sanity/lib/image";
+
+type InternalLinkDef = { target?: InternalLinkTarget; newTab?: boolean };
+type Props = MarkProps<InternalLinkDef>;
+
+const { node } = Astro.props;
+const { target, newTab } = node.markDef;
+const href = resolveInternalLinkHref(target);
+
+const title = target?.title;
+const description = target?.description;
+const imageUrl = target?.image
+  ? urlFor(target.image).width(480).height(270).url()
+  : null;
+
+const linkAttrs = newTab
+  ? { target: "_blank", rel: "noopener noreferrer" }
+  : {};
+---
+
+{href ? (
+  <span class="internal-link_wrap">
+    <a href={href} {...linkAttrs} class="internal-link_anchor">
+      <slot />
+    </a>
+    {(title || description || imageUrl) && (
+      <span class="internal-link_preview" aria-hidden="true">
+        {imageUrl && (
+          <span class="internal-link_preview_media">
+            <img src={imageUrl} alt="" loading="lazy" />
+          </span>
+        )}
+        <span class="internal-link_preview_content">
+          {title && <span class="internal-link_preview_title">{title}</span>}
+          {description && (
+            <span class="internal-link_preview_text">{description}</span>
+          )}
+        </span>
+      </span>
+    )}
+  </span>
+) : (
+  <slot />
+)}

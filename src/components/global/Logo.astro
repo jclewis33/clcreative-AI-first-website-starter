@@ -1,0 +1,44 @@
+---
+import {
+  LOGO_VIEWBOX,
+  LOGO_LABEL,
+  LOGO_ALL_PATHS,
+} from "../../config/logo-paths";
+
+interface Props {
+  /** Choose which logo to render. Both variants share the same artwork —
+   *  the prop is kept for call-site clarity / future divergence. */
+  variant?: "navbar" | "footer";
+  /** Optional link target for the logo */
+  href?: string;
+  /** Optional CSS class on the anchor */
+  class?: string;
+  /** Accessible label for the link */
+  ariaLabel?: string;
+  /** Width/height forwarded to <svg> for sizing control */
+  width?: string;
+  height?: string;
+}
+
+const {
+  href = "/",
+  class: className = "",
+  ariaLabel = `${LOGO_LABEL} logo`,
+  width = "100%",
+  height = "100%",
+} = Astro.props as Props;
+---
+
+<a href={href} aria-label={ariaLabel} class={className}>
+  <svg
+    width={width}
+    height={height}
+    viewBox={LOGO_VIEWBOX}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    role="img"
+    aria-label={LOGO_LABEL}
+  >
+    {LOGO_ALL_PATHS.map((d) => <path d={d} fill="currentColor" />)}
+  </svg>
+</a>

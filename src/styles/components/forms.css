@@ -1,0 +1,550 @@
+/* ==========================================================================
+   FORM COMPONENT STYLES
+   ========================================================================== */
+
+.form_fieldset_wrap {
+  align-items: inherit;
+  justify-content: inherit;
+  width: 100%;
+  position: relative;
+  container-type: inline-size;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Default: single-column stack */
+.form_fieldset_list {
+  gap: var(--space-2);
+  align-items: stretch;
+  justify-content: inherit;
+  flex-flow: column;
+  display: flex;
+}
+
+/* Modifier: 2-column grid */
+.form_fieldset_list--2col {
+  column-gap: var(--site-gutter);
+  row-gap: var(--space-2);
+  grid-template-rows: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-columns: 1fr;
+  display: grid;
+}
+
+/* Modifier: 3-column grid */
+.form_fieldset_list--3col {
+  column-gap: var(--site-gutter);
+  row-gap: var(--space-2);
+  grid-template-rows: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-columns: 1fr;
+  display: grid;
+}
+
+/* Modifier: wrapping row */
+.form_fieldset_list--wrap {
+  justify-content: inherit;
+  flex-flow: wrap;
+}
+
+.form_ui_label {
+  gap: .5rem;
+  font-weight: inherit;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 0;
+  transition: all .2s ease;
+  display: flex;
+  position: relative;
+}
+
+/* Wrap for custom checkbox / radio visual — unchecked by default; the filled
+   state is applied via .form_ui_item:has(:checked) below. */
+.form_ui_visual_wrap {
+  border: var(--border-width-main) solid;
+  border-color: var(--border);
+  background-color: transparent;
+  border-radius: var(--radius-xsmall);
+  flex: none;
+  width: 1.25rem;
+  aspect-ratio: 1;
+  justify-content: center;
+  align-items: center;
+  transition: all .2s ease;
+  display: flex;
+  position: relative;
+}
+
+/* Checked: filled box with accent border + fill */
+.form_ui_item:has(:checked) .form_ui_visual_wrap {
+  border-color: var(--text);
+  background-color: var(--text);
+}
+
+.form_ui_visual_icon {
+  color: var(--background);
+  opacity: 0;
+  width: 100%;
+  display: block;
+  overflow: visible !important;
+  transition: opacity .2s ease;
+}
+
+/* Checkmark appears when checked */
+.form_ui_item:has(:checked) .form_ui_visual_icon {
+  opacity: 1;
+}
+
+.form_select_wrap {
+  border-radius: 0;
+  justify-content: flex-end;
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+.form_select_icon {
+  pointer-events: none;
+  width: .8em;
+  margin-right: .9rem;
+  display: block;
+  position: absolute;
+  overflow: visible !important;
+}
+
+.form_label_wrap {
+  text-align: left;
+  flex-flow: column;
+  width: 100%;
+  display: flex;
+  position: relative;
+}
+
+.form_label_text {
+  margin-bottom: var(--space-1);
+  display: inline-block;
+}
+
+.form_wrap {
+  flex-flow: wrap;
+  width: 100%;
+  margin-bottom: 0;
+  display: flex;
+}
+
+.form_success_wrap {
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-main);
+  background-color: transparent;
+  width: 100%;
+  padding: 1.2rem;
+}
+
+.form_element {
+  gap: var(--space-8);
+  flex-flow: column;
+  width: 100%;
+  display: flex;
+}
+
+.form_error_wrap {
+  border: var(--border-width-main) solid var(--border);
+  background-color: transparent;
+  align-self: flex-start;
+  width: 100%;
+  margin-top: 0;
+  padding: .8rem 1.4rem;
+}
+
+.form_field {
+  font-family: var(--font-primary);
+  font-size: var(--text-large-size);
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  color: inherit;
+  text-transform: none;
+  -webkit-appearance: none;
+  appearance: none;
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-small);
+  background-color: transparent;
+  width: 100%;
+  height: 3rem;
+  margin-bottom: 0;
+  padding: 0 .9rem;
+  display: block;
+  outline: none !important;
+}
+
+.form_field::placeholder {
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+}
+
+.form_field.is-textarea {
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  height: auto;
+  min-height: 5rem;
+  padding-top: .5rem;
+  padding-left: .9rem;
+  padding-right: .9rem;
+}
+
+/* ========= FIELDSET RESPONSIVE COLLAPSE =========
+   .form_fieldset_wrap has container-type: inline-size,
+   so grid columns collapse based on fieldset width. */
+
+@container (width < 25em) {
+  .form_fieldset_list--2col {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-flow: column;
+    gap: var(--space-2);
+  }
+}
+
+@container (width < 30em) {
+  .form_fieldset_list--3col {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-flow: column;
+    gap: var(--space-2);
+  }
+}
+
+/* ========= FIELDSET LEGEND ========= */
+
+.form_legend {
+  font-family: var(--font-primary);
+  font-size: var(--text-regular-size);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  margin-bottom: var(--space-3);
+  padding: 0;
+  border: 0;
+}
+
+/* ========= FOCUS BORDER =========
+   Field border goes --border → --text when the field is focused. */
+
+.form_label_wrap .form_field {
+  transition: border-color .2s ease;
+}
+
+.form_label_wrap:focus-within .form_field {
+  border-color: var(--text);
+}
+
+/* ========= REQUIRED INDICATOR ========= */
+
+.form_required {
+  color: var(--color-error-red-dark);
+  margin-left: .15em;
+}
+
+[data-theme="dark"] .form_required {
+  color: var(--color-error-red);
+}
+
+/* ========= HELPER / ERROR TEXT ========= */
+
+.form_helper_text {
+  font-family: var(--font-primary);
+  font-size: var(--text-small-size);
+  line-height: var(--line-height-normal);
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+  margin-top: var(--space-1);
+}
+
+.form_helper_text.is-error {
+  color: var(--color-error-red-dark);
+}
+
+[data-theme="dark"] .form_helper_text.is-error {
+  color: var(--color-error-red);
+}
+
+/* ========= SELECT ========= */
+
+select.form_field {
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+/* ========= CHECKBOX / RADIO ITEM ========= */
+
+.form_ui_item {
+  position: relative;
+  display: inline-flex;
+}
+
+.form_ui_text {
+  font-family: var(--font-primary);
+  font-size: var(--text-regular-size);
+  line-height: var(--line-height-normal);
+  cursor: pointer;
+}
+
+/* ========= RADIO — CIRCLE SHAPE ========= */
+
+.form_ui_visual_wrap.is-radio {
+  border-radius: var(--radius-full);
+}
+
+/* ========= RADIO — DOT INDICATOR ========= */
+
+.form_ui_visual_dot {
+  width: .5rem;
+  height: .5rem;
+  border-radius: var(--radius-full);
+  background-color: var(--background);
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+/* Radio dot appears when checked */
+.form_ui_item:has(:checked) .form_ui_visual_dot {
+  opacity: 1;
+}
+
+/* ========= SUCCESS / ERROR MESSAGE TEXT ========= */
+
+.form_success_text {
+  font-family: var(--font-primary);
+  font-size: var(--text-regular-size);
+  line-height: var(--line-height-normal);
+  color: var(--color-success-green-dark);
+}
+
+.form_error_text {
+  font-family: var(--font-primary);
+  font-size: var(--text-regular-size);
+  line-height: var(--line-height-normal);
+  color: var(--color-error-red-dark);
+}
+
+[data-theme="dark"] .form_success_text {
+  color: var(--color-success-green);
+}
+
+[data-theme="dark"] .form_error_text {
+  color: var(--color-error-red);
+}
+
+/* ========= DISABLED STATE ========= */
+
+.form_label_wrap:has(> .form_field:disabled, > .form_select_wrap > .form_field:disabled) {
+  opacity: .5;
+  pointer-events: none;
+}
+
+.form_ui_item:has(:disabled) {
+  opacity: .5;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   RANGE SLIDER
+   ========================================================================== */
+
+/* Label row: label left, value output right */
+.form_range_label_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+/* Override default label margin when inside range wrapper */
+.form_range_wrap .form_label_text {
+  margin-bottom: 0;
+}
+
+/* Value output element */
+.form_range_output {
+  font-family: var(--font-primary);
+  font-size: var(--text-small-size);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  color: var(--text);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- NATIVE RANGE INPUT RESET ---- */
+
+.form_range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.5rem;
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.form_range:focus {
+  outline: none;
+}
+
+/* ---- TRACK ---- */
+
+.form_range::-webkit-slider-runnable-track {
+  height: 0.375rem;
+  border-radius: var(--radius-full);
+  border: var(--border-width-main) solid var(--border);
+  background:
+    linear-gradient(
+      to right,
+      var(--text) 0%,
+      var(--text) var(--range-progress, 50%),
+      transparent var(--range-progress, 50%),
+      transparent 100%
+    );
+  background-color: color-mix(in srgb, var(--text) 15%, transparent);
+  transition: border-color .2s ease;
+}
+
+.form_range::-moz-range-track {
+  height: 0.375rem;
+  border-radius: var(--radius-full);
+  border: var(--border-width-main) solid var(--border);
+  background-color: color-mix(in srgb, var(--text) 15%, transparent);
+  transition: border-color .2s ease;
+}
+
+/* Firefox native progress fill */
+.form_range::-moz-range-progress {
+  height: 0.375rem;
+  border-radius: var(--radius-full) 0 0 var(--radius-full);
+  background-color: var(--text);
+}
+
+/* ---- THUMB ---- */
+
+.form_range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--radius-full);
+  background-color: var(--text);
+  border: 0.1875rem solid var(--background);
+  box-shadow: 0 0 0 var(--border-width-main) var(--border);
+  margin-top: calc((0.375rem - 1.25rem) / 2);
+  transition: box-shadow .2s ease, transform .15s ease;
+}
+
+.form_range::-moz-range-thumb {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--radius-full);
+  background-color: var(--text);
+  border: 0.1875rem solid var(--background);
+  box-shadow: 0 0 0 var(--border-width-main) var(--border);
+  transition: box-shadow .2s ease, transform .15s ease;
+}
+
+/* ---- FOCUS STATE ---- */
+
+.form_label_wrap:focus-within .form_range::-webkit-slider-runnable-track {
+  border-color: var(--text);
+}
+
+.form_label_wrap:focus-within .form_range::-moz-range-track {
+  border-color: var(--text);
+}
+
+.form_label_wrap:focus-within .form_range::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 var(--border-width-main) var(--text),
+    0 0 0 .25rem color-mix(in srgb, var(--text) 30%, transparent);
+}
+
+.form_label_wrap:focus-within .form_range::-moz-range-thumb {
+  box-shadow:
+    0 0 0 var(--border-width-main) var(--text),
+    0 0 0 .25rem color-mix(in srgb, var(--text) 30%, transparent);
+}
+
+/* ---- THUMB HOVER ---- */
+
+.form_range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.form_range::-moz-range-thumb:hover {
+  transform: scale(1.1);
+}
+
+/* ---- MIN / MAX LABELS ---- */
+
+.form_range_minmax {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-1);
+}
+
+.form_range_min,
+.form_range_max {
+  font-family: var(--font-primary);
+  font-size: var(--text-tiny-size);
+  line-height: var(--line-height-normal);
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+}
+
+/* ---- RANGE DISABLED STATE ---- */
+
+.form_label_wrap:has(> .form_range:disabled) {
+  opacity: .5;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   FLOATING LABEL VARIANT
+   ========================================================================== */
+
+/* Label positioned absolutely inside the input area */
+.form_label_wrap.is-floating .form_label_text {
+  position: absolute;
+  top: 1.5rem;
+  left: .9rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+  margin-bottom: 0;
+  font-size: var(--text-large-size);
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+  padding: 0 .25rem;
+  background-color: transparent;
+  transition: all .2s ease;
+  z-index: 1;
+}
+
+/* Textarea: label near top instead of vertically centered */
+.form_label_wrap.is-floating:has(.is-textarea) .form_label_text {
+  top: .75rem;
+  transform: none;
+}
+
+/* Floated-up state: focused, has value (input/textarea), or has value (select).
+   Placed after textarea rule so it wins the cascade when active. */
+.form_label_wrap.is-floating:focus-within .form_label_text,
+.form_label_wrap.is-floating:has(input.form_field:not(:placeholder-shown)) .form_label_text,
+.form_label_wrap.is-floating:has(textarea.form_field:not(:placeholder-shown)) .form_label_text,
+.form_label_wrap.is-floating[data-has-value] .form_label_text {
+  top: 0;
+  transform: translateY(-50%);
+  font-size: var(--text-tiny-size);
+  color: var(--text);
+  background-color: var(--background);
+}
+
+/* Hide native placeholder when floating label is active */
+.form_label_wrap.is-floating .form_field::placeholder {
+  color: transparent;
+}

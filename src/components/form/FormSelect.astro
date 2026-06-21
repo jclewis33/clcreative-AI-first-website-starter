@@ -1,0 +1,220 @@
+---
+/**
+ * FormSelect — label + styled `<select>` with a custom dropdown arrow.
+ *
+ * Options can be provided via the `options` prop (simple cases) or via
+ * the default slot for complex `<optgroup>` structures.
+ *
+ * @example
+ * ```astro
+ * <!-- Via options prop -->
+ * <FormSelect label="Subject" name="subject"
+ *   placeholderOption="Select one..."
+ *   options={[
+ *     { label: 'General', value: 'general' },
+ *     { label: 'Support', value: 'support' },
+ *   ]}
+ * />
+ *
+ * <!-- Floating label variant -->
+ * <FormSelect label="Subject" name="subject" labelVariant="floating"
+ *   placeholderOption="Select one..."
+ *   options={[
+ *     { label: 'General', value: 'general' },
+ *     { label: 'Support', value: 'support' },
+ *   ]}
+ * />
+ *
+ * <!-- Via slot for optgroups -->
+ * <FormSelect label="Country" name="country" placeholderOption="Choose...">
+ *   <optgroup label="North America">
+ *     <option value="us">United States</option>
+ *     <option value="ca">Canada</option>
+ *   </optgroup>
+ * </FormSelect>
+ * ```
+ */
+
+interface SelectOption {
+  /** Display text. */
+  label: string;
+  /** Form value. */
+  value: string;
+  /** Disabled option. @default false */
+  disabled?: boolean;
+}
+
+interface Props {
+  /** Label text. */
+  label: string;
+
+  /** HTML `name` attribute. */
+  name: string;
+
+  /**
+   * Select options — array of `{ label, value, disabled? }`.
+   * Alternatively, use the default slot for `<option>` / `<optgroup>`.
+   */
+  options?: SelectOption[];
+
+  /** Placeholder option text (first option, disabled, `value=""`). */
+  placeholderOption?: string;
+
+  /**
+   * Whether the field is required.
+   * @default false
+   */
+  required?: boolean;
+
+  /**
+   * Disabled state.
+   * @default false
+   */
+  disabled?: boolean;
+
+  /** Default selected value. */
+  value?: string;
+
+  /**
+   * Label display variant.
+   * - `'default'` — Label shows above the select field
+   * - `'hidden'` — Label is visually hidden (still accessible to screen readers)
+   * - `'floating'` — Label sits inside the field as a placeholder, then floats
+   *   up above the border when the field is focused or has a selected value
+   * @default 'default'
+   */
+  labelVariant?: 'default' | 'hidden' | 'floating';
+
+  /** Helper text displayed below the select. */
+  helperText?: string;
+
+  /** Error text displayed below the select. */
+  errorText?: string;
+
+  /** HTML `id` attribute. Auto-generated if not provided. */
+  id?: string;
+
+  /** Extra classes on the outer `.form_label_wrap` element. */
+  class?: string;
+
+  /** Catch-all for extra attributes spread onto the `<select>`. */
+  [key: string]: any;
+}
+
+const {
+  label,
+  name,
+  options,
+  placeholderOption,
+  required = false,
+  disabled = false,
+  value,
+  labelVariant = 'default',
+  helperText,
+  errorText,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const fieldId = id || `field-${name}`;
+const describedById = (helperText || errorText) ? `${fieldId}-hint` : undefined;
+const isFloating = labelVariant === 'floating';
+---
+
+<div
+  class:list={['form_label_wrap', isFloating && 'is-floating', className]}
+>
+  <label
+    class:list={['form_label_text', labelVariant === 'hidden' && 'u-sr-only']}
+    for={fieldId}
+  >
+    {label}
+    {required && <span class="form_required" aria-hidden="true">*</span>}
+  </label>
+
+  <div class="form_select_wrap">
+    <select
+      class="form_field"
+      name={name}
+      id={fieldId}
+      required={required}
+      disabled={disabled}
+      aria-describedby={describedById}
+      aria-invalid={errorText ? 'true' : undefined}
+      {...rest}
+    >
+      {placeholderOption && (
+        <option value="" disabled selected={!value}>
+          {isFloating ? '' : placeholderOption}
+        </option>
+      )}
+
+      {options ? (
+        options.map((opt) => (
+          <option
+            value={opt.value}
+            disabled={opt.disabled}
+            selected={opt.value === value}
+          >
+            {opt.label}
+          </option>
+        ))
+      ) : (
+        <slot />
+      )}
+    </select>
+
+    <svg
+      class="form_select_icon"
+      viewBox="0 0 6 5"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M0.5 1L3 3.5L5.5 1"
+        stroke="currentColor"
+        stroke-width="0.125rem"
+        vector-effect="non-scaling-stroke"
+      />
+    </svg>
+  </div>
+
+  {(helperText || errorText) && (
+    <p
+      class:list={['form_helper_text', errorText && 'is-error']}
+      id={describedById}
+    >
+      {errorText || helperText}
+    </p>
+  )}
+</div>
+
+<script>
+  function initFloatingSelects() {
+    document.querySelectorAll<HTMLSelectElement>('.form_label_wrap.is-floating select.form_field').forEach((select) => {
+      if ((select as any).__floatingInit) return;
+      (select as any).__floatingInit = true;
+
+      const wrap = select.closest('.form_label_wrap');
+      if (!wrap) return;
+
+      function update() {
+        if (select.value) {
+          wrap!.setAttribute('data-has-value', '');
+        } else {
+          wrap!.removeAttribute('data-has-value');
+        }
+      }
+
+      select.addEventListener('change', update);
+      update();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFloatingSelects);
+  } else {
+    initFloatingSelects();
+  }
+</script>

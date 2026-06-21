@@ -1,0 +1,51 @@
+{
+  "version": 1.1,
+  "globalAttributes": [
+    {
+      "name": "data-splittext",
+      "description": "**GSAP Animation — SplitText line reveal**\n\nSplits the element's text into words and lines, then slides each line up from below a mask. Triggers once when the element scrolls to `top 75%` of the viewport.\n\nWaits for `document.fonts.ready` before splitting to avoid layout shift.\n\n**Combine with:** `data-prevent-flicker`, `data-delay`\n\n**Example:**\n```html\n<h1 data-splittext data-prevent-flicker=\"true\">Big headline</h1>\n```",
+      "valueSet": "v"
+    },
+    {
+      "name": "data-fade-in",
+      "description": "**GSAP Animation — Fade in**\n\nFades the element from `opacity: 0` to `1` when it scrolls into view (`top 75%`). No movement.\n\n**Combine with:** `data-duration`, `data-delay`, `data-prevent-flicker`\n\n**Example:**\n```html\n<div data-fade-in data-prevent-flicker=\"true\" data-duration=\"0.8\">…</div>\n```",
+      "valueSet": "v"
+    },
+    {
+      "name": "data-fade-up",
+      "description": "**GSAP Animation — Fade up**\n\nFades the element in while sliding it up from `data-distance` pixels below its resting position. Triggers when the element scrolls to `top 75%`.\n\n**Combine with:** `data-duration`, `data-distance`, `data-delay`, `data-prevent-flicker`\n\n**Example:**\n```html\n<p data-fade-up data-prevent-flicker=\"true\" data-distance=\"40\" data-delay=\"0.2\">…</p>\n```"
+    },
+    {
+      "name": "data-fade-list",
+      "description": "**GSAP Animation — Staggered fade-up for children**\n\nFades and slides up each child element of the list with a stagger between them. If the list has a single wrapper child (e.g. a Grid's inner div), the stagger automatically targets the grandchildren instead.\n\n**Combine with:** `data-duration`, `data-stagger`, `data-delay`, `data-prevent-flicker`\n\n**Example:**\n```html\n<ul data-fade-list data-stagger=\"0.15\" data-prevent-flicker=\"true\">\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>\n```"
+    },
+    {
+      "name": "data-prevent-flicker",
+      "description": "**GSAP Modifier — Prevent FOUC**\n\nHides the element via CSS until GSAP takes over and reveals it. Prevents a flash of unstyled content before the animation initializes.\n\nIf GSAP fails to load, a `gsap-not-found` class is added to `<html>` and CSS fallbacks restore visibility automatically.\n\n**Use with any animation:** `data-fade-in`, `data-fade-up`, `data-fade-list`, `data-splittext`\n\n**Value:** `\"true\"` (string — required for the JS check)",
+      "values": [
+        { "name": "true", "description": "Hide element until GSAP reveals it" }
+      ]
+    },
+    {
+      "name": "data-duration",
+      "description": "**GSAP Modifier — Animation duration**\n\nCustom animation duration in seconds.\n\n**Defaults:**\n- `data-fade-in`, `data-fade-up`, `data-fade-list` → `0.5`\n- `data-splittext` → `1.6` (not configurable via this attribute)\n\n**Example:** `data-duration=\"0.8\"`"
+    },
+    {
+      "name": "data-distance",
+      "description": "**GSAP Modifier — Translate distance**\n\nCustom translate distance in pixels for `data-fade-up`. Sets how far below its resting position the element starts.\n\n**Default:** `20`\n\n**Example:** `data-distance=\"40\"`"
+    },
+    {
+      "name": "data-stagger",
+      "description": "**GSAP Modifier — Stagger delay**\n\nCustom stagger delay in seconds between children of `data-fade-list`.\n\n**Default:** `0.2`\n\n**Example:** `data-stagger=\"0.15\"`"
+    },
+    {
+      "name": "data-delay",
+      "description": "**GSAP Modifier — Start delay**\n\nDelay before the animation starts, in seconds. Applied **after** the scroll trigger fires — so in a hero section (which is in view on load), delays start counting immediately and cleanly sequence multiple elements.\n\n**Default:** `0`\n\n**Works with:** `data-fade-in`, `data-fade-up`, `data-fade-list`, `data-splittext`\n\n**Hero sequencing example:**\n```html\n<h1 data-fade-up data-prevent-flicker=\"true\">Headline</h1>\n<p  data-fade-up data-prevent-flicker=\"true\" data-delay=\"0.2\">Sub copy</p>\n<div data-fade-up data-prevent-flicker=\"true\" data-delay=\"0.4\">\n  <Button>CTA</Button>\n</div>\n```"
+    },
+    {
+      "name": "data-refresh",
+      "description": "**GSAP Utility — Manual ScrollTrigger refresh**\n\nFires `ScrollTrigger.refresh()` once when this element first enters the viewport, then self-destructs. Use after content that loads asynchronously (images, embeds, dynamically injected DOM) to recalculate all trigger positions so downstream animations fire at the correct scroll offsets.\n\n**Example:**\n```html\n<div data-refresh>…late-loading content…</div>\n```",
+      "valueSet": "v"
+    }
+  ]
+}

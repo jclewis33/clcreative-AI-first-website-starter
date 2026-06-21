@@ -1,0 +1,75 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/ui/Section.astro";
+import ContentWrapper from "../components/ui/ContentWrapper.astro";
+import Heading from "../components/ui/Heading.astro";
+import Text from "../components/ui/Text.astro";
+---
+
+<BaseLayout
+  title="Thank You | CL Creative"
+  description="Thank You for CL Creative"
+>
+  <Section>
+    <ContentWrapper align="center" maxWidth="48rem">
+      <Heading>Thank You</Heading>
+      <Text>We will be in contact soon to talk about your project. </Text>
+      <div class="redirect-time"></div>
+    </ContentWrapper>
+  </Section>
+  <script is:inline>
+    document.addEventListener("DOMContentLoaded", function () {
+      const redirectTime = 5; // seconds
+
+      // Resolve the destination URL once, on page load.
+      // Priority:
+      //   1. localStorage "locat" (set by Head.astro on every non-thank-you page)
+      //   2. document.referrer if it's same-origin and not /thank-you itself
+      //   3. "/" homepage fallback
+      function resolveDestination() {
+        const stored = localStorage.getItem("locat");
+        if (stored) return stored;
+
+        const ref = document.referrer;
+        if (ref) {
+          try {
+            const refUrl = new URL(ref);
+            if (
+              refUrl.origin === location.origin &&
+              !refUrl.pathname.startsWith("/thank-you")
+            ) {
+              return ref;
+            }
+          } catch (e) {}
+        }
+
+        return "/";
+      }
+
+      const dest = resolveDestination();
+
+      function go() {
+        localStorage.removeItem("locat");
+        window.location = dest;
+      }
+
+      const timeoutFunction = window.setTimeout(go, redirectTime * 1000);
+
+      // display the timer on the page
+      const timerEl = document.querySelector(".redirect-time");
+      let countdown = redirectTime;
+      timerEl.innerText = `Redirecting in ${countdown} seconds...`;
+
+      const countdownInterval = setInterval(() => {
+        countdown--;
+        timerEl.innerText = `Redirecting in ${countdown} seconds...`;
+
+        if (countdown <= 0) {
+          clearInterval(countdownInterval);
+          window.clearTimeout(timeoutFunction);
+          go();
+        }
+      }, 1000);
+    });
+  </script>
+</BaseLayout>

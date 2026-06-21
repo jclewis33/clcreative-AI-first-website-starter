@@ -1,0 +1,397 @@
+---
+/**
+ * Visual — image component wrapping Astro `<Image />` with aspect ratio,
+ * focal-point positioning, border-radius, and variant support.
+ *
+ * Uses `layout="full-width"` so the browser downloads the right srcset
+ * size, while CSS controls `object-fit` / `object-position`.
+ *
+ * Focal-point positioning uses `--x` / `--y` CSS custom properties
+ * (0–100). Pass a named preset or `{ x, y }` for precise control.
+ *
+ * Variants:
+ *   - `default`    — image inside an aspect-ratio wrapper
+ *   - `background` — absolute-fill overlay (for Section `background` slot)
+ *
+ * @example Standard image with aspect ratio
+ * ```astro
+ * <Visual src={myImage} alt="Description" ratio="wide" />
+ * ```
+ *
+ * @example Background image in a Section
+ * ```astro
+ * <Section theme="dark" paddingTop="page-top" minHeight>
+ *   <Visual slot="background" src={heroBg} alt="" variant="background" priority />
+ *   <Heading tag="h1" variant="display-xl">Hero</Heading>
+ * </Section>
+ * ```
+ *
+ * @example Custom focal point and radius
+ * ```astro
+ * <Visual src={portrait} alt="Headshot" ratio="portrait"
+ *   position={{ x: 50, y: 25 }} radius="large" />
+ * ```
+ *
+ * @example Remote URL (width + height required)
+ * ```astro
+ * <Visual src="https://example.com/photo.jpg" alt="Photo"
+ *   width={1200} height={800} ratio="landscape" />
+ * ```
+ */
+
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+/* ── Position types ── */
+
+type PositionPreset =
+  /** 50 / 50 — centered (default) */
+  | 'center'
+  /** 50 / 0 — top edge */
+  | 'top'
+  /** 0 / 0 — top-left corner */
+  | 'top-left'
+  /** 100 / 0 — top-right corner */
+  | 'top-right'
+  /** 50 / 100 — bottom edge */
+  | 'bottom'
+  /** 0 / 100 — bottom-left corner */
+  | 'bottom-left'
+  /** 100 / 100 — bottom-right corner */
+  | 'bottom-right'
+  /** 0 / 50 — left edge */
+  | 'left'
+  /** 100 / 50 — right edge */
+  | 'right';
+
+/** Percentage-based focal point — `x` and `y` are 0–100. */
+type FocalPoint = { x: number; y: number };
+
+/* ── Ratio presets ── */
+
+type RatioPreset =
+  | 'wide'        // 16 / 9
+  | 'widescreen'  // 21 / 9
+  | 'landscape'   // 3 / 2
+  | 'square'      // 1 / 1
+  | 'portrait'    // 3 / 4
+  | 'tall';       // 2 / 3
+
+/* ── Radius type ── */
+
+type RadiusSize =
+  /** 0 — no rounding */
+  | 'none'
+  /** Subtle rounding */
+  | 'xsmall'
+  /** Slightly rounded */
+  | 'small'
+  /** Moderate rounding */
+  | 'medium'
+  /** Noticeable rounding */
+  | 'large'
+  /** Very rounded */
+  | 'xlarge'
+  /** Site default radius (--radius-main) */
+  | 'main'
+  /** Fully rounded / pill */
+  | 'full'
+  /** Large section-level rounding */
+  | 'section';
+
+/* ── Component props ── */
+
+/**
+ * Visual — image component with aspect ratio, focal-point positioning,
+ * border-radius, and background variant support.
+ *
+ * **Props:**
+ * - `src` — image source: imported `ImageMetadata` or URL string (**required**)
+ * - `alt` — alt text for accessibility (**required**, use `""` for decorative)
+ * - `ratio` — aspect ratio: wide (16/9), widescreen (21/9), landscape (3/2), square (1/1), portrait (3/4), tall (2/3), or custom CSS string (default: `'landscape'`)
+ * - `radius` — border-radius: none, xsmall, small, medium, large, xlarge, main, full, section (default: `'main'`)
+ * - `variant` — default (image in wrapper) or background (absolute-fill for Section slot) (default: `'default'`)
+ * - `position` — focal point: center, top, top-left, top-right, bottom, bottom-left, bottom-right, left, right, or `{ x, y }` (default: `'center'`)
+ * - `fit` — object-fit: cover, contain, fill, none, scale-down (default: `'cover'`)
+ * - `loading` — lazy or eager (default: `'lazy'`; `variant="background"` defaults to `'eager'`)
+ * - `priority` — sets eager loading + high fetchpriority for above-the-fold images (default: `false`)
+ * - `transparent` — removes skeleton background for transparent images like logos/PNGs. Pass as bare keyword, not `="true"` (default: `false`)
+ * - `width` — image width in px (required for remote URLs)
+ * - `height` — image height in px (required for remote URLs)
+ * - `class` — extra classes on the wrapper
+ */
+interface Props {
+  /**
+   * **Visual props:**
+   * - `src` — ImageMetadata or URL string (required)
+   * - `alt` — alt text, "" for decorative (required)
+   * - `ratio` — wide, widescreen, landscape, square, portrait, tall, or custom CSS (default 'landscape')
+   * - `radius` — none, xsmall, small, medium, large, xlarge, main, full, section (default 'main')
+   * - `variant` — default, background (absolute-fill for Section bg slot)
+   * - `position` — center, top, top-left, top-right, bottom, bottom-left, bottom-right, left, right, or { x, y }
+   * - `fit` — cover, contain, fill, none, scale-down (default 'cover')
+   * - `loading` — eager, lazy (default 'lazy'; `variant="background"` defaults to 'eager')
+   * - `priority` — eager loading + high fetchpriority for above-the-fold
+   * - `transparent` — removes skeleton bg for transparent images (logos, PNGs). Bare keyword, not `="true"`
+   * - `width` / `height` — required for remote URLs
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — `style` is merged with computed styles
+   */
+  docs?: string;
+
+  /**
+   * Image source — an imported image (`ImageMetadata`) or a URL string.
+   * @example src={myImage}
+   * @example src="https://example.com/photo.jpg"
+   */
+  src: ImageMetadata | string;
+
+  /**
+   * Alt text — required for accessibility.
+   * Use `""` for purely decorative images.
+   * @example alt="Team photo"
+   * @example alt=""
+   */
+  alt: string;
+
+  /**
+   * Aspect ratio of the wrapper.
+   * - **Preset:** `'wide'` (16/9), `'widescreen'` (21/9), `'landscape'` (3/2),
+   *   `'square'` (1/1), `'portrait'` (3/4), `'tall'` (2/3)
+   * - **Custom:** any CSS aspect-ratio string, e.g. `'4/3'`, `'2.35/1'`
+   * - Ignored when `variant="background"`.
+   * @default 'landscape'
+   * @example ratio="wide"
+   * @example ratio="4/3"
+   */
+  ratio?: RatioPreset | string;
+
+  /**
+   * Border-radius applied to the image wrapper.
+   * Maps to the `u-radius-*` utility classes.
+   *
+   * When the Visual is inside a breakout/full layout bleed column,
+   * the bleed-side corners are automatically zeroed via CSS context rules.
+   * @default 'main'
+   * @example radius="large"
+   * @example radius="none"
+   */
+  radius?: RadiusSize;
+
+  /**
+   * Component variant.
+   * - `default`    → standard image inside an aspect-ratio wrapper
+   * - `background` → absolute-fill for use in a Section `background` slot
+   *   or any `position: relative` parent
+   * @default 'default'
+   * @example variant="background"
+   */
+  variant?: 'default' | 'background';
+
+  /**
+   * Focal point / object-position.
+   * - **Named preset:** `'center'`, `'top'`, `'top-left'`, `'top-right'`,
+   *   `'bottom'`, `'bottom-left'`, `'bottom-right'`, `'left'`, `'right'`
+   * - **Custom:** `{ x: 30, y: 20 }` — percentage values 0–100
+   * @default 'center'
+   * @example position="top"
+   * @example position={{ x: 30, y: 20 }}
+   */
+  position?: PositionPreset | FocalPoint;
+
+  /**
+   * Object-fit behavior. Overrides the default `cover`.
+   * Applied on the wrapper and inherited by the image.
+   * @default 'cover'
+   * @example fit="contain"
+   */
+  fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+
+  /**
+   * Loading behavior.
+   * Overridden to `'eager'` when `priority` is `true`.
+   * `variant="background"` defaults to `'eager'` because background images are
+   * structural — native lazy-load can fail to fire for them on SSR routes
+   * where the image sits inside a chain of absolute-positioned containers.
+   * @default 'lazy' (or 'eager' when variant="background")
+   */
+  loading?: 'lazy' | 'eager';
+
+  /**
+   * Priority image — sets `loading="eager"` and `fetchpriority="high"`.
+   * Use for above-the-fold hero and background images.
+   * @default false
+   * @example priority
+   */
+  priority?: boolean;
+
+  /**
+   * Image width in pixels — **required** for remote URL sources.
+   * For imported images Astro infers this automatically.
+   */
+  width?: number;
+
+  /**
+   * Image height in pixels — **required** for remote URL sources.
+   * For imported images Astro infers this automatically.
+   */
+  height?: number;
+
+  /**
+   * Remove the loading-skeleton background color.
+   * Use for images with transparency (logos, PNGs, etc.)
+   * where the grey placeholder would show through.
+   * Pass as a bare keyword — `transparent`, not `transparent="true"`.
+   * @default false
+   * @example <Visual src={logo} alt="Logo" transparent />
+   */
+  transparent?: boolean;
+
+  /** Extra classes on the outer `.u-image-wrapper` div. */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
+   * are forwarded to the root `.u-image-wrapper` element.
+   * User-provided `style` is merged with computed aspect-ratio styles.
+   * @example data-animate="fade" aria-label="Hero image"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  src,
+  alt,
+  ratio     = 'landscape',
+  radius    = 'main',
+  variant   = 'default',
+  position  = 'center',
+  fit       = 'cover',
+  loading: loadingProp,
+  priority  = false,
+  transparent = false,
+  width,
+  height,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* ═══════════════════════════════════════════════════
+   Resolve radius utility class
+   ═══════════════════════════════════════════════════ */
+
+const radiusClass = `u-radius-${radius}`;
+
+/* ═══════════════════════════════════════════════════
+   Resolve aspect ratio
+   ═══════════════════════════════════════════════════ */
+
+const ratioPresets: Record<string, string> = {
+  'wide':       '16 / 9',
+  'widescreen': '21 / 9',
+  'landscape':  '3 / 2',
+  'square':     '1 / 1',
+  'portrait':   '3 / 4',
+  'tall':       '2 / 3',
+};
+
+const resolvedRatio =
+  variant === 'background'
+    ? undefined                                     // backgrounds fill parent, no ratio
+    : ratio
+      ? (ratioPresets[ratio] ?? ratio)              // preset or raw string
+      : undefined;                                  // no ratio set
+
+/* ═══════════════════════════════════════════════════
+   Resolve focal point
+   ═══════════════════════════════════════════════════ */
+
+const positionPresets: Record<string, FocalPoint> = {
+  'center':       { x: 50,  y: 50 },
+  'top':          { x: 50,  y: 0 },
+  'top-left':     { x: 0,   y: 0 },
+  'top-right':    { x: 100, y: 0 },
+  'bottom':       { x: 50,  y: 100 },
+  'bottom-left':  { x: 0,   y: 100 },
+  'bottom-right': { x: 100, y: 100 },
+  'left':         { x: 0,   y: 50 },
+  'right':        { x: 100, y: 50 },
+};
+
+const focal: FocalPoint =
+  typeof position === 'string'
+    ? (positionPresets[position] ?? { x: 50, y: 50 })
+    : position;
+
+/* ═══════════════════════════════════════════════════
+   Loading & priority
+   ═══════════════════════════════════════════════════ */
+
+const defaultLoading = variant === 'background' ? 'eager' as const : 'lazy' as const;
+const loading = priority ? 'eager' as const : (loadingProp ?? defaultLoading);
+const fetchpriority = priority ? 'high' : 'auto';
+
+/* ═══════════════════════════════════════════════════
+   Build inline styles
+   ═══════════════════════════════════════════════════ */
+
+const isBackground = variant === 'background';
+
+// Wrapper: aspect-ratio + optional object-fit override
+const wrapperParts: string[] = [];
+if (resolvedRatio)   wrapperParts.push(`aspect-ratio: ${resolvedRatio}`);
+if (fit !== 'cover') wrapperParts.push(`object-fit: ${fit}`);
+if (transparent)     wrapperParts.push('background-color: transparent');
+
+/* Merge user-provided style with computed wrapper styles */
+const { style: userStyle, ...attrs } = rest;
+const wrapperStyle = [...wrapperParts, userStyle].filter(Boolean).join('; ') || undefined;
+
+// Image: focal-point custom properties
+const imageStyle = `--x: ${focal.x}; --y: ${focal.y}`;
+
+/* ═══════════════════════════════════════════════════
+   Detect remote URL vs imported image
+   ═══════════════════════════════════════════════════ */
+
+const isRemote = typeof src === 'string' && src.startsWith('http');
+
+/* ═══════════════════════════════════════════════════
+   Image props — conditionally include width/height
+   ═══════════════════════════════════════════════════ */
+
+const imageProps: Record<string, any> = {
+  src,
+  alt,
+  class: 'u-image',
+  loading,
+  fetchpriority,
+  style: imageStyle,
+};
+
+if (!isRemote) {
+  // Local images use Astro's <Image> with layout
+  imageProps.layout = 'full-width' as const;
+}
+
+if (width  != null) imageProps.width  = width;
+if (height != null) imageProps.height = height;
+---
+
+<div
+  class:list={[
+    'u-image-wrapper',
+    radiusClass,
+    { 'is-background': isBackground },
+    className,
+  ]}
+  style={wrapperStyle}
+  {...attrs}
+>
+  {isRemote ? (
+    <img {...imageProps} />
+  ) : (
+    <Image {...(imageProps as any)} />
+  )}
+</div>

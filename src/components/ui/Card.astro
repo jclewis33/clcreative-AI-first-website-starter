@@ -1,0 +1,262 @@
+---
+/**
+ * Card — content card with optional image, clickable overlay, and 3 variants.
+ *
+ * Slots:
+ *   - `visual`  — image / media (hidden in `stacked` variant)
+ *   - `title`   — custom heading (falls back to `title` prop)
+ *   - `default` — body content
+ *   - `footer`  — optional row below the body
+ *
+ * Pass `href` to make the entire card surface a clickable link.
+ *
+ * @example Default card with image
+ * ```astro
+ * <Card title="Project" href="/work/project" ariaLabel="View project">
+ *   <Visual slot="visual" src={img} alt="Screenshot" ratio="wide" />
+ *   <Text>Short description.</Text>
+ *   <div slot="footer">
+ *     <Button variant="text" href="#" ariaLabel="Read more">Read more →</Button>
+ *   </div>
+ * </Card>
+ * ```
+ *
+ * @example Cover card (image fills card, content overlays)
+ * ```astro
+ * <Card variant="cover" title="Article" href="/article">
+ *   <img slot="visual" src="hero.jpg" alt=""
+ *     style="width:100%;height:100%;object-fit:cover;display:block;" />
+ *   <Text muted>Subtitle text.</Text>
+ * </Card>
+ * ```
+ *
+ * @example Stacked text card (no image)
+ * ```astro
+ * <Card variant="stacked" title="Feature Title">
+ *   <Text muted>Feature description.</Text>
+ *   <div slot="footer"><Heading variant="eyebrow">Category</Heading></div>
+ * </Card>
+ * ```
+ */
+
+type CardVariant =
+  /** Standard card — visual on top, content below */
+  | "default"
+  /** Text-only card — no visual slot (image hidden) */
+  | "stacked"
+  /** Cover card — visual fills card, content overlays at bottom */
+  | "cover";
+
+type GridRowSpan = 1 | 2 | 3 | 4;
+type GridColumnSpan = 1 | 2 | 3 | 4;
+
+/**
+ * Card — content card with optional image, clickable overlay, and 3 layout variants.
+ *
+ * **Props:**
+ * - `variant` — card layout: default (image top), stacked (text only), cover (image fills, content overlays) (default: `'default'`)
+ * - `href` — makes the entire card a clickable link
+ * - `newTab` — open link in new tab (default: `false`)
+ * - `ariaLabel` — accessible label for clickable overlay (required when `href` is set)
+ * - `title` — convenience title rendered as h4 (or use `title` slot for custom heading)
+ * - `rowSpan` — span multiple grid rows, 1–4
+ * - `colSpan` — span multiple grid columns, 1–4
+ * - `radius` — border-radius utility class override
+ * - `class` — extra classes on the outer wrapper
+ *
+ * **Slots:** `visual` (image/media), `title` (custom heading), default (body), `footer`.
+ */
+interface Props {
+  /**
+   * **Card props:**
+   * - `variant` — default (image top), stacked (text only), cover (image fills)
+   * - `href` — makes entire card clickable
+   * - `newTab` — open link in new tab
+   * - `ariaLabel` — accessible label for clickable overlay
+   * - `title` — convenience h4 title (uses `u-text-style-h5` by default)
+   * - To override the title style, use the `title` slot with a custom Heading instead of the `title` prop
+   * - `rowSpan` — 1-4 grid row span
+   * - `colSpan` — 1-4 grid column span
+   * - `radius` — border-radius override
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
+   *
+   * **Slots:** `visual` (image), `title` (custom heading), default (body), `footer`
+   */
+  docs?: string;
+
+  /**
+   * Card layout variant.
+   * - `default`  — image on top (16/9), content below
+   * - `stacked`  — text only, visual slot hidden
+   * - `cover`    — image fills card (2/3 portrait), content overlays at bottom
+   *
+   * @default 'default'
+   * @example variant="cover"
+   */
+  variant?: CardVariant;
+
+  /**
+   * Makes the entire card surface a clickable link.
+   * @example href="/work/project"
+   */
+  href?: string;
+
+  /**
+   * Open link in a new tab (adds `rel="noopener noreferrer"`).
+   * @default false
+   * @example newTab
+   */
+  newTab?: boolean;
+
+  /**
+   * Accessible label for the clickable overlay.
+   * Falls back to `title` prop if omitted. Required when `href` is set.
+   * @example ariaLabel="View project details"
+   */
+  ariaLabel?: string;
+
+  /**
+   * Convenience title — renders as plain text styled with `u-text-style-h5`.
+   *
+   * To use a different heading size, use the `title` slot instead with
+   * a Heading component — the slot wrapper applies no typography utility,
+   * so the Heading's `variant` prop controls the style entirely.
+   *
+   * @example title="Project Name"
+   * @example Using the title slot for a custom variant:
+   * ```astro
+   * <Card>
+   *   <Heading slot="title" tag="h3" variant="h6" marginBottom={0}>Custom Title</Heading>
+   * </Card>
+   * ```
+   */
+  title?: string;
+
+  /**
+   * Span multiple rows in a Grid. Values: 1–4.
+   * @example rowSpan={2}
+   */
+  rowSpan?: GridRowSpan;
+
+  /**
+   * Span multiple columns in a Grid. Values: 1–4.
+   * @example colSpan={2}
+   */
+  colSpan?: GridColumnSpan;
+
+  /**
+   * Border-radius override. Pass a utility class name.
+   * @example radius="u-radius-xlarge"
+   */
+  radius?: string;
+
+  /**
+   * Extra classes on the outer `.card_primary_wrap` element.
+   * @example class="u-box-shadow-medium"
+   */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
+   * are forwarded to the root `.card_primary_wrap` element.
+   * @example style="--custom: value" data-animate="fade"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  variant = "default",
+  href,
+  newTab = false,
+  ariaLabel,
+  title,
+  rowSpan,
+  colSpan,
+  radius,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* Span utility classes for grid placement */
+const spanClasses = [
+  rowSpan && rowSpan > 1 && `u-row-span-${rowSpan}`,
+  colSpan && colSpan > 1 && `u-column-span-${colSpan}`,
+].filter(Boolean);
+
+/* Clickable target */
+const isClickable = Boolean(href);
+const linkRel = newTab ? "noopener noreferrer" : undefined;
+const linkTarget = newTab ? "_blank" : undefined;
+const linkLabel = ariaLabel ?? title ?? undefined;
+
+/* Check which slots are used */
+const hasVisual = Astro.slots.has("visual");
+const hasTitle = Astro.slots.has("title");
+const hasFooter = Astro.slots.has("footer");
+const showVisual = variant !== "stacked";
+---
+
+<div
+  class:list={["card_primary_wrap", ...spanClasses, radius, className]}
+  data-card-variant={variant}
+  {...rest}
+>
+  <div
+    class="card_primary_group"
+    data-trigger={isClickable ? "hover-if-clickable focus" : undefined}
+  >
+    <div class="card_primary_element">
+      {/* Visual / image slot */}
+      {
+        showVisual && (hasVisual || variant === "default") && (
+          <div class="card_primary_visual">
+            <slot name="visual" />
+          </div>
+        )
+      }
+
+      {/* Content */}
+      <div class="card_primary_content u-margin-trim">
+        {/* Title */}
+        {
+          (hasTitle || title) && (
+            <div class:list={["card_primary_title", !hasTitle && "u-text-style-h5"]}>
+              {hasTitle ? <slot name="title" /> : title}
+            </div>
+          )
+        }
+
+        {/* Body */}
+        <div class="card_primary_text">
+          <slot />
+        </div>
+
+        {/* Footer */}
+        {
+          hasFooter && (
+            <div class="card_primary_footer">
+              <slot name="footer" />
+            </div>
+          )
+        }
+      </div>
+    </div>
+
+    {/* Full-surface clickable overlay */}
+    {
+      isClickable && (
+        <div class="clickable_wrap u-cover-absolute">
+          <a
+            href={href}
+            class="clickable_link"
+            aria-label={linkLabel}
+            target={linkTarget}
+            rel={linkRel}
+          />
+        </div>
+      )
+    }
+  </div>
+</div>

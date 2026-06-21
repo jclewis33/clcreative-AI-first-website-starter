@@ -1,0 +1,187 @@
+/* ==========================================================================
+   HERO — floating images with mouse parallax
+   ========================================================================== */
+
+/* Section needs relative + overflow clip for the image container */
+.wd-hero_section {
+  overflow: clip;
+  min-height: 90vh;
+}
+
+/* Image container — fills the background slot (already absolute, full-section) */
+.wd-hero_images {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Each floating image — absolute, rounded, with will-change for perf */
+.wd-hero_img {
+  position: absolute;
+  border-radius: var(--radius-medium);
+  overflow: hidden;
+  will-change: transform;
+}
+
+.wd-hero_img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* ── Desktop positions ──
+   Figma section is ~1320px. Images are small thumbnails at the
+   far edges, framing the centered text. Sizes use vw so they
+   scale with the viewport but stay small. */
+
+/* Top row */
+.wd-hero_img.is-top-left {
+  width: clamp(150px, 13vw, 240px);
+  top: -2%;
+  left: -1%;
+}
+
+.wd-hero_img.is-top-middle {
+  width: clamp(120px, 10vw, 170px);
+  top: 0;
+  left: 34%;
+}
+
+.wd-hero_img.is-top-right {
+  width: clamp(150px, 12vw, 220px);
+  top: -4%;
+  right: 10%;
+}
+
+/* Middle row — far left/right edges */
+.wd-hero_img.is-left-side {
+  width: clamp(150px, 13vw, 240px);
+  top: 34%;
+  left: -5%;
+}
+
+.wd-hero_img.is-right-side {
+  width: clamp(140px, 11vw, 200px);
+  top: 22%;
+  right: -3%;
+}
+
+/* Bottom row */
+.wd-hero_img.is-center-middle-left {
+  width: clamp(150px, 13vw, 240px);
+  bottom: -4%;
+  left: 6%;
+}
+
+.wd-hero_img.is-center-middle-right {
+  width: clamp(120px, 10vw, 170px);
+  bottom: 2%;
+  left: 48%;
+}
+
+.wd-hero_img.is-right-bottom {
+  width: clamp(150px, 13vw, 240px);
+  bottom: -4%;
+  right: -2%;
+}
+
+/* ── Mobile — even smaller, tucked into corners ── */
+
+@media (max-width: 49.999em) {
+  .wd-hero_section {
+    min-height: 80vh;
+  }
+
+  .wd-hero_img.is-top-left {
+    width: 22vw;
+    top: 0;
+    left: -4%;
+  }
+
+  .wd-hero_img.is-top-middle {
+    width: 16vw;
+    top: 6%;
+    left: 34%;
+  }
+
+  .wd-hero_img.is-top-right {
+    width: 18vw;
+    top: 2%;
+    right: 18%;
+  }
+
+  .wd-hero_img.is-left-side {
+    width: 16vw;
+    top: auto;
+    bottom: 14%;
+    left: -6%;
+  }
+
+  .wd-hero_img.is-right-side {
+    width: 18vw;
+    top: 12%;
+    right: -3%;
+  }
+
+  .wd-hero_img.is-center-middle-left {
+    width: 20vw;
+    bottom: 1%;
+    left: 14%;
+  }
+
+  .wd-hero_img.is-center-middle-right {
+    width: 16vw;
+    bottom: 3%;
+    left: auto;
+    right: 30%;
+  }
+
+  .wd-hero_img.is-right-bottom {
+    width: 22vw;
+    bottom: -2%;
+    right: -4%;
+  }
+}
+
+/* Eyebrow accent color */
+.wd-hero_eyebrow {
+  color: var(--color-brand-500);
+}
+
+/* ==========================================================================
+   OUTGROWN SECTION
+   ========================================================================== */
+
+/* Outgrown section — reorder text below image when stacked */
+.outgrown_wrapper .u-layout-column-1 {
+  order: calc(1 - var(--responsive-large, 1));
+}
+
+/* Outgrown section — rich text sizing */
+.outgrown_rich-text {
+  font-size: var(--font-size-large);
+}
+
+/* Outgrown section — 3-col card grid (mirrors .m2m_card pattern) */
+.outgrown_card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: 1px solid currentColor;
+}
+
+.outgrown_card_icon {
+  width: 2rem;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  stroke-width: var(--border-width-main);
+}
+
+.ideal_customer_content {
+  margin-inline: auto;
+  max-width: 53rem;
+}

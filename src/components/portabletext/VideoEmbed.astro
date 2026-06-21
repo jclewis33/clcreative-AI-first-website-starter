@@ -1,0 +1,63 @@
+---
+/**
+ * Video Embed — Portable Text custom type component
+ *
+ * Renders a YouTube or Vimeo video as a responsive iframe.
+ * Node shape: { _type: "videoEmbed", url: string, caption?: string }
+ */
+
+import type { Props as PortableTextProps } from "astro-portabletext/types";
+
+interface VideoEmbedNode {
+  _type: "videoEmbed";
+  url: string;
+  caption?: string;
+}
+
+type Props = PortableTextProps<VideoEmbedNode>;
+
+const { node } = Astro.props;
+
+function getEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      const id = u.searchParams.get("v");
+      if (id) return `https://www.youtube.com/embed/${id}`;
+      if (u.pathname.startsWith("/shorts/")) {
+        return `https://www.youtube.com/embed/${u.pathname.split("/")[2]}`;
+      }
+    }
+    if (host === "youtu.be") {
+      return `https://www.youtube.com/embed${u.pathname}`;
+    }
+    if (host === "vimeo.com") {
+      const id = u.pathname.split("/").filter(Boolean)[0];
+      if (id) return `https://player.vimeo.com/video/${id}`;
+    }
+    if (host === "player.vimeo.com") return url;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+const embedUrl = getEmbedUrl(node.url);
+---
+
+{embedUrl && (
+  <figure class="video-embed_wrap">
+    <div class="video-embed_frame">
+      <iframe
+        src={embedUrl}
+        title={node.caption || "Video"}
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+      />
+    </div>
+    {node.caption && <figcaption>{node.caption}</figcaption>}
+  </figure>
+)}

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /studio
+Disallow: /thank-you
+Disallow: /style-guide
+Disallow: /components
+
+Sitemap: https://www.clcreative.co/sitemap-index.xml

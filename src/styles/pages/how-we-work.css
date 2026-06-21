@@ -1,0 +1,167 @@
+/* How We Work page — component custom classes */
+
+/* Hero — orange accent box behind image */
+.how-we-work_hero_visual_wrap {
+  position: relative;
+}
+
+.how-we-work_hero_accent {
+  position: absolute;
+  right: calc(-1 * var(--site-margin));
+  top: calc(-1 * var(--space-4));
+  bottom: calc(-1 * var(--section-space-main));
+  width: 40%;
+  background-color: var(--heading-accent);
+  z-index: 0;
+}
+
+.how-we-work_hero_visual_wrap .visual_wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* M2M-style section — brand, watermark, 3-col icon grid (scoped to how-we-work) */
+.how-we-work_m2m_section {
+  position: relative;
+  overflow: hidden;
+}
+
+.how-we-work_m2m_watermark {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-family: var(--font-primary);
+  font-size: clamp(8rem, 4.57rem + 17.14vw, 20rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-brand-700);
+  opacity: 0.15;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  padding-right: var(--site-margin);
+}
+
+.how-we-work_m2m_content {
+  position: relative;
+  z-index: 1;
+  padding-top: var(--section-space-large);
+}
+
+.how-we-work_m2m_grid {
+  position: relative;
+  z-index: 1;
+  margin-top: var(--space-8);
+}
+
+.how-we-work_m2m_card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: 1px solid currentColor;
+}
+
+.how-we-work_m2m_card_icon {
+  width: 2.5rem;
+  aspect-ratio: 1 / 1;
+  color: currentColor;
+  flex-shrink: 0;
+}
+
+/* "What You Get" — 2x2 numbered grid (mirrors SEO pillars pattern) */
+.how-we-work_get_list {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-7);
+}
+
+.how-we-work_get_row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-7);
+  border-top: var(--border-width-main) solid var(--border);
+  padding-block: var(--space-6);
+}
+
+.how-we-work_get_item {
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+
+.how-we-work_get_number {
+  font-family: var(--font-primary);
+  font-size: var(--h2-size);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.how-we-work_get_item_content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* Responsive — stack rows at medium */
+@container (width < 50em) {
+  .how-we-work_get_row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    border-top: none;
+    padding-block: 0;
+  }
+
+  .how-we-work_get_item {
+    border-top: var(--border-width-main) solid var(--border);
+    padding-block: var(--space-5);
+  }
+}
+
+.how-we-work_check_list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.how-we-work_check_list li {
+  position: relative;
+  padding-left: 1.5em;
+}
+
+.how-we-work_check_list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--heading-accent);
+}
+
+/* Investment cards — reduce price-row sizing so longer names fit */
+.how-we-work_investment_card[data-pricing-variant="general"] .pricing_card_price_row > * {
+  font-size: var(--h5-size);
+}
+
+.how-we-work_investment_card[data-pricing-variant="general"] .pricing_card_price {
+  font-size: var(--h6-size);
+  font-weight: var(--font-weight-regular);
+  text-align: right;
+}
+
+/* Keep label left, price right — let each shrink to content so space-between works */
+.how-we-work_investment_card[data-pricing-variant="general"] .pricing_card_price_row > .u-text {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* Body text inside the card flows in a single column, not the default 2-col grid */
+.how-we-work_investment_card[data-pricing-variant="general"] .pricing_card_items {
+  grid-template-columns: minmax(0, 1fr);
+}

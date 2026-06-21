@@ -1,0 +1,384 @@
+---
+/**
+ * Text — body copy with design-system size, weight, and alignment tokens.
+ *
+ * Renders a `.u-text` wrapper around the tag element. The wrapper stays
+ * full-width while the child inherits `max-width`. Omit `variant` to inherit
+ * from the parent's font size.
+ *
+ * @example Lead paragraph
+ * ```astro
+ * <Text variant="large" weight="medium">Lead paragraph text.</Text>
+ * ```
+ *
+ * @example Muted caption
+ * ```astro
+ * <Text tag="figcaption" variant="small" muted align="center">
+ *   Photo by Jane Doe
+ * </Text>
+ * ```
+ *
+ * @example Clamped text (truncate at 3 lines)
+ * ```astro
+ * <Text variant="regular" clamp={3}>
+ *   Very long text that will be truncated with an ellipsis…
+ * </Text>
+ * ```
+ */
+
+type TextTag =
+  | "p"
+  | "span"
+  | "div"
+  | "label"
+  | "figcaption"
+  | "li"
+  | "dt"
+  | "dd"
+  | "caption";
+
+type TextSize =
+  /** 0.75rem — micro labels, legal copy */
+  | "tiny"
+  /** 0.875rem — captions, helper text */
+  | "small"
+  /** 1rem → 1.125rem fluid — default body text */
+  | "regular"
+  /** 1.125rem → 1.25rem fluid — lead paragraphs */
+  | "large"
+  /** 1.25rem → 1.5rem fluid — intro text, large pull quotes */
+  | "xlarge"
+  /** Heading variants — use heading size/weight/line-height on a text element */
+  | "h1"
+  | "h2"
+  | "h3"
+  | "h4"
+  | "h5"
+  | "h6"
+  /** Eyebrow — small uppercase label */
+  | "eyebrow"
+  /** Display variants — extra large impactful text */
+  | "display-xl"
+  | "display-lg"
+  | "display-md"
+  | "display-sm";
+
+type TextWeight =
+  /** 400 — normal body weight */
+  | "regular"
+  /** 500 — slightly heavier for emphasis */
+  | "medium"
+  /** 700 — strong emphasis */
+  | "bold";
+
+type TextAlign =
+  /** Left-aligned (default in LTR) */
+  | "left"
+  /** Centered text */
+  | "center"
+  /** Right-aligned */
+  | "right"
+  /** Inherit alignment from parent layout */
+  | "inherit";
+
+/**
+ * Text — body copy with design-system size, weight, and alignment tokens.
+ *
+ * **Props:**
+ * - `tag` — HTML element: p, span, div, label, figcaption, li, dt, dd, caption (default: `'p'`)
+ * - `variant` — typography tier: tiny, small, regular, large, xlarge, h1–h6, eyebrow, display-xl/lg/md/sm (default: `'regular'`)
+ * - `weight` — font weight: regular (400), medium (500), bold (700)
+ * - `align` — text alignment: left, center, right, inherit
+ * - `muted` — reduce opacity to 75% (default: `false`)
+ * - `balance` — even line breaks via `text-wrap: balance` (default: `false`)
+ * - `nowrap` — prevent text wrapping (default: `false`)
+ * - `clamp` — truncate at N lines with ellipsis, 1–6
+ * - `marginTop` — override margin-top: `0`–`8` (space scale), `'auto'` to push down in flex (default: none)
+ * - `marginBottom` — override margin-bottom: `0`–`8` (space scale) (default: none)
+ * - `maxWidth` — max-width of text content with units (default: `'60ch'`)
+ * - `class` — extra utility classes
+ *
+ * **Slot:** default — text content.
+ */
+interface Props {
+  /**
+   * **Text props:**
+   * - `tag` — p, span, div, label, figcaption, li, dt, dd, caption (default 'p')
+   * - `variant` — tiny, small, regular, large, xlarge, h1–h6, eyebrow, display-xl/lg/md/sm
+   * - `weight` — regular, medium, bold
+   * - `align` — left, center, right, inherit
+   * - `muted` — 75% opacity
+   * - `balance` — text-wrap: balance
+   * - `nowrap` — white-space: nowrap
+   * - `clamp` — 1-6 line truncation with ellipsis
+   * - `marginTop` — 0-8 (space scale) or 'auto' to push down in flex
+   * - `marginBottom` — 0-8 (space scale)
+   * - `maxWidth` — max-width with units (default '60ch')
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — `style` is merged with computed styles
+   *
+   * **Slot:** default — text content
+   */
+  docs?: string;
+
+  /**
+   * HTML element to render.
+   *
+   * | Value          | Use case                              |
+   * |----------------|---------------------------------------|
+   * | `'p'`          | Body paragraphs (default)             |
+   * | `'span'`       | Inline text within other elements     |
+   * | `'div'`        | Block wrapper when `p` is invalid     |
+   * | `'label'`      | Form field labels                     |
+   * | `'figcaption'` | Image or media captions               |
+   * | `'li'`         | List items                            |
+   * | `'dt'`         | Definition term                       |
+   * | `'dd'`         | Definition description                |
+   * | `'caption'`    | Table captions                        |
+   *
+   * @default 'p'
+   * @example tag="span"
+   * @example tag="figcaption"
+   */
+  tag?: TextTag;
+
+  /**
+   * Typography scale. Text sizes use fluid `clamp()`, heading/display variants
+   * use the heading type scale (same as the Heading component).
+   *
+   * **Text sizes:**
+   * | Value       | Size (min → max)     | Use case                      |
+   * |-------------|----------------------|-------------------------------|
+   * | `'tiny'`    | 0.75rem → 0.75rem    | Micro labels, legal copy      |
+   * | `'small'`   | 0.875rem → 0.875rem  | Captions, helper text         |
+   * | `'regular'` | 1rem → 1.125rem      | Default body text             |
+   * | `'large'`   | 1.125rem → 1.25rem   | Lead paragraphs               |
+   * | `'xlarge'`  | 1.25rem → 1.5rem     | Intro text, large pull quotes |
+   *
+   * **Heading sizes:** `'h1'`–`'h6'`, `'eyebrow'` — applies heading typography
+   * (size, weight, line-height, font-family) to a non-heading element.
+   *
+   * **Display sizes:** `'display-xl'`, `'display-lg'`, `'display-md'`, `'display-sm'`
+   * — extra large impactful text for hero/feature use.
+   *
+   * @default 'regular'
+   * @example variant="large"
+   * @example variant="h3"
+   * @example variant="display-sm"
+   */
+  variant?: TextSize;
+
+  /**
+   * Font weight.
+   *
+   * | Value       | Weight | Use case                              |
+   * |-------------|--------|---------------------------------------|
+   * | `'regular'` | 400    | Normal body weight (default)          |
+   * | `'medium'`  | 500    | Slightly heavier for subtle emphasis  |
+   * | `'bold'`    | 700    | Strong emphasis, key phrases          |
+   *
+   * @example weight="medium"
+   * @example weight="bold"
+   */
+  weight?: TextWeight;
+
+  /**
+   * Text alignment.
+   *
+   * | Value       | Behavior                              |
+   * |-------------|---------------------------------------|
+   * | `'left'`    | Left-aligned (default in LTR)         |
+   * | `'center'`  | Centered text                         |
+   * | `'right'`   | Right-aligned                         |
+   * | `'inherit'` | Inherit alignment from parent layout  |
+   *
+   * @example align="center"
+   * @example align="inherit"
+   */
+  align?: TextAlign;
+
+  /**
+   * Reduce opacity to 75% to create a secondary/muted text style.
+   * Use for supporting text, captions, timestamps, and metadata
+   * that should be visually subordinate to primary content.
+   *
+   * @default false
+   * @example muted
+   */
+  muted?: boolean;
+
+  /**
+   * Apply `text-wrap: balance` for even line breaks.
+   * Best for short text blocks (headings, pull quotes, CTAs)
+   * where uneven line lengths look awkward. Avoid on long
+   * paragraphs — the browser may reflow the entire block.
+   *
+   * @default false
+   * @example balance
+   */
+  balance?: boolean;
+
+  /**
+   * Prevent text from wrapping (`white-space: nowrap`).
+   * Use sparingly — only for labels that must stay on one line.
+   * @default false
+   * @example nowrap
+   */
+  nowrap?: boolean;
+
+  /**
+   * Truncate text at N lines with an ellipsis.
+   * Pairs with `variant` to ensure consistent clamping height.
+   * Applied on the child element (not wrapper) due to display conflict.
+   *
+   * | Value | Lines shown | Common use case                     |
+   * |-------|-------------|-------------------------------------|
+   * | `1`   | 1 line      | Single-line labels, nav items       |
+   * | `2`   | 2 lines     | Card titles, compact excerpts       |
+   * | `3`   | 3 lines     | Card descriptions, preview text     |
+   * | `4`   | 4 lines     | Longer previews, testimonials       |
+   * | `5`   | 5 lines     | Extended content previews           |
+   * | `6`   | 6 lines     | Maximum clamp depth                 |
+   *
+   * @example clamp={2}
+   * @example clamp={3}
+   */
+  clamp?: 1 | 2 | 3 | 4 | 5 | 6;
+
+  /**
+   * Override margin-top on the `.u-text` wrapper.
+   * - `0`–`8` — maps to `u-margin-top-N` (space scale: 6px–64px fluid)
+   * - `'auto'` — push element down in flex containers (align bottom edges across columns)
+   * @example marginTop={0}
+   * @example marginTop={4}
+   * @example marginTop="auto"
+   */
+  marginTop?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "auto";
+
+  /**
+   * Override margin-bottom on the `.u-text` wrapper.
+   * Maps to `u-margin-bottom-N` (space scale: 6px–64px fluid).
+   * Use `0` for tight layouts, higher values for extra breathing room.
+   *
+   * | Value | Size (min → max)   |
+   * |-------|--------------------|
+   * | `0`   | 0px                |
+   * | `1`   | 6px → 8px          |
+   * | `2`   | 10px → 12px        |
+   * | `3`   | 14px → 16px        |
+   * | `4`   | 20px → 24px        |
+   * | `5`   | 28px → 32px        |
+   * | `6`   | 32px → 40px        |
+   * | `7`   | 36px → 48px        |
+   * | `8`   | 40px → 64px        |
+   *
+   * NOTE: `marginBottom={0}` is **usually redundant**. Margin-trim already
+   * zeroes the bottom margin of the LAST child of a trimmed wrapper — a
+   * `<Section>` container, a `<Layout>` column, `<ContentWrapper>`, `<Col>`,
+   * `u-rich-text`, or any `u-margin-trim`/`u-container*` element. Only set it
+   * when this is the last child of a *custom* `<div>` that isn't auto-trimmed
+   * (e.g. a card body); even then, prefer `u-margin-trim` on that wrapper.
+   *
+   * @example marginBottom={0}
+   * @example marginBottom={4}
+   */
+  marginBottom?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+  /**
+   * Max-width of the text content, with units.
+   * Applied on the `.u-text` wrapper; the child element inherits
+   * this constraint via `max-width: inherit`.
+   *
+   * Common values:
+   * - `'60ch'` — default, optimal reading width
+   * - `'48ch'` — narrower prose (sidebars, cards)
+   * - `'40rem'` — fixed-width constraint
+   * - `'100%'` — fill available width
+   * - `'none'` — remove max-width entirely
+   *
+   * @default '60ch'
+   * @example maxWidth="48ch"
+   * @example maxWidth="40rem"
+   */
+  maxWidth?: string;
+
+  /**
+   * Extra utility classes to append to the `.u-text` wrapper.
+   *
+   * @example class="u-margin-bottom-4"
+   * @example class="u-background-1"
+   */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
+   * are forwarded to the root `.u-text` wrapper element.
+   * User-provided `style` is merged with computed max-width styles.
+   * @example data-animate="fade" style="--custom: value"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  tag: Tag = "p",
+  variant = "regular",
+  weight,
+  align,
+  muted = false,
+  balance = false,
+  nowrap = false,
+  clamp,
+  marginTop,
+  marginBottom,
+  maxWidth = "60ch",
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* Map variant to the correct CSS class name.
+   Display variants use `u-display-*`, everything else uses `u-text-style-*`. */
+const variantClass = variant?.startsWith("display-")
+  ? `u-${variant}` // → u-display-xl, u-display-lg, etc.
+  : `u-text-style-${variant}`; // → u-text-style-regular, u-text-style-h3, etc.
+
+/* Wrapper classes — typography, alignment, style modifiers, margin overrides, and user extras */
+const wrapperClasses = [
+  "u-text",
+  variant && variantClass,
+  weight && `u-weight-${weight}`,
+  align && `u-text-align-${align}`,
+  muted && "u-text-style-muted",
+  balance && "u-text-wrap-balance",
+  nowrap && "u-text-style-nowrap",
+  marginTop === "auto"
+    ? "u-margin-top-auto"
+    : marginTop !== undefined && `u-margin-top-${marginTop}`,
+  marginBottom !== undefined && `u-margin-bottom-${marginBottom}`,
+  className,
+]
+  .filter(Boolean)
+  .join(" ");
+
+/* Child classes — only clamp (display: -webkit-box conflicts with wrapper flex) */
+const childClasses =
+  [clamp && `u-line-clamp-${clamp}`].filter(Boolean).join(" ") || undefined;
+
+/* Merge user-provided style with computed max-width.
+   Wrap in var(--unset-medium, …) so the max-width only applies above the
+   medium breakpoint (~58em). Below that, --unset-medium = `unset`, which
+   removes the constraint and lets the text fill the available width. */
+const { style: userStyle, ...attrs } = rest;
+const mergedStyle = [
+  `max-width: var(--unset-medium, ${maxWidth})`,
+  userStyle,
+]
+  .filter(Boolean)
+  .join("; ");
+---
+
+<div class={wrapperClasses} style={mergedStyle} {...attrs}>
+  <Tag class={childClasses}>
+    <slot />
+  </Tag>
+</div>

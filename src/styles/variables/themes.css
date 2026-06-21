@@ -1,0 +1,297 @@
+/* ==========================================================================
+   THEME VARIABLES
+   ==========================================================================
+   Mode-switching semantic aliases. Apply data-theme="dark" or
+   data-theme="brand" to any section, layout, or component to swap all
+   theme values for that subtree. No attribute needed for the base (light)
+   mode — it is the default on :root.
+
+   Usage:
+     <section class="cta_wrap" data-theme="dark">
+     <section class="promo_wrap" data-theme="brand">
+
+   Variable groups:
+     Background  — --background, --background-2, --background-skeleton
+     Text        — --text, --heading-accent
+     Border      — --border
+     Selection   — --selection-background, --selection-text
+     Buttons     — --button-primary-*, --button-secondary-*
+     Links       — --link-text, --link-border, --link-*-hover
+     Nav         — --nav-background, --nav-banner-background, --nav-banner-color
+     Footer      — --footer-background, --footer-text, --footer-border
+   ========================================================================== */
+
+/* ==========================================================================
+   GRADIENT
+   Shared decorative gradient using brand scale.
+   ========================================================================== */
+
+:root {
+  --gradient-primary: linear-gradient(
+    94deg,
+    var(--color-brand-400) -0.01%,
+    var(--color-brand-500) 51.63%,
+    var(--color-brand-600) 103.27%
+  );
+}
+
+/* ==========================================================================
+   BASE MODE — Light (default)
+   ========================================================================== */
+
+:root,
+[data-theme="base"],
+[data-theme="light"],
+.u-theme-light {
+  /* Background */
+  --background: var(--color-light-200); /* #fdfdfd       */
+  --background-2: var(--color-light-100); /* white         */
+  --background-skeleton: color-mix(in lab, currentcolor 10%, transparent);
+
+  /* Text */
+  --text: var(--color-dark-900); /* #0c111d       */
+  --heading-accent: var(--color-brand-500); /* dark orange     */
+
+  /* Border */
+  --border: var(--color-dark-900-o20);
+
+  /* Surface — how a CONTRASTING card should look on a LIGHT section.
+     White paper, dark text, brand-accent stars. Consumed via .u-surface. */
+  --surface-background: var(--color-light-100); /* white card    */
+  --surface-text: var(--color-dark-900); /* dark text     */
+  --surface-heading-accent: var(--color-brand-500); /* brand stars   */
+  --surface-border: var(--color-dark-900-o20);
+
+  /* Selection */
+  --selection-background: var(--color-brand-300);
+  --selection-text: var(--color-brand-text); /* dark-900      */
+
+  /* Button — Primary (brand on light bg) */
+  --button-primary-background: var(--color-brand-500);
+  --button-primary-border: var(--color-brand-500);
+  --button-primary-text: var(--color-brand-text); /* dark-900      */
+  --button-primary-background-hover: var(--color-dark-900);
+  --button-primary-border-hover: var(--color-dark-900);
+  --button-primary-text-hover: var(--color-light-200); /* bg value      */
+
+  /* Button — Secondary */
+  --button-secondary-background: transparent;
+  --button-secondary-border: var(--color-dark-900-o20); /* = --border    */
+  --button-secondary-text: var(--color-dark-900);
+  --button-secondary-background-hover: var(--color-dark-900);
+  --button-secondary-border-hover: var(--color-dark-900);
+  --button-secondary-text-hover: var(--color-light-200); /* bg value      */
+
+  /* Links */
+  --link-text: var(--color-dark-900-o75); /* muted for group-hover dim */
+  --link-border: var(--color-dark-900-o20); /* = --border    */
+  --link-text-hover: var(--color-dark-900);
+  --link-border-hover: var(--color-dark-900);
+
+  /* Rich-text links */
+  --rich-text-link: var(--color-brand-500);
+
+  /* Nav */
+  --nav-background: var(--color-light-100); /* = bg-2 white  */
+  --nav-banner-background: var(--color-light-100); /* white          */
+  --nav-banner-color: var(--color-dark-900); /* dark text      */
+
+  /* Overlay */
+  --overlay-scrim: color-mix(in srgb, var(--color-dark-900) 60%, transparent);
+
+  /* Footer */
+  --footer-background: var(--color-dark-900);
+  --footer-text: var(--color-light-100);
+  --footer-border: var(--color-light-100-o20);
+}
+
+/* ==========================================================================
+   DARK MODE
+   ========================================================================== */
+
+[data-theme="dark"],
+.u-theme-dark {
+  /* Background */
+  --background: var(--color-dark-900); /* #0c111d        */
+  --background-2: var(--color-light-200); /* #2f2b2d        */
+  --background-skeleton: color-mix(in lab, currentcolor 10%, transparent);
+
+  /* Text */
+  --text: var(--color-light-100); /* white          */
+  --heading-accent: var(--color-brand-500); /* brand orange    */
+
+  /* Border */
+  --border: var(--color-light-100-o20);
+
+  /* Surface — how a CONTRASTING card should look on a DARK section.
+     Light "paper" so the card pops off the dark bg; dark text + brand stars.
+     (Reproduces the old `theme==="dark" && u-theme-light` behaviour.) */
+  --surface-background: var(--color-light-100); /* white paper   */
+  --surface-text: var(--color-dark-900); /* dark text     */
+  --surface-heading-accent: var(--color-brand-500); /* brand stars   */
+  --surface-border: var(--color-dark-900-o20);
+
+  /* Selection */
+  --selection-background: var(--color-brand-300);
+  --selection-text: var(--color-brand-text); /* dark-900       */
+
+  /* Button — Primary (brand on dark) */
+  --button-primary-background: var(--color-brand-500);
+  --button-primary-border: var(--color-brand-500);
+  --button-primary-text: var(--color-brand-text); /* dark-900       */
+  --button-primary-background-hover: var(
+    --color-light-100
+  ); /* = text: white  */
+  --button-primary-border-hover: var(--color-light-100);
+  --button-primary-text-hover: var(--color-dark-900); /* = bg           */
+
+  /* Button — Secondary */
+  --button-secondary-background: transparent;
+  --button-secondary-border: var(--color-light-100-o20); /* = --border     */
+  --button-secondary-text: var(--color-light-100);
+  --button-secondary-background-hover: var(
+    --color-light-100
+  ); /* = text         */
+  --button-secondary-border-hover: var(--color-light-100);
+  --button-secondary-text-hover: var(--color-dark-900); /* = bg           */
+
+  /* Links */
+  --link-text: var(--color-light-100-o75); /* muted for group-hover dim */
+  --link-border: var(--color-light-100-o20); /* = --border     */
+  --link-text-hover: var(--color-light-100);
+  --link-border-hover: var(--color-brand-500); /* brand on hover  */
+
+  /* Rich-text links */
+  --rich-text-link: var(--text);
+
+  /* Nav */
+  --nav-background: var(--color-dark-900); /* dark navy blue */
+  --nav-banner-background: var(--color-light-100); /* white — inverted */
+  --nav-banner-color: var(--color-dark-900); /* dark text      */
+
+  /* Overlay */
+  --overlay-scrim: color-mix(in srgb, var(--color-dark-900) 60%, transparent);
+
+  /* Footer */
+  --footer-background: var(--color-dark-900);
+  --footer-text: var(--color-light-100);
+  --footer-border: var(--color-light-100-o20);
+}
+
+/* ==========================================================================
+   BRAND MODE — Brand Orange
+   ========================================================================== */
+
+[data-theme="brand"],
+.u-theme-brand {
+  /* Background */
+  --background: var(--color-brand-500); /* brand orange    */
+  --background-2: var(--color-brand-400); /* darker orange   */
+  --background-skeleton: color-mix(in lab, currentcolor 10%, transparent);
+
+  /* Text */
+  --text: var(--color-brand-text); /* dark-900       */
+  --heading-accent: var(--color-brand-text);
+
+  /* Border */
+  --border: var(--color-brand-text-o20);
+
+  /* Surface — how a CONTRASTING card should look on a BRAND (orange) section.
+     Slightly-lighter orange card with white text, matching today's look
+     (--background-2 = brand-400; text/accent = brand-text = white). */
+  --surface-background: var(--color-brand-400); /* lighter orange */
+  --surface-text: var(--color-brand-text); /* white          */
+  --surface-heading-accent: var(--color-brand-text); /* white stars    */
+  --surface-border: var(--color-brand-text-o20);
+
+  /* Selection */
+  --selection-background: var(--color-brand-300);
+  --selection-text: var(--color-brand-text); /* dark-900       */
+
+  /* Button — Primary (white bg, brand text) */
+  --button-primary-background: var(--color-brand-text); /* white           */
+  --button-primary-border: var(--color-brand-text); /* white           */
+  --button-primary-text: var(--color-brand-500); /* brand orange    */
+  --button-primary-background-hover: color-mix(
+    in srgb,
+    var(--color-brand-text),
+    black 10%
+  );
+  --button-primary-border-hover: color-mix(
+    in srgb,
+    var(--color-brand-text),
+    black 10%
+  );
+  --button-primary-text-hover: var(--color-brand-500); /* brand stays     */
+
+  /* Button — Secondary */
+  --button-secondary-background: transparent;
+  --button-secondary-border: var(--color-brand-text-o20); /* = --border     */
+  --button-secondary-text: var(--color-brand-text); /* dark-900       */
+  --button-secondary-background-hover: var(
+    --color-brand-text
+  ); /* dark-900       */
+  --button-secondary-border-hover: var(--color-brand-text);
+  --button-secondary-text-hover: var(--color-brand-500); /* = bg brand      */
+
+  /* Links */
+  --link-text: var(--color-brand-text-o75); /* muted for group-hover dim */
+  --link-border: var(--color-brand-text-o20); /* = --border     */
+  --link-text-hover: var(--color-brand-text);
+  --link-border-hover: var(--color-brand-text);
+
+  /* Rich-text links */
+  --rich-text-link: var(--text);
+
+  /* Nav */
+  --nav-background: var(--color-brand-500); /* = bg           */
+  --nav-banner-background: var(--color-brand-text); /* dark-900       */
+  --nav-banner-color: var(--color-brand-500); /* brand text      */
+
+  /* Overlay */
+  --overlay-scrim: color-mix(in srgb, var(--color-brand-text) 60%, transparent);
+
+  /* Footer */
+  --footer-background: var(--color-dark-800);
+  --footer-text: var(--color-light-100);
+  --footer-border: var(--color-light-100-o20);
+}
+
+/* ==========================================================================
+   CLASS-BASED THEME CONTAINERS
+   Apply .u-theme-light / .u-theme-dark / .u-theme-brand as a class to any
+   element to paint it with the correct background and inherit text/border
+   colours for all descendants (same cascade as the data-theme approach).
+   ========================================================================== */
+
+.u-theme-light,
+.u-theme-dark,
+.u-theme-brand {
+  background-color: var(--background);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* ==========================================================================
+   SURFACE ISLAND
+   Apply .u-surface to a card that should render as the correct CONTRASTING
+   surface for whatever section theme it sits in. It reads the --surface-*
+   tier from the inherited data-theme and re-maps the standard semantic vars
+   so all descendants (text, stars via --heading-accent, borders) follow the
+   surface automatically — zero per-instance logic. Re-skin a fork by editing
+   the --surface-* values in the theme blocks above.
+   (Buttons/links inside a card are out of scope — current cards contain none;
+   extend this with button and link var remaps here if that ever changes.)
+   ========================================================================== */
+
+.u-surface {
+  --background: var(--surface-background);
+  --background-2: var(--surface-background);
+  --text: var(--surface-text);
+  --heading-accent: var(--surface-heading-accent);
+  --border: var(--surface-border);
+
+  background-color: var(--surface-background);
+  color: var(--surface-text);
+  border-color: var(--surface-border);
+}

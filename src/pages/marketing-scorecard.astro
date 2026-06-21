@@ -1,0 +1,216 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/ui/Section.astro";
+import Layout from "../components/ui/Layout.astro";
+import Col from "../components/ui/Col.astro";
+import Heading from "../components/ui/Heading.astro";
+import Text from "../components/ui/Text.astro";
+import Button from "../components/ui/Button.astro";
+import Grid from "../components/ui/Grid.astro";
+import Visual from "../components/ui/Visual.astro";
+import Scorecard from "../components/MarketingScorecard";
+
+import heroBG from "../assets/marketing-scorecard/scorecard-background-4.webp";
+import Overlay from "../components/ui/Overlay.astro";
+
+export const prerender = true;
+
+const ROOMS = [
+  { icon: "📐", name: "The Blueprint", subtitle: "Your Messaging Strategy" },
+  { icon: "🏠", name: "The House", subtitle: "Your Website" },
+  { icon: "🪴", name: "The Front Porch", subtitle: "Your Content" },
+  { icon: "🪟", name: "The Welcome Mat", subtitle: "Your Lead Magnet" },
+  { icon: "📬", name: "The Mailbox", subtitle: "Your Newsletter & Email" },
+  { icon: "🚪", name: "The Front Door", subtitle: "Your Booking System" },
+  { icon: "📊", name: "The Meter Box", subtitle: "Your Analytics" },
+];
+
+const BENEFITS = [
+  {
+    title: "Get clarity fast",
+    text: "See what's strong in your marketing and what's holding you back.",
+  },
+  {
+    title: "See what's missing",
+    text: "Identify gaps that are costing you leads and growth.",
+  },
+  {
+    title: "Prioritize with confidence",
+    text: "Know exactly where to focus first for the biggest impact.",
+  },
+];
+
+const TRUST_BADGES = [
+  { title: "100% Free", text: "No cost. No catch. Just clarity." },
+  { title: "5 Minutes", text: "Quick, focused, valuable." },
+  {
+    title: "Actionable Results",
+    text: "Clear next steps you can use right away.",
+  },
+];
+---
+
+<BaseLayout
+  title="Marketing Foundation Scorecard | CL Creative"
+  description="Your marketing isn't bringing in leads and you can't figure out why. Score yourself across 7 areas in 5 minutes. Free self-assessment for growth-stage business owners."
+  theme="light"
+>
+  <Section id="scorecard-section">
+    <Fragment slot="background">
+      <Visual src={heroBG} alt="" variant="background" priority />
+    </Fragment>
+
+    <!-- Stacked phases — both occupy the same grid cell. CSS fades between
+         them based on the data-phase attribute on the stack -->
+    <div class="scorecard_phase_stack" data-phase="hero">
+      <!-- HERO PHASE -->
+      <div class="scorecard_phase scorecard_phase_hero">
+        <Layout variant="columns" ratio="6-4" verticalAlign="center">
+          <!-- Left column -->
+          <Col slot="col1">
+            <p class="scorecard_hero_eyebrow u-text-style-eyebrow">
+              <span class="scorecard_hero_eyebrow_dot" aria-hidden="true"
+              ></span>
+              The Marketing Foundation Scorecard
+            </p>
+
+            <Heading tag="h1" variant="h1">
+              Your marketing isn't bringing in leads and you can't figure out
+              why
+            </Heading>
+
+            <Text variant="large">
+              Answer a few quick questions across 7 key areas and get a
+              personalized breakdown of what's working, what's not, and what to
+              fix first — in about 5 minutes.
+            </Text>
+
+            <Grid
+              largeColumns={3}
+              mediumColumns={3}
+              smallColumns={1}
+              rowGap={4}
+            >
+              {
+                BENEFITS.map((b) => (
+                  <div class="scorecard_hero_benefit">
+                    <div class="scorecard_hero_benefit_icon" aria-hidden="true">
+                      ✓
+                    </div>
+                    <p class="scorecard_hero_benefit_title u-text-style-regular">
+                      <strong>{b.title}</strong>
+                    </p>
+                    <p class="scorecard_hero_benefit_text u-text-style-small u-text-style-muted">
+                      {b.text}
+                    </p>
+                  </div>
+                ))
+              }
+            </Grid>
+
+            <div class="u-button-wrapper">
+              <Button
+                data-scorecard-start
+                href="#scorecard-section"
+                ariaLabel="Start the scorecard"
+              >
+                Start the Scorecard
+                <svg
+                  slot="icon"
+                  viewBox="0 0 14 10"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  class="scorecard_hero_btn_arrow"
+                >
+                  <line x1="0" y1="5" x2="12" y2="5"></line>
+                  <polyline points="8,1 12,5 8,9"></polyline>
+                </svg>
+              </Button>
+            </div>
+
+            <p
+              class="scorecard_hero_microcopy u-text-style-small u-text-style-muted"
+            >
+              <span aria-hidden="true">⏱</span> Takes 5 minutes
+              <span aria-hidden="true" class="scorecard_hero_dot">·</span>
+              <span aria-hidden="true">🔒</span> Get your personalized score and next
+              steps by email.
+            </p>
+          </Col>
+
+          <!-- Right column -->
+          <div slot="col2" class="scorecard_hero_rooms_card">
+            <p class="scorecard_hero_rooms_label u-text-style-eyebrow">
+              You'll score 7 rooms
+            </p>
+            <ul class="scorecard_rooms_list">
+              {
+                ROOMS.map((r) => (
+                  <li class="scorecard_rooms_item">
+                    <span class="scorecard_rooms_icon" aria-hidden="true">
+                      {r.icon}
+                    </span>
+                    <span class="scorecard_rooms_name">{r.name}</span>
+                    <span class="scorecard_rooms_sub u-text-style-small u-text-style-muted">
+                      — {r.subtitle}
+                    </span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </Layout>
+
+        <!-- Trust badges row, inside the hero phase -->
+        <div class="scorecard_trust_card u-margin-top-5">
+          <Grid largeColumns={3} mediumColumns={3} smallColumns={1} rowGap={5}>
+            {
+              TRUST_BADGES.map((t) => (
+                <div class="scorecard_trust_item">
+                  <div class="scorecard_trust_icon" aria-hidden="true">
+                    ✓
+                  </div>
+                  <div class="scorecard_trust_body">
+                    <p class="scorecard_trust_title u-text-style-regular">
+                      <strong>{t.title}</strong>
+                    </p>
+                    <p class="scorecard_trust_text u-text-style-small u-text-style-muted">
+                      {t.text}
+                    </p>
+                  </div>
+                </div>
+              ))
+            }
+          </Grid>
+        </div>
+      </div>
+
+      <!-- QUIZ PHASE -->
+      <div class="scorecard_phase scorecard_phase_quiz">
+        <Scorecard client:load skipIntro />
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<script>
+  const stack = document.querySelector<HTMLElement>(".scorecard_phase_stack");
+  const startButtons = document.querySelectorAll("[data-scorecard-start]");
+  const section = document.getElementById("scorecard-section");
+
+  startButtons.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      if (!stack) return;
+      e.preventDefault();
+      stack.setAttribute("data-phase", "quiz");
+      // Smooth-scroll to the top of the section so the quiz lines up with
+      // the viewport (the hero may have been taller than the quiz).
+      requestAnimationFrame(() => {
+        section?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+  });
+</script>

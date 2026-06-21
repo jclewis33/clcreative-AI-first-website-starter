@@ -1,0 +1,139 @@
+/* ==========================================================================
+   NAV VARIABLES
+   ==========================================================================
+   Navigation-specific sizing and spacing. Adjust these to restyle
+   the navigation without touching nav.css.
+
+   ┌────────────────────────────────────────────────────────────────────────┐
+   │  PILL-SHAPED  vs  FULL-WIDTH                                         │
+   │                                                                      │
+   │  The navbar supports two layouts controlled entirely by variables.    │
+   │  To switch, change all four values below together.                   │
+   │                                                                      │
+   │  ┌──────────────────────────────┬──────────────────────────────────┐  │
+   │  │  PILL-SHAPED                 │  FULL-WIDTH (current)           │  │
+   │  ├──────────────────────────────┼──────────────────────────────────┤  │
+   │  │  Floats as a rounded bar     │  Stretches edge-to-edge         │  │
+   │  │  with padding around it.     │  with no outer gap.             │  │
+   │  │                              │                                 │  │
+   │  │  --nav-spacing-outer-        │  --nav-spacing-outer-           │  │
+   │  │    horizontal: site-margin   │    horizontal: 0px  ★           │  │
+   │  │  --nav-spacing-outer-        │  --nav-spacing-outer-           │  │
+   │  │    vertical:   .75rem        │    vertical:   0px  ★           │  │
+   │  │  --nav-spacing-inner-        │  --nav-spacing-inner-           │  │
+   │  │    horizontal: site-gutter   │    horizontal: site-margin  ★  │  │
+   │  │  --nav-radius: radius-main   │  --nav-radius: radius-none  ★  │  │
+   │  └──────────────────────────────┴──────────────────────────────────┘  │
+   │                                                                      │
+   │  Also update in themes.css:                                          │
+   │    --nav-background — pill typically uses --background-2;            │
+   │    full-width typically uses a solid color (e.g. --color-dark-900).  │
+   │                                                                      │
+   │  Also add theme="dark" (or light/brand) to <Navbar> in              │
+   │  BaseLayout.astro so text/link colors match the background.          │
+   │                                                                      │
+   │  3-TIER STRUCTURE (nav.css):                                         │
+   │    .nav_wrap  — sticky positioning, transparent                      │
+   │    .nav_inner — full-width background, border-radius, side padding   │
+   │                 (padding driven by --nav-spacing-inner-horizontal)   │
+   │    .nav_contain — max-width centering + flex row layout              │
+   │                   (max-width driven by --nav-max-width-inner)        │
+   └────────────────────────────────────────────────────────────────────────┘
+
+   ┌────────────────────────────────────────────────────────────────────────┐
+   │  BANNER                                                              │
+   │                                                                      │
+   │  The announcement banner sits above the nav as a separate fixed bar. │
+   │  Configure it in BaseLayout.astro (bannerText / bannerHref).         │
+   │  Set bannerText to "" to disable.                                    │
+   │                                                                      │
+   │  Dismissal persists via sessionStorage keyed on bannerId prop.       │
+   │  --nav-banner-height is set to 0rem by default and overridden to     │
+   │  2.5rem by html.is-has-banner when a banner is present.              │
+   └────────────────────────────────────────────────────────────────────────┘
+
+   ========================================================================== */
+
+:root {
+
+  /* =====================================================
+     OUTER WRAP
+     Outermost padding that positions the bar over the page.
+
+     ★ These three control PILL vs FULL-WIDTH.
+       Change all three together.
+     ===================================================== */
+
+  --nav-max-width-outer:          100%;
+
+  /* ★ PILL ↔ FULL-WIDTH  — horizontal space around the bar
+         pill:       var(--site-margin)
+         full-width: 0px                                   */
+  --nav-spacing-outer-horizontal: 0px;
+
+  /* ★ PILL ↔ FULL-WIDTH  — vertical space around the bar
+         pill:       .75rem
+         full-width: 0px                                   */
+  --nav-spacing-outer-vertical:   0px;
+
+  /* =====================================================
+     INNER BAR
+     The visible bar that holds nav elements.
+     ===================================================== */
+
+  --nav-max-width-inner:          var(--max-width-main);
+
+  /* ★ PILL ↔ FULL-WIDTH  — padding inside the colored bar (nav_inner).
+         pill:       var(--site-gutter)
+         full-width: var(--site-margin)                     */
+  --nav-spacing-inner-horizontal: var(--site-margin);
+
+  /* ★ PILL ↔ FULL-WIDTH  — border radius of the bar
+         pill:       var(--radius-main)
+         full-width: var(--radius-none)                    */
+  --nav-radius:                   var(--radius-none);
+
+  /* =====================================================
+     HEIGHT
+     --nav-height-total is used by page-top padding to
+     account for the fixed nav + banner.
+     ===================================================== */
+
+  --nav-height:        3.5rem;   /* 56px — inner bar height                    */
+  --nav-banner-height: 0rem;     /* overridden by html.is-has-banner below     */
+
+  --nav-height-total: calc(
+    var(--nav-height) +
+    var(--nav-spacing-outer-vertical) * 2 +
+    var(--nav-banner-height)
+  );
+
+  /* Banner background + text color are in themes.css
+     (--nav-banner-background, --nav-banner-color)         */
+
+  /* =====================================================
+     HAMBURGER
+     ===================================================== */
+
+  --nav-hamburger-thickness: 0.125rem;   /* 2px  */
+  --nav-hamburger-gap:       0.375rem;   /* 6px  */
+
+  /* =====================================================
+     DROPDOWN
+     ===================================================== */
+
+  --nav-dropdown-radius:     var(--radius-main);
+  --nav-dropdown-padding:    var(--space-3);
+  --nav-dropdown-gap:        var(--space-1);
+  --nav-dropdown-background: var(--nav-background);
+  --nav-dropdown-min-width:  12rem;
+  --nav-dropdown-offset:     var(--space-3);
+
+}
+
+
+/* When banner is visible, include its height in nav offset calculations.
+   JS refines this to the actual measured height (for text that wraps). */
+html.is-has-banner {
+  --nav-banner-height: 2.5rem;
+}

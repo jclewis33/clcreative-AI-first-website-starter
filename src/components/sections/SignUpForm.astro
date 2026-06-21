@@ -1,0 +1,81 @@
+---
+/**
+ * SignUpForm — centered dark card with heading, subtext, and HoneyBook embed form.
+ *
+ * Renders a dark rounded card inside a light section. The form is loaded
+ * via HoneyBook's external script — no custom form markup needed.
+ *
+ * @example Default usage
+ * ```astro
+ * <SignUpForm />
+ * ```
+ *
+ * @example With anchor id
+ * ```astro
+ * <SignUpForm id="signup" />
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import ContentWrapper from "../ui/ContentWrapper.astro";
+import HoneyBookEmbed from "../ui/HoneyBookEmbed.astro";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **SignUpForm props:**
+   * - `theme` — 'light' | 'dark' | 'brand' (default 'light')
+   * - `padding` / `paddingTop` / `paddingBottom` — section padding
+   * - `id` — section id for anchor links
+   * - `class` — extra classes
+   */
+  docs?: string;
+
+  theme?: "light" | "dark" | "brand";
+  padding?: PaddingValue;
+  paddingTop?: PaddingValue;
+  paddingBottom?: PaddingValue;
+  id?: string;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  docs,
+  theme = "light",
+  padding = "main",
+  paddingTop = padding,
+  paddingBottom = padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<Section
+  theme={theme}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  id={id}
+  container="narrow"
+  class={className}
+  {...rest}
+>
+  <div data-fade-in class="signup_card" data-theme="dark">
+    <ContentWrapper align="center">
+      <Heading variant="h3"
+        >Ready to build a website that will help you grow?</Heading
+      >
+      <Text align="center"
+        >We dedicate our full attention and expertise to a select few projects
+        each month, ensuring personalized service and results. Fill out the form
+        to apply to work with us on your next project.</Text
+      >
+    </ContentWrapper>
+
+    <HoneyBookEmbed class="signup_form" />
+  </div>
+</Section>

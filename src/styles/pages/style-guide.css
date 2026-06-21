@@ -1,0 +1,468 @@
+/* ==========================================================================
+   STYLE GUIDE PAGE
+   src/styles/pages/style-guide.css
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------
+   PAGE LAYOUT — sticky sidebar + scrollable content
+   ----------------------------------------------------------------------- */
+
+.styleguide_layout {
+  display: grid;
+  grid-template-columns: 14rem 1fr;
+  align-items: start;
+  gap: var(--site-gutter);
+}
+
+@media (max-width: 960px) {
+  .styleguide_layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -----------------------------------------------------------------------
+   SIDEBAR NAV
+   ----------------------------------------------------------------------- */
+
+.styleguide_nav {
+  position: sticky;
+  top: calc(var(--nav-height-total) + 1rem);
+  overflow-y: auto;
+  max-height: calc(100svh - var(--nav-height-total) - 2rem);
+  padding-bottom: var(--space-6);
+}
+
+@media (max-width: 960px) {
+  .styleguide_nav {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+.styleguide_nav_card {
+  background-color: var(--background-2);
+  border-radius: var(--radius-main);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+}
+
+.styleguide_nav_title {
+  font-size: var(--text-small-size);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  opacity: 0.5;
+  margin-bottom: var(--space-3);
+}
+
+.styleguide_nav_list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.styleguide_nav_link {
+  display: block;
+  font-size: var(--text-small-size);
+  color: var(--text);
+  opacity: 0.7;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-small);
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+  text-decoration: none;
+}
+
+.styleguide_nav_link:hover {
+  background-color: var(--border);
+  opacity: 1;
+  color: var(--text);
+}
+
+/* Parent-level toggle links (siblings of .styleguide_nav_sub) */
+.styleguide_nav_list > li > .styleguide_nav_link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.styleguide_nav_list > li > .styleguide_nav_link::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.styleguide_nav_list > li > .styleguide_nav_link.is-active {
+  opacity: 1;
+  background-color: var(--border);
+}
+
+.styleguide_nav_list > li > .styleguide_nav_link.is-active::after {
+  transform: rotate(45deg);
+}
+
+.styleguide_nav_sub {
+  list-style: none;
+  padding: 0 0 0 var(--space-3);
+  margin: 0;
+  display: none;
+  flex-direction: column;
+  gap: 0.125rem;
+  overflow: hidden;
+  padding-top: var(--space-1);
+}
+
+.styleguide_nav_sub.is-open {
+  display: flex;
+}
+
+.styleguide_nav_sub .styleguide_nav_link {
+  font-size: 0.75rem;
+}
+
+/* -----------------------------------------------------------------------
+   CONTENT AREA
+   ----------------------------------------------------------------------- */
+
+.styleguide_content {
+  min-width: 0;
+}
+
+/* -----------------------------------------------------------------------
+   SECTION HEADINGS
+   ----------------------------------------------------------------------- */
+
+.styleguide_section_title {
+  font-size: var(--h2-size);
+  font-weight: var(--h2-weight);
+  line-height: var(--h2-line-height);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.styleguide_subsection_title {
+  font-size: var(--h4-size);
+  font-weight: var(--h4-weight);
+  line-height: var(--h4-line-height);
+  margin-bottom: var(--space-4);
+  margin-top: var(--space-7);
+  color: var(--text);
+  opacity: 0.7;
+}
+
+.styleguide_subsection_title:first-child {
+  margin-top: 0;
+}
+
+/* -----------------------------------------------------------------------
+   DEMO CARD WRAPPER
+   ----------------------------------------------------------------------- */
+
+.styleguide_card_wrap {
+  background-color: var(--background-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-main);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.styleguide_card_wrap.is-row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.styleguide_card_wrap.is-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: var(--space-3);
+}
+
+/* -----------------------------------------------------------------------
+   TAG / LABEL BADGE
+   ----------------------------------------------------------------------- */
+
+.tag_wrap {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  padding: 0.15rem 0.5rem;
+  font-size: var(--text-regular-size);
+  font-family: var(--font-primary);
+  color: var(--text);
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+/* -----------------------------------------------------------------------
+   COLOR SWATCH
+   ----------------------------------------------------------------------- */
+
+.styleguide_swatch_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  align-items: flex-start;
+}
+
+.styleguide_swatch {
+  width: 100%;
+  aspect-ratio: 1 / 0.6;
+  border-radius: var(--radius-small);
+  border: 1px solid var(--border);
+}
+
+.styleguide_swatch_label {
+  font-size: var(--text-small-size);
+  font-family: var(--font-primary);
+  opacity: 0.8;
+}
+
+/* -----------------------------------------------------------------------
+   THEME PREVIEW CARD
+   ----------------------------------------------------------------------- */
+
+.styleguide_theme_card {
+  border-radius: var(--radius-main);
+  padding: var(--space-5);
+  background-color: var(--background);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* -----------------------------------------------------------------------
+   SPACING SWATCH
+   ----------------------------------------------------------------------- */
+
+.styleguide_space_bar {
+  height: 1rem;
+  background-color: var(--color-brand-500);
+  border-radius: 2px;
+  opacity: 0.75;
+}
+
+.styleguide_space_row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.styleguide_space_row .styleguide_space_bar {
+  flex-shrink: 0;
+}
+
+/* -----------------------------------------------------------------------
+   RADIUS DEMO
+   ----------------------------------------------------------------------- */
+
+.styleguide_radius_box {
+  width: 4rem;
+  aspect-ratio: 1;
+  background-color: var(--color-brand-500);
+  opacity: 0.75;
+}
+
+/* -----------------------------------------------------------------------
+   SHADOW DEMO
+   ----------------------------------------------------------------------- */
+
+.styleguide_shadow_box {
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  background-color: var(--background);
+  border-radius: var(--radius-main);
+}
+
+/* -----------------------------------------------------------------------
+   SECTION OFFSET (for sticky nav)
+   ----------------------------------------------------------------------- */
+
+.styleguide_section {
+  scroll-margin-top: calc(var(--nav-height-total) + 1.5rem);
+  margin-bottom: var(--space-8);
+}
+
+.styleguide_section [id] {
+  scroll-margin-top: calc(var(--nav-height-total) + 1.5rem);
+}
+
+/* -----------------------------------------------------------------------
+   PAGE HEADER
+   ----------------------------------------------------------------------- */
+
+.styleguide_page_header {
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-6);
+  border-bottom: 2px solid var(--border);
+}
+
+/* -----------------------------------------------------------------------
+   COMPONENT DEMO BOX
+   ----------------------------------------------------------------------- */
+
+.styleguide_component_wrap {
+  background-color: var(--background);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-main);
+  padding: var(--space-5);
+}
+
+/* -----------------------------------------------------------------------
+   ICON DEMO
+   ----------------------------------------------------------------------- */
+
+.styleguide_icon_item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+}
+
+.styleguide_icon_item svg {
+  display: block;
+}
+
+/* -----------------------------------------------------------------------
+   GRID DEMO CELLS
+   ----------------------------------------------------------------------- */
+
+.styleguide_grid_cell {
+  background-color: var(--text);
+  opacity: 0.15;
+  border-radius: var(--radius-small);
+  height: 3rem;
+}
+
+/* Labeled grid cell — centered text, visible background */
+.styleguide_grid_cell.is-labeled {
+  background-color: var(--text);
+  opacity: 0.15;
+  border-radius: var(--radius-small);
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-small-size);
+  font-weight: var(--font-weight-medium);
+}
+
+/* -----------------------------------------------------------------------
+   OVERFLOW DEMO
+   ----------------------------------------------------------------------- */
+
+.styleguide_overflow_container {
+  width: 12rem;
+  height: 6rem;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-small);
+  position: relative;
+}
+
+.styleguide_overflow_child {
+  width: 18rem;
+  height: 9rem;
+  background-color: var(--color-brand-500);
+  opacity: 0.5;
+  border-radius: var(--radius-small);
+}
+
+/* -----------------------------------------------------------------------
+   POSITION DEMO
+   ----------------------------------------------------------------------- */
+
+.styleguide_position_container {
+  position: relative;
+  min-height: 10rem;
+  background-color: var(--background);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-small);
+  padding: var(--space-3);
+}
+
+.styleguide_position_box {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-small);
+  font-size: var(--text-small-size);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-light-100);
+}
+
+/* -----------------------------------------------------------------------
+   PADDING DEMO
+   ----------------------------------------------------------------------- */
+
+.styleguide_padding_demo {
+  background-color: var(--color-brand-500);
+  opacity: 0.75;
+  border-radius: var(--radius-small);
+  display: inline-block;
+}
+
+.styleguide_padding_demo_inner {
+  background-color: var(--background);
+  border-radius: 2px;
+  min-width: 3rem;
+  min-height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-tiny-size);
+  opacity: 1;
+}
+
+/* -----------------------------------------------------------------------
+   MARGIN DEMO
+   ----------------------------------------------------------------------- */
+
+.styleguide_margin_demo_box {
+  background-color: var(--text);
+  opacity: 0.12;
+  border-radius: var(--radius-small);
+  height: 2rem;
+  width: 100%;
+}
+
+/* -----------------------------------------------------------------------
+   CONTAINER DEMO
+   ----------------------------------------------------------------------- */
+
+.styleguide_container_demo {
+  background-color: var(--text);
+  opacity: 0.12;
+  border-radius: var(--radius-small);
+  height: 2rem;
+}
+
+/* -----------------------------------------------------------------------
+   DIVIDER
+   ----------------------------------------------------------------------- */
+
+.styleguide_divider {
+  height: 1px;
+  background-color: var(--border);
+  margin: var(--space-6) 0;
+}

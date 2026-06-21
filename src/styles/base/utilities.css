@@ -1,0 +1,115 @@
+/* ==========================================================================
+   GENERAL UTILITIES & ELEMENT STYLES
+   ========================================================================== */
+
+/* Allow text elements to inherit typography properties from parents */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+label {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-wrap: inherit;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Set all sections to a default of relative */
+section {
+  position: relative;
+}
+
+/* Removes Styles from Button Elements 
+   Important when using the Global Clickable Component for buttons */
+button {
+  background-color: unset;
+  padding: unset;
+  text-align: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+/* Button reset so you can use a button to wrap items without any button styling. This allows for the accessibility of buttons while ensuring no styles are applied */
+.u-button-reset {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  line-height: 0; /* icons often look better with tight line-height */
+  cursor: pointer;
+  height: fit-content;
+}
+
+/* Screen reader only — visible to assistive tech, hidden visually */
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Heading accent — applies theme accent color to <strong> within the element */
+.u-heading-accent strong {
+  color: var(--heading-accent);
+  font-weight: inherit;
+}
+
+/* Color utilities live in visual-utilities.css so they load *after*
+   base/typography.css and can override text-style color defaults
+   (e.g. the eyebrow's `color: var(--heading-accent)`). */
+
+/* Background — transparent only (theme-aware bg-1/2/skeleton live in visual-utilities.css) */
+.u-background-transparent { background-color: transparent; }
+
+/* Min-height */
+.u-min-height-screen { min-height: 100svh; }
+
+/* ==========================================================================
+   MARGIN TRIM — first-child / last-child margin removal
+   ==========================================================================
+   Automatically removes margin-top from the first visible child and
+   margin-bottom from the last visible child inside containers and
+   layout columns. Prevents unwanted extra space at the top and bottom
+   of a wrapper.
+
+   Targets:
+     .u-margin-trim            — explicit opt-in on any element
+     [class*="u-container"]    — all container variants
+     [class*="u-layout-column"]— Layout component columns
+     .u-content-wrapper        — content alignment wrapper
+     .u-rich-text              — CMS / portable text wrapper
+
+   Skip list (ignored when determining first / last):
+     .u-cover-absolute — absolutely positioned overlays (e.g. clickable overlays)
+     .u-ignore-trim    — explicit opt-out for any child
+
+   Margin-trim pattern, simplified for Astro (no Webflow condition-invisible).
+   ========================================================================== */
+
+/* First visible child — remove top margin */
+:is(.u-margin-trim, [class*="u-container"], [class*="u-layout-column"], .u-content-wrapper, .u-rich-text) > :not(:not(.u-cover-absolute, .u-ignore-trim) ~ :not(.u-cover-absolute, .u-ignore-trim)) {
+  margin-top: 0;
+}
+
+/* Last visible child — remove bottom margin */
+:is(.u-margin-trim, [class*="u-container"], [class*="u-layout-column"], .u-content-wrapper, .u-rich-text) > :not(:has(~ :not(.u-cover-absolute, .u-ignore-trim))) {
+  margin-bottom: 0;
+}

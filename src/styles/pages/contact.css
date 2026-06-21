@@ -1,0 +1,68 @@
+/* ==========================================================================
+   CONTACT PAGE
+   ========================================================================== */
+
+/* Contact info list — vertical stack with spacing, pinned to bottom */
+.contact_info_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-6);
+}
+
+/* Individual contact item — icon + text row */
+.contact_info_item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Prevent icon from shrinking */
+.contact_info_icon {
+  flex-shrink: 0;
+}
+
+/* Clickable contact items (email, phone) */
+.contact_info_link {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 300ms;
+}
+
+.contact_info_link.is-underline .contact_info_text {
+  text-decoration: underline;
+}
+
+.contact_info_link:hover {
+  opacity: 0.75;
+}
+
+/* ── Here's What Happens Next — full-reversed breakout ──────────────────── */
+
+.contact_next_content {
+  padding-block: var(--section-space-xsmall);
+}
+
+@media (width < 55em) {
+  .contact_next_content {
+    padding-block: 0;
+  }
+
+  .contact_next_section {
+    padding-block: var(--section-space-small);
+  }
+}
+
+/* HoneyBook form card */
+.contact_form_wrap {
+  background-color: var(--background-2);
+  border-radius: var(--radius-main);
+  padding: var(--space-5);
+}
+
+@container (max-width: 39em) {
+  .contact_form_wrap {
+    padding: var(--space-2);
+  }
+}

@@ -1,0 +1,122 @@
+---
+/**
+ * ComparisonSection — "Same Designer Hours. Two Very Different Websites."
+ *
+ * Side-by-side comparison of a looks-only website vs. a clear-message website.
+ * All copy is identical across the location pages, so everything is a default;
+ * a page typically only passes `leftImage` + `rightImage`.
+ */
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Visual from "../ui/Visual.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Button from "../ui/Button.astro";
+import ContentWrapper from "../ui/ContentWrapper.astro";
+
+interface Props {
+  /**
+   * **ComparisonSection props:**
+   * - `leftImage` / `rightImage` — the two comparison Visuals (required)
+   * - `leftAlt` / `rightAlt` — alt text (sensible defaults)
+   * - `title`, `left*`, `right*`, `buttonText`, `buttonHref` — copy overrides
+   */
+  docs?: string;
+
+  /** Section heading. */
+  title?: string;
+
+  /** Left (looks-only) Visual — required. */
+  leftImage: ImageMetadata | string;
+  /** Left Visual alt text. */
+  leftAlt?: string;
+  /** Left column heading. */
+  leftHeading?: string;
+  /** Left column tagline. */
+  leftTagline?: string;
+  /** Left column bullet list. */
+  leftItems?: string[];
+
+  /** Right (clear-message) Visual — required. */
+  rightImage: ImageMetadata | string;
+  /** Right Visual alt text. */
+  rightAlt?: string;
+  /** Right column heading. */
+  rightHeading?: string;
+  /** Right column tagline. */
+  rightTagline?: string;
+  /** Right column bullet list. */
+  rightItems?: string[];
+
+  /** CTA button label. @default 'Book a Strategy Call' */
+  buttonText?: string;
+  /** CTA button link. @default '/book-a-call' */
+  buttonHref?: string;
+
+  [key: string]: any;
+}
+
+const {
+  docs,
+  title = "Same Designer Hours. Two Very Different Websites.",
+  leftImage,
+  leftAlt = "A website built on looks alone",
+  leftHeading = "A website built on looks alone",
+  leftTagline = "You paid for art, not a sales tool.",
+  leftItems = [
+    "It might win compliments, but it doesn't bring in leads",
+    'Visitors land, think "nice," and leave, because nothing told them it was for them',
+    "Six months later you're back at the same problem with the same budget",
+  ],
+  rightImage,
+  rightAlt = "A website built on a clear message",
+  rightHeading = "A website built on a clear message",
+  rightTagline = "It works like your best salesperson.",
+  rightItems = [
+    "The right customer knows they're in the right place in the first scroll",
+    "The headline names their problem in their own words",
+    "The page follows their decision, not your feature list",
+    'Every photo and choice tells the right buyer "this is for you"',
+  ],
+  buttonText = "Book a Strategy Call",
+  buttonHref = "/book-a-call",
+  ...rest
+} = Astro.props;
+---
+
+<Section {...rest}>
+  <ContentWrapper align="center">
+    <Heading data-split-text tag="h2" variant="h2" maxWidth="25ch">
+      {title}
+    </Heading>
+  </ContentWrapper>
+
+  <Layout data-fade-list variant="columns" verticalAlign="center">
+    <Visual slot="col1" src={leftImage} alt={leftAlt} ratio="landscape" />
+    <Col slot="col2">
+      <Heading tag="h3" variant="h3">{leftHeading}</Heading>
+      <Text variant="xlarge">{leftTagline}</Text>
+      <ul class="u-list">
+        {leftItems.map((item) => <li>{item}</li>)}
+      </ul>
+    </Col>
+  </Layout>
+
+  <Layout data-fade-list variant="columns-reversed" verticalAlign="center">
+    <Visual slot="col1" src={rightImage} alt={rightAlt} ratio="landscape" />
+    <Col slot="col2">
+      <Heading tag="h3" variant="h3">{rightHeading}</Heading>
+      <Text variant="xlarge">{rightTagline}</Text>
+      <ul class="u-list">
+        {rightItems.map((item) => <li>{item}</li>)}
+      </ul>
+    </Col>
+  </Layout>
+
+  <ContentWrapper align="center" data-fade-in>
+    <div class="u-button-wrapper">
+      <Button href={buttonHref} ariaLabel={buttonText}>{buttonText}</Button>
+    </div>
+  </ContentWrapper>
+</Section>

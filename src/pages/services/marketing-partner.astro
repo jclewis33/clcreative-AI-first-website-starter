@@ -1,0 +1,646 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { serviceFaqJsonLd } from "../../lib/jsonld";
+import { SITE } from "../../config/site";
+import Section from "../../components/ui/Section.astro";
+import Layout from "../../components/ui/Layout.astro";
+import Col from "../../components/ui/Col.astro";
+import Heading from "../../components/ui/Heading.astro";
+import Text from "../../components/ui/Text.astro";
+import Button from "../../components/ui/Button.astro";
+import Visual from "../../components/ui/Visual.astro";
+import Overlay from "../../components/ui/Overlay.astro";
+import ContentWrapper from "../../components/ui/ContentWrapper.astro";
+
+import Grid from "../../components/ui/Grid.astro";
+import PricingCard from "../../components/ui/PricingCard.astro";
+import PricingItem from "../../components/ui/PricingItem.astro";
+import Services from "../../components/sections/Services.astro";
+
+import CTASection from "../../components/sections/CTASection.astro";
+import FAQ from "../../components/sections/FAQ.astro";
+import { marketingPartnerFaqs } from "../../data/faqs";
+
+import heroSmall from "../../assets/marketing-partner/marketing-partner-hero-small.webp";
+import heroLarge from "../../assets/marketing-partner/marketing-partner-hero-large.webp";
+import soundLikeImg from "../../assets/marketing-partner/marketing-partner-sound-like.webp";
+import playbookImg from "../../assets/marketing-partner/marketing-partner-playbook.webp";
+import differentImg from "../../assets/marketing-partner/marketing-partner-different.webp";
+import twelveMonthsImg from "../../assets/marketing-partner/marketing-partner-twelve-months.webp";
+import cardBgImg from "../../assets/marketing-partner/marketing-partner-card-background.webp";
+
+import "../../styles/pages/marketing-partner.css";
+
+const pageUrl = `${SITE.url}/services/marketing-partner`;
+
+// Per-page Service + FAQPage schema. LocalBusiness lives sitewide in
+// BaseLayout; referenced here via provider.@id.
+const schemaGraph = serviceFaqJsonLd({
+  pageUrl,
+  serviceType: "Marketing",
+  name: "Marketing Partner",
+  description:
+    "Your designer built the site, then disappeared. We stay. We run marketing with you so your website grows your business.",
+  audience: { audienceType: "Growth-stage businesses ready to scale" },
+  faqs: marketingPartnerFaqs,
+});
+---
+
+<BaseLayout
+  title="Marketing Partner | CL Creative"
+  description="Your designer built the site, then disappeared. We stay. We run marketing with you so your website grows your business."
+  canonical={pageUrl}
+  theme="light"
+  schema={schemaGraph}
+>
+  <!-- Hero -->
+  <Section>
+    <Layout variant="columns" verticalAlign="stretch">
+      <Heading
+        data-split-text
+        data-prevent-flicker="true"
+        slot="col1"
+        tag="h1"
+        variant="h1"
+      >
+        Stop running marketing alone. Partner with us. Grow your business.
+      </Heading>
+      <div
+        slot="col2"
+        class="u-display-flex u-flex-direction-column u-justify-content-end u-gap-5"
+      >
+        <Text
+          data-fade-up
+          data-prevent-flicker="true"
+          data-delay="0.2"
+          variant="large"
+        >
+          You hired someone to design the site. They built it and disappeared.
+          Now it's on you to market and run your business. We're the partner
+          that stays — running marketing with you, every week.
+        </Text>
+        <div
+          data-fade-up
+          data-prevent-flicker="true"
+          data-delay="0.4"
+          class="u-button-wrapper"
+        >
+          <Button href="/book-a-call" ariaLabel="Let's fix your marketing"
+            >Let's Fix Your Marketing</Button
+          >
+          <Button
+            variant="secondary"
+            href="/marketing-scorecard"
+            ariaLabel="Start with a free Marketing Health Quiz"
+            >Free Marketing Health Quiz</Button
+          >
+        </div>
+      </div>
+    </Layout>
+
+    <Layout
+      data-prevent-flicker="true"
+      data-fade-list
+      variant="columns"
+      ratio="1-3"
+    >
+      <Visual
+        slot="col1"
+        src={heroSmall}
+        alt="Marketing partner working with a client on her laptop"
+        ratio="tall"
+      />
+      <Visual
+        slot="col2"
+        class="u-padding-top-8"
+        src={heroLarge}
+        alt="Founder reviewing marketing strategy at a cafe"
+        ratio="landscape"
+      />
+    </Layout>
+  </Section>
+
+  <!-- Sound Like You? -->
+  <Section>
+    <ContentWrapper align="center">
+      <Heading
+        data-split-text
+        data-prevent-flicker="true"
+        tag="h2"
+        maxWidth="30ch"
+      >
+        Sound like you?
+      </Heading>
+    </ContentWrapper>
+
+    <Layout variant="full" verticalAlign="center">
+      <Col slot="col1">
+        <ul data-fade-list data-prevent-flicker="true" class="u-list">
+          <li>
+            Your designer built a great-looking site, then disappeared the day
+            it launched.
+          </li>
+          <li>
+            You're posting on social, sending the occasional newsletter, maybe
+            running an ad here and there. Nothing connects.
+          </li>
+          <li>
+            You're already running the team, payroll, sales, and delivery.
+            Marketing is the thing that keeps slipping to next week.
+          </li>
+          <li>
+            Everyone has an opinion about what you should do with your
+            marketing. None of them are doing it for you.
+          </li>
+          <li>
+            Every platform you've built an audience on has changed the rules at
+            least once.
+          </li>
+        </ul>
+      </Col>
+      <Visual
+        data-fade-up
+        data-prevent-flicker="true"
+        slot="col2"
+        src={soundLikeImg}
+        alt="Founder on a phone call between meetings"
+        ratio="landscape"
+        transparent
+      />
+    </Layout>
+  </Section>
+
+  <!-- You don't need another tool -->
+  <Section theme="brand">
+    <Heading
+      data-split-text
+      data-prevent-flicker="true"
+      tag="h2"
+      maxWidth="22ch"
+    >
+      You don't need another tool, you need a website that grows your business.
+      And a partner running it with you.
+    </Heading>
+
+    <Grid
+      data-fade-list
+      data-prevent-flicker="true"
+      largeColumns={3}
+      mediumColumns={1}
+      smallColumns={1}
+      rowGap={6}
+    >
+      <div class="marketing-partner_need_item">
+        <Heading maxWidth="30ch" tag="h3" variant="h5" marginBottom={0}>
+          You shouldn't have to grow alone.
+        </Heading>
+        <Text marginBottom={0}>
+          Or hire a full-time marketing team to effectively market your
+          business.
+        </Text>
+      </div>
+      <div class="marketing-partner_need_item">
+        <Heading maxWidth="30ch" tag="h3" variant="h5" marginBottom={0}>
+          Your business shouldn't own you.
+        </Heading>
+        <Text marginBottom={0}>
+          Marketing shouldn't steal your nights and weekends from you and your
+          family, or the life you built.
+        </Text>
+      </div>
+      <div class="marketing-partner_need_item">
+        <Heading maxWidth="30ch" tag="h3" variant="h5" marginBottom={0}>
+          You shouldn't have to rely on social.
+        </Heading>
+        <Text marginBottom={0}>
+          Social platforms change. Podcasts come and go. Algorithms shift.
+        </Text>
+      </div>
+    </Grid>
+  </Section>
+
+  <!-- Marketing Playbook -->
+  <Section theme="dark">
+    <Layout variant="columns" verticalAlign="start">
+      <Heading
+        data-split-text
+        data-prevent-flicker="true"
+        slot="col1"
+        tag="h2"
+        variant="h2"
+      >
+        We give you the marketing playbook for your website. Then we run it with
+        you.
+      </Heading>
+      <Text
+        data-fade-up
+        data-prevent-flicker="true"
+        data-delay="0.2"
+        slot="col2"
+      >
+        For a flat monthly retainer, we hand you a marketing playbook for your
+        website. Then we run it with you. Every month.
+      </Text>
+    </Layout>
+
+    <Layout variant="columns" verticalAlign="center">
+      <Col slot="col1">
+        <div data-fade-in data-prevent-flicker="true" class="u-rich-text">
+          <p>
+            We are not a vendor you check in with quarterly. Instead, we are a
+            marketing partner you work with every week. No full-time hire.
+          </p>
+          <p>
+            No depending on social platforms that change overnight. We use your
+            website as the hub of all your marketing.
+          </p>
+          <p>
+            You gain a stable asset that will keep growing your business year
+            after year. And the freedom to enjoy the life you have built for you
+            and your family.
+          </p>
+        </div>
+      </Col>
+      <Visual
+        data-fade-up
+        data-prevent-flicker="true"
+        slot="col2"
+        src={playbookImg}
+        alt="Marketing partner meeting with clients to review their strategy"
+        ratio="landscape"
+      />
+    </Layout>
+
+    <ContentWrapper align="center">
+      <div data-fade-up data-prevent-flicker="true" class="u-button-wrapper">
+        <Button href="/book-a-call" ariaLabel="Let's fix your marketing">
+          Let's Fix Your Marketing
+        </Button>
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- Different from an SEO Retainer -->
+  <Section padding="none" class="marketing-partner_different_section">
+    <Layout variant="full-reversed" verticalAlign="center">
+      <Col slot="col1">
+        <div class="marketing-partner_different_content">
+          <Heading
+            data-split-text
+            data-prevent-flicker="true"
+            maxWidth="30ch"
+            tag="h2"
+            variant="h2"
+          >
+            How this is different from an SEO retainer?
+          </Heading>
+          <div
+            data-fade-in
+            data-prevent-flicker="true"
+            class="marketing-partner_different_body"
+          >
+            <ContentWrapper>
+              <Text>
+                SEO is a tactic. Marketing Partner is the system that uses SEO
+                as one of its inputs.
+              </Text>
+              <Text>
+                An SEO retainer makes more people land on your site. Working
+                with a Marketing Partner does that and makes sure the site
+                converts them, the email nurtures them, the case studies prove
+                you, and the messaging is the same everywhere they meet you.
+              </Text>
+              <Button href="/book-a-call" ariaLabel="Let's fix your marketing">
+                Let's Fix Your Marketing
+              </Button>
+            </ContentWrapper>
+          </div>
+        </div>
+      </Col>
+      <Visual
+        data-fade-up
+        data-prevent-flicker="true"
+        radius="none"
+        slot="col2"
+        src={differentImg}
+        alt="Founder working from her laptop at home"
+        ratio="portrait"
+      />
+    </Layout>
+  </Section>
+
+  <!-- Two versions of the next twelve months -->
+  <Section gap={6}>
+    <Visual
+      data-fade-up
+      data-prevent-flicker="true"
+      src={twelveMonthsImg}
+      alt="Founder enjoying a calm morning at a coffee shop"
+      ratio="widescreen"
+      radius="main"
+    />
+
+    <ContentWrapper align="center">
+      <Heading
+        data-split-text
+        data-prevent-flicker="true"
+        tag="h2"
+        maxWidth="22ch"
+      >
+        Two versions of the next twelve months
+      </Heading>
+    </ContentWrapper>
+
+    <Grid
+      data-fade-list
+      data-prevent-flicker="true"
+      largeColumns={2}
+      mediumColumns={1}
+      rowGap={6}
+    >
+      <div class="marketing-partner_compare_card u-theme-brand">
+        <div class="marketing-partner_compare_card_header">
+          <Heading tag="h3" variant="h4" maxWidth="none" marginBottom={0}>
+            Without A Marketing Partner
+          </Heading>
+        </div>
+        <ul class="u-list">
+          <li>
+            The site keeps looking the same while your business changes around
+            it.
+          </li>
+          <li>
+            You keep piecing together social, email, and the occasional new page
+            yourself, or with a rotating cast of freelancers.
+          </li>
+          <li>
+            Every platform pivot (algorithm change, new social network, AI
+            search shift) is a fire drill.
+          </li>
+          <li>
+            Leads stay inconsistent. Some months are great. Others are quiet,
+            and you can't explain why.
+          </li>
+          <li>
+            Marketing keeps owning your nights and weekends. The business owns
+            you.
+          </li>
+        </ul>
+      </div>
+
+      <div class="marketing-partner_compare_card u-theme-dark">
+        <div class="marketing-partner_compare_card_header">
+          <Heading tag="h3" variant="h4" maxWidth="none" marginBottom={0}>
+            With A Marketing Partner
+          </Heading>
+        </div>
+        <ul class="u-list">
+          <li>
+            Your website grows your business and stays current with your offer,
+            your messaging, and how the business evolves.
+          </li>
+          <li>
+            Every channel points back to your website. The work compounds.
+          </li>
+          <li>
+            You stop rebuilding on rented land. Platforms can shift. Your
+            website doesn't.
+          </li>
+          <li>
+            Leads become predictable. Not because of one tactic, but because
+            someone is running marketing with you every week.
+          </li>
+          <li>
+            Marketing runs without you running it. You get your time back. Your
+            business stops owning you.
+          </li>
+        </ul>
+      </div>
+    </Grid>
+
+    <ContentWrapper align="center">
+      <div data-fade-up data-prevent-flicker="true" class="u-button-wrapper">
+        <Button href="/book-a-call" ariaLabel="Let's fix your marketing">
+          Let's Fix Your Marketing
+        </Button>
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- A year from now -->
+  <Section paddingTop="none">
+    <Layout variant="card">
+      <Col slot="col1" class="u-theme-dark">
+        <div class="marketing-partner_year_content-wrapper">
+          <div class="marketing-partner_year_content">
+            <Heading
+              data-split-text
+              data-prevent-flicker="true"
+              tag="h2"
+              variant="h3"
+              maxWidth="none"
+              marginBottom={0}
+            >
+              A year from now, your website grows your business.
+            </Heading>
+            <ul data-fade-list data-prevent-flicker="true" class="u-list">
+              <li>Your messaging is no longer scattered.</li>
+              <li>
+                You stopped trading nights and weekends for marketing tasks.
+              </li>
+              <li>Your website is growing your business.</li>
+              <li>You have predictable leads every month.</li>
+              <li>A business that no longer owns you.</li>
+              <li>And you didn't have to build it alone.</li>
+            </ul>
+          </div>
+        </div>
+      </Col>
+      <Col slot="col2">
+        <Visual src={cardBgImg} alt="" variant="background" />
+        <Overlay strength={70} />
+      </Col>
+    </Layout>
+  </Section>
+
+  <!-- Pricing -->
+  <Section theme="brand">
+    <Layout variant="columns" verticalAlign="start">
+      <Col slot="col1">
+        <Heading data-fade-in data-prevent-flicker="true" variant="eyebrow">
+          Partner With Us
+        </Heading>
+        <Heading
+          data-split-text
+          data-prevent-flicker="true"
+          tag="h2"
+          variant="h2"
+        >
+          You shouldn't have to grow alone.
+        </Heading>
+        <Text
+          data-fade-up
+          data-prevent-flicker="true"
+          data-delay="0.2"
+          variant="large"
+        >
+          We're the marketing partner who turns your website into a marketing
+          hub that grows your business.
+        </Text>
+      </Col>
+      <PricingCard
+        data-fade-up
+        data-prevent-flicker="true"
+        slot="col2"
+        theme="light"
+        variant="general"
+        priceLabel="Flat Retainer"
+        price="$5,000"
+        priceSuffix="/month"
+        href="/book-a-call"
+        buttonText="Let's Fix Your Marketing"
+        ariaLabel="Let's fix your marketing"
+        class="marketing-partner_pricing_card u-box-shadow-small"
+      >
+        <PricingItem>
+          Month-to-month after a 90-day initial commitment.
+        </PricingItem>
+        <PricingItem>
+          M2M Messaging Framework included in Month 1 if you don't already have
+          one. Standalone price: $1,500.
+        </PricingItem>
+        <PricingItem>
+          Migration to Webflow available as a separate engagement if you need to
+          move first. Marketing Partner begins after launch.
+        </PricingItem>
+      </PricingCard>
+    </Layout>
+  </Section>
+
+  <!-- Monthly Deliverables -->
+  <Section theme="dark">
+    <ContentWrapper align="center">
+      <Heading data-fade-in data-prevent-flicker="true" variant="eyebrow">
+        How We Do It
+      </Heading>
+      <Heading
+        data-split-text
+        data-prevent-flicker="true"
+        tag="h2"
+        variant="h2"
+      >
+        Monthly deliverables
+      </Heading>
+      <Text
+        data-fade-up
+        data-prevent-flicker="true"
+        data-delay="0.2"
+        align="center"
+        maxWidth="48rem"
+      >
+        What you get every month, every quarter, and at kickoff. This is the
+        working scope of the retainer. If something falls outside of it, we'll
+        talk about it as a separate engagement. No surprises.
+      </Text>
+    </ContentWrapper>
+
+    <div
+      data-fade-list
+      data-prevent-flicker="true"
+      class="marketing-partner_deliverables_list"
+    >
+      <div class="marketing-partner_deliverables_group">
+        <Heading tag="h3" variant="h4" marginBottom={0}>Every month</Heading>
+        <ul class="u-list">
+          <li>
+            <strong>Strategy session.</strong> One 60 to 90 minute working session.
+            We review last month, decide what changes next month, and set priorities.
+            Not a status report. A working session.
+          </li>
+          <li>
+            <strong>Performance report.</strong> GA4 and Search Console pulled together
+            into a one-page report. Plain English. What worked, what didn't, what
+            we're changing.
+          </li>
+          <li>
+            <strong>Website updates.</strong> Copy edits, new sections, page builds,
+            conversion improvements, SEO and AEO updates. The site keeps pace with
+            the business.
+          </li>
+          <li>
+            <strong>Twice monthly newsletter.</strong> Two issues per month. Written,
+            designed, scheduled. Built around the messaging from your M2M Framework
+            so every send reinforces the same story.
+          </li>
+          <li>
+            <strong>Drip campaign maintenance.</strong> Existing nurture sequences
+            optimized monthly based on open, click, and conversion data.
+          </li>
+        </ul>
+      </div>
+
+      <div class="marketing-partner_deliverables_group">
+        <Heading tag="h3" variant="h4" marginBottom={0}>Every quarter</Heading>
+        <ul class="u-list">
+          <li>
+            <strong>New lead magnet.</strong> One asset (guide, checklist, framework,
+            audit) written, designed, deployed, and connected to its drip sequence.
+          </li>
+          <li>
+            <strong>New pillar page.</strong> One long-form SEO and AEO optimized
+            page. Drives organic traffic to the hub and supports the content cluster.
+          </li>
+          <li>
+            <strong>Quarterly strategy reset.</strong> Step back from monthly execution.
+            Review the quarter's outcomes. Decide whether the strategy needs to evolve.
+          </li>
+        </ul>
+      </div>
+
+      <div class="marketing-partner_deliverables_group">
+        <Heading tag="h3" variant="h4" marginBottom={0}>Always on</Heading>
+        <ul class="u-list">
+          <li>
+            <strong>Webflow site maintenance.</strong> Speed, accessibility, broken
+            links, schema, meta, OG tags. Your marketing hub stays clean and functional.
+          </li>
+          <li>
+            <strong>AI-readiness.</strong> LLMs.txt maintained, structured data current,
+            AEO best practices applied as the landscape shifts.
+          </li>
+          <li>
+            <strong>Analytics monitoring.</strong> GA4 and Search Console watched
+            between reports. If something breaks or spikes, you hear about it.
+          </li>
+          <li>
+            <strong>Direct access.</strong> Slack DM or email for fast questions.
+            One business day response, usually faster.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <ContentWrapper align="center">
+      <div data-fade-up data-prevent-flicker="true" class="u-button-wrapper">
+        <Button href="/book-a-call" ariaLabel="Let's fix your marketing">
+          Let's Fix Your Marketing
+        </Button>
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- CTA -->
+  <CTASection
+    heading="Tired of running marketing alone? Partner with us."
+    text="A 30-minute strategy call. We'll look at where your marketing is now, where the gaps are, and whether Marketing Partner is the right fit. If it's not, we'll tell you. If it is, you'll leave the call with a clear next step."
+    buttonText="Let's Fix Your Marketing"
+    secondaryButtonText=""
+    overlayStrength={60}
+  />
+
+  <!-- FAQ -->
+  <FAQ items={marketingPartnerFaqs} />
+
+  <!-- Services -->
+  <Services />
+</BaseLayout>

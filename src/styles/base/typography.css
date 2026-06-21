@@ -1,0 +1,750 @@
+/* ==============================================================
+   HEADING STYLES & SEMANTIC TAGS
+   ============================================================== */
+
+/* Apply heading variables to semantic heading tags */
+h1 {
+  font-size: var(--h1-size);
+  font-family: var(--h1-font-family);
+  line-height: var(--h1-line-height);
+  font-weight: var(--h1-weight);
+  text-transform: var(--h1-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+h2 {
+  font-size: var(--h2-size);
+  font-family: var(--h2-font-family);
+  line-height: var(--h2-line-height);
+  font-weight: var(--h2-weight);
+  text-transform: var(--h2-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+h3 {
+  font-size: var(--h3-size);
+  font-family: var(--h3-font-family);
+  line-height: var(--h3-line-height);
+  font-weight: var(--h3-weight);
+  text-transform: var(--h3-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+h4 {
+  font-size: var(--h4-size);
+  font-family: var(--h4-font-family);
+  line-height: var(--h4-line-height);
+  font-weight: var(--h4-weight);
+  text-transform: var(--h4-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+h5 {
+  font-size: var(--h5-size);
+  font-family: var(--h5-font-family);
+  line-height: var(--h5-line-height);
+  font-weight: var(--h5-weight);
+  text-transform: var(--h5-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+h6 {
+  font-size: var(--h6-size);
+  font-family: var(--h6-font-family);
+  line-height: var(--h6-line-height);
+  font-weight: var(--h6-weight);
+  text-transform: var(--h6-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+/* ======== Heading utility classes for non-semantic elements ==============
+   Applied to .u-text wrappers (not the child heading tag).
+   Spacing uses bottom-margin only — all margin-top variables are 0.
+   Change the margin-top variable in variables/typography.css if you need
+   top spacing (e.g. for rich-text / blog prose).
+   ========================================================================= */
+
+.u-text-style-h1 {
+  font-size: var(--h1-size);
+  font-family: var(--h1-font-family);
+  line-height: var(--h1-line-height);
+  font-weight: var(--h1-weight);
+  text-transform: var(--h1-text-transform);
+  margin-top: var(--h1-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--h1-margin-bottom);
+}
+
+.u-text-style-h2 {
+  font-size: var(--h2-size);
+  font-family: var(--h2-font-family);
+  line-height: var(--h2-line-height);
+  font-weight: var(--h2-weight);
+  text-transform: var(--h2-text-transform);
+  margin-top: var(--h2-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--h2-margin-bottom);
+}
+
+.u-text-style-h3 {
+  font-size: var(--h3-size);
+  font-family: var(--h3-font-family);
+  line-height: var(--h3-line-height);
+  font-weight: var(--h3-weight);
+  text-transform: var(--h3-text-transform);
+  margin-top: var(--h3-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--h3-margin-bottom);
+}
+
+.u-text-style-h4 {
+  font-size: var(--h4-size);
+  font-family: var(--h4-font-family);
+  line-height: var(--h4-line-height);
+  font-weight: var(--h4-weight);
+  text-transform: var(--h4-text-transform);
+  margin-top: var(--h4-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--h4-margin-bottom);
+}
+
+.u-text-style-h5 {
+  font-size: var(--h5-size);
+  font-family: var(--h5-font-family);
+  line-height: var(--h5-line-height);
+  font-weight: var(--h5-weight);
+  text-transform: var(--h5-text-transform);
+  margin-top: var(--h5-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--h5-margin-bottom);
+}
+
+.u-text-style-h6 {
+  font-size: var(--h6-size);
+  font-family: var(--h6-font-family);
+  line-height: var(--h6-line-height);
+  font-weight: var(--h6-weight);
+  text-transform: var(--h6-text-transform);
+  margin-top: var(--h6-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--h6-margin-bottom);
+}
+
+.u-text-style-eyebrow {
+  font-size: var(--eyebrow-size);
+  font-family: var(--eyebrow-font-family);
+  line-height: var(--eyebrow-line-height);
+  font-weight: var(--eyebrow-weight);
+  text-transform: var(--eyebrow-text-transform);
+  margin-top: var(--eyebrow-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--eyebrow-margin-bottom);
+  color: var(--heading-accent);
+}
+
+/* ======= Display heading styles — extra large, impactful headings =========
+   Same bottom-margin-only pattern as heading utilities above.
+   ========================================================================= */
+
+.u-display-xl {
+  font-size: var(--display-xl-size);
+  font-family: var(--display-xl-font-family);
+  line-height: var(--display-xl-line-height);
+  font-weight: var(--display-xl-weight);
+  text-transform: var(--display-xl-text-transform);
+  margin-top: var(--display-xl-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--display-xl-margin-bottom);
+}
+
+.u-display-lg {
+  font-size: var(--display-lg-size);
+  font-family: var(--display-lg-font-family);
+  line-height: var(--display-lg-line-height);
+  font-weight: var(--display-lg-weight);
+  text-transform: var(--display-lg-text-transform);
+  margin-top: var(--display-lg-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--display-lg-margin-bottom);
+}
+
+.u-display-md {
+  font-size: var(--display-md-size);
+  font-family: var(--display-md-font-family);
+  line-height: var(--display-md-line-height);
+  font-weight: var(--display-md-weight);
+  text-transform: var(--display-md-text-transform);
+  margin-top: var(--display-md-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--display-md-margin-bottom);
+}
+
+.u-display-sm {
+  font-size: var(--display-sm-size);
+  font-family: var(--display-sm-font-family);
+  line-height: var(--display-sm-line-height);
+  font-weight: var(--display-sm-weight);
+  text-transform: var(--display-sm-text-transform);
+  margin-top: var(--display-sm-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--display-sm-margin-bottom);
+}
+
+/* ===================================================
+       TEXT SIZES
+   Same bottom-margin-only pattern as heading utilities above.
+   ================================================= */
+
+.u-text-style-tiny {
+  font-family: var(--text-tiny-font-family);
+  font-size: var(--text-tiny-size);
+  line-height: var(--text-tiny-line-height);
+  font-weight: var(--text-tiny-weight);
+  text-wrap: pretty;
+  text-transform: var(--text-tiny-text-transform);
+  margin-top: var(--text-tiny-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--text-tiny-margin-bottom);
+}
+
+.u-text-style-small {
+  font-family: var(--text-small-font-family);
+  font-size: var(--text-small-size);
+  line-height: var(--text-small-line-height);
+  font-weight: var(--text-small-weight);
+  text-wrap: pretty;
+  text-transform: var(--text-small-text-transform);
+  margin-top: var(--text-small-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--text-small-margin-bottom);
+}
+
+.u-text-style-regular {
+  font-family: var(--text-regular-font-family);
+  font-size: var(--text-regular-size);
+  line-height: var(--text-regular-line-height);
+  font-weight: var(--text-regular-weight);
+  text-wrap: pretty;
+  text-transform: var(--text-regular-text-transform);
+  margin-top: var(--text-regular-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--text-regular-margin-bottom);
+}
+
+.u-text-style-large {
+  font-family: var(--text-large-font-family);
+  font-size: var(--text-large-size);
+  line-height: var(--text-large-line-height);
+  font-weight: var(--text-large-weight);
+  text-wrap: pretty;
+  text-transform: var(--text-large-text-transform);
+  margin-top: var(--text-large-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--text-large-margin-bottom);
+}
+
+.u-text-style-xlarge {
+  font-family: var(--text-xlarge-font-family);
+  font-size: var(--text-xlarge-size);
+  line-height: var(--text-xlarge-line-height);
+  font-weight: var(--text-xlarge-weight);
+  text-wrap: pretty;
+  text-transform: var(--text-xlarge-text-transform);
+  margin-top: var(--text-xlarge-margin-top); /* → 0 (bottom-margin only) */
+  margin-bottom: var(--text-xlarge-margin-bottom);
+}
+
+/* ===============================================
+   FONT FAMILY UTILITIES
+   =============================================== */
+
+/* Switches an element's font family to IBM Plex Mono (tertiary font).
+   Use for numbers, code snippets, or monospace accents. */
+.u-font-mono {
+  font-family: var(--font-tertiary);
+}
+
+/* ===============================================
+   PARAGRAPH STYLES
+   =============================================== */
+/* Base paragraph — zero margin by default. Margin comes from the
+   u-text-style-* class applied to the child element inside .u-text. */
+
+p {
+  font-family: var(--text-regular-font-family);
+  font-size: var(--text-regular-size);
+  line-height: var(--text-regular-line-height);
+  font-weight: var(--text-regular-weight);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* ===============================================
+   LINK STYLES
+   =============================================== */
+
+/* For links that have classes (most will) */
+a {
+  color: var(--link-text);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--link-text-hover);
+}
+
+/* ==========================================================================
+   .u-text TEXT WRAPPER
+   ==========================================================================
+   Flex column wrapper that stays full-width (min-width overrides max-width
+   for rendering) while children inherit the max-width constraint. Inherits
+   align-items from the parent layout (e.g. center from stack-centered).
+   ========================================================================== */
+
+.u-text {
+  display: flex;
+  flex-flow: column;
+  min-width: 100%;
+  align-items: inherit;
+  justify-content: start;
+}
+
+/* Allow .u-text to shrink inside explicit flex-row containers
+   (e.g. icon + text patterns) where min-width: 100% causes overflow.
+   Add u-text-shrink to the flex parent to opt in. */
+.u-text-shrink > .u-text {
+  min-width: 0;
+}
+
+/* ==========================================================================
+   .u-text INHERITANCE BLOCK
+   ==========================================================================
+   Resets all type properties on headings inside .u-text to inherit from the
+   container (so .u-text-style-* classes drive everything).
+   Also globally resets p, blockquote, and label so they inherit from their
+   nearest typed ancestor instead of carrying browser or UA defaults.
+   ========================================================================== */
+
+.u-text :is(h1, h2, h3, h4, h5, h6),
+p,
+blockquote,
+label {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-wrap: inherit;
+}
+
+/* ==========================================================================
+   .u-text CHILDREN — sizing, margin reset, text-box trim
+   ==========================================================================
+   • width / max-width: children fill the wrapper and inherit the
+     max-width constraint from the parent .u-text.
+   • margin-inline: 0 prevents horizontal margin on children.
+   • margin-top: 0 enforces bottom-only spacing — all vertical rhythm
+     flows in one direction via margin-bottom from u-text-style-* classes.
+   • text-box-trim: progressive enhancement that removes leading space
+     above the cap-height and trailing space below the alphabetic
+     baseline. Unsupported browsers (Firefox) keep the normal
+     line-height box — text is slightly taller but fully readable.
+   ========================================================================== */
+
+.u-text > * {
+  width: 100%;
+  max-width: inherit !important;
+  margin-inline: 0 !important;
+  margin-top: 0 !important;
+  text-box-trim: both;
+  text-box-edge: cap alphabetic;
+}
+
+/* ==========================================================================
+   TEXT STYLE UTILITIES
+   ========================================================================== */
+
+.u-text-style-strikethrough {
+  text-decoration: line-through;
+}
+
+.u-text-style-underline {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.u-text-style-italic {
+  font-style: italic;
+}
+
+.u-text-style-bold {
+  font-weight: bold;
+}
+
+.u-text-style-nowrap {
+  white-space: nowrap;
+}
+
+.u-text-style-muted {
+  opacity: 0.75;
+}
+
+/* =====================================================
+   LINE CLAMP UTILITIES — systematic set
+   Pair with any element to truncate at N lines.
+   ===================================================== */
+
+[class*="u-line-clamp-"] {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+}
+
+.u-line-clamp-1 {
+  -webkit-line-clamp: 1;
+}
+.u-line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+.u-line-clamp-3 {
+  -webkit-line-clamp: 3;
+}
+.u-line-clamp-4 {
+  -webkit-line-clamp: 4;
+}
+.u-line-clamp-5 {
+  -webkit-line-clamp: 5;
+}
+.u-line-clamp-6 {
+  -webkit-line-clamp: 6;
+}
+
+/* ==========================================================================
+       TEXT ALIGNMENT UTILITIES
+   ========================================================================== */
+
+.u-text-align-left {
+  text-align: left;
+}
+
+.u-text-align-center {
+  text-align: center;
+}
+
+.u-text-align-right {
+  text-align: right;
+}
+
+.u-text-align-inherit {
+  text-align: inherit;
+}
+
+/* ===================================================
+   TEXT TRANSFORM UTILITIES
+   ================================================= */
+
+.u-text-transform-none {
+  text-transform: none;
+}
+.u-text-transform-uppercase {
+  text-transform: uppercase;
+}
+.u-text-transform-capitalize {
+  text-transform: capitalize;
+}
+.u-text-transform-lowercase {
+  text-transform: lowercase;
+}
+
+/* ===================================================
+   TEXT WRAP UTILITIES
+   ================================================= */
+
+.u-text-wrap-default {
+  text-wrap: wrap;
+}
+.u-text-wrap-balance {
+  text-wrap: balance;
+}
+.u-text-wrap-pretty {
+  text-wrap: pretty;
+}
+
+/* ===================================================
+   LINE HEIGHT UTILITIES
+   ================================================= */
+
+.u-line-height-small {
+  line-height: var(--line-height-tight);
+} /* 1     — display / large headings */
+.u-line-height-medium {
+  line-height: var(--line-height-medium);
+} /* 1.1   — mid headings */
+.u-line-height-large {
+  line-height: var(--line-height-large);
+} /* 1.3   — subheadings */
+.u-line-height-huge {
+  line-height: var(--line-height-normal);
+} /* 1.5   — body text */
+
+/* ===================================================
+   LETTER SPACING UTILITIES
+   ================================================= */
+
+.u-letter-spacing-tight {
+  letter-spacing: var(--letter-spacing-tight);
+} /* -0.03em */
+.u-letter-spacing-normal {
+  letter-spacing: var(--letter-spacing-normal);
+} /*  0em    */
+
+/* ===================================================
+   FONT WEIGHT UTILITIES
+   ================================================= */
+
+.u-weight-regular {
+  font-weight: var(--font-weight-normal);
+} /* 400 */
+.u-weight-medium {
+  font-weight: var(--font-weight-medium);
+} /* 500 */
+.u-weight-bold {
+  font-weight: var(--font-weight-bold);
+} /* 700 */
+
+/* ==========================================================================
+   RICH TEXT VERTICAL RHYTHM (.u-rich-text)
+   ==========================================================================
+   Applies margin-top and margin-bottom to bare heading and paragraph tags
+   inside a .u-rich-text wrapper. Used for CMS content (e.g. Sanity portable
+   text) where headings and paragraphs are bare tags — no .u-text wrappers.
+
+   Headings get margin-top for section separation (pushes away from the
+   preceding content) and margin-bottom for flow into their own content.
+   Paragraphs and other block elements use margin-bottom only.
+   Margin-trim on .u-rich-text handles first/last child edges.
+
+   Values use --space-* variables directly — NOT per-heading typography
+   variables — so you can tune rich-text rhythm independently of the
+   component text style system. Adjust any value here without affecting
+   components that use <Heading> or <Text>.
+   ========================================================================== */
+
+.u-rich-text h1 {
+  font-size: var(--h2-size);
+  line-height: var(--h2-line-height);
+  margin-top: var(--space-7);
+  margin-bottom: var(--space-5);
+}
+.u-rich-text h2 {
+  font-size: var(--h4-size);
+  line-height: var(--h4-line-height);
+  margin-top: var(--space-7);
+  margin-bottom: var(--space-4);
+}
+.u-rich-text h3 {
+  font-size: var(--h5-size);
+  line-height: var(--h5-line-height);
+  margin-top: var(--space-7);
+  margin-bottom: var(--space-4);
+}
+.u-rich-text h4 {
+  font-size: var(--h6-size);
+  line-height: var(--h6-line-height);
+  margin-top: var(--space-7);
+  margin-bottom: var(--space-4);
+}
+.u-rich-text h5 {
+  font-size: var(--h6-size);
+  line-height: var(--h6-line-height);
+  margin-top: var(--space-7);
+  margin-bottom: var(--space-4);
+}
+.u-rich-text h6 {
+  margin-top: var(--space-7);
+  margin-bottom: var(--space-4);
+}
+
+.u-rich-text p {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-regular-size);
+}
+.u-rich-text :is(ul, ol) {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-regular-size);
+}
+.u-rich-text :is(li):not(:last-of-type) {
+  margin-bottom: var(--space-2);
+}
+.u-rich-text blockquote {
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-xlarge-size);
+  font-weight: var(--font-weight-medium);
+  font-style: italic;
+}
+.u-rich-text :is(figure, img) {
+  margin-bottom: var(--space-5);
+}
+.u-rich-text hr {
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.u-rich-text a {
+  color: var(--rich-text-link);
+  text-decoration: underline;
+  transition: color 300ms ease;
+}
+
+.u-rich-text a:hover {
+  color: color-mix(in hsl, var(--rich-text-link) 70%, transparent);
+}
+
+/* ==========================================================================
+   LIST UTILITY (.u-list)
+   Apply directly to a <ul> or <ol> to get the same bullet rhythm as lists
+   inside .u-rich-text — without needing the rich-text wrapper.
+   ========================================================================== */
+
+.u-list {
+  margin-top: 0;
+  padding-inline-start: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+/* :where() drops specificity to 0 so .u-text-style-* classes win */
+:where(.u-list) {
+  font-size: var(--text-regular-size);
+}
+
+.u-list:last-child {
+  margin-bottom: 0;
+}
+
+.u-list > li:not(:last-of-type) {
+  margin-bottom: var(--space-2);
+}
+
+.video-embed_frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-medium);
+  overflow: hidden;
+}
+.video-embed_frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ---- Internal link hover preview ---- */
+
+.internal-link_wrap {
+  position: relative;
+  display: inline;
+  anchor-name: --internal-link;
+}
+
+.internal-link_preview {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 10;
+  display: grid;
+  width: 20rem;
+  max-width: min(20rem, calc(100vw - 2rem));
+  padding: 0;
+  border-radius: var(--radius-medium);
+  background: var(--background);
+  color: var(--text);
+  box-shadow: var(--box-shadow-medium, 0 10px 30px rgb(0 0 0 / 15%));
+  border: 1px solid color-mix(in hsl, var(--text) 10%, transparent);
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+  transition-delay: 0ms;
+  overflow: hidden;
+  text-align: left;
+}
+
+.internal-link_preview_media {
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--background-2);
+}
+
+.internal-link_preview_media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.internal-link_preview_content {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+}
+
+.internal-link_preview_title {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  margin-bottom: 0.25rem;
+}
+
+.internal-link_preview_text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: color-mix(in hsl, var(--text) 75%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .internal-link_wrap:hover .internal-link_preview,
+  .internal-link_wrap:focus-within .internal-link_preview {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 250ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .internal-link_preview {
+    transition: opacity 100ms linear;
+    transform: none;
+  }
+}
+
+/* Flip above the link when there isn't room below. Supported in Chrome
+   125+, Edge 125+, Safari 26+. Falls back to always-below (the default
+   rules up top) in unsupported browsers. */
+@position-try --internal-link-preview-above {
+  top: auto;
+  bottom: anchor(top);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+@supports (anchor-name: --x) {
+  .internal-link_preview {
+    position: fixed;
+    position-anchor: --internal-link;
+    inset: auto;
+    top: anchor(bottom);
+    left: anchor(left);
+    margin-top: 0.5rem;
+    position-try-fallbacks: --internal-link-preview-above;
+  }
+}

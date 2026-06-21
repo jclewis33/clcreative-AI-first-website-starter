@@ -1,0 +1,420 @@
+---
+/**
+ * HowItWorks — dark section with overlapping image cluster + scroll-animated timeline.
+ *
+ * Three overlapping images at the top, then a "How it works" heading with
+ * intro copy, followed by a 3-step alternating timeline. The vertical line
+ * and dots animate on scroll via GSAP ScrollTrigger (scrub, reversible).
+ *
+ * On mobile (small breakpoint), the timeline shifts to line-left / content-right.
+ *
+ * Copy has sensible defaults. Override per-page via named slots:
+ *   `eyebrow`, `heading`, `intro`,
+ *   `step1Title`, `step2Title`, `step3Title`,
+ *   `step1Body`, `step2Body`, `step3Body`.
+ * The image cluster stays consistent across the site.
+ *
+ * @example Default usage
+ * ```astro
+ * <HowItWorks />
+ * ```
+ *
+ * @example Custom padding
+ * ```astro
+ * <HowItWorks padding="large" />
+ * ```
+ *
+ * @example Override step 2 body for a specific page
+ * ```astro
+ * <HowItWorks>
+ *   <Fragment slot="step2Body">
+ *     We design the system that powers your site — the component library,
+ *     the CMS architecture, the interaction patterns — and then we build it
+ *     cleanly so your team owns it from day one.
+ *   </Fragment>
+ * </HowItWorks>
+ * ```
+ */
+
+import { Image } from "astro:assets";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Section from "../ui/Section.astro";
+
+import imgCenter from "../../assets/how-it-works/process-center-2.webp";
+import imgLeft from "../../assets/how-it-works/process-left-1.webp";
+import imgRight from "../../assets/how-it-works/process-right-2.webp";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **HowItWorks props:**
+   * - `padding` — sets both paddingTop and paddingBottom (default `'main'`)
+   * - `paddingTop` — override top padding only
+   * - `paddingBottom` — override bottom padding only
+   * - `class` — extra classes on outer Section
+   */
+  docs?: string;
+
+  /** Sets both paddingTop and paddingBottom @default 'main' */
+  padding?: PaddingValue;
+  /** Override top padding only */
+  paddingTop?: PaddingValue;
+  /** Override bottom padding only */
+  paddingBottom?: PaddingValue;
+  /** Extra classes on the outer Section */
+  class?: string;
+}
+
+const {
+  docs,
+  padding = "main",
+  paddingTop = padding,
+  paddingBottom = padding,
+  class: className,
+} = Astro.props;
+---
+
+<Section
+  theme="dark"
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  class:list={["how_it_works_section", className]}
+>
+  {/* ── Image cluster ── */}
+  <div class="how_it_works_images">
+    <div class="how_it_works_img_center">
+      <Image
+        src={imgCenter}
+        alt="CL Creative project work"
+        class="how_it_works_img"
+        data-fade-in
+      />
+    </div>
+    <div class="how_it_works_img_right">
+      <Image
+        src={imgRight}
+        alt="One CMS architecture powering case study, blog, and service page layouts"
+        class="how_it_works_img"
+        data-fade-in
+      />
+    </div>
+    <div class="how_it_works_img_left">
+      <Image
+        src={imgLeft}
+        alt="A single ideal customer highlighted within a crowd, connected by a network"
+        class="how_it_works_img"
+        data-fade-in
+      />
+    </div>
+  </div>
+
+  {/* ── Section header ── */}
+  <div class="how_it_works_header">
+    <Heading variant="eyebrow" class="u-color-brand" data-fade-in>
+      <slot name="eyebrow">How it works</slot>
+    </Heading>
+    <div class="how_it_works_intro">
+      <Heading data-split-text maxWidth="22ch">
+        <slot name="heading">A Clear Process. No Surprises.</slot>
+      </Heading>
+      <slot name="intro">
+        <Text data-fade-in maxWidth="52ch" marginBottom={0}>
+          Your time commitment: A one-hour call, the M2M Workbook, and
+          collaborative reviews until it's right. We do the heavy lifting. You
+          stay in the loop throughout the process.
+        </Text>
+      </slot>
+    </div>
+  </div>
+
+  {/* ── Timeline ── */}
+  <div class="how_it_works_timeline" data-how-it-works>
+    {/* Absolutely-positioned vertical line track (bg + animated fill) */}
+    <div class="how_it_works_line_track" aria-hidden="true">
+      <div class="how_it_works_line_bg"></div>
+      <div class="how_it_works_line_fill"></div>
+    </div>
+
+    {/* Step 1 — content RIGHT */}
+    <div class="how_it_works_step">
+      <div class="how_it_works_step_space"></div>
+      <div class="how_it_works_dot_wrap">
+        <div class="how_it_works_dot" data-dot="1"></div>
+      </div>
+      <div class="how_it_works_step_content">
+        <h3 class="how_it_works_step_title">
+          <span class="how_it_works_step_num u-font-mono">01</span>
+          <span>. <slot name="step1Title">Discovery &amp; Strategy</slot></span>
+        </h3>
+        <Text marginBottom={0}>
+          <slot name="step1Body"
+            >We dig into your business, your numbers, and your goals. You work
+            through our <a href="/m2m-framework" class="u-text-style-underline"
+              >M2M Workbook</a
+            > to define your ideal customer. We refine it, create your messaging,
+            and use it to write copy that sounds like you.</slot
+          >
+        </Text>
+      </div>
+    </div>
+
+    {/* Step 2 — content LEFT (right-aligned) */}
+    <div class="how_it_works_step">
+      <div class="how_it_works_step_content is-reversed">
+        <h3 class="how_it_works_step_title">
+          <span class="how_it_works_step_num u-font-mono">02</span>
+          <span>. <slot name="step2Title">Design &amp; Build</slot></span>
+        </h3>
+        <Text marginBottom={0}>
+          <slot name="step2Body"
+            >We design and build your site. While the site takes shape, we write
+            your starter content and setup the tools that power your marketing.
+            You'll see weekly progress and get two rounds of revisions to make
+            sure it's right.</slot
+          >
+        </Text>
+      </div>
+      <div class="how_it_works_dot_wrap">
+        <div class="how_it_works_dot" data-dot="2"></div>
+      </div>
+      <div class="how_it_works_step_space"></div>
+    </div>
+
+    {/* Step 3 — content RIGHT */}
+    <div class="how_it_works_step">
+      <div class="how_it_works_step_space"></div>
+      <div class="how_it_works_dot_wrap">
+        <div class="how_it_works_dot" data-dot="3"></div>
+      </div>
+      <div class="how_it_works_step_content">
+        <h3 class="how_it_works_step_title">
+          <span class="how_it_works_step_num u-font-mono">03</span>
+          <span>. <slot name="step3Title">Launch &amp; Grow</slot></span>
+        </h3>
+        <Text marginBottom={0}>
+          <slot name="step3Body"
+            >Everything goes live together. Your site, your content, your
+            newsletter, your analytics — all connected and working from the day
+            we launch. We train your team, provide 30 days post-launch support,
+            and offer a Marketing Partner retainer to keep building on the
+            foundation.</slot
+          >
+        </Text>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<script>
+  /**
+   * HowItWorks — GSAP ScrollTrigger scrub animation
+   *
+   * As the user scrolls through the section:
+   *   - The orange fill line grows from top to bottom (scaleY 0→1, scrubbed)
+   *   - Each dot (#2, #3) turns orange when the fill line reaches it
+   *   - Animation reverses when scrolling back up (scrub handles this)
+   *
+   * Line and dot positions are measured from the DOM after load so the
+   * animation stays accurate regardless of content height or viewport size.
+   *
+   * Mobile: at the small breakpoint the dots shift to the left column —
+   * the JS re-measures positions on resize via ResizeObserver.
+   */
+
+  function initHowItWorks() {
+    const gsap = (window as any).gsap;
+    const ScrollTrigger = (window as any).ScrollTrigger;
+
+    if (!gsap || !ScrollTrigger) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const section = document.querySelector<HTMLElement>("[data-how-it-works]");
+    if (!section) return;
+
+    if (section.dataset.howItWorksInit) return;
+    section.dataset.howItWorksInit = "true";
+
+    const lineTrack = section.querySelector<HTMLElement>(
+      ".how_it_works_line_track",
+    );
+    const lineFill = section.querySelector<HTMLElement>(
+      ".how_it_works_line_fill",
+    );
+    const dots = section.querySelectorAll<HTMLElement>(".how_it_works_dot");
+
+    if (!lineTrack || !lineFill || dots.length < 3) return;
+
+    // Capture non-null references — TypeScript loses narrowing through closures
+    const sec = section;
+    const track = lineTrack;
+    const fill = lineFill;
+
+    // Read colors from the live DOM so the stylesheet stays the single source:
+    // --color-brand-500 (colors.css) and --how-it-works-dot-inactive
+    // (how-it-works.css, inherited onto the dots). Literals are last-resort
+    // fallbacks only.
+    const cs = getComputedStyle(dots[0]);
+    const BRAND =
+      cs.getPropertyValue("--color-brand-500").trim() || "#f35423";
+    const INACTIVE =
+      cs.getPropertyValue("--how-it-works-dot-inactive").trim() || "#172138";
+
+    // ── Measure ──────────────────────────────────────────────────────────────
+    // Returns progress values (0–1) at which dot 2 and dot 3 should activate,
+    // and positions the line track element in the DOM.
+    function measureAndPosition() {
+      const sectionRect = sec.getBoundingClientRect();
+      const dot1Rect = dots[0].getBoundingClientRect();
+      const dot3Rect = dots[2].getBoundingClientRect();
+      const dot2Rect = dots[1].getBoundingClientRect();
+
+      const dotH = dot1Rect.height;
+      const dotH2 = dotH / 2;
+
+      // Section-relative positions of dot centers
+      const lineTop = dot1Rect.top + dotH2 - sectionRect.top;
+      const lineBottom = dot3Rect.top + dotH2 - sectionRect.top;
+      const lineHeight = lineBottom - lineTop;
+
+      // Horizontal center of dot 1 relative to section left
+      const lineLeft = dot1Rect.left + dot1Rect.width / 2 - sectionRect.left;
+
+      // Apply to track element
+      track.style.top = `${lineTop}px`;
+      track.style.height = `${lineHeight}px`;
+      track.style.left = `${lineLeft}px`;
+
+      // Progress at which each dot should activate (0–1 along the fill)
+      const dot2Progress =
+        (dot2Rect.top + dotH2 - sectionRect.top - lineTop) / lineHeight;
+      const dot3Progress =
+        (dot3Rect.top + dotH2 - sectionRect.top - lineTop) / lineHeight;
+
+      return { dot2Progress, dot3Progress };
+    }
+
+    // ── Build animation ───────────────────────────────────────────────────────
+    let st: any = null;
+
+    // Step content elements (step 2 and step 3 fade in with their dots)
+    const stepContents = sec.querySelectorAll<HTMLElement>(
+      ".how_it_works_step_content",
+    );
+    const step2Content = stepContents[1];
+    const step3Content = stepContents[2];
+
+    function buildAnimation() {
+      // Kill previous instance
+      if (st) {
+        st.kill();
+        st = null;
+      }
+
+      // Reset dots 2 & 3 to inactive
+      gsap.set(dots[1], { backgroundColor: INACTIVE, outlineColor: INACTIVE });
+      gsap.set(dots[2], { backgroundColor: INACTIVE, outlineColor: INACTIVE });
+
+      // Reset step 2 & 3 opacity (step 1 stays full opacity)
+      if (step2Content) gsap.set(step2Content, { opacity: 0.25 });
+      if (step3Content) gsap.set(step3Content, { opacity: 0.25 });
+
+      const { dot2Progress, dot3Progress } = measureAndPosition();
+
+      // Reset fill to zero
+      gsap.set(fill, { scaleY: 0, transformOrigin: "top center" });
+
+      // Fade-in should start a bit before the dot activates and complete at the dot
+      const fade2Start = Math.max(0, dot2Progress - 0.15);
+      const fade3Start = Math.max(0, dot3Progress - 0.15);
+
+      const tl = gsap.timeline({ paused: true });
+      tl.to(fill, { scaleY: 1, ease: "none", duration: 1 });
+
+      // Step 2: text fades in, then dot activates
+      if (step2Content) {
+        tl.to(
+          step2Content,
+          {
+            opacity: 1,
+            ease: "power1.out",
+            duration: dot2Progress - fade2Start,
+          },
+          fade2Start,
+        );
+      }
+      tl.to(
+        dots[1],
+        {
+          backgroundColor: BRAND,
+          outlineColor: BRAND,
+          ease: "none",
+          duration: 0.001,
+        },
+        dot2Progress,
+      );
+
+      // Step 3: text fades in, then dot activates
+      if (step3Content) {
+        tl.to(
+          step3Content,
+          {
+            opacity: 1,
+            ease: "power1.out",
+            duration: dot3Progress - fade3Start,
+          },
+          fade3Start,
+        );
+      }
+      tl.to(
+        dots[2],
+        {
+          backgroundColor: BRAND,
+          outlineColor: BRAND,
+          ease: "none",
+          duration: 0.001,
+        },
+        dot3Progress,
+      );
+
+      st = ScrollTrigger.create({
+        trigger: sec,
+        start: "top 70%",
+        end: "bottom 70%",
+        scrub: 0.4,
+        animation: tl,
+      });
+
+      ScrollTrigger.refresh();
+    }
+
+    // Initial build (after layout settles)
+    buildAnimation();
+
+    // Re-measure on resize so mobile layout shift stays correct
+    const ro = new ResizeObserver(() => {
+      buildAnimation();
+    });
+    ro.observe(sec);
+  }
+
+  // Poll for GSAP (CDN loaded with defer)
+  function waitForGsap(retries = 15) {
+    if ((window as any).gsap && (window as any).ScrollTrigger) {
+      // Delay slightly so images have rendered and layout is stable
+      requestAnimationFrame(() => initHowItWorks());
+    } else if (retries > 0) {
+      setTimeout(() => waitForGsap(retries - 1), 100);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => waitForGsap());
+  } else {
+    waitForGsap();
+  }
+</script>

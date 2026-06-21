@@ -1,0 +1,446 @@
+---
+/**
+ * Blog Post Template
+ *
+ * Renders a single blog post given the post document and a list of related
+ * posts. Used by the production route (`src/pages/blog/[slug].astro`).
+ */
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import SanityCtaSection from "../sections/SanityCtaSection.astro";
+import AdditionalPost from "../sections/BlogPostGrid.astro";
+
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Visual from "../ui/Visual.astro";
+import Overlay from "../ui/Overlay.astro";
+import Card from "../ui/Card.astro";
+import Button from "../ui/Button.astro";
+import Accordion from "../ui/Accordion.astro";
+import AccordionItem from "../ui/AccordionItem.astro";
+import TableOfContents from "../ui/TableOfContents.astro";
+import BlogCta from "../blog/BlogCta.astro";
+
+import "../../styles/pages/blog-post.css";
+
+import ctaImage from "../../assets/m2m-framework/m2m-workbook.avif";
+
+import { urlFor } from "../../sanity/lib/image";
+import { buildToc } from "../../lib/toc";
+import { estimateReadTime } from "../../lib/read-time";
+import { blogPostJsonLd } from "../../lib/jsonld";
+import JsonLd from "../global/JsonLd.astro";
+
+import { PortableText } from "astro-portabletext";
+
+const { default: CodeBlock } = await import("../portabletext/CodeBlock.astro");
+const { default: SanityImage } =
+  await import("../portabletext/SanityImage.astro");
+const { default: LinkMark } = await import("../portabletext/LinkMark.astro");
+const { default: InternalLinkMark } =
+  await import("../portabletext/InternalLinkMark.astro");
+const { default: BlockHeading2 } =
+  await import("../portabletext/BlockHeading2.astro");
+const { default: VideoEmbed } =
+  await import("../portabletext/VideoEmbed.astro");
+const { default: Callout } = await import("../portabletext/Callout.astro");
+const { default: BlogCtaInline } =
+  await import("../portabletext/BlogCtaInline.astro");
+
+interface Props {
+  post: any;
+  relatedPosts: any[];
+  manualRelatedPosts?: any[];
+  defaultCta?: any;
+  defaultCtaSection?: any;
+}
+
+const {
+  post,
+  relatedPosts,
+  manualRelatedPosts = [],
+  defaultCta = null,
+  defaultCtaSection = null,
+} = Astro.props;
+const resolvedBlogCta = post.ctaOverride ?? defaultCta ?? null;
+const resolvedCtaSection = post.ctaSectionOverride ?? defaultCtaSection ?? null;
+const manualRelatedSlugs = manualRelatedPosts.map((p) => p.slug);
+
+const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+const seo = post.seo || {};
+const metaTitle = seo.metaTitle || post.title;
+const metaDescription = seo.metaDescription || post.description;
+const ogTitle = seo.ogTitle || metaTitle;
+const ogDescription = seo.ogDescription || metaDescription;
+const ogImageUrl = seo.ogImage
+  ? urlFor(seo.ogImage).width(1200).height(630).format("jpg").quality(90).url()
+  : urlFor(post.image).width(1200).height(630).format("jpg").quality(90).url();
+
+const { body: processedBody, items: tocItems } = buildToc(post.body ?? []);
+const readTime = estimateReadTime(post.body);
+
+const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
+const jsonLd = blogPostJsonLd(post, siteOrigin);
+
+const portableTextComponents = {
+  type: {
+    codeBlock: CodeBlock,
+    code: CodeBlock,
+    image: SanityImage,
+    videoEmbed: VideoEmbed,
+    callout: Callout,
+    blogCtaInline: BlogCtaInline,
+  },
+  mark: {
+    link: LinkMark,
+    internalLink: InternalLinkMark,
+  },
+  block: {
+    h2: BlockHeading2,
+  },
+};
+---
+
+<BaseLayout
+  title={`${metaTitle} | Blog`}
+  description={metaDescription}
+  ogTitle={ogTitle}
+  ogDescription={ogDescription}
+  ogImage={ogImageUrl}
+  theme="light"
+>
+  <JsonLd data={jsonLd} />
+  <Section gap={1} paddingTop="small" paddingBottom="none">
+    <div class="blog_post_back_wrap">
+      <Button
+        variant="text"
+        href="/blog/category/all"
+        ariaLabel="All Blog Posts"
+        class="blog_post_back_link"
+      >
+        <svg
+          slot="icon"
+          aria-hidden="true"
+          width="10"
+          height="10"
+          viewBox="0 0 10 10"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="6,2 3,5 6,8"></polyline>
+        </svg>
+        All Posts
+      </Button>
+    </div>
+    <Layout docs="" variant="stack-centered">
+      <Col slot="col1">
+        <Text variant="small" muted>{formattedDate}</Text>
+
+        <Heading tag="h1" variant="h1" balance>{post.title}</Heading>
+
+        <p class="blog_post_read_time u-text-style-small u-margin-bottom-2">
+          {readTime} min read
+        </p>
+
+        <div class="blog_post_author_wrap u-margin-bottom-4">
+          {
+            post.authorAvatar && (
+              <div class="blog_post_avatar">
+                <img
+                  src={urlFor(post.authorAvatar).width(64).height(64).url()}
+                  alt={post.author}
+                  width="32"
+                  height="32"
+                  loading="lazy"
+                />
+              </div>
+            )
+          }
+          <span
+            class="blog_post_author_text u-text-style-regular u-margin-bottom-0"
+            >By <span class="u-weight-medium">{post.author}</span></span
+          >
+        </div>
+
+        <div class="blog_post_share_wrap">
+          <a
+            href="#"
+            class="blog_post_share_icon"
+            aria-label="Share on LinkedIn"
+            data-share="linkedin"
+          >
+            <svg
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              color="currentColor"
+              width="24"
+              height="24"
+              ><circle cx="4.983" cy="5.009" r="2.188"></circle><path
+                d="M9.237 8.855v12.139h3.769v-6.003c0-1.584.298-3.118 2.262-3.118 1.937 0 1.961 1.811 1.961 3.218v5.904H21v-6.657c0-3.27-.704-5.783-4.526-5.783-1.835 0-3.065 1.007-3.568 1.96h-.051v-1.66H9.237zm-6.142 0H6.87v12.139H3.095z"
+              ></path></svg
+            >
+          </a>
+
+          <a
+            href="#"
+            class="blog_post_share_icon"
+            aria-label="Share on Facebook"
+            data-share="facebook"
+          >
+            <svg
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              color="currentColor"
+              width="24"
+              height="24"
+              ><path
+                d="M13.397 20.997v-8.196h2.765l.411-3.209h-3.176V7.548c0-.926.258-1.56 1.587-1.56h1.684V3.127A22.336 22.336 0 0 0 14.201 3c-2.444 0-4.122 1.492-4.122 4.231v2.355H7.332v3.209h2.753v8.202h3.312z"
+              ></path></svg
+            >
+          </a>
+
+          <a
+            href="#"
+            class="blog_post_share_icon"
+            aria-label="Share on X"
+            data-share="twitter"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 25"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M17.1761 4.83203H19.9362L13.9061 11.6094L21 20.832H15.4456L11.0951 15.2386L6.11723 20.832H3.35544L9.80517 13.5828L3 4.83203H8.69545L12.6279 9.94465L17.1761 4.83203ZM16.2073 19.2074H17.7368L7.86441 6.37131H6.2232L16.2073 19.2074Z"
+                fill="currentColor"></path>
+            </svg>
+          </a>
+
+          <button
+            type="button"
+            class="blog_post_share_icon"
+            aria-label="Copy link"
+            data-share="copy"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="currentColor"
+              viewBox="0 0 256 256"
+              ><rect width="256" height="256" fill="none"></rect><line
+                x1="94.1"
+                y1="161.9"
+                x2="161.9"
+                y2="94"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="16"></line><path
+                d="M145,178.9l-28.3,28.3a48,48,0,0,1-67.9-67.9L77.1,111"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="16"></path><path
+                d="M178.9,145l28.3-28.3a48,48,0,0,0-67.9-67.9L111,77.1"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="16"></path></svg
+            >
+          </button>
+
+          <a
+            href="#"
+            class="blog_post_share_icon"
+            aria-label="Share via email"
+            data-share="mail"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+            </svg>
+          </a>
+        </div>
+      </Col>
+
+      {
+        post.video ? (
+          <div
+            slot="col2"
+            class="blog_post_video_wrap u-aspect-ratio-widescreen u-radius-main u-overflow-hidden"
+          >
+            <iframe
+              src={post.video
+                .replace("youtu.be/", "www.youtube.com/embed/")
+                .replace("watch?v=", "embed/")
+                .replace("&", "?")}
+              title={post.title}
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              style="position:absolute;top:0;left:0;width:100%;height:100%;"
+            />
+          </div>
+        ) : (
+          <Visual
+            docs=""
+            slot="col2"
+            src={urlFor(post.image).width(1200).url()}
+            alt={post.imageAlt}
+            ratio="wide"
+          />
+        )
+      }
+    </Layout>
+  </Section>
+
+  <Section paddingTop="small" paddingBottom="main">
+    <Layout
+      class="blog_post_content_layout"
+      style="max-width:72rem; margin-left:auto; margin-right:auto;"
+      variant="sticky-left"
+      ratio="3-9"
+      columnGap="var(--gap-8)"
+      verticalAlign="start"
+    >
+      <div slot="col1" class="blog_post_sidebar">
+        <TableOfContents items={tocItems} />
+        <Card
+          class="blog_post_sidebar_card"
+          variant="cover"
+          href="/m2m-framework#m2m-worksheet"
+          ariaLabel="m2m worksheet"
+        >
+          <Fragment slot="visual">
+            <img
+              src={typeof ctaImage === "string" ? ctaImage : ctaImage.src}
+              alt="M2M Workbook cover"
+              class="u-image u-object-fit-cover"
+            />
+            <Overlay
+              docs=""
+              variant="gradient"
+              strengthBottom={100}
+              strengthMiddle={30}
+              strengthTop={5}
+            />
+          </Fragment>
+
+          <Heading
+            tag="h3"
+            variant="h6"
+            class="u-margin-bottom-1 u-text-align-center"
+          >
+            Get the M2M ICP Discovery Worksheet
+          </Heading>
+          <Text variant="small" class="u-margin-bottom-2 u-text-align-center">
+            Know who your website should speak to and what to say.
+          </Text>
+          <div slot="footer">
+            <Button
+              docs=""
+              href="/m2m-framework#m2m-worksheet"
+              ariaLabel="m2m worksheet"
+              fullWidth
+              hoverTheme="brand">Get the Worksheet</Button
+            >
+          </div>
+        </Card>
+      </div>
+
+      <div slot="col2">
+        <div class="blog_post_prose u-rich-text">
+          <PortableText
+            value={processedBody}
+            components={portableTextComponents}
+          />
+        </div>
+        {resolvedBlogCta && <BlogCta cta={resolvedBlogCta} />}
+        {
+          post.faqs?.length > 0 && (
+            <div class="blog_post_faq_wrap" id="faq">
+              <Heading
+                tag="h2"
+                variant="h4"
+                maxWidth="50ch"
+                class="blog_post_faq_heading"
+              >
+                Questions You Might Be Asking
+              </Heading>
+              <Accordion closePrevious>
+                {post.faqs.map((faq: { question: string; answer: any }) => (
+                  <AccordionItem question={faq.question}>
+                    <Text>
+                      <PortableText
+                        value={faq.answer}
+                        components={{
+                          mark: {
+                            link: LinkMark,
+                            internalLink: InternalLinkMark,
+                          },
+                        }}
+                      />
+                    </Text>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          )
+        }
+      </div>
+    </Layout>
+  </Section>
+
+  {resolvedCtaSection && <SanityCtaSection cta={resolvedCtaSection} />}
+
+  {
+    manualRelatedPosts.length > 0 && (
+      <AdditionalPost
+        docs=""
+        theme="dark"
+        paddingTop="small"
+        variant="manual"
+        heading="Related Posts"
+        posts={manualRelatedPosts}
+        currentSlug={post.slug}
+      />
+    )
+  }
+
+  <AdditionalPost
+    docs=""
+    paddingTop="small"
+    variant="related"
+    heading="Other posts in this category"
+    posts={relatedPosts}
+    currentSlug={post.slug}
+    currentCategories={post.categories}
+    excludeSlugs={manualRelatedSlugs}
+  />
+</BaseLayout>

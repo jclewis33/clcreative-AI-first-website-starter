@@ -1,0 +1,43 @@
+---
+export const prerender = false;
+import GlossaryTermTemplate from "../../components/templates/GlossaryTermTemplate.astro";
+import { loadQuery } from "../../sanity/lib/load-query";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import {
+  GLOSSARY_TERM_QUERY,
+  GLOSSARY_TERMS_QUERY,
+  SITE_SETTINGS_QUERY,
+} from "../../sanity/lib/queries";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const draftProps = getDraftModeProps(Astro);
+
+const { data: term } = await loadQuery<any>({
+  query: GLOSSARY_TERM_QUERY,
+  params: { slug },
+  ...draftProps,
+});
+
+if (!term) {
+  return Astro.redirect("/404");
+}
+
+const { data: allTerms } = await loadQuery<any[]>({
+  query: GLOSSARY_TERMS_QUERY,
+  ...draftProps,
+});
+
+const { data: settings } = await loadQuery<any>({
+  query: SITE_SETTINGS_QUERY,
+  ...draftProps,
+});
+const defaultCtaSection = settings?.defaultCtaSection ?? null;
+---
+
+<GlossaryTermTemplate
+  term={term}
+  allTerms={allTerms}
+  defaultCtaSection={defaultCtaSection}
+/>

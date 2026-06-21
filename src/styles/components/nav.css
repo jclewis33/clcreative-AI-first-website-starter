@@ -1,0 +1,1024 @@
+/* ==========================================================================
+   NAV COMPONENT STYLES
+   ==========================================================================
+   Fixed navigation bar. Interactions are plain CSS (:hover, :focus-within,
+   [aria-expanded], :has()) — see the interaction model note below.
+
+   Banner: Full-width announcement bar fixed above the nav. Visibility is
+   controlled by html.is-has-banner (toggles --nav-banner-height + grid rows).
+   Dismisses to sessionStorage. See variables/nav.css for height/background.
+
+   Responsive behavior (container query at 77em / 1232px):
+     Mobile  — hamburger button visible, desktop links hidden.
+               Hamburger toggles aria-expanded; mobile menu slides
+               in with clip-path animation.
+     Desktop — full link list visible, hamburger + mobile menu hidden.
+
+   Pill ↔ Full-width toggle (change in variables/nav.css):
+     Pill:   --nav-spacing-outer-horizontal: var(--site-margin)
+             --nav-spacing-outer-vertical:   .75rem
+             --nav-radius:                   var(--radius-main)
+     Full:   --nav-spacing-outer-horizontal: 0px
+             --nav-spacing-outer-vertical:   0px
+             --nav-radius:                   var(--radius-none)
+
+   Interaction model (plain CSS):
+     - Links / toggles change color on :hover.
+     - Chevrons rotate via the toggle's [aria-expanded="true"] state.
+     - The hamburger morphs via .nav_hamburger_wrap[aria-expanded="true"].
+     - Dropdown / mega panels open via
+       [data-state="expanded"]:has([aria-expanded="true"]) (attribute selector).
+     - Search field border uses :focus-within.
+
+   Structure:
+     <div class="nav_banner_wrap" />  (fixed full-width, z-index 51)
+     <nav class="nav_wrap">           (fixed, top offset by --nav-banner-height)
+       <div class="nav_inner">
+         .nav_logo_wrap
+         .nav_menu_wrap (desktop links)
+           .nav_list > .nav_link_item > .nav_link_element (simple link)
+           .nav_list > .nav_link_item > .nav_dropdown_wrap (dropdown)
+             .nav_dropdown_toggle > .nav_dropdown_icon
+             .nav_dropdown_list > .nav_dropdown_inner > .nav_dropdown_link
+         .nav_cta_wrap (desktop CTA)
+         .nav_hamburger_state > .nav_hamburger_wrap (mobile)
+       </div>
+       <div class="nav_mobile_menu">
+         .nav_mobile_list > .nav_mobile_link_item > .nav_mobile_link_element
+         .nav_mobile_list > .nav_mobile_link_item.is-dropdown
+           > .nav_mobile_dropdown_wrap > .nav_mobile_dropdown_toggle
+           > .nav_mobile_dropdown_list > .nav_mobile_dropdown_inner > .nav_mobile_dropdown_link
+         .nav_mobile_cta
+       </div>
+     </nav>
+     <div class="nav_menu_backdrop" />
+   ========================================================================== */
+
+/* =====================================================
+   SKIP LINK — hidden until keyboard focus
+   ===================================================== */
+
+.nav_skip_wrap {
+  position: fixed;
+  top: var(--space-2);
+  left: 50%;
+  transform: translateX(-50%) translateY(-200%);
+  z-index: 60;
+  background-color: var(--background);
+  color: var(--text);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-main);
+  padding: var(--space-2) var(--space-4);
+  text-decoration: none;
+  font-weight: 600;
+  opacity: 0;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.nav_skip_wrap:focus {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  outline: var(--focus-width) solid var(--color-focus-state);
+  outline-offset: var(--focus-offset-outer);
+}
+
+/* =====================================================
+   BANNER — full-width announcement bar above the nav
+   Fixed to the very top of the viewport, independent
+   of the nav bar shape (pill or full-width).
+   ===================================================== */
+
+.nav_banner_wrap {
+  background-color: var(--nav-banner-background);
+  color: var(--nav-banner-color);
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows 0.3s ease;
+  pointer-events: auto;
+  /* Pull banner out of nav_wrap's outer vertical padding (0 in full-width
+     mode, 0.75rem in pill mode) so it always sits flush to the top. */
+  margin-top: calc(var(--nav-spacing-outer-vertical) * -1);
+  margin-left: calc(var(--nav-spacing-outer-horizontal) * -1);
+  margin-right: calc(var(--nav-spacing-outer-horizontal) * -1);
+  margin-bottom: var(--nav-spacing-outer-vertical);
+}
+
+/* Expand banner when active (class on <html>) */
+html.is-has-banner .nav_banner_wrap {
+  grid-template-rows: 1fr;
+}
+
+/* Force-hide banner instantly when dismissed (prevents flicker on reload) */
+html.is-banner-dismissed .nav_banner_wrap {
+  display: none;
+}
+
+/* Overlapping single-cell grid: link centers itself, close button
+   aligns to the far right. Both occupy the same grid area. */
+.nav_banner_inner {
+  min-height: 0;
+  min-width: 0; /* allow parent grid to shrink this child */
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  justify-items: center;
+  padding: var(--space-2) var(--space-4);
+}
+
+.nav_banner_link {
+  grid-area: 1 / 1;
+  justify-self: center;
+  max-width: calc(100% - 3rem); /* leave room for close button on right */
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+/* Override global a:hover so the link keeps the banner's color on hover */
+.nav_banner_link:hover {
+  color: inherit;
+  opacity: 0.7;
+}
+
+/* Banner text is single-line by default — truncates with an ellipsis
+   via u-line-clamp-1 on the element. To allow wrapping instead, remove
+   that utility class from the <span> in Navbar.astro. */
+.nav_banner_text {
+  margin: 0;
+  font-size: var(--font-size-small);
+  font-family: var(--font-secondary);
+  text-transform: uppercase;
+  color: inherit;
+}
+
+.nav_banner_arrow {
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.nav_banner_dot {
+  flex: none;
+  width: 1.5rem;
+  aspect-ratio: 1 / 1;
+}
+
+.nav_banner_dot_outer {
+  opacity: 0.1;
+  transform-origin: center;
+  animation: nav_banner_dot_pulse 4s ease-in-out infinite;
+}
+
+.nav_banner_dot_middle {
+  opacity: 0.2;
+  transform-origin: center;
+  animation: nav_banner_dot_pulse 4s ease-in-out infinite;
+  animation-delay: 0.3s;
+}
+
+.nav_banner_dot_inner {
+  transform-origin: center;
+  animation: nav_banner_dot_blink 4s ease-in-out infinite;
+}
+
+@keyframes nav_banner_dot_pulse {
+  0%,
+  100% {
+    opacity: var(--dot-opacity-min, 0.1);
+  }
+  50% {
+    opacity: var(--dot-opacity-max, 0.35);
+  }
+}
+
+.nav_banner_dot_middle {
+  --dot-opacity-min: 0.2;
+  --dot-opacity-max: 0.5;
+}
+
+@keyframes nav_banner_dot_blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav_banner_dot_outer,
+  .nav_banner_dot_middle,
+  .nav_banner_dot_inner {
+    animation: none;
+  }
+}
+
+/* Close button overlaps in the same grid cell, pushed to the far right */
+.nav_banner_close {
+  grid-area: 1 / 1;
+  justify-self: end;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.nav_banner_close:hover {
+  opacity: 1;
+}
+
+/* =====================================================
+   NAV WRAP — fixed outer element + container query root
+   ===================================================== */
+
+.nav_wrap {
+  z-index: 50;
+  width: 100%;
+  max-width: var(--nav-max-width-outer);
+  margin: 0 auto;
+  padding-top: var(--nav-spacing-outer-vertical);
+  padding-bottom: var(--nav-spacing-outer-vertical);
+  padding-left: var(--nav-spacing-outer-horizontal);
+  padding-right: var(--nav-spacing-outer-horizontal);
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  container-type: inline-size;
+  container-name: nav;
+  pointer-events: none;
+}
+
+/* =====================================================
+   NAV INNER — visible pill-shaped bar
+   ===================================================== */
+
+/* Tier 2 — full-width background bar.
+   Background color, border-radius, and inner horizontal padding live here.
+   Padding is driven by --nav-spacing-inner-horizontal (= var(--site-margin)
+   in full-width mode, var(--site-gutter) in pill mode). */
+.nav_inner {
+  background-color: var(--nav-background);
+  color: var(--text);
+  border-bottom: var(--border-width-main) solid var(--border);
+  border-radius: var(--nav-radius);
+  padding-left: var(--nav-spacing-inner-horizontal);
+  padding-right: var(--nav-spacing-inner-horizontal);
+  width: 100%;
+  position: relative;
+  transition:
+    border-radius 0.3s ease,
+    border-color 0.3s ease;
+  pointer-events: auto;
+}
+
+/* Tier 3 — inner layout container.
+   Centers content to --nav-max-width-inner and arranges items as a flex row.
+   No padding here — padding belongs on nav_inner above. */
+.nav_contain {
+  font-family: var(--font-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-tight);
+  gap: var(--space-3);
+  height: var(--nav-height);
+  max-width: var(--nav-max-width-inner);
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+}
+
+/* When mobile menu is open, flatten bottom corners to connect with menu panel.
+   Uses :has() on nav_wrap targeting hamburger specifically, NOT the generic
+   data-state system, to avoid conflicts with dropdown aria-expanded. */
+.nav_wrap:has(.nav_hamburger_wrap[aria-expanded="true"]) .nav_inner {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+}
+
+/* When a mega menu is open, flatten bottom corners so the mega panel
+   connects seamlessly with the pill-shaped nav bar. */
+.nav_inner:has([data-dropdown-type="mega"][aria-expanded="true"]) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+}
+
+/* Hamburger state wrapper */
+.nav_hamburger_state {
+  flex: none;
+  display: flex;
+}
+
+/* =====================================================
+   NAV LOGO
+   ===================================================== */
+
+.nav_logo_wrap {
+  flex: none;
+  justify-content: flex-start;
+  align-items: center;
+  display: flex;
+}
+
+/* Target the SVG inside the Logo component anchor */
+.nav_logo_wrap svg {
+  height: 1.5rem;
+  width: auto;
+  display: block;
+}
+
+/* =====================================================
+   NAV MENU — desktop links (hidden on mobile)
+   ===================================================== */
+
+.nav_menu_wrap {
+  display: none;
+}
+
+.nav_list {
+  gap: var(--space-1);
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.nav_link_item {
+  display: flex;
+  align-items: center;
+}
+
+.nav_link_element {
+  color: var(--link-text);
+  padding: 0.4rem 0.6rem;
+  transition: color 0.2s ease;
+  display: block;
+}
+
+.nav_link_element:hover {
+  color: var(--text);
+}
+
+/* =====================================================
+   DESKTOP DROPDOWN — grid-template-rows animated panel
+   ===================================================== */
+
+/* Wrapper: relative positioning for absolute dropdown panel */
+.nav_dropdown_wrap {
+  position: relative;
+}
+
+/* Toggle button: styled like a nav link + chevron icon */
+.nav_dropdown_toggle {
+  color: var(--link-text);
+  gap: var(--space-1);
+  padding: 0.4rem 0.6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.nav_dropdown_toggle:hover {
+  color: var(--text);
+}
+
+/* Chevron icon — rotates 180deg when its toggle is expanded */
+.nav_dropdown_icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.nav_dropdown_toggle[aria-expanded="true"] .nav_dropdown_icon {
+  transform: rotate(180deg);
+}
+
+/* Dropdown panel — positioned below the toggle, animated via grid rows */
+.nav_dropdown_list {
+  position: absolute;
+  top: calc(100% + var(--nav-dropdown-offset));
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: var(--nav-dropdown-min-width);
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
+    visibility 0.3s ease;
+}
+
+/* Open state: expand the grid row + fade in */
+[data-state="expanded"]:has([aria-expanded="true"]) > .nav_dropdown_list {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Inner wrapper: required for grid-template-rows animation */
+.nav_dropdown_inner {
+  min-height: 0;
+  background-color: var(--nav-background);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--nav-dropdown-radius);
+  padding: var(--nav-dropdown-padding);
+  display: block;
+}
+
+/* Dropdown link */
+.nav_dropdown_link {
+  color: var(--link-text);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-small);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+  display: block;
+}
+
+.nav_dropdown_link:hover {
+  color: var(--text);
+}
+
+/* =====================================================
+   NAV CTA — button area (hidden on mobile)
+   ===================================================== */
+
+.nav_cta_wrap {
+  flex: none;
+  gap: var(--space-2);
+  align-items: center;
+  display: none;
+}
+
+/* =====================================================
+   NAV HAMBURGER — shown on mobile, hidden on desktop
+   ===================================================== */
+
+.nav_hamburger_wrap {
+  flex: none;
+  flex-flow: column;
+  gap: var(--nav-hamburger-gap);
+  justify-content: center;
+  align-items: center;
+  width: var(--button-size-medium);
+  height: var(--button-size-medium);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  display: flex;
+}
+
+.nav_hamburger_line_1,
+.nav_hamburger_line_2,
+.nav_hamburger_line_3 {
+  background-color: currentColor;
+  border-radius: var(--radius-full);
+  width: 1.25rem;
+  height: var(--nav-hamburger-thickness);
+  display: block;
+}
+
+/* Hamburger → X morph when the button is expanded (aria-expanded="true").
+   Line 1 drops + rotates 45deg, line 2 fades out, line 3 rises + rotates -45deg. */
+.nav_hamburger_line_1 {
+  transform: translateY(0) rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.nav_hamburger_line_2 {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.nav_hamburger_line_3 {
+  transform: translateY(0) rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.nav_hamburger_wrap[aria-expanded="true"] .nav_hamburger_line_1 {
+  transform: translateY(
+      calc(var(--nav-hamburger-gap) + var(--nav-hamburger-thickness))
+    )
+    rotate(45deg);
+}
+
+.nav_hamburger_wrap[aria-expanded="true"] .nav_hamburger_line_2 {
+  opacity: 0;
+}
+
+.nav_hamburger_wrap[aria-expanded="true"] .nav_hamburger_line_3 {
+  transform: translateY(
+      calc((var(--nav-hamburger-gap) + var(--nav-hamburger-thickness)) * -1)
+    )
+    rotate(-45deg);
+}
+
+/* =====================================================
+   NAV MOBILE MENU — clip-path animated slide-down
+
+   IMPORTANT: position: absolute is required.
+   nav_wrap is position: sticky, so the mobile menu
+   must be out of flow to avoid pushing page content
+   down when the nav is sticky. It anchors to the
+   bottom edge of nav_wrap via top: 100%.
+   ===================================================== */
+
+.nav_mobile_menu {
+  background-color: var(--nav-background);
+  border-radius: 0 0 var(--nav-radius) var(--nav-radius);
+  border: var(--border-width-main) solid var(--border);
+  border-top: none;
+  max-width: var(--nav-max-width-inner);
+  max-height: calc(100svh - var(--nav-height-total));
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-4) var(--nav-spacing-inner-horizontal) var(--space-6);
+  overflow-y: auto;
+
+  /* Out of flow — never takes up space in the sticky nav_wrap */
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+
+  /* Clip-path animation — collapsed by default */
+  clip-path: inset(0 0 100% 0);
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+/* Open state: reveal via clip-path.
+   Targets hamburger specifically to avoid dropdown toggle conflicts. */
+.nav_wrap:has(.nav_hamburger_wrap[aria-expanded="true"]) > .nav_mobile_menu {
+  clip-path: inset(0 0 0 0);
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav_mobile_list {
+  gap: 0;
+  flex-flow: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.nav_mobile_link_item {
+  border-bottom: var(--border-width-main) solid var(--border);
+  display: flex;
+}
+
+.nav_mobile_link_element {
+  color: var(--text);
+  width: 100%;
+  padding: var(--space-3) 0;
+  transition: color 0.2s ease;
+  display: block;
+}
+
+/* =====================================================
+   MOBILE DROPDOWN — inline grid-template-rows animation
+   ===================================================== */
+
+/* Wrapper fills the full width of the list item */
+.nav_mobile_dropdown_wrap {
+  width: 100%;
+}
+
+/* Toggle: same styling as mobile links + chevron */
+.nav_mobile_dropdown_toggle {
+  color: var(--text);
+  width: 100%;
+  padding: var(--space-3) 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* Mobile chevron rotation */
+.nav_mobile_dropdown_icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.nav_mobile_dropdown_toggle[aria-expanded="true"] .nav_mobile_dropdown_icon {
+  transform: rotate(180deg);
+}
+
+/* Mobile dropdown list — grid-template-rows animation */
+.nav_mobile_dropdown_list {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Open state */
+[data-state="expanded"]:has([aria-expanded="true"])
+  > .nav_mobile_dropdown_list {
+  grid-template-rows: 1fr;
+}
+
+/* Inner wrapper for grid animation */
+.nav_mobile_dropdown_inner {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile dropdown link */
+.nav_mobile_dropdown_link {
+  color: var(--link-text);
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  display: block;
+}
+
+.nav_mobile_dropdown_link:hover {
+  color: var(--text);
+}
+
+/* Mobile link hover feedback */
+.nav_mobile_link_element:hover {
+  opacity: 0.7;
+}
+
+.nav_mobile_dropdown_toggle:hover {
+  opacity: 0.7;
+}
+
+/* Dropdown list item: flex-wrap so the dropdown_wrap fills full width */
+.nav_mobile_link_item.is-dropdown {
+  flex-wrap: wrap;
+}
+
+/* Mobile CTA — full-width button at bottom of mobile menu */
+.nav_mobile_cta {
+  padding-top: var(--space-4);
+}
+
+/* =====================================================
+   NAV MENU BACKDROP — dims page behind open mobile menu
+   ===================================================== */
+
+.nav_menu_backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: var(--overlay-scrim);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+.nav_menu_backdrop.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* =====================================================
+   NAV ACTIONS — right-side items (search, language, CTA)
+   Hidden on mobile, shown at desktop breakpoint.
+   ===================================================== */
+
+.nav_actions_wrap {
+  flex: none;
+  gap: var(--space-1);
+  align-items: center;
+  display: none;
+}
+
+.nav_actions_list {
+  gap: var(--space-1);
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.nav_actions_item {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.nav_actions_cta {
+  flex: none;
+  margin-left: var(--space-2);
+}
+
+/* =====================================================
+   DESKTOP MEGA MENU — full-width multi-column dropdown
+   Mega wraps are positioned relative to nav_inner (which
+   has position: relative). The parent dropdown_wrap is set
+   to position: static so the mega escapes its bounds.
+   ===================================================== */
+
+/* Override dropdown_wrap positioning for mega menus.
+   Also reset nav_actions_item so mega panels position to nav_inner. */
+.nav_dropdown_wrap:has(.nav_mega_wrap) {
+  position: static;
+}
+.nav_actions_item:has(.nav_mega_wrap) {
+  position: static;
+}
+
+.nav_mega_wrap {
+  position: absolute;
+  top: 0;
+  left: calc(-1 * var(--border-width-main));
+  right: calc(-1 * var(--border-width-main));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
+    visibility 0.4s ease;
+}
+
+/* Open state */
+[data-state="expanded"]:has([aria-expanded="true"]) > .nav_mega_wrap {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+}
+
+.nav_mega_content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.nav_mega_scroll {
+  margin-top: calc(var(--nav-height) - var(--border-width-main));
+  max-height: calc(
+    100svh - var(--nav-height-total) - var(--nav-spacing-outer-vertical) * 2
+  );
+  overflow: hidden auto;
+  background-color: var(--nav-background);
+  border: var(--border-width-main) solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--nav-radius) var(--nav-radius);
+  pointer-events: auto;
+}
+
+.nav_mega_contain {
+  padding: var(--space-5) var(--nav-spacing-inner-horizontal) var(--space-6);
+  max-width: var(--nav-max-width-inner);
+  margin: 0 auto;
+}
+
+.nav_mega_layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: var(--space-6) var(--site-gutter);
+}
+
+.nav_mega_list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: block;
+}
+
+.nav_mega_link {
+  color: var(--link-text);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-small);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+  display: block;
+}
+
+.nav_mega_link:hover {
+  color: var(--text);
+}
+
+/* =====================================================
+   DESKTOP SEARCH — mega-style dropdown with form
+   ===================================================== */
+
+.nav_search_trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.nav_search_trigger:hover {
+  opacity: 0.7;
+}
+
+.nav_search_icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+}
+
+.nav_search_form {
+  display: flex;
+  align-items: center;
+  border-bottom: var(--border-width-main) solid var(--border);
+  gap: var(--space-2);
+  transition: border-bottom-color 0.2s ease;
+}
+
+.nav_search_btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.nav_search_btn:hover {
+  opacity: 1;
+}
+
+.nav_search_btn_icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.nav_search_label {
+  flex: 1;
+}
+
+.nav_search_field {
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+  background-color: transparent;
+  border: none;
+  width: 100%;
+  height: 2.9em;
+  padding: 0;
+  outline: none;
+}
+
+/* Override global input:focus-visible outline — the parent
+   nav_search_form border-bottom change serves as the focus indicator */
+.nav_search_field:focus-visible {
+  outline: none;
+  border-radius: 0;
+}
+
+.nav_search_field::placeholder {
+  color: var(--link-text);
+}
+
+/* Clear button — always visible when field has value, themed to --text */
+.nav_search_field::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1em;
+  height: 1em;
+  cursor: pointer;
+  background-color: var(--text);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round'%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round'%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+}
+
+/* Focus state: border-bottom goes from --border to --text (matches form_field focus) */
+.nav_search_form:focus-within {
+  border-bottom-color: var(--text);
+}
+
+/* =====================================================
+   LANGUAGE PICKER — uppercase text + regular dropdown
+   ===================================================== */
+
+.nav_language_toggle {
+  color: inherit;
+  gap: var(--space-1);
+  padding: 0.4rem 0.6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.2s ease;
+}
+
+.nav_language_toggle:hover {
+  opacity: 0.7;
+}
+
+/* =====================================================
+   MOBILE SEARCH — always visible at top of mobile menu
+   ===================================================== */
+
+.nav_mobile_search {
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-width-main) solid var(--border);
+  margin-bottom: 0;
+}
+
+/* =====================================================
+   DESKTOP BREAKPOINT — @container nav (min-width: 77em)
+   Show desktop menu + CTA, hide hamburger + mobile menu
+   ===================================================== */
+
+@container nav (min-width: 77em) {
+  .nav_menu_wrap {
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+  }
+
+  .nav_actions_wrap {
+    display: flex;
+  }
+
+  .nav_cta_wrap {
+    display: flex;
+  }
+
+  .nav_hamburger_wrap {
+    display: none;
+  }
+
+  .nav_mobile_menu {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+}

@@ -1,0 +1,47 @@
+---
+export const prerender = false;
+import CaseStudyTemplate from "../../components/templates/CaseStudyTemplate.astro";
+import { loadQuery } from "../../sanity/lib/load-query";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import {
+  CASE_STUDY_QUERY,
+  CASE_STUDIES_QUERY,
+  SITE_SETTINGS_QUERY,
+} from "../../sanity/lib/queries";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const draftProps = getDraftModeProps(Astro);
+
+const { data: study } = await loadQuery<any>({
+  query: CASE_STUDY_QUERY,
+  params: { slug },
+  ...draftProps,
+});
+
+if (!study) {
+  return Astro.redirect("/404");
+}
+
+if (study.comingSoon) {
+  return Astro.redirect("/404");
+}
+
+const { data: allStudies } = await loadQuery<any[]>({
+  query: CASE_STUDIES_QUERY,
+  ...draftProps,
+});
+
+const { data: settings } = await loadQuery<any>({
+  query: SITE_SETTINGS_QUERY,
+  ...draftProps,
+});
+const defaultCtaSection = settings?.defaultCtaSection ?? null;
+---
+
+<CaseStudyTemplate
+  study={study}
+  allStudies={allStudies}
+  defaultCtaSection={defaultCtaSection}
+/>

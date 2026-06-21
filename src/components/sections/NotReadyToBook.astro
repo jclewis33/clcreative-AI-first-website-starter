@@ -1,0 +1,90 @@
+---
+/**
+ * NotReadyToBook — brand-themed fallback CTA used at the bottom of the
+ * web design city/industry pages. Offers a low-commitment "send a note"
+ * path for visitors who aren't ready to book a call.
+ *
+ * All copy has sensible defaults matching the original inline section.
+ * Override per-page via props.
+ *
+ * @example Default usage
+ * ```astro
+ * <NotReadyToBook />
+ * ```
+ *
+ * @example Custom link target
+ * ```astro
+ * <NotReadyToBook linkHref="/contact" linkText="Send me a quick note instead →" />
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Heading from "../ui/Heading.astro";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **NotReadyToBook props:**
+   * - `heading` — lead-in text before the link (default `'Not ready to book?'`)
+   * - `linkText` — clickable link text (default `'Send me a quick note instead →'`)
+   * - `linkHref` — link target (default `'/contact'`)
+   * - `theme` — section theme (default `'brand'`)
+   * - `padding` / `paddingTop` / `paddingBottom` — section padding (default `'small'`)
+   * - `class` — extra classes on outer Section
+   */
+  docs?: string;
+
+  /** Lead-in text before the link. @default 'Not ready to book?' */
+  heading?: string;
+  /** Clickable link text. @default 'Send me a quick note instead →' */
+  linkText?: string;
+  /** Link target. @default '/contact' */
+  linkHref?: string;
+  /** Section color theme. @default 'brand' */
+  theme?: "light" | "dark" | "brand";
+  /** Sets both paddingTop and paddingBottom. @default 'small' */
+  padding?: PaddingValue;
+  /** Override top padding only. */
+  paddingTop?: PaddingValue;
+  /** Override bottom padding only. */
+  paddingBottom?: PaddingValue;
+  /** Extra classes on the outer Section. */
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  docs,
+  heading = "Not ready to book?",
+  linkText = "Send me a quick note instead →",
+  linkHref = "/contact",
+  theme = "brand",
+  padding = "small",
+  paddingTop = padding,
+  paddingBottom = padding,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<Section
+  theme={theme}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  class={className}
+  {...rest}
+>
+  <Layout variant="stack">
+    <Col slot="col1">
+      <Heading tag="h2" variant="h4">
+        {heading}
+        <a href={linkHref} class="u-text-style-underline">
+          {linkText}
+        </a>
+      </Heading>
+    </Col>
+  </Layout>
+</Section>

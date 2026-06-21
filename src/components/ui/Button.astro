@@ -1,0 +1,449 @@
+---
+/**
+ * Button — a theme-aware button component.
+ *
+ * Uses the wrapper pattern: an outer wrapper sets border-radius and is
+ * the hover/focus target, a clickable overlay (`<a>` or `<button>`) handles
+ * interaction, and a visual element displays the label and icon.
+ *
+ * **Variants** control colour and shape via `data-button-variant`:
+ * - `primary`   — filled button using `--button-primary-*` theme tokens (default)
+ * - `secondary` — outlined / ghost using `--button-secondary-*` theme tokens
+ * - `text`      — text-link style, no background, bottom-border only
+ *
+ * **Sizes** control padding via `data-button-size`:
+ * - `default` — standard padding (no attribute emitted)
+ * - `small`   — compact
+ * - `large`   — prominent CTA
+ *
+ * Colour transitions are plain CSS — `.button_main_wrap:hover` /
+ * `:has(:focus-visible)` swap the theme tokens, no JavaScript required.
+ * Buttons automatically adapt to `data-theme="light|dark|brand"` on any ancestor.
+ *
+ * @example Primary link button (most common)
+ * ```astro
+ * <Button href="/contact" ariaLabel="Contact us">Contact Us</Button>
+ * ```
+ *
+ * @example Secondary button
+ * ```astro
+ * <Button variant="secondary" href="/about" ariaLabel="Learn more about us">
+ *   Learn More
+ * </Button>
+ * ```
+ *
+ * @example Text-link button
+ * ```astro
+ * <Button variant="text" href="/blog" ariaLabel="Read more articles">
+ *   Read more →
+ * </Button>
+ * ```
+ *
+ * @example Submit button (form)
+ * ```astro
+ * <Button type="submit" ariaLabel="Submit the form">Send Message</Button>
+ * ```
+ *
+ * @example Large CTA with icon
+ * ```astro
+ * <Button href="/start" size="large" ariaLabel="Get started now">
+ *   Get Started
+ *   <svg slot="icon" aria-hidden="true" viewBox="0 0 10 10" fill="none"
+ *     stroke="currentColor" stroke-width="1.5">
+ *     <line x1="0" y1="5" x2="8" y2="5" />
+ *     <polyline points="5,2 8,5 5,8" />
+ *   </svg>
+ * </Button>
+ * ```
+ *
+ * @example Disabled button
+ * ```astro
+ * <Button disabled ariaLabel="Currently unavailable">Unavailable</Button>
+ * ```
+ *
+ * @example Square (no radius) secondary button
+ * ```astro
+ * <Button variant="secondary" square href="/pricing" ariaLabel="View pricing">
+ *   Pricing
+ * </Button>
+ * ```
+ */
+
+/**
+ * Visual style variant.
+ * - `'primary'`   — filled button with brand colours (default)
+ * - `'secondary'` — outlined / ghost button
+ * - `'text'`      — text-link style, no background or side borders
+ */
+type ButtonVariant = "primary" | "secondary" | "text";
+
+/**
+ * Size preset.
+ * - `'default'` — standard padding (.9rem 1.5rem)
+ * - `'small'`   — compact padding (.55rem 1.25rem)
+ * - `'large'`   — prominent padding (1rem 2rem)
+ */
+type ButtonSize = "default" | "small" | "large";
+
+/**
+ * Override which theme's hover tokens the button uses.
+ * Useful when a button sits inside a different-themed container
+ * (e.g. a brand-coloured button on a dark card that shouldn't hover to white).
+ */
+type ButtonHoverTheme = "light" | "dark" | "brand";
+
+/**
+ * Button — theme-aware, trigger-driven button using the wrapper pattern.
+ *
+ * Renders as `<a>` when `href` is set, `<button>` otherwise.
+ * Automatically adapts to `data-theme="light|dark|brand"` on any ancestor.
+ *
+ * **Props:**
+ * - `variant` — visual style: primary (filled), secondary (outlined), text (link style) (default: `'primary'`)
+ * - `size` — padding preset: default, small, large (default: `'default'`)
+ * - `href` — turns into a link (`<a>` tag)
+ * - `newTab` — open link in new tab (default: `false`)
+ * - `disabled` — disable the button, not links (default: `false`)
+ * - `ariaLabel` — accessible label on the clickable overlay (**required**)
+ * - `type` — native button type: button, submit, reset (default: `'button'`)
+ * - `square` — remove pill radius (default: `false`)
+ * - `id` — HTML id on wrapper
+ * - `class` — extra classes on wrapper
+ * - `[key: string]` — extra attributes spread onto clickable overlay (e.g. `data-modal-trigger`)
+ *
+ * **Slots:** default (label text), `icon` (rendered after label).
+ *
+ * @example Button with supporting copy
+ * ```astro
+ * <Button href="/book-a-call" ariaLabel="Book a call" supportText="No credit card required">
+ *   Get Started
+ * </Button>
+ * ```
+ */
+interface Props {
+  /**
+   * **Button props:**
+   * - `variant` — `'primary'` | `'secondary'` | `'text'` (default `'primary'`)
+   * - `size` — `'default'` | `'small'` | `'large'` (default `'default'`)
+   * - `href` — link URL (renders `<a>`)
+   * - `newTab` — open in new tab
+   * - `disabled` — disable button
+   * - `ariaLabel` — accessible label (required)
+   * - `type` — `'button'` | `'submit'` | `'reset'` (default `'button'`)
+   * - `square` — removes pill radius
+   * - `fullWidth` — stretches button to 100% width (block display) (default `false`)
+   * - `hoverTheme` — `'light'` | `'dark'` | `'brand'` — override hover colours with a different theme's tokens. Useful when a button sits on a differently-themed container (e.g. brand button on dark card → pass `hoverTheme="brand"` to avoid dark hover).
+   * - `id` — wrapper id
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to clickable overlay (`<a>` or `<button>`)
+   *
+   * **Slots:** default (label text), `icon` (after label)
+   */
+  docs?: string;
+
+  /**
+   * Visual style of the button.
+   *
+   * | Value | Description |
+   * |-------|-------------|
+   * | `'primary'` | Filled button — uses `--button-primary-*` theme tokens. Lime on light, lime on dark, inverted on brand. |
+   * | `'secondary'` | Outlined / ghost — uses `--button-secondary-*` theme tokens. Transparent bg with border. |
+   * | `'text'` | Text-link style — no background, no side borders, bottom border only. Uses `--link-*` theme tokens. |
+   *
+   * @default 'primary'
+   */
+  variant?: ButtonVariant;
+
+  /**
+   * Size preset — controls padding on the button element.
+   *
+   * | Value | Padding |
+   * |-------|---------|
+   * | `'default'` | `.9rem 1.5rem` |
+   * | `'small'` | `.55rem 1.25rem` |
+   * | `'large'` | `1rem 2rem` |
+   *
+   * @default 'default'
+   */
+  size?: ButtonSize;
+
+  /**
+   * Turns the button into a link (`<a>` tag).
+   * When set, the clickable overlay renders as an `<a>` element.
+   * When omitted, it renders as a `<button>` element.
+   *
+   * @example
+   * ```astro
+   * <Button href="/about" ariaLabel="About us">About</Button>
+   * ```
+   */
+  href?: string;
+
+  /**
+   * Opens the link in a new tab. Only applies when `href` is set.
+   * Automatically adds `rel="noopener noreferrer"` for security.
+   * @default false
+   */
+  newTab?: boolean;
+
+  /**
+   * Disables the button. Only applies to `<button>` elements (not links).
+   * When disabled, the wrapper gets `opacity: 0.4`, `cursor: not-allowed`,
+   * and `pointer-events: none` via the `[data-button]:has(button:disabled)` rule.
+   * @default false
+   */
+  disabled?: boolean;
+
+  /**
+   * Accessible label for the clickable overlay.
+   * This is the text screen readers announce — the visible `.button_main_text`
+   * is set to `aria-hidden="true"`.
+   *
+   * **Required** — always pass the readable button text here.
+   *
+   * @example ariaLabel="Book your free strategy call"
+   */
+  ariaLabel?: string;
+
+  /**
+   * Native button type. Only applies when `href` is **not** set.
+   * - `'button'` — generic (default)
+   * - `'submit'` — submits the nearest `<form>`
+   * - `'reset'`  — resets the nearest `<form>`
+   * @default 'button'
+   */
+  type?: "button" | "submit" | "reset";
+
+  /**
+   * Removes the default pill radius (sets `border-radius: 0`).
+   * Applies the `button_main_wrap--no-radius` modifier.
+   * @default false
+   *
+   * @example
+   * ```astro
+   * <Button square href="/pricing" ariaLabel="View pricing">Pricing</Button>
+   * ```
+   */
+  square?: boolean;
+
+  /**
+   * @deprecated No longer needed — a `<Button>` with no `href` already renders
+   * as a plain `<button>`. This prop is now a no-op, kept only so existing
+   * usage doesn't break. Simply omit `href` for an action/modal/form button.
+   *
+   * @default false
+   */
+  action?: boolean;
+
+  /**
+   * Stretches the button to 100% width of its parent (block display).
+   * By default buttons are `inline-block` and shrink-wrap their content.
+   * @default false
+   *
+   * @example
+   * ```astro
+   * <Button fullWidth href="/start" ariaLabel="Get started">Get Started</Button>
+   * ```
+   */
+  fullWidth?: boolean;
+
+  /**
+   * Override which theme's hover tokens the button uses.
+   * Useful when a button sits inside a container whose theme
+   * would produce an awkward hover — e.g. a brand primary button
+   * on a dark card that hovers to white by default.
+   *
+   * | Value | Effect |
+   * |-------|--------|
+   * | `'light'` | Hover uses the light theme's button tokens (hover to dark) |
+   * | `'dark'`  | Hover uses the dark theme's button tokens (hover to white) |
+   * | `'brand'` | Hover uses the brand theme's button tokens (subtle darken) |
+   *
+   * @example
+   * ```astro
+   * <Button hoverTheme="brand" href="#" ariaLabel="CTA">Get the guide</Button>
+   * ```
+   */
+  hoverTheme?: ButtonHoverTheme;
+
+  /**
+   * HTML `id` attribute applied to the wrapper element.
+   *
+   * @example id="hero-cta"
+   */
+  id?: string;
+
+  /**
+   * Extra classes appended to the outer `.button_main_wrap` wrapper.
+   * Use for spacing utilities or layout overrides.
+   *
+   * @example class="u-margin-top-4"
+   */
+  class?: string;
+
+  /**
+   * Optional supporting copy displayed below the button.
+   * When omitted, no extra element is rendered.
+   * Renders as a small, muted text line beneath the button.
+   *
+   * @example
+   * ```astro
+   * <Button href="/book-a-call" ariaLabel="Book a call" supportText="No credit card required">
+   *   Get Started
+   * </Button>
+   * ```
+   */
+  supportText?: string;
+
+  /**
+   * Catch-all for additional HTML attributes.
+   * Any extra props are spread onto the clickable overlay element (`<a>` or `<button>`).
+   * Useful for `data-modal-trigger`, `data-modal-close`, etc.
+   *
+   * @example
+   * ```astro
+   * <Button data-modal-trigger="contact-modal" ariaLabel="Open contact form">
+   *   Contact Us
+   * </Button>
+   * ```
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  variant = "primary",
+  size = "default",
+  href,
+  newTab = false,
+  disabled = false,
+  ariaLabel,
+  type = "button",
+  square = false,
+  action = false,
+  fullWidth = false,
+  hoverTheme,
+  supportText,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* Renders as <a> when an href is provided, otherwise a plain <button> — for
+   modal triggers/closes (data-modal-trigger / data-modal-close), form submits,
+   or any on-page JS action. Those attributes flow through `...rest` onto the
+   element below; there is no default navigation. */
+const resolvedHref = href;
+const resolvedAriaLabel = ariaLabel;
+
+/* Wrapper classes */
+const wrapClasses = [
+  "button_main_wrap",
+  square && "button_main_wrap--no-radius",
+  fullWidth && "button_main_wrap--full-width",
+  className,
+]
+  .filter(Boolean)
+  .join(" ");
+
+/* Data attributes for variant/size (CSS selectors in buttons.css) */
+const dataVariant = variant;
+const dataSize = size !== "default" ? size : undefined;
+const dataHoverTheme = hoverTheme || undefined;
+
+/* Security defaults for external links */
+const linkRel = newTab ? "noopener noreferrer" : undefined;
+const linkTarget = newTab ? "_blank" : undefined;
+
+/* Check if icon slot is used */
+const hasIcon = Astro.slots.has("icon");
+---
+
+{
+  supportText ? (
+    <div class="button_support_wrap">
+      <div
+        class={wrapClasses}
+        data-button-variant={dataVariant}
+        data-button-size={dataSize}
+        data-button-hover={dataHoverTheme}
+        data-button
+        id={id}
+      >
+        <div class="clickable_wrap u-cover-absolute">
+          {resolvedHref ? (
+            <a
+              href={resolvedHref}
+              class="clickable_link"
+              aria-label={resolvedAriaLabel}
+              target={linkTarget}
+              rel={linkRel}
+              {...rest}
+            />
+          ) : (
+            <button
+              class="clickable_btn"
+              type={type}
+              disabled={disabled}
+              aria-label={resolvedAriaLabel}
+              {...rest}
+            />
+          )}
+        </div>
+        <div class="button_main_element">
+          <span class="button_main_text" aria-hidden="true">
+            <slot />
+          </span>
+          {hasIcon && (
+            <span class="button_main_icon">
+              <slot name="icon" />
+            </span>
+          )}
+        </div>
+      </div>
+      <p class="button_support_text u-text-style-small u-text-style-muted">
+        {supportText}
+      </p>
+    </div>
+  ) : (
+    <div
+      class={wrapClasses}
+      data-button-variant={dataVariant}
+      data-button-size={dataSize}
+      data-button-hover={dataHoverTheme}
+      data-button
+      id={id}
+    >
+      <div class="clickable_wrap u-cover-absolute">
+        {resolvedHref ? (
+          <a
+            href={resolvedHref}
+            class="clickable_link"
+            aria-label={resolvedAriaLabel}
+            target={linkTarget}
+            rel={linkRel}
+            {...rest}
+          />
+        ) : (
+          <button
+            class="clickable_btn"
+            type={type}
+            disabled={disabled}
+            aria-label={resolvedAriaLabel}
+            {...rest}
+          />
+        )}
+      </div>
+      <div class="button_main_element">
+        <span class="button_main_text" aria-hidden="true">
+          <slot />
+        </span>
+        {hasIcon && (
+          <span class="button_main_icon">
+            <slot name="icon" />
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}

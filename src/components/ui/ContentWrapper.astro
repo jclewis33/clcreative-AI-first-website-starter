@@ -1,0 +1,136 @@
+---
+/**
+ * ContentWrapper — block-level alignment wrapper for content.
+ *
+ * Controls text alignment and cascades `align-items` / `justify-content`
+ * down to child flex/grid containers (e.g. `.u-text` uses
+ * `align-items: inherit`, so headings and text inside will follow
+ * the wrapper's alignment).
+ *
+ * This is **not** a flex or grid container — it's a plain block wrapper.
+ * Margin-trim is applied automatically (first child loses margin-top,
+ * last child loses margin-bottom).
+ *
+ * @example Inherit alignment from parent (default)
+ * ```astro
+ * <ContentWrapper>
+ *   <Heading tag="h2" variant="h2">Title</Heading>
+ *   <Text variant="large">Body text.</Text>
+ * </ContentWrapper>
+ * ```
+ *
+ * @example Center-aligned content
+ * ```astro
+ * <ContentWrapper align="center">
+ *   <Heading tag="h2" variant="h2">Centered Title</Heading>
+ *   <Text variant="large">Centered body text.</Text>
+ * </ContentWrapper>
+ * ```
+ *
+ * @example Center on mobile, inherit on desktop
+ * ```astro
+ * <ContentWrapper align="center-mobile">
+ *   <Heading tag="h2" variant="h2">Responsive Title</Heading>
+ *   <Text>Left on desktop, centered on mobile.</Text>
+ * </ContentWrapper>
+ * ```
+ */
+
+/**
+ * ContentWrapper — block-level alignment wrapper for content.
+ *
+ * Controls text alignment and cascades alignment to child flex/grid
+ * containers. Not a flex or grid layout itself — it's a plain block
+ * wrapper with margin-trim on first/last children.
+ *
+ * **Props:**
+ * - `align` — alignment variant: `'inherit'`, `'center'`, `'left'`, `'right'`, `'center-mobile'` (default: `'inherit'`)
+ * - `maxWidth` — constrain children width (e.g. `'48rem'`, `'600px'`)
+ * - `class` — extra utility classes
+ *
+ * **Slot:** default — content (Heading, Text, Button, etc.)
+ */
+interface Props {
+  /**
+   * **ContentWrapper props:**
+   * - `align` — inherit, center, left, right, center-mobile (default 'inherit')
+   * - `maxWidth` — constrain children width (e.g. `'48rem'`, `'600px'`). Wrapper stays full-width for alignment; inner container is constrained and auto-centered.
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
+   *
+   * **Slot:** default — content
+   */
+  docs?: string;
+
+  /**
+   * Alignment variant — controls text-align, align-items, and justify-content.
+   *
+   * - `'inherit'` — inherits alignment from the parent (default)
+   * - `'center'` — center-align everything
+   * - `'left'` — left/start-align everything
+   * - `'right'` — right/end-align everything
+   * - `'center-mobile'` — center at medium breakpoint (< 58em / ~928px),
+   *   start-align above that. Uses the `--center-medium` responsive flag.
+   *
+   * @default 'inherit'
+   * @example align="center"
+   * @example align="center-mobile"
+   */
+  align?: 'inherit' | 'center' | 'left' | 'right' | 'center-mobile';
+
+  /**
+   * Max-width constraint on the content inside the wrapper.
+   * The wrapper stays full-width for alignment context; an inner
+   * container is constrained and centered with `margin-inline: auto`.
+   * Pass any CSS length value.
+   * @example maxWidth="48rem"
+   * @example maxWidth="600px"
+   */
+  maxWidth?: string;
+
+  /** Extra utility classes. */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
+   * are forwarded to the root `.u-content-wrapper` element.
+   * @example style="--custom: value" data-animate="fade"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  align = 'inherit',
+  maxWidth,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* Map align prop → combo class */
+const alignClassMap: Record<string, string | null> = {
+  'inherit':       null,
+  'center':        'is-center-align',
+  'left':          'is-left-align',
+  'right':         'is-right-align',
+  'center-mobile': 'is-center-align-mobile',
+};
+
+const wrapperClasses = [
+  'u-content-wrapper',
+  alignClassMap[align],
+  className,
+].filter(Boolean).join(' ');
+---
+
+{maxWidth ? (
+  <div class={wrapperClasses} {...rest}>
+    <div class="u-content-wrapper_inner" style={`max-width: ${maxWidth};`}>
+      <slot />
+    </div>
+  </div>
+) : (
+  <div class={wrapperClasses} {...rest}>
+    <slot />
+  </div>
+)}

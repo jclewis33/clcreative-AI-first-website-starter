@@ -1,0 +1,136 @@
+/* ==========================================================================
+   CASE STUDIES PAGE STYLES
+   ==========================================================================
+   Custom classes for the case studies listing page:
+     - Case studies hero section (case-studies_hero_*)
+     - Filter bar above the grid (case-study_grid_header, _filter_wrap,
+       _select_wrap, _filter_select, _select_arrow, _search_wrap,
+       _search_icon, _search_input)
+     - No-results message (case-study_no_results)
+
+   Note: Case study card styles (case-study_card_*) live in
+   src/styles/components/case-study-card.css and are loaded globally,
+   so the card renders consistently on any page.
+   ========================================================================== */
+
+/* ---- Filter Bar (above the grid) ---- */
+
+.case-study_grid_header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.case-study_filter_wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.case-study_select_wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.case-study_filter_select {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--background-2);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-main);
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  min-width: 12rem;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.case-study_filter_select:focus {
+  border-color: var(--text);
+}
+
+.case-study_select_arrow {
+  position: absolute;
+  right: 1rem;
+  color: var(--text);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.case-study_search_wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.case-study_search_icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.case-study_search_input {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--background-2);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-main);
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  min-width: 18rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.case-study_search_input::placeholder {
+  color: var(--text);
+  opacity: 0.4;
+}
+
+.case-study_search_input:focus {
+  border-color: var(--text);
+}
+
+@container (width < 35em) {
+  .case-study_grid_header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .case-study_filter_wrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .case-study_select_wrap,
+  .case-study_search_wrap {
+    width: 100%;
+  }
+
+  .case-study_filter_select,
+  .case-study_search_input {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* ---- No Results ---- */
+
+.case-study_no_results {
+  padding: var(--space-8) 0;
+}
+
+/* ---- Hero Section ---- */
+
+/* .case-studies_hero_wrap {
+ Styling handled by Section component
+}*/

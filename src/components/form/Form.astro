@@ -1,0 +1,94 @@
+---
+/**
+ * Form — wrapper component for the `<form>` element.
+ *
+ * Renders `.form_wrap` > `<form class="form_element">` with an open slot
+ * for field components. Optionally renders success and error feedback
+ * messages (hidden by default — surface them via client-side JS).
+ *
+ * @example
+ * ```astro
+ * <Form name="contact" successMessage="Thanks!" errorMessage="Something went wrong.">
+ *   <FormFieldset columns={2}>
+ *     <FormField label="First Name" name="first-name" required />
+ *     <FormField label="Last Name" name="last-name" required />
+ *   </FormFieldset>
+ *   <Button type="submit" ariaLabel="Send">Submit</Button>
+ * </Form>
+ * ```
+ */
+
+interface Props {
+  /**
+   * Form name — used as the `name` attribute on the `<form>` element.
+   */
+  name?: string;
+
+  /**
+   * Form action URL. Omit for client-side JS handling.
+   */
+  action?: string;
+
+  /**
+   * HTTP method.
+   * @default 'POST'
+   */
+  method?: 'GET' | 'POST';
+
+  /**
+   * Success message shown after successful submission.
+   * When provided, the success wrapper renders (hidden by default).
+   */
+  successMessage?: string;
+
+  /**
+   * Error message shown when submission fails.
+   * When provided, the error wrapper renders (hidden by default).
+   */
+  errorMessage?: string;
+
+  /** HTML `id` attribute on the outer wrapper. */
+  id?: string;
+
+  /** Extra classes on the outer `.form_wrap` element. */
+  class?: string;
+
+  /** Catch-all for data attributes spread onto the `<form>`. */
+  [key: string]: any;
+}
+
+const {
+  name,
+  action,
+  method = 'POST',
+  successMessage,
+  errorMessage,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<div class:list={['form_wrap', className]} id={id}>
+  <form
+    class="form_element"
+    name={name}
+    action={action}
+    method={method}
+    {...rest}
+  >
+    <slot />
+  </form>
+
+  {successMessage && (
+    <div class="form_success_wrap" style="display: none;" role="status">
+      <p class="form_success_text">{successMessage}</p>
+    </div>
+  )}
+
+  {errorMessage && (
+    <div class="form_error_wrap" style="display: none;" role="alert">
+      <p class="form_error_text">{errorMessage}</p>
+    </div>
+  )}
+</div>

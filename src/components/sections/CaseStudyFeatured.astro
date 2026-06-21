@@ -1,0 +1,298 @@
+---
+/**
+ * CaseStudyFeatured — showcase section with an interactive flex layout.
+ *
+ * Displays 3 case study cards in a row. The first card starts wider
+ * than the other two. On desktop, hovering any card expands it while
+ * the others narrow — powered by CSS `flex` transitions.
+ *
+ * Below the large breakpoint the 1-wide + 2-narrow layout is preserved.
+ * When the container collapses further, all cards stack at equal width.
+ *
+ * Designed to be placed once and updated in one place — pass studies
+ * via prop or let it pull the first 3 featured case studies from data.
+ *
+ * @example Default usage (pulls first 3 featured case studies)
+ * ```astro
+ * <CaseStudyFeatured />
+ * ```
+ *
+ * @example Custom heading + studies
+ * ```astro
+ * <CaseStudyFeatured
+ *   eyebrow="Our Work"
+ *   studies={myStudies}
+ * >
+ *   <Fragment slot="heading">
+ *     <Heading tag="h2" variant="display-sm">Custom heading</Heading>
+ *   </Fragment>
+ * </CaseStudyFeatured>
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Visual from "../ui/Visual.astro";
+import Button from "../ui/Button.astro";
+
+import { loadQuery } from "../../sanity/lib/load-query";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import { urlFor } from "../../sanity/lib/image";
+
+type SectionTheme = "light" | "dark" | "brand";
+type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+
+/**
+ * CaseStudyFeatured — interactive 3-card showcase with hover expand animation.
+ *
+ * **Props:**
+ * - `slugs` — 3 case study slugs in display order (falls back to Satterfield, Leverture, PopCandi)
+ * - `eyebrow` — eyebrow text above heading (default `'Proven Results'`)
+ * - `headingVariant` — visual style for card title headings (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
+ * - `theme` — light, dark, brand
+ * - `padding` — none, small, main, large, page-top (default `'main'`)
+ * - `paddingTop` / `paddingBottom` — override individual padding
+ * - `id` — section anchor id
+ * - `class` — extra classes
+ *
+ * **Slots:** `heading` — custom heading markup (replaces default stats heading)
+ */
+interface Props {
+  /**
+   * **CaseStudyFeatured props:**
+   * - `studies` — pre-fetched case study data array (skips internal Sanity fetch when provided)
+   * - `slugs` — 3 case study slugs in display order (falls back to Satterfield, Leverture, PopCandi)
+   * - `eyebrow` — eyebrow text (default `'Proven Results'`)
+   * - `headingVariant` — card title heading variant (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
+   * - `theme` — light, dark, brand
+   * - `padding` — none, small, main, large, page-top (default `'main'`)
+   * - `paddingTop` / `paddingBottom` — override individual padding
+   * - `id` — section anchor id
+   * - `class` — extra classes
+   *
+   * **Slots:** `heading` — custom heading markup
+   */
+  docs?: string;
+
+  /**
+   * Case study slugs to display, in display order. Exactly 3 required.
+   * Falls back to Satterfield Builders, Leverture, PopCandi AI.
+   *
+   * @default ["satterfield-builders-website-redesign-for-modern-home-builder", "leverture-web-design-and-development-for-an-agency", "popcandi-ai-marketing-and-saas-platform"]
+   * @example slugs={["slug-a", "slug-b", "slug-c"]}
+   */
+  slugs?: [string, string, string];
+
+  /**
+   * Pre-fetched case study data from Sanity. When provided, the component
+   * skips its internal Sanity fetch — use this to parallelize fetches at
+   * the page level with `Promise.all`.
+   *
+   * Each object needs: `slug`, `client`, `description`, `image`, `imageAlt`.
+   * Must be in display order (first item renders as the expanded card).
+   *
+   * @example studies={prefetchedStudies}
+   */
+  studies?: any[];
+
+  /**
+   * Eyebrow text rendered above the heading.
+   *
+   * @default 'Proven Results'
+   * @example eyebrow="Our Work"
+   */
+  eyebrow?: string;
+
+  /**
+   * Visual style for each card's title heading. Controls font size
+   * and weight without changing the semantic `<h3>` tag.
+   *
+   * Accepts any Heading `variant` value:
+   * - `'display-xl'` | `'display-lg'` | `'display-md'` | `'display-sm'`
+   * - `'h1'` | `'h2'` | `'h3'` | `'h4'` | `'h5'` | `'h6'`
+   * - `'eyebrow'`
+   *
+   * @default 'h6'
+   * @example headingVariant="h5"
+   */
+  headingVariant?:
+    | "display-xl"
+    | "display-lg"
+    | "display-md"
+    | "display-sm"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "eyebrow";
+
+  /**
+   * Section color theme.
+   * @example theme="dark"
+   */
+  theme?: SectionTheme;
+
+  /**
+   * Section vertical padding.
+   * @default 'main'
+   */
+  padding?: PaddingSize;
+
+  /** Override top padding only. */
+  paddingTop?: PaddingSize;
+
+  /** Override bottom padding only. */
+  paddingBottom?: PaddingSize;
+
+  /** Section anchor id. */
+  id?: string;
+
+  /** Extra classes on the outer Section element. */
+  class?: string;
+}
+
+/* ── Exported constants for page-level fetching ───────────────────────── */
+
+export const FEATURED_CASE_STUDIES_SLUGS: [string, string, string] = [
+  "satterfield-builders-website-redesign-for-modern-home-builder",
+  "leverture-web-design-and-development-for-an-agency",
+  "popcandi-ai-marketing-and-saas-platform",
+];
+
+export const FEATURED_CASE_STUDIES_QUERY = `*[_type == "caseStudy" && slug.current in $slugs] {
+  "slug": slug.current,
+  client,
+  description,
+  image,
+  "imageAlt": coalesce(imageAlt, image.asset->altText, "")
+}`;
+
+const {
+  docs,
+  slugs = FEATURED_CASE_STUDIES_SLUGS,
+  studies,
+  eyebrow = "Proven Results",
+  headingVariant = "h6",
+  theme,
+  padding = "main",
+  paddingTop,
+  paddingBottom,
+  id,
+  class: className,
+} = Astro.props;
+
+/* ── Resolve studies — use prop or fetch from Sanity ──────────────────── */
+
+let displayStudies: any[];
+
+if (studies && studies.length >= 3) {
+  // Pre-fetched data provided — skip internal fetch
+  displayStudies = studies;
+} else {
+  // Fetch from Sanity (standalone usage)
+  const { data: results } = await loadQuery<any[]>({
+    query: FEATURED_CASE_STUDIES_QUERY,
+    params: { slugs },
+    ...getDraftModeProps(Astro),
+  });
+  displayStudies = slugs
+    .map((slug: string) => (results ?? []).find((s: any) => s.slug === slug))
+    .filter(Boolean);
+}
+
+/* ── Heading slot ─────────────────────────────────────────────────────── */
+
+const hasHeadingSlot = Astro.slots.has("heading");
+---
+
+{
+  displayStudies.length >= 3 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      id={id}
+      class:list={["case-study-featured_wrap", className]}
+    >
+      <div class="case-study-featured_inner u-container">
+        {/* Heading area */}
+        <div
+          data-prevent-flicker="true"
+          data-fade-in
+          class="case-study-featured_heading"
+        >
+          {hasHeadingSlot ? (
+            <slot name="heading" />
+          ) : (
+            <>
+              {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+              <Heading
+                data-prevent-flicker="true"
+                data-split-text
+                variant="h1"
+                maxWidth="40ch"
+              >
+                530% more traffic.
+                <br />
+                Enterprise trial signups.
+                <br />
+                50+ SEO pages deployed.
+              </Heading>
+            </>
+          )}
+        </div>
+
+        {/* Cards */}
+        <div class="case-study-featured_cards">
+          {displayStudies.map((study: any, i: number) => (
+            <a
+              href={`/case-studies/${study.slug}`}
+              class:list={[
+                "case-study-featured_card",
+                i === 0 && "is-expanded",
+              ]}
+              aria-label={`View ${study.client} case study`}
+            >
+              <div class="case-study-featured_card_visual">
+                <Visual
+                  src={
+                    typeof study.image === "string"
+                      ? study.image
+                      : urlFor(study.image).width(1200).url()
+                  }
+                  alt={study.imageAlt}
+                  width={1200}
+                  height={800}
+                  radius="large"
+                />
+              </div>
+              <div class="case-study-featured_card_content">
+                <Heading
+                  tag="h3"
+                  variant={headingVariant}
+                  marginBottom={0}
+                  maxWidth="100%"
+                >
+                  {study.client}
+                </Heading>
+                <Text variant="small" marginBottom={0}>
+                  {study.description}
+                </Text>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div class="u-button-wrapper">
+          {" "}
+          <Button href="/case-studies" ariaLabel="View All Case Studies">
+            View All Case Studies
+          </Button>{" "}
+        </div>
+      </div>
+    </Section>
+  )
+}

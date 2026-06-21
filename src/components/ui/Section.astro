@@ -1,0 +1,284 @@
+---
+/**
+ * Section — full-width page section with theming, fluid padding,
+ * optional background slot, and a constrained container.
+ *
+ * Slots:
+ *   - `background` — absolute overlay (z-index 0) for background images,
+ *     videos, or gradient divs. Use `<Visual variant="background">`.
+ *   - `default` — main content, rendered inside a `.u-container`.
+ *
+ * Always use `paddingTop="page-top"` on the first section after the nav.
+ *
+ * @example Dark hero with background image
+ * ```astro
+ * <Section theme="dark" paddingTop="page-top" minHeight id="hero">
+ *   <Visual slot="background" src={bg} alt="" variant="background" priority />
+ *   <Heading tag="h1" variant="display-xl">Page Title</Heading>
+ *   <Text variant="large">Supporting text.</Text>
+ * </Section>
+ * ```
+ *
+ * @example Standard content section
+ * ```astro
+ * <Section padding="large" theme="light">
+ *   <Heading tag="h2" variant="h2">Section Title</Heading>
+ *   <Text variant="regular">Body copy.</Text>
+ * </Section>
+ * ```
+ *
+ * @example Narrow prose section
+ * ```astro
+ * <Section container="narrow" padding="main">
+ *   <Text variant="large">Long-form article text…</Text>
+ * </Section>
+ * ```
+ */
+
+type SectionTheme =
+  /** Inherit the current page / parent theme — no data-theme rendered, section stays transparent */
+  | 'inherit'
+  | 'light'
+  | 'dark'
+  | 'brand';
+
+type PaddingSize =
+  /** No vertical padding */
+  | 'none'
+  /** Extra small — 1.25–2rem fluid */
+  | 'xsmall'
+  /** Small — 3–5rem fluid */
+  | 'small'
+  /** Main — 4–7rem fluid (default) */
+  | 'main'
+  /** Large — 5.5–10rem fluid */
+  | 'large'
+  /** Page top — 10–14rem fluid, use on the first section on a page */
+  | 'page-top';
+
+type ContainerSize =
+  /** Standard container — max 90rem / 1440px */
+  | 'default'
+  /** Narrow container — max 48rem / 768px (good for prose) */
+  | 'narrow'
+  /** Wide container — max 120rem / 1920px */
+  | 'wide'
+  /** Full-width — no max-width constraint */
+  | 'full';
+
+/**
+ * Section — full-width page section with theming, fluid padding,
+ * optional background slot, and a constrained container.
+ *
+ * **Props:**
+ * - `theme` — color theme: inherit, light, dark, brand
+ * - `padding` — vertical padding: none, small, main, large, page-top (default: `'main'`)
+ * - `paddingTop` — override top padding only (use `'page-top'` on the first section)
+ * - `paddingBottom` — override bottom padding only
+ * - `minHeight` — full viewport height `min-height: 100svh` (default: `false`)
+ * - `container` — container max-width: default, narrow, wide, full (default: `'default'`)
+ * - `id` — HTML id for same-page anchor links
+ * - `class` — extra classes on `<section>`
+ *
+ * **Slots:** `background` (absolute overlay for images/videos), default (content inside container).
+ */
+interface Props {
+  /**
+   * **Section props:**
+   * - `theme` — inherit, light, dark, brand (cascades to children)
+   * - `padding` — sets both top + bottom (default 'main'). Override per-side with paddingTop / paddingBottom.
+   * - `paddingTop` — override top only (use 'page-top' on first section after nav)
+   * - `paddingBottom` — override bottom only
+   * - `minHeight` — 100svh for hero sections
+   * - `container` — default, narrow, wide, full
+   * - `gap` — 0–8, container flex gap (default: 8 / `--space-8`)
+   * - `id` — anchor link target
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to `<section>`
+   *
+   * **Padding options (fluid values scale with viewport):**
+   * | Value        | Height                    | Use case                           |
+   * |--------------|---------------------------|------------------------------------|
+   * | `'none'`     | 0px                       | No spacing (flush sections)        |
+   * | `'xsmall'`   | 1.25rem → 2rem (20–32px)  | Tight sub-sections (case studies)  |
+   * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
+   * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
+   * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
+   * | `'page-top'` | 10rem → 14rem (160–224px) | First section — clears fixed nav   |
+   *
+   * **Slots:** `background` (absolute overlay for images/videos), default (container content)
+   */
+  docs?: string;
+
+  /**
+   * Color theme — cascades CSS variables to all children.
+   * - `inherit` — transparent, inherits parent theme (same as omitting)
+   * - `light`   — light background, dark text
+   * - `dark`    — dark background, light text
+   * - `brand`   — brand-colored background
+   *
+   * @example theme="dark"
+   */
+  theme?: SectionTheme;
+
+  /**
+   * Vertical padding (top + bottom). Override per-side with
+   * `paddingTop` / `paddingBottom`.
+   *
+   * | Value        | Height                    | Use case                           |
+   * |--------------|---------------------------|------------------------------------|
+   * | `'none'`     | 0px                       | No spacing (flush sections)        |
+   * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
+   * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
+   * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
+   * | `'page-top'` | 10rem → 14rem (160–224px) | First section — clears fixed nav   |
+   *
+   * @default 'main'
+   * @example padding="large"
+   */
+  padding?: PaddingSize;
+
+  /**
+   * Override top padding only.
+   *
+   * | Value        | Height                    | Use case                           |
+   * |--------------|---------------------------|------------------------------------|
+   * | `'none'`     | 0px                       | No spacing (flush sections)        |
+   * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
+   * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
+   * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
+   * | `'page-top'` | 10rem → 14rem (160–224px) | First section — clears fixed nav   |
+   *
+   * @example paddingTop="page-top"
+   */
+  paddingTop?: PaddingSize;
+
+  /**
+   * Override bottom padding only.
+   *
+   * | Value        | Height                    | Use case                           |
+   * |--------------|---------------------------|------------------------------------|
+   * | `'none'`     | 0px                       | No spacing (flush sections)        |
+   * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
+   * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
+   * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
+   * | `'page-top'` | 10rem → 14rem (160–224px) | First section — clears fixed nav   |
+   *
+   * @example paddingBottom="none"
+   */
+  paddingBottom?: PaddingSize;
+
+  /**
+   * Full viewport height (`min-height: 100svh`). Use for hero sections.
+   * @default false
+   * @example minHeight
+   */
+  minHeight?: boolean;
+
+  /**
+   * Container max-width.
+   * - `default` — 90 rem / 1440 px
+   * - `narrow`  — 48 rem / 768 px (prose)
+   * - `wide`    — 120 rem / 1920 px
+   * - `full`    — no constraint
+   *
+   * @default 'default'
+   * @example container="narrow"
+   */
+  container?: ContainerSize;
+
+  /**
+   * Gap between child elements in the container (uses `--space-N` scale).
+   * Overrides the default `--space-8` gap on the container flex layout.
+   *
+   * | Value | Size               |
+   * |-------|--------------------|
+   * | `0`   | 0px                |
+   * | `1`   | ~6–8px fluid       |
+   * | `2`   | ~8–12px fluid      |
+   * | `3`   | ~12–16px fluid     |
+   * | `4`   | ~16–24px fluid     |
+   * | `5`   | ~20–32px fluid     |
+   * | `6`   | ~24–40px fluid     |
+   * | `7`   | ~32–48px fluid     |
+   * | `8`   | ~40–64px fluid     |
+   *
+   * @example gap={4}
+   */
+  gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+  /**
+   * HTML `id` for same-page anchor links.
+   * @example id="about"
+   */
+  id?: string;
+
+  /**
+   * Extra classes on the `<section>` element.
+   * @example class="u-background-1"
+   */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
+   * are forwarded to the root `<section>` element.
+   * @example style="--custom: value" data-animate="fade"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  theme,
+  padding     = 'main',
+  paddingTop,
+  paddingBottom,
+  minHeight   = false,
+  container   = 'default',
+  gap,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* Resolve per-side padding, falling back to the shared `padding` prop */
+const topPadding    = paddingTop    ?? padding;
+const bottomPadding = paddingBottom ?? padding;
+
+/* Container modifier class */
+const containerClass = {
+  'u-container-narrow': container === 'narrow',
+  'u-container-wide':   container === 'wide',
+  'u-container-full':   container === 'full',
+};
+
+/* Check if background slot is used — only renders the slot div when needed */
+const hasBackground = Astro.slots.has('background');
+
+/* 'inherit' means "no data-theme" — section stays transparent and picks up
+   the parent context. Map it (and undefined) to undefined so Astro omits
+   the attribute entirely. */
+const resolvedTheme = theme === 'inherit' ? undefined : theme;
+---
+
+<section
+  class:list={['u-section', { 'u-min-height-screen': minHeight }, className]}
+  data-theme={resolvedTheme}
+  data-padding-top={topPadding}
+  data-padding-bottom={bottomPadding}
+  id={id}
+  {...rest}
+>
+  {hasBackground && (
+    <div class="u-background-slot">
+      <slot name="background" />
+    </div>
+  )}
+
+  <div
+    class:list={['u-container', containerClass]}
+    style={gap !== undefined ? `gap: ${gap === 0 ? '0px' : `var(--space-${gap})`}` : undefined}
+  >
+    <slot />
+  </div>
+</section>

@@ -1,0 +1,246 @@
+---
+export const prerender = false;
+/**
+ * Blog Category Page
+ *
+ * Displays all blog posts for a specific category with:
+ *   1. Hero section — background image + overlay, category name + description
+ *   2. Blog grid — 3-column responsive grid of BlogCard components
+ *
+ * Content is fetched from Sanity CMS, filtered by category.
+ */
+
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import SanityCtaSection from "../../../components/sections/SanityCtaSection.astro";
+import Section from "../../../components/ui/Section.astro";
+import Layout from "../../../components/ui/Layout.astro";
+import Grid from "../../../components/ui/Grid.astro";
+import Heading from "../../../components/ui/Heading.astro";
+import Text from "../../../components/ui/Text.astro";
+import ContentWrapper from "../../../components/ui/ContentWrapper.astro";
+import BlogCard from "../../../components/ui/BlogCard.astro";
+
+// Sanity
+import { loadQuery } from "../../../sanity/lib/load-query";
+import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
+import {
+  BLOG_CATEGORIES_QUERY,
+  BLOG_POSTS_QUERY,
+  BLOG_POSTS_BY_CATEGORY_QUERY,
+  SITE_SETTINGS_QUERY,
+} from "../../../sanity/lib/queries";
+import { urlFor } from "../../../sanity/lib/image";
+import { displayCategory } from "../../../lib/category-display";
+
+// Styles
+import "../../../styles/pages/blog.css";
+
+/* ── Resolve category slug → display name ── */
+
+const { category: categorySlug } = Astro.params;
+if (!categorySlug) return Astro.redirect("/404");
+
+const draftProps = getDraftModeProps(Astro);
+
+let category: string;
+if (categorySlug === "all") {
+  category = "All";
+} else {
+  const { data: categories } = await loadQuery<string[]>({
+    query: BLOG_CATEGORIES_QUERY,
+    ...draftProps,
+  });
+  const match = (categories ?? []).find(
+    (c) => c.toLowerCase().replace(/\s+/g, "-") === categorySlug,
+  );
+  if (!match) return Astro.redirect("/404");
+  category = match;
+}
+
+const categoryLabel = category === "All" ? "All" : displayCategory(category);
+
+/* ── Fetch posts — all posts for "All", filtered for specific category ── */
+
+const { data: posts } =
+  category === "All"
+    ? await loadQuery<any[]>({ query: BLOG_POSTS_QUERY, ...draftProps })
+    : await loadQuery<any[]>({
+        query: BLOG_POSTS_BY_CATEGORY_QUERY,
+        params: { category },
+        ...draftProps,
+      });
+
+const { data: settings } = await loadQuery<any>({
+  query: SITE_SETTINGS_QUERY,
+  ...draftProps,
+});
+const defaultCtaSection = settings?.defaultCtaSection ?? null;
+---
+
+<BaseLayout
+  docs=""
+  theme="light"
+  title={`${categoryLabel} | Blog | CL Creative`}
+  description={`Browse all ${categoryLabel} blog posts.`}
+>
+  {
+    /* ================================================================
+      HERO SECTION — background image + overlay
+      ================================================================ */
+  }
+  <Section
+    gap={1}
+    docs=""
+    paddingTop="small"
+    paddingBottom="small"
+    theme="brand"
+    class="blog_hero_wrap"
+  >
+    <a href="/blog" class="blog_back_link">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M15 18L9 12L15 6"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      Main Blog
+    </a>
+
+    <ContentWrapper>
+      <Heading tag="h1" variant="h1"
+        >{category === "All" ? "All Posts" : categoryLabel}</Heading
+      >
+      <Text>
+        {
+          category === "All"
+            ? "Browse all blog posts."
+            : `Browse all ${categoryLabel} blog posts.`
+        }
+      </Text>
+    </ContentWrapper>
+  </Section>
+
+  {
+    /* ================================================================
+      BLOG GRID — 3-column responsive grid of blog cards
+      ================================================================ */
+  }
+  {
+    posts.length > 0 ? (
+      <Section gap={6} paddingTop="small">
+        <div class="blog_grid_header">
+          <Heading tag="h2" variant="h3" marginBottom={0}>
+            {category === "All" ? "All Posts" : `All ${categoryLabel} Posts`}
+          </Heading>
+          <div class="blog_filter_wrap">
+            <div class="blog_search_wrap">
+              <svg
+                class="blog_search_icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="search"
+                id="blog-search"
+                class="blog_search_input"
+                placeholder="Search posts..."
+                autocomplete="off"
+              />
+            </div>
+          </div>
+        </div>
+
+        <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
+          {posts.map((post: any) => (
+            <BlogCard
+              title={post.title}
+              description={post.description}
+              categories={post.categories}
+              href={`/blog/${post.slug}`}
+              image={urlFor(post.image).width(600).url()}
+              imageAlt={post.imageAlt}
+              author={post.author}
+              authorAvatar={
+                post.authorAvatar
+                  ? urlFor(post.authorAvatar).width(80).height(80).url()
+                  : undefined
+              }
+              date={post.date}
+              data-title={post.title}
+              data-description={post.description}
+            />
+          ))}
+        </Grid>
+
+        <div id="blog-no-results" class="blog_no_results" style="display:none;">
+          <Text muted align="center">
+            No posts match your search.
+          </Text>
+        </div>
+      </Section>
+    ) : (
+      <Section padding="large">
+        <Layout variant="stack-centered">
+          <ContentWrapper slot="col1" align="center">
+            <Heading tag="h2" variant="h3">
+              No posts yet
+            </Heading>
+            <Text variant="regular" align="center">
+              Check back soon for {categoryLabel} content.
+            </Text>
+          </ContentWrapper>
+        </Layout>
+      </Section>
+    )
+  }
+
+  {defaultCtaSection && <SanityCtaSection cta={defaultCtaSection} />}
+</BaseLayout>
+
+<script>
+  const searchInput = document.getElementById(
+    "blog-search",
+  ) as HTMLInputElement;
+  const noResults = document.getElementById("blog-no-results");
+  const cards = document.querySelectorAll<HTMLElement>(".blog_card_wrap");
+
+  function filterPosts() {
+    const query = searchInput?.value.toLowerCase().trim() ?? "";
+    let visibleCount = 0;
+
+    cards.forEach((card) => {
+      const title = (card.dataset.title ?? "").toLowerCase();
+      const description = (card.dataset.description ?? "").toLowerCase();
+      const show =
+        !query || title.includes(query) || description.includes(query);
+      card.style.display = show ? "" : "none";
+      if (show) visibleCount++;
+    });
+
+    if (noResults) {
+      noResults.style.display = visibleCount === 0 ? "" : "none";
+    }
+
+    (window as any).ScrollTrigger?.refresh();
+  }
+
+  searchInput?.addEventListener("input", filterPosts);
+</script>

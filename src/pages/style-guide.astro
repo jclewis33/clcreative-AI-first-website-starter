@@ -1,0 +1,3346 @@
+---
+/**
+ * Style Guide — a living reference for all utility classes, typography,
+ * colour themes, spacing, layout, and UI components in this design system.
+ *
+ * Visit /style-guide to view it.
+ */
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/ui/Section.astro";
+import Heading from "../components/ui/Heading.astro";
+import Text from "../components/ui/Text.astro";
+import Layout from "../components/ui/Layout.astro";
+import Grid from "../components/ui/Grid.astro";
+import Card from "../components/ui/Card.astro";
+import Accordion from "../components/ui/Accordion.astro";
+import AccordionItem from "../components/ui/AccordionItem.astro";
+import Modal from "../components/ui/Modal.astro";
+import Slider from "../components/ui/Slider.astro";
+import Button from "../components/ui/Button.astro";
+
+import "../styles/pages/style-guide.css";
+---
+
+<BaseLayout
+  title="Style Guide | Design System"
+  description="A living reference for all utility classes, typography, colour themes, spacing, layout, and UI components."
+>
+  <!-- ===== PAGE HEADER ===== -->
+  <Section paddingTop="page-top" paddingBottom="small">
+    <div class="styleguide_page_header">
+      <p class="u-text-style-eyebrow u-margin-bottom-2">Design System</p>
+      <Heading tag="h1" variant="display-lg">Style Guide</Heading>
+      <p class="u-text-style-large u-text-style-muted u-margin-top-3">
+        A living reference for all utility classes, typography, colour themes,
+        spacing, layout, and UI components.
+      </p>
+    </div>
+  </Section>
+
+  <!-- ===== LAYOUT: SIDEBAR + CONTENT ===== -->
+  <Section padding="none" paddingBottom="large">
+    <div class="styleguide_layout">
+      <!-- ── SIDEBAR NAV ── -->
+      <nav class="styleguide_nav" aria-label="Style guide sections">
+        <div class="styleguide_nav_card">
+          <p class="styleguide_nav_title">Sections</p>
+          <ul class="styleguide_nav_list">
+            <li>
+              <a class="styleguide_nav_link" href="#typography">Typography</a>
+              <ul class="styleguide_nav_sub">
+                <li>
+                  <a class="styleguide_nav_link" href="#type-headings"
+                    >Headings</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#type-display">Display</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#type-text">Text Sizes</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#type-styles"
+                    >Text Styles</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#type-align">Alignment</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#type-clamp"
+                    >Line Clamp</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a class="styleguide_nav_link" href="#color">Color</a>
+              <ul class="styleguide_nav_sub">
+                <li>
+                  <a class="styleguide_nav_link" href="#color-brand"
+                    >Brand Colors</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#color-themes">Themes</a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a class="styleguide_nav_link" href="#buttons">Buttons</a>
+              <ul class="styleguide_nav_sub">
+                <li>
+                  <a class="styleguide_nav_link" href="#btn-primary">Primary</a>
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#btn-secondary"
+                    >Secondary</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#btn-themes">By Theme</a>
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#btn-icon"
+                    >Icon / Arrow</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a class="styleguide_nav_link" href="#spacing">Spacing</a>
+              <ul class="styleguide_nav_sub">
+                <li>
+                  <a class="styleguide_nav_link" href="#spacing-scale">Scale</a>
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#spacing-radius"
+                    >Radius</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#spacing-ratio"
+                    >Aspect Ratios</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#spacing-shadows"
+                    >Shadows</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#spacing-padding"
+                    >Padding</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#spacing-margin"
+                    >Margin</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a class="styleguide_nav_link" href="#layout">Layout</a>
+              <ul class="styleguide_nav_sub">
+                <li>
+                  <a class="styleguide_nav_link" href="#layout-containers"
+                    >Containers</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#layout-flex">Flexbox</a>
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#layout-grid">Grid</a>
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#layout-gap">Gap</a>
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#layout-component"
+                    >Layout Component</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a class="styleguide_nav_link" href="#misc">Misc Utilities</a>
+              <ul class="styleguide_nav_sub">
+                <li>
+                  <a class="styleguide_nav_link" href="#misc-display">Display</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#misc-overflow"
+                    >Overflow</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#misc-dimensions"
+                    >Dimensions</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#misc-objectfit"
+                    >Object Fit</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#misc-button-wrappers"
+                    >Button Wrappers</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#misc-responsive"
+                    >Responsive</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#misc-icons">Icons</a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a class="styleguide_nav_link" href="#components">Components</a>
+              <ul class="styleguide_nav_sub">
+                <li>
+                  <a class="styleguide_nav_link" href="#comp-section">Section</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#comp-card">Card</a>
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#comp-accordion"
+                    >Accordion</a
+                  >
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#comp-modal">Modal</a>
+                </li>
+                <li>
+                  <a class="styleguide_nav_link" href="#comp-slider">Slider</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- ── MAIN CONTENT ── -->
+      <div class="styleguide_content">
+        <!-- ================================================
+             TYPOGRAPHY
+             ================================================ -->
+        <section id="typography" class="styleguide_section">
+          <h2 class="styleguide_section_title">Typography</h2>
+
+          <!-- Semantic Headings -->
+          <div id="type-headings">
+            <h3 class="styleguide_subsection_title">Semantic Headings</h3>
+
+            {
+              [1, 2, 3, 4, 5, 6].map((n) => (
+                <div class="styleguide_card_wrap">
+                  <div class="tag_wrap">{`<h${n}> / .u-text-style-h${n}`}</div>
+                  <div class={`u-text-style-h${n}`}>
+                    {n === 1 && "Heading One — The Quick Brown Fox"}
+                    {n === 2 && "Heading Two — The Quick Brown Fox"}
+                    {n === 3 && "Heading Three — The Quick Brown Fox"}
+                    {n === 4 && "Heading Four — The Quick Brown Fox"}
+                    {n === 5 && "Heading Five — The Quick Brown Fox"}
+                    {n === 6 && "Heading Six — The Quick Brown Fox"}
+                  </div>
+                </div>
+              ))
+            }
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">.u-text-style-eyebrow</div>
+              <div class="u-text-style-eyebrow">Eyebrow Label</div>
+            </div>
+          </div>
+
+          <!-- Display Headings -->
+          <div id="type-display">
+            <h3 class="styleguide_subsection_title">Display Headings</h3>
+
+            {
+              ["display-xl", "display-lg", "display-md", "display-sm"].map(
+                (v) => (
+                  <div class="styleguide_card_wrap">
+                    <div class="tag_wrap">{`.u-${v}`}</div>
+                    <div class={`u-${v}`}>
+                      Display — {v.replace("display-", "").toUpperCase()}
+                    </div>
+                  </div>
+                ),
+              )
+            }
+          </div>
+
+          <!-- Text Sizes -->
+          <div id="type-text">
+            <h3 class="styleguide_subsection_title">Text Sizes</h3>
+
+            {
+              [
+                "xlarge",
+                "large",
+                "regular",
+                "small",
+                "tiny",
+              ].map((s) => (
+                <div class="styleguide_card_wrap is-row">
+                  <span class="tag_wrap">{`.u-text-style-${s}`}</span>
+                  <span class={`u-text-style-${s}`}>
+                    The quick brown fox jumps over the lazy dog
+                  </span>
+                </div>
+              ))
+            }
+          </div>
+
+          <!-- Text Styles -->
+          <div id="type-styles">
+            <h3 class="styleguide_subsection_title">
+              Text Styles &amp; Modifiers
+            </h3>
+
+            <div class="styleguide_card_wrap">
+              {
+                [
+                  { cls: "u-text-style-bold", label: "Bold text" },
+                  { cls: "u-text-style-italic", label: "Italic text" },
+                  {
+                    cls: "u-text-style-strikethrough",
+                    label: "Strikethrough text",
+                  },
+                  {
+                    cls: "u-text-style-muted",
+                    label: "Muted text (0.75 opacity)",
+                  },
+                  {
+                    cls: "u-text-transform-capitalize",
+                    label: "Capitalize text",
+                  },
+                  { cls: "u-text-style-nowrap", label: "No-wrap text" },
+                  { cls: "u-weight-regular", label: "Weight regular (400)" },
+                  { cls: "u-weight-medium", label: "Weight medium (500)" },
+                  { cls: "u-weight-bold", label: "Weight bold (700)" },
+                  { cls: "u-gradient-text", label: "Gradient text" },
+                ].map(({ cls, label }) => (
+                  <div
+                    class="u-flex u-align-center u-gap-3"
+                    style="margin-bottom:0.5rem"
+                  >
+                    <span class="tag_wrap">{`.${cls}`}</span>
+                    <span class={cls}>{label}</span>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">Line Height</h3>
+            <div class="styleguide_card_wrap">
+              {
+                [
+                  { cls: "u-line-height-small", label: "small (1)" },
+                  { cls: "u-line-height-medium", label: "medium (1.1)" },
+                  { cls: "u-line-height-large", label: "large (1.3)" },
+                  { cls: "u-line-height-huge", label: "huge (1.5)" },
+                ].map(({ cls, label }) => (
+                  <div style="margin-bottom:var(--space-5)">
+                    <span
+                      class="tag_wrap"
+                      style="margin-bottom:var(--space-2); display:inline-flex"
+                    >
+                      {`.${cls}`} — {label}
+                    </span>
+                    <p
+                      class={`u-text-style-regular ${cls} u-max-width-small`}
+                      style="background:var(--background); padding:var(--space-3); border-radius:var(--radius-small); border:1px solid var(--border)"
+                    >
+                      The quick brown fox jumps over the lazy dog. Pack my box
+                      with five dozen liquor jugs. How vexingly quick daft
+                      zebras jump.
+                    </p>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">Letter Spacing</h3>
+            <div class="styleguide_card_wrap">
+              {
+                [
+                  { cls: "u-letter-spacing-tight", label: "tight (-0.03em)" },
+                  { cls: "u-letter-spacing-normal", label: "normal (0em)" },
+                ].map(({ cls, label }) => (
+                  <div style="margin-bottom:var(--space-4)">
+                    <span
+                      class="tag_wrap"
+                      style="margin-bottom:var(--space-2); display:inline-flex"
+                    >
+                      {`.${cls}`} — {label}
+                    </span>
+                    <p class={`u-text-style-h2 ${cls}`}>
+                      The Quick Brown Fox Jumps
+                    </p>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">Text Wrap</h3>
+            <div class="u-grid-3" style="gap:var(--space-3)">
+              {
+                [
+                  { cls: "u-text-wrap-default", label: "wrap (default)" },
+                  { cls: "u-text-wrap-balance", label: "balance" },
+                  { cls: "u-text-wrap-pretty", label: "pretty" },
+                ].map(({ cls, label }) => (
+                  <div class="styleguide_card_wrap">
+                    <span class="tag_wrap">
+                      {`.${cls}`} — {label}
+                    </span>
+                    <p class={`u-text-style-h4 ${cls}`}>
+                      A fairly long heading that wraps across multiple lines to
+                      show the effect
+                    </p>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Text Alignment -->
+          <div id="type-align">
+            <h3 class="styleguide_subsection_title">Text Alignment</h3>
+            <div class="styleguide_card_wrap">
+              {
+                [
+                  { cls: "u-text-align-left", label: "Left aligned text" },
+                  { cls: "u-text-align-center", label: "Center aligned text" },
+                  { cls: "u-text-align-right", label: "Right aligned text" },
+                ].map(({ cls, label }) => (
+                  <div
+                    class="u-flex u-align-center u-gap-3"
+                    style="margin-bottom:0.5rem"
+                  >
+                    <span class="tag_wrap">{`.${cls}`}</span>
+                    <span class={`u-width-full ${cls}`} style="max-width:16rem">
+                      {label}
+                    </span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Line Clamp -->
+          <div id="type-clamp">
+            <h3 class="styleguide_subsection_title">Line Clamp</h3>
+            <div class="styleguide_card_wrap">
+              {
+                [1, 2, 3, 4, 5].map((n) => (
+                  <div
+                    class="u-flex u-align-start u-gap-3"
+                    style="margin-bottom:0.75rem"
+                  >
+                    <span
+                      class="tag_wrap"
+                      style="flex-shrink:0"
+                    >{`.u-line-clamp-${n}`}</span>
+                    <p class={`u-line-clamp-${n}`} style="max-width:28rem">
+                      The quick brown fox jumps over the lazy dog. Pack my box
+                      with five dozen liquor jugs. How vexingly quick daft
+                      zebras jump! The five boxing wizards jump quickly.
+                    </p>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Heading Accent -->
+          <div>
+            <h3 class="styleguide_subsection_title">Heading Accent</h3>
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                .u-heading-accent (wraps strong in accent color)
+              </div>
+              <p class="u-text-style-h3 u-heading-accent">
+                Your website should <strong>convert</strong>, not just impress.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================
+             COLOR
+             ================================================ -->
+        <section id="color" class="styleguide_section">
+          <h2 class="styleguide_section_title">Color</h2>
+
+          <!-- Brand Swatches -->
+          <div id="color-brand">
+            <h3 class="styleguide_subsection_title">Dark Palette</h3>
+            <div class="styleguide_card_wrap is-grid">
+              {
+                [
+                  { name: "dark-900", hex: "#1f1d1e", var: "--color-dark-900" },
+                  {
+                    name: "dark-900-o75",
+                    hex: "75% opacity",
+                    var: "--color-dark-900-o75",
+                  },
+                  {
+                    name: "dark-900-o50",
+                    hex: "50% opacity",
+                    var: "--color-dark-900-o50",
+                  },
+                  {
+                    name: "dark-900-o20",
+                    hex: "20% opacity",
+                    var: "--color-dark-900-o20",
+                  },
+                  { name: "dark-800", hex: "#2f2b2d", var: "--color-dark-800" },
+                ].map(({ name, hex, var: cssVar }) => (
+                  <div class="styleguide_swatch_wrap">
+                    <div
+                      class="styleguide_swatch"
+                      style={`background-color: var(${cssVar})`}
+                    />
+                    <span class="styleguide_swatch_label">{name}</span>
+                    <span class="styleguide_swatch_label">{hex}</span>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">Light Palette</h3>
+            <div class="styleguide_card_wrap is-grid">
+              {
+                [
+                  { name: "light-100", hex: "white", var: "--color-light-100" },
+                  {
+                    name: "light-100-o75",
+                    hex: "75% opacity",
+                    var: "--color-light-100-o75",
+                  },
+                  {
+                    name: "light-100-o50",
+                    hex: "50% opacity",
+                    var: "--color-light-100-o50",
+                  },
+                  {
+                    name: "light-100-o20",
+                    hex: "20% opacity",
+                    var: "--color-light-100-o20",
+                  },
+                  {
+                    name: "light-200",
+                    hex: "#ebebeb",
+                    var: "--color-light-200",
+                  },
+                ].map(({ name, hex, var: cssVar }) => (
+                  <div class="styleguide_swatch_wrap">
+                    <div
+                      class="styleguide_swatch"
+                      style={`background-color: var(${cssVar})`}
+                    />
+                    <span class="styleguide_swatch_label">{name}</span>
+                    <span class="styleguide_swatch_label">{hex}</span>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">
+              Brand Palette — orange Scale
+            </h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              All shades derived from <code>--color-brand-500</code> (#f35423) via
+              <code>color-mix()</code>.
+            </p>
+            <div class="styleguide_card_wrap is-grid">
+              {
+                [
+                  {
+                    name: "brand-100",
+                    hex: "80% white",
+                    var: "--color-brand-100",
+                  },
+                  {
+                    name: "brand-200",
+                    hex: "60% white",
+                    var: "--color-brand-200",
+                  },
+                  {
+                    name: "brand-300",
+                    hex: "40% white",
+                    var: "--color-brand-300",
+                  },
+                  {
+                    name: "brand-400",
+                    hex: "20% white",
+                    var: "--color-brand-400",
+                  },
+                  {
+                    name: "brand-500",
+                    hex: "#c6fb50",
+                    var: "--color-brand-500",
+                  },
+                  {
+                    name: "brand-600",
+                    hex: "20% black",
+                    var: "--color-brand-600",
+                  },
+                  {
+                    name: "brand-700",
+                    hex: "40% black",
+                    var: "--color-brand-700",
+                  },
+                  {
+                    name: "brand-800",
+                    hex: "60% black",
+                    var: "--color-brand-800",
+                  },
+                  {
+                    name: "brand-900",
+                    hex: "80% black",
+                    var: "--color-brand-900",
+                  },
+                  {
+                    name: "brand-text",
+                    hex: "white",
+                    var: "--color-brand-text",
+                  },
+                  {
+                    name: "brand-text-o75",
+                    hex: "75% opacity",
+                    var: "--color-brand-text-o75",
+                  },
+                  {
+                    name: "brand-text-o20",
+                    hex: "20% opacity",
+                    var: "--color-brand-text-o20",
+                  },
+                ].map(({ name, hex, var: cssVar }) => (
+                  <div class="styleguide_swatch_wrap">
+                    <div
+                      class="styleguide_swatch"
+                      style={`background-color: var(${cssVar})`}
+                    />
+                    <span class="styleguide_swatch_label">{name}</span>
+                    <span class="styleguide_swatch_label">{hex}</span>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">System / Status Colors</h3>
+            <div class="styleguide_card_wrap is-grid">
+              {
+                [
+                  {
+                    name: "success-green",
+                    hex: "#cef5ca",
+                    var: "--color-success-green",
+                  },
+                  {
+                    name: "success-green-dark",
+                    hex: "#114e0b",
+                    var: "--color-success-green-dark",
+                  },
+                  {
+                    name: "warning-yellow",
+                    hex: "#fcf8d8",
+                    var: "--color-warning-yellow",
+                  },
+                  {
+                    name: "warning-yellow-dark",
+                    hex: "#5e5515",
+                    var: "--color-warning-yellow-dark",
+                  },
+                  {
+                    name: "error-red",
+                    hex: "#f8e4e4",
+                    var: "--color-error-red",
+                  },
+                  {
+                    name: "error-red-dark",
+                    hex: "#3b0b0b",
+                    var: "--color-error-red-dark",
+                  },
+                ].map(({ name, hex, var: cssVar }) => (
+                  <div class="styleguide_swatch_wrap">
+                    <div
+                      class="styleguide_swatch"
+                      style={`background-color: var(${cssVar})`}
+                    />
+                    <span class="styleguide_swatch_label">{name}</span>
+                    <span class="styleguide_swatch_label">{hex}</span>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">Focus State</h3>
+            <div class="styleguide_card_wrap is-grid">
+              <div class="styleguide_swatch_wrap">
+                <div
+                  class="styleguide_swatch"
+                  style="background-color: var(--color-focus-state)"
+                >
+                </div>
+                <span class="styleguide_swatch_label">focus-state</span>
+                <span class="styleguide_swatch_label">brand-500</span>
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Semantic Theme Colors</h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              These switch automatically when a theme is applied.
+            </p>
+            <div class="styleguide_card_wrap is-grid">
+              {
+                [
+                  { name: "--background", var: "--background" },
+                  { name: "--background-2", var: "--background-2" },
+                  { name: "--text", var: "--text" },
+                  { name: "--border", var: "--border" },
+                  { name: "--heading-accent", var: "--heading-accent" },
+                ].map(({ name, var: cssVar }) => (
+                  <div class="styleguide_swatch_wrap">
+                    <div
+                      class="styleguide_swatch"
+                      style={`background-color: var(${cssVar}); border: 1px solid var(--border)`}
+                    />
+                    <span class="styleguide_swatch_label">{name}</span>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">Background Utilities</h3>
+            <div class="styleguide_card_wrap is-row">
+              {
+                [
+                  { cls: "u-background-1", label: "--background" },
+                  { cls: "u-background-2", label: "--background-2" },
+                  {
+                    cls: "u-background-skeleton",
+                    label: "--background-skeleton",
+                  },
+                ].map(({ cls, label }) => (
+                  <div class="styleguide_swatch_wrap">
+                    <div
+                      class={`styleguide_swatch ${cls}`}
+                      style="width:6rem"
+                    />
+                    <span class="tag_wrap">{`.${cls}`}</span>
+                    <span class="styleguide_swatch_label">{label}</span>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">Gradient Utilities</h3>
+            <div class="styleguide_card_wrap is-row">
+              <div class="styleguide_swatch_wrap">
+                <div class="styleguide_swatch u-gradient-1" style="width:8rem">
+                </div>
+                <span class="tag_wrap">.u-gradient-1</span>
+              </div>
+              <div class="styleguide_swatch_wrap">
+                <div
+                  class="styleguide_swatch u-gradient-light-blue"
+                  style="width:8rem"
+                >
+                </div>
+                <span class="tag_wrap">.u-gradient-light-blue</span>
+              </div>
+              <div class="styleguide_swatch_wrap">
+                <div
+                  class="styleguide_swatch u-gradient-light-blue-reverse"
+                  style="width:8rem"
+                >
+                </div>
+                <span class="tag_wrap">.u-gradient-light-blue-reverse</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Themes -->
+          <div id="color-themes">
+            <h3 class="styleguide_subsection_title">
+              Themes — <code>data-theme</code>
+            </h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              Apply <code>data-theme="light|dark|brand"</code> to any element to cascade
+              theme tokens to all children.
+            </p>
+
+            {
+              [
+                { theme: "light" as const, label: "light" },
+                { theme: "dark" as const, label: "dark" },
+                { theme: "brand" as const, label: "brand" },
+              ].map(({ theme, label }) => (
+                <div
+                  class="styleguide_card_wrap"
+                  style="margin-bottom:var(--space-4)"
+                >
+                  <div class="tag_wrap">{`data-theme="${label}"`}</div>
+                  <div class="styleguide_theme_card" data-theme={theme}>
+                    <p class="u-text-style-eyebrow u-margin-bottom-2">
+                      Eyebrow label
+                    </p>
+                    <p class="u-text-style-h3 u-heading-accent u-margin-bottom-3">
+                      Heading with <strong>accent color</strong>
+                    </p>
+                    <p class="u-text-style-regular u-margin-bottom-4">
+                      Body text on this theme background. The quick brown fox
+                      jumps over the lazy dog.
+                    </p>
+                    <div class="u-flex u-gap-3">
+                      <Button href="#" ariaLabel="Primary button">
+                        Primary Button
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        square
+                        href="#"
+                        ariaLabel="Secondary button"
+                      >
+                        Secondary
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        </section>
+
+        <!-- ================================================
+             BUTTONS
+             ================================================ -->
+        <section id="buttons" class="styleguide_section">
+          <h2 class="styleguide_section_title">Buttons</h2>
+          <p class="u-text-style-small u-text-style-muted u-margin-bottom-6">
+            Use the <code>&lt;Button&gt;</code> component with <code
+              >variant</code
+            > and <code>size</code> props. The component outputs the wrapper
+            pattern with <code>data-trigger</code> and <code>color-mix()</code>
+            transitions automatically.
+          </p>
+
+          <!-- Primary Button -->
+          <div id="btn-primary">
+            <h3 class="styleguide_subsection_title">Primary Button</h3>
+            <div class="styleguide_card_wrap is-row">
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">variant="primary" (default)</span>
+                <Button href="#" ariaLabel="Primary button"
+                  >Primary Button</Button
+                >
+              </div>
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">square (no radius)</span>
+                <Button href="#" square ariaLabel="Square primary button"
+                  >Square Radius</Button
+                >
+              </div>
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">icon slot (arrow)</span>
+                <Button href="#" ariaLabel="Button with arrow icon">
+                  With Arrow
+                  <svg
+                    slot="icon"
+                    aria-hidden="true"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <line x1="0" y1="5" x2="8" y2="5"></line>
+                    <polyline points="5,2 8,5 5,8"></polyline>
+                  </svg>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secondary Button -->
+          <div id="btn-secondary">
+            <h3 class="styleguide_subsection_title">
+              Secondary / Outline Button
+            </h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              Secondary buttons use <code>--button-secondary-*</code> tokens via
+              <code>variant="secondary"</code>.
+            </p>
+            <div class="styleguide_card_wrap is-row">
+              <Button variant="secondary" href="#" ariaLabel="Secondary button"
+                >Secondary Button</Button
+              >
+              <Button
+                variant="secondary"
+                square
+                href="#"
+                ariaLabel="Square secondary button">Square Secondary</Button
+              >
+              <Button
+                variant="secondary"
+                href="#"
+                ariaLabel="Secondary button with arrow"
+              >
+                With Arrow
+                <svg
+                  slot="icon"
+                  aria-hidden="true"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <line x1="0" y1="5" x2="8" y2="5"></line>
+                  <polyline points="5,2 8,5 5,8"></polyline>
+                </svg>
+              </Button>
+            </div>
+          </div>
+
+          <!-- Text Button -->
+          <div id="btn-text">
+            <h3 class="styleguide_subsection_title">Text / Link Button</h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              Text buttons use <code>--link-*</code> tokens via <code
+                >variant="text"</code
+              >. No background, bottom border only.
+            </p>
+            <div class="styleguide_card_wrap is-row">
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">default</span>
+                <Button variant="text" href="#" ariaLabel="Text button"
+                  >Text Button</Button
+                >
+              </div>
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">icon slot (arrow)</span>
+                <Button
+                  variant="text"
+                  href="#"
+                  ariaLabel="Text button with arrow"
+                >
+                  Text Button
+                  <svg
+                    slot="icon"
+                    aria-hidden="true"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <line x1="0" y1="5" x2="8" y2="5"></line>
+                    <polyline points="5,2 8,5 5,8"></polyline>
+                  </svg>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Button Sizes -->
+          <div id="btn-sizes">
+            <h3 class="styleguide_subsection_title">Button Sizes</h3>
+            <div class="styleguide_card_wrap is-row">
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">size="small"</span>
+                <Button href="#" size="small" ariaLabel="Small button"
+                  >Small</Button
+                >
+              </div>
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">size="default"</span>
+                <Button href="#" ariaLabel="Default button">Default</Button>
+              </div>
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">size="large"</span>
+                <Button href="#" size="large" ariaLabel="Large button"
+                  >Large</Button
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Buttons in each Theme -->
+          <div id="btn-themes">
+            <h3 class="styleguide_subsection_title">Buttons by Theme</h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              All button token values switch automatically when a parent has a
+              theme applied.
+            </p>
+            {
+              [
+                { theme: "light" as const, label: "Light theme" },
+                { theme: "dark" as const, label: "Dark theme" },
+                { theme: "brand" as const, label: "Brand theme" },
+              ].map(({ theme, label }) => (
+                <div
+                  class={`styleguide_card_wrap u-theme-${theme}`}
+                  style="margin-bottom:var(--space-3)"
+                >
+                  <span class="tag_wrap" style="color:var(--text)">
+                    {label}
+                  </span>
+                  <div class="u-flex u-gap-3 u-flex-wrap">
+                    <Button href="#" ariaLabel={`Primary on ${label}`}>
+                      Primary
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      href="#"
+                      ariaLabel={`Secondary on ${label}`}
+                    >
+                      Secondary
+                    </Button>
+                    <Button
+                      variant="text"
+                      href="#"
+                      ariaLabel={`Text on ${label}`}
+                    >
+                      Text link
+                    </Button>
+                    <Button href="#" ariaLabel={`Arrow on ${label}`}>
+                      With Arrow
+                      <svg
+                        slot="icon"
+                        aria-hidden="true"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      >
+                        <line x1="0" y1="5" x2="8" y2="5" />
+                        <polyline points="5,2 8,5 5,8" />
+                      </svg>
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      href="#"
+                      ariaLabel={`Secondary arrow on ${label}`}
+                    >
+                      Secondary Arrow
+                      <svg
+                        slot="icon"
+                        aria-hidden="true"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      >
+                        <line x1="0" y1="5" x2="8" y2="5" />
+                        <polyline points="5,2 8,5 5,8" />
+                      </svg>
+                    </Button>
+                    <Button
+                      variant="text"
+                      href="#"
+                      ariaLabel={`Text arrow on ${label}`}
+                    >
+                      Text Arrow
+                      <svg
+                        slot="icon"
+                        aria-hidden="true"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      >
+                        <line x1="0" y1="5" x2="8" y2="5" />
+                        <polyline points="5,2 8,5 5,8" />
+                      </svg>
+                    </Button>
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+
+          <!-- Icon / Toggle / Close Buttons -->
+          <div id="btn-icon">
+            <h3 class="styleguide_subsection_title">Icon Buttons</h3>
+            <div class="styleguide_card_wrap is-row">
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">.button_toggle_wrap</span>
+                <div class="button_toggle_wrap">
+                  <button
+                    class="button_toggle_element"
+                    type="button"
+                    aria-label="Toggle"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="9"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">.button_close_wrap (primary)</span>
+                <div class="button_close_wrap">
+                  <button
+                    class="button_close_element"
+                    type="button"
+                    aria-label="Close"
+                  >
+                    <svg
+                      class="button_close_icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      aria-hidden="true"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">.button_close_element--secondary</span>
+                <div class="button_close_wrap">
+                  <button
+                    class="button_close_element button_close_element--secondary"
+                    type="button"
+                    aria-label="Close"
+                  >
+                    <svg
+                      class="button_close_icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      aria-hidden="true"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div
+                class="styleguide_swatch_wrap"
+                style="align-items:flex-start"
+              >
+                <span class="tag_wrap">.button_close_element--large</span>
+                <div class="button_close_wrap">
+                  <button
+                    class="button_close_element button_close_element--large"
+                    type="button"
+                    aria-label="Close"
+                  >
+                    <svg
+                      class="button_close_icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      aria-hidden="true"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================
+             SPACING
+             ================================================ -->
+        <section id="spacing" class="styleguide_section">
+          <h2 class="styleguide_section_title">Spacing</h2>
+
+          <!-- Scale -->
+          <div id="spacing-scale">
+            <h3 class="styleguide_subsection_title">
+              Space Scale (--space-1 to --space-8)
+            </h3>
+            <div class="styleguide_card_wrap">
+              {
+                [1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                  <div
+                    class="styleguide_space_row"
+                    style="margin-bottom:0.5rem"
+                  >
+                    <span
+                      class="tag_wrap"
+                      style="flex-shrink:0; width:6.5rem"
+                    >{`--space-${n}`}</span>
+                    <div
+                      class="styleguide_space_bar"
+                      style={`width: var(--space-${n}); width: calc(var(--space-${n}) * 4);`}
+                    />
+                    <span class="u-text-style-tiny u-text-style-muted">
+                      {n === 1 && "6–8px"}
+                      {n === 2 && "10–12px"}
+                      {n === 3 && "14–16px"}
+                      {n === 4 && "20–24px"}
+                      {n === 5 && "28–32px"}
+                      {n === 6 && "32–40px"}
+                      {n === 7 && "36–48px"}
+                      {n === 8 && "40–64px"}
+                    </span>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">Section Spacing</h3>
+            <div class="styleguide_card_wrap">
+              {
+                [
+                  {
+                    cls: "u-padding-block-small",
+                    name: "small",
+                    range: "3–5rem",
+                  },
+                  {
+                    cls: "u-padding-block-main",
+                    name: "main",
+                    range: "4–7rem",
+                  },
+                  {
+                    cls: "u-padding-block-large",
+                    name: "large",
+                    range: "5.5–10rem",
+                  },
+                ].map(({ cls, name, range }) => (
+                  <div style="margin-bottom:var(--space-3)">
+                    <div
+                      class="u-flex u-align-center u-gap-3"
+                      style="margin-bottom:var(--space-2)"
+                    >
+                      <span class="tag_wrap">{`.${cls}`}</span>
+                      <span class="u-text-style-tiny u-text-style-muted">
+                        {range}
+                      </span>
+                    </div>
+                    <div
+                      class={cls}
+                      style="background:var(--background); border:1px solid var(--border); border-radius:var(--radius-small)"
+                    >
+                      <p class="u-text-style-small u-text-style-muted u-text-align-center">
+                        padding-{name}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Radius -->
+          <div id="spacing-radius">
+            <h3 class="styleguide_subsection_title">Border Radius</h3>
+            <div class="styleguide_card_wrap is-row">
+              {
+                [
+                  { cls: "u-radius-none", label: "none" },
+                  { cls: "u-radius-xsmall", label: "xsmall" },
+                  { cls: "u-radius-small", label: "small" },
+                  { cls: "u-radius-medium", label: "medium" },
+                  { cls: "u-radius-main", label: "main" },
+                  { cls: "u-radius-large", label: "large" },
+                  { cls: "u-radius-xlarge", label: "xlarge" },
+                  { cls: "u-radius-full", label: "full" },
+                  { cls: "u-radius-section", label: "section" },
+                ].map(({ cls, label }) => (
+                  <div
+                    class="styleguide_swatch_wrap"
+                    style="align-items:center"
+                  >
+                    <div class={`styleguide_radius_box ${cls}`} />
+                    <span class="tag_wrap">{`.${cls}`}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Aspect Ratios -->
+          <div id="spacing-ratio">
+            <h3 class="styleguide_subsection_title">Aspect Ratios</h3>
+            <div class="styleguide_card_wrap is-row">
+              {
+                [
+                  { cls: "u-ratio-1-1", label: "1:1" },
+                  { cls: "u-ratio-16-9", label: "16:9" },
+                  { cls: "u-ratio-3-2", label: "3:2" },
+                  { cls: "u-ratio-2-3", label: "2:3" },
+                  { cls: "u-ratio-2-1", label: "2:1" },
+                  { cls: "u-ratio-5-4", label: "5:4" },
+                  { cls: "u-ratio-4-5", label: "4:5" },
+                ].map(({ cls, label }) => (
+                  <div class="styleguide_swatch_wrap" style="width:5rem">
+                    <div
+                      class={`styleguide_radius_box u-radius-small ${cls}`}
+                      style="width:100%"
+                    />
+                    <span class="tag_wrap">{label}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Shadows -->
+          <div id="spacing-shadows">
+            <h3 class="styleguide_subsection_title">Box Shadows</h3>
+            <div class="styleguide_card_wrap is-row">
+              {
+                [
+                  "u-box-shadow-xxsmall",
+                  "u-box-shadow-xsmall",
+                  "u-box-shadow-small",
+                  "u-box-shadow-medium",
+                  "u-box-shadow-large",
+                  "u-box-shadow-xlarge",
+                  "u-box-shadow-xxlarge",
+                ].map((cls) => (
+                  <div class="styleguide_swatch_wrap" style="width:7rem">
+                    <div class={`styleguide_shadow_box ${cls}`} />
+                    <span class="tag_wrap">{`.${cls.replace("u-box-shadow-", "")}`}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Padding -->
+          <div id="spacing-padding">
+            <h3 class="styleguide_subsection_title">Padding Scale</h3>
+            <div class="styleguide_card_wrap">
+              <div class="u-grid-4" style="gap:var(--space-3)">
+                {
+                  [0, 1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                    <div style="text-align:center">
+                      <div class={`styleguide_padding_demo u-padding-${n}`}>
+                        <div class="styleguide_padding_demo_inner">
+                          <span class="u-text-style-tiny">{n}</span>
+                        </div>
+                      </div>
+                      <span
+                        class="tag_wrap"
+                        style="margin-top:var(--space-1); display:inline-flex"
+                      >{`.u-padding-${n}`}</span>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Padding Block vs Inline</h3>
+            <div class="u-grid-2" style="gap:var(--space-3)">
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-padding-block-4 (vertical only)</span>
+                <div
+                  class="styleguide_padding_demo u-padding-block-4"
+                  style="width:100%"
+                >
+                  <div class="styleguide_padding_demo_inner">
+                    <span class="u-text-style-tiny">block (top + bottom)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap"
+                  >.u-padding-inline-4 (horizontal only)</span
+                >
+                <div
+                  class="styleguide_padding_demo u-padding-inline-4"
+                  style="width:100%"
+                >
+                  <div class="styleguide_padding_demo_inner">
+                    <span class="u-text-style-tiny">inline (left + right)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Named Padding</h3>
+            <div class="styleguide_card_wrap">
+              {
+                [
+                  { cls: "u-padding-small", label: "small" },
+                  { cls: "u-padding-main", label: "main" },
+                  { cls: "u-padding-large", label: "large" },
+                  { cls: "u-padding-sitemargin", label: "sitemargin" },
+                  { cls: "u-padding-gutter", label: "gutter" },
+                ].map(({ cls, label }) => (
+                  <div style="margin-bottom:var(--space-2)">
+                    <span
+                      class="tag_wrap"
+                      style="margin-bottom:var(--space-1); display:inline-flex"
+                    >{`.${cls}`}</span>
+                    <div
+                      class={`styleguide_padding_demo ${cls}`}
+                      style="width:100%"
+                    >
+                      <div class="styleguide_padding_demo_inner">
+                        <span class="u-text-style-tiny">{label}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Margin -->
+          <div id="spacing-margin">
+            <h3 class="styleguide_subsection_title">Margin Scale</h3>
+            <div class="styleguide_card_wrap">
+              <p class="u-text-style-tiny u-text-style-muted u-margin-bottom-3">
+                The gap between the two bars visualizes the margin size.
+              </p>
+              {
+                [0, 1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                  <div
+                    class="u-flex u-align-center u-gap-3"
+                    style="margin-bottom:var(--space-2)"
+                  >
+                    <span
+                      class="tag_wrap"
+                      style="flex-shrink:0; width:8rem"
+                    >{`.u-margin-top-${n}`}</span>
+                    <div style="flex:1">
+                      <div class="styleguide_margin_demo_box" />
+                      <div
+                        class={`styleguide_margin_demo_box u-margin-top-${n}`}
+                      />
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">
+              Text Style Margins (automatic)
+            </h3>
+            <div class="styleguide_card_wrap">
+              <div
+                style="background:var(--background); padding:var(--space-4); border-radius:var(--radius-small); border:1px solid var(--border)"
+              >
+                <p class="u-text-style-h3">
+                  Heading with automatic margin (via text style class)
+                </p>
+                <p class="u-text-style-regular">
+                  First paragraph — margins are built into each text style class.
+                  No manual u-margin-heading or u-margin-paragraph needed.
+                </p>
+                <p class="u-text-style-regular">
+                  Second paragraph, same automatic spacing. Margin-trim removes
+                  the first/last child margins in containers.
+                </p>
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Auto Centering</h3>
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">.u-margin-inline-auto</span>
+              <div
+                class="styleguide_grid_cell u-margin-inline-auto"
+                style="width:12rem; height:2.5rem; opacity:0.3; display:flex; align-items:center; justify-content:center"
+              >
+                <span
+                  class="u-text-style-tiny"
+                  style="opacity:1; color:var(--text)"
+                  >centered via auto margin</span
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================
+             LAYOUT
+             ================================================ -->
+        <section id="layout" class="styleguide_section">
+          <h2 class="styleguide_section_title">Layout</h2>
+
+          <!-- Containers -->
+          <div id="layout-containers">
+            <h3 class="styleguide_subsection_title">Container Widths</h3>
+            <div class="styleguide_card_wrap">
+              {
+                [
+                  { cls: "u-container", label: "default" },
+                  { cls: "u-container u-container-narrow", label: "narrow" },
+                  { cls: "u-container u-container-wide", label: "wide" },
+                  { cls: "u-container u-container-full", label: "full" },
+                ].map(({ cls, label }) => (
+                  <div style="margin-bottom:var(--space-2)">
+                    <div class={cls}>
+                      <div
+                        class="styleguide_container_demo"
+                        style="display:flex; align-items:center; justify-content:center"
+                      >
+                        <span
+                          class="u-text-style-tiny"
+                          style="opacity:1; color:var(--text)"
+                        >{`.${cls}`}</span>
+                      </div>
+                    </div>
+                    <div
+                      class="u-flex u-align-center u-gap-3 u-margin-top-1"
+                      style="padding-left:var(--space-2)"
+                    >
+                      <span class="tag_wrap">{label}</span>
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Flexbox -->
+          <div id="layout-flex">
+            <h3 class="styleguide_subsection_title">Flexbox</h3>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">.u-flex .u-flex-row .u-gap-3</div>
+              <div class="u-flex u-flex-row u-gap-3">
+                {
+                  [1, 2, 3].map((n) => (
+                    <div
+                      class="styleguide_grid_cell"
+                      style="flex:1; height:2rem; opacity:0.4"
+                    />
+                  ))
+                }
+              </div>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                .u-flex .u-justify-center .u-align-center .u-gap-3
+              </div>
+              <div class="u-flex u-justify-center u-align-center u-gap-3">
+                {
+                  [1, 2, 3].map((n) => (
+                    <div
+                      class="styleguide_grid_cell"
+                      style={`width:3rem; height:${n * 1.2}rem; opacity:0.4`}
+                    />
+                  ))
+                }
+              </div>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                .u-flex .u-justify-between .u-align-end .u-gap-3
+              </div>
+              <div class="u-flex u-justify-between u-align-end u-gap-3">
+                {
+                  [1, 2, 3, 4].map((n) => (
+                    <div
+                      class="styleguide_grid_cell"
+                      style={`width:3rem; height:${n * 1.5}rem; opacity:0.4`}
+                    />
+                  ))
+                }
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Flex Direction</h3>
+            <div class="u-grid-2" style="gap:var(--space-3)">
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-flex .u-flex-row</span>
+                <div class="u-flex u-flex-row u-gap-2">
+                  <div
+                    class="styleguide_grid_cell"
+                    style="flex:1; height:2rem; opacity:0.4"
+                  >
+                  </div>
+                  <div
+                    class="styleguide_grid_cell"
+                    style="flex:1; height:2rem; opacity:0.25"
+                  >
+                  </div>
+                  <div
+                    class="styleguide_grid_cell"
+                    style="flex:1; height:2rem; opacity:0.15"
+                  >
+                  </div>
+                </div>
+              </div>
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-flex .u-flex-column</span>
+                <div class="u-flex u-flex-column u-gap-2">
+                  <div
+                    class="styleguide_grid_cell"
+                    style="height:2rem; opacity:0.4"
+                  >
+                  </div>
+                  <div
+                    class="styleguide_grid_cell"
+                    style="height:2rem; opacity:0.25"
+                  >
+                  </div>
+                  <div
+                    class="styleguide_grid_cell"
+                    style="height:2rem; opacity:0.15"
+                  >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Flex Wrap</h3>
+            <div class="u-grid-2" style="gap:var(--space-3)">
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-flex-nowrap</span>
+                <div
+                  class="u-flex u-flex-nowrap u-gap-2"
+                  style="overflow:hidden"
+                >
+                  {
+                    [1, 2, 3, 4, 5, 6].map(() => (
+                      <div
+                        class="styleguide_grid_cell"
+                        style="min-width:4rem; height:2rem; opacity:0.3"
+                      />
+                    ))
+                  }
+                </div>
+              </div>
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-flex-wrap</span>
+                <div class="u-flex u-flex-wrap u-gap-2">
+                  {
+                    [1, 2, 3, 4, 5, 6].map(() => (
+                      <div
+                        class="styleguide_grid_cell"
+                        style="min-width:4rem; height:2rem; opacity:0.3"
+                      />
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Justify Content</h3>
+            {
+              [
+                { cls: "u-justify-start", label: "start" },
+                { cls: "u-justify-center", label: "center" },
+                { cls: "u-justify-end", label: "end" },
+                { cls: "u-justify-between", label: "between" },
+              ].map(({ cls, label }) => (
+                <div
+                  class="styleguide_card_wrap"
+                  style="margin-bottom:var(--space-2)"
+                >
+                  <span class="tag_wrap">{`.${cls}`}</span>
+                  <div class={`u-flex ${cls} u-gap-2`}>
+                    <div
+                      class="styleguide_grid_cell"
+                      style="width:3rem; height:2rem; opacity:0.35"
+                    />
+                    <div
+                      class="styleguide_grid_cell"
+                      style="width:3rem; height:2rem; opacity:0.25"
+                    />
+                    <div
+                      class="styleguide_grid_cell"
+                      style="width:3rem; height:2rem; opacity:0.15"
+                    />
+                  </div>
+                </div>
+              ))
+            }
+
+            <h3 class="styleguide_subsection_title">Align Items</h3>
+            <div class="u-grid-3" style="gap:var(--space-3)">
+              {
+                [
+                  { cls: "u-align-start", label: "start" },
+                  { cls: "u-align-center", label: "center" },
+                  { cls: "u-align-end", label: "end" },
+                ].map(({ cls, label }) => (
+                  <div class="styleguide_card_wrap">
+                    <span class="tag_wrap">{`.${cls}`}</span>
+                    <div
+                      class={`u-flex ${cls} u-gap-2`}
+                      style="min-height:5rem"
+                    >
+                      <div
+                        class="styleguide_grid_cell"
+                        style="width:3rem; height:2rem; opacity:0.4"
+                      />
+                      <div
+                        class="styleguide_grid_cell"
+                        style="width:3rem; height:3.5rem; opacity:0.3"
+                      />
+                      <div
+                        class="styleguide_grid_cell"
+                        style="width:3rem; height:1.5rem; opacity:0.2"
+                      />
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">Order</h3>
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">.u-order-first / .u-order-last</span>
+              <div class="u-flex u-gap-2">
+                <div
+                  class="styleguide_grid_cell u-order-last"
+                  style="flex:1; height:2rem; opacity:0.4; display:flex; align-items:center; justify-content:center"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">A (u-order-last)</span
+                  >
+                </div>
+                <div
+                  class="styleguide_grid_cell"
+                  style="flex:1; height:2rem; opacity:0.25; display:flex; align-items:center; justify-content:center"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">B</span
+                  >
+                </div>
+                <div
+                  class="styleguide_grid_cell u-order-first"
+                  style="flex:1; height:2rem; opacity:0.15; display:flex; align-items:center; justify-content:center"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">C (u-order-first)</span
+                  >
+                </div>
+              </div>
+              <p class="u-text-style-tiny u-text-style-muted">
+                Source order: A, B, C — Visual order: C, B, A
+              </p>
+            </div>
+          </div>
+
+          <!-- Grid -->
+          <div id="layout-grid">
+            <h3 class="styleguide_subsection_title">
+              CSS Grid — Simple Columns
+            </h3>
+
+            {
+              [1, 2, 3, 4].map((cols) => (
+                <div class="styleguide_card_wrap">
+                  <div class="tag_wrap">{`.u-grid-${cols}`}</div>
+                  <div class={`u-grid-${cols}`}>
+                    {Array.from({ length: cols * 2 }).map(() => (
+                      <div class="styleguide_grid_cell" />
+                    ))}
+                  </div>
+                </div>
+              ))
+            }
+
+            <h3 class="styleguide_subsection_title">
+              Grid Component — Responsive Columns
+            </h3>
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                &lt;Grid largeColumns=3 mediumColumns=2 smallColumns=1 /&gt;
+              </div>
+              <Grid
+                largeColumns={3}
+                mediumColumns={2}
+                smallColumns={1}
+                rowGap={3}
+              >
+                {
+                  Array.from({ length: 6 }).map(() => (
+                    <div class="styleguide_grid_cell" />
+                  ))
+                }
+              </Grid>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Column Span</h3>
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap"
+                >.u-span-2 / .u-span-full on a u-grid-4</span
+              >
+              <div class="u-grid-4">
+                <div class="styleguide_grid_cell" style="opacity:0.15"></div>
+                <div
+                  class="styleguide_grid_cell u-span-2"
+                  style="opacity:0.35; display:flex; align-items:center; justify-content:center"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">u-span-2</span
+                  >
+                </div>
+                <div class="styleguide_grid_cell" style="opacity:0.15"></div>
+                <div
+                  class="styleguide_grid_cell u-span-full"
+                  style="opacity:0.25; display:flex; align-items:center; justify-content:center"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">u-span-full</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Column Start</h3>
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">.u-column-start-* on a u-grid-4</span>
+              <div class="u-grid-4">
+                <div
+                  class="styleguide_grid_cell u-column-start-2"
+                  style="opacity:0.35; display:flex; align-items:center; justify-content:center"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">start-2</span
+                  >
+                </div>
+                <div class="styleguide_grid_cell" style="opacity:0.15"></div>
+                <div class="styleguide_grid_cell" style="opacity:0.15"></div>
+                <div
+                  class="styleguide_grid_cell u-column-start-3 u-span-2"
+                  style="opacity:0.25; display:flex; align-items:center; justify-content:center"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">start-3 span-2</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Row Span</h3>
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">.u-row-span-2 on a u-grid-3</span>
+              <div class="u-grid-3">
+                <div
+                  class="styleguide_grid_cell u-row-span-2"
+                  style="opacity:0.35; height:auto; display:flex; align-items:center; justify-content:center"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">row-span-2</span
+                  >
+                </div>
+                <div class="styleguide_grid_cell" style="opacity:0.15"></div>
+                <div class="styleguide_grid_cell" style="opacity:0.15"></div>
+                <div class="styleguide_grid_cell" style="opacity:0.2"></div>
+                <div class="styleguide_grid_cell" style="opacity:0.2"></div>
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Autofit vs Autofill</h3>
+            <div class="u-grid-2" style="gap:var(--space-3)">
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-grid-autofit (min 5rem)</span>
+                <div class="u-grid-autofit" style="--col-min:5rem">
+                  <div class="styleguide_grid_cell" style="opacity:0.3"></div>
+                  <div class="styleguide_grid_cell" style="opacity:0.2"></div>
+                  <div class="styleguide_grid_cell" style="opacity:0.15"></div>
+                </div>
+                <p class="u-text-style-tiny u-text-style-muted">
+                  3 items — columns stretch to fill space
+                </p>
+              </div>
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-grid-autofill (min 5rem)</span>
+                <div class="u-grid-autofill" style="--col-min:5rem">
+                  <div class="styleguide_grid_cell" style="opacity:0.3"></div>
+                  <div class="styleguide_grid_cell" style="opacity:0.2"></div>
+                  <div class="styleguide_grid_cell" style="opacity:0.15"></div>
+                </div>
+                <p class="u-text-style-tiny u-text-style-muted">
+                  3 items — columns stay at min-width, empty tracks preserved
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gap -->
+          <div id="layout-gap">
+            <h3 class="styleguide_subsection_title">Gap Utilities</h3>
+            <div class="styleguide_card_wrap">
+              {
+                [0, 1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                  <div
+                    style={`display:flex; gap:var(--space-${n || 0}); align-items:center; margin-bottom:0.5rem`}
+                  >
+                    <span
+                      class="tag_wrap"
+                      style="flex-shrink:0; width:5rem"
+                    >{`.u-gap-${n}`}</span>
+                    <div class={`u-flex u-gap-${n}`}>
+                      <div
+                        class="styleguide_grid_cell"
+                        style="width:2rem; height:1rem; opacity:0.5"
+                      />
+                      <div
+                        class="styleguide_grid_cell"
+                        style="width:2rem; height:1rem; opacity:0.5"
+                      />
+                      <div
+                        class="styleguide_grid_cell"
+                        style="width:2rem; height:1rem; opacity:0.5"
+                      />
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Layout Component -->
+          <div id="layout-component">
+            <h3 class="styleguide_subsection_title">
+              Layout Component Variants
+            </h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              The <code>&lt;Layout&gt;</code> component renders named CSS grid layouts.
+              Resize your browser to see mobile stacking.
+            </p>
+
+            {
+              [
+                { variant: "columns" as const, label: "columns — equal 50/50" },
+                {
+                  variant: "columns-reversed" as const,
+                  label: "columns-reversed — reversed on desktop",
+                },
+                { variant: "contain" as const, label: "contain — 40/60" },
+                {
+                  variant: "breakout" as const,
+                  label: "breakout — ~60/40 (named-line grid)",
+                },
+                { variant: "card" as const, label: "card — auto / 1fr" },
+              ].map(({ variant, label }) => (
+                <div class="styleguide_card_wrap">
+                  <div class="tag_wrap">{`variant="${variant}"`}</div>
+                  <div class="u-text-style-tiny u-text-style-muted">
+                    {label}
+                  </div>
+                  <Layout variant={variant}>
+                    <div
+                      slot="col1"
+                      class="styleguide_grid_cell"
+                      style="height:4rem; opacity:0.5; border-radius:var(--radius-small)"
+                    />
+                    <div
+                      slot="col2"
+                      class="styleguide_grid_cell"
+                      style="height:4rem; opacity:0.3; border-radius:var(--radius-small)"
+                    />
+                  </Layout>
+                </div>
+              ))
+            }
+          </div>
+        </section>
+
+        <!-- ================================================
+             MISC UTILITIES
+             ================================================ -->
+        <section id="misc" class="styleguide_section">
+          <h2 class="styleguide_section_title">Misc Utilities</h2>
+
+          <!-- Display -->
+          <div id="misc-display">
+            <h3 class="styleguide_subsection_title">Display</h3>
+
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap"
+                >.u-display-block vs .u-display-inline-block</span
+              >
+              <div>
+                <div
+                  class="styleguide_grid_cell u-display-block"
+                  style="width:6rem; height:2rem; opacity:0.3; margin-bottom:var(--space-1)"
+                >
+                </div>
+                <div
+                  class="styleguide_grid_cell u-display-block"
+                  style="width:6rem; height:2rem; opacity:0.2; margin-bottom:var(--space-1)"
+                >
+                </div>
+                <p class="u-text-style-tiny u-text-style-muted">
+                  block — each on its own line
+                </p>
+              </div>
+              <div>
+                <div
+                  class="styleguide_grid_cell u-display-inline-block"
+                  style="width:6rem; height:2rem; opacity:0.3; margin-right:var(--space-1)"
+                >
+                </div>
+                <div
+                  class="styleguide_grid_cell u-display-inline-block"
+                  style="width:6rem; height:2rem; opacity:0.2; margin-right:var(--space-1)"
+                >
+                </div>
+                <p class="u-text-style-tiny u-text-style-muted">
+                  inline-block — side by side
+                </p>
+              </div>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">.u-display-none</span>
+              <div class="u-flex u-gap-2">
+                <div
+                  class="styleguide_grid_cell"
+                  style="flex:1; height:2rem; opacity:0.3; display:flex; align-items:center; justify-content:center"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">A</span
+                  >
+                </div>
+                <div
+                  class="styleguide_grid_cell u-display-none"
+                  style="flex:1; height:2rem; opacity:0.3"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">B (hidden)</span
+                  >
+                </div>
+                <div
+                  class="styleguide_grid_cell"
+                  style="flex:1; height:2rem; opacity:0.2; display:flex; align-items:center; justify-content:center"
+                >
+                  <span
+                    class="u-text-style-tiny"
+                    style="opacity:1; color:var(--text)">C</span
+                  >
+                </div>
+              </div>
+              <p class="u-text-style-tiny u-text-style-muted">
+                B is hidden with u-display-none — only A and C render
+              </p>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">Responsive hide classes</span>
+              <div class="u-flex u-gap-2 u-flex-wrap">
+                {
+                  [
+                    ".u-hide",
+                    ".u-hide-on-xsmall",
+                    ".u-hide-on-small",
+                    ".u-hide-on-medium",
+                    ".u-hide-on-large",
+                  ].map((cls) => <span class="tag_wrap">{cls}</span>)
+                }
+              </div>
+              <p class="u-text-style-tiny u-text-style-muted">
+                These use container queries to hide elements at specific
+                container widths (≤20em, 20–35em, 35–50em, >50em)
+              </p>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Position &amp; Z-Index</h3>
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">Position utilities</span>
+              <div class="styleguide_position_container">
+                <div
+                  class="styleguide_position_box u-position-static"
+                  style="background:var(--color-brand-700)"
+                >
+                  static (default)
+                </div>
+                <div
+                  class="styleguide_position_box u-position-relative"
+                  style="background:var(--color-brand-600); top:-0.5rem; left:2rem"
+                >
+                  relative (offset top/left)
+                </div>
+                <div
+                  class="styleguide_position_box u-position-absolute"
+                  style="background:var(--color-brand-500); top:var(--space-2); right:var(--space-2); color:var(--color-dark-900)"
+                >
+                  absolute (top-right)
+                </div>
+              </div>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">.u-cover-absolute</span>
+              <div
+                style="position:relative; height:5rem; background:var(--background); border:1px solid var(--border); border-radius:var(--radius-small)"
+              >
+                <div
+                  class="u-cover-absolute"
+                  style="background:var(--color-brand-500); opacity:0.2; border-radius:var(--radius-small)"
+                >
+                </div>
+                <p
+                  class="u-text-style-tiny"
+                  style="position:relative; padding:var(--space-3)"
+                >
+                  Child fills parent completely with u-cover-absolute
+                </p>
+              </div>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">Z-Index layers</span>
+              <div style="position:relative; height:6rem">
+                <div
+                  class="styleguide_position_box u-position-absolute u-zindex-1"
+                  style="background:var(--color-brand-700); top:0; left:0; width:8rem; height:3rem; display:flex; align-items:center; justify-content:center"
+                >
+                  z-1
+                </div>
+                <div
+                  class="styleguide_position_box u-position-absolute u-zindex-2"
+                  style="background:var(--color-brand-500); top:1rem; left:3rem; width:8rem; height:3rem; display:flex; align-items:center; justify-content:center; color:var(--color-dark-900)"
+                >
+                  z-2
+                </div>
+                <div
+                  class="styleguide_position_box u-position-absolute u-zindex-3"
+                  style="background:var(--color-brand-300); top:2rem; left:6rem; width:8rem; height:3rem; display:flex; align-items:center; justify-content:center; color:var(--color-dark-900)"
+                >
+                  z-3
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overflow -->
+          <div id="misc-overflow">
+            <h3 class="styleguide_subsection_title">Overflow</h3>
+            <div class="u-grid-2" style="gap:var(--space-3)">
+              {
+                [
+                  { cls: "u-overflow-visible", label: "visible" },
+                  { cls: "u-overflow-hidden", label: "hidden" },
+                  { cls: "u-overflow-clip", label: "clip" },
+                  { cls: "u-overflow-x-auto", label: "x-auto (scrollbar)" },
+                ].map(({ cls, label }) => (
+                  <div class="styleguide_card_wrap">
+                    <span class="tag_wrap">{`.${cls}`}</span>
+                    <div class={`styleguide_overflow_container ${cls}`}>
+                      <div class="styleguide_overflow_child" />
+                    </div>
+                    <p class="u-text-style-tiny u-text-style-muted">
+                      overflow: {label}
+                    </p>
+                  </div>
+                ))
+              }
+            </div>
+
+            <h3 class="styleguide_subsection_title">Visibility</h3>
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">.u-visible vs .u-invisible</span>
+              <div class="u-flex u-gap-3">
+                <div>
+                  <div
+                    class="styleguide_grid_cell u-visible"
+                    style="width:6rem; height:3rem; opacity:0.3"
+                  >
+                  </div>
+                  <p
+                    class="u-text-style-tiny u-text-style-muted u-margin-top-1"
+                  >
+                    u-visible
+                  </p>
+                </div>
+                <div>
+                  <div
+                    class="styleguide_grid_cell u-invisible"
+                    style="width:6rem; height:3rem; opacity:0.3; border:2px dashed var(--border)"
+                  >
+                  </div>
+                  <p
+                    class="u-text-style-tiny u-text-style-muted u-margin-top-1"
+                  >
+                    u-invisible (occupies space)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap">Pointer &amp; accessibility</span>
+              <div class="u-flex u-gap-2 u-flex-wrap">
+                {
+                  [".u-pointer-on", ".u-pointer-off", ".u-sr-only"].map(
+                    (cls) => <span class="tag_wrap">{cls}</span>,
+                  )
+                }
+              </div>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Max Width</h3>
+            <div class="styleguide_card_wrap">
+              {
+                [
+                  { cls: "u-max-width-xxsmall", label: "12rem" },
+                  { cls: "u-max-width-xsmall", label: "16rem" },
+                  { cls: "u-max-width-small", label: "20rem" },
+                  { cls: "u-max-width-medium", label: "32rem" },
+                  { cls: "u-max-width-large", label: "48rem" },
+                  { cls: "u-max-width-xlarge", label: "64rem" },
+                ].map(({ cls, label }) => (
+                  <div style="margin-bottom:0.5rem">
+                    <div
+                      class={`styleguide_space_bar ${cls}`}
+                      style="width:100%"
+                    />
+                    <div class="u-flex u-align-center u-gap-3 u-margin-top-1">
+                      <span class="tag_wrap">{`.${cls}`}</span>
+                      <span class="u-text-style-tiny u-text-style-muted">
+                        {label}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Dimensions -->
+          <div id="misc-dimensions">
+            <h3 class="styleguide_subsection_title">Dimensions</h3>
+            <div class="u-grid-2" style="gap:var(--space-3)">
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-width-full</span>
+                <div
+                  class="styleguide_grid_cell u-width-full"
+                  style="height:2rem; opacity:0.3"
+                >
+                </div>
+                <p class="u-text-style-tiny u-text-style-muted">width: 100%</p>
+              </div>
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-height-full</span>
+                <div
+                  style="height:5rem; border:1px dashed var(--border); border-radius:var(--radius-small)"
+                >
+                  <div
+                    class="styleguide_grid_cell u-height-full"
+                    style="width:4rem; opacity:0.3"
+                  >
+                  </div>
+                </div>
+                <p class="u-text-style-tiny u-text-style-muted">
+                  height: 100% (fills parent)
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Object Fit -->
+          <div id="misc-objectfit">
+            <h3 class="styleguide_subsection_title">Object Fit</h3>
+            <div class="u-grid-2" style="gap:var(--space-3)">
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-object-fit-cover</span>
+                <div
+                  style="width:100%; height:6rem; border:1px solid var(--border); border-radius:var(--radius-small); overflow:hidden"
+                >
+                  <div
+                    class="u-object-fit-cover"
+                    style="width:100%; height:100%; background:var(--gradient-primary)"
+                  >
+                  </div>
+                </div>
+                <p class="u-text-style-tiny u-text-style-muted">
+                  Fills container, crops to fit
+                </p>
+              </div>
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-object-fit-contain</span>
+                <div
+                  style="width:100%; height:6rem; border:1px solid var(--border); border-radius:var(--radius-small); overflow:hidden; display:flex; align-items:center; justify-content:center"
+                >
+                  <div
+                    style="width:60%; height:80%; background:var(--gradient-primary); border-radius:var(--radius-small)"
+                  >
+                  </div>
+                </div>
+                <p class="u-text-style-tiny u-text-style-muted">
+                  Scales to fit, no cropping
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Button Wrappers -->
+          <div id="misc-button-wrappers">
+            <h3 class="styleguide_subsection_title">Button Wrappers</h3>
+            <div class="u-grid-2" style="gap:var(--space-3)">
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-button-wrapper</span>
+                <div class="u-button-wrapper">
+                  <Button href="#" ariaLabel="Example single button"
+                    >Single Button</Button
+                  >
+                </div>
+              </div>
+              <div class="styleguide_card_wrap">
+                <span class="tag_wrap">.u-button-wrapper (multiple)</span>
+                <div class="u-button-wrapper">
+                  <Button href="#" ariaLabel="Primary action">Primary</Button>
+                  <Button
+                    variant="secondary"
+                    href="#"
+                    ariaLabel="Secondary action">Secondary</Button
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Responsive Columns -->
+          <div id="misc-responsive">
+            <h3 class="styleguide_subsection_title">
+              Responsive Columns (data attributes)
+            </h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              Use <code>data-large-columns</code>, <code
+                >data-medium-columns</code
+              >, <code>data-small-columns</code> for per-breakpoint column control.
+              These respond to the <strong>container width</strong>, not the
+              viewport.
+            </p>
+            <div class="styleguide_card_wrap">
+              <span class="tag_wrap"
+                >data-large-columns="4" data-medium-columns="2"
+                data-small-columns="1"</span
+              >
+              <div class="u-container">
+                <div
+                  data-large-columns="4"
+                  data-medium-columns="2"
+                  data-small-columns="1"
+                  style="gap:var(--space-3)"
+                >
+                  {
+                    [1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                      <div
+                        class="styleguide_grid_cell"
+                        style="display:flex; align-items:center; justify-content:center"
+                      >
+                        <span
+                          class="u-text-style-tiny"
+                          style="opacity:1; color:var(--text)"
+                        >
+                          {n}
+                        </span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+              <p class="u-text-style-tiny u-text-style-muted">
+                Resize your browser to see 4→2→1 columns based on container
+                width
+              </p>
+            </div>
+
+            <h3 class="styleguide_subsection_title">Responsive Flags</h3>
+            <div class="styleguide_card_wrap">
+              <p
+                class="u-text-style-small u-text-style-muted u-margin-bottom-3"
+              >
+                Flags are CSS custom properties set per container-query tier.
+                Use them in <code>var()</code> to control any property at specific
+                breakpoints without writing container queries.
+              </p>
+              <div class="u-grid-2" style="gap:var(--space-2)">
+                {
+                  [
+                    { flag: "--flex-{tier}", val: "flex" },
+                    { flag: "--none-{tier}", val: "none" },
+                    { flag: "--column-{tier}", val: "column" },
+                    { flag: "--row-{tier}", val: "row" },
+                    { flag: "--center-{tier}", val: "center" },
+                    { flag: "--start-{tier}", val: "start" },
+                    { flag: "--end-{tier}", val: "end" },
+                    { flag: "--unset-{tier}", val: "unset" },
+                    { flag: "--relative-{tier}", val: "relative" },
+                    { flag: "--responsive-{tier}", val: "1 (numeric)" },
+                  ].map(({ flag, val }) => (
+                    <div class="u-flex u-align-center u-gap-2">
+                      <span class="tag_wrap" style="flex-shrink:0">
+                        {flag}
+                      </span>
+                      <span class="u-text-style-tiny u-text-style-muted">
+                        → {val}
+                      </span>
+                    </div>
+                  ))
+                }
+              </div>
+              <p class="u-text-style-tiny u-text-style-muted u-margin-top-3">
+                Replace <code>{`{tier}`}</code> with <code>medium</code>, <code
+                  >small</code
+                >, or <code>xsmall</code>. Example: <code
+                  >display: var(--none-small, block)</code
+                > hides on small.
+              </p>
+            </div>
+          </div>
+
+          <!-- Icons -->
+          <div id="misc-icons">
+            <h3 class="styleguide_subsection_title">Icon Sizes</h3>
+            <div class="styleguide_card_wrap is-row">
+              {
+                [
+                  { cls: "u-icon-16", size: "1rem / 16px" },
+                  { cls: "u-icon-24", size: "1.5rem / 24px" },
+                  { cls: "u-icon-32", size: "2rem / 32px" },
+                  { cls: "u-icon-48", size: "3rem / 48px" },
+                  { cls: "u-icon-64", size: "4rem / 64px" },
+                ].map(({ cls, size }) => (
+                  <div class="styleguide_icon_item">
+                    <svg
+                      class={cls}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span class="tag_wrap">{`.${cls}`}</span>
+                    <span class="styleguide_swatch_label">{size}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================
+             COMPONENTS
+             ================================================ -->
+        <section id="components" class="styleguide_section">
+          <h2 class="styleguide_section_title">Components</h2>
+
+          <!-- Section Component -->
+          <div id="comp-section">
+            <h3 class="styleguide_subsection_title">Section Component</h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              The <code>&lt;Section&gt;</code> component wraps content in a full-width
+              section with fluid padding, optional theming, and a constrained container.
+              Use <code>theme="inherit"</code> (or omit the prop) to stay transparent
+              and pick up the parent context.
+            </p>
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                &lt;Section theme="inherit" padding="small" /&gt; — inherits
+                page theme
+              </div>
+              <div class="styleguide_component_wrap">
+                <Section theme="inherit" padding="small">
+                  <p class="u-text-style-regular">
+                    Inherit — no <code>data-theme</code> rendered. Section is transparent
+                    and picks up the surrounding context.
+                  </p>
+                </Section>
+              </div>
+            </div>
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                &lt;Section theme="light" padding="small" /&gt;
+              </div>
+              <div class="styleguide_component_wrap">
+                <Section theme="light" padding="small">
+                  <p class="u-text-style-regular">
+                    Light theme, small padding — this is the section content.
+                  </p>
+                </Section>
+              </div>
+            </div>
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                &lt;Section theme="dark" padding="small" /&gt;
+              </div>
+              <div class="styleguide_component_wrap">
+                <Section theme="dark" padding="small">
+                  <p class="u-text-style-regular">
+                    Dark theme, small padding — this is the section content.
+                  </p>
+                </Section>
+              </div>
+            </div>
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                &lt;Section theme="brand" padding="small" /&gt;
+              </div>
+              <div class="styleguide_component_wrap">
+                <Section theme="brand" padding="small">
+                  <p class="u-text-style-regular">
+                    Brand theme, small padding — this is the section content.
+                  </p>
+                </Section>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Component -->
+          <div id="comp-card">
+            <h3 class="styleguide_subsection_title">Card Component</h3>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                variant="default" — visual on top, content below
+              </div>
+              <Grid
+                largeColumns={3}
+                mediumColumns={2}
+                smallColumns={1}
+                rowGap={4}
+              >
+                <Card
+                  title="Default Card"
+                  href="#"
+                  ariaLabel="View default card"
+                >
+                  <p
+                    slot="visual"
+                    style="aspect-ratio:16/9; background:var(--color-dark-800); border-radius:var(--radius-small);"
+                  >
+                  </p>
+                  <p>This is the body text slot. Add any content here.</p>
+                  <div slot="footer">
+                    <span class="u-text-style-small u-text-style-muted"
+                      >Footer row</span
+                    >
+                  </div>
+                </Card>
+                <Card
+                  title="Default Card"
+                  href="#"
+                  ariaLabel="View second card"
+                >
+                  <p
+                    slot="visual"
+                    style="aspect-ratio:16/9; background:var(--color-dark-900); border-radius:var(--radius-small);"
+                  >
+                  </p>
+                  <p>
+                    Another card with a longer body text to show how the layout
+                    behaves with more content in the text slot area.
+                  </p>
+                </Card>
+                <Card title="Default Card" href="#" ariaLabel="View third card">
+                  <p
+                    slot="visual"
+                    style="aspect-ratio:16/9; background:var(--color-brand-500); border-radius:var(--radius-small); opacity:0.7"
+                  >
+                  </p>
+                  <p>Third card in the grid — notice equal height columns.</p>
+                </Card>
+              </Grid>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                variant="stacked" — text only, no visual slot
+              </div>
+              <Grid
+                largeColumns={3}
+                mediumColumns={2}
+                smallColumns={1}
+                rowGap={4}
+              >
+                <Card variant="stacked" title="Stacked Card">
+                  <p>
+                    Content-only card. No visual slot is rendered. Great for
+                    feature lists or stat blocks.
+                  </p>
+                </Card>
+                <Card variant="stacked" title="Stacked Card Two">
+                  <p>
+                    Another stacked card showing consistent heights across the
+                    row.
+                  </p>
+                </Card>
+                <Card variant="stacked" title="Stacked Card Three">
+                  <p>
+                    Third stacked card — uses the same card shell without a
+                    media area.
+                  </p>
+                </Card>
+              </Grid>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                variant="cover" — visual fills card, content overlays
+              </div>
+              <Grid
+                largeColumns={3}
+                mediumColumns={2}
+                smallColumns={1}
+                rowGap={4}
+              >
+                <Card
+                  variant="cover"
+                  title="Cover Card"
+                  href="#"
+                  ariaLabel="View cover card"
+                >
+                  <div
+                    slot="visual"
+                    style="aspect-ratio:3/4; background:var(--gradient-primary); border-radius:var(--radius-main);"
+                  >
+                  </div>
+                  <p>Overlay content over the visual.</p>
+                </Card>
+                <Card
+                  variant="cover"
+                  title="Cover Card Two"
+                  href="#"
+                  ariaLabel="View second cover card"
+                >
+                  <div
+                    slot="visual"
+                    style="aspect-ratio:3/4; background:linear-gradient(135deg, var(--color-dark-800), var(--color-dark-900)); border-radius:var(--radius-main);"
+                  >
+                  </div>
+                  <p>Second cover card demo.</p>
+                </Card>
+                <Card
+                  variant="cover"
+                  title="Cover Card Three"
+                  href="#"
+                  ariaLabel="View third cover card"
+                >
+                  <div
+                    slot="visual"
+                    style="aspect-ratio:3/4; background:var(--gradient-primary); border-radius:var(--radius-main);"
+                  >
+                  </div>
+                  <p>Gradient fill example.</p>
+                </Card>
+              </Grid>
+            </div>
+          </div>
+
+          <!-- Accordion Component -->
+          <div id="comp-accordion">
+            <h3 class="styleguide_subsection_title">Accordion Component</h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              Compose <code>&lt;Accordion&gt;</code> with <code
+                >&lt;AccordionItem&gt;</code
+              > rows. Animated with GSAP height transitions.
+            </p>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                &lt;Accordion openByDefault=1 /&gt; (first item open)
+              </div>
+              <div class="styleguide_component_wrap">
+                <Accordion openByDefault={1}>
+                  <AccordionItem question="What is the design system?">
+                    A structured design system built
+                    around CSS variables, a trigger/state system, and a
+                    consistent class naming convention.
+                  </AccordionItem>
+                  <AccordionItem question="How do themes work?">
+                    Apply <code>data-theme="dark"</code> or <code
+                      >data-theme="brand"</code
+                    > to any section or component. All semantic CSS variables cascade
+                    automatically to children.
+                  </AccordionItem>
+                  <AccordionItem question="Does the accordion use GSAP?">
+                    Yes — height animations use <code>gsap.fromTo</code> for smooth
+                    open/close. If GSAP is unavailable it falls back to <code
+                      >display: block/none</code
+                    >.
+                  </AccordionItem>
+                </Accordion>
+              </div>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                &lt;Accordion closePrevious=false /&gt; (multiple open)
+              </div>
+              <div class="styleguide_component_wrap">
+                <Accordion closePrevious={false}>
+                  <AccordionItem question="Can multiple items be open?">
+                    Yes — set <code>closePrevious={false}</code> on the parent Accordion.
+                  </AccordionItem>
+                  <AccordionItem question="Can I open an item on hover?">
+                    Pass <code>openOnHover={true}</code> — not recommended for keyboard
+                    users.
+                  </AccordionItem>
+                </Accordion>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Component -->
+          <div id="comp-modal">
+            <h3 class="styleguide_subsection_title">Modal Component</h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              Trigger a modal by adding <code
+                >data-modal-trigger="modal-id"</code
+              > to any button or link. The Modal renders a native <code
+                >&lt;dialog&gt;</code
+              > element.
+            </p>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                variant="small" — centered overlay (default)
+              </div>
+              <div class="styleguide_component_wrap">
+                <div class="u-flex u-gap-4">
+                  <Button
+                    ariaLabel="Open centered modal"
+                    data-modal-trigger="sg-modal-small"
+                    >Open Centered Modal</Button
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                variant="side-panel" — slides in from the right
+              </div>
+              <div class="styleguide_component_wrap">
+                <div class="u-flex u-gap-4">
+                  <Button
+                    ariaLabel="Open side panel modal"
+                    data-modal-trigger="sg-modal-side-panel"
+                    >Open Side Panel Modal</Button
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                variant="full-screen" — fills the viewport
+              </div>
+              <div class="styleguide_component_wrap">
+                <div class="u-flex u-gap-4">
+                  <Button
+                    ariaLabel="Open full-screen modal"
+                    data-modal-trigger="sg-modal-full"
+                    >Open Full-screen Modal</Button
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider Component -->
+          <div id="comp-slider">
+            <h3 class="styleguide_subsection_title">Slider Component</h3>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              Powered by Swiper v8. Responsive slide counts, optional bullets
+              and arrows.
+            </p>
+
+            <!-- Overflow Variants -->
+            <h4 class="u-text-style-h6 u-margin-top-6 u-margin-bottom-3">
+              Overflow Variants
+            </h4>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              The <code>variant</code> prop controls how slides overflow the container
+              edges. Uses <code>clip-path</code> for directional cropping or <code
+                >overflow: hidden</code
+              > to crop both sides.
+            </p>
+
+            <!-- crop-left (default) -->
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                variant="crop-left" (default) — left edge clipped, slides peek
+                from right
+              </div>
+              <div class="styleguide_component_wrap">
+                <Slider
+                  variant="crop-left"
+                  slidesLg={3}
+                  slidesMd={2}
+                  slidesSm={1}
+                  showBullets={true}
+                  showArrows={true}
+                >
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 1
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 2
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 3
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 4
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 5
+                    </div>
+                  </div>
+                </Slider>
+              </div>
+            </div>
+
+            <!-- crop-right -->
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                variant="crop-right" — right edge clipped, slides peek from left
+              </div>
+              <div class="styleguide_component_wrap">
+                <Slider
+                  variant="crop-right"
+                  slidesLg={3}
+                  slidesMd={2}
+                  slidesSm={1}
+                  showBullets={true}
+                  showArrows={true}
+                >
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 1
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 2
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 3
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 4
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 5
+                    </div>
+                  </div>
+                </Slider>
+              </div>
+            </div>
+
+            <!-- crop-both -->
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                variant="crop-both" — both sides clipped, no overflow visible
+              </div>
+              <div class="styleguide_component_wrap">
+                <Slider
+                  variant="crop-both"
+                  slidesLg={3}
+                  slidesMd={2}
+                  slidesSm={1}
+                  showBullets={true}
+                  showArrows={true}
+                >
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 1
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 2
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 3
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 4
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 5
+                    </div>
+                  </div>
+                </Slider>
+              </div>
+            </div>
+
+            <!-- overflow-visible -->
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                variant="overflow-visible" — all overflow visible on both sides
+              </div>
+              <div class="styleguide_component_wrap">
+                <Slider
+                  variant="overflow-visible"
+                  slidesLg={3}
+                  slidesMd={2}
+                  slidesSm={1}
+                  showBullets={true}
+                  showArrows={true}
+                >
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 1
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 2
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 3
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 4
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 5
+                    </div>
+                  </div>
+                </Slider>
+              </div>
+            </div>
+
+            <!-- Controls -->
+            <h4 class="u-text-style-h6 u-margin-top-6 u-margin-bottom-3">
+              Controls
+            </h4>
+            <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
+              Use <code>showBullets</code>, <code>showArrows</code>, and <code
+                >showControls</code
+              > to toggle the pagination and navigation UI.
+            </p>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                showBullets=false showArrows=false — no controls
+              </div>
+              <div class="styleguide_component_wrap">
+                <Slider
+                  slidesLg={3}
+                  slidesMd={2}
+                  slidesSm={1}
+                  showBullets={false}
+                  showArrows={false}
+                >
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 1
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 2
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 3
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 4
+                    </div>
+                  </div>
+                </Slider>
+              </div>
+            </div>
+
+            <div class="styleguide_card_wrap">
+              <div class="tag_wrap">
+                showArrows=true showBullets=false — arrows only
+              </div>
+              <div class="styleguide_component_wrap">
+                <Slider
+                  slidesLg={3}
+                  slidesMd={2}
+                  slidesSm={1}
+                  showBullets={false}
+                  showArrows={true}
+                >
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 1
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 2
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                    >
+                      Slide 3
+                    </div>
+                  </div>
+                  <div class="swiper-slide">
+                    <div
+                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                    >
+                      Slide 4
+                    </div>
+                  </div>
+                </Slider>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- end #components -->
+      </div>
+      <!-- end .styleguide_content -->
+    </div>
+    <!-- end .styleguide_layout -->
+  </Section>
+
+  <!-- ===== MODALS (rendered at root level for proper stacking context) ===== -->
+  <Modal id="sg-modal-small" variant="small">
+    <Heading tag="h2" variant="h3">Centered Modal</Heading>
+    <p class="u-margin-top-3">
+      This is a <strong>small (centered overlay)</strong> modal. Press <kbd
+        >Esc</kbd
+      > or click outside to close it.
+    </p>
+    <p class="u-margin-top-3 u-text-style-small u-text-style-muted">
+      Trigger any modal by adding <code>data-modal-trigger="modal-id"</code> to a
+      button or link.
+    </p>
+  </Modal>
+
+  <Modal id="sg-modal-side-panel" variant="side-panel">
+    <Heading tag="h2" variant="h3">Side Panel Modal</Heading>
+    <p class="u-margin-top-3">
+      This is a <strong>side-panel</strong> modal — it slides in from the right edge
+      of the viewport.
+    </p>
+    <p class="u-margin-top-3 u-text-style-small u-text-style-muted">
+      Great for filter panels, settings drawers, or supplementary navigation.
+    </p>
+  </Modal>
+
+  <Modal id="sg-modal-full" variant="full-screen">
+    <Heading tag="h2" variant="h3">Full-screen Modal</Heading>
+    <p class="u-margin-top-3">
+      This is a <strong>full-screen</strong> modal — it fills the entire viewport.
+    </p>
+    <p class="u-margin-top-3 u-text-style-small u-text-style-muted">
+      Use for image viewers, video players, or immersive content experiences.
+    </p>
+  </Modal>
+</BaseLayout>
+
+<script>
+  /**
+   * Style-guide sidebar nav: auto-toggle sub-lists based on which section
+   * is currently visible in the viewport, plus smooth-scroll with custom easing.
+   * Uses GSAP for sub-list expand/collapse (same technique as Accordion component).
+   */
+  function initNavToggle() {
+    const gsap = (window as any).gsap;
+    const sections = document.querySelectorAll<HTMLElement>(
+      ".styleguide_section",
+    );
+    const allNavLinks = document.querySelectorAll<HTMLAnchorElement>(
+      ".styleguide_nav .styleguide_nav_link",
+    );
+    const parentNavLinks = document.querySelectorAll<HTMLAnchorElement>(
+      ".styleguide_nav_list > li > .styleguide_nav_link",
+    );
+
+    // ── Smooth scroll — native browser behavior with header offset ──
+    function scrollToSection(targetId: string) {
+      const target = document.getElementById(targetId);
+      if (!target) return;
+
+      // Resolve --nav-height-total + 1.5rem (matches CSS scroll-margin-top)
+      const probe = document.createElement("div");
+      probe.style.height = "calc(var(--nav-height-total) + 1.5rem)";
+      probe.style.position = "absolute";
+      probe.style.visibility = "hidden";
+      document.body.appendChild(probe);
+      const headerOffset = probe.offsetHeight;
+      document.body.removeChild(probe);
+
+      const elementPosition =
+        target.getBoundingClientRect().top + window.scrollY;
+      const offsetPosition = elementPosition - headerOffset;
+
+      window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+    }
+
+    // Intercept all nav link clicks for smooth scrolling
+    allNavLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        const href = link.getAttribute("href");
+        if (!href?.startsWith("#")) return;
+        const targetId = href.slice(1);
+        if (!document.getElementById(targetId)) return;
+        e.preventDefault();
+        history.pushState(null, "", `#${targetId}`);
+        // Slight delay lets GSAP toggle / layout settle before measuring
+        setTimeout(() => scrollToSection(targetId), 20);
+      });
+    });
+
+    // ── GSAP timelines for sub-list expand/collapse (Accordion pattern) ──
+    type NavEntry = {
+      link: HTMLAnchorElement;
+      subList: HTMLUListElement | null;
+      timeline: any | null;
+    };
+
+    const sectionMap = new Map<string, NavEntry>();
+
+    parentNavLinks.forEach((link) => {
+      const href = link.getAttribute("href");
+      if (!href) return;
+      const id = href.replace("#", "");
+      const subList = link.nextElementSibling as HTMLUListElement | null;
+
+      let timeline: any = null;
+
+      if (subList && gsap) {
+        timeline = gsap.timeline({
+          paused: true,
+          defaults: { duration: 0.3, ease: "power1.inOut" },
+        });
+        timeline.set(subList, { display: "flex" });
+        timeline.fromTo(subList, { height: 0 }, { height: "auto" });
+      }
+
+      sectionMap.set(id, { link, subList, timeline });
+    });
+
+    // ── Expand / collapse helpers ──
+    function openSection(entry: NavEntry) {
+      entry.link.classList.add("is-active");
+      if (entry.timeline) {
+        entry.timeline.play();
+      } else if (entry.subList) {
+        entry.subList.classList.add("is-open");
+      }
+    }
+
+    function closeSection(entry: NavEntry) {
+      entry.link.classList.remove("is-active");
+      if (entry.timeline) {
+        entry.timeline.reverse();
+      } else if (entry.subList) {
+        entry.subList.classList.remove("is-open");
+      }
+    }
+
+    // ── Section toggle via IntersectionObserver ──
+    const visibleSections = new Set<string>();
+    let currentActive = "";
+
+    function updateActiveSection() {
+      let bestId = "";
+      let bestDistance = Infinity;
+
+      visibleSections.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const distance = Math.abs(el.getBoundingClientRect().top);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestId = id;
+        }
+      });
+
+      if (!bestId && !visibleSections.size) {
+        sectionMap.forEach((item) => closeSection(item));
+        currentActive = "";
+        return;
+      }
+
+      if (!bestId || bestId === currentActive) return;
+
+      currentActive = bestId;
+      sectionMap.forEach((item, key) => {
+        if (key === bestId) {
+          openSection(item);
+        } else {
+          closeSection(item);
+        }
+      });
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.id;
+          if (entry.isIntersecting) {
+            visibleSections.add(id);
+          } else {
+            visibleSections.delete(id);
+          }
+        });
+        updateActiveSection();
+      },
+      {
+        rootMargin: "0px 0px -20% 0px",
+        threshold: 0,
+      },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+  }
+
+  document.addEventListener("DOMContentLoaded", initNavToggle);
+</script>

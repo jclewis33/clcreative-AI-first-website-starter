@@ -1,0 +1,232 @@
+---
+/**
+ * Marquee — infinite horizontal scrolling ticker powered by GSAP.
+ *
+ * Place any content in the default slot — text, logos, cards, CMS items.
+ * Each direct child should have the `marquee_item` class for proper spacing
+ * and flex behavior.
+ *
+ * GSAP is loaded globally via CDN (Head.astro). No additional scripts needed.
+ *
+ * @example Text marquee
+ * ```astro
+ * <Marquee>
+ *   <span class="marquee_item u-text-style-h3">Design</span>
+ *   <span class="marquee_item u-text-style-h3">Develop</span>
+ *   <span class="marquee_item u-text-style-h3">Deploy</span>
+ * </Marquee>
+ * ```
+ *
+ * @example Logo marquee (slower, larger gap)
+ * ```astro
+ * <Marquee speed={30} gap={8}>
+ *   <div class="marquee_item">
+ *     <Image src={logo1} alt="Acme Corp" />
+ *   </div>
+ *   <div class="marquee_item">
+ *     <Image src={logo2} alt="Globex" />
+ *   </div>
+ * </Marquee>
+ * ```
+ *
+ * @example CMS-driven
+ * ```astro
+ * <Marquee>
+ *   {clients.map(c => (
+ *     <div class="marquee_item">
+ *       <Image src={c.logo} alt={c.name} />
+ *     </div>
+ *   ))}
+ * </Marquee>
+ * ```
+ */
+
+/**
+ * Marquee — infinite horizontal scrolling ticker powered by GSAP.
+ *
+ * **Props:**
+ * - `speed` — animation duration in seconds; higher = slower (default: `20`)
+ * - `direction` — scroll direction: `'left'` or `'right'` (default: `'left'`)
+ * - `pauseOnHover` — pause animation on mouse hover (default: `true`)
+ * - `gap` — spacing between items, uses `--space-N` scale 0–8 (default: `6`)
+ * - `class` — extra classes on the wrapper
+ * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.)
+ *
+ * **Slot:** default — marquee items (use `.marquee_item` class on each child)
+ */
+interface Props {
+  /**
+   * **Marquee props:**
+   * - `speed` — duration in seconds, higher = slower (default 20)
+   * - `direction` — 'left' or 'right' (default 'left')
+   * - `pauseOnHover` — pause on hover (default true)
+   * - `gap` — spacing scale 0–8 (default 6)
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
+   *
+   * **Slot:** default — items with `.marquee_item` class
+   */
+  docs?: string;
+
+  /**
+   * Animation duration in seconds. Higher = slower.
+   * @default 20
+   * @example speed={30}
+   */
+  speed?: number;
+
+  /**
+   * Scroll direction.
+   * - `'left'` — items move right-to-left (default)
+   * - `'right'` — items move left-to-right
+   * @default 'left'
+   */
+  direction?: 'left' | 'right';
+
+  /**
+   * Pause the animation when the user hovers over the marquee.
+   * @default true
+   */
+  pauseOnHover?: boolean;
+
+  /**
+   * Gap between items. Uses the `--space-N` fluid scale (0–8).
+   * `0` removes all spacing between items.
+   * @default 6
+   * @example gap={8}
+   */
+  gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+  /** Extra utility classes on the `.marquee_wrap` element. */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
+   * are forwarded to the root `.marquee_wrap` element.
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  speed        = 20,
+  direction    = 'left',
+  pauseOnHover = true,
+  gap          = 6,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const gapValue = gap === 0 ? '0px' : `var(--space-${gap})`;
+---
+
+<div
+  class:list={['marquee_wrap', className]}
+  data-marquee="component"
+  data-marquee-speed={String(speed)}
+  data-marquee-direction={direction}
+  data-marquee-pause={String(pauseOnHover)}
+  {...rest}
+>
+  <div class="marquee_track" style={`--marquee-gap: ${gapValue}`}>
+    <div class="marquee_inner" data-marquee="inner">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<script>
+  /**
+   * Marquee JavaScript — initializes GSAP-driven infinite scroll
+   *
+   * GSAP is loaded globally from CDN (added to Head.astro).
+   * This script polls for window.gsap availability, then initializes
+   * each [data-marquee="component"] element.
+   *
+   * Data attributes on .marquee_wrap:
+   *   data-marquee-speed     — duration in seconds
+   *   data-marquee-direction — "left" | "right"
+   *   data-marquee-pause     — "true" | "false" (pause on hover)
+   */
+
+  function initMarquees() {
+    const gsap = (window as any).gsap;
+    if (!gsap) {
+      console.warn('Marquee: GSAP not found. Make sure GSAP CDN script is loaded.');
+      return;
+    }
+
+    // Respect reduced motion preference
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    document.querySelectorAll<HTMLElement>('[data-marquee="component"]').forEach((wrap) => {
+      // Guard against double-init (Astro page transitions)
+      if (wrap.dataset.marqueeInit) return;
+      wrap.dataset.marqueeInit = 'true';
+
+      const track = wrap.querySelector<HTMLElement>('.marquee_track');
+      const inner = wrap.querySelector<HTMLElement>('[data-marquee="inner"]');
+      if (!track || !inner) return;
+
+      const speed          = parseFloat(wrap.dataset.marqueeSpeed ?? '20');
+      const direction      = wrap.dataset.marqueeDirection ?? 'left';
+      const shouldPause    = wrap.dataset.marqueePause !== 'false';
+
+      // Measure one copy
+      const innerWidth = inner.getBoundingClientRect().width;
+      const trackGap   = parseFloat(getComputedStyle(track).gap) || 0;
+      const wrapWidth  = wrap.offsetWidth;
+
+      // Always create at least one clone; add more if content is narrow
+      const copyWidth    = innerWidth + trackGap;
+      const copiesNeeded = Math.max(2, Math.ceil(wrapWidth / copyWidth) + 1);
+
+      for (let i = 1; i < copiesNeeded; i++) {
+        const clone = inner.cloneNode(true) as HTMLElement;
+        clone.removeAttribute('data-marquee');
+        clone.setAttribute('aria-hidden', 'true');
+        track.appendChild(clone);
+      }
+
+      // Distance for one full cycle (one copy width + one gap)
+      const distance = copyWidth;
+
+      // Create the animation
+      let tween;
+      if (direction === 'right') {
+        tween = gsap.fromTo(track,
+          { x: -distance },
+          { x: 0, ease: 'none', duration: speed, repeat: -1 }
+        );
+      } else {
+        tween = gsap.to(track, {
+          x: -distance,
+          ease: 'none',
+          duration: speed,
+          repeat: -1,
+        });
+      }
+
+      // Pause on hover
+      if (shouldPause) {
+        wrap.addEventListener('mouseenter', () => tween.pause());
+        wrap.addEventListener('mouseleave', () => tween.resume());
+      }
+    });
+  }
+
+  // GSAP CDN may load after DOMContentLoaded, so poll briefly
+  function waitForGsap(retries = 10) {
+    if ((window as any).gsap) {
+      initMarquees();
+    } else if (retries > 0) {
+      setTimeout(() => waitForGsap(retries - 1), 100);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => waitForGsap());
+  } else {
+    waitForGsap();
+  }
+</script>

@@ -1,0 +1,363 @@
+---
+/**
+ * Modal — native `<dialog>`-based modal with CSS enter/exit transitions.
+ *
+ * **Trigger pattern:** Add `data-modal-trigger="modal-id"` to any element
+ * to open the matching modal.
+ *
+ * **Close methods:** close button, backdrop click, `Escape` key (native).
+ * Body scroll is locked while the modal is open.
+ *
+ * Slots:
+ *   - `default` — main scrollable content
+ *   - `close`   — override the default × close button
+ *
+ * @example Small centered modal with Button trigger
+ * ```astro
+ * <Button data-modal-trigger="contact" ariaLabel="Open contact form">
+ *   Contact Us
+ * </Button>
+ *
+ * <Modal id="contact" variant="small" ariaLabel="Contact form">
+ *   <Heading tag="h2" variant="h3">Get in Touch</Heading>
+ *   <Text>Fill out the form below.</Text>
+ * </Modal>
+ * ```
+ *
+ * @example Side panel (settings / filters)
+ * ```astro
+ * <Button data-modal-trigger="filters" ariaLabel="Open filters">
+ *   Filters
+ * </Button>
+ *
+ * <Modal id="filters" variant="side-panel" ariaLabel="Filter options">
+ *   <Heading tag="h2" variant="h4">Filters</Heading>
+ *   <Text>Filter controls here.</Text>
+ * </Modal>
+ * ```
+ *
+ * @example Full-screen modal
+ * ```astro
+ * <Modal id="gallery" variant="full-screen" ariaLabel="Image gallery">
+ *   <Visual src={photo} alt="Large view" ratio="wide" />
+ * </Modal>
+ * ```
+ */
+
+type ModalVariant =
+  /** Centered panel — max 800px wide (default) */
+  | 'small'
+  /** Slides in from the right edge — good for filter/settings panels */
+  | 'side-panel'
+  /** Full viewport — use for image viewers or immersive content */
+  | 'full-screen';
+
+/**
+ * Modal — native `<dialog>`-based modal with CSS enter/exit transitions.
+ *
+ * Trigger with `data-modal-trigger="modal-id"` on any element.
+ * Closes via: close button, backdrop click, or `Escape` key.
+ *
+ * **Props:**
+ * - `id` — unique ID matching `data-modal-trigger` value (**required**)
+ * - `variant` — layout style: small (centered panel), side-panel (slides from right), full-screen (default: `'small'`)
+ * - `ariaLabel` — accessible label when no visible heading is present
+ * - `class` — extra classes on the `<dialog>` element
+ *
+ * **Slots:** default (scrollable content), `close` (override the default close button).
+ */
+interface Props {
+  /**
+   * **Modal props:**
+   * - `id` — must match `data-modal-trigger` value (required)
+   * - `variant` — small (centered), side-panel (slides from right), full-screen (default 'small')
+   * - `ariaLabel` — accessible label when no visible heading
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to `<dialog>`
+   *
+   * **Slots:** default (scrollable content), `close` (override close button)
+   */
+  docs?: string;
+
+  /**
+   * Unique ID — must match the `data-modal-trigger` value on trigger elements.
+   * Required.
+   * @example id="contact-modal"
+   */
+  id: string;
+
+  /**
+   * Modal layout variant.
+   * - `small` — centered panel, max 800px wide
+   * - `side-panel` — slides in from the right edge
+   * - `full-screen` — full viewport
+   * @default 'small'
+   * @example variant="side-panel"
+   */
+  variant?: ModalVariant;
+
+  /**
+   * Accessible label for the modal.
+   * Rendered as `aria-label` when no visible heading is present.
+   * @example ariaLabel="Contact form"
+   */
+  ariaLabel?: string;
+
+  /** Extra utility classes to add to the `<dialog>` element. */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
+   * are forwarded to the root `<dialog>` element.
+   * @example style="--custom: value" data-animate="fade"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  id,
+  variant   = 'small',
+  ariaLabel,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const hasClose = Astro.slots.has('close');
+---
+
+<dialog
+  class:list={['modal_dialog', className]}
+  data-modal-variant={variant}
+  aria-label={ariaLabel}
+  id={id}
+  {...rest}
+>
+  <div class="modal_inner">
+
+    <!-- Backdrop — clicking closes the modal -->
+    <div class="modal_backdrop" data-modal-close aria-hidden="true"></div>
+
+    <!-- Content panel -->
+    <div class="modal_content">
+      <div class="modal_scroll">
+
+        <!-- Close button -->
+        <div class="modal_close_wrap">
+          {hasClose ? (
+            <slot name="close" />
+          ) : (
+            <button
+              class="u-button-reset"
+              data-modal-close
+              aria-label="Close modal"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          )}
+        </div>
+
+        <!-- Main content slot -->
+        <div class="modal_slot">
+          <slot />
+        </div>
+
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  /**
+   * Modal JavaScript — GSAP-powered open/close animations
+   *
+   * Trigger:  data-modal-trigger="modal-id"  — on any element to open
+   * Close:    data-modal-close                — on any element inside the modal
+   * Dialog:   uses native showModal() / close() API
+   *
+   * Each modal gets a paused GSAP timeline built for its variant.
+   * Open  → dialog.showModal() + tl.play()
+   * Close → tl.reverse() → onReverseComplete calls dialog.close()
+   *
+   * If GSAP is not available, falls back to instant open/close.
+   */
+
+  // Store timelines per modal element (gsap type not available — CDN loaded)
+  const modalTimelines = new WeakMap<HTMLDialogElement, any>();
+
+  function buildTimeline(modal: HTMLDialogElement): any | null {
+    const g = (window as any).gsap;
+    if (!g) return null;
+
+    const variant = modal.dataset.modalVariant || 'small';
+    const backdrop = modal.querySelector('.modal_backdrop');
+    const content = modal.querySelector('.modal_content');
+
+    const tl = g.timeline({
+      paused: true,
+      onReverseComplete: () => {
+        modal.close();
+        restoreScroll();
+        // Clear GSAP inline styles for a clean next open
+        g.set(backdrop, { clearProps: 'all' });
+        g.set(content, { clearProps: 'all' });
+      },
+    });
+
+    if (variant === 'side-panel') {
+      tl.fromTo(backdrop,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.35, ease: 'power1.out', immediateRender: false }
+      );
+      tl.fromTo(content,
+        { xPercent: 100 },
+        { xPercent: 0, duration: 0.45, ease: 'power2.out', force3D: true, immediateRender: false },
+        '<'
+      );
+    } else if (variant === 'full-screen') {
+      tl.fromTo(backdrop,
+        { opacity: 0 },
+        { opacity: 0, duration: 0.01, immediateRender: false }
+      );
+      tl.fromTo(content,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.25, ease: 'power1.out', immediateRender: false }
+      );
+    } else {
+      // small (default)
+      tl.fromTo(backdrop,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3, ease: 'power1.out', immediateRender: false }
+      );
+      tl.fromTo(content,
+        { opacity: 0, y: '6rem' },
+        { opacity: 1, y: '0rem', duration: 0.3, ease: 'power1.out', immediateRender: false },
+        '<'
+      );
+    }
+
+    return tl;
+  }
+
+  function openModal(modal: HTMLDialogElement) {
+    const g = (window as any).gsap;
+
+    // Show the dialog first so GSAP can measure and apply styles
+    // (display:none elements can't receive transforms reliably)
+    modal.showModal();
+    document.body.style.overflow = 'hidden';
+
+    if (g) {
+      const variant = modal.dataset.modalVariant || 'small';
+      const backdrop = modal.querySelector('.modal_backdrop');
+      const content = modal.querySelector('.modal_content');
+
+      // Immediately set hidden state — runs in the same JS task as
+      // showModal() so the browser never paints the visible state
+      g.set(backdrop, { opacity: 0 });
+      if (variant === 'side-panel') {
+        g.set(content, { xPercent: 100 });
+      } else if (variant === 'full-screen') {
+        g.set(content, { opacity: 0 });
+      } else {
+        g.set(content, { opacity: 0, y: '6rem' });
+      }
+
+      // Kill any previous timeline to avoid stale tween state
+      const oldTl = modalTimelines.get(modal);
+      if (oldTl) oldTl.kill();
+
+      // Build a fresh timeline every open for clean from/to values
+      const tl = buildTimeline(modal);
+      if (tl) {
+        modalTimelines.set(modal, tl);
+        tl.play();
+      }
+    }
+  }
+
+  function closeModal(modal: HTMLDialogElement) {
+    const tl = modalTimelines.get(modal);
+    if (tl) {
+      // Reverse the timeline — onReverseComplete calls dialog.close()
+      tl.reverse();
+    } else {
+      // No GSAP — close instantly
+      modal.close();
+      restoreScroll();
+    }
+  }
+
+  function restoreScroll() {
+    const openModals = document.querySelectorAll('dialog[open]');
+    if (openModals.length === 0) {
+      document.body.style.overflow = '';
+    }
+  }
+
+  function initModals() {
+    // ---- Trigger: open modal ----
+    document.addEventListener('click', (e) => {
+      const trigger = (e.target as HTMLElement).closest<HTMLElement>('[data-modal-trigger]');
+      if (!trigger) return;
+
+      const targetId = trigger.dataset.modalTrigger;
+      if (!targetId) return;
+
+      const dialog = document.getElementById(targetId) as HTMLDialogElement | null;
+      if (!dialog || !(dialog instanceof HTMLDialogElement)) return;
+
+      openModal(dialog);
+    });
+
+    // ---- Close button / backdrop click ----
+    document.addEventListener('click', (e) => {
+      const closeBtn = (e.target as HTMLElement).closest<HTMLElement>('[data-modal-close]');
+      if (!closeBtn) return;
+
+      const dialog = closeBtn.closest<HTMLDialogElement>('dialog');
+      if (!dialog) return;
+
+      closeModal(dialog);
+    });
+
+    // ---- ESC key — intercept native cancel to animate close ----
+    document.addEventListener('cancel', (e) => {
+      if (e.target instanceof HTMLDialogElement) {
+        e.preventDefault();
+        closeModal(e.target);
+      }
+    }, true);
+  }
+
+  // GSAP loads from CDN (deferred), so poll briefly before falling back
+  function waitForGsapAndInit(retries = 15) {
+    if ((window as any).gsap) {
+      initModals();
+    } else if (retries > 0) {
+      setTimeout(() => waitForGsapAndInit(retries - 1), 100);
+    } else {
+      // GSAP not available — modals still work, just without animation
+      initModals();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => waitForGsapAndInit());
+  } else {
+    waitForGsapAndInit();
+  }
+</script>

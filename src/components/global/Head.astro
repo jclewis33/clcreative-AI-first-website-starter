@@ -1,0 +1,181 @@
+---
+// src/components/Head.astro
+import { Font } from "astro:assets";
+import { SITE } from "../../config/site";
+
+// Destructure props with default values.
+// These can be overridden on a per-page basis.
+const {
+  title = `${SITE.name} | ${SITE.tagline}`,
+  description = SITE.defaultDescription,
+  ogImage = SITE.ogImagePath,
+  ogImageAlt = `${SITE.name} — ${SITE.tagline} for growth-stage businesses`,
+  ogTitle,
+  ogDescription,
+  canonical,
+} = Astro.props;
+
+// Auto-derive canonical from the current path against Astro.site.
+// Pages can still pass an explicit `canonical` prop to override.
+const resolvedCanonical =
+  canonical || new URL(Astro.url.pathname, Astro.site).toString();
+
+// OG/Twitter fallback chain: explicit OG → meta title/description
+const resolvedOgTitle = ogTitle || title;
+const resolvedOgDescription = ogDescription || description;
+const resolvedTwitterTitle = resolvedOgTitle;
+const resolvedTwitterDescription = resolvedOgDescription;
+
+// Social platforms require absolute URLs for images — resolve relative
+// paths against Astro.site so `ogImage="/foo.png"` works everywhere.
+const resolvedOgImage = ogImage
+  ? new URL(ogImage, Astro.site).toString()
+  : "";
+const resolvedTwitterImage = resolvedOgImage;
+---
+
+<!-- Character Encoding -->
+<meta charset="UTF-8" />
+
+<!-- Ensure proper scaling on mobile devices -->
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- Mobile browser UI chrome color (address bar, etc.). Literal hex required —
+     a meta tag can't read CSS vars; mirrors --color-brand-500 (see SITE.brand). -->
+<meta name="theme-color" content={SITE.brand.color} />
+
+<!-- Fonts (Astro Fonts API) -->
+<Font cssVariable="--font-bdo-grotesk" preload />
+<Font cssVariable="--font-inter" preload />
+<Font cssVariable="--font-ibm-plex-mono" preload />
+
+<!-- Favicon and Apple Touch Icon -->
+<link rel="icon" href={SITE.logoPath} type="image/x-icon" />
+<link rel="apple-touch-icon" href={SITE.appleTouchIconPath} />
+
+<!-- Sitemap discovery for crawlers -->
+<link rel="sitemap" href="/sitemap-index.xml" />
+
+<!-- Canonical URL: auto-derived from Astro.url + Astro.site, overridable via prop -->
+<link rel="canonical" href={resolvedCanonical} />
+
+<!-- Page Title and Meta Description for SEO -->
+<title>{title}</title>
+<meta name="description" content={description} />
+
+<!-- Open Graph Meta Tags for social sharing (e.g., Facebook, LinkedIn) -->
+<meta property="og:title" content={resolvedOgTitle} />
+<meta property="og:description" content={resolvedOgDescription} />
+<meta property="og:type" content="website" />
+<meta property="og:url" content={resolvedCanonical} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:image" content={resolvedOgImage} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={ogImageAlt} />
+
+<!-- Twitter Card Meta Tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content={SITE.xHandle} />
+<meta name="twitter:creator" content={SITE.xHandle} />
+<meta property="twitter:title" content={resolvedTwitterTitle} />
+<meta property="twitter:description" content={resolvedTwitterDescription} />
+<meta property="twitter:image" content={resolvedTwitterImage} />
+<meta property="twitter:image:alt" content={ogImageAlt} />
+
+<!-- UserCentric - Cookie Popup (loaded first so it can gate tracking scripts) -->
+<link rel="preconnect" href="//privacy-proxy.usercentrics.eu" />
+<link
+  rel="preload"
+  href="//privacy-proxy.usercentrics.eu/latest/uc-block.bundle.js"
+  as="script"
+/>
+<script
+  type="application/javascript"
+  src="https://privacy-proxy.usercentrics.eu/latest/uc-block.bundle.js"
+></script>
+<script
+  id="usercentrics-cmp"
+  src="https://app.usercentrics.eu/browser-ui/latest/loader.js"
+  data-settings-id={SITE.integrations.usercentricsId}
+  async></script>
+<script is:inline define:vars={{ translationsUrl: SITE.integrations.usercentricsTranslationsUrl }}>
+  uc.setCustomTranslations(translationsUrl);
+</script>
+
+<!-- Google Tag Manager -->
+<script is:inline define:vars={{ gtmId: SITE.integrations.gtmId }}>
+  (function (w, d, s, l, i) {
+    w[l] = w[l] || [];
+    w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+    var f = d.getElementsByTagName(s)[0],
+      j = d.createElement(s),
+      dl = l != "dataLayer" ? "&l=" + l : "";
+    j.async = true;
+    j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+    f.parentNode.insertBefore(j, f);
+  })(window, document, "script", "dataLayer", gtmId);
+</script>
+<!-- End Google Tag Manager -->
+
+<!-- MailerLite Universal -->
+<script is:inline define:vars={{ mailerLiteAccount: SITE.integrations.mailerLiteAccount }}>
+  (function (w, d, e, u, f, l, n) {
+    ((w[f] =
+      w[f] ||
+      function () {
+        (w[f].q = w[f].q || []).push(arguments);
+      }),
+      (l = d.createElement(e)),
+      (l.async = 1),
+      (l.src = u),
+      (n = d.getElementsByTagName(e)[0]),
+      n.parentNode.insertBefore(l, n));
+  })(
+    window,
+    document,
+    "script",
+    "https://assets.mailerlite.com/js/universal.js",
+    "ml",
+  );
+  ml("account", mailerLiteAccount);
+</script>
+<!-- End MailerLite Universal -->
+
+<!-- Data Prevent Flicker Remove if No Script Loaded -->
+
+<style>
+  .gsap-not-found [data-prevent-flicker="true"] {
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+</style>
+
+<noscript>
+  <style>
+    [data-prevent-flicker="true"] {
+      visibility: visible !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    [data-animate-in],
+    [data-animate-up] {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  </style>
+</noscript>
+
+<!-- Form Redirect -->
+
+<script is:inline>
+  if (!location.pathname.startsWith("/thank-you")) {
+    localStorage.setItem("locat", location.href);
+  }
+</script>
+
+<!-- GSAP and Swiper are bundled via npm — see src/scripts/gsap-init.js and
+     src/scripts/swiper-init.js, both imported in BaseLayout. -->

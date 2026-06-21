@@ -1,0 +1,146 @@
+---
+/**
+ * SplitSection — full-reversed content + image section.
+ *
+ * The recurring "experience"/"agitate" pattern used across the industry and
+ * service pages: a heading + rich-text body + CTA button on one side, a square
+ * image on the other (image bleeds to the viewport edge via the `full-reversed`
+ * Layout). The structural shell (Section + Layout + content wrapper + Visual)
+ * and the shared `.split_*` styles live here; each page passes its own heading
+ * and body through the default slot.
+ *
+ * Default slot: the heading and body. Put the body in a
+ * `<div class="split_body u-rich-text">` (drop `u-rich-text` if the body uses
+ * `<Text>` components instead of bare prose). The CTA button is rendered
+ * automatically after the slot — override its label/href via props, or pass
+ * `buttonText={null}` to omit it.
+ *
+ * @example
+ * <SplitSection image={img} imageAlt="…" imagePosition="top">
+ *   <Heading tag="h2" variant="h4" maxWidth="30ch" data-splittext data-prevent-flicker="true">
+ *     A Web Designer Who Has Actually Pastored a Church
+ *   </Heading>
+ *   <div data-fade-in class="split_body u-rich-text">
+ *     <p>…</p>
+ *   </div>
+ * </SplitSection>
+ */
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Visual from "../ui/Visual.astro";
+import Button from "../ui/Button.astro";
+
+/** Spacing-scale step (`--space-N`) for the column gap. `0` = no gap. */
+type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+interface Props {
+  /**
+   * **SplitSection** — full-reversed content + image section.
+   *
+   * **What you can change:**
+   * - `image` — the side image (required)
+   * - `imageAlt` — image alt text (required)
+   * - `theme` — `'light'` | `'dark'` | `'brand'` (default `'dark'`)
+   * - `imageRatio` — Visual aspect ratio, e.g. `'square'`, `'portrait'` (default `'square'`)
+   * - `imagePosition` — focal point, e.g. `'top'` (default centered)
+   * - `gap` — column gap. Number = `--space-N` scale (0–8), e.g. `gap={8}`, or any CSS length string (default `--site-gutter`)
+   * - `buttonText` — CTA label (default `'Book a Strategy Call'`; pass `null` to hide)
+   * - `buttonHref` — CTA link (default `'/book-a-call'`)
+   * - `buttonAriaLabel` — CTA aria-label (falls back to `buttonText`)
+   * - `class` — extra classes on the Section
+   * - plus any HTML attribute (`id`, `data-*`, …) — forwarded to the Section
+   *
+   * **Default slot:** the heading + body markup. Put the body in
+   * `<div class="split_body u-rich-text">…</div>` (drop `u-rich-text` if the
+   * body uses `<Text>` components instead of bare prose). The CTA button renders
+   * automatically after the slot.
+   */
+  docs?: string;
+
+  /** Side image. */
+  image: ImageMetadata | string;
+  /** Side image alt text. */
+  imageAlt: string;
+  /** Section theme. @default 'dark' */
+  theme?: "light" | "dark" | "brand";
+  /** Visual aspect ratio. @default 'square' */
+  imageRatio?: string;
+  /** Visual focal point (e.g. `'top'`). Defaults to centered. */
+  imagePosition?:
+    | "center"
+    | "top"
+    | "top-left"
+    | "top-right"
+    | "bottom"
+    | "bottom-left"
+    | "bottom-right"
+    | "left"
+    | "right"
+    | { x: number; y: number };
+  /**
+   * Horizontal gap between columns. Pass a number for the `--space-N`
+   * scale (0–8), or any CSS length string. Defaults to `--site-gutter`.
+   * @example gap={8}
+   * @example gap="var(--gap-8)"
+   */
+  gap?: GapScale | string;
+  /** CTA button label. `null` hides the button. @default 'Book a Strategy Call' */
+  buttonText?: string | null;
+  /** CTA button link. @default '/book-a-call' */
+  buttonHref?: string;
+  /** CTA aria-label (falls back to `buttonText`). */
+  buttonAriaLabel?: string;
+  /** Extra classes on the Section. */
+  class?: string;
+
+  [key: string]: any;
+}
+
+const {
+  docs,
+  image,
+  imageAlt,
+  theme = "dark",
+  imageRatio = "square",
+  imagePosition,
+  gap,
+  buttonText = "Book a Strategy Call",
+  buttonHref = "/book-a-call",
+  buttonAriaLabel,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<Section
+  theme={theme}
+  padding="none"
+  class:list={["split_section", className]}
+  {...rest}
+>
+  <Layout variant="full-reversed" verticalAlign="center" columnGap={gap}>
+    <Col slot="col1">
+      <div class="split_content">
+        <slot />
+        {
+          buttonText && (
+            <div class="u-button-wrapper">
+              <Button href={buttonHref} ariaLabel={buttonAriaLabel ?? buttonText}>
+                {buttonText}
+              </Button>
+            </div>
+          )
+        }
+      </div>
+    </Col>
+    <Visual
+      slot="col2"
+      src={image}
+      alt={imageAlt}
+      ratio={imageRatio}
+      position={imagePosition}
+      radius="none"
+    />
+  </Layout>
+</Section>

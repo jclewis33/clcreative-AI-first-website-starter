@@ -1,0 +1,79 @@
+---
+/**
+ * FormFieldset — responsive multi-column grouping for form fields.
+ *
+ * Renders a native `<fieldset>` with an optional `<legend>` and a grid
+ * container that adapts column count. The fieldset itself is a container
+ * query context (`container-type: inline-size`), so columns collapse
+ * based on the fieldset's own width — not the viewport.
+ *
+ * Collapse behavior:
+ *   - 2-col and 3-col → single column at container < 35em (560px)
+ *
+ * For fields that should span the full row in a multi-column layout,
+ * add `class="u-span-full"` to that field component.
+ *
+ * @example
+ * ```astro
+ * <FormFieldset columns={2} legend="Contact Details">
+ *   <FormField label="First Name" name="first-name" />
+ *   <FormField label="Last Name" name="last-name" />
+ *   <FormField label="Email" name="email" type="email" class="u-span-full" />
+ * </FormFieldset>
+ * ```
+ */
+
+type FieldsetColumns = 1 | 2 | 3;
+
+interface Props {
+  /**
+   * Number of columns in this fieldset group.
+   * - `1` — single column stack (default)
+   * - `2` — two equal columns (e.g. first name / last name)
+   * - `3` — three equal columns (e.g. city / state / zip)
+   *
+   * Multi-column layouts collapse to 1 column at container < 35em.
+   * @default 1
+   */
+  columns?: FieldsetColumns;
+
+  /**
+   * Optional legend text. Renders a `<legend>` when provided.
+   * Groups related fields (e.g. "Contact Information").
+   */
+  legend?: string;
+
+  /**
+   * Visually hide the legend while keeping it accessible to screen readers.
+   * @default false
+   */
+  legendHidden?: boolean;
+
+  /** Extra classes on the `<fieldset>` element. */
+  class?: string;
+}
+
+const {
+  columns = 1,
+  legend,
+  legendHidden = false,
+  class: className,
+} = Astro.props as Props;
+
+const listClass = [
+  'form_fieldset_list',
+  columns === 2 && 'form_fieldset_list--2col',
+  columns === 3 && 'form_fieldset_list--3col',
+];
+---
+
+<fieldset class:list={['form_fieldset_wrap', className]}>
+  {legend && (
+    <legend class:list={['form_legend', legendHidden && 'u-sr-only']}>
+      {legend}
+    </legend>
+  )}
+  <div class:list={listClass}>
+    <slot />
+  </div>
+</fieldset>

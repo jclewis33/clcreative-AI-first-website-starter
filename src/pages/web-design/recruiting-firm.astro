@@ -1,0 +1,410 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { serviceFaqJsonLd } from "../../lib/jsonld";
+import { SITE } from "../../config/site";
+import Section from "../../components/ui/Section.astro";
+import Layout from "../../components/ui/Layout.astro";
+import Col from "../../components/ui/Col.astro";
+import Heading from "../../components/ui/Heading.astro";
+import Text from "../../components/ui/Text.astro";
+import Button from "../../components/ui/Button.astro";
+import Visual from "../../components/ui/Visual.astro";
+import Overlay from "../../components/ui/Overlay.astro";
+import ContentWrapper from "../../components/ui/ContentWrapper.astro";
+import Grid from "../../components/ui/Grid.astro";
+
+// Section components
+import SplitSection from "../../components/sections/SplitSection.astro";
+import StackingPanels from "../../components/sections/StackingPanels.astro";
+import StackingPanel from "../../components/sections/StackingPanel.astro";
+import M2MFramework from "../../components/sections/M2MFramework.astro";
+import CTASection from "../../components/sections/CTASection.astro";
+import CaseStudyFeatured from "../../components/sections/CaseStudyFeatured.astro";
+import HowWeWorkPromo from "../../components/sections/HowWeWorkPromo.astro";
+import TestimonialShowcase from "../../components/sections/TestimonialShowcase.astro";
+import HowItWorks from "../../components/sections/HowItWorks.astro";
+import FAQ from "../../components/sections/FAQ.astro";
+import NotReadyToBook from "../../components/sections/NotReadyToBook.astro";
+
+// Data
+import { webDesignRecruitingFirmFaqs } from "../../data/faqs";
+
+// Images
+import heroImg from "../../assets/industries/recruiting-firm/recruiting-firm-hero.webp";
+import site1Img from "../../assets/industries/recruiting-firm/recruiting-site-1.webp";
+import site2Img from "../../assets/industries/recruiting-firm/recruiting-site-2.webp";
+import businessImg from "../../assets/industries/recruiting-firm/recruiting-business-1.webp";
+import connectionImg from "../../assets/industries/recruiting-firm/recruiting-website-connection.webp";
+import workHardImg from "../../assets/industries/recruiting-firm/recruiting-website-work-hard.webp";
+import mockupImg from "../../assets/industries/recruiting-firm/recruiting-website-mockup.webp";
+
+// Styles
+import "../../styles/pages/recruiting-firm.css";
+
+const pageUrl = `${SITE.url}/web-design/recruiting-firm`;
+
+// Per-page structured data — Service + FAQPage combined into a single @graph.
+// LocalBusiness lives sitewide in BaseLayout; referenced here via @id.
+const schemaGraph = serviceFaqJsonLd({
+  pageUrl,
+  serviceType: "Web Design",
+  name: "Web Design for Recruiting Firms",
+  description:
+    "Strategy-first Webflow web design for recruiting and staffing firms. Clear, two-audience sites that bring in both clients and candidates, built on the M2M Framework.",
+  audience: {
+    audienceType: "Recruiting and staffing firms",
+  },
+  faqs: webDesignRecruitingFirmFaqs,
+});
+---
+
+<BaseLayout
+  title="Web Design for Recruiting Firms | CL Creative"
+  description="Web design for recruiting and staffing firms, built by a team that's worked in the industry. Messaging that wins clients and candidates. Book a free call."
+  canonical={pageUrl}
+  theme="light"
+  schema={schemaGraph}
+>
+  <!-- ==================== HERO ==================== -->
+  <Section theme="dark" minHeight id="recruiting-hero">
+    <Fragment slot="background">
+      <Visual
+        src={heroImg}
+        alt="CL Creative web design for recruiting firms"
+        variant="background"
+        priority
+      />
+      <Overlay strength={40} />
+    </Fragment>
+    <Layout variant="stack">
+      <Col slot="col1" class="u-hero-fade">
+        <Heading tag="h1" variant="h1" maxWidth="24ch">
+          Web Design for Recruiting Firms That Need to Win Clients and
+          Candidates
+        </Heading>
+        <Text variant="large" maxWidth="60ch">
+          You know the placement is everything. But before a client ever calls
+          or a candidate ever applies, they check your website, and if it
+          doesn't immediately tell them they're in the right place, you have
+          lost them before the conversation starts.
+        </Text>
+        <div class="u-button-wrapper">
+          <Button href="/book-a-call" ariaLabel="Book a Strategy Call"
+            >Book a Strategy Call</Button
+          >
+          <Button
+            variant="secondary"
+            href="/marketing-scorecard"
+            ariaLabel="Free Marketing Health Quiz"
+          >
+            Free Marketing Health Quiz
+          </Button>
+        </div>
+      </Col>
+    </Layout>
+  </Section>
+
+  <!-- ==================== AGITATION — STACKING PANELS ==================== -->
+  <StackingPanels>
+    <Heading
+      slot="heading"
+      data-splittext
+      data-prevent-flicker="true"
+      tag="h2"
+      variant="h2"
+      >A polished recruiting website that confuses visitors is still a confusing
+      website</Heading
+    >
+    <StackingPanel>
+      <Heading tag="h3" variant="h3"
+        >The reason most recruiting sites underperform has nothing to do with
+        how they look.</Heading
+      >
+      <Text marginBottom={0}>
+        It's that they never decide who each page is for. The homepage tries to
+        pitch clients and reassure candidates in the same breath. The calls to
+        action point everywhere at once. So a hiring manager and a job seeker
+        land on the same page and both walk away unsure.
+      </Text>
+      <Visual
+        slot="visual"
+        src={site1Img}
+        alt="A recruiting website that tries to speak to everyone at once"
+        ratio="landscape"
+      />
+    </StackingPanel>
+
+    <StackingPanel reversed>
+      <Heading tag="h3" variant="h3"
+        >A recruiting website that works gives each audience a clear path</Heading
+      >
+      <Text marginBottom={0}>
+        Clients see why you fill roles better than the firm down the street.
+        Candidates see why they want to work with you. Everyone knows where to
+        go next. That is what we build.
+      </Text>
+      <Visual
+        slot="visual"
+        src={site2Img}
+        alt="A recruiting website that gives clients and candidates a clear path"
+        ratio="landscape"
+      />
+    </StackingPanel>
+  </StackingPanels>
+
+  <!-- ==================== EXPERIENCE ==================== -->
+  <SplitSection
+    image={businessImg}
+    imageAlt="CL Creative founder, a former recruiter, at work in a staffing office"
+  >
+    <Heading
+      data-splittext
+      data-prevent-flicker="true"
+      tag="h2"
+      variant="h4"
+      maxWidth="30ch"
+    >
+      A Web Designer Who Has Actually Worked a Desk in Recruiting
+    </Heading>
+    <div data-fade-in class="split_body u-rich-text">
+      <p>
+        CL Creative builds websites for recruiting and staffing firms, and we
+        come at it from inside the industry.
+      </p>
+      <p>
+        Before CL Creative, our founder spent four years in staffing as a
+        recruiter, a recruiting lead who trained other recruiters, and an
+        account manager. So we have sat on your side of the table.
+      </p>
+      <p><strong>That experience shows up in the work:</strong></p>
+      <ul>
+        <li>
+          <strong
+            ><a
+              href="/case-studies/synergy-sparq-web-design-and-seo-for-a-staffing-firm"
+              >Synergy Sparq</a
+            >,</strong
+          > an IT and software development recruiting firm that places offshore
+          candidates. We built their website to speak clearly to the companies
+          hiring.
+        </li>
+        <li>
+          <strong>PopCandi,</strong> a recruiting agency we worked with, and
+          <strong
+            ><a
+              href="/case-studies/popcandi-ai-marketing-and-saas-platform"
+              >PopCandi AI</a
+            ></strong
+          >, the AI recruiting software platform we designed and built for them.
+        </li>
+      </ul>
+      <p>
+        We understand recruiting beyond the marketing site, down to the tools
+        and workflow your team actually uses.
+      </p>
+    </div>
+  </SplitSection>
+
+  <!-- ==================== M2M FRAMEWORK ==================== -->
+  <M2MFramework paddingTop="none">
+    <Fragment slot="intro">
+      <Text data-fade-in maxWidth="60ch">
+        We use a framework we created called M2M to map out who your clients and
+        candidates are and what each needs to hear. Then the whole site gets
+        built around that:
+      </Text>
+      <ul data-fade-in class="u-list">
+        <li>
+          The message each audience reads first, on a page that's clearly for
+          them
+        </li>
+        <li>
+          The order of the page, built around how clients and candidates
+          actually decide
+        </li>
+        <li>
+          The calls to action that send hiring managers and job seekers to the
+          right next step
+        </li>
+        <li>The questions and objections we answer, and where</li>
+      </ul>
+      <Text data-fade-in maxWidth="60ch" marginBottom={0}>
+        That's why the sites we build bring in clients and candidates instead of
+        just compliments.
+      </Text>
+    </Fragment>
+    <Fragment slot="card2Body">
+      We turn that research into conversion copy. Potential clients will see
+      their problem and your solution. And they'll immediately know you're the
+      right fit for them.
+    </Fragment>
+    <Fragment slot="card3Body">
+      We then design and build you a custom <a href="/why-webflow"
+        >Webflow site</a
+      >
+      that's easy to update and ready to scale as your business grows.
+    </Fragment>
+  </M2MFramework>
+
+  <!-- ==================== COMPARISON / STAKES ==================== -->
+  <Section gap={6}>
+    <Visual
+      data-fade-up
+      data-prevent-flicker="true"
+      src={connectionImg}
+      alt="A recruiting website connecting clients and candidates across every channel"
+      ratio="16/9"
+      radius="large"
+    />
+
+    <ContentWrapper align="center">
+      <Heading
+        data-splittext
+        data-prevent-flicker="true"
+        tag="h2"
+        maxWidth="24ch"
+      >
+        Depending on the Designer, You'll End up with Two Very Different
+        Websites
+      </Heading>
+    </ContentWrapper>
+
+    <Grid
+      data-fade-list
+      data-prevent-flicker="true"
+      largeColumns={2}
+      mediumColumns={1}
+      rowGap={6}
+    >
+      <div class="recruiting-compare_card u-theme-brand">
+        <div class="recruiting-compare_card_header">
+          <Heading tag="h3" variant="h4" maxWidth="none" marginBottom={0}>
+            A site that talks to everyone
+          </Heading>
+        </div>
+        <Text variant="large">You blur both audiences and convert neither.</Text
+        >
+        <ul class="u-list">
+          <li>
+            Hiring managers can't tell if you understand their roles, so they
+            call a firm that looks like a specialist
+          </li>
+          <li>
+            Candidates can't tell if you place people like them, so they apply
+            elsewhere
+          </li>
+          <li>
+            The site wins compliments on the design and still sends you nothing
+          </li>
+        </ul>
+      </div>
+
+      <div class="recruiting-compare_card u-theme-dark">
+        <div class="recruiting-compare_card_header">
+          <Heading tag="h3" variant="h4" maxWidth="none" marginBottom={0}>
+            A site with a clear path
+          </Heading>
+        </div>
+        <Text variant="large">
+          It works like your best recruiter, before anyone picks up the phone.
+        </Text>
+        <ul class="u-list">
+          <li>
+            A hiring manager sees a firm that clearly fills their kind of role
+          </li>
+          <li>A candidate sees a firm worth applying to</li>
+          <li>Each one knows exactly where to go next</li>
+          <li>Every section tells the right visitor "this is for you"</li>
+        </ul>
+      </div>
+    </Grid>
+  </Section>
+
+  <!-- ==================== CTA ==================== -->
+  <CTASection
+    heading="If Your Website Isn't Bringing In Clients and Candidates, We Need to Talk"
+    text="Book a 30-minute strategy call. We'll look at your firm and your current site, figure out what's working and what isn't, and you'll walk away with a clear picture of what your website needs to do for both sides of your business, plus a rough budget range."
+  />
+
+  <!-- ==================== END RESULT ==================== -->
+  <Section theme="dark">
+    <ContentWrapper align="center">
+      <Heading
+        data-splittext
+        data-prevent-flicker="true"
+        tag="h2"
+        variant="h2"
+        maxWidth="26ch"
+      >
+        A Recruiting Website That Works as Hard as Your Team Does
+      </Heading>
+    </ContentWrapper>
+
+    <Layout data-fade-list variant="columns" verticalAlign="center">
+      <Col slot="col1">
+        <Text variant="large">
+          Picture the version of your site where a hiring manager lands and
+          immediately sees a firm that fills their kind of role, and a candidate
+          lands and immediately sees a firm worth applying to. Each one knows
+          where to go next. Neither one bounces.
+        </Text>
+        <Text variant="large">
+          And your website finally pulls its weight on both sides of the
+          business, instead of sitting there looking nice while your recruiters
+          do all the work.
+        </Text>
+        <Heading variant="eyebrow" class="u-color-brand">
+          That's what we build
+        </Heading>
+        <Text variant="large">
+          Clear by design, built by people who know recruiting, made to bring in
+          the clients and candidates you actually want. So your firm grows on
+          purpose, not by accident.
+        </Text>
+      </Col>
+      <Visual
+        slot="col2"
+        src={workHardImg}
+        alt="A recruiter and hiring manager reviewing a clear, conversion-focused recruiting website"
+        ratio="16/10"
+      />
+    </Layout>
+
+    <ContentWrapper align="center" data-fade-in>
+      <div class="u-button-wrapper">
+        <Button href="/book-a-call" ariaLabel="Book a Strategy Call"
+          >Book a Strategy Call</Button
+        >
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- ==================== TESTIMONIALS ==================== -->
+  <TestimonialShowcase />
+
+  <!-- ==================== PROCESS ==================== -->
+  <HowItWorks />
+
+  <!-- ==================== HOW WE WORK ==================== -->
+  <HowWeWorkPromo
+    image={mockupImg}
+    imageAlt="A recruiting marketing site and growth tools working together"
+    imageRatio="3/2"
+  />
+
+  <!-- ==================== FEATURED CASE STUDIES ==================== -->
+  <CaseStudyFeatured
+    theme="dark"
+    slugs={[
+      "synergy-sparq-web-design-and-seo-for-a-staffing-firm",
+      "popcandi-ai-marketing-and-saas-platform",
+      "leverture-web-design-and-development-for-an-agency",
+    ]}
+  />
+
+  <!-- ==================== FAQ ==================== -->
+  <FAQ items={webDesignRecruitingFirmFaqs} />
+
+  <!-- ==================== NOT READY TO BOOK ==================== -->
+  <NotReadyToBook />
+</BaseLayout>

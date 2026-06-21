@@ -1,0 +1,54 @@
+---
+/**
+ * CaseStudyBlockRenderer — renders a single content block by type.
+ *
+ * Accepts a typed ContentBlock and delegates to the correct block component.
+ * Used inside the case study detail page to map over the flexible content array.
+ *
+ * Each block carries an optional `sectionSpacing` value (set in Sanity)
+ * that controls the Section padding. Falls back to "xsmall" if not set.
+ */
+import Section from "../ui/Section.astro";
+import FullWidthImage from "./blocks/FullWidthImage.astro";
+import ImageGrid from "./blocks/ImageGrid.astro";
+import RichTextBlock from "./blocks/RichTextBlock.astro";
+import RichTextLeftBlock from "./blocks/RichTextLeftBlock.astro";
+import RichTextColumnsBlock from "./blocks/RichTextColumnsBlock.astro";
+import RichTextWithImageBlock from "./blocks/RichTextWithImageBlock.astro";
+import StatsBlock from "./blocks/StatsBlock.astro";
+import type { ContentBlock } from "./types";
+
+interface Props {
+  block: ContentBlock;
+}
+
+const { block } = Astro.props;
+
+// Resolve spacing: per-side overrides take priority, then shared value, then default
+const spacing = block.sectionSpacing ?? "xsmall";
+const spacingTop = block.sectionSpacingTop ?? spacing;
+const spacingBottom = block.sectionSpacingBottom ?? spacing;
+---
+
+<Section docs="" paddingTop={spacingTop} paddingBottom={spacingBottom}>
+  {block.type === "fullWidthImage" && (
+    <FullWidthImage image={block.image} imageAlt={block.imageAlt} aspectRatio={block.aspectRatio} transparent={block.transparent} />
+  )}
+  {block.type === "imageGrid" && <ImageGrid images={block.images} aspectRatio={block.aspectRatio} />}
+  {block.type === "richText" && <RichTextBlock html={block.html} maxWidth={block.maxWidth} />}
+  {block.type === "richTextLeft" && <RichTextLeftBlock html={block.html} maxWidth={block.maxWidth} />}
+  {block.type === "richTextColumns" && (
+    <RichTextColumnsBlock html={block.html} />
+  )}
+  {block.type === "richTextWithImage" && (
+    <RichTextWithImageBlock
+      html={block.html}
+      image={block.image}
+      imageAlt={block.imageAlt}
+      aspectRatio={block.aspectRatio}
+      transparent={block.transparent}
+      objectFit={block.objectFit}
+    />
+  )}
+  {block.type === "stats" && <StatsBlock items={block.items} />}
+</Section>

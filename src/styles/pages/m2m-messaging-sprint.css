@@ -1,0 +1,57 @@
+/* M2M Messaging Sprint page — component custom classes */
+
+/* Hero — full-bleed image breaking out of container */
+.m2m-sprint-hero_img {
+  width: 100vw;
+  margin-inline: calc(-50vw + 50%);
+}
+
+/* Deliverables grid — first 6 cards span 2 of 6 cols; last 2 span 3 to fill the row */
+.m2m-sprint-deliverable_card {
+  grid-column: span 2;
+}
+
+.m2m-sprint-deliverable_card.is-wide {
+  grid-column: span 3;
+}
+
+/* Difference section — "Without / With Locked-In Messaging" comparison cards */
+.m2m-sprint-compare_card {
+  padding: var(--space-5);
+  border-radius: var(--radius-main);
+}
+
+.m2m-sprint-compare_card_header {
+  display: inline-flex;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Right Fit section — icon + text list rows */
+.m2m-sprint-fit_list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.m2m-sprint-fit_item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.m2m-sprint-fit_icon {
+  width: 1.25rem;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.m2m-sprint-fit_icon.is-check {
+  color: #16a34a;
+}
+
+.m2m-sprint-fit_icon.is-x {
+  color: #ef4444;
+}

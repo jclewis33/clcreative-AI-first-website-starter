@@ -1,0 +1,226 @@
+---
+/**
+ * FormRange — label + range slider with optional value display.
+ *
+ * The track border transitions to --text on :focus-within; `--range-progress`
+ * drives the track fill.
+ * A small inline script updates the output display and progress on input.
+ *
+ * @example
+ * ```astro
+ * <FormRange label="Budget" name="budget" min={500} max={10000}
+ *   step={100} value={2500} showValue prefix="$" />
+ *
+ * <FormRange label="Opacity" name="opacity" min={0} max={100}
+ *   value={75} showValue showMinMax suffix="%" />
+ * ```
+ */
+
+
+interface Props {
+  /** Label text for the range slider. Always rendered for accessibility. */
+  label: string;
+
+  /** HTML `name` attribute on the input. Required for form submission. */
+  name: string;
+
+  /**
+   * Minimum value of the range.
+   * @default 0
+   */
+  min?: number;
+
+  /**
+   * Maximum value of the range.
+   * @default 100
+   */
+  max?: number;
+
+  /**
+   * Step increment between values. Use `'any'` for continuous.
+   * @default 1
+   */
+  step?: number | 'any';
+
+  /**
+   * Default value of the range input.
+   * @default 50
+   */
+  value?: number;
+
+  /**
+   * Show the current value in an `<output>` element beside the label.
+   * @default false
+   */
+  showValue?: boolean;
+
+  /**
+   * Show min/max labels below the track.
+   * @default false
+   */
+  showMinMax?: boolean;
+
+  /** Unit suffix displayed after the value (e.g. "%", "px", "ms"). */
+  suffix?: string;
+
+  /** Unit prefix displayed before the value (e.g. "$"). */
+  prefix?: string;
+
+  /**
+   * Whether the field is required.
+   * @default false
+   */
+  required?: boolean;
+
+  /**
+   * Disabled state.
+   * @default false
+   */
+  disabled?: boolean;
+
+  /**
+   * Label display variant.
+   * - `'default'` — Label shows above the range slider
+   * - `'hidden'` — Label is visually hidden (still accessible to screen readers)
+   * @default 'default'
+   */
+  labelVariant?: 'default' | 'hidden';
+
+  /** Helper text displayed below the input. */
+  helperText?: string;
+
+  /** Error text displayed below the input (overrides helperText visually). */
+  errorText?: string;
+
+  /** HTML `id` attribute. Auto-generated if not provided. */
+  id?: string;
+
+  /** Extra classes on the outer `.form_label_wrap` element. */
+  class?: string;
+
+  /** Catch-all for extra attributes spread onto the `<input>`. */
+  [key: string]: any;
+}
+
+const {
+  label,
+  name,
+  min = 0,
+  max = 100,
+  step = 1,
+  value = 50,
+  showValue = false,
+  showMinMax = false,
+  suffix,
+  prefix,
+  required = false,
+  disabled = false,
+  labelVariant = 'default',
+  helperText,
+  errorText,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const fieldId = id || `field-${name}`;
+const outputId = `${fieldId}-output`;
+const describedById = (helperText || errorText) ? `${fieldId}-hint` : undefined;
+const initialProgress = ((value - min) / (max - min)) * 100;
+---
+
+<div
+  class:list={['form_label_wrap', 'form_range_wrap', className]}
+>
+  <div class="form_range_label_row">
+    <label
+      class:list={['form_label_text', labelVariant === 'hidden' && 'u-sr-only']}
+      for={fieldId}
+    >
+      {label}
+      {required && <span class="form_required" aria-hidden="true">*</span>}
+    </label>
+
+    {showValue && (
+      <output
+        class="form_range_output"
+        id={outputId}
+        for={fieldId}
+      >
+        {prefix}{value}{suffix}
+      </output>
+    )}
+  </div>
+
+  <input
+    class="form_range"
+    type="range"
+    name={name}
+    id={fieldId}
+    min={min}
+    max={max}
+    step={step}
+    value={value}
+    required={required}
+    disabled={disabled}
+    aria-describedby={describedById}
+    aria-invalid={errorText ? 'true' : undefined}
+    style={`--range-progress: ${initialProgress}%`}
+    data-output={showValue ? outputId : undefined}
+    data-prefix={prefix || undefined}
+    data-suffix={suffix || undefined}
+    {...rest}
+  />
+
+  {showMinMax && (
+    <div class="form_range_minmax" aria-hidden="true">
+      <span class="form_range_min">{prefix}{min}{suffix}</span>
+      <span class="form_range_max">{prefix}{max}{suffix}</span>
+    </div>
+  )}
+
+  {(helperText || errorText) && (
+    <p
+      class:list={['form_helper_text', errorText && 'is-error']}
+      id={describedById}
+    >
+      {errorText || helperText}
+    </p>
+  )}
+</div>
+
+<script>
+  function initFormRanges() {
+    document.querySelectorAll<HTMLInputElement>('.form_range').forEach((input) => {
+      if (input.dataset.rangeInit) return;
+      input.dataset.rangeInit = 'true';
+
+      const outputId = input.dataset.output;
+      const output = outputId ? document.getElementById(outputId) : null;
+      const prefix = input.dataset.prefix || '';
+      const suffix = input.dataset.suffix || '';
+
+      function update() {
+        const min = parseFloat(input.min) || 0;
+        const max = parseFloat(input.max) || 100;
+        const val = parseFloat(input.value);
+        const progress = ((val - min) / (max - min)) * 100;
+
+        input.style.setProperty('--range-progress', `${progress}%`);
+
+        if (output) {
+          output.textContent = `${prefix}${input.value}${suffix}`;
+        }
+      }
+
+      input.addEventListener('input', update);
+      update();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFormRanges);
+  } else {
+    initFormRanges();
+  }
+</script>

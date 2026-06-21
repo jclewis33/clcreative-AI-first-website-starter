@@ -1,0 +1,520 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { serviceFaqJsonLd } from "../../lib/jsonld";
+import { SITE } from "../../config/site";
+import Section from "../../components/ui/Section.astro";
+import Layout from "../../components/ui/Layout.astro";
+import Col from "../../components/ui/Col.astro";
+import Heading from "../../components/ui/Heading.astro";
+import Text from "../../components/ui/Text.astro";
+import Button from "../../components/ui/Button.astro";
+import Visual from "../../components/ui/Visual.astro";
+import ContentWrapper from "../../components/ui/ContentWrapper.astro";
+import Accordion from "../../components/ui/Accordion.astro";
+import AccordionItem from "../../components/ui/AccordionItem.astro";
+
+// Section Components
+import HowItWorks from "../../components/sections/HowItWorks.astro";
+import M2MFramework from "../../components/sections/M2MFramework.astro";
+import TestimonialShowcase from "../../components/sections/TestimonialShowcase.astro";
+import CaseStudyFeatured from "../../components/sections/CaseStudyFeatured.astro";
+import AfterLaunch from "../../components/sections/AfterLaunch.astro";
+import FAQ from "../../components/sections/FAQ.astro";
+import HowWeWorkPromo from "../../components/sections/HowWeWorkPromo.astro";
+import { webDevFaqs } from "../../data/faqs";
+
+// Images
+import heroImg from "../../assets/web-development/web-development-hero.avif";
+import builtToLast1Img from "../../assets/web-development/built-to-last-1.webp";
+import builtToLast2Img from "../../assets/web-development/built-to-last-2.webp";
+import foundationImg from "../../assets/web-development/webflow-foundation.webp";
+import siteLast1Img from "../../assets/web-development/webflow-site-last-1.webp";
+import siteLast2Img from "../../assets/web-development/webflow-site-last-2.webp";
+import siteLast3Img from "../../assets/web-development/webflow-site-last-3.webp";
+import certifiedPartnerImg from "../../assets/web-development/webflow-certified-partner.webp";
+import strongerImg from "../../assets/web-development/weblfow-site-stronger-1.webp";
+
+// Styles
+import "../../styles/pages/web-development.css";
+
+const pageUrl = `${SITE.url}/services/webflow-development`;
+
+// Per-page Service + FAQPage schema. LocalBusiness lives sitewide in
+// BaseLayout; referenced here via provider.@id.
+const schemaGraph = serviceFaqJsonLd({
+  pageUrl,
+  serviceType: "Webflow Development",
+  name: "Webflow Development",
+  description: "Webflow development for growth stage companies.",
+  audience: { audienceType: "Growth-stage businesses ready to scale" },
+  faqs: webDevFaqs,
+});
+---
+
+<BaseLayout
+  title="Web Development | CL Creative"
+  description="Webflow development for growth stage companies."
+  canonical={pageUrl}
+  theme="light"
+  schema={schemaGraph}
+>
+  <!-- Hero Section -->
+  <Section>
+    <Layout
+      data-fade-list
+      data-prevent-flicker="true"
+      variant="columns"
+      verticalAlign="center"
+    >
+      <Col slot="col1">
+        <Heading variant="eyebrow" maxWidth="60ch"
+          >Webflow Development for Growth-Stage Companies</Heading
+        >
+        <Heading tag="h1" variant="h2"
+          >Webflow Website Built by a Certified Partner, Not a Freelancer With a
+          Template</Heading
+        >
+        <Text
+          >Building a Webflow site that looks good is one job. Building one
+          that's fast, maintainable, and easy for your team to update is a
+          different job entirely.</Text
+        >
+        <div class="u-button-wrapper">
+          <Button href="/book-a-call" ariaLabel="Book a Strategy Call"
+            >Book a Strategy Call</Button
+          >
+          <Button
+            variant="secondary"
+            href="/marketing-scorecard"
+            ariaLabel="Start with a free Marketing Health Quiz"
+            >Free Marketing Health Quiz</Button
+          >
+        </div>
+      </Col>
+      <div slot="col2" class="web-dev_hero_visual_wrap">
+        <div class="web-dev_hero_accent"></div>
+        <Visual
+          transparent
+          src={heroImg}
+          alt="Web development project showcase"
+          ratio="270/187"
+          radius="none"
+        />
+      </div>
+    </Layout>
+  </Section>
+
+  <!-- Webflow Site Foundation Section -->
+  <Section theme="brand" padding="none">
+    <Layout
+      variant="full-reversed"
+      verticalAlign="center"
+      columnGap="var(--gap-8)"
+    >
+      <Col slot="col1">
+        <div class="web-dev_foundation_content">
+          <Heading
+            data-split-text
+            data-prevent-flicker="true"
+            maxWidth="30ch"
+            tag="h2"
+            variant="h3"
+            >A Webflow Site Is Only as Good as the Foundation Underneath It</Heading
+          >
+          <div
+            class="web-dev_foundation_body"
+            data-fade-in
+            data-delay="0.2"
+            data-prevent-flicker="true"
+          >
+            <Text
+              >The design is what your visitors see. The build is what decides
+              whether your site loads fast, ranks in search, scales when your
+              team grows, and stays maintainable five years from now. Most
+              developers stop thinking about those things the moment the site
+              launches.</Text
+            >
+            <Text
+              >We don't. As a Webflow Certified Partner, we build sites with the
+              component systems, CMS architecture, and performance budgets that
+              make every future update easier instead of harder.</Text
+            >
+          </div>
+          <div class="u-button-wrapper">
+            <Button href="/book-a-call" ariaLabel="Book a Strategy Call"
+              >Book a Strategy Call</Button
+            >
+          </div>
+        </div>
+      </Col>
+      <Visual
+        radius="none"
+        slot="col2"
+        src={foundationImg}
+        alt="Webflow site foundation example showing CMS and component architecture"
+        ratio="square"
+      />
+    </Layout>
+  </Section>
+
+  <!-- Webflow Three Things Section -->
+  <Section>
+    <ContentWrapper align="center">
+      <Heading data-split-text maxWidth="40ch"
+        >The Three Things That Decide Whether Your Webflow Site Lasts</Heading
+      >
+      <Text data-fade-in variant="large" align="center" maxWidth="60ch"
+        >Every site we build is structured around three decisions most Webflow
+        freelancers skip. They take more work upfront, but they're the
+        difference between a site you can grow into or a site you'll have to
+        rebuild in two years.</Text
+      >
+    </ContentWrapper>
+    <div class="web-dev_three_wrap" data-three-accordion>
+      <div class="web-dev_three_visual_wrap">
+        <div
+          class="web-dev_three_visual"
+          data-visual-key="1"
+          data-accordion-active
+        >
+          <Visual
+            src={siteLast1Img}
+            alt="CMS architecture built for real editors"
+            ratio="square"
+            radius="main"
+          />
+        </div>
+        <div class="web-dev_three_visual" data-visual-key="2">
+          <Visual
+            src={siteLast2Img}
+            alt="Performance that compounds over time"
+            ratio="square"
+            radius="main"
+          />
+        </div>
+        <div class="web-dev_three_visual" data-visual-key="3">
+          <Visual
+            src={siteLast3Img}
+            alt="Custom work that lasts"
+            ratio="square"
+            radius="main"
+          />
+        </div>
+      </div>
+      <Accordion openOnHover openByDefault={1} class="web-dev_three_accordion">
+        <AccordionItem
+          question="CMS Architecture Built for Real Editors"
+          data-visual-key="1"
+        >
+          <Text
+            >Your team will spend more time in the CMS than we will. We design
+            Collections, reference fields, and templates so your editors can
+            launch a new case study, blog post, or service page without breaking
+            anything or calling a developer. Clean, named, documented. Built for
+            the people who actually use it.</Text
+          >
+          <div class="web-dev_three_inline_visual">
+            <Visual
+              src={siteLast1Img}
+              alt="CMS architecture built for real editors"
+              ratio="square"
+              radius="main"
+            />
+          </div>
+        </AccordionItem>
+        <AccordionItem
+          question="Performance That Compounds Over Time"
+          data-visual-key="2"
+        >
+          <Text
+            >Slow sites cost you customers. We build performance into the
+            system, not on top of it, so your site loads fast on launch day and
+            stays fast as your content and team grow.</Text
+          >
+          <div class="web-dev_three_inline_visual">
+            <Visual
+              src={siteLast2Img}
+              alt="Performance that compounds over time"
+              ratio="square"
+              radius="main"
+            />
+          </div>
+        </AccordionItem>
+        <AccordionItem question="Custom Work That Lasts" data-visual-key="3">
+          <Text
+            >Sometimes Webflow can't get there alone. You need GSAP animations,
+            custom code, or a third-party tool integration. We handle those
+            builds the same way we handle the rest of the site: structured,
+            documented, and tested across the browsers and devices your
+            customers actually use.</Text
+          >
+          <div class="web-dev_three_inline_visual">
+            <Visual
+              src={siteLast3Img}
+              alt="Custom work that lasts"
+              ratio="square"
+              radius="main"
+            />
+          </div>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  </Section>
+
+  <!-- Webflow Site Last Section -->
+  <Section theme="dark">
+    <Layout variant="stack">
+      <Col slot="col1">
+        <Heading data-split-text>Built to Launch vs. Built to Last</Heading>
+        <Text data-fade-in variant="large"
+          >In order for your site to scale with your business growth, it needs
+          to be build on a lasting foundation.</Text
+        >
+      </Col>
+    </Layout>
+
+    <Layout data-fade-list variant="columns" class="system-content_research">
+      <Col slot="col1">
+        <Heading variant="h4">Without a Proper Foundation</Heading>
+        <Text data-fade-in variant="large"
+          >The site launches. Three months in, your team tries to add a new
+          service page and the styles break across the whole site because
+          nothing was built with a consistent class system.
+        </Text>
+        <Text data-fade-in variant="large"
+          >Sections were copied across pages instead of built once, so a small
+          change to your CTA means updating it in twelve places.
+        </Text>
+        <Text data-fade-in variant="large"
+          >Every layout change becomes a developer ticket. You pay for a "fix"
+          every month or live with a site that gets harder to change over time.
+        </Text>
+      </Col>
+      <Visual
+        slot="col2"
+        src={builtToLast1Img}
+        alt="Showing an image of a team collaborating"
+        transparent
+      />
+    </Layout>
+
+    <Layout variant="columns">
+      <Visual
+        slot="col1"
+        src={builtToLast2Img}
+        alt="Showing team talking with one another"
+        data-fade-in
+      />
+      <Col slot="col2">
+        <Heading variant="h4">With a Proper Foundation</Heading>
+        <Text data-fade-in variant="large"
+          >The site launches. Six months in, your marketing manager has added
+          four new case studies, two service pages, and a dozen blog posts on
+          their own.
+        </Text>
+        <Text data-fade-in variant="large"
+          >Sections stay consistent because they're built from one source.
+          Change the CTA once and it updates everywhere it's used.
+        </Text>
+        <Text data-fade-in variant="large"
+          >When you need a new feature or a layout change, you can add it
+          yourself because the site was built with a component first framework.
+        </Text>
+      </Col>
+    </Layout>
+  </Section>
+
+  <!-- Webflow Mid-Page CTA Section -->
+  <Section padding="small">
+    <ContentWrapper align="left">
+      <Heading variant="h3" maxWidth="35ch" marginBottom={3}
+        >If you want to avoid a Webflow sites that falls apart three months
+        later, a strategy-first build with CL Creative is the right next step.</Heading
+      >
+
+      <div class="u-button-wrapper">
+        <Button href="/book-a-call" ariaLabel="Book a Free Strategy Call"
+          >Book a Free Strategy Call</Button
+        >
+      </div>
+    </ContentWrapper>
+  </Section>
+
+  <!-- M2M Framework Section -->
+  <M2MFramework padding="small">
+    <Fragment slot="heading"
+      >Build Quality Doesn't Matter If the Site Says the Wrong Thing</Fragment
+    >
+    <Fragment slot="intro">
+      <Text data-fade-in size="regular" maxWidth="60ch" marginBottom={0}
+        >A technically perfect Webflow site that doesn't speak to your ideal
+        customer is still a broken site. That's why every build starts with our
+        Market-to-Message Framework. We figure out who you're talking to before
+        we write a single line of code.</Text
+      >
+    </Fragment>
+    <Fragment slot="card2Body"
+      >We turn that research into conversion copy. Potential clients will see
+      their problem and your solution. And they'll immediately know you're the
+      right fit for them.</Fragment
+    >
+    <Fragment slot="card3Body"
+      >We then design and build you a custom <a href="/why-webflow"
+        >Webflow site</a
+      > that's easy to update and ready to scale as your business grows.</Fragment
+    >
+  </M2MFramework>
+
+  <!-- Webflow Certified Partner Section -->
+  <Section>
+    <Layout variant="columns" ratio="4-7" verticalAlign="center">
+      <Col slot="col1">
+        <Heading data-fade-in variant="eyebrow" maxWidth="40ch"
+          >Webflow Certified Partner</Heading
+        >
+        <Heading data-split-text tag="h2" variant="h3" maxWidth="30ch"
+          >Recognized by Webflow. Trusted by Growth-Stage Teams</Heading
+        >
+        <Text data-fade-in
+          >Webflow doesn't hand out Partner status. It's earned through builds
+          that pass technical review, client satisfaction scores, and a track
+          record of solving real problems with the platform.</Text
+        >
+        <Text data-fade-in
+          >When you work with us, you're not getting a freelancer who watched
+          the Webflow tutorial series. You're getting a developer Webflow itself
+          recognizes as a Certified Partner.</Text
+        >
+      </Col>
+      <Visual
+        slot="col2"
+        src={certifiedPartnerImg}
+        alt="Webflow Certified Partner badge"
+        ratio="736/414"
+        radius="main"
+        transparent
+      />
+    </Layout>
+  </Section>
+
+  <!-- How It Works Section -->
+  <HowItWorks>
+    <Fragment slot="step2Body"
+      >We design the system that powers your site — the component library, the
+      CMS architecture, the interaction patterns — and then we build it cleanly
+      so your team owns it from day one.</Fragment
+    >
+  </HowItWorks>
+
+  <!-- How We Work promo -->
+  <HowWeWorkPromo padding="small" />
+
+  <!-- Case Study Featured Section -->
+  <CaseStudyFeatured theme="dark" />
+
+  <!-- Testimonials Section -->
+  <TestimonialShowcase />
+
+  <!-- After Launch Section -->
+  <AfterLaunch />
+
+  <!-- Webflow Stronger Section -->
+  <Section>
+    <ContentWrapper align="center">
+      <Heading data-split-text maxWidth="40ch"
+        >A Webflow Site That Gets Stronger Over Time, Not Weaker</Heading
+      >
+    </ContentWrapper>
+    <Layout variant="breakout" ratio="4-7" verticalAlign="center">
+      <Col slot="col1">
+        <Text data-fade-in variant="large"
+          >Six months from launch, your marketing team is shipping campaigns
+          without bottlenecks. Your site loads faster than it did on day one.
+          And when you need to add something new, the architecture welcomes it
+          instead of fighting it.</Text
+        >
+        <div class="u-button-wrapper">
+          <Button href="/book-a-call" ariaLabel="Book a Strategy Call"
+            >Book a Strategy Call</Button
+          >
+        </div>
+      </Col>
+      <Visual
+        slot="col2"
+        transparent
+        src={strongerImg}
+        alt="Marketing team shipping campaigns with a Webflow site that scales"
+        ratio="705/397"
+        radius="main"
+      />
+    </Layout>
+  </Section>
+
+  <!-- FAQ Section -->
+  <FAQ items={webDevFaqs} />
+
+  <!-- Single CTA Section -->
+  <Section padding="small" theme="brand">
+    <ContentWrapper align="left">
+      <Heading variant="h3" maxWidth="35ch" marginBottom={3}
+        >Ready to Build a Site That Sells for You?</Heading
+      >
+      <Text
+        >Thirty Minutes. We'll dig into your business, look at what's working
+        and what's not, and figure out your next step.</Text
+      >
+      <div class="u-button-wrapper">
+        <Button href="/book-a-call" ariaLabel="Book a Free Strategy Call"
+          >Book a Free Strategy Call</Button
+        >
+      </div>
+    </ContentWrapper>
+  </Section>
+</BaseLayout>
+
+<script>
+  function initThreeAccordionVisuals() {
+    const wrap = document.querySelector<HTMLElement>("[data-three-accordion]");
+    if (!wrap) return;
+
+    const visuals = wrap.querySelectorAll<HTMLElement>(".web-dev_three_visual");
+    const visualMap: Record<string, HTMLElement> = {};
+
+    visuals.forEach((v) => {
+      const key = v.getAttribute("data-visual-key");
+      if (key) visualMap[key] = v;
+    });
+
+    function setActiveVisual(key: string | null) {
+      if (!key) return;
+      visuals.forEach((v) => v.removeAttribute("data-accordion-active"));
+      if (visualMap[key]) {
+        visualMap[key].setAttribute("data-accordion-active", "");
+      }
+    }
+
+    const items = wrap.querySelectorAll<HTMLElement>(".accordion_item");
+    items.forEach((item) => {
+      const key = item.getAttribute("data-visual-key");
+      const heading = item.querySelector<HTMLElement>(
+        ".accordion_toggle_button",
+      );
+      if (!heading || !key) return;
+
+      heading.addEventListener("pointerenter", (e) => {
+        if (e.pointerType === "touch") return;
+        setActiveVisual(key);
+      });
+
+      heading.addEventListener("click", () => {
+        setActiveVisual(key);
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initThreeAccordionVisuals);
+  } else {
+    initThreeAccordionVisuals();
+  }
+</script>

@@ -1,0 +1,20 @@
+---
+/**
+ * RichTextLeftBlock — left-aligned rich text content block.
+ *
+ * Full-width block for body content that should remain left-aligned.
+ * Renders portable text HTML inside a u-rich-text container with a
+ * configurable max-width (default 70ch).
+ */
+
+interface Props {
+  html: string;
+  maxWidth?: string;
+}
+
+const { html, maxWidth = '90ch' } = Astro.props;
+---
+
+<div class="case-study_detail_rich_text_left_wrap" style={`max-width: ${maxWidth}`} data-fade-in data-prevent-flicker="true">
+  <div class="u-rich-text" set:html={html} />
+</div>

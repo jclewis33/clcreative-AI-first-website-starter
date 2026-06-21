@@ -1,0 +1,316 @@
+/* ==========================================================================
+   GLOSSARY PAGE STYLES
+   ==========================================================================
+   Custom classes for glossary listing and term detail pages:
+     - Listing: letter nav, search, filter, cards (glossary_*, glossary_card_*)
+     - Detail: breadcrumbs, category tag, TOC, prose, prev/next (glossary_term_*)
+   ========================================================================== */
+
+/* ================================================================
+   GLOSSARY INDEX — LISTING PAGE
+   ================================================================ */
+
+/* ---- Hero ---- */
+
+.glossary_hero_wrap {
+  /* Section wrapper — styling handled by Section component */
+}
+
+/* ---- Controls (letter nav + search + filters) ---- */
+
+.glossary_controls_wrap {
+  /* Section wrapper */
+}
+
+/* A-Z letter navigation bar */
+.glossary_letter_nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+  /* margin-bottom: var(--space-4); */
+}
+
+.glossary_letter_link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-full);
+  border: var(--border-width-main) solid var(--border);
+  font-size: var(--text-small-size);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  color: var(--text);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.glossary_letter_link:hover {
+  background-color: var(--background-2);
+  border-color: var(--text);
+}
+
+/* Search input */
+.glossary_search_wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 24rem;
+  margin-inline: auto;
+}
+
+.glossary_search_icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.glossary_search_input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--background-2);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-main);
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.glossary_search_input::placeholder {
+  color: var(--text);
+  opacity: 0.4;
+}
+
+.glossary_search_input:focus {
+  border-color: var(--text);
+}
+
+/* Category filter buttons */
+.glossary_filter_wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.glossary_filter_button {
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text);
+  font-size: var(--text-tiny-size);
+  font-family: inherit;
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+  line-height: 1.4;
+}
+
+.glossary_filter_button:hover {
+  border-color: var(--text);
+}
+
+.glossary_filter_button.is-active {
+  background-color: var(--button-primary-background);
+  border-color: var(--button-primary-border);
+  color: var(--button-primary-text);
+}
+
+/* ---- Letter groups ---- */
+
+.glossary_letter_group {
+  margin-bottom: var(--space-6);
+  scroll-margin-top: calc(var(--nav-height-total) + 1.5rem);
+}
+
+/* ---- Glossary cards (index + related terms) ---- */
+
+.glossary_card_wrap {
+  /* Card component handles base styling */
+}
+
+.glossary_card_title_wrap {
+  /* Title wrapper */
+}
+
+.glossary_card_footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: auto;
+  padding-top: var(--space-3);
+  text-align: left;
+}
+
+.glossary_card_category {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* ---- Empty state ---- */
+
+.glossary_empty_state {
+  padding: var(--space-8) 0;
+  text-align: center;
+}
+
+/* ================================================================
+   GLOSSARY TERM — DETAIL PAGE
+   ================================================================ */
+
+/* ---- Hero ---- */
+
+.glossary_term_hero_wrap {
+  /* Section wrapper */
+}
+
+/* Breadcrumbs */
+.glossary_term_breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-small-size);
+}
+
+.glossary_term_breadcrumb_link {
+  color: var(--link-text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.glossary_term_breadcrumb_link:hover {
+  color: var(--link-text-hover);
+}
+
+.glossary_term_breadcrumb_sep {
+  color: var(--border);
+}
+
+.glossary_term_breadcrumb_current {
+  color: var(--text);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Category tag — mirrors case-study_detail_category_tag */
+.glossary_term_category_tag {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: var(--text-tiny-size);
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  margin-bottom: var(--space-3);
+}
+
+/* ---- Content section ---- */
+
+.glossary_term_content_wrap {
+  /* Section wrapper */
+}
+
+/* Hide the entire sidebar column at medium so it doesn't occupy
+   grid/flex space (gap) when the TOC content is hidden. */
+.glossary_term_content_wrap .u-layout-column-1 {
+  display: var(--none-medium, block);
+}
+
+/* ---- Table of contents sidebar ---- */
+
+.glossary_term_toc {
+  /* Hide on medium using the responsive flag */
+  display: var(--none-medium, block);
+}
+
+.glossary_term_toc_list {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-3) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.glossary_term_toc_link {
+  font-size: var(--text-small-size);
+  color: var(--link-text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.glossary_term_toc_link:hover {
+  color: var(--link-text-hover);
+}
+
+.glossary_term_toc_link.is-active {
+  color: var(--color-brand-500);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ---- Prose ---- */
+
+.glossary_term_prose {
+  /* Rich text rhythm inherited from u-rich-text */
+}
+
+/* Scroll offset for anchored headings (clears fixed nav) */
+.glossary_term_prose [id] {
+  scroll-margin-top: calc(var(--nav-height-total) + 1.5rem);
+}
+
+/* ---- Related terms section ---- */
+
+.glossary_term_related_wrap {
+  /* Section wrapper */
+}
+
+/* ---- Prev/Next navigation ---- */
+
+.glossary_term_nav_wrap {
+  /* Section wrapper */
+}
+
+.glossary_term_prev_next {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  border-top: var(--border-width-main) solid var(--border);
+  padding-top: var(--space-5);
+}
+
+.glossary_term_nav_link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-decoration: none;
+  color: var(--text);
+  transition: color 0.2s ease;
+}
+
+.glossary_term_nav_link:hover {
+  color: var(--link-text-hover);
+}
+
+.glossary_term_nav_link.is-next {
+  text-align: right;
+  align-items: flex-end;
+  margin-left: auto;
+}

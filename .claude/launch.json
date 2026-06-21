@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "4567"],
+      "port": 4567,
+      "cwd": "/Users/caseylewis/Documents/GitHub/clcreative"
+    },
+    {
+      "name": "dev4321",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 4321,
+      "cwd": "/Users/caseylewis/Documents/GitHub/clcreative"
+    }
+  ]
+}

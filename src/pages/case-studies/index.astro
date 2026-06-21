@@ -1,0 +1,284 @@
+---
+export const prerender = false;
+/**
+ * Case Studies Listing Page
+ *
+ * Main case studies index with:
+ *   1. Hero section — title + description
+ *   2. Filter bar — Industry + Category dropdowns + search input
+ *   3. Case study grid — 2-column responsive grid of CaseStudyCard components
+ *
+ * Content is fetched from Sanity CMS. Filter dropdown options are derived
+ * from the actual case study data — only values used by at least one case
+ * study appear in the dropdowns.
+ */
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SanityCtaSection from "../../components/sections/SanityCtaSection.astro";
+import Section from "../../components/ui/Section.astro";
+import Layout from "../../components/ui/Layout.astro";
+import Col from "../../components/ui/Col.astro";
+import Grid from "../../components/ui/Grid.astro";
+import Heading from "../../components/ui/Heading.astro";
+import Text from "../../components/ui/Text.astro";
+import CaseStudyCard from "../../components/ui/CaseStudyCard.astro";
+
+// Sanity
+import { loadQuery } from "../../sanity/lib/load-query";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import { CASE_STUDIES_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
+import { urlFor, hotspotPosition } from "../../sanity/lib/image";
+import { stegaClean } from "@sanity/client/stega";
+
+// Styles
+import "../../styles/pages/case-studies.css";
+
+/* ── Fetch from Sanity (already sorted by date desc in query) ── */
+
+const { data: sortedCaseStudies } = await loadQuery<any[]>({
+  query: CASE_STUDIES_QUERY,
+  ...getDraftModeProps(Astro),
+});
+
+const { data: settings } = await loadQuery<any>({
+  query: SITE_SETTINGS_QUERY,
+  ...getDraftModeProps(Astro),
+});
+const defaultCtaSection = settings?.defaultCtaSection ?? null;
+
+/* ── Derive filter options from actual data ── */
+
+const industryOptions = [
+  ...new Set(
+    sortedCaseStudies.flatMap((s: any) =>
+      (s.industries ?? []).map((v: string) => stegaClean(v)),
+    ),
+  ),
+].sort((a, b) => a.localeCompare(b));
+
+const categoryOptions = [
+  ...new Set(
+    sortedCaseStudies.flatMap((s: any) =>
+      (s.categories ?? []).map((v: string) => stegaClean(v)),
+    ),
+  ),
+].sort((a, b) => a.localeCompare(b));
+---
+
+<BaseLayout
+  docs=""
+  theme="light"
+  title="Case Studies | CL Creative"
+  description="Explore our portfolio of web design, development, migration, messaging, and SEO projects."
+>
+  {
+    /* ================================================================
+      HERO SECTION
+      ================================================================ */
+  }
+  <Section docs="" theme="dark" class="case-studies_hero_wrap">
+    <Layout variant="stack-centered">
+      <Col slot="col1">
+        <Heading
+          data-fade-in
+          data-prevent-flicker="true"
+          tag="h1"
+          variant="display-sm">Case Studies</Heading
+        >
+        <Text data-fade-in data-prevent-flicker="true" variant="large">
+          A selection of projects across web design, development, migration,
+          messaging, and SEO.
+        </Text>
+      </Col>
+    </Layout>
+  </Section>
+
+  {
+    /* ================================================================
+      FILTER BAR + CASE STUDY GRID
+      ================================================================ */
+  }
+  <Section padding="large" gap={6}>
+    <div class="case-study_grid_header">
+      <div class="case-study_filter_wrap">
+        <div class="case-study_select_wrap">
+          <select
+            id="case-study-industry"
+            class="case-study_filter_select"
+            aria-label="Filter by industry"
+          >
+            <option value="">All Industries</option>
+            {industryOptions.map((industry) => (
+              <option value={industry}>{industry}</option>
+            ))}
+          </select>
+          <svg
+            class="case-study_select_arrow"
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="case-study_select_wrap">
+          <select
+            id="case-study-category"
+            class="case-study_filter_select"
+            aria-label="Filter by category"
+          >
+            <option value="">All Categories</option>
+            {categoryOptions.map((category) => (
+              <option value={category}>{category}</option>
+            ))}
+          </select>
+          <svg
+            class="case-study_select_arrow"
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div class="case-study_search_wrap">
+        <svg
+          class="case-study_search_icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="search"
+          id="case-study-search"
+          class="case-study_search_input"
+          placeholder="Search case studies..."
+          autocomplete="off"
+          aria-label="Search case studies"
+        />
+      </div>
+    </div>
+
+    <Grid largeColumns={2} mediumColumns={2} smallColumns={1} rowGap={6}>
+      {
+        sortedCaseStudies.map((study: any) => (
+          <CaseStudyCard
+            data-prevent-flicker="true"
+            data-fade-in
+            title={study.title}
+            description={study.description}
+            categories={study.categories}
+            industries={study.industries}
+            client={study.client}
+            href={`/case-studies/${study.slug}`}
+            image={urlFor(study.image).width(1200).url()}
+            imageAlt={study.imageAlt}
+            imagePosition={hotspotPosition(study.image)}
+            date={study.date}
+            featured={study.featured}
+            comingSoon={study.comingSoon}
+            externalUrl={study.liveUrl}
+          />
+        ))
+      }
+    </Grid>
+
+    <div
+      id="case-study-no-results"
+      class="case-study_no_results"
+      style="display:none;"
+    >
+      <Text muted align="center">
+        No case studies match your filters.
+      </Text>
+    </div>
+  </Section>
+
+  {defaultCtaSection && <SanityCtaSection cta={defaultCtaSection} />}
+</BaseLayout>
+
+<script>
+  const industrySelect = document.getElementById(
+    "case-study-industry",
+  ) as HTMLSelectElement | null;
+  const categorySelect = document.getElementById(
+    "case-study-category",
+  ) as HTMLSelectElement | null;
+  const searchInput = document.getElementById(
+    "case-study-search",
+  ) as HTMLInputElement | null;
+  const noResults = document.getElementById("case-study-no-results");
+  const cards = document.querySelectorAll<HTMLElement>(".case-study_card_wrap");
+
+  function parseList(value: string | undefined): string[] {
+    return (value ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  function filterCards() {
+    const industry = industrySelect?.value ?? "";
+    const category = categorySelect?.value ?? "";
+    const query = searchInput?.value.toLowerCase().trim() ?? "";
+
+    let visibleCount = 0;
+
+    cards.forEach((card) => {
+      const industries = parseList(card.dataset.industries);
+      const categories = parseList(card.dataset.categories);
+      const title = (card.dataset.title ?? "").toLowerCase();
+      const description = (card.dataset.description ?? "").toLowerCase();
+      const client = (card.dataset.client ?? "").toLowerCase();
+
+      const matchesIndustry = !industry || industries.includes(industry);
+      const matchesCategory = !category || categories.includes(category);
+      const matchesQuery =
+        !query ||
+        title.includes(query) ||
+        description.includes(query) ||
+        client.includes(query) ||
+        categories.some((c) => c.toLowerCase().includes(query)) ||
+        industries.some((i) => i.toLowerCase().includes(query));
+
+      const show = matchesIndustry && matchesCategory && matchesQuery;
+      card.style.display = show ? "" : "none";
+      if (show) visibleCount++;
+    });
+
+    if (noResults) {
+      noResults.style.display = visibleCount === 0 ? "" : "none";
+    }
+
+    (window as any).ScrollTrigger?.refresh();
+  }
+
+  industrySelect?.addEventListener("change", filterCards);
+  categorySelect?.addEventListener("change", filterCards);
+  searchInput?.addEventListener("input", filterCards);
+</script>

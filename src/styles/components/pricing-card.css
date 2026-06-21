@@ -1,0 +1,326 @@
+/* ==========================================================================
+   PRICING CARD + PRICING ITEM COMPONENT STYLES
+   ==========================================================================
+   Usage:
+     <div class="pricing_card_wrap" data-pricing-variant="default">
+       <div class="pricing_card_element">
+         <div class="u-content-wrapper">
+           <div class="pricing_card_header">
+             <div class="pricing_card_label">…label…</div>
+             <Heading>…name…</Heading>
+             <div class="pricing_card_price_row">…price + suffix…</div>
+             …description…
+           </div>
+           <div class="pricing_card_items">
+             <div class="pricing_item_wrap">…</div>
+           </div>
+           <div class="pricing_card_cta u-button-wrapper">…</div>
+           <div class="pricing_card_footer">…</div>
+         </div>
+       </div>
+     </div>
+
+   Variants: default | compact | general
+   Combo:    is-featured (accent border)
+   ========================================================================== */
+
+/* ---- Outer wrapper ---- */
+
+.pricing_card_wrap {
+  width: 100%;
+  border-radius: var(--radius-main);
+  display: flex;
+}
+
+/* ---- Element — inner card surface ---- */
+
+.pricing_card_element {
+  border: var(--border-width-main) solid var(--border);
+  border-radius: inherit;
+  overflow: clip;
+  background-color: var(--background-2);
+  display: flex;
+  flex-flow: column;
+  width: 100%;
+  padding: var(--space-6);
+  transition: border-color 0.2s ease;
+  container-type: inline-size;
+}
+
+/* Theme override — re-apply color so inherited white/dark doesn't persist */
+.pricing_card_element[data-theme] {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* Make ContentWrapper a flex column so margin-top: auto works on CTA */
+.pricing_card_element > .u-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--space-3);
+}
+
+/* ---- Label banner — full-width callout at top of card ---- */
+
+.pricing_card_label {
+  margin-top: calc(var(--space-6) * -1);
+  margin-inline: calc(var(--space-6) * -1);
+  margin-bottom: var(--space-4);
+  padding: var(--space-1) var(--space-6);
+  background-color: var(--heading-accent);
+  color: #fff;
+  text-align: center;
+  font-weight: var(--font-weight-bold, 700);
+  font-size: var(--text-small-size);
+}
+
+/* ---- Header — name, price, description ---- */
+
+.pricing_card_header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-width-main) solid
+    color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+/* Description — extra top spacing + constrained width */
+.pricing_card_header > .u-text:last-child {
+  margin-top: var(--space-3);
+  max-width: 85%;
+}
+
+/* ---- Price row — wraps label + price ---- */
+
+.pricing_card_price_row.has-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Override .u-text min-width so price shrinks inside flex row */
+.pricing_card_price_row.has-label > .u-text {
+  min-width: 0;
+}
+
+/* ---- Price display ---- */
+
+.pricing_card_price {
+  font-weight: var(--font-weight-bold, 700);
+}
+
+/* ---- Price label (e.g. "Starting at") ---- */
+
+.pricing_card_price_label {
+  font-size: var(--text-small-size);
+  font-weight: var(--font-weight-normal);
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+/* ---- Price suffix (e.g. "/month") — inline span after price ---- */
+
+.pricing_card_price_suffix {
+  font-size: var(--h6-size);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ---- Items section wrapper (label + items) ---- */
+
+.pricing_card_items_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  text-align: left;
+  width: 100%;
+}
+
+/* ---- Items label (e.g. "Your Investment Includes:") ---- */
+
+.pricing_card_items_label {
+  font-weight: var(--font-weight-bold, 700);
+  font-size: var(--text-regular-size, 1rem);
+}
+
+/* ---- Items list ---- */
+
+.pricing_card_items {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- CTA — push to bottom ---- */
+
+.pricing_card_cta {
+  margin-top: auto;
+  width: 100%;
+}
+
+/* Ensure support text wrapper stretches full width inside card */
+.pricing_card_cta .button_support_wrap {
+  display: flex;
+  width: 100%;
+  text-align: center;
+}
+
+/* ---- Footer ---- */
+
+.pricing_card_footer {
+  margin-top: calc(var(--space-2) * -1);
+}
+
+/* ==========================================================================
+   VARIANT: compact — tighter spacing, price on top, name below
+   ========================================================================== */
+
+[data-pricing-variant="compact"] .pricing_card_element {
+  padding: var(--space-5);
+}
+
+[data-pricing-variant="compact"] .pricing_card_element > .u-content-wrapper {
+  gap: var(--space-4);
+}
+
+[data-pricing-variant="compact"] .pricing_card_header {
+  padding-bottom: 0;
+  border-bottom: none;
+  align-items: start;
+  text-align: left;
+  gap: var(--space-1);
+}
+
+/* ---- Compact price row — icon left, price right ---- */
+
+[data-pricing-variant="compact"] .pricing_card_price_row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+/* ---- Compact icon (optional slot) ---- */
+
+.pricing_card_icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--heading-accent);
+}
+
+/* ---- Compact price — uniform size, pushed right ---- */
+
+.pricing_card_price_compact {
+  margin-left: auto;
+  font-size: var(--text-small-size);
+  font-weight: var(--font-weight-bold);
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   VARIANT: general — price-first header, 2-column items, no package name
+   ========================================================================== */
+
+/* ---- General price row — priceLabel + price spread across ---- */
+
+[data-pricing-variant="general"] .pricing_card_price_row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--space-3);
+}
+
+/* Override .u-text min-width so headings shrink inside flex row */
+[data-pricing-variant="general"] .pricing_card_price_row > .u-text {
+  min-width: 0;
+}
+
+/* General header — left-align description below price row */
+[data-pricing-variant="general"] .pricing_card_header {
+  align-items: flex-start;
+  text-align: left;
+}
+
+/* General description — tighter top spacing, full width */
+[data-pricing-variant="general"] .pricing_card_header > .u-text:last-child {
+  margin-top: var(--space-1);
+  max-width: 100%;
+}
+
+/* ---- General items — 2-column grid, no borders ---- */
+
+[data-pricing-variant="general"] .pricing_card_items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1) var(--space-5);
+}
+
+[data-pricing-variant="general"] .pricing_item_wrap {
+  border-bottom: none;
+  padding-block: var(--space-1);
+}
+
+/* Collapse 2-col items to 1-col when card is narrow */
+@container (max-width: 30rem) {
+  [data-pricing-variant="general"] .pricing_card_items {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- General CTA — divider line above button ---- */
+
+[data-pricing-variant="general"] .pricing_card_cta {
+  padding-top: var(--space-5);
+  border-top: var(--border-width-main) solid
+    color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+/* ==========================================================================
+   COMBO: is-featured — accent border highlight
+   ========================================================================== */
+
+.pricing_card_wrap.is-featured .pricing_card_element {
+  border-color: var(--heading-accent);
+}
+
+/* ==========================================================================
+   PRICING ITEM — feature line item
+   ========================================================================== */
+
+.pricing_item_wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  border-bottom: var(--border-width-main) solid
+    color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+.pricing_item_wrap:last-child {
+  border-bottom: none;
+}
+
+/* ---- Icon ---- */
+
+.pricing_item_icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--heading-accent);
+}
+
+/* ---- Text ---- */
+
+.pricing_item_text {
+  flex: 1;
+  font-size: var(--text-small-size);
+  line-height: var(--line-height-small, 1.5);
+}

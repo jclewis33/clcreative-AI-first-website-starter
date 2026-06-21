@@ -1,0 +1,153 @@
+/* ==========================================================================
+   BASE — SITE FOUNDATION VARIABLES
+   ==========================================================================
+   Core site-wide variables: screen sizes, layout dimensions, radius,
+   border, and focus. These are the first things to update when restyling
+   the site — everything else derives from them.
+   ========================================================================== */
+
+:root {
+  /* =====================================================
+     SCREEN SIZE
+     Viewport breakpoints used for all fluid clamp() calculations.
+     ===================================================== */
+
+  --viewport-min: 20; /* 320px  */
+  --viewport-max: 90; /* 1440px */
+
+  /* =====================================================
+     SITE LAYOUT
+     ===================================================== */
+
+  /* Site margin — single-side horizontal gutter.
+     Container width: calc(100% - var(--site-margin) * 2) */
+
+  --site-margin-min: 1;
+  --site-margin-max: 3;
+
+  --site-margin: clamp(
+    var(--site-margin-min) * 1rem,
+    (
+      (
+          var(--site-margin-min) -
+            (
+              (var(--site-margin-max) - var(--site-margin-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--site-margin-max) - var(--site-margin-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--site-margin-max) * 1rem
+  );
+
+  /* Site gutter — fluid column gap used in column-width calculation */
+
+  --site-gutter-min: 1;
+  --site-gutter-max: 2;
+
+  --site-gutter: clamp(
+    var(--site-gutter-min) * 1rem,
+    (
+      (
+          var(--site-gutter-min) -
+            (
+              (var(--site-gutter-max) - var(--site-gutter-min)) /
+                (var(--viewport-max) - var(--viewport-min)) *
+                var(--viewport-min)
+            )
+        ) *
+        1rem +
+        (
+          (var(--site-gutter-max) - var(--site-gutter-min)) /
+            (var(--viewport-max) - var(--viewport-min))
+        ) *
+        100vw
+    ),
+    var(--site-gutter-max) * 1rem
+  );
+
+  /* Column count and computed column width */
+
+  --site-column-count: 12;
+
+  --column-width: calc(
+    (
+        min(var(--max-width-main), 100% - var(--site-margin) * 2) -
+          (var(--site-gutter) * (var(--site-column-count) - 1))
+      ) /
+      var(--site-column-count)
+  );
+
+  /* =====================================================
+     MAX-WIDTH
+     ===================================================== */
+
+  --max-width-full: 100%; /* edge-to-edge                  */
+  --max-width-wide: 120rem; /* 1920px — full-bleed sections  */
+  --max-width-main: 90rem; /* 1440px — standard container   */
+  --max-width-small: 50rem; /*  800px — cards / modals       */
+  --max-width-narrow: 48rem; /*  768px — prose / narrow text  */
+
+  /* =====================================================
+     RADIUS
+     ===================================================== */
+
+  --radius-none: 0px;
+  --radius-xsmall: 4px;
+  --radius-small: 6px;
+  --radius-medium: 8px;
+  --radius-large: 10px;
+  --radius-xlarge: 12px;
+  --radius-main: 1rem;
+  --radius-full: 100vw;
+  --radius-section: clamp(2rem, 2.857vw + 1.429rem, 4rem);
+
+  /* =====================================================
+     BORDER WIDTH
+     ===================================================== */
+
+  --border-width-main: 0.094rem; /* ≈ 1.5px */
+
+  /* =====================================================
+     BORDER COLORS
+     Static border color tokens. Theme-aware --border is in themes.css.
+     ===================================================== */
+
+  --border-color-light: var(--color-light-100-o20); /* subtle separation   */
+  --border-color-dark: var(--color-dark-900-o50); /* stronger definition */
+  --border-color-brand: var(--color-brand-text-o20); /* emphasis            */
+
+  /* =====================================================
+     BOX SHADOW
+     ===================================================== */
+
+  --box-shadow-xxsmall: 0 1px 2px #0000000d;
+  --box-shadow-xsmall: 0 1px 3px #0000001a, 0 1px 2px #0000000f;
+  --box-shadow-small: 0 4px 8px -2px #0000001a, 0 2px 4px -2px #0000000f;
+  --box-shadow-medium: 0 12px 16px -4px #00000014, 0 4px 6px -2px #00000008;
+  --box-shadow-large: 0 20px 24px -4px #00000014, 0 8px 8px -4px #00000008;
+  --box-shadow-xlarge: 0 24px 48px -12px #0000002e;
+  --box-shadow-xxlarge: 0 32px 64px -12px #00000024;
+
+  /* =====================================================
+     BUTTON SIZES
+     ===================================================== */
+
+  --button-size-small: 2rem; /*  32px — compact / icon-only */
+  --button-size-medium: 2.5rem; /*  40px — default toggle/icon */
+  --button-size-large: 3rem; /*  48px — prominent CTA       */
+
+  /* =====================================================
+     FOCUS
+     ===================================================== */
+
+  --focus-width: 0.125rem;
+  --focus-offset-inner: calc(var(--focus-width) * -1);
+  --focus-offset-outer: 0.1875rem;
+}

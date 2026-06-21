@@ -1,0 +1,44 @@
+---
+/**
+ * StackingPanel — a single card inside `<StackingPanels>`.
+ *
+ * Default slot: the card content (heading + body). `visual` slot: the image
+ * (`<Visual ratio="landscape" />`). Set `reversed` to put the image on the
+ * left and content on the right (desktop only — on mobile the image always
+ * sits on top).
+ */
+interface Props {
+  /**
+   * **StackingPanel** — one card in a `<StackingPanels>` stack.
+   *
+   * **What you can change:**
+   * - `reversed` — image left / content right on desktop (default `false`)
+   * - `class` — extra classes on the card item
+   *
+   * **Slots:**
+   * - default — card content (Heading + Text + lists)
+   * - `visual` — the image (e.g. `<Visual ratio="landscape" />`)
+   */
+  docs?: string;
+
+  /** Image left / content right on desktop. @default false */
+  reversed?: boolean;
+  /** Extra classes on the panel item. */
+  class?: string;
+
+  [key: string]: any;
+}
+
+const { docs, reversed = false, class: className, ...rest } = Astro.props;
+---
+
+<div class:list={["stacking-panels_item", className]} {...rest}>
+  <div class:list={["stacking-panels_card", reversed && "is-reversed"]}>
+    <div class="stacking-panels_content">
+      <slot />
+    </div>
+    <div class="stacking-panels_visual">
+      <slot name="visual" />
+    </div>
+  </div>
+</div>

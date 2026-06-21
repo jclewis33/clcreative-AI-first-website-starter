@@ -1,0 +1,206 @@
+---
+/**
+ * Grid — responsive CSS Grid using container-query column counts.
+ *
+ * Column counts adapt via `@container` queries on the nearest `.u-container`.
+ * Gap defaults to `--site-gutter` on both axes. Override with `rowGap` / `columnGap`.
+ *
+ * Breakpoint tiers (container width):
+ *   - large  — default (no query)
+ *   - medium — ≤ 928 px
+ *   - small  — ≤ 560 px
+ *   - xsmall — ≤ 320 px
+ *
+ * @example Responsive card grid (3 → 2 → 1)
+ * ```astro
+ * <Grid largeColumns={3} mediumColumns={2} smallColumns={1}>
+ *   <Card title="A" />
+ *   <Card title="B" />
+ *   <Card title="C" />
+ * </Grid>
+ * ```
+ *
+ * @example Auto-fit (columns fill available space, empty tracks collapse)
+ * ```astro
+ * <Grid variant="autofit" minColWidth="18rem" rowGap={4}>
+ *   <Card title="A" />
+ *   <Card title="B" />
+ * </Grid>
+ * ```
+ *
+ * @example Auto-fill (columns fill available space, empty tracks preserved)
+ * ```astro
+ * <Grid variant="autofill" minColWidth="18rem" rowGap={4}>
+ *   <Card title="A" />
+ *   <Card title="B" />
+ * </Grid>
+ * ```
+ */
+
+type Columns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+type GapSize  = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+type GridVariant =
+  /** Standard grid — uses the data-attribute column system */
+  | 'default'
+  /** Auto-fit — columns fill available space at a minimum width, empty tracks collapse */
+  | 'autofit'
+  /** Auto-fill — columns fill available space at a minimum width, empty tracks preserved */
+  | 'autofill';
+
+/**
+ * Grid — responsive CSS Grid using container-query column counts.
+ *
+ * Column counts adapt via `@container` queries on the nearest `.u-container`.
+ *
+ * **Props:**
+ * - `largeColumns` — columns at default size, 1–12 (default: `3`)
+ * - `mediumColumns` — columns at container ≤ 928px, 0 = inherit (default: `2`)
+ * - `smallColumns` — columns at container ≤ 560px, 0 = inherit (default: `1`)
+ * - `xsmallColumns` — columns at container ≤ 320px, 0 = inherit (default: `0`)
+ * - `rowGap` — override row gap on the `--space-N` scale, 0–8. Omit to use `--site-gutter`.
+ * - `columnGap` — override column gap on the `--space-N` scale, 0–8. Omit to use `--site-gutter`.
+ * - `variant` — `'default'` | `'autofit'` | `'autofill'` (default: `'default'`)
+ * - `minColWidth` — minimum column width for autofit/autofill variants (e.g. `'16rem'`)
+ * - `class` — extra classes on the wrapper
+ *
+ * **Slot:** default — grid children (Cards, etc.)
+ */
+interface Props {
+  /**
+   * **Grid props:**
+   * - `largeColumns` — 1-12 at default size (default 3)
+   * - `mediumColumns` — 0-4 at ≤ 928px (default 2, 0 = inherit)
+   * - `smallColumns` — 0-2 at ≤ 560px (default 1, 0 = inherit)
+   * - `xsmallColumns` — 0-1 at ≤ 320px (default 0)
+   * - `rowGap` — 0-8 row gap on --space-N scale
+   * - `columnGap` — 0-8 column gap on --space-N scale
+   * - `variant` — default, autofit, autofill
+   * - `minColWidth` — min column width for autofit/autofill (e.g. '16rem')
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
+   *
+   * **Slot:** default — grid children (Cards, etc.)
+   */
+  docs?: string;
+
+  /**
+   * Columns at the large breakpoint (default screen size). 1–12.
+   * @default 3
+   * @example largeColumns={4}
+   */
+  largeColumns?: Columns;
+
+  /**
+   * Columns at the medium breakpoint (container ≤ 928 px).
+   * `0` = inherit from large.
+   * @default 2
+   * @example mediumColumns={2}
+   */
+  mediumColumns?: 0 | Columns;
+
+  /**
+   * Columns at the small breakpoint (container ≤ 560 px).
+   * `0` = inherit from medium.
+   * @default 1
+   * @example smallColumns={1}
+   */
+  smallColumns?: 0 | Columns;
+
+  /**
+   * Columns at the xsmall breakpoint (container ≤ 320 px).
+   * `0` = inherit from small.
+   * @default 0
+   */
+  xsmallColumns?: 0 | Columns;
+
+  /**
+   * Override row gap (`--space-N` scale, 0–8).
+   * Omit to inherit `--site-gutter` from the base grid class.
+   * @example rowGap={4}
+   */
+  rowGap?: GapSize;
+
+  /**
+   * Override column gap (`--space-N` scale, 0–8).
+   * Omit to inherit `--site-gutter` from the base grid class.
+   * @example columnGap={4}
+   */
+  columnGap?: GapSize;
+
+  /**
+   * Grid mode.
+   * - `default`  — responsive column counts via breakpoint props
+   * - `autofit`  — `auto-fit minmax(min, 1fr)` — empty tracks collapse, items stretch to fill. Also set `minColWidth`.
+   * - `autofill` — `auto-fill minmax(min, 1fr)` — empty tracks preserved, items stay near min-width. Also set `minColWidth`.
+   * @default 'default'
+   * @example variant="autofit" minColWidth="18rem"
+   * @example variant="autofill" minColWidth="18rem"
+   */
+  variant?: GridVariant;
+
+  /**
+   * Minimum column width for `autofit` / `autofill` variants (CSS value).
+   * Ignored when `variant="default"`.
+   * @example minColWidth="16rem"
+   */
+  minColWidth?: string;
+
+  /**
+   * Extra classes on the outer wrapper.
+   * @example class="u-margin-top-8"
+   */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
+   * are forwarded to the root `.u-grid-wrapper` element.
+   * @example style="--custom: value" data-animate="fade"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  largeColumns   = 3,
+  mediumColumns  = 2,
+  smallColumns   = 1,
+  xsmallColumns  = 0,
+  rowGap,
+  columnGap,
+  variant        = 'default',
+  minColWidth,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const rowGapClass = rowGap != null ? (rowGap > 0 ? `u-gap-row-${rowGap}` : 'u-gap-row-0') : undefined;
+const colGapClass = columnGap != null ? (columnGap > 0 ? `u-gap-column-${columnGap}` : 'u-gap-column-0') : undefined;
+
+const isAuto = variant === 'autofit' || variant === 'autofill';
+const autoGridClass = variant === 'autofill' ? 'u-grid-autofill' : 'u-grid-autofit';
+const autoStyle = (isAuto && minColWidth)
+  ? `--col-min: ${minColWidth};`
+  : undefined;
+---
+
+<div class:list={['u-grid-wrapper', className]} {...rest}>
+  {variant === 'default' ? (
+    <div
+      class:list={[rowGapClass, colGapClass]}
+      data-large-columns={String(largeColumns)}
+      data-medium-columns={mediumColumns > 0 ? String(mediumColumns) : undefined}
+      data-small-columns={smallColumns > 0  ? String(smallColumns)  : undefined}
+      data-xsmall-columns={xsmallColumns > 0 ? String(xsmallColumns) : undefined}
+    >
+      <slot />
+    </div>
+  ) : (
+    <div
+      class:list={[autoGridClass, rowGapClass, colGapClass]}
+      style={autoStyle}
+    >
+      <slot />
+    </div>
+  )}
+</div>

@@ -1,0 +1,465 @@
+---
+/**
+ * CaseStudyGrid — a full-section component that displays case study cards
+ * in a responsive grid, with composable filtering by featured status,
+ * categories, and item limit.
+ *
+ * Composes `<Section>` for theming/padding and `<Grid>` for the responsive
+ * column layout. Each study renders as a `<CaseStudyCard>`.
+ *
+ * **Filters (composable — can be combined):**
+ * - `featured`   — only show studies marked as featured
+ * - `categories` — show studies matching ANY listed category (OR logic)
+ * - `limit`      — cap the number of displayed cards
+ * - `excludeSlug` — hide a specific study (useful on detail pages)
+ *
+ * All results sort by date descending (newest first). If no studies match
+ * the filters, the entire section is hidden.
+ *
+ * CMS-ready: accepts a typed `CaseStudy[]` array that maps directly to CMS
+ * collection fields. When connecting Sanity, Contentful, or another headless
+ * CMS, pass the query result as the `studies` prop.
+ *
+ * @example Featured case studies on a landing page
+ * ```astro
+ * <CaseStudyGrid featured limit={3} heading="Featured Work" eyebrow="Case Studies" />
+ * ```
+ *
+ * @example Category-filtered on a service page
+ * ```astro
+ * <CaseStudyGrid
+ *   categories={["Web Design", "SEO"]}
+ *   limit={3}
+ *   columns={3}
+ *   heading="Related Projects"
+ * />
+ * ```
+ *
+ * @example Two-column grid on a detail page
+ * ```astro
+ * <CaseStudyGrid
+ *   excludeSlug={study.slug}
+ *   limit={2}
+ *   columns={2}
+ *   heading="More Case Studies"
+ * />
+ * ```
+ *
+ * @example With custom heading slot
+ * ```astro
+ * <CaseStudyGrid featured limit={3}>
+ *   <Fragment slot="heading">
+ *     <Heading variant="eyebrow">Portfolio</Heading>
+ *     <Heading tag="h2" variant="display-sm" accent>
+ *       Our best <strong>work</strong>
+ *     </Heading>
+ *   </Fragment>
+ * </CaseStudyGrid>
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Grid from "../ui/Grid.astro";
+import Heading from "../ui/Heading.astro";
+import CaseStudyCard from "../ui/CaseStudyCard.astro";
+
+// Data fallback — same source used by the listing and detail pages
+import { caseStudies as allCaseStudiesData } from "../../data/case-studies";
+
+/* ── Re-export the shared type ───────────────────────────────────────────
+   Single source of truth in case-studies.ts. Other pages can import
+   from here or from the data file directly.
+   ────────────────────────────────────────────────────────────────────── */
+
+export type { CaseStudy } from "../../data/case-studies";
+import type { CaseStudy } from "../../data/case-studies";
+
+/* ── Shared types ── */
+
+type SectionTheme = "light" | "dark" | "brand";
+type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+/** Spacing-scale step (`--space-N`) for the gap props. `0` = no gap. */
+type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+/* ── Component props ── */
+
+/**
+ * CaseStudyGrid — section component displaying case study cards in a
+ * responsive grid with composable filtering props.
+ *
+ * **Props:**
+ * - `studies` — CaseStudy[] to filter from (falls back to imported sample data)
+ * - `featured` — only show featured case studies
+ * - `categories` — filter by categories (OR logic, case-insensitive exact match)
+ * - `limit` — max cards to display (default: `3`)
+ * - `excludeSlug` — slug to exclude (useful on detail pages)
+ * - `columns` — 2 or 3 column grid (default: `3`)
+ * - `heading` — section heading text (default: `"Case Studies"`)
+ * - `eyebrow` — eyebrow text above heading
+ * - `theme` — light, dark, brand
+ * - `padding` — none, small, main, large, page-top (default: `'main'`)
+ * - `paddingTop` / `paddingBottom` — override individual padding
+ * - `columnGap` — horizontal gap in inner Layout. Number = `--space-N` scale (0–8), or any CSS length string (default: `--site-gutter`)
+ * - `rowGap` — vertical gap between heading and grid. Number = `--space-N` scale (0–8), or any CSS length string (default: `--space-8`)
+ * - `id` — section anchor id
+ * - `class` — extra classes
+ *
+ * **Slots:** `heading` — custom heading markup
+ */
+interface Props {
+  /**
+   * **CaseStudyGrid props:**
+   * - `studies` — CaseStudy[] to filter from (falls back to sample data)
+   * - `featured` — only show featured studies
+   * - `categories` — category filter array (OR logic)
+   * - `limit` — max cards (default 3)
+   * - `excludeSlug` — slug to exclude
+   * - `columns` — 2 or 3 (default 3)
+   * - `heading` — section heading (default "Case Studies")
+   * - `eyebrow` — eyebrow text above heading
+   * - `theme` — light, dark, brand
+   * - `padding` — none, small, main, large, page-top (default 'main')
+   * - `paddingTop` / `paddingBottom` — override individual padding
+   * - `cardHeadingVariant` — visual style for card title headings (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
+   * - `cardTextVariant` — visual style for card description text (default `'small'`). Accepts: tiny, small, regular, large, xlarge, h1–h6, display-xl/lg/md/sm, eyebrow
+   * - `columnGap` — horizontal gap in inner Layout. Number = `--space-N` scale (0–8), or any CSS length string (default: `--site-gutter`)
+   * - `rowGap` — vertical gap between heading and grid. Number = `--space-N` scale (0–8), or any CSS length string (default: `--space-8`)
+   * - `id` — section anchor id
+   * - `class` — extra classes
+   *
+   * **Slots:** `heading` — custom heading markup
+   */
+  docs?: string;
+
+  /**
+   * All available case studies to filter from.
+   * Pass your full studies array — the component handles filtering and sorting.
+   * If omitted, uses the shared data from `src/data/case-studies.ts`.
+   *
+   * When connecting a CMS, pass the query result here:
+   * ```astro
+   * const allStudies = await sanity.fetch(studiesQuery);
+   * <CaseStudyGrid studies={allStudies} featured limit={3} />
+   * ```
+   *
+   * @example studies={allStudies}
+   */
+  studies?: CaseStudy[];
+
+  /**
+   * When `true`, only show case studies with `featured: true`.
+   *
+   * Can be combined with `categories` and `limit` for precise control.
+   *
+   * @example featured
+   * @example featured={true}
+   */
+  featured?: boolean;
+
+  /**
+   * Filter by categories — shows studies matching **any** of the listed
+   * categories (OR logic). Case-insensitive, exact match.
+   *
+   * A case study with `categories: ["Web Design", "SEO"]` would match
+   * if the filter includes `"web design"` or `"seo"`.
+   *
+   * @example categories={["Web Design"]}
+   * @example categories={["Web Design", "SEO", "Brand Strategy"]}
+   */
+  categories?: string[];
+
+  /**
+   * Maximum number of cards to display after filtering and sorting.
+   *
+   * @default 3
+   * @example limit={2}
+   * @example limit={6}
+   */
+  limit?: number;
+
+  /**
+   * Slug of a case study to exclude from results.
+   * Useful on detail pages to hide the current study from the grid.
+   *
+   * @example excludeSlug={study.slug}
+   */
+  excludeSlug?: string;
+
+  /**
+   * Column layout preset for the card grid.
+   *
+   * | Value | Large | Medium | Small |
+   * |-------|-------|--------|-------|
+   * | `3`   | 3 col | 2 col  | 1 col |
+   * | `2`   | 2 col | 2 col  | 1 col |
+   *
+   * @default 3
+   * @example columns={2}
+   */
+  columns?: 2 | 3;
+
+  /**
+   * Visual style for each card's title heading. Controls the font size
+   * and weight without changing the semantic `<h3>` tag on the card.
+   *
+   * Accepts any Heading `variant` value:
+   * - `'display-xl'` | `'display-lg'` | `'display-md'` | `'display-sm'`
+   * - `'h1'` | `'h2'` | `'h3'` | `'h4'` | `'h5'` | `'h6'`
+   * - `'eyebrow'`
+   *
+   * @default 'h5'
+   * @example cardHeadingVariant="h4"
+   * @example cardHeadingVariant="h6"
+   */
+  cardHeadingVariant?: "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+
+  /**
+   * Visual style for each card's description text. Controls the font size
+   * without changing the element tag.
+   *
+   * Accepts any Text `variant` value:
+   * - `'tiny'` | `'small'` | `'regular'` | `'large'` | `'xlarge'`
+   * - `'h1'` | `'h2'` | `'h3'` | `'h4'` | `'h5'` | `'h6'`
+   * - `'display-xl'` | `'display-lg'` | `'display-md'` | `'display-sm'`
+   * - `'eyebrow'`
+   *
+   * @default 'small'
+   * @example cardTextVariant="regular"
+   * @example cardTextVariant="tiny"
+   */
+  cardTextVariant?: "tiny" | "small" | "regular" | "large" | "xlarge" | "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+
+  /**
+   * Section heading text. Renders as `<h2>` with `variant="h2"`.
+   * If omitted, defaults to "Case Studies".
+   *
+   * For richer heading markup, use the `heading` slot instead.
+   *
+   * @default "Case Studies"
+   * @example heading="Featured Work"
+   */
+  heading?: string;
+
+  /**
+   * Eyebrow text rendered above the heading (e.g. "Portfolio", "Our Work").
+   * Only rendered when a heading prop or slot is present.
+   *
+   * @example eyebrow="Portfolio"
+   */
+  eyebrow?: string;
+
+  /**
+   * Section color theme — sets `data-theme` on the wrapping Section,
+   * cascading CSS color variables to all children.
+   *
+   * - `'light'` — light background, dark text
+   * - `'dark'`  — dark background, light text
+   * - `'brand'` — brand-colored background
+   *
+   * @example theme="dark"
+   */
+  theme?: SectionTheme;
+
+  /**
+   * Section vertical padding (equal top and bottom).
+   *
+   * | Value        | Size              |
+   * |--------------|-------------------|
+   * | `'none'`     | 0                 |
+   * | `'small'`    | ~3–5rem fluid     |
+   * | `'main'`     | ~4–7rem fluid     |
+   * | `'large'`    | ~5.5–10rem fluid  |
+   * | `'page-top'` | ~10–14rem fluid   |
+   *
+   * @default 'main'
+   * @example padding="large"
+   */
+  padding?: PaddingSize;
+
+  /**
+   * Override top padding only. Accepts the same values as `padding`.
+   *
+   * @example paddingTop="page-top"
+   * @example paddingTop="none"
+   */
+  paddingTop?: PaddingSize;
+
+  /**
+   * Override bottom padding only. Accepts the same values as `padding`.
+   *
+   * @example paddingBottom="small"
+   * @example paddingBottom="none"
+   */
+  paddingBottom?: PaddingSize;
+
+  /**
+   * Section `id` for same-page anchor links.
+   *
+   * @example id="case-studies"
+   */
+  id?: string;
+
+  /**
+   * Horizontal gap between columns in the inner Layout.
+   * Pass a number for the fluid gap scale (`0`–`8`, maps to `--space-N`),
+   * or any CSS length string.
+   *
+   * @default 'var(--site-gutter)' (fluid 1-2rem)
+   * @example columnGap={4}
+   * @example columnGap="var(--gap-4)"
+   */
+  columnGap?: GapScale | string;
+
+  /**
+   * Vertical gap between the heading area and the card grid.
+   * Pass a number for the fluid space scale (`0`–`8`, maps to `--space-N`),
+   * or any CSS length string.
+   *
+   * @default 'var(--space-8)' (fluid 40-64px)
+   * @example rowGap={6}
+   * @example rowGap="var(--space-6)"
+   */
+  rowGap?: GapScale | string;
+
+  /**
+   * Extra classes on the outer Section element.
+   *
+   * @example class="u-margin-top-8"
+   */
+  class?: string;
+}
+
+const {
+  docs,
+  studies,
+  featured,
+  categories: filterCategories,
+  limit = 3,
+  excludeSlug,
+  columns = 3,
+  cardHeadingVariant,
+  cardTextVariant,
+  heading,
+  eyebrow,
+  theme,
+  padding = "main",
+  paddingTop,
+  paddingBottom,
+  columnGap,
+  rowGap: rowGapProp = "var(--space-8)",
+  id,
+  class: className,
+} = Astro.props;
+
+/* ═══════════════════════════════════════════════════
+   Filter & sort case studies
+   Filters are composable — applied in sequence.
+   ═══════════════════════════════════════════════════ */
+
+const allStudies = studies ?? allCaseStudiesData;
+
+let filtered = [...allStudies];
+
+// 1. Exclude current slug (for detail pages)
+if (excludeSlug) {
+  filtered = filtered.filter((s) => s.slug !== excludeSlug);
+}
+
+// 2. Featured filter
+if (featured) {
+  filtered = filtered.filter((s) => s.featured === true);
+}
+
+// 3. Category filter — match ANY of the provided categories (OR logic)
+if (filterCategories && filterCategories.length > 0) {
+  const normalizedFilter = filterCategories.map((c) => c.toLowerCase());
+  filtered = filtered.filter((s) =>
+    s.categories.some((cat) => normalizedFilter.includes(cat.toLowerCase())),
+  );
+}
+
+// 4. Sort by date descending (most recent first)
+filtered.sort(
+  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+);
+
+// 5. Apply limit
+filtered = filtered.slice(0, limit);
+
+/* ═══════════════════════════════════════════════════
+   Resolve heading text
+   ═══════════════════════════════════════════════════ */
+
+const hasHeadingSlot = Astro.slots.has("heading");
+const resolvedHeading = heading ?? "Case Studies";
+const showHeading = hasHeadingSlot || resolvedHeading;
+
+/* ═══════════════════════════════════════════════════
+   Grid column mapping
+   ═══════════════════════════════════════════════════ */
+
+const gridProps =
+  columns === 2
+    ? {
+        largeColumns: 2 as const,
+        mediumColumns: 2 as const,
+        smallColumns: 1 as const,
+      }
+    : {
+        largeColumns: 3 as const,
+        mediumColumns: 2 as const,
+        smallColumns: 1 as const,
+      };
+---
+
+{
+  filtered.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      id={id}
+      class:list={["case-study-grid_wrap", className]}
+    >
+      <Layout docs="" variant="stack" columnGap={columnGap} rowGap={rowGapProp}>
+        <Col slot="col1">
+          {/* Heading area */}
+          {showHeading &&
+            (hasHeadingSlot ? (
+              <slot name="heading" />
+            ) : (
+              <>
+                {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+                <Heading tag="h2" variant="h2">
+                  {resolvedHeading}
+                </Heading>
+              </>
+            ))}
+        </Col>
+
+        {/* Case study card grid */}
+        <Grid slot="col2" {...gridProps} rowGap={6}>
+          {filtered.map((study) => (
+            <CaseStudyCard
+              title={study.title}
+              description={study.description}
+              categories={study.categories}
+              href={`/case-studies/${study.slug}`}
+              image={study.image}
+              imageAlt={study.imageAlt}
+              date={study.date}
+              featured={study.featured}
+              comingSoon={(study as any).comingSoon}
+              externalUrl={(study as any).liveUrl}
+              headingVariant={cardHeadingVariant}
+              textVariant={cardTextVariant}
+            />
+          ))}
+        </Grid>
+      </Layout>
+    </Section>
+  )
+}

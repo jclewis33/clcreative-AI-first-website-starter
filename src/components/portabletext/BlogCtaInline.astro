@@ -1,0 +1,23 @@
+---
+/**
+ * Blog CTA Inline — Portable Text custom type component.
+ *
+ * Node shape: { _type: "blogCtaInline", cta: <dereferenced blogCta> }
+ * The reference is dereferenced server-side by the BLOG_POST_QUERY, so the
+ * node arrives with the full CTA object already on `node.cta`.
+ */
+
+import type { Props as PortableTextProps } from "astro-portabletext/types";
+import BlogCta from "../blog/BlogCta.astro";
+
+interface BlogCtaInlineNode {
+  _type: "blogCtaInline";
+  cta?: any;
+}
+
+type Props = PortableTextProps<BlogCtaInlineNode>;
+
+const { node } = Astro.props;
+---
+
+{node.cta && <BlogCta cta={node.cta} />}

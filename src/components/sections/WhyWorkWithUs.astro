@@ -1,0 +1,141 @@
+---
+/**
+ * WhyWorkWithUs — breakout-reversed section with numbered value props.
+ *
+ * Image bleeds to the left viewport edge, content on the right with
+ * an eyebrow, heading, numbered list with dividers, and a CTA button.
+ *
+ * @example Default usage
+ * ```astro
+ * <WhyWorkWithUs />
+ * ```
+ *
+ * @example Custom padding and theme
+ * ```astro
+ * <WhyWorkWithUs theme="dark" padding="large" />
+ * ```
+ */
+
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Visual from "../ui/Visual.astro";
+import Button from "../ui/Button.astro";
+
+import whyImage from "../../assets/why-work-with-us/why-work-with-us-1.webp";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **WhyWorkWithUs props:**
+   * - `theme` — 'light' | 'dark' | 'brand'
+   * - `padding` / `paddingTop` / `paddingBottom` — section padding
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute
+   */
+  docs?: string;
+
+  /** Color theme for the section. */
+  theme?: "light" | "dark" | "brand";
+
+  /** Section vertical padding. @default 'main' */
+  padding?: PaddingValue;
+  paddingTop?: PaddingValue;
+  paddingBottom?: PaddingValue;
+
+  /** Extra classes on the section. */
+  class?: string;
+
+  [key: string]: any;
+}
+
+const {
+  docs,
+  theme,
+  padding = "none",
+  paddingTop,
+  paddingBottom,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const items = [
+  {
+    number: "01",
+    title: "We don't believe in handoffs",
+    text: "Your project gets direct, senior attention from start to finish. Not a junior team you've never met. Not a rotating cast of account managers.",
+  },
+  {
+    number: "02",
+    title: "We don't believe in design before strategy",
+    text: "A pretty site that doesn't know who it's talking to is worse than no site at all. We don't touch design until your messaging is locked in and grounded in real customer research. Then we build everything you need to actually market your business with your website as the hub.",
+  },
+  {
+    number: "03",
+    title: "We don't believe a website is done at launch",
+    text: "Most agencies hand you the keys and disappear. We offer ongoing Marketing Partner retainers so your foundation keeps performing as your business grows. Updates, optimization, and a strategic partner who already knows your business.",
+  },
+];
+---
+
+<Section
+  theme={theme}
+  padding={padding}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  class:list={["why-work_section", className]}
+  {...rest}
+>
+  <Layout
+    docs=""
+    columnGap="var(--gap-8)"
+    variant="full-reversed"
+    verticalAlign="center"
+  >
+    <Col slot="col1">
+      <div class="why-work_content">
+        <Heading data-fade-in variant="eyebrow"> Why Work With Us </Heading>
+        <Heading data-split-text variant="h3">
+          Why growth-stage companies choose us over bigger agencies
+        </Heading>
+
+        <div class="why-work_list">
+          {
+            items.map((item) => (
+              <div class="why-work_row" data-fade-in>
+                <p class="why-work_number">{item.number}</p>
+                <div class="why-work_item_content">
+                  <Heading
+                    maxWidth="none"
+                    tag="h3"
+                    variant="h5"
+                    marginBottom={0}
+                  >
+                    {item.title}
+                  </Heading>
+                  <Text marginBottom={0} set:html={item.text} />
+                </div>
+              </div>
+            ))
+          }
+        </div>
+
+        <div class="u-button-wrapper">
+          <Button href="/book-a-call" ariaLabel="Book a Strategy Call">
+            Book a Strategy Call
+          </Button>
+        </div>
+      </div>
+    </Col>
+    <Visual
+      radius="none"
+      slot="col2"
+      src={whyImage}
+      alt="Why work with us"
+      ratio="portrait"
+    />
+  </Layout>
+</Section>

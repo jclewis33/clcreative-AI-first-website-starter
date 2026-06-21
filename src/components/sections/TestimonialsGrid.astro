@@ -1,0 +1,177 @@
+---
+/**
+ * TestimonialsGrid — a responsive grid of testimonial cards.
+ *
+ * Composes `<Section>` for theming/padding and `<Grid>` for responsive
+ * columns. Shares the same testimonial card design as TestimonialsSlider.
+ *
+ * Usage:
+ * ```astro
+ * <TestimonialsGrid
+ *   theme="light"
+ *   heading="What Our Clients Say"
+ *   testimonials={testimonials}
+ *   limit={6}
+ * />
+ * ```
+ *
+ * Slots:
+ *   heading — override the heading area with custom markup
+ */
+
+import Section from "../ui/Section.astro";
+import Heading from "../ui/Heading.astro";
+import Grid from "../ui/Grid.astro";
+import ContentWrapper from "../ui/ContentWrapper.astro";
+import TestimonialCard, { type Testimonial } from "../ui/TestimonialCard.astro";
+
+type SectionTheme = "light" | "dark" | "brand";
+type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **TestimonialsGrid props:**
+   * - `testimonials` — array of { quote, name, role?, company?, avatar?, stars? }
+   * - `limit` — max testimonials to display (slices after Sanity ordering)
+   * - `heading` — simple heading text (or use `heading` slot for custom markup)
+   * - `eyebrow` — small label above heading (e.g. "Testimonials")
+   * - `theme` — 'light' | 'dark' | 'brand'
+   * - `padding` — 'none' | 'small' | 'main' | 'large' | 'page-top' (default 'large')
+   * - `paddingTop` / `paddingBottom` — override top/bottom padding independently
+   * - `id` — section id for anchor links
+   * - `columns` — grid columns at desktop: 1–4 (default 3)
+   * - `columnsMd` — grid columns at medium (~800px): 0–2 (default 2, 0 = inherit)
+   * - `columnsSm` — grid columns at small (~560px): 0–1 (default 1, 0 = inherit)
+   * - `class` — extra classes on outer Section
+   *
+   * **Slots:** `heading` — override the heading area with custom markup
+   *
+   * **Testimonial shape:** { quote, name, role?, company?, avatar?, stars? }
+   * - `avatar` accepts a URL string or Sanity image object
+   * - `stars` — 1–5 (omit to hide stars)
+   */
+  docs?: string;
+
+  /** Array of testimonial objects to render as grid cards */
+  testimonials: Testimonial[];
+
+  /**
+   * Max number of testimonials to display.
+   * Slices the array after any Sanity-side ordering.
+   */
+  limit?: number;
+
+  /**
+   * Simple heading text. Renders as h2 with `variant="h2"`.
+   * For richer heading markup, use the `heading` slot instead.
+   */
+  heading?: string;
+
+  /**
+   * Eyebrow text above the heading (e.g. "Testimonials").
+   * Only rendered when `heading` prop or slot is used.
+   */
+  eyebrow?: string;
+
+  /** Section color theme */
+  theme?: SectionTheme;
+
+  /** Section vertical padding */
+  padding?: PaddingSize;
+
+  /** Override top padding only */
+  paddingTop?: PaddingSize;
+
+  /** Override bottom padding only */
+  paddingBottom?: PaddingSize;
+
+  /** Section id for anchor links */
+  id?: string;
+
+  /**
+   * Grid columns at desktop.
+   * @default 3
+   */
+  columns?: 1 | 2 | 3 | 4;
+
+  /**
+   * Grid columns at medium (~800px).
+   * @default 2
+   */
+  columnsMd?: 0 | 1 | 2;
+
+  /**
+   * Grid columns at small (~560px).
+   * @default 1
+   */
+  columnsSm?: 0 | 1;
+
+  /** Extra classes on the outer Section element */
+  class?: string;
+}
+
+const {
+  docs,
+  testimonials: rawTestimonials,
+  limit,
+  heading,
+  eyebrow,
+  theme,
+  padding = "large",
+  paddingTop,
+  paddingBottom,
+  id,
+  columns = 3,
+  columnsMd = 2,
+  columnsSm = 1,
+  class: className,
+} = Astro.props;
+
+const testimonials = limit
+  ? rawTestimonials.slice(0, limit)
+  : rawTestimonials;
+
+const hasHeadingSlot = Astro.slots.has("heading");
+const showHeading = hasHeadingSlot || heading;
+---
+
+<Section
+  theme={theme}
+  padding={padding}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  id={id}
+  class={className}
+>
+  {/* Heading area */}
+  {
+    showHeading && (
+      <ContentWrapper class="testimonials_header">
+        {hasHeadingSlot ? (
+          <slot name="heading" />
+        ) : (
+          <>
+            {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+            <Heading tag="h2" balance>
+              {heading}
+            </Heading>
+          </>
+        )}
+      </ContentWrapper>
+    )
+  }
+
+  {/* Grid */}
+  <Grid
+    largeColumns={columns}
+    mediumColumns={columnsMd}
+    smallColumns={columnsSm}
+    rowGap={6}
+  >
+    {
+      testimonials.map((testimonial) => (
+        <TestimonialCard {...testimonial} />
+      ))
+    }
+  </Grid>
+</Section>

@@ -1,0 +1,320 @@
+/* ================================================================
+   RESPONSIVE COLUMN SYSTEM
+   ================================================================
+   Column count and display are controlled declaratively via
+   data attributes on the element itself, not by CSS class names.
+   This means a single element can express its layout at every
+   breakpoint tier without extra wrapper elements or modifier classes.
+
+   USAGE:
+     <div data-large-columns="3" data-medium-columns="2" data-small-columns="1">
+       ...
+     </div>
+
+   Column count of "1" → display: flex (single column stack)
+   Column count of 2+  → display: grid with repeat(N, 1fr) columns
+
+   BREAKPOINT TIERS (requires a container-type: inline-size ancestor):
+     large  — default, no query
+     medium — @container (width < 58em)  — ~928px
+     small  — @container (width < 35em)  — ~560px
+     xsmall — @container (width < 20em)  — ~320px
+
+   RESPONSIVE FLAGS:
+   Each tier sets utility flags on all descendants (*) that you can
+   reference in other CSS rules. This lets you control layout props
+   (display, flex-direction, alignment, order, etc.) per tier without
+   writing media queries or extra container queries yourself.
+
+   Example — hide an element only on mobile:
+     display: var(--none-small, block);
+
+   Example — stack flex items on small:
+     flex-direction: var(--column-small, row);
+
+   Example — conditionally center on medium:
+     justify-content: var(--center-medium, flex-start);
+
+   Available flags per tier (undefined at larger tiers → use fallback):
+     --flex-{tier}      → "flex"
+     --none-{tier}      → "none"
+     --column-{tier}    → "column"
+     --row-{tier}       → "row"
+     --start-{tier}     → "start"
+     --center-{tier}    → "center"
+     --end-{tier}       → "end"
+     --unset-{tier}     → "unset"
+     --relative-{tier}  → "relative"
+     --responsive-{tier} → 1 (numeric, for calc() use)
+   ================================================================ */
+
+/* Defaults — the large tier is active by default; medium/small/xsmall flip
+   to 1 inside their container queries below. (Moved here from the old
+   interactions.css when the trigger/state system was removed.) */
+:root {
+  --responsive-large: 1;
+  --responsive-medium: 0;
+  --responsive-small: 0;
+  --responsive-xsmall: 0;
+}
+
+/* ========= Large (default) ========= */
+
+[data-large-columns="1"] {
+  display: flex;
+  flex-direction: column;
+}
+[data-large-columns="2"] {
+  display: grid;
+  --column-count: 2;
+}
+[data-large-columns="3"] {
+  display: grid;
+  --column-count: 3;
+}
+[data-large-columns="4"] {
+  display: grid;
+  --column-count: 4;
+}
+[data-large-columns="5"] {
+  display: grid;
+  --column-count: 5;
+}
+[data-large-columns="6"] {
+  display: grid;
+  --column-count: 6;
+}
+[data-large-columns="7"] {
+  display: grid;
+  --column-count: 7;
+}
+[data-large-columns="8"] {
+  display: grid;
+  --column-count: 8;
+}
+[data-large-columns="9"] {
+  display: grid;
+  --column-count: 9;
+}
+[data-large-columns="10"] {
+  display: grid;
+  --column-count: 10;
+}
+[data-large-columns="11"] {
+  display: grid;
+  --column-count: 11;
+}
+[data-large-columns="12"] {
+  display: grid;
+  --column-count: 12;
+}
+
+/* Apply grid template from the current column count value.
+   Wrapped in :where() to keep specificity at 0,0,0 so utility classes like
+   .u-gap-column-N / .u-gap-row-N can override the default gap without
+   needing to fight an attribute-selector specificity battle. */
+:where([data-large-columns]:not([data-large-columns="1"])) {
+  grid-template-columns: repeat(var(--column-count), minmax(0, 1fr));
+  gap: var(--site-gutter);
+}
+
+/* ========= Medium — @container (width < 58em) ========= */
+
+@container (width < 58em) {
+  * {
+    --responsive-large: 0;
+    --responsive-medium: 1;
+    --flex-medium: flex;
+    --none-medium: none;
+    --column-medium: column;
+    --row-medium: row;
+    --start-medium: start;
+    --center-medium: center;
+    --end-medium: end;
+    --unset-medium: unset;
+    --relative-medium: relative;
+  }
+
+  [data-medium-columns="1"] {
+    display: flex;
+    flex-direction: column;
+  }
+  [data-medium-columns="2"] {
+    display: grid;
+    --column-count: 2;
+  }
+  [data-medium-columns="3"] {
+    display: grid;
+    --column-count: 3;
+  }
+  [data-medium-columns="4"] {
+    display: grid;
+    --column-count: 4;
+  }
+  [data-medium-columns="5"] {
+    display: grid;
+    --column-count: 5;
+  }
+  [data-medium-columns="6"] {
+    display: grid;
+    --column-count: 6;
+  }
+  [data-medium-columns="7"] {
+    display: grid;
+    --column-count: 7;
+  }
+  [data-medium-columns="8"] {
+    display: grid;
+    --column-count: 8;
+  }
+  [data-medium-columns="9"] {
+    display: grid;
+    --column-count: 9;
+  }
+  [data-medium-columns="10"] {
+    display: grid;
+    --column-count: 10;
+  }
+  [data-medium-columns="11"] {
+    display: grid;
+    --column-count: 11;
+  }
+  [data-medium-columns="12"] {
+    display: grid;
+    --column-count: 12;
+  }
+}
+
+/* ========= Small — @container (width < 35em) ========= */
+
+@container (width < 35em) {
+  * {
+    --responsive-medium: 0;
+    --responsive-small: 1;
+    --flex-small: flex;
+    --none-small: none;
+    --column-small: column;
+    --row-small: row;
+    --start-small: start;
+    --center-small: center;
+    --end-small: end;
+    --unset-small: unset;
+    --relative-small: relative;
+  }
+
+  [data-small-columns="1"] {
+    display: flex;
+    flex-direction: column;
+  }
+  [data-small-columns="2"] {
+    display: grid;
+    --column-count: 2;
+  }
+  [data-small-columns="3"] {
+    display: grid;
+    --column-count: 3;
+  }
+  [data-small-columns="4"] {
+    display: grid;
+    --column-count: 4;
+  }
+  [data-small-columns="5"] {
+    display: grid;
+    --column-count: 5;
+  }
+  [data-small-columns="6"] {
+    display: grid;
+    --column-count: 6;
+  }
+  [data-small-columns="7"] {
+    display: grid;
+    --column-count: 7;
+  }
+  [data-small-columns="8"] {
+    display: grid;
+    --column-count: 8;
+  }
+  [data-small-columns="9"] {
+    display: grid;
+    --column-count: 9;
+  }
+  [data-small-columns="10"] {
+    display: grid;
+    --column-count: 10;
+  }
+  [data-small-columns="11"] {
+    display: grid;
+    --column-count: 11;
+  }
+  [data-small-columns="12"] {
+    display: grid;
+    --column-count: 12;
+  }
+}
+
+/* ========= XSmall — @container (width < 20em) ========= */
+
+@container (width < 20em) {
+  * {
+    --responsive-small: 0;
+    --responsive-xsmall: 1;
+    --flex-xsmall: flex;
+    --none-xsmall: none;
+    --column-xsmall: column;
+    --row-xsmall: row;
+    --start-xsmall: start;
+    --center-xsmall: center;
+    --end-xsmall: end;
+    --unset-xsmall: unset;
+    --relative-xsmall: relative;
+  }
+
+  [data-xsmall-columns="1"] {
+    display: flex;
+    flex-direction: column;
+  }
+  [data-xsmall-columns="2"] {
+    display: grid;
+    --column-count: 2;
+  }
+  [data-xsmall-columns="3"] {
+    display: grid;
+    --column-count: 3;
+  }
+  [data-xsmall-columns="4"] {
+    display: grid;
+    --column-count: 4;
+  }
+  [data-xsmall-columns="5"] {
+    display: grid;
+    --column-count: 5;
+  }
+  [data-xsmall-columns="6"] {
+    display: grid;
+    --column-count: 6;
+  }
+  [data-xsmall-columns="7"] {
+    display: grid;
+    --column-count: 7;
+  }
+  [data-xsmall-columns="8"] {
+    display: grid;
+    --column-count: 8;
+  }
+  [data-xsmall-columns="9"] {
+    display: grid;
+    --column-count: 9;
+  }
+  [data-xsmall-columns="10"] {
+    display: grid;
+    --column-count: 10;
+  }
+  [data-xsmall-columns="11"] {
+    display: grid;
+    --column-count: 11;
+  }
+  [data-xsmall-columns="12"] {
+    display: grid;
+    --column-count: 12;
+  }
+}

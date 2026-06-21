@@ -1,0 +1,575 @@
+---
+export const prerender = false;
+/**
+ * Blog Listing Page
+ *
+ * Clay-inspired layout with:
+ *   1. Hero — dark background + featured posts slider (cover cards)
+ *   2. Latest — 2 large + 3 small cards from most recent posts
+ *   3. Per-category sections — heading, description, 2 large + 3 small cards, "View all" link
+ *
+ * Categories shown: Business, SEO, Web Design, Webflow Tutorial
+ * Video posts appear within their other categories (no dedicated Video section).
+ * Development and Photography are excluded from the section list.
+ */
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SanityCtaSection from "../../components/sections/SanityCtaSection.astro";
+import Section from "../../components/ui/Section.astro";
+import Grid from "../../components/ui/Grid.astro";
+import Heading from "../../components/ui/Heading.astro";
+import Text from "../../components/ui/Text.astro";
+import Button from "../../components/ui/Button.astro";
+import BlogCard from "../../components/ui/BlogCard.astro";
+import Slider from "../../components/ui/Slider.astro";
+
+// Sanity
+import { loadQuery } from "../../sanity/lib/load-query";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import { BLOG_POSTS_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
+import { urlFor } from "../../sanity/lib/image";
+import { displayCategory } from "../../lib/category-display";
+import { stegaClean } from "@sanity/client/stega";
+
+// Styles
+import "../../styles/pages/blog.css";
+import ContentWrapper from "../../components/ui/ContentWrapper.astro";
+
+/* ── Fetch all posts from Sanity ── */
+
+const { data: allPosts } = await loadQuery<any[]>({
+  query: BLOG_POSTS_QUERY,
+  ...getDraftModeProps(Astro),
+});
+
+const { data: settings } = await loadQuery<any>({
+  query: SITE_SETTINGS_QUERY,
+  ...getDraftModeProps(Astro),
+});
+const defaultCtaSection = settings?.defaultCtaSection ?? null;
+
+/* ── Featured posts for the hero slider ── */
+
+const featuredPosts = allPosts.filter((p: any) => p.featured);
+// Fall back to the 4 most recent if none are marked featured
+const sliderPosts =
+  featuredPosts.length > 0 ? featuredPosts.slice(0, 6) : allPosts.slice(0, 4);
+
+/* ── Latest posts (most recent 5, excluding slider duplicates for variety) ── */
+
+const latestPosts = allPosts.slice(0, 5);
+const latestLarge = latestPosts.slice(0, 2);
+const latestSmall = latestPosts.slice(2, 5);
+
+/* ── Category sections ── */
+
+const categoryConfig: {
+  name: string;
+  slug: string;
+  description: string;
+  theme?: "light" | "dark" | "brand";
+}[] = [
+  {
+    name: "Marketing",
+    slug: "marketing",
+    description:
+      "Strategies, frameworks, and tactics for getting your business in front of the right people.",
+    theme: "brand",
+  },
+  {
+    name: "Business",
+    slug: "business",
+    description:
+      "Insights on running a creative business, freelancing, and client work.",
+    theme: "dark",
+  },
+  {
+    name: "SEO",
+    slug: "seo",
+    description:
+      "Search engine and Answer engine optimization strategies to grow your organic traffic.",
+    theme: "brand",
+  },
+  {
+    name: "Web Design",
+    slug: "web-design",
+    description:
+      "Dive into cutting-edge trends and tips for creating stunning websites.",
+  },
+  {
+    name: "Webflow Tutorial",
+    slug: "webflow-tutorial",
+    description: "Step-by-step guides for building in Webflow.",
+    theme: "dark",
+  },
+];
+
+// Group posts by primary category (each post appears in one section only).
+// stegaClean strips invisible stega metadata so === comparison still works in
+// draft mode — otherwise every post's category fails to match the hardcoded
+// section names and all category sections render empty.
+function getPostsForCategory(categoryName: string) {
+  return allPosts.filter((p: any) => {
+    const primary = p.primaryCategory || (p.categories && p.categories[0]);
+    return stegaClean(primary) === categoryName;
+  });
+}
+
+// Build category sections with posts — only include categories that have content
+const categorySections = categoryConfig
+  .map((cat) => ({
+    ...cat,
+    posts: getPostsForCategory(cat.name),
+  }))
+  .filter((cat) => cat.posts.length > 0);
+
+/* ── Helper: format date ── */
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+---
+
+<BaseLayout
+  docs=""
+  theme="light"
+  title="Blog | CL Creative"
+  description="A web design, development, SEO, and business blog."
+>
+  {
+    /* ================================================================
+      HERO — dark theme, left-aligned, category nav + featured slider
+      ================================================================ */
+  }
+  <Section gap={4} docs="" theme="dark" class="blog_hero_wrap">
+    {/* Category nav tabs + search */}
+    <div class="blog_top_bar">
+      <nav class="blog_category_nav" aria-label="Blog categories">
+        {
+          categorySections.map((cat) => (
+            <a href={`#${cat.slug}`} class="blog_category_nav_link">
+              {displayCategory(cat.name)}
+            </a>
+          ))
+        }
+        <a href="#latest" class="blog_category_nav_link">Latest</a>
+      </nav>
+      <div class="blog_search_wrap">
+        <svg
+          class="blog_search_icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          type="search"
+          id="blog-index-search"
+          class="blog_search_input"
+          placeholder="Search"
+          autocomplete="off"
+          aria-label="Search posts shown on this page"
+          enterkeyhint="search"
+        />
+      </div>
+    </div>
+    <ContentWrapper>
+      <Heading
+        data-prevent-flicker="true"
+        data-split-text
+        tag="h1"
+        variant="h1"
+        balance>Blog</Heading
+      >
+      <Text data-prevent-flicker="true" data-fade-up>
+        We write about web design, SEO, marketing, and small business so you can
+        build a website, and a company, that attracts the right customer.
+      </Text>
+    </ContentWrapper>
+    {/* Featured slider */}
+    {
+      sliderPosts.length > 1 && (
+        <div class="blog_slider_wrap">
+          <Slider
+            variant="crop-left"
+            slidesLg={2}
+            slidesMd={1.5}
+            slidesSm={1.1}
+            slidesXs={1}
+            showArrows
+            showBullets={false}
+            speed={500}
+          >
+            {sliderPosts.map((post: any) => (
+              <a
+                href={`/blog/${post.slug}`}
+                class="blog_slider_card"
+                data-trigger="hover focus"
+                aria-label={`Read ${post.title}`}
+                data-search-card
+                data-title={stegaClean(post.title)}
+                data-description={stegaClean(post.description)}
+                data-categories={(post.categories ?? [])
+                  .map((c: string) => stegaClean(c))
+                  .join(",")}
+              >
+                <div class="blog_slider_card_img u-image-wrapper u-radius-main u-overflow-hidden">
+                  <img
+                    src={urlFor(post.image).width(800).url()}
+                    alt={post.imageAlt}
+                    class="u-image"
+                    loading="lazy"
+                    width="800"
+                    height="450"
+                  />
+                  <div class="blog_slider_card_overlay" />
+                </div>
+                <div class="blog_slider_card_content">
+                  {post.categories?.[0] && (
+                    <span class="blog_slider_card_category">
+                      {displayCategory(post.categories[0])}
+                    </span>
+                  )}
+                  <h3 class="blog_slider_card_title">{post.title}</h3>
+                </div>
+              </a>
+            ))}
+          </Slider>
+        </div>
+      )
+    }
+  </Section>
+
+  {
+    /* ================================================================
+      CATEGORY SECTIONS — one per category with posts
+      ================================================================ */
+  }
+  {
+    categorySections.map((cat) => {
+      const largePosts = cat.posts.slice(0, 2);
+      const smallPosts = cat.posts.slice(2, 5);
+
+      return (
+        <Section
+          docs=""
+          padding="main"
+          gap={6}
+          theme={cat.theme}
+          id={cat.slug}
+          class="blog_category_section"
+        >
+          <div class="blog_section_header">
+            <div class="blog_section_header_text">
+              <Heading data-split-text tag="h2" marginBottom={0}>
+                {displayCategory(cat.name)}
+              </Heading>
+              <Text data-fade-in muted marginBottom={0}>
+                {cat.description}
+              </Text>
+            </div>
+          </div>
+
+          {/* Featured cards — large left, small right */}
+          {largePosts.length > 0 && (
+            <div data-fade-in class="blog_featured_grid">
+              {largePosts.map((post: any, i: number) => (
+                <a
+                  href={`/blog/${post.slug}`}
+                  class:list={["blog_featured_card", i === 0 && "is-large"]}
+                  data-trigger="hover focus"
+                  data-search-card
+                  data-title={stegaClean(post.title)}
+                  data-description={stegaClean(post.description)}
+                  data-categories={(post.categories ?? [])
+                    .map((c: string) => stegaClean(c))
+                    .join(",")}
+                >
+                  <div class="blog_featured_card_img u-image-wrapper u-radius-main u-overflow-hidden">
+                    <img
+                      src={urlFor(post.image)
+                        .width(i === 0 ? 1000 : 600)
+                        .url()}
+                      alt={post.imageAlt}
+                      class="u-image"
+                      loading="lazy"
+                      width={i === 0 ? 1000 : 600}
+                      height={i === 0 ? 563 : 338}
+                    />
+                  </div>
+                  <h3 class="blog_featured_card_title">{post.title}</h3>
+                  <div class="blog_featured_card_meta">
+                    <span class="blog_featured_card_date">
+                      {formatDate(post.date)}
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+
+          {/* 3 smaller cards */}
+          {smallPosts.length > 0 && (
+            <Grid
+              largeColumns={3}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={6}
+            >
+              {smallPosts.map((post: any) => (
+                <BlogCard
+                  data-fade-in
+                  data-search-card
+                  data-title={stegaClean(post.title)}
+                  data-description={stegaClean(post.description)}
+                  data-categories={(post.categories ?? [])
+                    .map((c: string) => stegaClean(c))
+                    .join(",")}
+                  title={post.title}
+                  description={post.description}
+                  categories={post.categories}
+                  href={`/blog/${post.slug}`}
+                  image={urlFor(post.image).width(600).url()}
+                  imageAlt={post.imageAlt}
+                  author={post.author}
+                  authorAvatar={
+                    post.authorAvatar
+                      ? urlFor(post.authorAvatar).width(80).height(80).url()
+                      : undefined
+                  }
+                  date={post.date}
+                />
+              ))}
+            </Grid>
+          )}
+
+          <div class="blog_section_footer">
+            <Button
+              variant="text"
+              href={`/blog/category/${cat.slug}`}
+              ariaLabel={`View all ${displayCategory(cat.name)} articles`}
+            >
+              View all articles
+              <svg
+                slot="icon"
+                aria-hidden="true"
+                width="10"
+                height="10"
+                viewBox="0 0 10 10"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <line x1="0" y1="5" x2="8" y2="5" />
+                <polyline points="5,2 8,5 5,8" />
+              </svg>
+            </Button>
+          </div>
+        </Section>
+      );
+    })
+  }
+
+  {
+    /* ================================================================
+      LATEST SECTION — 2 large + 3 small
+      ================================================================ */
+  }
+  {
+    latestPosts.length > 0 && (
+      <Section
+        docs=""
+        padding="main"
+        gap={6}
+        id="latest"
+        class="blog_category_section"
+      >
+        <div class="blog_section_header">
+          <Heading data-prevent-flicker="true" data-split-text marginBottom={0}>
+            Latest
+          </Heading>
+        </div>
+
+        {/* 2 large cards */}
+        {latestLarge.length > 0 && (
+          <Grid
+            largeColumns={2}
+            mediumColumns={2}
+            smallColumns={1}
+            rowGap={6}
+            class="blog_large_grid"
+          >
+            {latestLarge.map((post: any) => (
+              <BlogCard
+                data-prevent-flicker="true"
+                data-fade-in
+                data-search-card
+                data-title={stegaClean(post.title)}
+                data-description={stegaClean(post.description)}
+                data-categories={(post.categories ?? [])
+                  .map((c: string) => stegaClean(c))
+                  .join(",")}
+                title={post.title}
+                description={post.description}
+                categories={post.categories}
+                href={`/blog/${post.slug}`}
+                image={urlFor(post.image).width(800).url()}
+                imageAlt={post.imageAlt}
+                author={post.author}
+                authorAvatar={
+                  post.authorAvatar
+                    ? urlFor(post.authorAvatar).width(80).height(80).url()
+                    : undefined
+                }
+                date={post.date}
+              />
+            ))}
+          </Grid>
+        )}
+
+        {/* 3 smaller cards */}
+        {latestSmall.length > 0 && (
+          <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
+            {latestSmall.map((post: any) => (
+              <BlogCard
+                data-prevent-flicker="true"
+                data-fade-in
+                data-search-card
+                data-title={stegaClean(post.title)}
+                data-description={stegaClean(post.description)}
+                data-categories={(post.categories ?? [])
+                  .map((c: string) => stegaClean(c))
+                  .join(",")}
+                title={post.title}
+                description={post.description}
+                categories={post.categories}
+                href={`/blog/${post.slug}`}
+                image={urlFor(post.image).width(600).url()}
+                imageAlt={post.imageAlt}
+                author={post.author}
+                authorAvatar={
+                  post.authorAvatar
+                    ? urlFor(post.authorAvatar).width(80).height(80).url()
+                    : undefined
+                }
+                date={post.date}
+              />
+            ))}
+          </Grid>
+        )}
+
+        <div class="blog_section_footer">
+          <Button
+            variant="text"
+            href="/blog/category/all"
+            ariaLabel="View all blog posts"
+          >
+            View archive
+            <svg
+              slot="icon"
+              aria-hidden="true"
+              width="10"
+              height="10"
+              viewBox="0 0 10 10"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <line x1="0" y1="5" x2="8" y2="5" />
+              <polyline points="5,2 8,5 5,8" />
+            </svg>
+          </Button>
+        </div>
+      </Section>
+    )
+  }
+
+  <div
+    id="blog-index-no-results"
+    class="blog_no_results"
+    style="display:none;"
+  >
+    <Text muted align="center">
+      No posts on this page match your search. Try the <a
+        href="/blog/category/all"
+        class="u-text-style-underline">full archive</a
+      > for every post.
+    </Text>
+  </div>
+
+  {defaultCtaSection && <SanityCtaSection cta={defaultCtaSection} />}
+</BaseLayout>
+
+<script>
+  const searchInput = document.getElementById(
+    "blog-index-search",
+  ) as HTMLInputElement | null;
+  const noResults = document.getElementById("blog-index-no-results");
+  const cards = document.querySelectorAll<HTMLElement>("[data-search-card]");
+  const sections = document.querySelectorAll<HTMLElement>(
+    ".blog_category_section",
+  );
+
+  function filterPosts() {
+    const query = searchInput?.value.toLowerCase().trim() ?? "";
+    let totalVisible = 0;
+
+    cards.forEach((card) => {
+      const haystack = [
+        card.dataset.title ?? "",
+        card.dataset.description ?? "",
+        card.dataset.categories ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      const show = !query || haystack.includes(query);
+      card.style.display = show ? "" : "none";
+      if (show) totalVisible++;
+    });
+
+    sections.forEach((section) => {
+      const sectionCards = section.querySelectorAll<HTMLElement>(
+        "[data-search-card]",
+      );
+      const hasVisible = Array.from(sectionCards).some(
+        (c) => c.style.display !== "none",
+      );
+      section.style.display = query && !hasVisible ? "none" : "";
+    });
+
+    // Sync each slider card's parent .swiper-slide and nudge Swiper to
+    // recompute its layout — otherwise hidden slides still claim width.
+    const sliderElement = document.querySelector<HTMLElement>(
+      ".blog_slider_wrap .swiper",
+    );
+    if (sliderElement) {
+      sliderElement
+        .querySelectorAll<HTMLElement>("[data-search-card]")
+        .forEach((card) => {
+          const slide = card.closest(".swiper-slide") as HTMLElement | null;
+          if (slide) slide.style.display = card.style.display;
+        });
+      (sliderElement as any).swiper?.update();
+    }
+
+    if (noResults) {
+      noResults.style.display = query && totalVisible === 0 ? "" : "none";
+    }
+
+    (window as any).ScrollTrigger?.refresh();
+  }
+
+  searchInput?.addEventListener("input", filterPosts);
+</script>

@@ -1,0 +1,203 @@
+/* ==========================================================================
+   CARD COMPONENT STYLES
+   ==========================================================================
+   Usage:
+     <div class="card_primary_wrap" data-card-variant="default">
+       <div class="card_primary_group" data-trigger="hover-if-clickable focus">
+         <div class="card_primary_element">
+           <div class="card_primary_visual">…image…</div>
+           <div class="card_primary_content u-margin-trim">
+             <h3 class="card_primary_title u-text-style-h4">Title</h3>
+             <div class="card_primary_text">Body text</div>
+           </div>
+         </div>
+         <div class="clickable_wrap u-cover-absolute">
+           <a href="/page" class="clickable_link"></a>
+         </div>
+       </div>
+     </div>
+
+   Variants: default | stacked | cover
+   Grid spans: u-row-span-2, u-column-span-2
+   ========================================================================== */
+
+/* ---- Outer wrapper ---- */
+
+.card_primary_wrap {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-main);
+  display: flex;
+}
+
+/* ---- Group — the full clickable surface ---- */
+
+.card_primary_group {
+  position: relative;
+  border-radius: inherit;
+  width: 100%;
+  display: flex;
+}
+
+/* ---- Element — inner card surface with border ---- */
+
+/* card_primary_element
+   Inner card surface — trigger-driven border. No padding here so the
+   visual (image) can go edge-to-edge; overflow: clip lets the card's
+   border-radius shape the image corners.
+
+   Renders as a contrasting "surface" via the --surface-* theme tier, so the
+   card pops and stays readable on any section theme with no per-theme CSS.
+   Re-skin by editing --surface-* in src/styles/variables/themes.css. The
+   cover variant opts out (it's an image overlay) and keeps its own white text. */
+.card_primary_element {
+  border: var(--border-width-main) solid var(--surface-border);
+  border-radius: inherit;
+  overflow: clip;
+  background-color: var(--surface-background);
+  color: var(--surface-text);
+  flex-flow: column;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  position: relative;
+}
+
+/* Non-cover cards become a surface island: children (borders, muted text,
+   category tags, etc.) resolve against the card surface, not the parent theme.
+   Cover keeps its own white-on-gradient text (see the cover variant below). */
+[data-card-variant="default"] .card_primary_content,
+[data-card-variant="stacked"] .card_primary_content {
+  --background: var(--surface-background);
+  --background-2: var(--surface-background);
+  --text: var(--surface-text);
+  --heading-accent: var(--surface-heading-accent);
+  --border: var(--surface-border);
+}
+
+/* ---- Visual — image/media container ---- */
+
+.card_primary_visual {
+  border-radius: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.card_primary_visual img,
+.card_primary_visual .u-image {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ---- Hover: image scale + text opacity ---- */
+
+.card_primary_group[data-trigger]:hover .card_primary_visual img,
+.card_primary_group[data-trigger]:hover .card_primary_visual .u-image {
+  transform: scale(1.05);
+}
+
+.card_primary_group[data-trigger]:hover .card_primary_content {
+  opacity: 0.55;
+}
+
+.card_primary_content {
+  transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.card_primary_image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---- Content — padded text area ---- */
+
+.card_primary_content {
+  z-index: 1;
+  position: relative;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.card_primary_title {
+  font-weight: inherit;
+}
+
+/* ==========================================================================
+   VARIANT: default — visual on top, content below
+   ========================================================================== */
+
+[data-card-variant="default"] .card_primary_element {
+  gap: 0;
+}
+
+[data-card-variant="default"] .card_primary_visual {
+  aspect-ratio: 16 / 9;
+}
+
+/* ==========================================================================
+   VARIANT: stacked — content only, no visual (text card)
+   ========================================================================== */
+
+[data-card-variant="stacked"] .card_primary_element {
+  gap: 0;
+}
+
+[data-card-variant="stacked"] .card_primary_visual {
+  display: none;
+}
+
+/* ==========================================================================
+   VARIANT: cover — visual fills the card, content overlays at bottom
+   ========================================================================== */
+
+[data-card-variant="cover"] {
+  aspect-ratio: 2 / 3;
+  height: auto;
+}
+
+[data-card-variant="cover"] .card_primary_element {
+  padding: 0;
+  overflow: hidden;
+}
+
+[data-card-variant="cover"] .card_primary_visual {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  aspect-ratio: unset;
+}
+
+[data-card-variant="cover"] .card_primary_content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-4);
+  background: linear-gradient(
+    to top,
+    var(--overlay-scrim) 0%,
+    transparent 100%
+  );
+  border-radius: 0 0 inherit inherit;
+  color: var(--color-light-100);
+}
+
+/* ==========================================================================
+   GRID SPAN UTILITIES (for use inside Grid component)
+   ========================================================================== */
+
+.u-column-span-2 {
+  grid-column: span 2;
+}
+.u-column-span-3 {
+  grid-column: span 3;
+}
+.u-row-span-2 {
+  grid-row: span 2;
+}
+.u-row-span-3 {
+  grid-row: span 3;
+}

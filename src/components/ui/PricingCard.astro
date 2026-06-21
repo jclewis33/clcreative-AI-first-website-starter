@@ -1,0 +1,430 @@
+---
+/**
+ * PricingCard — pricing tier card with name, price, description, feature
+ * items slot, and CTA button.
+ *
+ * Composes ContentWrapper, Heading, Text, and Button internally.
+ * No box-shadow is baked in — add `u-box-shadow-*` utility classes yourself.
+ *
+ * Three variants:
+ * - `default` — full card with name, price, description, feature items, and CTA
+ * - `compact` — tighter spacing for quick-view / à la carte cards. Price is optional.
+ * - `general` — price-first header (priceLabel + price spread across), 2-column items grid, no package name
+ *
+ * @example Detailed card with feature items and label badge
+ * ```astro
+ * <PricingCard
+ *   name="Growth Package"
+ *   price="$3,500"
+ *   priceSuffix="/month"
+ *   description="For businesses ready to scale."
+ *   href="/contact"
+ *   featured
+ *   class="u-box-shadow-medium"
+ * >
+ *   <Fragment slot="label">
+ *     <Text tag="span" variant="tiny" weight="bold" marginBottom={0}>Most Popular</Text>
+ *   </Fragment>
+ *   <PricingItem>3 blog posts per month</PricingItem>
+ *   <PricingItem>Monthly technical SEO audit</PricingItem>
+ * </PricingCard>
+ * ```
+ *
+ * @example General variant with support text below CTA
+ * ```astro
+ * <PricingCard
+ *   theme="light"
+ *   variant="general"
+ *   price="$5,000"
+ *   priceLabel="Starting at"
+ *   description="Typical projects range from $7K–$15K+."
+ *   href="/contact"
+ *   buttonText="Let's Fix Your Site"
+ *   buttonSupportText="One call. We'll confirm fit and give you a real number."
+ *   itemsLabel="Your Investment Includes:"
+ *   class="u-box-shadow-small"
+ * >
+ *   <PricingItem>Custom design and development</PricingItem>
+ * </PricingCard>
+ * ```
+ *
+ * @example Compact card without price, text-link CTA
+ * ```astro
+ * <PricingCard
+ *   variant="compact"
+ *   name="SEO & AEO"
+ *   description="Get found by the right buyers."
+ *   href="/services/seo"
+ *   buttonText="Explore SEO"
+ *   buttonVariant="text"
+ *   class="u-box-shadow-medium"
+ * />
+ * ```
+ *
+ * @example Card inside a dark section (theme override)
+ * ```astro
+ * <PricingCard
+ *   theme="light"
+ *   name="Web Design"
+ *   price="$5,000"
+ *   priceLabel="Starting at"
+ *   href="/contact"
+ * >
+ *   <PricingItem>Custom design and development</PricingItem>
+ * </PricingCard>
+ * ```
+ */
+
+import ContentWrapper from "./ContentWrapper.astro";
+import Heading from "./Heading.astro";
+import Text from "./Text.astro";
+import Button from "./Button.astro";
+
+type PricingCardVariant =
+  /** Full card with room for feature items */
+  | "default"
+  /** Compact quick-view card with tighter spacing */
+  | "compact"
+  /** General pricing card — price-first header, 2-column items grid, no package name */
+  | "general";
+
+type ContentAlign = "inherit" | "center" | "left";
+type ButtonVariant = "primary" | "secondary" | "text";
+
+/**
+ * PricingCard — pricing tier card with name, price, description, items slot, and CTA.
+ *
+ * **Slots:** `label` (badge above name), `default` (PricingItems), `footer` (below button), `icon` (compact only)
+ */
+interface Props {
+  /**
+   * **PricingCard props:**
+   * - `name` — package name (optional for general variant)
+   * - `price` — price string (optional — omit for compact cards without pricing)
+   * - `priceSuffix` — suffix after price (e.g. "/month")
+   * - `priceLabel` — text above price
+   * - `description` — tagline below price
+   * - `descriptionMuted` — muted description text (default: true)
+   * - `href` — CTA link
+   * - `buttonText` — button label
+   * - `buttonSupportText` — small text below the CTA button
+   * - `ariaLabel` — button accessible label
+   * - `buttonVariant` — primary, secondary, or text
+   * - `variant` — default, compact, or general
+   * - `itemsLabel` — label above items (e.g. "Your Investment Includes:")
+   * - `featured` — accent border highlight
+   * - `theme` — override card's internal color theme ('light' | 'dark' | 'brand'). Use 'light' inside dark sections.
+   * - `align` — content alignment
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute — forwarded to root element
+   *
+   * **Slots:** `label` (badge), `default` (items), `footer` (below button), `icon` (compact only)
+   */
+  docs?: string;
+
+  /** Package name — rendered as a heading. Optional for general variant. */
+  name?: string;
+
+  /**
+   * Price display string (the main number).
+   * @example price="$5,000"
+   * @example price="$3,500"
+   */
+  price?: string;
+
+  /**
+   * Suffix displayed after the price in smaller text (e.g. "/month", "/link").
+   * @example priceSuffix="/month"
+   */
+  priceSuffix?: string;
+
+  /**
+   * Small text displayed above the price.
+   * @example priceLabel="Starting at"
+   */
+  priceLabel?: string;
+
+  /** Short tagline or description below the price. */
+  description?: string;
+
+  /**
+   * Apply muted styling (reduced opacity) to the description text.
+   * @default true
+   */
+  descriptionMuted?: boolean;
+
+  /** CTA button link. Omit to hide the button. */
+  href?: string;
+
+  /**
+   * CTA button label text.
+   * @default 'Get started'
+   */
+  buttonText?: string;
+
+  /**
+   * Accessible label for the CTA button.
+   * Falls back to `"Learn more about {name}"`.
+   */
+  ariaLabel?: string;
+
+  /**
+   * Small supporting text rendered below the CTA button.
+   * @example buttonSupportText="No commitment — just a conversation."
+   */
+  buttonSupportText?: string;
+
+  /**
+   * Button visual style.
+   * @default 'primary'
+   */
+  buttonVariant?: ButtonVariant;
+
+  /**
+   * Card layout variant.
+   * - `default` — full card with room for feature items
+   * - `compact` — tighter spacing for quick-view cards
+   * - `general` — price-first header, 2-column items grid, no package name
+   * @default 'default'
+   */
+  variant?: PricingCardVariant;
+
+  /**
+   * Label text above the items list (e.g. "Your Investment Includes:").
+   * Typically used with the general variant.
+   */
+  itemsLabel?: string;
+
+  /**
+   * Highlight this card with an accent-colored border.
+   * @default false
+   */
+  featured?: boolean;
+
+  /**
+   * Content alignment via ContentWrapper.
+   * @default 'inherit'
+   */
+  align?: ContentAlign;
+
+  /**
+   * Override the card's internal color theme. Sets `data-theme` on the card
+   * element so text, borders, and buttons resolve against the card's own
+   * background instead of inheriting from the section.
+   *
+   * Use `'light'` when placing a card inside a dark section — the card's
+   * `--background-2` surface is light, so text needs to flip to dark.
+   */
+  theme?: "light" | "dark" | "brand";
+
+  /** Extra classes on the outer `.pricing_card_wrap` element. */
+  class?: string;
+
+  /** Any additional HTML attributes forwarded to root element. */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  name,
+  price,
+  priceSuffix,
+  priceLabel,
+  description,
+  descriptionMuted = true,
+  href,
+  buttonText = "Get started",
+  buttonSupportText,
+  ariaLabel,
+  buttonVariant = "primary",
+  variant = "default",
+  itemsLabel,
+  featured = false,
+  align = "inherit",
+  theme,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const buttonLabel =
+  ariaLabel ?? (name ? `Learn more about ${name}` : "Learn more");
+const hasItems = Astro.slots.has("default");
+const hasLabel = Astro.slots.has("label");
+const hasFooter = Astro.slots.has("footer");
+const hasIcon = Astro.slots.has("icon");
+const isCompact = variant === "compact";
+const isGeneral = variant === "general";
+---
+
+<div
+  class:list={["pricing_card_wrap", featured && "is-featured", className]}
+  data-pricing-variant={variant}
+  {...rest}
+>
+  <div class="pricing_card_element" {...(theme ? { "data-theme": theme } : {})}>
+    {
+      /* Label banner — full-width callout at top of card (default variant only) */
+    }
+    {
+      hasLabel && !isCompact && !isGeneral && (
+        <div class="pricing_card_label">
+          <slot name="label" />
+        </div>
+      )
+    }
+
+    <ContentWrapper align={align}>
+      {
+        /* Header — general:  price row only (priceLabel left, price right)
+                   compact:  price row → name → description
+                   default:  name → price → description */
+      }
+      <div class="pricing_card_header">
+        {
+          isGeneral ? (
+            <>
+              {/* General: price row only — priceLabel (h4) + price (h3) spread across */}
+              <div class="pricing_card_price_row">
+                {priceLabel && (
+                  <Heading
+                    tag="p"
+                    variant="h4"
+                    marginBottom={0}
+                    maxWidth="100%"
+                  >
+                    {priceLabel}
+                  </Heading>
+                )}
+                <Heading
+                  tag="p"
+                  variant="h3"
+                  marginBottom={0}
+                  maxWidth="100%"
+                  class="pricing_card_price"
+                >
+                  {price}
+                  {priceSuffix && (
+                    <span class="pricing_card_price_suffix">{priceSuffix}</span>
+                  )}
+                </Heading>
+              </div>
+
+              {description && (
+                <Text variant="small" muted={descriptionMuted} marginBottom={0} maxWidth="100%">
+                  {description}
+                </Text>
+              )}
+            </>
+          ) : isCompact ? (
+            <>
+              {/* Compact: price row on top (icon left, price right) */}
+              {(price || hasIcon) && (
+                <div class="pricing_card_price_row">
+                  {hasIcon && (
+                    <div class="pricing_card_icon">
+                      <slot name="icon" />
+                    </div>
+                  )}
+                  {price && (
+                    <span class="pricing_card_price_compact">
+                      {priceLabel && <>{priceLabel} </>}
+                      {price}
+                      {priceSuffix}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Compact: name below price */}
+              <Heading tag="h3" variant="h5" marginBottom={0} maxWidth="100%">
+                {name}
+              </Heading>
+
+              {description && (
+                <Text variant="small" muted={descriptionMuted} marginBottom={0}>
+                  {description}
+                </Text>
+              )}
+            </>
+          ) : (
+            <>
+              <Heading tag="h3" variant="h6" marginBottom={0} maxWidth="100%">
+                {name}
+              </Heading>
+
+              {/* Default: price row */}
+              <div
+                class:list={[
+                  "pricing_card_price_row",
+                  priceLabel && "has-label",
+                ]}
+              >
+                {priceLabel && (
+                  <span class="pricing_card_price_label">{priceLabel}</span>
+                )}
+                <Heading
+                  tag="p"
+                  variant="h2"
+                  marginBottom={0}
+                  maxWidth="100%"
+                  class="pricing_card_price"
+                >
+                  {price}
+                  {priceSuffix && (
+                    <span class="pricing_card_price_suffix">{priceSuffix}</span>
+                  )}
+                </Heading>
+              </div>
+
+              {description && (
+                <Text variant="small" muted={descriptionMuted} marginBottom={0}>
+                  {description}
+                </Text>
+              )}
+            </>
+          )
+        }
+      </div>
+
+      {/* Feature items (PricingItem components) */}
+      {
+        (hasItems || itemsLabel) && (
+          <div class="pricing_card_items_wrap">
+            {itemsLabel && <p class="pricing_card_items_label">{itemsLabel}</p>}
+            {hasItems && (
+              <div class="pricing_card_items">
+                <slot />
+              </div>
+            )}
+          </div>
+        )
+      }
+
+      {/* CTA Button */}
+      {
+        href && (
+          <div class="pricing_card_cta u-button-wrapper">
+            <Button
+              href={href}
+              variant={buttonVariant}
+              ariaLabel={buttonLabel}
+              fullWidth
+              supportText={buttonSupportText}
+            >
+              {buttonText}
+            </Button>
+          </div>
+        )
+      }
+
+      {/* Footer */}
+      {
+        hasFooter && (
+          <div class="pricing_card_footer">
+            <slot name="footer" />
+          </div>
+        )
+      }
+    </ContentWrapper>
+  </div>
+</div>

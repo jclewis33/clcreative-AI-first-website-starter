@@ -1,0 +1,454 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/ui/Section.astro";
+import Layout from "../components/ui/Layout.astro";
+import Col from "../components/ui/Col.astro";
+import ContentWrapper from "../components/ui/ContentWrapper.astro";
+import Grid from "../components/ui/Grid.astro";
+import Heading from "../components/ui/Heading.astro";
+import Text from "../components/ui/Text.astro";
+import Button from "../components/ui/Button.astro";
+import Visual from "../components/ui/Visual.astro";
+
+// Section Components
+import HowItWorks from "../components/sections/HowItWorks.astro";
+import CTASection from "../components/sections/CTASection.astro";
+import FAQ from "../components/sections/FAQ.astro";
+import PricingCard from "../components/ui/PricingCard.astro";
+import { howWeWorkFaqs } from "../data/faqs";
+import TestimonialShowcase from "../components/sections/TestimonialShowcase.astro";
+
+// Icons
+import IcpIcon from "../components/icons/icpIcon.astro";
+import MessagingIcon from "../components/icons/messagingIcon.astro";
+import DeploymentMapIcon from "../components/icons/deploymentMapIcon.astro";
+
+// Images
+import heroImg from "../assets/how-we-work/how-we-work-hero.webp";
+import midPageImg from "../assets/how-we-work/how-we-work-mid-page.webp";
+import notIncludedImg from "../assets/how-we-work/how-we-work-not-included.webp";
+import ctaImg from "../assets/how-we-work/how-we-work-cta.webp";
+
+// Styles
+import "../styles/pages/how-we-work.css";
+---
+
+<BaseLayout
+  title="How We Work | CL Creative"
+  description="A complete marketing foundation — strategy, messaging, website, content, and tools — not just a website."
+  theme="light"
+>
+  <!-- Hero Section -->
+  <Section>
+    <Layout
+      data-fade-list
+      data-prevent-flicker="true"
+      variant="columns"
+      verticalAlign="center"
+    >
+      <Col slot="col1">
+        <Heading variant="eyebrow">How We Fix Your Website & Marketing</Heading>
+        <Heading tag="h1" variant="h2"
+          >Everything You Need to Market Your Business</Heading
+        >
+        <Text variant="large"
+          >Website, strategy, messaging, content, and the tools connected
+          together, so your business grows on purpose, not by accident.</Text
+        >
+        <Text
+          >When we launch your website, you don't just have a website — you have
+          a complete system for attracting the right customers and turning them
+          into booked calls.</Text
+        >
+        <Text>Here's how it works, what you get, and what it costs.</Text>
+        <div class="u-button-wrapper">
+          <Button href="/book-a-call" ariaLabel="Book a strategy call"
+            >Book a Strategy Call</Button
+          >
+          <Button
+            variant="text"
+            href="#investment"
+            ariaLabel="Jump to investment section"
+          >
+            Jump to Investment
+            <svg
+              slot="icon"
+              aria-hidden="true"
+              viewBox="0 0 10 10"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <line x1="0" y1="5" x2="8" y2="5"></line>
+              <polyline points="5,2 8,5 5,8"></polyline>
+            </svg>
+          </Button>
+        </div>
+      </Col>
+      <div slot="col2" class="how-we-work_hero_visual_wrap">
+        <div class="how-we-work_hero_accent"></div>
+        <Visual
+          transparent
+          src={heroImg}
+          alt="How we work — strategy, design, development and launch"
+          ratio="270/187"
+          radius="none"
+        />
+      </div>
+    </Layout>
+  </Section>
+
+  <!-- Strategy First — M2M-style section with icons -->
+  <Section paddingTop="none" theme="brand" class="how-we-work_m2m_section">
+    <div class="how-we-work_m2m_watermark" aria-hidden="true">M2M</div>
+    <ContentWrapper class="how-we-work_m2m_content">
+      <Heading data-fade-in variant="eyebrow" maxWidth="30ch"
+        >Strategy First, Always</Heading
+      >
+      <Heading data-split-text tag="h2" variant="h2" maxWidth="28ch">
+        Most websites fail because the message is wrong, not the design
+      </Heading>
+      <Text data-fade-in maxWidth="60ch">
+        That's why every project starts with the Market-to-Message Framework — a
+        structured process for figuring out who you're actually talking to, what
+        to say to them, and where to say it.
+      </Text>
+      <Text data-fade-in maxWidth="60ch">
+        The result is messaging that works on your homepage, your sales calls,
+        your ads, your emails, and every other surface where your business shows
+        up.
+      </Text>
+      <Text data-fade-in maxWidth="60ch">
+        Same five messaging soundbites, everywhere. That's how customers start
+        to remember what you do.
+      </Text>
+    </ContentWrapper>
+    <Grid
+      data-fade-list
+      largeColumns={3}
+      mediumColumns={1}
+      smallColumns={1}
+      rowGap={0}
+      class="how-we-work_m2m_grid"
+    >
+      <div class="how-we-work_m2m_card">
+        <div class="how-we-work_m2m_card_icon"><IcpIcon /></div>
+        <Heading tag="h3" variant="h4" marginBottom={0}
+          >Ideal Customer Profile</Heading
+        >
+        <Text marginBottom={0}>
+          A named, specific persona — not "small business owners," but the
+          actual person you're selling to, in their own words. Every design and
+          copy decision flows from this.
+        </Text>
+      </div>
+      <div class="how-we-work_m2m_card">
+        <div class="how-we-work_m2m_card_icon"><MessagingIcon /></div>
+        <Heading tag="h3" variant="h4" marginBottom={0}
+          >Messaging Soundbites</Heading
+        >
+        <Text marginBottom={0}>
+          Five short, repeatable lines that cover the problem, the empathy, the
+          answer, the change, and the end result. Used everywhere your customer
+          hears you.
+        </Text>
+      </div>
+      <div class="how-we-work_m2m_card">
+        <div class="how-we-work_m2m_card_icon"><DeploymentMapIcon /></div>
+        <Heading tag="h3" variant="h4" marginBottom={0}>Deployment Map</Heading>
+        <Text marginBottom={0}>
+          The exact placement of every soundbite across every surface in your
+          business. Homepage hero, sales call open, email subject lines,
+          LinkedIn bio, ad headlines. Nothing left to guess.
+        </Text>
+      </div>
+    </Grid>
+  </Section>
+
+  <!-- Mid-page visual break -->
+  <Section padding="small">
+    <Visual
+      src={midPageImg}
+      alt="A strategy conversation around a conference table"
+      ratio="1280/686"
+    />
+  </Section>
+
+  <!-- What You Get — single-column list of deliverable groups -->
+  <Section theme="dark">
+    <ContentWrapper align="center">
+      <Heading data-fade-in variant="eyebrow">What You Get</Heading>
+      <Heading data-split-text tag="h2" variant="h2">
+        Everything You Need to Grow on Purpose
+      </Heading>
+      <Text data-fade-up align="center" maxWidth="48rem">
+        A typical engagement includes everything below — grouped into four parts
+        of the foundation. This is a complete system where strategy informs the
+        website, the website hosts the content, the content captures the leads,
+        and analytics tells you what's working.
+      </Text>
+    </ContentWrapper>
+
+    <div class="how-we-work_get_list">
+      <div class="how-we-work_get_row">
+        <div data-fade-in class="how-we-work_get_item">
+          <p class="how-we-work_get_number">01</p>
+          <div class="how-we-work_get_item_content">
+            <Heading tag="h3" variant="h4" marginBottom={0}
+              >Strategy &amp; Messaging</Heading
+            >
+            <Text weight="bold" marginBottom={0}
+              >The foundation everything else is built on.</Text
+            >
+            <ul class="how-we-work_check_list">
+              <li>Ideal Customer Profile Discovery</li>
+              <li>Five messaging soundbites you'll use everywhere</li>
+              <li>One Controlling Idea that ties it all together</li>
+              <li>A repeatable line that closes the sale at every CTA</li>
+              <li>A memorable tagline customers repeat to their friends</li>
+              <li>Your 150-word business story</li>
+              <li>Deployment map (where each piece goes)</li>
+              <li>Measurement Plan</li>
+            </ul>
+          </div>
+        </div>
+        <div data-fade-in class="how-we-work_get_item">
+          <p class="how-we-work_get_number">02</p>
+          <div class="how-we-work_get_item_content">
+            <Heading tag="h3" variant="h4" marginBottom={0}>Website</Heading>
+            <Text weight="bold" marginBottom={0}
+              >A custom site built around the strategy — not a template.</Text
+            >
+            <ul class="how-we-work_check_list">
+              <li>Custom Webflow design and development</li>
+              <li>SEO foundation (technical + on-page)</li>
+              <li>Schema and AIO foundation for AI search visibility</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="how-we-work_get_row">
+        <div data-fade-in class="how-we-work_get_item">
+          <p class="how-we-work_get_number">03</p>
+          <div class="how-we-work_get_item_content">
+            <Heading tag="h3" variant="h4" marginBottom={0}
+              >Content &amp; Lead Generation</Heading
+            >
+            <Text weight="bold" marginBottom={0}
+              >The tools to start filling the pipeline from day one.</Text
+            >
+            <ul class="how-we-work_check_list">
+              <li>Starter blog content</li>
+              <li>Newsletter setup and template</li>
+              <li>Booking system setup (Calendly + Zoom or iCal)</li>
+              <li>Lead magnet to start capturing subscribers</li>
+            </ul>
+          </div>
+        </div>
+        <div data-fade-in class="how-we-work_get_item">
+          <p class="how-we-work_get_number">04</p>
+          <div class="how-we-work_get_item_content">
+            <Heading tag="h3" variant="h4" marginBottom={0}
+              >Measurement &amp; Support</Heading
+            >
+            <Text weight="bold" marginBottom={0}
+              >Everything you need to keep growing after launch.</Text
+            >
+            <ul class="how-we-work_check_list">
+              <li>GA4 + Microsoft Clarity analytics with reporting template</li>
+              <li>Measurement plan to track ICP-fit over time</li>
+              <li>Team training and documentation</li>
+              <li>30 days of post-launch support</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- Mid-page quote -->
+  <Section padding="small">
+    <ContentWrapper align="center">
+      <Heading data-split-text tag="h2" variant="h1" maxWidth="22ch">
+        Get the message right, and everything else gets easier.
+      </Heading>
+    </ContentWrapper>
+  </Section>
+
+  <!-- How It Works -->
+  <HowItWorks />
+
+  <!-- Investment -->
+  <Section id="investment" theme="brand">
+    <ContentWrapper align="center">
+      <Heading data-fade-in maxWidth="none" variant="eyebrow"
+        >Your Investment Pays for Itself</Heading
+      >
+      <Heading data-split-text tag="h2" variant="h2" maxWidth="22ch">
+        Grow Your Business on Purpose, Not by Accident
+      </Heading>
+      <Text data-fade-up align="center" maxWidth="48rem">
+        Start with a M2M Messaging Sprint to lock in your messaging, or build
+        the Full Marketing Foundation.
+      </Text>
+    </ContentWrapper>
+
+    <Grid largeColumns={2} mediumColumns={1} smallColumns={1} rowGap={6}>
+      <PricingCard
+        data-fade-up
+        theme="light"
+        variant="general"
+        priceLabel="M2M Messaging Sprint"
+        price="$2,500"
+        href="/book-a-call"
+        buttonText="Start Your Sprint"
+        ariaLabel="Start your M2M Messaging Sprint"
+        class="how-we-work_investment_card u-box-shadow-medium"
+      >
+        <Text marginBottom={0}>
+          A standalone engagement for businesses that need to lock in who
+          they're talking to and what to say.
+        </Text>
+        <Text marginBottom={0}>
+          You walk away with a complete messaging system that becomes the
+          foundation for all your marketing assets - website, lead magnets,
+          newsletter, social posts, ads.
+        </Text>
+      </PricingCard>
+
+      <PricingCard
+        data-fade-up
+        theme="light"
+        variant="general"
+        priceLabel="Marketing Foundation"
+        price="starting at $7,500"
+        href="/book-a-call"
+        buttonText="Build Your Marketing Foundation"
+        ariaLabel="Start your full marketing foundation"
+        class="how-we-work_investment_card u-box-shadow-medium"
+      >
+        <Text marginBottom={0}>The complete engagement described above.</Text>
+        <Text marginBottom={0}>
+          Includes the M2M Sprint plus a custom Webflow build, content, lead
+          capture, measurement, and 30 days of post-launch support.
+        </Text>
+        <Text marginBottom={0}>
+          Best fit for growth-stage businesses ready to invest in a marketing
+          foundation and website that brings in the right customers.
+        </Text>
+      </PricingCard>
+    </Grid>
+
+    <ContentWrapper align="center">
+      <Text variant="h5">Already have a site?</Text>
+    </ContentWrapper>
+
+    <Grid largeColumns={3} mediumColumns={1} smallColumns={1} rowGap={3}>
+      <PricingCard
+        variant="compact"
+        name="SEO & AEO"
+        description="Get found by the right buyers in search and AI tools."
+        href="/services/seo"
+        buttonText="Explore SEO"
+        buttonVariant="text"
+        class="u-box-shadow-medium"
+      />
+      <PricingCard
+        variant="compact"
+        name="Website Support"
+        description="Ongoing updates, optimization, and improvements."
+        href="/services/webflow-website-support"
+        buttonText="Explore Support"
+        buttonVariant="text"
+        class="u-box-shadow-medium"
+      />
+      <PricingCard
+        variant="compact"
+        name="Marketing Partner"
+        description="Marketing run for you giving you the freedom to live your life and focus on your business."
+        href="/services/marketing-partner"
+        buttonText="Explore Marketing Partner"
+        buttonVariant="text"
+        class="u-box-shadow-medium"
+      />
+    </Grid>
+  </Section>
+
+  <!-- CTA -->
+  <CTASection
+    padding="small"
+    heading="Tired of a website that doesn't bring in customers, building a strategy-first website is the right next step."
+    text="We'll dig into what's working, what's not, and what it's costing you — whether you hire us or not."
+    buttonText="Book a Strategy Call"
+    buttonHref="/book-a-call"
+    secondaryButtonText=""
+  />
+
+  <!-- What's Not Included -->
+  <Section paddingTop="none" paddingBottom="small">
+    <Layout variant="columns" verticalAlign="center">
+      <Visual
+        slot="col1"
+        src={notIncludedImg}
+        alt="Strategy planning at a wall of project artifacts"
+        ratio="3/2"
+      />
+      <Col slot="col2">
+        <Heading data-split-text variant="h3">What's Not Included</Heading>
+        <Text data-fade-in variant="large">
+          To make sure we're a fit, here's what isn't part of a typical
+          engagement. If you need any of these, I can usually point you to
+          someone I trust.
+        </Text>
+        <ul class="u-list" data-fade-in>
+          <li>Hosting (Webflow handles this)</li>
+          <li>Domain registration</li>
+          <li>
+            Ongoing maintenance after the 30-day support window (available as a
+            separate retainer)
+          </li>
+          <li>
+            Paid ad management (we have a partner we work with if you want to
+            run ads)
+          </li>
+          <li>
+            Logo or brand identity design (quoted as a separate engagement)
+          </li>
+        </ul>
+      </Col>
+    </Layout>
+  </Section>
+
+  <!-- FAQ -->
+  <FAQ padding="small" items={howWeWorkFaqs} />
+
+  <!-- Testimonials Section -->
+  <TestimonialShowcase paddingTop="none" paddingBottom="none" />
+
+  <!-- Ready to Start — final CTA card -->
+  <Section padding="small">
+    <Layout variant="contain" verticalAlign="center">
+      <Col slot="col1">
+        <Heading data-fade-in variant="eyebrow">Ready to Start?</Heading>
+        <Heading data-split-text tag="h2" variant="h2" maxWidth="20ch">
+          Book a FREE Strategy Call to Get Started
+        </Heading>
+        <Text data-fade-in maxWidth="48ch">
+          Get help with your marketing and website. We'll talk through what's
+          working, what's not, and what to focus on next to improve your website
+          and marketing.
+        </Text>
+        <div data-fade-in class="u-button-wrapper">
+          <Button href="/book-a-call" ariaLabel="Book a Free Strategy Call"
+            >Book a Strategy Call</Button
+          >
+        </div>
+      </Col>
+      <Visual
+        slot="col2"
+        src={ctaImg}
+        alt="A modern office where strategy and design come together"
+      />
+    </Layout>
+  </Section>
+</BaseLayout>

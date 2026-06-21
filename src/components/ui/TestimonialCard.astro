@@ -1,0 +1,136 @@
+---
+/**
+ * TestimonialCard — a single testimonial "card" (stars, quote, author).
+ *
+ * The shared, single-source card rendered by both `<TestimonialsSlider>` and
+ * `<TestimonialsGrid>`. Keeping the markup here (instead of duplicating it in
+ * each section) means the card design only ever has to change in one place.
+ *
+ * **Theme-aware readability.** `.testimonial_card` (in
+ * `src/styles/components/testimonials.css`) applies the surface treatment
+ * itself — it remaps the semantic vars to the `--surface-*` tier and sets its
+ * own `color`, so it renders as the correct contrasting surface for whatever
+ * section `data-theme` it inherits (light/dark → light "paper" + dark text;
+ * brand → tonal orange card). No `theme` prop needed — the card reacts
+ * automatically. To change how cards look per theme, edit the `--surface-*`
+ * values in `src/styles/variables/themes.css`.
+ *
+ * Usage:
+ * ```astro
+ * <TestimonialCard
+ *   quote="Amazing product!"
+ *   name="Jane Doe"
+ *   role="CEO"
+ *   company="Acme"
+ *   stars={5}
+ * />
+ * ```
+ */
+
+import Text from "./Text.astro";
+import { urlFor } from "../../sanity/lib/image";
+
+/** Shape of a single testimonial */
+export interface Testimonial {
+  /** The quote / testimonial text */
+  quote: string;
+  /** Author name */
+  name: string;
+  /** Author role / title (optional) */
+  role?: string;
+  /** Company or organization (optional — appended to role) */
+  company?: string;
+  /** Author avatar — URL string or Sanity image object (optional) */
+  avatar?: any;
+  /** Number of stars to display — 0–5 (optional, omit to hide stars) */
+  stars?: number;
+}
+
+interface Props extends Testimonial {
+  /** Optional extra class(es) on the card root (escape hatch). */
+  class?: string;
+  /**
+   * Width/height attributes on the avatar `<img>` (CSS controls the rendered
+   * size; this is just the intrinsic hint).
+   * @default 48
+   */
+  avatarSize?: number;
+  /** JSDoc holder — destructured but unused (keeps it out of `...rest`). */
+  docs?: string;
+  /** Any other HTML attribute — spread onto the card root. */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  quote,
+  name,
+  role,
+  company,
+  avatar,
+  stars,
+  class: className,
+  avatarSize = 48,
+  ...rest
+} = Astro.props;
+
+const avatarUrl = avatar
+  ? typeof avatar === "string"
+    ? avatar
+    : urlFor(avatar).width(80).height(80).url()
+  : undefined;
+const subtitle = [role, company].filter(Boolean).join(", ");
+---
+
+<div class:list={["testimonial_card", className]} {...rest}>
+  {/* Stars */}
+  {
+    stars != null && stars > 0 && (
+      <div class="testimonial_stars" aria-label={`${stars} out of 5 stars`}>
+        {Array.from({ length: stars }).map(() => (
+          <svg
+            class="testimonial_star"
+            viewBox="0 0 20 19"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M10 0l2.35 7.24H20l-6.18 4.49 2.36 7.24L10 14.49l-6.18 4.48 2.36-7.24L0 7.24h7.64L10 0z" />
+          </svg>
+        ))}
+      </div>
+    )
+  }
+
+  {/* Quote */}
+  <Text class="testimonial_quote" size="regular">
+    {quote}
+  </Text>
+
+  {/* Author */}
+  <div class="testimonial_author">
+    {
+      avatarUrl && (
+        <img
+          class="testimonial_author_avatar"
+          src={avatarUrl}
+          alt={name}
+          loading="lazy"
+          width={avatarSize}
+          height={avatarSize}
+        />
+      )
+    }
+    <div class="testimonial_author_info">
+      <Text tag="span" weight="bold" size="small" marginBottom={0}>
+        {name}
+      </Text>
+      {
+        subtitle && (
+          <Text tag="span" size="small" muted marginBottom={0}>
+            {subtitle}
+          </Text>
+        )
+      }
+    </div>
+  </div>
+</div>

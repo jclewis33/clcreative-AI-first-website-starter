@@ -1,0 +1,111 @@
+/* ==========================================================================
+   CASE STUDY DETAIL PAGE STYLES
+   ==========================================================================
+   Custom classes for individual case study pages:
+     - Hero section (case-study_detail_*)
+     - Category tags
+     - Meta row (client, timeline)
+     - Slider aspect ratio override
+     - Up Next section
+   ========================================================================== */
+
+/* ---- Back Link ---- */
+
+.case-study_detail_back_link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-small-size);
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  opacity: 0.6;
+  margin-bottom: var(--space-6);
+  transition: opacity 0.2s ease;
+  width: fit-content;
+}
+
+.case-study_detail_back_link:hover {
+  opacity: 1;
+}
+
+.case-study_detail_back_link svg {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
+
+/* ---- Hero ---- */
+
+/*.case-study_detail_hero_wrap {
+   Section wrapper — additional styling handled by Section component 
+}*/
+
+/* Category tags row */
+.case-study_detail_categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.case-study_detail_category_tag {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: var(--text-tiny-size);
+  font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+/* Client + timeline + visit website meta row */
+.case-study_detail_meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.case-study_detail_meta_item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Remove .u-text wrapper width so label + value sit inline */
+.case-study_detail_meta_item > .u-text {
+  min-width: 0;
+}
+
+/* Button inside meta row — remove wrapper spacing so it aligns with text items */
+.case-study_detail_meta_item > .button_main_wrap {
+  margin: 0;
+}
+
+/* ---- Slider override ---- */
+
+/* Custom aspect ratio for case study gallery slides */
+.case-study_detail_slider .swiper-slide .u-image-wrapper {
+  aspect-ratio: 8.4 / 6.3;
+}
+
+/* ---- Rich text blocks ---- */
+
+/* Centered rich text — max-width set via inline style, centered with auto margins */
+.case-study_detail_rich_text_wrap {
+  margin-inline: auto;
+}
+
+/* Left-aligned rich text — max-width set via inline style, no centering */
+/*.case-study_detail_rich_text_left_wrap {
+   No margin-inline: auto — stays left-aligned 
+}*/
+
+/* ---- Up Next ---- */
+
+/*.case-study_detail_up_next_wrap {
+   Section wrapper — styling handled by Section component 
+}*/

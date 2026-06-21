@@ -1,0 +1,513 @@
+---
+/**
+ * Slider component — a touch/swipe carousel powered by Swiper v12.
+ *
+ * Swiper is npm-bundled via src/scripts/swiper-init.js (imported in
+ * BaseLayout.astro), which exposes `window.Swiper` and pulls in the CSS.
+ *
+ * Slides are placed in the default slot. Each child is automatically
+ * wrapped in a `.swiper-slide` div — no manual wrapping needed:
+ *
+ * ```astro
+ * <Slider slidesLg={3} slidesSm={1.2}>
+ *   <Card …/>
+ *   <Card …/>
+ *   <Card …/>
+ * </Slider>
+ * ```
+ *
+ * Slots:
+ *   default    — slide content (each child becomes a slide)
+ *   controls   — override the default bullet + arrow controls
+ */
+
+type SliderVariant =
+  /** Left edge is clipped to the container — slides peek in from the right */
+  | "crop-left"
+  /** Right edge is clipped to the container — slides peek in from the left */
+  | "crop-right"
+  /** Both sides are clipped — no slides visible outside the container */
+  | "crop-both"
+  /** All overflow is visible — use when the slider is inside a clipped parent */
+  | "overflow-visible";
+
+/**
+ * Slider — touch/swipe carousel powered by Swiper v12.
+ *
+ * Each slide must be wrapped in a `.swiper-slide` div.
+ *
+ * **Props:**
+ * - `variant` — overflow clipping: crop-left, crop-right, crop-both, overflow-visible (default: `'crop-left'`)
+ * - `slidesLg` — slides visible at desktop (default: `3`)
+ * - `slidesMd` — slides visible at tablet (default: `2`)
+ * - `slidesSm` — slides visible at mobile; fractional = peek effect (default: `1.2`)
+ * - `slidesXs` — slides visible at xsmall (default: `1.1`)
+ * - `speed` — transition speed in ms (default: `600`)
+ * - `freeMode` — free drag, no snap (default: `false`)
+ * - `autoplay` — auto-advance slides, pauses on hover/touch (default: `false`)
+ * - `autoplayDelay` — ms between slides when autoplay is on (default: `6000`)
+ * - `loop` — infinitely loop slides (default: `false`)
+ * - `mousewheel` — horizontal mouse-wheel scrolls slider (default: `true`)
+ * - `slideToClicked` — click a slide to navigate to it (default: `false`)
+ * - `showBullets` — bullet pagination (default: `true`)
+ * - `showArrows` — prev/next arrow buttons (default: `true`)
+ * - `showControls` — show controls row (default: `true`)
+ * - `class` — extra classes on the wrapper
+ *
+ * **Slots:** default (`.swiper-slide` divs), `controls` (override controls row).
+ */
+interface Props {
+  /**
+   * **Slider props:**
+   * - `variant` — crop-left, crop-right, crop-both, overflow-visible (default 'crop-left')
+   * - `slidesLg` — slides at desktop (default 3)
+   * - `slidesMd` — slides at tablet (default 2)
+   * - `slidesSm` — slides at mobile, fractional = peek (default 1.2)
+   * - `slidesXs` — slides at xsmall (default 1.1)
+   * - `speed` — transition ms (default 600)
+   * - `freeMode` — free drag, no snap (default false)
+   * - `autoplay` — auto-advance slides, pauses on hover/touch (default false)
+   * - `autoplayDelay` — ms between slides when autoplay on (default 6000)
+   * - `loop` — infinitely loop slides (default false)
+   * - `mousewheel` — horizontal scroll (default true)
+   * - `slideToClicked` — click to navigate (default false)
+   * - `showBullets` — pagination dots (default true)
+   * - `showArrows` — prev/next arrows (default true)
+   * - `showControls` — show controls row (default true)
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
+   *
+   * **Slots:** default (`.swiper-slide` divs), `controls` (override controls row)
+   */
+  docs?: string;
+
+  /**
+   * Overflow / crop variant.
+   * - `crop-left`        → clips left overflow, slides peek in from the right
+   * - `crop-right`       → clips right overflow, slides peek in from the left
+   * - `crop-both`        → clips both sides, no slides visible outside container
+   * - `overflow-visible` → all overflow visible (use inside a clipped parent)
+   * @default 'crop-left'
+   * @example variant="overflow-visible"
+   */
+  variant?: SliderVariant;
+
+  /**
+   * Number of slides visible at the large breakpoint (desktop).
+   * Fractional values (e.g. `2.2`) create a "peek" effect.
+   * @default 3
+   * @example slidesLg={4}
+   */
+  slidesLg?: number;
+
+  /**
+   * Number of slides visible at the medium breakpoint (~tablet).
+   * @default 2
+   */
+  slidesMd?: number;
+
+  /**
+   * Number of slides visible at the small breakpoint (mobile).
+   * Fractional values create a "peek" effect showing the next slide edge.
+   * @default 1.2
+   * @example slidesSm={1}
+   */
+  slidesSm?: number;
+
+  /**
+   * Number of slides visible at the xsmall breakpoint (very small mobile).
+   * @default 1.1
+   */
+  slidesXs?: number;
+
+  /**
+   * Transition speed in milliseconds.
+   * @default 600
+   */
+  speed?: number;
+
+  /**
+   * Enable free-drag mode — slides don't snap to fixed positions.
+   * @default false
+   */
+  freeMode?: boolean;
+
+  /**
+   * Allow horizontal mouse-wheel to scroll the slider.
+   * @default true
+   */
+  mousewheel?: boolean;
+
+  /**
+   * Slide to a clicked slide.
+   * @default false
+   */
+  slideToClicked?: boolean;
+
+  /**
+   * Automatically advance slides on a timer. Pauses on hover/touch.
+   * @default false
+   */
+  autoplay?: boolean;
+
+  /**
+   * Delay between slides in milliseconds when `autoplay` is enabled.
+   * @default 6000
+   */
+  autoplayDelay?: number;
+
+  /**
+   * Infinitely loop slides. When there are too few slides for a seamless
+   * loop (Swiper 9+ rearranges instead of cloning), the component duplicates
+   * the slide set at init so both edges stay filled, and renders one bullet
+   * per original slide.
+   * @default false
+   */
+  loop?: boolean;
+
+  /**
+   * Show bullet pagination below the slider.
+   * @default true
+   */
+  showBullets?: boolean;
+
+  /**
+   * Show prev/next arrow buttons below the slider.
+   * @default true
+   * @example showArrows
+   */
+  showArrows?: boolean;
+
+  /**
+   * Show the controls row (bullets and/or arrows).
+   * Set to `false` to hide all controls.
+   * @default true
+   */
+  showControls?: boolean;
+
+  /** Extra utility classes to add to the `.slider_wrap` element. */
+  class?: string;
+
+  /**
+   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
+   * are forwarded to the root `.slider_wrap` element.
+   * @example style="--custom: value" data-animate="fade"
+   */
+  [key: string]: any;
+}
+
+const {
+  docs,
+  variant = "crop-left",
+  slidesLg = 3,
+  slidesMd = 2,
+  slidesSm = 1.2,
+  slidesXs = 1.1,
+  speed = 600,
+  freeMode = false,
+  autoplay = false,
+  autoplayDelay = 6000,
+  loop = false,
+  mousewheel = true,
+  slideToClicked = false,
+  showBullets = true,
+  showArrows = true,
+  showControls = true,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const hasControls = Astro.slots.has("controls");
+const showControlsRow =
+  showControls && (showBullets || showArrows || hasControls);
+
+// Variant CSS modifier on the slider element
+const variantClassMap: Record<SliderVariant, string> = {
+  "crop-left": "slider_element--clip-right",
+  "crop-right": "slider_element--clip-left",
+  "crop-both": "slider_element--crop-both",
+  "overflow-visible": "",
+};
+const sliderModifier = variantClassMap[variant];
+
+// Unique ID for this slider instance
+const sliderId = `slider-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<div
+  class:list={["slider_wrap", className]}
+  data-slider="component"
+  data-slider-variant={variant}
+  id={sliderId}
+  {...rest}
+>
+  <!-- Offset container — applies per-breakpoint peek margin -->
+  <div
+    class="slider_offset"
+    style={`--lg: ${slidesLg}; --md: ${slidesMd}; --sm: ${slidesSm}; --xs: ${slidesXs};`}
+  >
+    <div
+      class:list={["slider_element swiper", sliderModifier]}
+      data-speed={String(speed)}
+      data-free-mode={String(freeMode)}
+      data-autoplay={String(autoplay)}
+      data-autoplay-delay={String(autoplayDelay)}
+      data-loop={String(loop)}
+      data-mousewheel={String(mousewheel)}
+      data-slide-to-clicked={String(slideToClicked)}
+    >
+      <!-- Swiper slide wrapper — each direct child is auto-wrapped in .swiper-slide -->
+      <div class="slider_list swiper-wrapper">
+        <slot />
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls: bullets + arrows -->
+  {
+    showControlsRow && (
+      <div class="slider_controls">
+        {hasControls ? (
+          <slot name="controls" />
+        ) : (
+          <>
+            {showBullets && <div class="slider_bullet_list" />}
+            {showArrows && (
+              <div class="slider_button_layout">
+                <button
+                  class="slider_button_prev u-button-reset"
+                  aria-label="Previous slide"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+                <button
+                  class="slider_button_next u-button-reset"
+                  aria-label="Next slide"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    )
+  }
+</div>
+
+<!-- Synchronous auto-wrap: runs before first paint so slides have correct
+     dimensions immediately — prevents CLS (Cumulative Layout Shift). -->
+<script is:inline define:vars={{ sliderId }}>
+  (function() {
+    var wrap = document.getElementById(sliderId);
+    if (!wrap) return;
+    var wrapper = wrap.querySelector('.swiper-wrapper');
+    if (!wrapper) return;
+    Array.from(wrapper.children).forEach(function(child) {
+      if (!child.classList.contains('swiper-slide')) {
+        var slide = document.createElement('div');
+        slide.className = 'swiper-slide';
+        wrapper.insertBefore(slide, child);
+        slide.appendChild(child);
+      }
+    });
+  })();
+</script>
+
+<script>
+  /**
+   * Slider JavaScript — initializes Swiper v12 for each .slider_wrap
+   *
+   * Swiper is npm-bundled via src/scripts/swiper-init.js (imported in
+   * BaseLayout.astro), which exposes window.Swiper.
+   *
+   * Slide widths and gap are handled entirely by CSS:
+   *   - Each slide width: calc(100% / var(--slide-count))
+   *   - Gap: padding-inline: calc(var(--_gap---size) / 2) on each slide
+   *   - --slide-count is mapped from --lg/--md/--sm/--xs at each breakpoint in slider.css
+   *
+   * Using slidesPerView: 'auto' lets Swiper respect the CSS-driven widths.
+   *
+   * Data attributes on .slider_element:
+   *   data-speed           — transition speed (ms)
+   *   data-free-mode       — "true" | "false"
+   *   data-mousewheel      — "true" | "false"
+   *   data-slide-to-clicked — "true" | "false"
+   */
+
+  function initSliders() {
+    const Swiper = (window as any).Swiper;
+    if (!Swiper) {
+      console.warn(
+        "Slider: Swiper not found. Make sure src/scripts/swiper-init.js is imported in BaseLayout.",
+      );
+      return;
+    }
+
+    document
+      .querySelectorAll<HTMLElement>('.slider_wrap[data-slider="component"]')
+      .forEach((wrap) => {
+        const offset = wrap.querySelector<HTMLElement>(".slider_offset");
+        const element = wrap.querySelector<HTMLElement>(".slider_element");
+        const bullets = wrap.querySelector<HTMLElement>(".slider_bullet_list");
+        const prevBtn = wrap.querySelector<HTMLElement>(".slider_button_prev");
+        const nextBtn = wrap.querySelector<HTMLElement>(".slider_button_next");
+
+        if (!element || !offset) return;
+
+        // Read data attributes from .slider_element
+        const speed = parseInt(element.dataset.speed ?? "600", 10);
+        const freeMode = element.dataset.freeMode === "true";
+        const useAutoplay = element.dataset.autoplay === "true";
+        const autoplayDelay = parseInt(
+          element.dataset.autoplayDelay ?? "6000",
+          10,
+        );
+        const useLoop = element.dataset.loop === "true";
+        const useMousewheel = element.dataset.mousewheel === "true";
+        const slideToClicked = element.dataset.slideToClicked === "true";
+
+        // Swiper 9+ rearranges real slides instead of cloning them (the v8
+        // behavior), so a loop with few slides leaves an empty edge until the
+        // next advance. Restore the seamless look by duplicating the slide
+        // set until both edges can stay buffered. Bullets are hand-rolled
+        // below so the dot count stays at the original slide count.
+        let originalCount = 0;
+        let duplicated = false;
+        const maxVisible = Math.ceil(
+          parseFloat(getComputedStyle(offset).getPropertyValue("--lg")) || 3,
+        );
+        if (useLoop) {
+          const wrapper = element.querySelector<HTMLElement>(".swiper-wrapper");
+          const slides = wrapper ? Array.from(wrapper.children) : [];
+          originalCount = slides.length;
+          const minForSeamless = maxVisible * 2 + 2;
+          if (wrapper && originalCount > 1 && originalCount < minForSeamless) {
+            const copies = Math.ceil(minForSeamless / originalCount) - 1;
+            for (let c = 0; c < copies; c++) {
+              slides.forEach((s) => {
+                const dup = s.cloneNode(true) as HTMLElement;
+                dup.setAttribute("data-duplicate", "true");
+                dup.setAttribute("aria-hidden", "true");
+                wrapper.appendChild(dup);
+              });
+            }
+            duplicated = true;
+          }
+        }
+
+        // Build bullet pagination elements if the container exists. When
+        // slides were duplicated, skip Swiper's pagination (it would render
+        // one bullet per DOM slide, duplicates included) — bullets are
+        // hand-rolled after init instead.
+        let paginationConfig: object | false = false;
+        if (bullets && !duplicated) {
+          paginationConfig = {
+            el: bullets,
+            clickable: true,
+            bulletClass: "slider_bullet_item",
+            bulletActiveClass: "is-active",
+            renderBullet: (index: number, className: string) => {
+              return `<button class="${className}" aria-label="Go to slide ${index + 1}"></button>`;
+            },
+          };
+        }
+
+        // Navigation arrows
+        let navigationConfig: object | false = false;
+        if (prevBtn && nextBtn) {
+          navigationConfig = { prevEl: prevBtn, nextEl: nextBtn };
+        }
+
+        // slidesPerView: 'auto' — Swiper respects the CSS-driven slide widths.
+        // Gap and slide count are handled entirely by slider.css via --_gap---size
+        // and --slide-count (mapped from the --lg/--md/--sm/--xs vars on .slider_offset).
+        const swiper = new Swiper(element, {
+          speed,
+          freeMode: freeMode ? { enabled: true } : false,
+          autoplay: useAutoplay
+            ? {
+                delay: autoplayDelay,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+              }
+            : false,
+          mousewheel: useMousewheel ? { forceToAxis: true } : false,
+          slideToClickedSlide: slideToClicked,
+          loop: useLoop,
+          // Keep extra slides positioned beyond the visible ones so the loop
+          // rearranges before the edge empties (the v8 seamless look).
+          loopAdditionalSlides: useLoop ? maxVisible + 1 : 0,
+          grabCursor: true,
+          watchSlidesProgress: true,
+          slidesPerView: "auto",
+
+          pagination: paginationConfig,
+          navigation: navigationConfig,
+        });
+
+        // Hand-rolled bullets for duplicated loops: one dot per ORIGINAL
+        // slide, synced via realIndex modulo so either copy activates it.
+        if (duplicated && bullets) {
+          const btns: HTMLElement[] = [];
+          for (let i = 0; i < originalCount; i++) {
+            const b = document.createElement("button");
+            b.className = "slider_bullet_item";
+            b.setAttribute("aria-label", `Go to slide ${i + 1}`);
+            b.addEventListener("click", () => swiper.slideToLoop(i));
+            bullets.appendChild(b);
+            btns.push(b);
+          }
+          const sync = () => {
+            const active = swiper.realIndex % originalCount;
+            btns.forEach((b, i) =>
+              b.classList.toggle("is-active", i === active),
+            );
+          };
+          swiper.on("slideChange", sync);
+          sync();
+        }
+      });
+  }
+
+  // Swiper is bundled via swiper-init.js, but this component's script may run
+  // before that module sets window.Swiper, so we poll briefly (resolves on the
+  // first tick once it's set).
+  function waitForSwiper(retries = 10) {
+    if ((window as any).Swiper) {
+      initSliders();
+    } else if (retries > 0) {
+      setTimeout(() => waitForSwiper(retries - 1), 100);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => waitForSwiper());
+  } else {
+    waitForSwiper();
+  }
+</script>

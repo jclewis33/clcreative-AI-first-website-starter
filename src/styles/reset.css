@@ -1,0 +1,166 @@
+/* ==========================================================================
+   MODERN CSS RESET
+   ========================================================================== */
+
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default margin and padding */
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+  padding: 0;
+}
+
+/* Set core root defaults */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--nav-height-total, 0px);
+}
+
+/* Set core body defaults */
+body {
+  min-height: 100vh;
+  line-height: 1.5;
+  font-family: var(--font-primary);
+  color: var(--text);
+  background-color: var(--background);
+  text-transform: var(--text-transform-inherit);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smoothing: antialiased;
+  text-rendering: optimizeLegibility; /* This overrides optimizeSpeed */
+  /* Remove the default mobile Safari/Chrome semi-transparent tap overlay
+     that flashes on any tappable element (buttons, links, accordions).
+     Focus rings and :active states still provide interaction feedback. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Make images easier to work with.
+   Astro injects similar defaults when using the <Image> component with responsiveStyles: true,
+   but these rules ensure consistency for raw <img> or <picture> elements (e.g. from APIs or images added to the public folder, which aren't touched by Astro).
+*/
+img,
+picture {
+  display: block;
+  max-width: 100%;
+  height: 100%;
+}
+
+/* Videos default to full-width and cover */
+video {
+  width: 100%;
+  object-fit: cover;
+}
+
+/* SVGs respect container width */
+svg {
+  max-width: 100%;
+}
+
+/* Inherit fonts for inputs and buttons */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Style placeholder option (empty value selected) in selects */
+select:has(option[value=""]:checked) {
+  color: color-mix(in srgb, var(--text) 40%, transparent);
+}
+
+/* Remove all animations, transitions and smooth scroll for people that prefer not to see them */
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Remove list styles on ul, ol elements with a list role, which suggests default styling will be removed */
+ul[role="list"],
+ol[role="list"] {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* A elements that don't have a class get default styles */
+a:not([class]) {
+  text-decoration-skip-ink: auto;
+  color: var(--link-text);
+}
+
+/* Focus State — outline only appears during keyboard navigation.
+   A tiny inline script in BaseLayout toggles .using-keyboard on <html>
+   (added on Tab keydown, removed on mousedown). */
+a, button, :where([tabindex]), input, textarea, select {
+  outline-offset: var(--focus-offset-outer);
+}
+
+html.using-keyboard a:focus-visible,
+html.using-keyboard button:focus-visible,
+html.using-keyboard [role="button"]:focus-visible,
+html.using-keyboard [tabindex]:focus-visible,
+html.using-keyboard input:focus-visible,
+html.using-keyboard textarea:focus-visible,
+html.using-keyboard select:focus-visible {
+  outline-color: var(--text);
+  outline-width: var(--focus-width);
+  outline-style: solid;
+}
+
+/* Text selection colors — theme-aware */
+::selection {
+  background-color: var(--selection-background);
+  color: var(--selection-text);
+}
+
+/* Prevent image selection highlight */
+img::selection {
+  background: transparent;
+}
+
+/* Force select option text to be readable in light mode */
+@media (prefers-color-scheme: light) {
+  option {
+    color: black;
+  }
+}
+
+/* Data Prevent Flicker Attribute to keep flicker from occuring with GSAP  */
+
+html:not(.gsap-not-found) [data-prevent-flicker="true"] {
+  visibility: hidden;
+}
+.line-mask,
+.word-mask,
+.char-mask {
+  padding-block: 0.1em;
+  margin-block: -0.1em;
+}

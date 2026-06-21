@@ -1,0 +1,24 @@
+/* ==========================================================================
+   PROJECT IMAGES
+   Scrolling marquee of project screenshots with varying aspect ratios.
+   ========================================================================== */
+
+.project-images_section .marquee_item img {
+  max-height: none;
+}
+
+.project-images_section .marquee_inner {
+  align-items: center;
+}
+
+.project-images_item {
+  overflow: hidden;
+  border-radius: var(--radius-small);
+}
+
+.project-images_img {
+  display: block;
+  height: clamp(10rem, 12vw + 4rem, 20rem);
+  width: auto;
+  border-radius: var(--radius-small);
+}

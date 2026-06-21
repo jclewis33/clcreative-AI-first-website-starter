@@ -1,0 +1,374 @@
+---
+/**
+ * Services — dark "What We Do" section with 4 service rows.
+ *
+ * Desktop: rows are simple links. On hover the hovered row stays full
+ * opacity and the others fade to 40%. A cursor-follower appears with a
+ * pill button label ("Explore Design", etc.) and a service image that
+ * lerps toward the cursor for a smooth trailing effect.
+ *
+ * Medium and below: the cursor follower is disabled and each row renders
+ * the image inline above the title with an "Explore X →" link below.
+ *
+ * @example Default usage
+ * ```astro
+ * <Services />
+ * ```
+ */
+
+import { Image } from "astro:assets";
+import Section from "../ui/Section.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import ContentWrapper from "../ui/ContentWrapper.astro";
+
+import imgM2MMessagingSprint from "../../assets/services/m2m-messaging-know.webp";
+import imgWebDesign from "../../assets/services/web-design.png";
+import imgWebDevelopment from "../../assets/services/web-development.png";
+import imgSeoAeo from "../../assets/services/seo-aeo.png";
+import imgMarketingPartner from "../../assets/marketing-partner/marketing-partner-playbook.webp";
+import imgWebsiteSupport from "../../assets/services/website-support.png";
+
+type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+
+interface Props {
+  /**
+   * **Services props:**
+   * - `padding` / `paddingTop` / `paddingBottom` — section padding
+   * - `class` — extra classes on outer Section
+   */
+  docs?: string;
+
+  /** Sets both paddingTop and paddingBottom @default 'main' */
+  padding?: PaddingValue;
+  paddingTop?: PaddingValue;
+  paddingBottom?: PaddingValue;
+  class?: string;
+}
+
+const {
+  docs,
+  padding = "main",
+  paddingTop = padding,
+  paddingBottom = padding,
+  class: className,
+} = Astro.props;
+
+const services = [
+  {
+    title: "M2M Messaging Sprint",
+    description:
+      "A complete messaging system you can use everywhere to attract the the right customers",
+    href: "/services/m2m-messaging-sprint",
+    cta: "Explore M2M Messaging Sprint",
+    image: imgM2MMessagingSprint,
+    imageAlt: "M2M Messaging Sprint service",
+  },
+  {
+    title: "Web Design",
+    description:
+      "Conversion-focused Webflow design built around your ideal customer, not a template library.",
+    href: "/services/web-design",
+    cta: "Explore Design",
+    image: imgWebDesign,
+    imageAlt: "Web design service",
+  },
+  {
+    title: "Webflow Development",
+    description:
+      "Clean, scalable builds with the component systems and CMS structure your team needs to move fast.",
+    href: "/services/webflow-development",
+    cta: "Explore Development",
+    image: imgWebDevelopment,
+    imageAlt: "Webflow development service",
+  },
+  {
+    title: "SEO & AEO",
+    description:
+      "Technical and on-page SEO & AEO so the right buyers actually find you where they are searching.",
+    href: "/services/seo",
+    cta: "Explore SEO & AEO",
+    image: imgSeoAeo,
+    imageAlt: "SEO and AEO service",
+  },
+
+  {
+    title: "Website Support",
+    description:
+      "Launch is step one. We handle updates, optimization, and improvements so your site keeps performing.",
+    href: "/services/webflow-website-support",
+    cta: "Explore Support",
+    image: imgWebsiteSupport,
+    imageAlt: "Website support service",
+  },
+  {
+    title: "Marketing Partner",
+    description:
+      "We run your marketing for you giving you the freedom to live your life and focus on your business.",
+    href: "/services/marketing-partner",
+    cta: "Explore Marketing Partner",
+    image: imgMarketingPartner,
+    imageAlt: "Marketing partner service",
+  },
+];
+---
+
+<Section
+  theme="dark"
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  class:list={["services_section", className]}
+>
+  <ContentWrapper align="center" class="services_header">
+    <Heading variant="eyebrow" class="u-color-brand" data-fade-in>
+      What We Do
+    </Heading>
+    <Heading tag="h2" data-split-text maxWidth="22ch" class="services_title">
+      Strategy-led services for growth-stage businesses.
+    </Heading>
+    <Text data-fade-in maxWidth="60ch" align="center">
+      Every engagement starts with the M2M Framework, so whether you need a
+      website, a marketing foundation, or focused support, the work is grounded
+      in who you're trying to reach.
+    </Text>
+  </ContentWrapper>
+
+  <div class="services_list" data-services data-fade-in>
+    {
+      services.map((s, i) => (
+        <a
+          href={s.href}
+          class="services_row"
+          data-service-row
+          data-service-index={i}
+          aria-label={`${s.cta} — ${s.title}`}
+        >
+          <div class="services_row_inner">
+            <div class="services_mobile_visual">
+              <Image
+                src={s.image}
+                alt={s.imageAlt}
+                class="services_mobile_img"
+                widths={[320, 480, 640]}
+                sizes="(max-width: 800px) 100vw, 50vw"
+              />
+            </div>
+            <h3 class="services_row_title">{s.title}</h3>
+            <div class="services_row_content">
+              <p class="services_row_text">{s.description}</p>
+              <span class="services_row_link" aria-hidden="true">
+                {s.cta}
+                <svg
+                  class="services_row_link_icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <polyline points="9,6 15,12 9,18" />
+                </svg>
+              </span>
+            </div>
+          </div>
+        </a>
+      ))
+    }
+
+    {/* ── Desktop cursor follower ─────────────────────────────── */}
+    {
+      /* Image and button are independent layers so each can lerp at its
+        own speed: button tracks the cursor instantly, image trails. */
+    }
+    <div
+      class="services_cursor_image"
+      data-services-cursor-image
+      aria-hidden="true"
+    >
+      {
+        services.map((s, i) => (
+          <Image
+            src={s.image}
+            alt={s.imageAlt}
+            class="services_cursor_img"
+            data-cursor-img={i}
+            widths={[320, 480, 640]}
+            sizes="447px"
+            loading="eager"
+          />
+        ))
+      }
+    </div>
+    <span
+      class="services_cursor_button"
+      data-services-cursor-button
+      aria-hidden="true"
+    >
+      Explore Design
+    </span>
+  </div>
+</Section>
+
+<script>
+  /**
+   * Services — desktop cursor follower
+   *
+   * Tracks mouse position over the list and uses GSAP `quickTo` to lerp
+   * the cursor follower toward the pointer with a small delay, giving the
+   * image a smooth trailing motion. Hovering a row also activates that
+   * row's image and CTA label.
+   *
+   * Disabled at < 800px (CSS handles layout shift) and when the user
+   * prefers reduced motion or is on a touch-only device.
+   */
+  function initServices() {
+    const gsap = (window as any).gsap;
+    if (!gsap) return;
+
+    const list = document.querySelector<HTMLElement>("[data-services]");
+    if (!list) return;
+    if (list.dataset.servicesInit) return;
+    list.dataset.servicesInit = "true";
+
+    const cursorImage = list.querySelector<HTMLElement>(
+      "[data-services-cursor-image]",
+    );
+    const cursorButton = list.querySelector<HTMLElement>(
+      "[data-services-cursor-button]",
+    );
+    const rows = Array.from(
+      list.querySelectorAll<HTMLAnchorElement>("[data-service-row]"),
+    );
+    const cursorImages = Array.from(
+      list.querySelectorAll<HTMLImageElement>("[data-cursor-img]"),
+    );
+
+    if (!cursorImage || !cursorButton || rows.length === 0) return;
+
+    // Reduced motion / touch — bail and let CSS handle the static layout
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const isCoarse = window.matchMedia("(pointer: coarse)").matches;
+    if (reduceMotion || isCoarse) return;
+
+    const desktopMQ = window.matchMedia("(min-width: 800px)");
+
+    // Two independent followers:
+    //   - button tracks the cursor near-instantly
+    //   - image trails behind so they read as separate layers
+    gsap.set([cursorImage, cursorButton], { x: 0, y: 0, opacity: 0 });
+
+    const imgX = gsap.quickTo(cursorImage, "x", {
+      duration: 0.55,
+      ease: "power3",
+    });
+    const imgY = gsap.quickTo(cursorImage, "y", {
+      duration: 0.55,
+      ease: "power3",
+    });
+    const btnX = gsap.quickTo(cursorButton, "x", {
+      duration: 0.08,
+      ease: "power2",
+    });
+    const btnY = gsap.quickTo(cursorButton, "y", {
+      duration: 0.08,
+      ease: "power2",
+    });
+
+    let activeIndex = -1;
+    let needsSnap = true; // snap on first move after each enter
+    let imageYOffset = 0; // negative = image flipped above cursor
+
+    const setActiveImage = (idx: number) => {
+      cursorImages.forEach((img, i) => {
+        img.classList.toggle("is-active", i === idx);
+      });
+    };
+
+    const onMove = (e: MouseEvent) => {
+      if (!desktopMQ.matches) return;
+      const rect = list.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (needsSnap) {
+        // First move after entering — place both layers at the cursor
+        // instantly so the image doesn't fly in from a previous position.
+        gsap.set(cursorImage, { x, y: y + imageYOffset });
+        gsap.set(cursorButton, { x, y });
+        needsSnap = false;
+        return;
+      }
+
+      imgX(x);
+      imgY(y + imageYOffset);
+      btnX(x);
+      btnY(y);
+    };
+
+    const onListEnter = () => {
+      if (!desktopMQ.matches) return;
+      needsSnap = true;
+      gsap.to([cursorImage, cursorButton], {
+        opacity: 1,
+        duration: 0.25,
+        ease: "power2.out",
+      });
+    };
+
+    const onListLeave = () => {
+      gsap.to([cursorImage, cursorButton], {
+        opacity: 0,
+        duration: 0.25,
+        ease: "power2.out",
+      });
+      list.classList.remove("is-cursor-active");
+      rows.forEach((r) => r.classList.remove("is-active"));
+      activeIndex = -1;
+    };
+
+    list.addEventListener("mousemove", onMove);
+    list.addEventListener("mouseenter", onListEnter);
+    list.addEventListener("mouseleave", onListLeave);
+
+    rows.forEach((row, idx) => {
+      row.addEventListener("mouseenter", () => {
+        if (!desktopMQ.matches) return;
+        if (activeIndex === idx) return;
+        activeIndex = idx;
+
+        list.classList.add("is-cursor-active");
+        rows.forEach((r, i) => r.classList.toggle("is-active", i === idx));
+
+        const cta = row.getAttribute("aria-label")?.split(" — ")[0] ?? "";
+        cursorButton.textContent = cta;
+        setActiveImage(idx);
+
+        // Flip the image above the cursor when the hovered row sits too
+        // close to the list's bottom edge for the image to fit below.
+        // Shifts the GSAP-controlled Y so the image lands above the
+        // cursor instead of centered on it. Button still tracks cursor.
+        const listRect = list.getBoundingClientRect();
+        const rowRect = row.getBoundingClientRect();
+        const imgHeight = cursorImage.offsetHeight || 252;
+        const rowCenterY = rowRect.top + rowRect.height / 2;
+        const spaceBelow = listRect.bottom - rowCenterY;
+        const shouldFlip = spaceBelow < imgHeight / 2 + 32;
+        imageYOffset = shouldFlip ? -(imgHeight / 2 + 32) : 0;
+      });
+    });
+  }
+
+  function waitForGsap(retries = 15) {
+    if ((window as any).gsap) {
+      requestAnimationFrame(() => initServices());
+    } else if (retries > 0) {
+      setTimeout(() => waitForGsap(retries - 1), 100);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => waitForGsap());
+  } else {
+    waitForGsap();
+  }
+</script>

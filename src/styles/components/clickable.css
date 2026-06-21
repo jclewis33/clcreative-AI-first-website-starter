@@ -1,0 +1,41 @@
+/* ==========================================================================
+   CLICKABLE WRAPPER — makes a card or container fully clickable
+   Position the parent relative and add .clickable_wrap to it.
+   ========================================================================== */
+
+.clickable_wrap {
+  z-index: 3;
+  border-radius: inherit;
+}
+
+.clickable_link {
+  border-radius: inherit;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0%;
+}
+
+.clickable_btn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: inherit;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  position: absolute;
+  inset: 0%;
+}
+
+/* Disabled state for button wrappers.
+   Add data-button to the wrapper element to enable this pattern.
+   Example: <div class="button_main_wrap" data-button>
+              <button disabled>...</button>
+            </div> */
+
+[data-button]:has(button:disabled) {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}

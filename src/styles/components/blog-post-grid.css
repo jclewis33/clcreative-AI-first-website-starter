@@ -1,0 +1,11 @@
+/* ==========================================================================
+   BLOG POST GRID — section component styles
+   Component: src/components/sections/BlogPostGrid.astro
+   ========================================================================== */
+
+/* Override the u-container default gap (--space-8) so the heading
+   and card grid sit closer together 
+.blog-post-grid_wrap > .u-container {
+  gap: var(--space-6);
+}
+*/

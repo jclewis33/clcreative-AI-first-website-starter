@@ -1,0 +1,35 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # Supply-chain defense: don't propose a version until it's had time to
+    # "bake" on npm. Almost all malicious/compromised package versions are
+    # detected and pulled within hours-to-days, so waiting means we never
+    # adopt a poisoned release. NOTE: this delays *version* updates only —
+    # Dependabot SECURITY updates (CVE fixes) ignore cooldown and still
+    # arrive immediately, which is what we want.
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    ignore:
+      # Sanity 6 majors are held back intentionally — moving to v6 is a
+      # deliberate migration (re-verify all Studio plugins + the visual-editing
+      # islands), not an auto-merge. The old @sanity/astro 3.3.1 pin that used
+      # to block this was lifted once 3.4.1 tested clean after the Studio
+      # migration (the embedded Studio that caused the dev duplicate-React bug
+      # is gone). @sanity/astro now follows normal cooldown'd updates. Drop
+      # these two ignores when you actively migrate to Sanity 6.
+      - dependency-name: "sanity"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@sanity/vision"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

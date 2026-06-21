@@ -1,0 +1,64 @@
+---
+export const prerender = false;
+import BlogPostTemplate from "../../components/templates/BlogPostTemplate.astro";
+import { loadQuery } from "../../sanity/lib/load-query";
+import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import {
+  BLOG_POST_QUERY,
+  BLOG_POSTS_QUERY,
+  SITE_SETTINGS_QUERY,
+} from "../../sanity/lib/queries";
+import { urlFor } from "../../sanity/lib/image";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const draftProps = getDraftModeProps(Astro);
+
+const { data: post } = await loadQuery<any>({
+  query: BLOG_POST_QUERY,
+  params: { slug },
+  ...draftProps,
+});
+
+if (!post) {
+  return Astro.redirect("/404");
+}
+
+const { data: allPosts } = await loadQuery<any[]>({
+  query: BLOG_POSTS_QUERY,
+  ...draftProps,
+});
+
+const { data: settings } = await loadQuery<any>({
+  query: SITE_SETTINGS_QUERY,
+  ...draftProps,
+});
+const defaultCta = settings?.defaultBlogCta ?? null;
+const defaultCtaSection = settings?.defaultCtaSection ?? null;
+const relatedPosts = (allPosts ?? []).map((p: any) => ({
+  ...p,
+  image: urlFor(p.image).width(600).url(),
+  authorAvatar: p.authorAvatar
+    ? urlFor(p.authorAvatar).width(80).height(80).url()
+    : undefined,
+}));
+
+const manualRelatedPosts = ((post.relatedPosts ?? []) as any[])
+  .filter((p) => p?.slug)
+  .map((p) => ({
+    ...p,
+    image: urlFor(p.image).width(600).url(),
+    authorAvatar: p.authorAvatar
+      ? urlFor(p.authorAvatar).width(80).height(80).url()
+      : undefined,
+  }));
+---
+
+<BlogPostTemplate
+  post={post}
+  relatedPosts={relatedPosts}
+  manualRelatedPosts={manualRelatedPosts}
+  defaultCta={defaultCta}
+  defaultCtaSection={defaultCtaSection}
+/>

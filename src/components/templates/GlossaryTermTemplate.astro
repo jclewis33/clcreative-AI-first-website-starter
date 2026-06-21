@@ -1,0 +1,312 @@
+---
+/**
+ * Glossary Term Template
+ *
+ * Renders a glossary term given the term document and the full list of terms
+ * (used to compute prev/next). Used by the production route
+ * (`src/pages/glossary/[slug].astro`).
+ */
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SanityCtaSection from "../sections/SanityCtaSection.astro";
+import Section from "../ui/Section.astro";
+import Layout from "../ui/Layout.astro";
+import Col from "../ui/Col.astro";
+import Grid from "../ui/Grid.astro";
+import Heading from "../ui/Heading.astro";
+import Text from "../ui/Text.astro";
+import Card from "../ui/Card.astro";
+
+import { urlFor } from "../../sanity/lib/image";
+import { portableTextToHtml } from "../../sanity/lib/portable-text";
+import { glossaryTermJsonLd } from "../../lib/jsonld";
+import JsonLd from "../global/JsonLd.astro";
+
+import "../../styles/pages/glossary.css";
+
+interface Props {
+  term: any;
+  allTerms: any[];
+  defaultCtaSection?: any;
+}
+
+const { term, allTerms, defaultCtaSection = null } = Astro.props;
+const resolvedCtaSection = term.ctaSectionOverride ?? defaultCtaSection ?? null;
+
+const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
+const jsonLd = glossaryTermJsonLd(term, siteOrigin);
+
+const sortedTerms = [...allTerms].sort((a: any, b: any) =>
+  a.term.localeCompare(b.term),
+);
+
+const currentIndex = sortedTerms.findIndex((t: any) => t.slug === term.slug);
+const prevTerm =
+  sortedTerms[(currentIndex - 1 + sortedTerms.length) % sortedTerms.length];
+const nextTerm = sortedTerms[(currentIndex + 1) % sortedTerms.length];
+
+const relatedTerms = (term.relatedTerms ?? []).slice(0, 4);
+
+const contentHtml = portableTextToHtml(term.body, (ref) =>
+  urlFor({ _ref: ref }).width(960).url(),
+);
+
+interface TocEntry {
+  text: string;
+  id: string;
+}
+
+const tocEntries: TocEntry[] = [];
+const headingRegex = /<h2[^>]*>(.*?)<\/h2>/gi;
+let match: RegExpExecArray | null;
+while ((match = headingRegex.exec(contentHtml)) !== null) {
+  const text = match[1].replace(/<[^>]*>/g, "");
+  const id = text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  tocEntries.push({ text, id });
+}
+
+let processedContent = contentHtml;
+tocEntries.forEach(({ text, id }) => {
+  processedContent = processedContent.replace(
+    new RegExp(
+      `<h2([^>]*)>(${text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})</h2>`,
+      "i",
+    ),
+    `<h2$1 id="${id}">$2</h2>`,
+  );
+});
+---
+
+<BaseLayout
+  title={`${term.term} | Glossary | CL Creative`}
+  description={term.shortDefinition}
+  theme="light"
+>
+  <JsonLd data={jsonLd} />
+  <Section paddingTop="small" theme="dark" class="glossary_term_hero_wrap">
+    <Layout variant="stack">
+      <Col slot="col1">
+        <nav class="glossary_term_breadcrumbs" aria-label="Breadcrumb">
+          <a href="/glossary" class="glossary_term_breadcrumb_link">Glossary</a>
+          <span class="glossary_term_breadcrumb_sep" aria-hidden="true">/</span>
+          <span class="glossary_term_breadcrumb_current" aria-current="page">
+            {term.term}
+          </span>
+        </nav>
+
+        <span class="glossary_term_category_tag">{term.category}</span>
+
+        <Heading tag="h1" variant="h1" balance>{term.term}</Heading>
+
+        <Text variant="large">{term.shortDefinition}</Text>
+      </Col>
+    </Layout>
+  </Section>
+
+  <Section paddingTop="small" class="glossary_term_content_wrap">
+    <Layout
+      variant="sticky-left"
+      ratio="3-9"
+      columnGap="var(--gap-8)"
+      verticalAlign="start"
+      style="max-width:72rem; margin-left:auto; margin-right:auto;"
+    >
+      {
+        tocEntries.length > 0 && (
+          <nav
+            slot="col1"
+            class="glossary_term_toc"
+            aria-label="Table of contents"
+          >
+            <Heading tag="h2" variant="h6" marginBottom={0}>
+              On this page
+            </Heading>
+            <ul class="glossary_term_toc_list">
+              {tocEntries.map((entry) => (
+                <li>
+                  <a href={`#${entry.id}`} class="glossary_term_toc_link">
+                    {entry.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+
+      <div
+        slot="col2"
+        class="glossary_term_prose u-rich-text"
+        set:html={processedContent}
+      />
+    </Layout>
+  </Section>
+
+  {
+    relatedTerms.length > 0 && (
+      <Section padding="large" class="glossary_term_related_wrap">
+        <Heading tag="h2" variant="h3">
+          Related Terms
+        </Heading>
+        <Grid
+          largeColumns={relatedTerms.length >= 3 ? 3 : 2}
+          mediumColumns={2}
+          smallColumns={1}
+          rowGap={4}
+        >
+          {relatedTerms.map((related: any) => (
+            <Card
+              variant="stacked"
+              href={`/glossary/${related.slug}`}
+              ariaLabel={`Read definition of ${related.term}`}
+              class="glossary_card_wrap"
+            >
+              <div slot="title" class="glossary_card_title_wrap">
+                <Heading tag="h3" variant="h5" marginBottom={0} maxWidth="100%">
+                  {related.term}
+                </Heading>
+              </div>
+              <Text variant="small" muted clamp={2}>
+                {related.shortDefinition}
+              </Text>
+              <div slot="footer" class="glossary_card_footer">
+                <Text
+                  tag="span"
+                  variant="tiny"
+                  weight="medium"
+                  marginBottom={0}
+                  class="glossary_card_category"
+                >
+                  {related.category}
+                </Text>
+              </div>
+            </Card>
+          ))}
+        </Grid>
+      </Section>
+    )
+  }
+
+  <Section padding="small" class="glossary_term_nav_wrap">
+    <div class="glossary_term_prev_next">
+      <a
+        href={`/glossary/${prevTerm.slug}`}
+        class="glossary_term_nav_link is-prev"
+      >
+        <Text tag="span" variant="tiny" muted marginBottom={0}>Previous</Text>
+        <Text tag="span" variant="regular" weight="medium" marginBottom={0}>
+          {prevTerm.term}
+        </Text>
+      </a>
+      <a
+        href={`/glossary/${nextTerm.slug}`}
+        class="glossary_term_nav_link is-next"
+      >
+        <Text tag="span" variant="tiny" muted marginBottom={0}>Next</Text>
+        <Text tag="span" variant="regular" weight="medium" marginBottom={0}>
+          {nextTerm.term}
+        </Text>
+      </a>
+    </div>
+  </Section>
+
+  {resolvedCtaSection && <SanityCtaSection cta={resolvedCtaSection} />}
+</BaseLayout>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const tocLinks = document.querySelectorAll<HTMLAnchorElement>(
+      ".glossary_term_toc_link",
+    );
+    if (!tocLinks.length) return;
+
+    tocLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        const targetId = link.getAttribute("href")?.replace("#", "");
+        if (!targetId) return;
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        e.preventDefault();
+
+        const probe = document.createElement("div");
+        probe.style.height = "calc(var(--nav-height-total) + 1.5rem)";
+        probe.style.position = "absolute";
+        probe.style.visibility = "hidden";
+        document.body.appendChild(probe);
+        const headerOffset = probe.offsetHeight;
+        document.body.removeChild(probe);
+
+        const top =
+          target.getBoundingClientRect().top + window.scrollY - headerOffset;
+        window.scrollTo({ top, behavior: "smooth" });
+      });
+    });
+
+    const sectionIds = Array.from(tocLinks)
+      .map((link) => link.getAttribute("href")?.replace("#", ""))
+      .filter((id): id is string => !!id);
+
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (!sections.length) return;
+
+    const visibleSections = new Set<string>();
+    let currentActive = "";
+
+    function setActive(id: string) {
+      if (id === currentActive) return;
+      currentActive = id;
+      tocLinks.forEach((link) => {
+        const linkId = link.getAttribute("href")?.replace("#", "");
+        link.classList.toggle("is-active", linkId === id);
+      });
+    }
+
+    function updateActiveSection() {
+      let bestId = "";
+      let bestDistance = Infinity;
+
+      visibleSections.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const distance = Math.abs(el.getBoundingClientRect().top);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestId = id;
+        }
+      });
+
+      if (bestId) {
+        setActive(bestId);
+      } else if (!visibleSections.size) {
+        setActive("");
+      }
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.id;
+          if (entry.isIntersecting) {
+            visibleSections.add(id);
+          } else {
+            visibleSections.delete(id);
+          }
+        });
+        updateActiveSection();
+      },
+      {
+        rootMargin: "0px 0px -20% 0px",
+        threshold: 0,
+      },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+  });
+</script>

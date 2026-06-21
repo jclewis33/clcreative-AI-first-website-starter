@@ -1,0 +1,49 @@
+/* ==========================================================================
+   VISUAL / IMAGE COMPONENT — Layout Context Rules
+   ==========================================================================
+   Base .u-image-wrapper and .u-image styles live in base/visual-utilities.css.
+   This file contains only layout-context overrides for the Visual component
+   when used inside breakout, full, or contain Layout variants.
+   ========================================================================== */
+
+/* ── Breakout / full layout context ── */
+/* When the Visual sits in a bleed column, zero the corners on the
+   viewport-edge side so the image runs flush to the screen edge.
+   breakout / full           → image bleeds RIGHT  → zero right corners
+   breakout-reversed / full-reversed → image bleeds LEFT → zero left corners */
+
+[data-layout-variant="breakout"] .u-layout-column-2 .u-image-wrapper,
+[data-layout-variant="full"] .u-layout-column-2 .u-image-wrapper {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+[data-layout-variant="breakout-reversed"] .u-layout-column-2 .u-image-wrapper,
+[data-layout-variant="full-reversed"] .u-layout-column-2 .u-image-wrapper {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* ── Full / full-reversed — image fills section height ── */
+/* Override the default aspect-ratio so the image stretches to match
+   the content column height instead of constraining itself. */
+
+[data-layout-variant="full"] .u-layout .u-layout-column-2,
+[data-layout-variant="full-reversed"] .u-layout .u-layout-column-2 {
+  align-self: stretch;
+}
+
+[data-layout-variant="full"] .u-layout-column-2 .u-image-wrapper,
+[data-layout-variant="full-reversed"] .u-layout-column-2 .u-image-wrapper {
+  aspect-ratio: unset;
+  height: 100%;
+}
+
+/* ── Contain layout context ── */
+/* The contain card wrapper already has border-radius and overflow: clip,
+   so the image wrapper inside needs zero radius to fill the card shape. */
+
+[data-layout-variant="contain"] .u-image-wrapper,
+[data-layout-variant="contain-reversed"] .u-image-wrapper {
+  border-radius: 0;
+}
