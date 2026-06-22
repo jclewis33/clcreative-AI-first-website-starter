@@ -44,12 +44,10 @@ export const glossaryTerm = defineType({
       group: "meta",
       options: {
         list: [
-          { title: "Development", value: "Development" },
-          { title: "SEO", value: "SEO" },
-          { title: "CSS", value: "CSS" },
-          { title: "Design", value: "Design" },
+          { title: "General", value: "General" },
+          { title: "Technical", value: "Technical" },
           { title: "Business", value: "Business" },
-          { title: "Performance", value: "Performance" },
+          { title: "Design", value: "Design" },
         ],
       },
       validation: (rule) => rule.required(),

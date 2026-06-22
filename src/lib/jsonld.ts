@@ -145,7 +145,7 @@ export function breadcrumbJsonLd(pathname: string, siteUrl: string = SITE.url) {
 export interface ServiceFaqOptions {
   /** Absolute page URL (used for @id and url). */
   pageUrl: string;
-  /** schema.org `serviceType`, e.g. "Web Design". */
+  /** schema.org `serviceType`, e.g. "Consulting". */
   serviceType: string;
   /** Service `name`. */
   name: string;

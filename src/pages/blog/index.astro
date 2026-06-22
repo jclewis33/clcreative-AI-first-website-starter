@@ -8,9 +8,9 @@ export const prerender = false;
  *   2. Latest — 2 large + 3 small cards from most recent posts
  *   3. Per-category sections — heading, description, 2 large + 3 small cards, "View all" link
  *
- * Categories shown: Business, SEO, Web Design, Webflow Tutorial
- * Video posts appear within their other categories (no dedicated Video section).
- * Development and Photography are excluded from the section list.
+ * Categories shown: News, Guides, Insights, Tutorials
+ * Any category without a matching section here (e.g. Resources) still gets its
+ * own archive page at /blog/category/<slug>, just no section on this index.
  */
 
 import BaseLayout from "../../layouts/BaseLayout.astro";
@@ -29,6 +29,7 @@ import { getDraftModeProps } from "../../sanity/lib/draft-mode";
 import { BLOG_POSTS_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
 import { urlFor } from "../../sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
+import { SITE } from "../../config/site";
 
 // Styles
 import "../../styles/pages/blog.css";
@@ -69,36 +70,31 @@ const categoryConfig: {
   theme?: "light" | "dark" | "brand";
 }[] = [
   {
-    name: "Marketing",
-    slug: "marketing",
+    name: "News",
+    slug: "news",
     description:
-      "Strategies, frameworks, and tactics for getting your business in front of the right people.",
+      "Announcements, updates, and the latest from our team.",
     theme: "brand",
   },
   {
-    name: "Business",
-    slug: "business",
+    name: "Guides",
+    slug: "guides",
     description:
-      "Insights on running a creative business, freelancing, and client work.",
+      "In-depth guides and how-tos to help you get more done.",
     theme: "dark",
   },
   {
-    name: "SEO",
-    slug: "seo",
+    name: "Insights",
+    slug: "insights",
     description:
-      "Search engine and Answer engine optimization strategies to grow your organic traffic.",
+      "Perspectives, trends, and ideas worth sharing.",
     theme: "brand",
   },
   {
-    name: "Web Design",
-    slug: "web-design",
+    name: "Tutorials",
+    slug: "tutorials",
     description:
-      "Dive into cutting-edge trends and tips for creating stunning websites.",
-  },
-  {
-    name: "Webflow Tutorial",
-    slug: "webflow-tutorial",
-    description: "Step-by-step guides for building in Webflow.",
+      "Step-by-step walkthroughs to help you put ideas into practice.",
     theme: "dark",
   },
 ];
@@ -136,7 +132,7 @@ function formatDate(dateStr: string) {
   docs=""
   theme="light"
   title="Blog | Astro Starter"
-  description="A web design, development, SEO, and business blog."
+  description={SITE.defaultDescription}
 >
   {
     /* ================================================================
@@ -193,8 +189,8 @@ function formatDate(dateStr: string) {
         balance>Blog</Heading
       >
       <Text data-prevent-flicker="true" data-fade-up>
-        We write about web design, SEO, marketing, and small business so you can
-        build a website, and a company, that attracts the right customer.
+        Articles, guides, and insights from our team — practical writing to help
+        you get more out of what we do.
       </Text>
     </ContentWrapper>
     {/* Featured slider */}

@@ -12,8 +12,8 @@
  *
  * The llms endpoints consume `PAGES` (via the `*_PAGES` group exports).
  *
- * Labels differ per surface on purpose (e.g. nav "Web Development" vs footer
- * "Webflow Development"), so each page can carry `navLabel` / `footerLabel`
+ * Labels differ per surface on purpose (e.g. a short nav "Work" vs a longer
+ * footer "Case Studies"), so each page can carry `navLabel` / `footerLabel`
  * overrides; both fall back to `title`.
  *
  * ═══════════════════════════════════════════════════════════════════════════

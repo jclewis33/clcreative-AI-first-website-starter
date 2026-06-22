@@ -38,8 +38,8 @@
  * <BlogPostGrid
  *   posts={allPosts}
  *   variant="category"
- *   category="SEO"
- *   heading="SEO Articles"
+ *   category="Guides"
+ *   heading="Guides"
  * />
  * ```
  *
@@ -85,7 +85,7 @@ export interface BlogPost {
   slug: string;
   /** Post excerpt / description */
   description: string;
-  /** Category labels (e.g. ["Web Design", "SEO"]) */
+  /** Category labels (e.g. ["Guides", "News"]) */
   categories: string[];
   /** Featured image — imported ImageMetadata or URL string */
   image: ImageMetadata | string;
@@ -208,11 +208,11 @@ interface Props {
    * Category to filter by when using `variant="category"`.
    * Only posts matching this category will be shown.
    *
-   * Comparison is case-insensitive — `"seo"`, `"SEO"`, and `"Seo"`
-   * all match posts with category `"SEO"`. Spelling must be exact.
+   * Comparison is case-insensitive — `"guides"`, `"Guides"`, and `"GUIDES"`
+   * all match posts with category `"Guides"`. Spelling must be exact.
    *
-   * @example category="SEO"
-   * @example category="Web Design"
+   * @example category="Guides"
+   * @example category="News"
    */
   category?: string;
 
@@ -382,101 +382,90 @@ const {
 
 const samplePosts: BlogPost[] = [
   {
-    title: "How to Build a Conversion-Focused Landing Page",
-    slug: "conversion-focused-landing-page",
+    title: "How to Get Started in Five Simple Steps",
+    slug: "getting-started-guide",
     description:
-      "Learn the key principles behind designing landing pages that turn visitors into leads. We cover messaging, layout, and CTA placement strategies.",
-    categories: ["Web Design"],
+      "A practical walkthrough to help you get up and running quickly — from first setup to your first results.",
+    categories: ["Guides"],
     image: featuredImage,
-    imageAlt: "Landing page design mockup",
+    imageAlt: "Getting started checklist on a desk",
     author: "Jane Doe",
     authorAvatar: avatarPlaceholder,
     date: "2026-03-01",
     featured: true,
   },
   {
-    title: "SEO Fundamentals Every Developer Should Know",
-    slug: "seo-fundamentals-developers",
+    title: "What's New: Our Latest Updates",
+    slug: "latest-updates",
     description:
-      "Technical SEO best practices for web developers, from semantic HTML and structured data to Core Web Vitals optimization.",
-    categories: ["SEO"],
+      "A roundup of the improvements and features we've shipped recently, and what they mean for you.",
+    categories: ["News"],
     image: blogImage1,
-    imageAlt: "SEO dashboard screenshot",
+    imageAlt: "Team reviewing recent product updates",
     author: "Jane Doe",
     date: "2026-02-20",
   },
   {
-    title: "Why We Moved from WordPress to Webflow",
-    slug: "wordpress-to-webflow-migration",
+    title: "Five Trends Shaping Our Industry This Year",
+    slug: "industry-trends",
     description:
-      "The challenges and benefits of migrating client sites from WordPress to Webflow, and what we learned along the way.",
-    categories: ["Development"],
+      "The shifts we're watching closely, and how forward-thinking teams are responding to them.",
+    categories: ["Insights"],
     image: blogImage2,
-    imageAlt: "Webflow editor interface",
+    imageAlt: "Charts illustrating industry trends",
     author: "Jane Doe",
     date: "2026-02-15",
   },
   {
-    title: "The Power of Strategic Copywriting for B2B",
-    slug: "strategic-copywriting-b2b",
+    title: "The Power of Clear, Customer-Focused Messaging",
+    slug: "customer-focused-messaging",
     description:
-      "How targeted messaging and ICP research can transform your website from a digital brochure into a lead generation machine.",
-    categories: ["Business"],
+      "How sharper messaging turns a website from a digital brochure into a tool that actually converts.",
+    categories: ["Insights"],
     image: blogImage3,
-    imageAlt: "Business strategy session",
+    imageAlt: "Whiteboard messaging workshop",
     author: "Jane Doe",
     date: "2026-02-10",
   },
   {
-    title: "Designing Accessible Websites Without Sacrificing Aesthetics",
-    slug: "accessible-web-design",
+    title: "Designing for Everyone: A Practical Accessibility Guide",
+    slug: "accessibility-guide",
     description:
-      "Practical techniques for building beautiful websites that work for everyone, including keyboard navigation and screen reader optimization.",
-    categories: ["Web Design"],
+      "Practical techniques for building experiences that work for everyone, including keyboard navigation and screen reader support.",
+    categories: ["Guides"],
     image: heroImage,
-    imageAlt: "Accessible design components",
+    imageAlt: "Accessible interface components",
     author: "Jane Doe",
     date: "2026-02-05",
   },
   {
-    title: "How to Increase Organic Traffic by 500% in 6 Months",
-    slug: "increase-organic-traffic",
+    title: "A Step-by-Step Walkthrough of Your First Project",
+    slug: "first-project-walkthrough",
     description:
-      "A step-by-step breakdown of the SEO strategy we used to grow a client's organic traffic from 200 to over 1,200 monthly visitors.",
-    categories: ["SEO"],
+      "Follow along as we set up a project from scratch and explain each decision along the way.",
+    categories: ["Tutorials"],
     image: blogImage1,
-    imageAlt: "Analytics dashboard showing traffic growth",
+    imageAlt: "Step-by-step project walkthrough on screen",
     author: "Jane Doe",
     date: "2026-01-28",
   },
   {
-    title: "The Complete Guide to Webflow CMS Collections",
-    slug: "webflow-cms-collections-guide",
+    title: "The Tools and Resources We Rely On",
+    slug: "tools-and-resources",
     description:
-      "Everything you need to know about structuring CMS collections in Webflow for scalable, maintainable content management.",
-    categories: ["Development"],
+      "A curated list of the software, templates, and references our team reaches for every day.",
+    categories: ["Resources"],
     image: blogImage2,
-    imageAlt: "Webflow CMS collection editor",
+    imageAlt: "Collection of tools and resources",
     author: "Jane Doe",
     date: "2026-01-20",
-  },
-  {
-    title: "Brand Photography Tips for Small Business Websites",
-    slug: "brand-photography-tips",
-    description:
-      "How to plan, shoot, and edit brand photography that strengthens your website's visual identity and builds trust with visitors.",
-    categories: ["Business"],
-    image: blogImage3,
-    imageAlt: "Professional brand photography setup",
-    author: "Jane Doe",
-    date: "2026-01-15",
   },
   {
     title: "Building a Design System from Scratch",
     slug: "design-system-from-scratch",
     description:
-      "How we build scalable, consistent design systems that accelerate development and improve quality.",
-    categories: ["Web Design"],
+      "How we build scalable, consistent systems that accelerate work and improve quality.",
+    categories: ["Guides"],
     image: featuredImage,
     imageAlt: "Design system component library",
     author: "Jane Doe",
