@@ -28,7 +28,7 @@
  * @example Category-filtered on a service page
  * ```astro
  * <CaseStudyGrid
- *   categories={["Web Design", "SEO"]}
+ *   categories={["Design", "Marketing"]}
  *   limit={3}
  *   columns={3}
  *   heading="Related Projects"
@@ -162,11 +162,11 @@ interface Props {
    * Filter by categories — shows studies matching **any** of the listed
    * categories (OR logic). Case-insensitive, exact match.
    *
-   * A case study with `categories: ["Web Design", "SEO"]` would match
-   * if the filter includes `"web design"` or `"seo"`.
+   * A case study with `categories: ["Design", "Marketing"]` would match
+   * if the filter includes `"design"` or `"marketing"`.
    *
-   * @example categories={["Web Design"]}
-   * @example categories={["Web Design", "SEO", "Brand Strategy"]}
+   * @example categories={["Design"]}
+   * @example categories={["Design", "Marketing", "Branding"]}
    */
   categories?: string[];
 

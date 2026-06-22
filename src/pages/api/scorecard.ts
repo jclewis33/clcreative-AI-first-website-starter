@@ -429,7 +429,7 @@ async function sendUserResultsEmail(env: Env, payload: ScorecardPayload) {
   const html = `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:640px;margin:0 auto;color:#1a1a1a;padding:24px;">
       <p style="margin:0 0 8px;">Hi ${escape(firstName)},</p>
-      <p style="margin:0 0 24px;">Here's your full Marketing Foundation Scorecard. Save this email — you can refer back to it any time.</p>
+      <p style="margin:0 0 24px;">Here's your full Scorecard. Save this email — you can refer back to it any time.</p>
 
       <div style="background:#fafafa;border:1px solid #eee;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px;">
         <p style="margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#888;">Your Score</p>

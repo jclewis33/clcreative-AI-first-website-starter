@@ -47,8 +47,7 @@ export interface CaseStudyDetail extends CaseStudy {
 }
 
 /* ── Available categories ─────────────────────────────────────────────────
-   Web Design | Webflow Development | SEO | Brand Strategy |
-   Photography | Migration | Automation | Website Development
+   Design | Development | Strategy | Branding | Marketing | Consulting
    ──────────────────────────────────────────────────────────────────────── */
 
 /* ── Case study data ──────────────────────────────────────────────────────
@@ -62,7 +61,7 @@ export const caseStudies: CaseStudyDetail[] = [
     slug: "acme-corp-rebrand",
     description:
       "A complete brand refresh and website redesign that increased lead generation by 340% and established a cohesive visual identity across all digital touchpoints.",
-    categories: ["Brand Strategy", "Web Design", "Webflow Development"],
+    categories: ["Branding", "Design", "Development"],
     image: projectImage1,
     imageAlt: "Acme Corp website redesign showcase",
     date: "2026-02-28",
@@ -78,11 +77,11 @@ export const caseStudies: CaseStudyDetail[] = [
     content: [
       {
         type: "richText",
-        html: "<h3>Introduction</h3><p>Acme Corp had outgrown their dated WordPress site. Their brand no longer reflected the premium services they offered, and lead generation had stalled. They needed a complete digital transformation that would position them as an industry leader while driving measurable business results.</p>",
+        html: "<h3>Introduction</h3><p>Acme Corp had outgrown their dated website. Their brand no longer reflected the premium services they offered, and new inquiries had stalled. They needed a complete digital refresh that would position them as an industry leader while driving measurable business results.</p>",
       },
       {
         type: "richTextWithImage",
-        html: "<h3>The Challenge</h3><p>The existing website was built on an outdated WordPress theme with inconsistent branding, slow load times, and a confusing user journey. Lead conversion had plateaued despite increasing ad spend, signaling that the problem was the destination — not the traffic.</p><p>We needed to rebuild their entire digital presence from the ground up while preserving the SEO equity they had built over the years.</p>",
+        html: "<h3>The Challenge</h3><p>The existing website was dated, with inconsistent branding, slow load times, and a confusing user journey. Conversions had plateaued despite steady traffic, signaling that the problem was the destination — not the demand.</p><p>We needed to rebuild their entire site from the ground up while preserving the search visibility they had built over the years.</p>",
         image: projectImage2,
         imageAlt: "Acme Corp brand exploration",
       },
@@ -100,7 +99,7 @@ export const caseStudies: CaseStudyDetail[] = [
       },
       {
         type: "richTextColumns",
-        html: "<h3>The Approach</h3><p>We started with an in-depth brand strategy workshop to uncover Acme Corp's core values and competitive differentiators. From there, we developed a visual identity system and translated it into a high-converting Webflow website with custom animations and a robust CMS.</p><p>The design process involved three rounds of iteration, with stakeholder feedback incorporated at every stage. We prioritized mobile-first design, accessibility, and page speed throughout the build.</p><p>Content strategy was developed in parallel with the design work, ensuring that every page had clear messaging and a strong call to action aligned with the business goals.</p>",
+        html: "<h3>The Approach</h3><p>We started with an in-depth brand strategy workshop to uncover Acme Corp's core values and competitive differentiators. From there, we developed a visual identity system and translated it into a fast, high-converting website with custom animations and a robust CMS.</p><p>The design process involved three rounds of iteration, with stakeholder feedback incorporated at every stage. We prioritized mobile-first design, accessibility, and page speed throughout the build.</p><p>Content strategy was developed in parallel with the design work, ensuring that every page had clear messaging and a strong call to action aligned with the business goals.</p>",
       },
       {
         type: "stats",
@@ -120,8 +119,8 @@ export const caseStudies: CaseStudyDetail[] = [
     title: "E-Commerce Migration for Summit Outdoor",
     slug: "summit-outdoor-migration",
     description:
-      "Migrated a legacy WordPress storefront to a modern Webflow CMS with custom product filtering, resulting in a 60% improvement in page load speed.",
-    categories: ["Migration", "Webflow Development", "SEO"],
+      "Rebuilt a slow, legacy storefront on a modern platform with custom product filtering, resulting in a 60% improvement in page load speed.",
+    categories: ["Development", "Strategy", "Marketing"],
     image: projectImage2,
     imageAlt: "Summit Outdoor e-commerce site",
     date: "2026-02-15",
@@ -137,7 +136,7 @@ export const caseStudies: CaseStudyDetail[] = [
     content: [
       {
         type: "richText",
-        html: "<h3>Introduction</h3><p>Summit Outdoor's WordPress site was slow, difficult to maintain, and losing sales. We planned a phased migration to Webflow, ensuring zero downtime and preserving all SEO equity through careful redirect mapping and content migration.</p>",
+        html: "<h3>Introduction</h3><p>Summit Outdoor's storefront was slow, difficult to maintain, and losing sales. We planned a phased replatform, ensuring zero downtime and preserving all search visibility through careful redirect mapping and content migration.</p>",
       },
       {
         type: "fullWidthImage",
@@ -146,9 +145,9 @@ export const caseStudies: CaseStudyDetail[] = [
       },
       {
         type: "richTextWithImage",
-        html: "<h3>From Legacy to Modern</h3><p>The migration involved auditing over 500 product pages, mapping URL structures, and building a custom CMS architecture in Webflow that would scale with their catalog growth.</p><p>We implemented custom product filtering, optimized all imagery, and built an intuitive checkout flow that reduced cart abandonment by 35%.</p>",
+        html: "<h3>From Legacy to Modern</h3><p>The migration involved auditing over 500 product pages, mapping URL structures, and building a custom CMS architecture that would scale with their catalog growth.</p><p>We implemented custom product filtering, optimized all imagery, and built an intuitive checkout flow that reduced cart abandonment by 35%.</p>",
         image: projectImage4,
-        imageAlt: "SEO audit results and migration mapping",
+        imageAlt: "Migration mapping and redirect plan",
       },
       {
         type: "imageGrid",
@@ -168,7 +167,7 @@ export const caseStudies: CaseStudyDetail[] = [
     slug: "bloom-wellness-photography",
     description:
       "Planned and directed a lifestyle photography shoot that captured the essence of the brand, providing assets used across web, social, and print.",
-    categories: ["Photography", "Brand Strategy"],
+    categories: ["Branding", "Strategy"],
     image: projectImage3,
     imageAlt: "Bloom Wellness brand photography",
     date: "2026-02-01",
@@ -218,11 +217,11 @@ export const caseStudies: CaseStudyDetail[] = [
     ],
   },
   {
-    title: "SEO Strategy for GreenLeaf Organics",
+    title: "Organic Growth for GreenLeaf Organics",
     slug: "greenleaf-organics-seo",
     description:
-      "Developed a comprehensive SEO strategy including technical audits, content optimization, and link building that grew organic traffic by 520% in six months.",
-    categories: ["SEO", "Web Design"],
+      "Developed a comprehensive growth strategy spanning technical fixes, content, and outreach that grew organic traffic by 520% in six months.",
+    categories: ["Marketing", "Design"],
     image: projectImage4,
     imageAlt: "GreenLeaf Organics analytics dashboard",
     date: "2026-01-20",
@@ -237,16 +236,16 @@ export const caseStudies: CaseStudyDetail[] = [
     content: [
       {
         type: "richText",
-        html: "<h3>Introduction</h3><p>GreenLeaf Organics was virtually invisible in search results despite having quality products. Our comprehensive audit revealed critical technical issues, thin content, and missed keyword opportunities across their entire site.</p>",
+        html: "<h3>Introduction</h3><p>GreenLeaf Organics was hard to find online despite having quality products. Our comprehensive audit revealed critical technical issues, thin content, and missed opportunities across their entire site.</p>",
       },
       {
         type: "fullWidthImage",
         image: projectImage4,
-        imageAlt: "SEO audit findings dashboard",
+        imageAlt: "Growth audit findings dashboard",
       },
       {
         type: "richTextColumns",
-        html: "<h3>Strategy & Execution</h3><p>We implemented a three-phase approach: technical foundation fixes, content optimization and creation, and authority building through strategic outreach. Each phase built on the last, creating compounding growth in organic visibility.</p><p>Phase one addressed site speed, crawlability, and structured data. Phase two involved rewriting key landing pages and launching a content hub targeting high-intent keywords. Phase three focused on earning backlinks from industry publications and building topical authority.</p><p>Throughout the engagement, we provided monthly reporting with clear KPIs and actionable recommendations, ensuring the team understood the strategy and could sustain the momentum independently.</p>",
+        html: "<h3>Strategy & Execution</h3><p>We implemented a three-phase approach: technical foundation fixes, content improvement and creation, and audience building through strategic outreach. Each phase built on the last, creating compounding growth in visibility.</p><p>Phase one addressed site speed and technical health. Phase two involved rewriting key pages and launching a content hub around the topics their audience cared about. Phase three focused on earning coverage from industry publications and building authority.</p><p>Throughout the engagement, we provided monthly reporting with clear KPIs and actionable recommendations, ensuring the team understood the strategy and could sustain the momentum independently.</p>",
       },
       {
         type: "stats",
@@ -263,7 +262,7 @@ export const caseStudies: CaseStudyDetail[] = [
     slug: "relay-logistics-automation",
     description:
       "Built custom automation workflows connecting their CRM, invoicing, and project management tools — saving the team over 15 hours per week.",
-    categories: ["Automation", "Website Development"],
+    categories: ["Consulting", "Development"],
     image: projectImage5,
     imageAlt: "Relay Logistics automation dashboard",
     date: "2026-01-10",
@@ -311,7 +310,7 @@ export const caseStudies: CaseStudyDetail[] = [
     slug: "architect-studio-portfolio",
     description:
       "Designed and developed a minimal portfolio site showcasing architectural projects with full-bleed imagery and smooth scroll-driven animations.",
-    categories: ["Web Design", "Webflow Development"],
+    categories: ["Design", "Development"],
     image: heroImage,
     imageAlt: "Architect Studio portfolio website",
     date: "2025-12-15",

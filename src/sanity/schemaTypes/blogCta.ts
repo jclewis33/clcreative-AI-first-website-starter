@@ -61,7 +61,7 @@ export const blogCta = defineType({
     defineField({
       name: "linkUrl",
       title: "Link URL",
-      description: "Where the entire CTA block links to. Can be a relative path (e.g. /m2m-framework) or a full URL.",
+      description: "Where the entire CTA block links to. Can be a relative path (e.g. /contact) or a full URL.",
       type: "url",
       validation: (rule) =>
         rule
