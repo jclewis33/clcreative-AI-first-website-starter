@@ -280,21 +280,176 @@ hand-edit the clamp expression. (`min` = size at 320px, `max` = size at 1440px.)
 These are binary/vector swaps you guide (the CLI auto-syncs only the logo's
 accessible `LOGO_LABEL` to the site name). Tell the user exactly what to replace —
 keep the **filenames** and nothing else needs touching; if they rename, update the
-matching `SITE.*Path` in [site.ts](../../../src/config/site.ts).
+matching `SITE.*Path` in [site.ts](../../../src/config/site.ts). **Swap every one of
+these — don't leave any placeholder logo behind.**
 
 | Asset | File (in [public/images/](../../../public/images/)) | Notes |
 |---|---|---|
 | Open Graph image | `og-image.png` (`SITE.ogImagePath`) | 1200×630, the social-share card |
-| Favicon | `favicon.png` (`SITE.logoPath` — also the JSON-LD logo) | square |
-| Apple touch / web clip | `webclip.png` (`SITE.appleTouchIconPath`) | 180×180 |
+| Favicon | `favicon.png` (`SITE.logoPath` — also the JSON-LD logo) | **square** |
+| Apple touch / web clip | `webclip.png` (`SITE.appleTouchIconPath`) | **square**, 180×180 |
+
+> **If the brand logo isn't square, make a square version.** The favicon, the
+> webclip, and the Sanity Studio badge (step 1e) all render in square tiles. If the
+> user only has a wide/horizontal logo, **generate a square asset yourself** — take
+> the symbol/monogram alone (drop the wordmark) and center it on a tight transparent
+> square, or center the full logo on a square canvas with even padding (it will
+> letterbox — fine, but a square mark fills best). The Pillow trim/center script in
+> step 1e produces exactly this; reuse it for the favicon/webclip too.
 
 **Inline logo (the nav/footer wordmark)** is vector path data in
 [src/config/logo-paths.ts](../../../src/config/logo-paths.ts) — `LOGO_MARK_PATHS`
 (the monogram), `LOGO_WORDMARK_PATHS` (the wordmark), and `LOGO_VIEWBOX`. To
 re-brand it, replace those `d=…` path strings (and the viewBox) from the new
-logo's SVG; both the front-end [Logo.astro](../../../src/components/global/Logo.astro)
-and the Studio logo render from this one file. The CLI already updates
-`LOGO_LABEL` to the new site name.
+logo's SVG; the front-end [Logo.astro](../../../src/components/global/Logo.astro)
+renders from this file. The CLI already updates `LOGO_LABEL` to the new site name.
+**The Sanity Studio logo + dashboard icon are a separate job** — see step 1e (the
+starter ships them reading from `logo-paths.ts`, but the dashboard rail icon needs
+the self-contained data-URI approach below, so re-point them per 1e during setup).
+
+#### 1e. Sanity Studio branding — navbar logo + dashboard rail icon
+Make the fork's Studio show **the project's own logo in BOTH places:** (1) the
+Studio **navbar** (top-left inside the studio app), and (2) the Sanity **dashboard
+app rail** (the vertical icon strip in the outer `www.sanity.io` dashboard shell,
+one icon per deployed studio). The starter ships placeholder versions of these two
+components reading from `logo-paths.ts`; this step replaces them with the
+data-URI approach that the dashboard rail requires. **Apply this during setup;
+verify it after `npx sanity deploy` (step 4).**
+
+**Why this is tricky (the mechanism — do not skip).** The dashboard does NOT render
+your icon component live. Per Sanity's docs (`/docs/dashboard/dashboard-configure`):
+- The workspace `icon` from `sanity.config.ts` is **extracted into the studio
+  manifest** (`<host>.sanity.studio/static/create-manifest.json`,
+  `workspaces[0].icon`) on every `npx sanity deploy`.
+- The dashboard then renders that icon inside a **sandboxed `srcdoc` iframe** whose
+  stylesheet forces `svg { width:100%; aspect-ratio:1 }`.
+
+Hard rules that follow:
+- The icon MUST be a **static, self-contained SVG** (no hooks, context, imports of
+  external values, or dynamic logic).
+- Size it with the `width`/`height` **ATTRIBUTES** (`width="1em" height="1em"`) plus
+  a `viewBox`. Do NOT use an inline `style` for size — it beats the iframe's
+  stylesheet and pins the icon tiny.
+- Do NOT use an `<img>` for the icon — the iframe's `svg{width:100%}` rule doesn't
+  target `<img>`, so it renders at intrinsic (tiny) size, and a bundled asset URL
+  404s in the dashboard's outer document.
+- A raster logo CAN be used by embedding it as a base64 data URI inside an
+  `<svg><image href="data:..."/></svg>` — the data URI is self-contained, so it
+  serializes into the manifest and renders in the sandbox. (A pure-vector inline
+  `<svg>` works too and is crisper — if the brand has clean vector paths, keep the
+  `logo-paths.ts` inline-`<svg>` approach instead; the data-URI route below is for
+  raster/webclip-only logos.)
+
+**Input:** a square logo badge PNG with the logo centered — in this starter,
+`public/images/webclip.png` (the apple-touch/webclip image, step 1d). A wide logo
+will letterbox in the square tile; a square mark fills best.
+
+**Step 1 — generate the trimmed square data URI.** The source badge usually has
+built-in transparent padding, making the logo float small in the tile. Trim it to
+its content bbox, re-center on a tight square, embed as base64. Requires Pillow
+(`python3 -m pip install --user Pillow`). This WRITES
+`src/sanity/components/studioIconData.ts`:
+
+```bash
+python3 - <<'PY'
+from PIL import Image
+import base64, io
+src = Image.open("public/images/webclip.png").convert("RGBA")
+logo = src.crop(src.getbbox())            # trim transparent padding
+w, h = logo.size
+margin = round(0.05 * max(w, h))
+side = max(w, h) + 2 * margin
+canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+canvas.paste(logo, ((side - w)//2, (side - h)//2), logo)   # center on tight square
+buf = io.BytesIO(); canvas.save(buf, "PNG", optimize=True)
+b64 = base64.b64encode(buf.getvalue()).decode()
+open("src/sanity/components/studioIconData.ts","w").write(
+'/**\n * Square brand badge for the Studio workspace `icon` + navbar logo, as a\n'
+' * base64 data URI. Derived from the square webclip with padding trimmed and the\n'
+' * logo re-centered on a tight square. Data URI (not an asset import) because the\n'
+' * dashboard serializes the icon into its manifest and renders it in a sandboxed\n'
+' * iframe where a bundled URL 404s. Regenerate with the Pillow trim script.\n */\n'
+'export const STUDIO_ICON_DATA_URI =\n  "data:image/png;base64,' + b64 + '";\n')
+print("wrote studioIconData.ts; square side =", side)
+PY
+```
+
+**Step 2 — `StudioIcon.tsx` (dashboard rail icon): inline SVG, attribute-sized.**
+Set the `viewBox` and `<image>` width/height to the square `side` **the script
+printed** (it's `132` below only as an example — substitute the printed value).
+
+```tsx
+import { STUDIO_ICON_DATA_URI } from "./studioIconData";
+
+export function StudioIcon() {
+  return (
+    <svg
+      width="1em"
+      height="1em"
+      viewBox="0 0 132 132"            /* match the square `side` from step 1 */
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="<Brand> icon"
+    >
+      <image href={STUDIO_ICON_DATA_URI} x={0} y={0} width={132} height={132} />
+    </svg>
+  );
+}
+export default StudioIcon;
+```
+
+**Step 3 — `StudioLogo.tsx` (navbar): plain `<img>` is fine here.** The navbar
+renders in-app (NOT serialized, NOT sandboxed), so an `<img>` data URI works and is
+simplest.
+
+```tsx
+import { STUDIO_ICON_DATA_URI } from "./studioIconData";
+
+export function StudioLogo() {
+  return (
+    <img
+      src={STUDIO_ICON_DATA_URI}
+      alt="<Brand> logo"
+      style={{ height: "32px", width: "auto", display: "block" }}
+    />
+  );
+}
+export default StudioLogo;
+```
+
+**Step 4 — wire them in `sanity.config.ts`** (already wired in the starter; confirm
+the imports still resolve after the edits above):
+
+```ts
+import { StudioLogo } from "./src/sanity/components/StudioLogo";
+import { StudioIcon } from "./src/sanity/components/StudioIcon";
+
+export default defineConfig({
+  // ...
+  icon: StudioIcon,                              // DASHBOARD RAIL icon (serialized to manifest)
+  studio: { components: { logo: StudioLogo } },  // NAVBAR logo
+});
+```
+
+**Step 5 — deploy & VERIFY (in step 4 below; do not skip the manifest check).**
+After `npx sanity build` + `npx sanity deploy`, confirm the icon serialized as an
+inline `<svg>` (NOT an `<img>`, NOT empty):
+
+```bash
+curl -s "https://<your-studio-host>.sanity.studio/static/create-manifest.json" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['workspaces'][0]['icon'][:200])"
+```
+
+Expected output begins with:
+`<svg width="1em" height="1em" viewBox="0 0 132 132" ...><image href="data:image/png;base64,...`
+If it shows an `<img …>` or is empty, the rail icon will be broken/tiny.
+
+**Gotchas to tell the user:**
+- Changes only appear after `npx sanity deploy`; the dashboard caches the rail icon
+  hard — hard-refresh (Cmd/Ctrl+Shift+R), possibly twice.
+- A wide (non-square) logo sits centered with space above/below in the square tile —
+  inherent, not a bug. For edge-to-edge fill, supply a square mark (symbol only, no
+  wordmark).
 
 ### 2. Create the Sanity project (MCP)
 1. `list_organizations` → pick the target org (ask if more than one).
@@ -348,7 +503,10 @@ This is the load-bearing step — get it right so the new project's Studio and t
 site's queries actually work. **Prerequisite:** step 3 already pointed
 `sanity.cli.ts` / `site.shared.mjs` at the new `projectId` + `dataset`, so the
 Sanity CLI now targets the new project. Make sure you're logged in to the same
-Sanity account that owns it (`npx sanity login` if needed).
+Sanity account that owns it (`npx sanity login` if needed). **Also apply the Studio
+branding (step 1e) before this deploy** — the workspace `icon` is extracted into the
+manifest *at deploy time*, so the navbar logo + dashboard rail icon must already be
+in place when you run `npx sanity deploy`.
 
 1. **Validate the schema compiles first** — catch errors before they hit the new
    project: `npx sanity build` (compiles the Studio incl. the schema). Fix any
@@ -377,6 +535,14 @@ Sanity account that owns it (`npx sanity login` if needed).
      changed `sanityApiVersion` in step 3, also update the matching literals in
      `sanity.config.ts` (`STRUCTURE_API_VERSION`, `visionTool` default) and
      `astro.config.mjs` so they agree.
+5. **Verify the Studio branding landed** (step 1e) — check the deployed manifest
+   serialized the icon as an inline `<svg><image href="data:…">` (not an `<img>`,
+   not empty), then hard-refresh the dashboard rail:
+   ```bash
+   curl -s "https://<studioHost>.sanity.studio/static/create-manifest.json" \
+     | python3 -c "import sys,json; print(json.load(sys.stdin)['workspaces'][0]['icon'][:200])"
+   ```
+   And confirm the navbar logo shows the brand mark inside the Studio.
 
 > **No content seeding required.** A fresh project is empty and the site is
 > null-safe — `siteSettings` is queried with `?.… ?? null`, so pages render
@@ -436,6 +602,11 @@ Then run the **§7 post-launch verification** curl block from the checklist.
 - **Fonts and font sizes were explicitly discussed** (steps 1b/1c) — the user
   either confirmed the starter defaults or supplied new typefaces / a new fluid
   type scale, and those were applied.
+- **Brand assets swapped** (steps 1d/1e) — OG image, favicon, and webclip replaced
+  (square versions generated where the logo isn't square), the front-end wordmark
+  re-pointed, and the **Sanity Studio navbar logo + dashboard rail icon** show the
+  brand mark — verified via the deployed `create-manifest.json` (inline `<svg>`, not
+  an `<img>`).
 - CORS origins added; Viewer token created and placed.
 - The user has the residual Cloudflare/GitHub dashboard list and knows the content
   scaffolding still needs their copy.
