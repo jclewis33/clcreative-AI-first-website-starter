@@ -8,20 +8,27 @@
  *     videos, or gradient divs. Use `<Visual variant="background">`.
  *   - `default` — main content, rendered inside a `.u-container`.
  *
- * Always use `paddingTop="page-top"` on the first section after the nav.
+ * Padding defaults to `'main'` — just omit the prop for almost every section
+ * (including heroes and the first section). Don't add `'large'` by default.
+ * `'page-top'` is ONLY for a *fixed* navbar; this project's nav is sticky, so
+ * the first section does not need extra top padding to clear it.
  *
- * @example Dark hero with background image
+ * The container (`.u-container`) is a flex column with a built-in `gap`
+ * (default `--space-8`). Direct children are spaced apart automatically —
+ * don't add `marginBottom` between them; retune the `gap` prop instead.
+ *
+ * @example Dark hero with background image (default padding — sticky nav)
  * ```astro
- * <Section theme="dark" paddingTop="page-top" minHeight id="hero">
+ * <Section theme="dark" minHeight id="hero">
  *   <Visual slot="background" src={bg} alt="" variant="background" priority />
  *   <Heading tag="h1" variant="display-xl">Page Title</Heading>
  *   <Text variant="large">Supporting text.</Text>
  * </Section>
  * ```
  *
- * @example Standard content section
+ * @example Standard content section (padding="main" is the default)
  * ```astro
- * <Section padding="large" theme="light">
+ * <Section theme="light">
  *   <Heading tag="h2" variant="h2">Section Title</Heading>
  *   <Text variant="regular">Body copy.</Text>
  * </Section>
@@ -29,7 +36,7 @@
  *
  * @example Narrow prose section
  * ```astro
- * <Section container="narrow" padding="main">
+ * <Section container="narrow">
  *   <Text variant="large">Long-form article text…</Text>
  * </Section>
  * ```
@@ -53,7 +60,7 @@ type PaddingSize =
   | 'main'
   /** Large — 5.5–10rem fluid */
   | 'large'
-  /** Page top — 10–14rem fluid, use on the first section on a page */
+  /** Page top — 10–14rem fluid; fixed-navbar layouts only (rare). Not needed for this project's sticky nav. */
   | 'page-top';
 
 type ContainerSize =
@@ -72,11 +79,12 @@ type ContainerSize =
  *
  * **Props:**
  * - `theme` — color theme: inherit, light, dark, brand
- * - `padding` — vertical padding: none, small, main, large, page-top (default: `'main'`)
- * - `paddingTop` — override top padding only (use `'page-top'` on the first section)
+ * - `padding` — vertical padding: none, small, main, large, page-top (default: `'main'` — just omit it)
+ * - `paddingTop` — override top padding only (`'page-top'` is fixed-navbar only — not this project)
  * - `paddingBottom` — override bottom padding only
  * - `minHeight` — full viewport height `min-height: 100svh` (default: `false`)
  * - `container` — container max-width: default, narrow, wide, full (default: `'default'`)
+ * - `gap` — flex gap between the container's direct children, `0`–`8` (default: `--space-8`)
  * - `id` — HTML id for same-page anchor links
  * - `class` — extra classes on `<section>`
  *
@@ -86,12 +94,12 @@ interface Props {
   /**
    * **Section props:**
    * - `theme` — inherit, light, dark, brand (cascades to children)
-   * - `padding` — sets both top + bottom (default 'main'). Override per-side with paddingTop / paddingBottom.
-   * - `paddingTop` — override top only (use 'page-top' on first section after nav)
+   * - `padding` — sets both top + bottom (default 'main' — just omit it). Override per-side with paddingTop / paddingBottom.
+   * - `paddingTop` — override top only ('page-top' is fixed-navbar only — not needed for this project's sticky nav)
    * - `paddingBottom` — override bottom only
    * - `minHeight` — 100svh for hero sections
    * - `container` — default, narrow, wide, full
-   * - `gap` — 0–8, container flex gap (default: 8 / `--space-8`)
+   * - `gap` — 0–8, container flex gap (default: 8 / `--space-8`). Spaces direct children automatically — retune here, don't add `marginBottom` between siblings.
    * - `id` — anchor link target
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to `<section>`
@@ -104,7 +112,7 @@ interface Props {
    * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
    * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
    * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
-   * | `'page-top'` | 10rem → 14rem (160–224px) | First section — clears fixed nav   |
+   * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)    |
    *
    * **Slots:** `background` (absolute overlay for images/videos), default (container content)
    */
@@ -131,10 +139,10 @@ interface Props {
    * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
    * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
    * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
-   * | `'page-top'` | 10rem → 14rem (160–224px) | First section — clears fixed nav   |
+   * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)    |
    *
    * @default 'main'
-   * @example padding="large"
+   * @example padding="small"
    */
   padding?: PaddingSize;
 
@@ -147,9 +155,9 @@ interface Props {
    * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
    * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
    * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
-   * | `'page-top'` | 10rem → 14rem (160–224px) | First section — clears fixed nav   |
+   * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)    |
    *
-   * @example paddingTop="page-top"
+   * @example paddingTop="none"
    */
   paddingTop?: PaddingSize;
 
@@ -162,7 +170,7 @@ interface Props {
    * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
    * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
    * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
-   * | `'page-top'` | 10rem → 14rem (160–224px) | First section — clears fixed nav   |
+   * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)    |
    *
    * @example paddingBottom="none"
    */
