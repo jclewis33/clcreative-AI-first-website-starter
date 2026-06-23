@@ -549,10 +549,10 @@ The `theme` prop sets `data-theme` on `<html>`, which cascades CSS color variabl
 <!-- Dark-themed page -->
 <BaseLayout title="Blog | Site Name" theme="dark">...</BaseLayout>
 
-<!-- Mixed — light page with one dark hero section -->
+<!-- Mixed — light page with one dark hero section (default padding throughout) -->
 <BaseLayout title="About | Site Name">
-  <Section theme="dark" paddingTop="page-top">Hero</Section>
-  <Section padding="large">Light content</Section>
+  <Section theme="dark">Hero</Section>
+  <Section>Light content</Section>
 </BaseLayout>
 ```
 
@@ -775,8 +775,8 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `theme` | `'light'`\|`'dark'`\|`'brand'` | — | Sets `data-theme`; cascades CSS variables to all children |
-| `padding` | `'none'`\|`'xsmall'`\|`'small'`\|`'main'`\|`'large'`\|`'page-top'` | `'main'` | Equal top + bottom padding |
-| `paddingTop` | same as `padding` | — | Override top only. Use `'page-top'` on the first section of a page. |
+| `padding` | `'none'`\|`'xsmall'`\|`'small'`\|`'main'`\|`'large'`\|`'page-top'` | `'main'` | Equal top + bottom padding. **Leave it off — `'main'` is the default and the right choice for almost every section.** Don't reach for `'large'` by default (see note below). |
+| `paddingTop` | same as `padding` | — | Override top only. **Do NOT use `'page-top'` here by default** — it's only for a *fixed* nav, and this project's nav is sticky (see note below). |
 | `paddingBottom` | same as `padding` | — | Override bottom only |
 | `minHeight` | `boolean` | `false` | `min-height: 100svh` — hero sections |
 | `container` | `'default'`\|`'narrow'`\|`'wide'`\|`'full'` | `'default'` | Container max-width |
@@ -791,9 +791,13 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
 - `none` → 0
 - `xsmall` → ~1.25–2rem fluid
 - `small` → ~3–5rem fluid
-- `main` → ~4–7rem fluid *(default)*
+- `main` → ~4–7rem fluid *(default — use this for virtually every section)*
 - `large` → ~5.5–10rem fluid
-- `page-top` → ~10–14rem fluid *(always use on the first section after the nav)*
+- `page-top` → ~10–14rem fluid *(only for a **fixed** nav — see note below; not for this project by default)*
+
+> **Default padding: leave it on `main`.** Every `<Section>` already defaults to `padding="main"`, so you don't need to write `padding="main"` at all — just omit the prop. **Do not add `padding="large"` (or any other override) by default.** `main` is the correct rhythm for the overwhelming majority of sections, including content sections, card grids, and listing pages. Only use `large` (or another value) when a specific section genuinely needs more room *and* you've been asked for it (or it's clearly required by a design) — not as a habit. If a section needs more breathing room later, that's a deliberate, manual change.
+
+> **`page-top` is for a FIXED nav only — don't use it on this project by default.** `page-top` exists to push a page's first section down so it clears a navbar that's pinned as a fixed overlay. **This project's navbar is `sticky` by default**, so it sits in normal document flow and the first section does *not* need extra top padding to clear it. Build the first section (hero included) with the normal default padding — omit `paddingTop` entirely. `page-top` stays in the project only for the specific case where someone switches the nav to `fixed`; reach for it then, not before.
 
 **How padding is applied (overriding it):** padding lives **directly on the `<section>`** — the chosen sizes are emitted as `data-padding-top` / `data-padding-bottom` attributes and mapped to `padding-top` / `padding-bottom` in [section.css](src/styles/components/section.css). There are **no spacer divs** (that was a Webflow-port artifact, removed). The mapping rules are wrapped in `:where()` so they carry **zero specificity** — which means any single component/page class can override section padding without an `!important` or attribute-level selector. This is the supported pattern for sections that need responsive or asymmetric padding the props can't express: pass `padding="none"` and drive it from a class, e.g.
 
@@ -808,14 +812,14 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
 ```
 
 ```astro
-<!-- Dark hero with background image -->
-<Section theme="dark" paddingTop="page-top" minHeight id="hero">
+<!-- Dark hero with background image — default padding (sticky nav, no page-top) -->
+<Section theme="dark" minHeight id="hero">
   <Image slot="background" src={bg} alt="" class="u-image" />
   <Heading tag="h1" variant="display-xl">Page Title</Heading>
 </Section>
 
-<!-- Prose section -->
-<Section container="narrow" padding="main">
+<!-- Prose section — padding="main" is the default, shown here only for clarity -->
+<Section container="narrow">
   <Text variant="large">Article body…</Text>
 </Section>
 ```
@@ -1483,7 +1487,8 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 
 ### Standard content section
 ```astro
-<Section theme="light" padding="large">
+<!-- No padding prop — defaults to padding="main", the standard rhythm -->
+<Section theme="light">
   <Layout variant="columns" ratio="5-7" verticalAlign="center">
     <Col slot="col1">
       <Heading variant="eyebrow">Section Label</Heading>
@@ -1498,7 +1503,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 
 ### Card grid section
 ```astro
-<Section padding="large">
+<Section>
   <Heading tag="h2" variant="h2">Our Work</Heading>
   <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
     <Card title="Project One" href="/work/one" ariaLabel="View Project One">
@@ -1511,7 +1516,8 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 
 ### Hero section (first section on page)
 ```astro
-<Section theme="dark" paddingTop="page-top" paddingBottom="large" minHeight id="hero">
+<!-- Sticky nav → no page-top; default padding="main". minHeight drives the hero height. -->
+<Section theme="dark" minHeight id="hero">
   <Image slot="background" src={heroBg} alt="" class="u-image" />
   <Layout variant="stack-centered">
     <Col slot="col1">
@@ -1531,8 +1537,8 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 ### Blog listing page
 ```astro
 <!-- src/pages/blog/index.astro — structure overview -->
-<Section theme="dark" paddingTop="page-top" paddingBottom="main">
-  <!-- Hero with background image + overlay -->
+<Section theme="dark">
+  <!-- Hero with background image + overlay (default padding; sticky nav, no page-top) -->
   <Fragment slot="background">
     <Visual src={heroImage} alt="" variant="background" priority />
     <Overlay strength={75} />
@@ -1546,7 +1552,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 </Section>
 
 <!-- Featured post — 2-column reversed (image left, content right) -->
-<Section padding="large">
+<Section>
   <Layout variant="columns-reversed" verticalAlign="center">
     <Col slot="col1">
       <ContentWrapper>
@@ -1560,7 +1566,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 </Section>
 
 <!-- Blog grid — 3 → 2 → 1 responsive -->
-<Section padding="large">
+<Section>
   <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
     {posts.map(post => <BlogCard {...post} />)}
   </Grid>
@@ -1578,8 +1584,8 @@ import Text       from '../components/ui/Text.astro';
 ---
 <!-- Default theme is light (omit theme prop to use site default) -->
 <BaseLayout title="New Page | Site Name" description="SEO description.">
-  <!-- Always use paddingTop="page-top" on the first section -->
-  <Section paddingTop="page-top">
+  <!-- First section: no padding prop (defaults to "main"); no page-top — nav is sticky -->
+  <Section>
     <Heading tag="h1" variant="h1">New Page</Heading>
     <Text variant="large">Page intro text.</Text>
   </Section>
@@ -1587,7 +1593,7 @@ import Text       from '../components/ui/Text.astro';
 
 <!-- Dark-themed page — pass theme="dark" -->
 <BaseLayout title="Blog | Site Name" description="Our blog." theme="dark">
-  <Section paddingTop="page-top">
+  <Section>
     <Heading tag="h1" variant="h1">Blog</Heading>
     <Text variant="large">Page intro text.</Text>
   </Section>
@@ -1928,3 +1934,5 @@ Avoid these when writing CSS and HTML in this project:
 - Adding `maxWidth` to `<Heading>` or `<Text>` by default — both already have built-in defaults (Heading `30ch`, Text `60ch`; `eyebrow` headings have none). Don't add the prop reflexively when building from a design, and never re-state the default value. Only set `maxWidth` when the design needs a *different* constraint and you've been told (or it's clearly required) to change it
 - Hard-coding per-theme card colors (a `[data-theme="dark"] .card …` branch, or force-applying `.u-theme-light`) for a contrasting card — use the `--surface-*` tier instead (see **Surface tier** under Variables). Define the look once per theme in `themes.css`; the card adapts automatically
 - Putting a contrasting card's `color`/`--text` only on a child layer (or relying solely on the `.u-surface` utility) while the card's own wrapping class sets just `background` — the inner `.u-text` layers then inherit `color` from `.u-section[data-theme]` (white on a dark section) and the text goes invisible on a light card. Set `color: var(--surface-text)` on the card's own wrapping class (the layer that contains all the text)
+- `paddingTop="page-top"` on any section (heroes included) — `page-top` is **only** for a *fixed* navbar, and this project's nav is **sticky** by default, so the first section doesn't need it. Build heroes/first sections with the normal default padding; only use `page-top` if the nav has been switched to `fixed`
+- Adding `padding="large"` (or any padding override) to a section by default — `<Section>` already defaults to `padding="main"`, which is correct for almost every section. Omit the prop entirely (don't even write `padding="main"`). Only override to `large`/another value when a specific section genuinely needs it *and* it's been asked for or is clearly required by a design — never as a habit
