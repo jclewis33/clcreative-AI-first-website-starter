@@ -73,6 +73,8 @@ Update is kept on (not just Create/Delete) because several of these types render
 
 Editors open `/studio`, click **Presentation**, and the same public URL renders drafts inside the Studio iframe. This works via the `sanity-preview-mode` cookie set by `/api/draft-mode/enable` — public visitors never have the cookie, so drafts can't leak. Full flow is documented in [`CLAUDE.md`](CLAUDE.md) under "Deployment, Sanity Studio & Preview".
 
+**No domain yet?** A fork can deploy to the Worker's free `*.workers.dev` URL with working Presentation **before** any custom domain exists — `SITE_URL` is env-overridable and the Studio trusts `https://*.workers.dev` automatically, so the staging→production switch is a no-code env change. Per-client runbook: **§4a "Staging-first deploy"** in [docs/new-project-checklist.md](docs/new-project-checklist.md).
+
 ## 🎨 Cloning this as a template
 
 The site identity is centralized so a new site is mostly config, not find-and-replace:
