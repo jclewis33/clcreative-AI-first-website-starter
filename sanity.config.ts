@@ -23,6 +23,7 @@ import {
 import {
   SANITY_PROJECT_ID,
   SANITY_DATASET,
+  SITE_URL,
 } from "./src/config/site.shared.mjs";
 import { schema } from "./src/sanity/schemaTypes";
 import { resolve } from "./src/sanity/lib/resolve";
@@ -224,19 +225,22 @@ export default defineConfig({
       resolve,
       // The Studio is hosted at <studioHost>.sanity.studio and iframes the live
       // site cross-origin. `initial` is the site origin (overridable via
-      // SANITY_STUDIO_PREVIEW_URL for local `sanity dev` against localhost).
-      // The enable/disable endpoints resolve relative to it and live on the
-      // site (src/pages/api/draft-mode/*).
+      // SANITY_STUDIO_PREVIEW_URL for local `sanity dev` against localhost, or
+      // to point a deployed Studio at a staging *.workers.dev URL). Falls back
+      // to SITE_URL (itself env-overridable — see site.shared.mjs). The
+      // enable/disable endpoints resolve relative to it and live on the site
+      // (src/pages/api/draft-mode/*).
       previewUrl: {
-        initial:
-          process.env.SANITY_STUDIO_PREVIEW_URL || "https://www.example.com",
+        initial: process.env.SANITY_STUDIO_PREVIEW_URL || SITE_URL,
         previewMode: {
           enable: "/api/draft-mode/enable",
           disable: "/api/draft-mode/disable",
         },
       },
-      // Iframe origins the Studio trusts for Comlink/overlay messaging.
-      allowOrigins: ["http://localhost:*", "https://www.example.com"],
+      // Iframe origins the Studio trusts for Comlink/overlay messaging. The
+      // *.workers.dev wildcard trusts any client's staging Worker automatically;
+      // SITE_URL covers the production (or env-overridden) origin.
+      allowOrigins: ["http://localhost:*", "https://*.workers.dev", SITE_URL],
     }),
     // Dev-only GROQ playground for testing queries against the live dataset.
     // Gated so it never appears in the deployed Studio toolbar. The static

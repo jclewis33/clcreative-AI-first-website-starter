@@ -152,7 +152,10 @@ const currentCssVar = (src, name) => {
 const PROMPTS = [
   // ── Identity ──────────────────────────────────────────────────────────────
   { key: "siteName", q: "Site / brand name", from: [SITE, "name"] },
-  { key: "siteUrl", q: "Site URL (no trailing slash)", from: [SHARED, "SITE_URL"], validate: (v) => /^https?:\/\/[^/]+$/.test(v) || "Must be an absolute origin like https://www.example.com (no trailing slash)" },
+  // A staging https://<worker>.<account>.workers.dev URL is a fine answer here
+  // when the real domain isn't ready — SITE_URL is env-overridable at deploy time
+  // (see docs/new-project-checklist.md §4a "Staging-first deploy").
+  { key: "siteUrl", q: "Site URL (no trailing slash — a staging *.workers.dev URL is fine pre-launch)", from: [SHARED, "SITE_URL"], validate: (v) => /^https?:\/\/[^/]+$/.test(v) || "Must be an absolute origin like https://www.example.com (no trailing slash)" },
   { key: "email", q: "Primary contact email", from: [SITE, "email"] },
   { key: "founder", q: "Founder / person name", from: [SITE, "founder"] },
   { key: "tagline", q: "Tagline (appended to <title>)", from: [SITE, "tagline"] },
