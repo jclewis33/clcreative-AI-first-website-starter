@@ -22,6 +22,16 @@
  * Card) is already one element — give it `slot="col1"` / `slot="col2"`
  * directly. `<Col>` is only for grouping *two or more* loose elements.
  *
+ * ⚠️ **Never use `<Col>` to wrap a `<Visual>` together with other content —
+ * use `<ContentWrapper>` instead.** Because `display: contents` removes the
+ * `<Col>` box, `.u-image-wrapper` becomes a direct child of the Layout column
+ * (a grid/flex item with a definite height). Its `height: 100%` then overrides
+ * the inline `aspect-ratio` from `ratio="…"` and stretches the image to a huge
+ * near-portrait size — worst on mobile when the column collapses to
+ * `display: flex`. `<ContentWrapper>` inserts a real `height: auto` block
+ * between the column and the image, so `height: 100%` has nothing definite to
+ * resolve against → falls back to `auto` → the aspect-ratio governs.
+ *
  * @example Multiple loose elements in a column
  * ```astro
  * <Layout variant="columns" verticalAlign="center">
