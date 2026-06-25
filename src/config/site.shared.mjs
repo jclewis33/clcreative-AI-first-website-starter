@@ -27,5 +27,12 @@ export const SANITY_DATASET = "production";
 /** Sanity API version (date-pinned). Keep in sync with Studio/Vision. */
 export const SANITY_API_VERSION = "2025-03-15";
 
-/** Absolute site origin, no trailing slash. */
-export const SITE_URL = "https://www.example.com";
+/**
+ * Absolute site origin, no trailing slash.
+ *
+ * Env-overridable: set `SITE_URL` in the Cloudflare build environment to target
+ * a staging `*.workers.dev` URL before the real domain exists. At launch, change
+ * that build var to the production origin (or unset it to use the literal below).
+ * The literal is the template default fallback.
+ */
+export const SITE_URL = process.env.SITE_URL || "https://www.example.com";

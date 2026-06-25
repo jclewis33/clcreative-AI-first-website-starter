@@ -117,6 +117,18 @@ Optional (keep current if blank): tagline, descriptions, X handle, phone, hours,
 address (locality/region/country), priceRange, GTM/MailerLite/Usercentrics/
 HoneyBook ids.
 
+> **Site URL before the real domain exists — a staging `*.workers.dev` URL is a
+> valid answer.** A fork can deploy and run (including Sanity Presentation) on the
+> Worker's free `https://<worker>.<account>.workers.dev` URL before any custom
+> domain is attached. If the user doesn't have the real domain yet, set `siteUrl`
+> to the staging Worker URL now — no logic changes, and **no code edit is needed
+> to switch later**: `SITE_URL` is env-overridable at deploy time (see
+> `src/config/site.shared.mjs`), so at launch they just change the Cloudflare
+> `SITE_URL` build var to the real origin and redeploy. The full per-client
+> staging→production runbook is **§4a "Staging-first deploy"** in
+> [docs/new-project-checklist.md](../../../docs/new-project-checklist.md); surface
+> it whenever the domain isn't ready.
+
 > **⚠️ Always ask about fonts and font sizes — do not skip.** Steps **1b (fonts)**
 > and **1c (fluid type scale)** below are **required parts of this conversational
 > gather, not optional add-ons.** Even if the user only gives you the identity
@@ -521,6 +533,21 @@ in place when you run `npx sanity deploy`.
    `https://<studioHost>.sanity.studio`. Grab the issued **appId**, write it into
    `deployment.appId` in [sanity.cli.ts](../../../sanity.cli.ts) (step 3 cleared
    it), and commit — so future deploys target the same app.
+
+   > **⚠️ Deploying staging-first?** If the site lives on a staging
+   > `*.workers.dev` URL (no real domain yet — see step 1), the Studio's
+   > Presentation must point there, so deploy with `SANITY_STUDIO_PREVIEW_URL` set
+   > **on the same line before `npx`**:
+   > ```bash
+   > SANITY_STUDIO_PREVIEW_URL=https://<worker>.<account>.workers.dev npx sanity deploy
+   > ```
+   > A plain `npx sanity deploy` bakes in the `SITE_URL` fallback (the
+   > not-yet-existing production domain) and Presentation will load that instead of
+   > staging. At launch, redeploy the Studio with `SANITY_STUDIO_PREVIEW_URL` set to
+   > the real origin (or unset it to fall back to the now-correct `SITE_URL`). The
+   > code already trusts any `https://*.workers.dev` origin via `allowOrigins` in
+   > [sanity.config.ts](../../../sanity.config.ts) — no per-fork edit. Full runbook:
+   > §4a in [docs/new-project-checklist.md](../../../docs/new-project-checklist.md).
 4. **Verify the schema landed correctly** (don't skip — this is the whole point):
    - Sanity MCP `get_schema` on the new project should list **all 13 types**:
      `author, blogCta, blogCtaInline, blogFaq, blogPost, callout, caseStudy,
@@ -562,6 +589,11 @@ Add all four to the new project (with credentials allowed):
 `http://localhost:4321`, `http://localhost:3333`. Use `add_cors_origin` per
 origin. `npx sanity deploy` usually adds the studio host automatically — verify.
 
+> **Staging-first:** if the site is on a staging `*.workers.dev` URL (step 1), add
+> `https://<worker>.<account>.workers.dev` as a CORS origin **with credentials
+> allowed** too — Presentation's draft fetches are credentialed and will fail
+> without it. At launch, add the real `https://www.<newdomain>` the same way.
+
 ### 6. Sanity Viewer token (manual — guide)
 There's no MCP tool to mint tokens. Tell the user: sanity.io/manage → the new
 project → API → Tokens → create a **Viewer** token. Put it in `.env` as
@@ -581,6 +613,12 @@ You cannot click these; list them and point at the checklist:
 - **Cloudflare** (§4): create the worker + connect the repo, set `vars`, add
   `SANITY_API_READ_TOKEN` as an encrypted secret, attach the domain, "Always Use
   HTTPS" on, and the **WAF rate-limit rule** for any public POST endpoint.
+  - **Shipping before the real domain?** Point at **§4a "Staging-first deploy"**:
+    create the SESSION KV namespace + pin its id, set the `SITE_URL` build var to
+    the staging `https://<worker>.<account>.workers.dev` URL, toggle the Production
+    `workers.dev` route on, add that URL to Sanity CORS, and deploy the Studio with
+    `SANITY_STUDIO_PREVIEW_URL` pointed at it (step 4 above). At launch, swap the
+    `SITE_URL` build var to the real origin and redeploy — no code commit.
 - **GitHub** (§5): enable Dependabot alerts/security updates/malware
   alerts/grouped updates; account-level push protection.
 - **Email/lead-capture** (§6): Resend + MailerLite keys/secrets, or drop the
