@@ -14,6 +14,10 @@
  *   `<Col>` component (`src/components/ui/Col.astro`) — the standard wrapper.
  *   Do NOT use a bare `<div slot="col1">` (it becomes the grid child and breaks
  *   alignment/gap); `<Col>` bakes in the required `u-display-contents`.
+ *   EXCEPTION: a column holding a `<Visual>` *together with other content* must
+ *   use `<ContentWrapper>`, NOT `<Col>` — `<Col>`'s `display: contents` lets the
+ *   image's `height: 100%` override its `ratio` aspect-ratio and balloon (see
+ *   the `<Col>` note in `Col.astro` / CLAUDE.md).
  *
  * Slots (stack / stack-centered):
  *   - default — all content goes into a single column
@@ -170,7 +174,7 @@ interface Props {
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
    *
-   * **Slots:** `col1` (left), `col2` (right). A single component (Visual, Grid, Card) takes `slot` directly; wrap MULTIPLE loose elements in the `<Col>` component (`<Col slot="col1">…</Col>`) — the standard wrapper that bakes in `u-display-contents`.
+   * **Slots:** `col1` (left), `col2` (right). A single component (Visual, Grid, Card) takes `slot` directly; wrap MULTIPLE loose elements in the `<Col>` component (`<Col slot="col1">…</Col>`) — the standard wrapper that bakes in `u-display-contents`. EXCEPTION: a column holding a `<Visual>` alongside other content must use `<ContentWrapper>`, not `<Col>` (`<Col>`'s `display: contents` lets the image's `height: 100%` override its `ratio` aspect-ratio and balloon).
    */
   docs?: string;
 

@@ -32,7 +32,18 @@
    ======================================================= */
 
 /* Wrapper for images — controls dimensions, radius, and overflow.
-   Set aspect-ratio inline or via a u-ratio-* utility as needed. */
+   Set aspect-ratio inline or via a u-ratio-* utility as needed.
+
+   ⚠️ The `height: 100%` below only behaves as a fixed-ratio image (letting an
+   inline `aspect-ratio`, e.g. from <Visual ratio="…">, size the box) when the
+   PARENT's height is INDEFINITE — then `height: 100%` resolves to `auto` and the
+   aspect-ratio governs. If the parent height is definite (a grid/flex item, e.g.
+   a Layout column once it collapses to `display: flex`), `height: 100%` wins and
+   STRETCHES the image, overriding the aspect-ratio. This is why a Layout column
+   holding a <Visual> alongside other content must wrap them in <ContentWrapper>
+   (a real `height: auto` block) and NOT in <Col> (`display: contents` removes its
+   box, so .u-image-wrapper becomes a direct grid/flex child with a definite
+   height). See the <Col> note in CLAUDE.md. */
 .u-image-wrapper {
   position: relative;
   overflow: clip;
