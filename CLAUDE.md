@@ -234,7 +234,7 @@ src/
 
 - **Images**: Wrap images with `u-image-wrapper` (controls dimensions, radius, overflow) and apply `u-image` to the `<img>` element (absolute-fill with focal-point positioning via `--x`/`--y`). Use `is-background` on the wrapper for Section background slots.
 - **Alt text — every image needs it**: Every `<Image>`, `<img>`, and `<Visual>` must carry meaningful, descriptive `alt` text. Do **not** ship `alt=""`. SEO crawlers (Ahrefs, etc.) report empty `alt` as a *missing* alt attribute, so even decorative/duplicate images get flagged — write a real description instead of leaving it blank. For images sourced from data (e.g. a `services`/`posts` array), reuse the existing `imageAlt`/`alt` field rather than hardcoding or blanking it. Inside `aria-hidden="true"` containers (decorative collages, cursor-follower effects) the `alt` is skipped by screen readers but still read by crawlers — so it must be present and descriptive there too. The only acceptable exception is a third-party/external image whose markup we don't render (e.g. the HoneyBook tracking pixel), since we have nothing to set `alt` on.
-- **Slots**: When placing multiple loose elements into a Layout column, wrap them in the **`<Col>` component** (`<Col slot="col1">…</Col>`) — the standard wrapper. It renders `<div class="u-display-contents">` with that load-bearing class baked in, so it can't be forgotten (a plain `<div>` would become the grid child and break alignment/gap). Do not hand-write `<div slot="col1" class="u-display-contents">` anymore. Single self-contained components (Visual, Grid, Card) take `slot` directly — no `<Col>` needed.
+- **Slots**: When placing multiple loose elements into a Layout column, wrap them in the **`<Col>` component** (`<Col slot="col1">…</Col>`) — the standard wrapper. It renders `<div class="u-display-contents">` with that load-bearing class baked in, so it can't be forgotten (a plain `<div>` would become the grid child and break alignment/gap). Do not hand-write `<div slot="col1" class="u-display-contents">` anymore. Single self-contained components (Visual, Grid, Card) take `slot` directly — no `<Col>` needed. **Exception:** don't use `<Col>` to wrap a `<Visual>` *alongside other content* — use `<ContentWrapper>` instead. `<Col>`'s `display: contents` lets the image's `height: 100%` override its `ratio` aspect-ratio and balloon; `<ContentWrapper>` is a real block so the aspect-ratio governs (see the ⚠️ note in the `<Col>` section).
 - **Animations**: GSAP data attributes (`data-duration`, `data-distance`, `data-stagger`, `data-prevent-flicker`) are used for scroll-triggered animations. These are not classes.
 - **Component props**: Use TypeScript interfaces for component props. Prop names use camelCase.
 - **Extra attributes (rest spread)**: All UI components accept arbitrary HTML attributes (`style`, `data-*`, `aria-*`, etc.) beyond their explicit props — no extra prop needed. The `[key: string]: any` index signature on each interface allows TypeScript to accept any attribute. Internally, each component destructures known props and captures the remainder with `...rest`, then spreads `{...rest}` (or `{...attrs}` for style-merging components) onto the root element. For components that compute inline styles (Heading, Text, Visual, Overlay), user-provided `style` is extracted from `rest` and merged with the computed style string so both apply. **Button is special:** its `...rest` spreads onto the clickable overlay (`<a>` or `<button>`), not the outer wrapper. BlogCard's `...rest` passes through to the underlying `<Card>` component. Each component also has a `docs` prop (destructured but unused) that serves as a JSDoc documentation holder visible in editor autocomplete — it must be destructured to prevent it from leaking into `...rest` as a DOM attribute.
@@ -246,6 +246,7 @@ src/
 - **Text parent containers**: Direct parents of text elements should not be `display: flex` — flex prevents vertical margin collapsing between text. Use `display: block` or no display override for text wrappers. Add `u-margin-trim` to the direct parent of text elements with margins to prevent unwanted extra space at the edges.
 - **Text spacing**: Bottom-margin-only inside `.u-text` wrappers. Every text style class (`u-text-style-*`, `u-display-*`) declares both `margin-top` and `margin-bottom` via variables, but all `margin-top` variables are `0` — so spacing flows in one direction only (bottom). Inside `.u-text` wrappers, the child's `margin-top` is also forced to `0 !important` by the `.u-text > *` rule. Bare heading tags (`h1`–`h6`) and `p` have `margin-top: 0; margin-bottom: 0;` — so headings and paragraphs used without a text style class (accordion toggles, nav links, footers) carry zero margin. **Rich text** (`.u-rich-text`): a separate vertical rhythm system for CMS/prose content where bare heading and paragraph tags flow without `.u-text` wrappers. Headings get both `margin-top` (section separation) and `margin-bottom` (flow into content); paragraphs get `margin-bottom` only. Values use `--space-*` variables directly (not per-heading typography variables) so you can tune rich-text rhythm independently. Rules live in `src/styles/base/typography.css`. **Margin trim**: containers (`u-container`), layout columns (`u-layout-column`), content wrappers (`u-content-wrapper`), rich text (`u-rich-text`), and any element with `u-margin-trim` automatically remove `margin-top` from the first visible child and `margin-bottom` from the last visible child — preventing extra space at the edges. Add `u-ignore-trim` to any child that should keep its margin. `text-box-trim` is applied as a progressive enhancement inside `.u-text`.
 - **Don't add redundant `marginBottom={0}`**: because of margin-trim (above), the **last child's bottom margin is already auto-zeroed** whenever a `<Text>`/`<Heading>` is the *last child* of a **trimmed wrapper** — a `<Section>` container, a `<Layout>` column (`slot="col1"`/`"col2"`), `<ContentWrapper>`, `<Col>`, `u-rich-text`, or any element carrying `u-margin-trim` / `u-container*`. In those cases `marginBottom={0}` does **nothing** — do not add it. It is only needed when the element is the last child of a **custom `<div>`** that is *not* one of those (e.g. a card body `*_content`, a `*_meta` row, an `<li>`). Even then, prefer adding `u-margin-trim` to that custom wrapper once over sprinkling `marginBottom={0}` on each child. The trim rules live in [src/styles/components/section.css](src/styles/components/section.css) (`:last-child { margin-bottom: 0 }`) and [src/styles/base/utilities.css](src/styles/base/utilities.css) (last-visible-child trim).
+- **Layout containers space their own children — don't add margins between siblings.** The `<Section>` content container (`.u-container`) is a **flex column with a built-in `gap`** (default `--space-8`, overridable via the Section `gap` prop, `0`–`8`). Its direct children are spaced apart automatically — so when you stack a `<Heading>` above a `<Layout>`, `<Grid>`, `<ContentWrapper>`, another `<Heading>`, or a `<Text>` **directly inside a `<Section>`**, do **not** add `marginBottom` (or any `u-margin-*` utility) to create that gap; the container already does it. The same is true inside a `<Layout>` (CSS grid with a `rowGap`), its `stack`/`stack-centered` variants, and inside `<Col>` (`display: contents`, so its children become the Layout's grid children and inherit that row gap). To change the spacing, **adjust the container's gap** (`<Section gap={N}>` / `<Layout rowGap={N}>`) — never per-child margins. The one exception is `<ContentWrapper>` — a plain block with **no gap**; spacing between its children comes from the text elements' own bottom margins (last one auto-trimmed), so you still don't add extra `marginBottom`. **Net rule:** between direct children of a `<Section>` / `<Layout>` / `<Col>`, spacing is the container's `gap` — leave child margins alone. Only reach for `marginBottom` inside a custom `<div>` *you* wrote that has no gap and isn't margin-trimmed (e.g. a card body).
 
 ---
 
@@ -549,10 +550,10 @@ The `theme` prop sets `data-theme` on `<html>`, which cascades CSS color variabl
 <!-- Dark-themed page -->
 <BaseLayout title="Blog | Site Name" theme="dark">...</BaseLayout>
 
-<!-- Mixed — light page with one dark hero section -->
+<!-- Mixed — light page with one dark hero section (default padding throughout) -->
 <BaseLayout title="About | Site Name">
-  <Section theme="dark" paddingTop="page-top">Hero</Section>
-  <Section padding="large">Light content</Section>
+  <Section theme="dark">Hero</Section>
+  <Section>Light content</Section>
 </BaseLayout>
 ```
 
@@ -775,11 +776,12 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `theme` | `'light'`\|`'dark'`\|`'brand'` | — | Sets `data-theme`; cascades CSS variables to all children |
-| `padding` | `'none'`\|`'xsmall'`\|`'small'`\|`'main'`\|`'large'`\|`'page-top'` | `'main'` | Equal top + bottom padding |
-| `paddingTop` | same as `padding` | — | Override top only. Use `'page-top'` on the first section of a page. |
+| `padding` | `'none'`\|`'xsmall'`\|`'small'`\|`'main'`\|`'large'`\|`'page-top'` | `'main'` | Equal top + bottom padding. **Leave it off — `'main'` is the default and the right choice for almost every section.** Don't reach for `'large'` by default (see note below). |
+| `paddingTop` | same as `padding` | — | Override top only. **Do NOT use `'page-top'` here by default** — it's only for a *fixed* nav, and this project's nav is sticky (see note below). |
 | `paddingBottom` | same as `padding` | — | Override bottom only |
 | `minHeight` | `boolean` | `false` | `min-height: 100svh` — hero sections |
 | `container` | `'default'`\|`'narrow'`\|`'wide'`\|`'full'` | `'default'` | Container max-width |
+| `gap` | `0`–`8` | `8` (`--space-8`) | Flex `gap` between the container's direct children. Retune the built-in spacing here instead of adding per-child margins (see note below). |
 | `id` | `string` | — | `id` for same-page anchor links |
 | `class` | `string` | — | Extra classes on `<section>` |
 
@@ -787,13 +789,19 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
 - `background` — renders in `.u-background-slot` (absolute overlay, z-index 0). For background images, videos, or gradient divs.
 - default — content inside `.u-container`
 
+> **The container spaces its children for you.** `.u-container` is a **flex column with `gap: var(--space-8)`**, so a Section's direct children (Heading, Layout, Grid, ContentWrapper, Text…) are already spaced apart — **don't add `marginBottom` / `u-margin-*` between them.** To make that spacing tighter or looser, set the `gap` prop (`<Section gap={4}>`), don't sprinkle margins. See **Layout containers space their own children** under Astro-Specific Notes.
+
 **Padding values:**
 - `none` → 0
 - `xsmall` → ~1.25–2rem fluid
 - `small` → ~3–5rem fluid
-- `main` → ~4–7rem fluid *(default)*
+- `main` → ~4–7rem fluid *(default — use this for virtually every section)*
 - `large` → ~5.5–10rem fluid
-- `page-top` → ~10–14rem fluid *(always use on the first section after the nav)*
+- `page-top` → ~10–14rem fluid *(only for a **fixed** nav — see note below; not for this project by default)*
+
+> **Default padding: leave it on `main`.** Every `<Section>` already defaults to `padding="main"`, so you don't need to write `padding="main"` at all — just omit the prop. **Do not add `padding="large"` (or any other override) by default.** `main` is the correct rhythm for the overwhelming majority of sections, including content sections, card grids, and listing pages. Only use `large` (or another value) when a specific section genuinely needs more room *and* you've been asked for it (or it's clearly required by a design) — not as a habit. If a section needs more breathing room later, that's a deliberate, manual change.
+
+> **`page-top` is for a FIXED nav only — don't use it on this project by default.** `page-top` exists to push a page's first section down so it clears a navbar that's pinned as a fixed overlay. **This project's navbar is `sticky` by default**, so it sits in normal document flow and the first section does *not* need extra top padding to clear it. Build the first section (hero included) with the normal default padding — omit `paddingTop` entirely. `page-top` stays in the project only for the specific case where someone switches the nav to `fixed`; reach for it then, not before.
 
 **How padding is applied (overriding it):** padding lives **directly on the `<section>`** — the chosen sizes are emitted as `data-padding-top` / `data-padding-bottom` attributes and mapped to `padding-top` / `padding-bottom` in [section.css](src/styles/components/section.css). There are **no spacer divs** (that was a Webflow-port artifact, removed). The mapping rules are wrapped in `:where()` so they carry **zero specificity** — which means any single component/page class can override section padding without an `!important` or attribute-level selector. This is the supported pattern for sections that need responsive or asymmetric padding the props can't express: pass `padding="none"` and drive it from a class, e.g.
 
@@ -808,14 +816,14 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
 ```
 
 ```astro
-<!-- Dark hero with background image -->
-<Section theme="dark" paddingTop="page-top" minHeight id="hero">
+<!-- Dark hero with background image — default padding (sticky nav, no page-top) -->
+<Section theme="dark" minHeight id="hero">
   <Image slot="background" src={bg} alt="" class="u-image" />
   <Heading tag="h1" variant="display-xl">Page Title</Heading>
 </Section>
 
-<!-- Prose section -->
-<Section container="narrow" padding="main">
+<!-- Prose section — padding="main" is the default, shown here only for clarity -->
+<Section container="narrow">
   <Text variant="large">Article body…</Text>
 </Section>
 ```
@@ -854,7 +862,7 @@ Two-column CSS Grid with 13 named variants. Uses `display: var(--layout-collapse
 | `card` | 1fr | Centered card: col1 content centered with padding, col2 positioned absolutely as background (rounded, clipped). Use with Visual + Overlay in col2 for CTA sections. |
 | `auto-width` | auto auto | Both columns size to content |
 
-**Slots:** `col1` (left) and `col2` (right). **All variants use `slot="col1"`** — including `stack` and `stack-centered`. When placing multiple loose elements (Heading, Text, Button) into a column, wrap them in the **`<Col>` component** (`<Col slot="col1">…</Col>`) — see [`<Col>`](#col) below. `<Col>` renders `<div class="u-display-contents">` so its children behave as direct grid children, with the load-bearing `u-display-contents` class baked in (never hand-write that div). Single components that already have their own wrapper (Visual, Grid, Card) can take `slot` directly — no `<Col>` needed.
+**Slots:** `col1` (left) and `col2` (right). **All variants use `slot="col1"`** — including `stack` and `stack-centered`. When placing multiple loose elements (Heading, Text, Button) into a column, wrap them in the **`<Col>` component** (`<Col slot="col1">…</Col>`) — see [`<Col>`](#col) below. `<Col>` renders `<div class="u-display-contents">` so its children behave as direct grid children, with the load-bearing `u-display-contents` class baked in (never hand-write that div). Single components that already have their own wrapper (Visual, Grid, Card) can take `slot` directly — no `<Col>` needed. **Exception:** a column that holds a `<Visual>` *together with other content* must use `<ContentWrapper>`, not `<Col>` — `<Col>`'s `display: contents` lets the image's `height: 100%` override its `ratio` aspect-ratio and balloon (see the ⚠️ note in the [`<Col>`](#col) section).
 
 **Stack variants:** Do NOT wrap children in ContentWrapper for alignment — `stack-centered` already handles centering via `text-align: center` and `align-items: center`. ContentWrapper is only needed inside two-column layouts when you need to control alignment within a column.
 
@@ -951,6 +959,8 @@ The standard wrapper for putting **multiple loose elements** into a single `<Lay
 **When to use it:** a Layout slot positions exactly one element. Whenever a column holds two or more loose elements (Heading + Text + Button, or Visual + Overlay), wrap them in `<Col>`. A *single* self-contained component (Visual, Grid, Card) is already one element — give it `slot="col1"`/`slot="col2"` directly; do **not** wrap it in `<Col>`.
 
 **Why not a plain `<div>`:** a normal `<div>` would itself become the grid/flex child, collapsing all your elements into one box and breaking column alignment and gap. `<Col>` (via `display: contents`) wraps for slotting without becoming a layout box.
+
+> ⚠️ **A column that holds a `<Visual>` together with other content must use `<ContentWrapper>`, not `<Col>`.** Because `display: contents` removes the `<Col>` box, `.u-image-wrapper` becomes a **direct child of the Layout column** — a grid/flex item with a *definite* height. The wrapper's `height: 100%` ([visual-utilities.css](src/styles/base/visual-utilities.css)) then **overrides the inline `aspect-ratio`** that `<Visual ratio="…">` sets, so the image balloons to a huge near-portrait size and crowds out the text below (worst on mobile, where the column collapses to `display: flex`). `<ContentWrapper>` inserts a real `height: auto` block between the column and the image, so `height: 100%` has nothing definite to resolve against → it falls back to `auto` → the aspect-ratio governs and the image sizes correctly. Rule: `<Col>` is only for self-sizing loose elements (Heading / Text / Button); reach for `<ContentWrapper>` the moment a `<Visual>` shares the column with other content.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
@@ -1483,7 +1493,8 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 
 ### Standard content section
 ```astro
-<Section theme="light" padding="large">
+<!-- No padding prop — defaults to padding="main", the standard rhythm -->
+<Section theme="light">
   <Layout variant="columns" ratio="5-7" verticalAlign="center">
     <Col slot="col1">
       <Heading variant="eyebrow">Section Label</Heading>
@@ -1498,7 +1509,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 
 ### Card grid section
 ```astro
-<Section padding="large">
+<Section>
   <Heading tag="h2" variant="h2">Our Work</Heading>
   <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
     <Card title="Project One" href="/work/one" ariaLabel="View Project One">
@@ -1511,7 +1522,8 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 
 ### Hero section (first section on page)
 ```astro
-<Section theme="dark" paddingTop="page-top" paddingBottom="large" minHeight id="hero">
+<!-- Sticky nav → no page-top; default padding="main". minHeight drives the hero height. -->
+<Section theme="dark" minHeight id="hero">
   <Image slot="background" src={heroBg} alt="" class="u-image" />
   <Layout variant="stack-centered">
     <Col slot="col1">
@@ -1531,8 +1543,8 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 ### Blog listing page
 ```astro
 <!-- src/pages/blog/index.astro — structure overview -->
-<Section theme="dark" paddingTop="page-top" paddingBottom="main">
-  <!-- Hero with background image + overlay -->
+<Section theme="dark">
+  <!-- Hero with background image + overlay (default padding; sticky nav, no page-top) -->
   <Fragment slot="background">
     <Visual src={heroImage} alt="" variant="background" priority />
     <Overlay strength={75} />
@@ -1546,7 +1558,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 </Section>
 
 <!-- Featured post — 2-column reversed (image left, content right) -->
-<Section padding="large">
+<Section>
   <Layout variant="columns-reversed" verticalAlign="center">
     <Col slot="col1">
       <ContentWrapper>
@@ -1560,7 +1572,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 </Section>
 
 <!-- Blog grid — 3 → 2 → 1 responsive -->
-<Section padding="large">
+<Section>
   <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
     {posts.map(post => <BlogCard {...post} />)}
   </Grid>
@@ -1578,8 +1590,8 @@ import Text       from '../components/ui/Text.astro';
 ---
 <!-- Default theme is light (omit theme prop to use site default) -->
 <BaseLayout title="New Page | Site Name" description="SEO description.">
-  <!-- Always use paddingTop="page-top" on the first section -->
-  <Section paddingTop="page-top">
+  <!-- First section: no padding prop (defaults to "main"); no page-top — nav is sticky -->
+  <Section>
     <Heading tag="h1" variant="h1">New Page</Heading>
     <Text variant="large">Page intro text.</Text>
   </Section>
@@ -1587,7 +1599,7 @@ import Text       from '../components/ui/Text.astro';
 
 <!-- Dark-themed page — pass theme="dark" -->
 <BaseLayout title="Blog | Site Name" description="Our blog." theme="dark">
-  <Section paddingTop="page-top">
+  <Section>
     <Heading tag="h1" variant="h1">Blog</Heading>
     <Text variant="large">Page intro text.</Text>
   </Section>
@@ -1707,7 +1719,9 @@ Sanity Studio is **hosted by Sanity** at `your-studio.sanity.studio` — it is *
 
 **Deploying the Studio:** `npx sanity schema deploy` then `npx sanity deploy` (publishes to `your-studio.sanity.studio` using the `studioHost`/`deployment.appId` already set in [sanity.cli.ts](sanity.cli.ts)). Studio updates ship independently of the site build.
 
-**Local workflow:** run `npx sanity dev` (Studio at `localhost:3333`) and `npm run dev` (site at `localhost:4321`) in separate terminals — there is no `/studio` on the dev site. To drive Presentation locally against the local site, set `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` (the Presentation `previewUrl.initial` falls back to `https://www.example.com`). `frame-ancestors` already allows `localhost:3333`.
+**Local workflow:** run `npx sanity dev` (Studio at `localhost:3333`) and `npm run dev` (site at `localhost:4321`) in separate terminals — there is no `/studio` on the dev site. To drive Presentation locally against the local site, set `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` (the Presentation `previewUrl.initial` falls back to `SITE_URL` — default `https://www.example.com`). `frame-ancestors` already allows `localhost:3333`.
+
+**Staging-first deploy (ship before the real domain exists).** A fork can run on the Worker's free `https://<worker>.<account>.workers.dev` URL — including Sanity Presentation — before any custom domain is attached, with **no per-fork code edits**. The mechanism: `SITE_URL` in [src/config/site.shared.mjs](src/config/site.shared.mjs) is **env-overridable** (`process.env.SITE_URL || "<literal>"`), so the Cloudflare *build* env supplies the staging origin; [sanity.config.ts](sanity.config.ts) drives `presentationTool`'s `previewUrl.initial` and `allowOrigins` from `SITE_URL` plus a `https://*.workers.dev` wildcard, so any staging Worker is trusted automatically. Deploy the Studio with `SANITY_STUDIO_PREVIEW_URL=https://<worker>.<account>.workers.dev npx sanity deploy` (env var on the same line — a plain `npx sanity deploy` bakes in the `SITE_URL` fallback). At launch, change the Cloudflare `SITE_URL` build var to the real origin and redeploy — no code commit. Full per-client runbook: **§4a "Staging-first deploy"** in [docs/new-project-checklist.md](docs/new-project-checklist.md).
 
 ### Studio editing experience (desk, groups, icons, Vision)
 
@@ -1925,6 +1939,10 @@ Avoid these when writing CSS and HTML in this project:
 - `width` + `height` for square icons — use `width` + `aspect-ratio: 1/1`
 - `display: flex` on direct parents of text elements with margins — prevents margin collapsing
 - `marginBottom={0}` on a `<Text>`/`<Heading>` that is the last child of a trimmed wrapper (Section container, Layout column, ContentWrapper, Col, `u-rich-text`, `u-margin-trim`) — margin-trim already zeroes it; the prop does nothing. Only use it (or add `u-margin-trim` to the wrapper) inside a custom `<div>` that isn't auto-trimmed
+- Adding a positive `marginBottom` (or `u-margin-*`) to separate a direct child of a `<Section>`/`<Layout>`/`<Col>` from the next sibling — those containers have a built-in `gap`/`rowGap` that already spaces them (Section's `.u-container` defaults to `--space-8`). Change the container's `gap`/`rowGap` instead. (`<ContentWrapper>` is the exception — a plain block that uses the text elements' own margins.)
 - Adding `maxWidth` to `<Heading>` or `<Text>` by default — both already have built-in defaults (Heading `30ch`, Text `60ch`; `eyebrow` headings have none). Don't add the prop reflexively when building from a design, and never re-state the default value. Only set `maxWidth` when the design needs a *different* constraint and you've been told (or it's clearly required) to change it
 - Hard-coding per-theme card colors (a `[data-theme="dark"] .card …` branch, or force-applying `.u-theme-light`) for a contrasting card — use the `--surface-*` tier instead (see **Surface tier** under Variables). Define the look once per theme in `themes.css`; the card adapts automatically
 - Putting a contrasting card's `color`/`--text` only on a child layer (or relying solely on the `.u-surface` utility) while the card's own wrapping class sets just `background` — the inner `.u-text` layers then inherit `color` from `.u-section[data-theme]` (white on a dark section) and the text goes invisible on a light card. Set `color: var(--surface-text)` on the card's own wrapping class (the layer that contains all the text)
+- `paddingTop="page-top"` on any section (heroes included) — `page-top` is **only** for a *fixed* navbar, and this project's nav is **sticky** by default, so the first section doesn't need it. Build heroes/first sections with the normal default padding; only use `page-top` if the nav has been switched to `fixed`
+- Adding `padding="large"` (or any padding override) to a section by default — `<Section>` already defaults to `padding="main"`, which is correct for almost every section. Omit the prop entirely (don't even write `padding="main"`). Only override to `large`/another value when a specific section genuinely needs it *and* it's been asked for or is clearly required by a design — never as a habit
+- Wrapping a `<Visual>` together with other content in a `<Col>` — `<Col>`'s `display: contents` makes `.u-image-wrapper` a direct grid/flex child with a definite height, so its `height: 100%` overrides the `ratio` aspect-ratio and the image balloons (worst on mobile when the column collapses to `display: flex`). Use `<ContentWrapper>` (a real `height: auto` block) for any column that holds a `<Visual>` alongside other content; keep `<Col>` for self-sizing loose elements (Heading / Text / Button) only

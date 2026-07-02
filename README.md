@@ -73,6 +73,8 @@ Update is kept on (not just Create/Delete) because several of these types render
 
 Editors open `/studio`, click **Presentation**, and the same public URL renders drafts inside the Studio iframe. This works via the `sanity-preview-mode` cookie set by `/api/draft-mode/enable` — public visitors never have the cookie, so drafts can't leak. Full flow is documented in [`CLAUDE.md`](CLAUDE.md) under "Deployment, Sanity Studio & Preview".
 
+**No domain yet?** A fork can deploy to the Worker's free `*.workers.dev` URL with working Presentation **before** any custom domain exists — `SITE_URL` is env-overridable and the Studio trusts `https://*.workers.dev` automatically, so the staging→production switch is a no-code env change. Per-client runbook: **§4a "Staging-first deploy"** in [docs/new-project-checklist.md](docs/new-project-checklist.md).
+
 ## 🎨 Cloning this as a template
 
 The site identity is centralized so a new site is mostly config, not find-and-replace:
@@ -86,6 +88,124 @@ The site identity is centralized so a new site is mostly config, not find-and-re
 7. **Worker** — update the worker name / KV id in `wrangler.jsonc`. The `site` URL in `astro.config.mjs` comes from `site.shared.mjs` automatically.
 
 That covers identity. For everything else a fork needs — Sanity project + CORS, Cloudflare worker/domain/**WAF rate-limit rule**, GitHub Dependabot/security settings, email services, and the post-launch security verification commands — work through **[docs/new-project-checklist.md](docs/new-project-checklist.md)** top to bottom. It separates what ships with the code (verify only) from what must be re-created in dashboards per project, and lists the current dependency pins with their removal conditions.
+
+## 🤖 Building pages with an AI agent — best practices
+
+This repo is designed to be built on by an AI coding agent (e.g. Claude Code).
+When the agent is set up well, whole pages can be built in roughly one pass —
+most sections correct on the first try, with only spacing/image/color tweaks
+afterward. That outcome comes from *what the agent is given*, not luck. If you
+want the same result, do these things.
+
+### Why it works (and what to lean on)
+
+1. **[`CLAUDE.md`](CLAUDE.md) is the contract.** It documents every component's
+   props/slots, the CSS variable tiers, the responsive flag system, and an
+   explicit **anti-patterns** list. The agent composes from this known
+   vocabulary instead of inventing one. Keep it current — it does most of the
+   heavy lifting.
+2. **Point at a reference page.** Existing pages (e.g.
+   [`src/pages/index.astro`](src/pages/index.astro),
+   [`src/pages/contact.astro`](src/pages/contact.astro)) are worked examples of
+   the house style and reusable sections (`CTASection`, `BlogPostGrid`, etc.).
+   "Match how `index.astro` is built" is worth a paragraph of instructions.
+3. **Give the source of truth, not a description of it.** If you connect design
+   and content MCP connectors (Figma for design, a CMS like Sanity/Webflow for
+   copy and images), the agent reads *exact* structure, copy, and design — so
+   almost nothing about content has to be guessed, and therefore almost nothing
+   has to be corrected later.
+
+### What to give the agent (checklist)
+
+- [ ] **The goal**, in one line ("build the About page").
+- [ ] **Composition rules:** "use the existing components and utility classes;
+      keep new CSS minimal; use the responsive flag system for breakpoints; new
+      bespoke sections are fine, but reuse components where you can."
+- [ ] **Design source** — if you have a design, share it section by section
+      (e.g. Figma frame links), each with a short note on intent ("this is
+      already a section elsewhere — make it a reusable component," "see the
+      open/expanded state," "check it at all breakpoints").
+- [ ] **Content + color source — and which source wins for what.** Be explicit
+      about where copy, images, and colors come from, especially if they live in
+      different places than the layout. If the page is adapted from an existing
+      site (a previous build, a sibling brand, a competitor's structure you're
+      matching), say so and name the split — e.g. *"the layout matches [design
+      source]; pull all copy, images, and colors from [live site URL]."* One
+      sentence like that tells the agent **design = layout, live site = content
+      + color** and prevents a whole class of rework (like copying the wrong
+      brand color).
+- [ ] **Where CMS-backed content lives** — "team members come from Sanity,"
+      "testimonials are in the CMS," etc., so the agent wires data instead of
+      hard-coding it.
+- [ ] **Specific assets when they matter** — name the exact image/asset to use
+      for a given slot (e.g. the founder's headshot, a particular logo) rather
+      than letting the agent pick. Surgical, concrete feedback on each pass
+      ("this section is text-only, no images," "use the dark theme here," "use
+      *that* headshot for the founder") beats "this feels off."
+
+### A prompt that works (template)
+
+Copy, fill in the brackets, and paste. Drop the bracketed lines that don't apply
+to your build:
+
+```text
+Build out the [PAGE NAME] page. Use the components from this project wherever
+possible, and use the utility classes. Keep any new CSS minimal — reuse what we
+have, and use the responsive flag system for breakpoints. Some sections may need
+new bespoke markup; that's fine, but compose from existing components first.
+Match how src/pages/[REFERENCE PAGE].astro is built.
+
+[IF ADAPTED FROM AN EXISTING DESIGN/SITE] Important context: this page is
+adapted from [DESIGN/SITE SOURCE] — the layout/structure is the same, but
+[what differs, e.g. "only the colors differ"]. So:
+  • [Design source, e.g. Figma] = the layout/design (shared section by section below).
+  • [Live site / CMS] = the source for all copy, images, and colors.
+Pull copy + images + colors from [the live site/CMS]. View it at multiple
+breakpoints — some sections stack/show/hide differently on mobile.
+
+[CMS NOTE, if any]: [e.g. "Team members should come from Sanity — add them there
+and pull them in."]
+
+Design, section by section:
+  • [section]: [link]   — [intent note, e.g. "already a section elsewhere, make
+                          it a reusable component and use it here too"]
+  • [section]: [link]   — [e.g. "see the expanded/open state at all breakpoints"]
+  • ...
+
+Content / images / colors source: [URL or CMS]
+```
+
+### Let the agent reach your sources (network allowlist)
+
+MCP connector traffic (Figma/Sanity/Webflow tools) is proxied through Anthropic,
+so **reading** via those tools works with no setup. But when the agent's *shell*
+needs to reach the internet directly — downloading image **bytes**, running
+`npm run build` (which fetches the CMS at build time), or running a
+data-migration script — that's governed by the **environment's network access**
+in Claude Code on the web, which defaults to **Trusted** (package registries +
+GitHub only).
+
+To let those steps through, edit the environment → set **Network access** to
+**Custom** → add one domain per line under **Allowed domains**, and tick **"Also
+include default list of common package managers"** so npm/GitHub still work. Add
+the domains *your* sources live on. For this stack (Sanity CMS + Figma, plus a
+Webflow live site as a content source) that's:
+
+```text
+*.sanity.io
+*.apicdn.sanity.io
+cdn.sanity.io
+cdn.prod.website-files.com
+*.figma.com
+```
+
+(Drop or swap any line that doesn't match your sources — e.g. remove the Webflow
+CDN if you're not pulling from a Webflow site.) Without this, the agent can still
+*read* designs/content over MCP and commit code, but can't pull image files into
+the repo or complete a local `npm run build` (it'll 403 on the CMS). Full
+reference: Anthropic's
+[Claude Code on the web — Network access](https://code.claude.com/docs/en/claude-code-on-the-web#network-access)
+docs. (GitHub goes through a separate proxy and always works.)
 
 ## 👀 Want to learn more?
 

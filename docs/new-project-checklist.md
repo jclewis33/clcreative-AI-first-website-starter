@@ -81,6 +81,31 @@ Full narrative + the embedded alternative: the Notion guide *"Sanity + Astro + C
    - Adjust the path if the fork renames or adds POST endpoints — every public POST endpoint should sit behind a rule like this.
 5. Optional: **Security.txt** (Security → Settings) — publishes `/.well-known/security.txt` with your contact for vulnerability reports.
 
+### 4a. Staging-first deploy (ship to `*.workers.dev` before the real domain exists)
+
+You can stand up a fully working site — including Sanity **Presentation / visual editing** — on the Worker's free `https://<worker>.<account>.workers.dev` URL before any custom domain is attached. The code already supports this with **no per-fork edits**: `SITE_URL` (in `src/config/site.shared.mjs`) is env-overridable, and `sanity.config.ts` drives `previewUrl.initial` + `allowOrigins` from it (plus a `https://*.workers.dev` wildcard). Per-client steps:
+
+1. **Create the Worker** from the client repo (Workers Builds connected, building from the production branch); select your deploy API token. (A missing `ai_search_write` permission warning is irrelevant — ignore it.)
+2. **Create a KV namespace** for sessions and pin its id (Astro 6 SSR sessions require it — deploy fails on the placeholder):
+   - `npx wrangler kv namespace create SESSION` (or dashboard → Storage & Databases → KV → Create)
+   - Put the returned 32-char id into `wrangler.jsonc` → `kv_namespaces[0].id` (binding stays `SESSION`). Commit + push.
+3. **Add the read token secret:** create a **Viewer** token (manage.sanity.io → project → API → Tokens) and add it to the Worker as an **encrypted secret** named exactly `SANITY_API_READ_TOKEN` (Worker → Settings → Variables and Secrets).
+4. **Set the build var** `SITE_URL=https://<worker>.<account>.workers.dev` in the Worker's **build** environment (read at build time for canonical URLs / sitemap / Studio preview).
+5. **Make the site live:** Worker → **Domains** tab → toggle the **Production** `workers.dev` route ON. Then promote the latest version to 100% (Deployments tab), OR set the Workers Builds deploy command to `npx wrangler deploy` so pushes auto-go-live (default `wrangler versions upload` only stages a version).
+6. **Add the staging URL to Sanity CORS** with **Allow credentials** checked: manage.sanity.io → project → API → CORS Origins → add `https://<worker>.<account>.workers.dev`. (Or via Sanity MCP `add_cors_origin` with `allowCredentials: true`.)
+7. **Deploy the Studio pointed at staging** (locally, from the client repo, on the deployed branch):
+   ```
+   SANITY_STUDIO_PREVIEW_URL=https://<worker>.<account>.workers.dev npx sanity deploy
+   ```
+   ⚠️ The env var **must** be on the same line before `npx`. A plain `npx sanity deploy` bakes in the `SITE_URL` fallback (the not-yet-existing production domain) and Presentation points there instead. If `sanity deploy` prints a NEW appId, write it into `sanity.cli.ts` → `deployment.appId` and commit.
+8. **Verify in Chrome:** open `<studioHost>.sanity.studio` → **Presentation** → confirm the staging site loads in the frame with click-to-edit overlays. (Safari/Brave can block the cross-site draft cookie — use Chrome.)
+
+**At launch (real domain ready) — no code commit:**
+
+1. Attach the real domain to the Worker (DNS through Cloudflare).
+2. Change the Cloudflare `SITE_URL` build var to `https://www.<realdomain>` → redeploy.
+3. Add the real domain to Sanity CORS (with credentials); redeploy the Studio with `SANITY_STUDIO_PREVIEW_URL=https://www.<realdomain>` (or unset it to fall back to `SITE_URL`).
+
 ---
 
 ## 5. GitHub (🔁 per-fork)
