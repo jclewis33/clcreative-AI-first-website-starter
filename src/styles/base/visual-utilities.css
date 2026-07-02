@@ -44,7 +44,11 @@
 
 /* Absolute-fill image inside .u-image-wrapper.
    Inherits object-fit from wrapper. Focal-point positioning via
-   --x and --y custom properties (0–100, default 50/50 = center). */
+   --x and --y custom properties (0–100, default 50/50 = center).
+   object-position is scoped under the wrapper (specificity 0,2,0) so it
+   beats Astro's injected [data-astro-image-pos="center"] rule (0,1,0),
+   which local <Image layout="…"> stamps on the <img> and would otherwise
+   override our focal point on source order alone. */
 .u-image {
   position: absolute;
   inset: 0;
@@ -52,6 +56,9 @@
   width: 100%;
   height: 100%;
   object-fit: inherit;
+}
+
+.u-image-wrapper .u-image {
   object-position: calc(var(--x, 50) * 1%) calc(var(--y, 50) * 1%);
 }
 
