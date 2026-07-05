@@ -80,6 +80,11 @@ Full narrative + the embedded alternative: the Notion guide *"Sanity + Astro + C
    - 5 requests / 10 seconds per IP → **Block**, 10 s duration
    - Adjust the path if the fork renames or adds POST endpoints — every public POST endpoint should sit behind a rule like this.
 5. Optional: **Security.txt** (Security → Settings) — publishes `/.well-known/security.txt` with your contact for vulnerability reports.
+6. **Rebuild-debounce Worker + Sanity publish webhook.** The SSR content routes go live instantly, but the sitemap and `llms.txt` / `llms-full.txt` are built at build time, so a Sanity **publish** must trigger a Cloudflare rebuild. A standalone Worker in [`workers/rebuild-debounce/`](../workers/rebuild-debounce/) debounces a burst of publishes into one build. Deploy it and wire the webhook per its own [README](../workers/rebuild-debounce/README.md):
+   - `cd workers/rebuild-debounce && npm install && npx wrangler deploy` (rename `name` in its `wrangler.jsonc` to match this fork's worker first).
+     - ⚠️ If `wrangler deploy` errors with `redirected configuration path … does not exist`, delete the root `.wrangler/deploy/config.json` (a gitignored `@astrojs/cloudflare` artifact) and retry.
+   - `wrangler secret put DEPLOY_HOOK_URL` (the site worker's deploy hook: Settings → Builds → Deploy hooks, targeting `main`) and `wrangler secret put WEBHOOK_TOKEN` (random, e.g. `openssl rand -hex 32`).
+   - In Sanity (manage.sanity.io → API → Webhooks): **URL** = the Worker's `*.workers.dev` URL, **header** `Authorization: Bearer <WEBHOOK_TOKEN>`, **Trigger on** Create/Update/Delete, **Filter** `!(_id in path("drafts.**"))` (intentionally broad — see the main README), Sanity "Secret" field left blank.
 
 ### 4a. Staging-first deploy (ship to `*.workers.dev` before the real domain exists)
 

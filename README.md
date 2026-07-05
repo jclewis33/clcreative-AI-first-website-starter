@@ -57,17 +57,24 @@ Configured at [manage.sanity.io](https://www.sanity.io/manage) → project `your
 
 | Field | Value |
 |---|---|
-| URL | Cloudflare deploy hook (Workers & Pages → `your-worker-name` → Settings → Builds → Deploy hooks, targeting `main`) |
+| URL | The rebuild-debounce Worker's `*.workers.dev` URL (see [Rebuild-debounce Worker](#rebuild-debounce-worker) below) — **not** the deploy hook directly. The Worker holds the real deploy hook as a secret and calls it after debouncing. |
+| HTTP header | `Authorization: Bearer <WEBHOOK_TOKEN>` (must match the Worker's `WEBHOOK_TOKEN` secret) — leave Sanity's "Secret" field blank (that's a different HMAC feature we don't use) |
 | Dataset | `production` |
 | Trigger on | Create, Update, Delete |
 | HTTP method | `POST` |
-| Filter | `_type in ["blogPost", "caseStudy", "glossaryTerm", "testimonial", "author"] && !(_id in path("drafts.**"))` |
+| Filter | `!(_id in path("drafts.**"))` |
 
-The `!(_id in path("drafts.**"))` clause means **only published documents rebuild the site** — autosaved drafts are ignored, so typing in Studio doesn't thrash the build. Clicking **Publish** (or a release going live) writes to the non-draft ID and passes the filter; unpublishing fires it too, so removed content clears on the next build.
+The filter is intentionally **broad**: it matches any published document of **any type**. The single clause only excludes autosaved drafts so typing in Studio doesn't thrash the build. Clicking **Publish** (or a release going live) writes to the non-draft ID and passes the filter; unpublishing fires it too, so removed content clears on the next build.
 
-Update is kept on (not just Create/Delete) because several of these types render on **static** pages — testimonials and case-study cards appear sitewide, and blog posts surface in the navbar and on the `web-design` pages — so an edit needs a rebuild to show. At a couple of posts a week the rebuild volume is negligible.
+**Why broad rather than a `_type` allowlist?** On this stack nearly every content type surfaces on a built page (sitemap, `llms.txt`, static cards, the navbar), so a per-type allowlist would just be a list you have to remember to update. With the broad filter, **a new content type triggers rebuilds automatically** — nothing to keep in sync. The occasional extra trigger is harmless: the debounce Worker (below) collapses a burst of publishes into a single build.
 
-**Adding a new content type?** Add its `_type` to the filter array, otherwise publishing docs of that type won't trigger rebuilds.
+Update is kept on (not just Create/Delete) because several types render on **static** pages — testimonials and case-study cards appear sitewide, and blog posts surface in the navbar and on the `web-design` pages — so an edit needs a rebuild to show.
+
+### Rebuild-debounce Worker
+
+The Sanity webhook fires **once per published document**, so publishing several docs in a row would kick off several builds. A tiny standalone Cloudflare Worker in [`workers/rebuild-debounce/`](workers/rebuild-debounce/) sits between Sanity and the deploy hook and **collapses a burst of publishes into one build** (Durable Object alarm; ~5 min debounce, 15 min max wait).
+
+The chain is: **publish → debounce Worker (waits ~5 min) → Cloudflare deploy hook → one build.** The deploy hook still lives on the site worker; the debounce Worker only calls it. Point the Sanity webhook **URL** at the debounce Worker's `*.workers.dev` URL (not directly at the deploy hook) and add an `Authorization: Bearer <token>` header — see the Worker's own [README](workers/rebuild-debounce/README.md) for the per-fork deploy + secret + webhook steps. It's a separate Worker, deployed manually with `wrangler deploy`; it is **not** part of the site's CI build.
 
 ### Draft preview (Presentation)
 

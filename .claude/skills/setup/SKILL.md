@@ -86,6 +86,7 @@ something the CLI bolts on.
 | Verify config + build | `npm run check:config`, `npm run build` |
 | Sanity **Viewer token** | ⚠️ Manual — no MCP tool. Guide the user to create it. |
 | Cloudflare worker / domain / **encrypted secret** / **WAF rule** | ⚠️ Manual dashboard work. Guide + verify. |
+| **Rebuild-debounce Worker** deploy + **Sanity publish webhook** | ⚠️ Manual (CLI keeps its `name` in sync; deploy + secrets + webhook are `wrangler`/dashboard). Guide — SSR content needs it (step 8). |
 | GitHub Dependabot toggles / account push-protection | ⚠️ Manual dashboard work. Guide. |
 
 The single source of truth for the manual pieces is
@@ -95,6 +96,26 @@ and point the user there for anything you can't do for them.
 ## Procedure
 
 Work top to bottom. Confirm each external action before taking it.
+
+> **Every step below is MANDATORY to surface — walk through all of them.** This
+> skill's job is to make sure nothing needed to get the project launch-ready is
+> silently skipped. Treat each numbered step (and each sub-step marked "REQUIRED
+> ASK" or listed in the dashboard handoff) as something you **must raise with the
+> user** — even the ones that are per-fork optional in outcome (integrations,
+> content scaffolding, the WAF rule, the rebuild-debounce webhook). "Optional"
+> describes whether the user *does* it, **not** whether you *mention* it.
+>
+> The user may decline any item ("skip that for now") — that's fine, and you
+> record it — but you may **not** decide on their behalf that an item isn't worth
+> bringing up. Concretely:
+> - **Raise every step**, including the ones the CLI can't do and the ones that
+>   are commonly left blank. If you're unsure whether the fork needs something,
+>   ask; don't quietly omit it.
+> - **Track what was skipped.** When the user declines an item, note it, and in
+>   the final handoff (step 9) present a clear "still needs doing" list of every
+>   deferred item so the project isn't left with silent gaps.
+> - The **Done criteria** at the end is the checklist that every item was either
+>   completed or explicitly deferred by the user — not that every item was done.
 
 ### 0. Preflight
 - Confirm this is a fork (see guard above).
@@ -608,8 +629,43 @@ npm run build          # full build (re-queries Sanity; empty project is fine)
 Fix anything that fails before handing off. A brand-new empty Sanity project
 builds clean — content routes just render empty states.
 
-### 8. Hand off the dashboard checklist (manual)
-You cannot click these; list them and point at the checklist:
+### 8. Rebuild-debounce Worker + Sanity publish webhook (guide — REQUIRED to surface)
+**Always raise this** — the content routes are SSR, so published content is live
+instantly, but the **sitemap** and **`llms.txt` / `llms-full.txt`** are generated
+at build time. A Sanity **publish** must therefore trigger a Cloudflare rebuild,
+and the webhook fires once per document — so the starter ships a standalone
+**rebuild-debounce Worker** ([workers/rebuild-debounce/](../../../workers/rebuild-debounce/))
+that collapses a burst of publishes into one build. The chain is:
+**publish → debounce Worker (waits ~5 min) → Cloudflare deploy hook → one build.**
+
+The CLI (step 3) already renamed the Worker's `wrangler.jsonc` `name` to
+`<worker>-rebuild-debounce`. The rest is `wrangler` + dashboard work you guide the
+user through (full runbook: the Worker's own
+[README](../../../workers/rebuild-debounce/README.md) and §4.6 of
+[docs/new-project-checklist.md](../../../docs/new-project-checklist.md)):
+
+1. **Deploy the Worker:** `cd workers/rebuild-debounce && npm install && npx wrangler deploy`.
+   - ⚠️ If it errors with `redirected configuration path … does not exist`, delete
+     the root `.wrangler/deploy/config.json` (a gitignored `@astrojs/cloudflare`
+     artifact) and retry.
+2. **Set two secrets:** `wrangler secret put DEPLOY_HOOK_URL` (the site worker's
+   deploy hook — Cloudflare → the site worker → Settings → Builds → Deploy hooks,
+   targeting `main`) and `wrangler secret put WEBHOOK_TOKEN` (random, e.g.
+   `openssl rand -hex 32`).
+3. **Wire the Sanity webhook** (manage.sanity.io → project → API → Webhooks):
+   **URL** = the Worker's `*.workers.dev` URL (**not** the deploy hook directly),
+   **header** `Authorization: Bearer <WEBHOOK_TOKEN>`, **Trigger on**
+   Create/Update/Delete, **Filter** `!(_id in path("drafts.**"))` (intentionally
+   broad — any published doc of any type; see the main README), and leave Sanity's
+   "Secret" field blank.
+
+> **If the user defers this**, the site still works and published content is live
+> immediately — but the sitemap and llms.txt won't refresh until the next git
+> push / manual rebuild. Flag that trade-off and record it in the step-9 handoff.
+
+### 9. Hand off the dashboard checklist (manual)
+You cannot click these; list them and point at the checklist. **Include every
+item the user deferred in earlier steps** so nothing is silently dropped:
 - **Cloudflare** (§4): create the worker + connect the repo, set `vars`, add
   `SANITY_API_READ_TOKEN` as an encrypted secret, attach the domain, "Always Use
   HTTPS" on, and the **WAF rate-limit rule** for any public POST endpoint.
@@ -619,6 +675,11 @@ You cannot click these; list them and point at the checklist:
     `workers.dev` route on, add that URL to Sanity CORS, and deploy the Studio with
     `SANITY_STUDIO_PREVIEW_URL` pointed at it (step 4 above). At launch, swap the
     `SITE_URL` build var to the real origin and redeploy — no code commit.
+- **Rebuild-debounce Worker + Sanity webhook** (step 8 / §4.6): deploy
+  `workers/rebuild-debounce/`, set `DEPLOY_HOOK_URL` + `WEBHOOK_TOKEN` secrets,
+  and point the Sanity publish webhook at the Worker with the broad
+  `!(_id in path("drafts.**"))` filter — so the sitemap + llms.txt refresh on
+  publish.
 - **GitHub** (§5): enable Dependabot alerts/security updates/malware
   alerts/grouped updates; account-level push protection.
 - **Email/lead-capture** (§6): Resend + MailerLite keys/secrets, or drop the
@@ -646,5 +707,12 @@ Then run the **§7 post-launch verification** curl block from the checklist.
   brand mark — verified via the deployed `create-manifest.json` (inline `<svg>`, not
   an `<img>`).
 - CORS origins added; Viewer token created and placed.
+- **Rebuild-debounce Worker + Sanity publish webhook** (step 8) was surfaced —
+  either deployed + wired (Worker deployed, both secrets set, webhook pointed at
+  it with the broad filter) **or** explicitly deferred by the user and listed in
+  the handoff.
+- **Every mandatory-to-surface step was raised** — nothing was silently skipped;
+  each item was either completed or explicitly deferred by the user, and every
+  deferred item appears in the step-9 handoff "still needs doing" list.
 - The user has the residual Cloudflare/GitHub dashboard list and knows the content
   scaffolding still needs their copy.
