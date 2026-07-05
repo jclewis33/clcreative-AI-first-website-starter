@@ -1,0 +1,17 @@
+{
+  "name": "rebuild-debounce",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Debounces Sanity publish webhooks into a single Cloudflare deploy-hook rebuild.",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250601.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.0.0"
+  }
+}

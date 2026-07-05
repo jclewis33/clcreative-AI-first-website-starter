@@ -16,6 +16,7 @@
  *   • src/config/site.shared.mjs       — Sanity projectId/dataset/apiVersion + URL (regenerated)
  *   • src/config/site.ts               — scalar identity fields (keyed replace)
  *   • wrangler.jsonc                   — worker `name` + the two PUBLIC_SANITY_* vars
+ *   • workers/rebuild-debounce/wrangler.jsonc — debounce worker `name` (kept "<worker>-rebuild-debounce")
  *   • src/styles/variables/colors.css  — --color-brand-500 (the canonical brand hue)
  *   • sanity.cli.ts                    — studioHost (+ clears appId for the new project)
  *   • .env                             — created from .env.example (token left blank)
@@ -69,6 +70,7 @@ const CONFIG_PATH = getFlagValue("--config");
 const SHARED = "src/config/site.shared.mjs";
 const SITE = "src/config/site.ts";
 const WRANGLER = "wrangler.jsonc";
+const WRANGLER_DEBOUNCE = "workers/rebuild-debounce/wrangler.jsonc";
 const COLORS = "src/styles/variables/colors.css";
 const THEMES = "src/styles/variables/themes.css";
 const TYPOGRAPHY = "src/styles/variables/typography.css";
@@ -329,6 +331,18 @@ async function buildChanges(a) {
     changes.push({ rel: WRANGLER, before: await readSrc(WRANGLER), after: src, edits });
   }
 
+  // 3b. workers/rebuild-debounce/wrangler.jsonc — keep the standalone debounce
+  //     Worker's `name` in sync as "<worker>-rebuild-debounce". It's a separate
+  //     Worker (deployed manually, not in CI), but its name should track the
+  //     site worker so the pair is obvious in the Cloudflare dashboard.
+  if (a.workerName && (await fileExists(WRANGLER_DEBOUNCE))) {
+    const before = await readSrc(WRANGLER_DEBOUNCE);
+    const r = replaceJsonString(before, "name", `${a.workerName}-rebuild-debounce`);
+    if (r.changed && r.src !== before) {
+      changes.push({ rel: WRANGLER_DEBOUNCE, before, after: r.src, edits: ["name"] });
+    }
+  }
+
   // 4. colors.css — the canonical brand hue + any extra swatches (e.g. Figma).
   //    The brand-100..900 scale derives from --color-brand-500 via color-mix,
   //    so only the base swatches are set here; the scale follows automatically.
@@ -442,7 +456,7 @@ ${c.bold}Fork setup${c.reset} — rewrite per-fork identity/config files.
   node scripts/setup.mjs --config a.json --yes   non-interactive (used by /setup skill)
   node scripts/setup.mjs --dry-run     preview changes, write nothing
 
-Writes: ${SHARED}, ${SITE}, ${WRANGLER}, ${COLORS}, ${THEMES}, ${CLI}, .env
+Writes: ${SHARED}, ${SITE}, ${WRANGLER}, ${WRANGLER_DEBOUNCE}, ${COLORS}, ${THEMES}, ${CLI}, .env
 Leaves content scaffolding (areaServed, social, FAQs, site-structure) intact.
 
 Color maps (--config only; e.g. pulled from Figma by the /setup skill):
@@ -497,6 +511,9 @@ webclip (public/images/), and the inline SVG logo paths (src/config/logo-paths.t
   3. Fill ${c.bold}SANITY_API_READ_TOKEN${c.reset} in .env (Sanity → API → Tokens, Viewer role)
   4. Finish the dashboard steps in ${c.bold}docs/new-project-checklist.md${c.reset}
      (Sanity CORS, Cloudflare secrets + WAF + domain, GitHub Dependabot).
+  5. Deploy the ${c.bold}rebuild-debounce Worker${c.reset} + wire the Sanity publish webhook
+     (${c.dim}workers/rebuild-debounce/README.md${c.reset}) — SSR content needs it to
+     regenerate the sitemap + llms.txt on publish.
 ${c.dim}  The /setup Claude skill automates steps 1–2 and the Sanity project creation.${c.reset}
 `);
 }
