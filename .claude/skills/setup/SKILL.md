@@ -86,7 +86,8 @@ something the CLI bolts on.
 | Verify config + build | `npm run check:config`, `npm run build` |
 | Sanity **Viewer token** | ⚠️ Manual — no MCP tool. Guide the user to create it. |
 | Cloudflare worker / domain / **encrypted secret** / **WAF rule** | ⚠️ Manual dashboard work. Guide + verify. |
-| **Rebuild-debounce Worker** deploy + **Sanity publish webhook** | ⚠️ Manual (CLI keeps its `name` in sync; deploy + secrets + webhook are `wrangler`/dashboard). Guide — SSR content needs it (step 8). |
+| **Rebuild-debounce Worker** deploy + its two secrets | ✅ Automatable when `wrangler` is authed — you run `wrangler deploy` + `secret put` via Bash (auth-detect → run-or-print; step 8). CLI keeps its `name` in sync. |
+| **Sanity publish webhook** (points at the Worker) | ⚠️ Manual dashboard step — guide (step 8.4). |
 | GitHub Dependabot toggles / account push-protection | ⚠️ Manual dashboard work. Guide. |
 
 The single source of truth for the manual pieces is
@@ -639,25 +640,95 @@ that collapses a burst of publishes into one build. The chain is:
 **publish → debounce Worker (waits ~5 min) → Cloudflare deploy hook → one build.**
 
 The CLI (step 3) already renamed the Worker's `wrangler.jsonc` `name` to
-`<worker>-rebuild-debounce`. The rest is `wrangler` + dashboard work you guide the
-user through (full runbook: the Worker's own
+`<worker>-rebuild-debounce`. The remaining work splits into a **Cloudflare side**
+(deploy the Worker + set its two secrets — cleanly scriptable) and a **Sanity
+side** (wire the publish webhook — dashboard only). Full runbook: the Worker's own
 [README](../../../workers/rebuild-debounce/README.md) and §4.6 of
-[docs/new-project-checklist.md](../../../docs/new-project-checklist.md)):
+[docs/new-project-checklist.md](../../../docs/new-project-checklist.md).
 
-1. **Deploy the Worker:** `cd workers/rebuild-debounce && npm install && npx wrangler deploy`.
-   - ⚠️ If it errors with `redirected configuration path … does not exist`, delete
-     the root `.wrangler/deploy/config.json` (a gitignored `@astrojs/cloudflare`
-     artifact) and retry.
-2. **Set two secrets:** `wrangler secret put DEPLOY_HOOK_URL` (the site worker's
-   deploy hook — Cloudflare → the site worker → Settings → Builds → Deploy hooks,
-   targeting `main`) and `wrangler secret put WEBHOOK_TOKEN` (random, e.g.
-   `openssl rand -hex 32`).
-3. **Wire the Sanity webhook** (manage.sanity.io → project → API → Webhooks):
-   **URL** = the Worker's `*.workers.dev` URL (**not** the deploy hook directly),
-   **header** `Authorization: Bearer <WEBHOOK_TOKEN>`, **Trigger on**
-   Create/Update/Delete, **Filter** `!(_id in path("drafts.**"))` (intentionally
-   broad — any published doc of any type; see the main README), and leave Sanity's
-   "Secret" field blank.
+#### 8.1 — Detect wrangler auth, then pick the path
+The Cloudflare deploy + secrets are ordinary `wrangler` commands, so **you (Claude)
+can run them via Bash** when `wrangler` is authenticated — the user just approves
+each command; they don't type anything. First probe auth:
+
+```bash
+cd workers/rebuild-debounce && npx wrangler whoami
+```
+
+- **Authenticated** (prints an account/email) → take the **automated path (8.2)**:
+  run the deploy + secrets yourself via Bash.
+- **Not authenticated** (says "not logged in" / errors) → take the **guided path
+  (8.3)**: print the commands for the user to run, plus how to authenticate. Do
+  **not** try to run `wrangler login` for them — it opens a browser OAuth flow you
+  can't complete; tell them to run it (or to set a `CLOUDFLARE_API_TOKEN`), then
+  you can switch to the automated path.
+
+Only the **Cloudflare** side is automatable. The Sanity webhook (8.4) is always a
+dashboard step, and everything in step 9's handoff (domain, Workers Builds ↔ repo
+connection, deploy hook creation, WAF) stays manual — scripting those is brittle
+and needs broad token scopes; leave them to the guided checklist.
+
+#### 8.2 — Automated path (wrangler authenticated): you run it
+Run these via Bash, confirming each with the user first. **Ask the user for the
+deploy-hook URL** before you start — it's the one value only they can get
+(Cloudflare → the **site** worker → Settings → Builds → Deploy hooks → create one
+targeting `main`, copy the URL).
+
+```bash
+# 1. Deploy the Worker.
+cd workers/rebuild-debounce && npm install && npx wrangler deploy
+#    ⚠️ If it errors "redirected configuration path … does not exist", the root
+#    .wrangler/deploy/config.json (a gitignored @astrojs/cloudflare artifact) is
+#    hijacking the subfolder deploy. Remove it and retry:
+#    rm ../../.wrangler/deploy/config.json && npx wrangler deploy
+
+# 2. DEPLOY_HOOK_URL secret — pipe the user-provided URL via stdin (avoids it
+#    sitting in argv). Replace the placeholder with the real value they gave you.
+printf '%s' 'https://api.cloudflare.com/…the-deploy-hook…' | npx wrangler secret put DEPLOY_HOOK_URL
+
+# 3. WEBHOOK_TOKEN secret — generate it, set it, and PRINT IT ONCE so it can go in
+#    the Sanity webhook header (8.4). This is a shared secret between the Worker and
+#    the webhook, so surfacing it once here is expected.
+TOKEN="$(openssl rand -hex 32)"; printf '%s' "$TOKEN" | npx wrangler secret put WEBHOOK_TOKEN; echo "WEBHOOK_TOKEN=$TOKEN"
+```
+
+Capture the Worker's `*.workers.dev` URL from the `wrangler deploy` output and the
+printed `WEBHOOK_TOKEN` — both feed the webhook in 8.4.
+
+> **Secret hygiene:** the deploy-hook URL and token appear in the transcript
+> (unavoidable — the user pastes one, you generate the other). Don't write them to
+> any tracked file, don't commit them, and don't echo them again after 8.4. Use the
+> scratchpad for any temp file and delete it.
+
+#### 8.3 — Guided path (not authenticated): print, don't run
+If `whoami` failed, give the user the exact block to run themselves, and how to
+authenticate first:
+
+```bash
+# Authenticate once (browser OAuth) — or export CLOUDFLARE_API_TOKEN instead:
+npx wrangler login
+
+# Then, from the repo root:
+cd workers/rebuild-debounce && npm install && npx wrangler deploy
+#   (if it errors about a redirected config path, run:
+#    rm ../../.wrangler/deploy/config.json && npx wrangler deploy)
+npx wrangler secret put DEPLOY_HOOK_URL   # paste the site worker's deploy-hook URL
+npx wrangler secret put WEBHOOK_TOKEN      # paste a random string, e.g. openssl rand -hex 32
+```
+
+Tell them to report back the Worker's `*.workers.dev` URL and the token they used,
+so you can finish the webhook wiring in 8.4. Offer: "once you've run `wrangler
+login`, I can do the rest for you."
+
+#### 8.4 — Wire the Sanity webhook (always a dashboard step)
+Regardless of path, the webhook itself is configured in Sanity's dashboard
+(manage.sanity.io → project → API → Webhooks). Give the user these exact values:
+- **URL** → the Worker's `*.workers.dev` URL (**not** the deploy hook directly).
+- **HTTP header** → `Authorization: Bearer <WEBHOOK_TOKEN>` (the token from 8.2/8.3).
+- **Trigger on** → Create, Update, Delete.
+- **Filter** → `!(_id in path("drafts.**"))` — intentionally broad (any published
+  doc of any type; see the main README).
+- Leave Sanity's **"Secret"** field blank (a different HMAC feature we don't use).
 
 > **If the user defers this**, the site still works and published content is live
 > immediately — but the sitemap and llms.txt won't refresh until the next git
