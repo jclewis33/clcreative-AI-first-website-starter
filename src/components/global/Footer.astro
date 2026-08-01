@@ -159,6 +159,9 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
                     rel="noopener noreferrer"
                     class="footer_social_link"
                   >
+                    {/* Real anchor text for crawlers — the SVG icon alone
+                        leaves this link textless for SEO. */}
+                    <span class="u-sr-only">{link.label}</span>
                     <svg
                       viewBox={link.viewBox}
                       aria-hidden="true"

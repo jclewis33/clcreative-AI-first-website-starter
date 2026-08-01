@@ -21,33 +21,34 @@ All commands are run from the root of the project, from a terminal:
 | `npm run setup`           | Interactive fork setup — rewrites per-fork identity/config files (see [Forking](#-forking-this-as-a-starter)) |
 | `npm run dev`             | Starts local dev server at `localhost:4321`      |
 | `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
+| `npm run preview`         | Preview your build locally, before deploying (Astro's local server — unrelated to the `/preview` draft-preview routes) |
+| `npm run studio`          | Run Sanity Studio locally at `localhost:3333` (Presentation iframes **production**) |
+| `npm run studio:local`    | Studio at `localhost:3333` with Presentation iframing the **local** site (`localhost:4321`) — use this while developing routes/preview |
 | `npm run check:schema`    | Validate JSON-LD on key pages (dev server must be running) |
 | `npm run check:config`    | Verify `wrangler.jsonc` matches `src/config/site.shared.mjs` (also runs automatically before `build`) |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 
-## 🏗️ Rendering model — static by default, CMS routes SSR
+## 🏗️ Rendering model — everything public is prerendered
 
-The site is **static by default**: every route prerenders to HTML at build time. A small set of routes opt into **server-side rendering** with `export const prerender = false;` so the Sanity Presentation tool can show live drafts (per-request fetch with the `drafts` perspective):
+**Every public route prerenders to static HTML at build time — including the CMS content routes.** `/blog/[slug]`, `/case-studies/[slug]`, and `/glossary/[slug]` enumerate their slugs with `getStaticPaths` (slug-only GROQ queries; helpers in `src/sanity/lib/page-data.ts`) and are served by the Cloudflare assets binding at zero Worker CPU. Only two kinds of routes are server-rendered (`export const prerender = false;`):
 
-- `src/pages/blog/**`, `src/pages/case-studies/**`, `src/pages/glossary/**` — the CMS-driven content routes
-- `src/pages/api/draft-mode/*` — the cookie set/clear routes
-- `/studio/*` — auto-injected as SSR by the `@sanity/astro` integration
+- `src/pages/preview/**` — the SSR **draft-preview twins** that Sanity's Presentation tool iframes (same templates, same loaders as the public routes; only the perspective differs)
+- `src/pages/api/**` — the scorecard endpoint and the draft-mode cookie set/clear routes
 
-Everything else (home, about, services, location/industry pages, legal pages, `llms.txt`) stays prerendered. `astro.config.mjs` is `output: "static"` with the Cloudflare adapter; new pages default to static automatically.
+`astro.config.mjs` is `output: "static"` with the Cloudflare adapter; new pages default to static automatically.
 
-> The published SSR content routes use Sanity's CDN + edge caching (`s-maxage=300` in `src/middleware.ts`), so edits to content shown only on those routes go live within ~5 minutes **without** a rebuild.
+> **Why not show drafts on the public URLs?** With `@astrojs/cloudflare`, a prerendered path is returned by the assets binding **before** Astro middleware ever runs, so a cookie-keyed draft rewrite there is impossible. And serving the content routes as SSR just for preview burns Worker CPU per request — on a production site built from this stack it caused `exceededCpu` 503s under crawler load. Hence the parallel `/preview` tree: SSR for editors only, static for everyone else.
 
 ## 🚢 Deployment & content rebuilds
 
-`www.example.com` is served by a single Cloudflare Worker (the `your-worker-name` project). There is no separate preview deployment — draft preview runs on the same URL via a cookie set by Sanity's Presentation tool (see below).
+`www.example.com` is served by a single Cloudflare Worker (the `your-worker-name` project): prerendered pages come from its assets binding, and the same Worker server-renders `/preview/*` and `/api/*`. There is no separate preview deployment — draft preview is the `/preview/*` route tree on the same Worker (see below). The only other Worker is the tiny rebuild-debounce Worker that collapses publish webhooks into one build.
 
 **Two things trigger a production rebuild (`astro build`, ~60–90s):**
 
 1. **Git push to `main`** — Cloudflare watches the repo and auto-builds on commit.
 2. **Sanity publish** — a webhook POSTs to a Cloudflare deploy hook whenever a published (non-draft) document of a watched type is created, updated, or deleted.
 
-Because the build re-queries Sanity on every run, a rebuild regenerates the sitemap and `llms.txt` / `llms-full.txt` automatically — the same lifecycle as the pages.
+Because the build re-queries Sanity on every run, a rebuild regenerates the content pages themselves plus the sitemap and `llms.txt` / `llms-full.txt` — with prerendered content routes, **the publish→webhook→rebuild chain is how published content reaches the live site** (typically ~5–20 minutes end-to-end with the debounce window). Draft preview in the Studio is unaffected — `/preview/*` always fetches fresh.
 
 **Need a manual rebuild?** Either click **Retry deployment** in the Cloudflare dashboard (Workers & Pages → `your-worker-name` → Deployments), or `POST` the deploy-hook URL (handy from a script or an iOS Shortcut). No new infrastructure required.
 
@@ -68,7 +69,7 @@ The filter is intentionally **broad**: it matches any published document of **an
 
 **Why broad rather than a `_type` allowlist?** On this stack nearly every content type surfaces on a built page (sitemap, `llms.txt`, static cards, the navbar), so a per-type allowlist would just be a list you have to remember to update. With the broad filter, **a new content type triggers rebuilds automatically** — nothing to keep in sync. The occasional extra trigger is harmless: the debounce Worker (below) collapses a burst of publishes into a single build.
 
-Update is kept on (not just Create/Delete) because several types render on **static** pages — testimonials and case-study cards appear sitewide, and blog posts surface in the navbar and on the `web-design` pages — so an edit needs a rebuild to show.
+Update is kept on (not just Create/Delete) because **every content page is static** — an edit to any published document needs a rebuild to show up anywhere on the site.
 
 ### Rebuild-debounce Worker
 
@@ -76,9 +77,13 @@ The Sanity webhook fires **once per published document**, so publishing several 
 
 The chain is: **publish → debounce Worker (waits ~5 min) → Cloudflare deploy hook → one build.** The deploy hook still lives on the site worker; the debounce Worker only calls it. Point the Sanity webhook **URL** at the debounce Worker's `*.workers.dev` URL (not directly at the deploy hook) and add an `Authorization: Bearer <token>` header — see the Worker's own [README](workers/rebuild-debounce/README.md) for the per-fork deploy + secret + webhook steps. It's a separate Worker, deployed manually with `wrangler deploy`; it is **not** part of the site's CI build.
 
+> ⚠️ With prerendered content routes this Worker is **load-bearing**: until it (or some other rebuild trigger) is wired up, publishing in Sanity changes nothing on the live site. Don't defer it past launch.
+
 ### Draft preview (Presentation)
 
-Editors open `/studio`, click **Presentation**, and the same public URL renders drafts inside the Studio iframe. This works via the `sanity-preview-mode` cookie set by `/api/draft-mode/enable` — public visitors never have the cookie, so drafts can't leak. Full flow is documented in [`CLAUDE.md`](CLAUDE.md) under "Deployment, Sanity Studio & Preview".
+Editors open the hosted Studio, click **Presentation**, and the iframe loads the **`/preview/<type>/<slug>`** SSR twin of the page — same template and data loader as the public route, but fetched per-request so the `sanity-preview-mode` cookie (set by `/api/draft-mode/enable`) can switch it to the drafts perspective. Public visitors get the prerendered pages and never have the cookie on an SSR route, so drafts can't leak; `/preview` is robots-disallowed, noindexed, and never edge-cached. Full flow is documented in [`CLAUDE.md`](CLAUDE.md) under "Deployment, Sanity Studio & Preview".
+
+> Changing preview URLs or adding a previewable type touches `src/sanity/lib/resolve.ts`, which ships inside the **Studio** bundle — deploy the site first, then run `npx sanity deploy`, or Presentation keeps loading the old URLs.
 
 **No domain yet?** A fork can deploy to the Worker's free `*.workers.dev` URL with working Presentation **before** any custom domain exists — `SITE_URL` is env-overridable and the Studio trusts `https://*.workers.dev` automatically, so the staging→production switch is a no-code env change. Per-client runbook: **§4a "Staging-first deploy"** in [docs/new-project-checklist.md](docs/new-project-checklist.md).
 
@@ -87,7 +92,7 @@ Editors open `/studio`, click **Presentation**, and the same public URL renders 
 The site identity is centralized so a new site is mostly config, not find-and-replace:
 
 1. **`src/config/site.ts`** — the single source of truth: name, URL, email, phone, founder, address, social links + `xHandle`, `sameAs`, `areaServed`, OG/logo/apple-touch-icon paths, SEO defaults (`tagline`, `defaultDescription`), `brand.color`, and the `integrations` block (Google Tag Manager, MailerLite, Usercentrics account ids). Edit this first. Everything (Head, the GTM `<noscript>` in BaseLayout, footer, JSON-LD, `llms.txt`, scorecard emails, contact pages) reads from it.
-2. **`src/config/site.shared.mjs`** — a tiny dependency-free module holding the Sanity `projectId`/`dataset`/`apiVersion` and the site `url`. This is the ONE place those primitives live: `site.ts`, `astro.config.mjs`, `sanity.config.ts`, `sanity.cli.ts`, and the `scripts/*.mjs` all import it (no more hand-synced copies). Also set `PUBLIC_SANITY_PROJECT_ID` / `PUBLIC_SANITY_DATASET` in `.env` and in `wrangler.jsonc` `vars` (JSON can't import — `npm run check:config`, also run automatically before every build, fails if `wrangler.jsonc` drifts from the shared module). Add `SANITY_API_READ_TOKEN` as an encrypted Cloudflare secret.
+2. **`src/config/site.shared.mjs`** — a tiny dependency-free module holding the Sanity `projectId`/`dataset`/`apiVersion` and the site `url`. This is the ONE place those primitives live: `site.ts`, `astro.config.mjs`, `sanity.config.ts`, `sanity.cli.ts`, and the `scripts/*.mjs` all import it (no hand-synced copies). Also set `PUBLIC_SANITY_PROJECT_ID` / `PUBLIC_SANITY_DATASET` in `.env` and in `wrangler.jsonc` `vars` (JSON can't import — `npm run check:config`, also run automatically before every build, fails if `wrangler.jsonc` drifts from the shared module). Add `SANITY_API_READ_TOKEN` as an encrypted Cloudflare secret.
 3. **`src/data/site-structure.ts`** — the page/menu registry: `PAGES` (every internal page, once) plus `NAV_MENU`, `FOOTER_GROUPS`, and `BANNER`. The navbar, footer, `llms.txt`, and the announcement banner all derive from it — edit pages/menus/banner here, in one file.
 4. **Fonts** — swap files in `src/assets/fonts/`, then update the `fonts` block in `astro.config.mjs` and the font variables in `src/styles/variables/typography.css`.
 5. **Brand color** — change `--color-brand-500` in `src/styles/variables/colors.css` (the canonical source). Then mirror the new hex into `SITE.brand.color` in `site.ts` — that literal is used only by HTML email and the `<meta theme-color>` tag, which can't read CSS variables.

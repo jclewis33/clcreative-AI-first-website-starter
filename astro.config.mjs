@@ -2,7 +2,6 @@
 import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import sanity from "@sanity/astro";
-import { createClient } from "@sanity/client";
 import react from "@astrojs/react";
 import cloudflare from "@astrojs/cloudflare";
 import { loadEnv } from "vite";
@@ -25,71 +24,14 @@ const PUBLIC_SANITY_PROJECT_ID =
 const PUBLIC_SANITY_DATASET = env.PUBLIC_SANITY_DATASET || SANITY_DATASET;
 
 /**
- * Fetch every Sanity slug at build time and return fully-qualified URLs for
- * `@astrojs/sitemap`'s `customPages` option. Without this, SSR routes
- * (`/blog/[slug]`, `/case-studies/[slug]`, `/glossary/[slug]`) are invisible
- * to the sitemap crawler because Astro only enumerates prerendered paths.
- *
- * `blog/category/[category]` is driven off the `categories[]` array on every
- * blogPost, so we also enumerate unique categories and emit
- * `/blog/category/<slug>` entries.
+ * NOTE: the sitemap deliberately has NO `customPages` option and no
+ * `getSanityUrls()`-style helper. A customPages list is only ever needed for
+ * SSR routes (which are invisible to `@astrojs/sitemap`), and every content
+ * route here is PRERENDERED via `getStaticPaths` (see
+ * src/sanity/lib/page-data.ts) — the sitemap enumerates them automatically
+ * from the route table. When adding a new content type, add a getStaticPaths
+ * helper, never a customPages list.
  */
-async function getSanityUrls() {
-  const client = createClient({
-    projectId: PUBLIC_SANITY_PROJECT_ID,
-    dataset: PUBLIC_SANITY_DATASET,
-    apiVersion: SANITY_API_VERSION,
-    useCdn: true,
-  });
-
-  try {
-    const [posts, caseStudies, glossary, categories] = await Promise.all([
-      client.fetch(
-        `*[_type == "blogPost" && defined(slug.current)]{ "slug": slug.current }`,
-      ),
-      client.fetch(
-        `*[_type == "caseStudy" && defined(slug.current) && comingSoon != true]{ "slug": slug.current }`,
-      ),
-      client.fetch(
-        `*[_type == "glossaryTerm" && defined(slug.current)]{ "slug": slug.current }`,
-      ),
-      client.fetch(
-        `array::unique(*[_type == "blogPost" && defined(categories)].categories[])`,
-      ),
-    ]);
-
-    const categorySlugs = [
-      "all",
-      .../** @type {string[]} */ (categories ?? []).map((c) =>
-        String(c).toLowerCase().replace(/\s+/g, "-"),
-      ),
-    ];
-
-    return [
-      .../** @type {{ slug: string }[]} */ (posts).map(
-        (p) => `${SITE_URL}/blog/${p.slug}`,
-      ),
-      .../** @type {{ slug: string }[]} */ (caseStudies).map(
-        (c) => `${SITE_URL}/case-studies/${c.slug}`,
-      ),
-      .../** @type {{ slug: string }[]} */ (glossary).map(
-        (g) => `${SITE_URL}/glossary/${g.slug}`,
-      ),
-      ...categorySlugs.map((s) => `${SITE_URL}/blog/category/${s}`),
-    ];
-  } catch (err) {
-    // A fresh fork (before `/setup` provisions Sanity) or a network-restricted
-    // build environment can't reach the dataset. Don't hard-fail the build —
-    // the sitemap just omits dynamic CMS URLs until Sanity is reachable.
-    const message = err instanceof Error ? err.message : String(err);
-    console.warn(
-      `[astro.config] Skipping Sanity sitemap URLs — could not reach the dataset: ${message}`,
-    );
-    return [];
-  }
-}
-
-const sanityCustomPages = await getSanityUrls();
 
 /**
  * Dev-only pages — visible on `astro dev` so they can be referenced while
@@ -100,10 +42,25 @@ const sanityCustomPages = await getSanityUrls();
 const DEV_ONLY_PATHS = ["/style-guide", "/components"];
 
 /**
- * Pages that should ship to production but stay out of `sitemap-index.xml`
- * (also disallowed in robots.txt). Form confirmation pages, etc.
+ * Sitemap exclusions — TWO lists with TWO different matching modes, both
+ * mirrored in public/robots.txt (keep them in sync). A single loose
+ * `page.includes(path)` check gets this wrong in both directions: it silently
+ * drops real content whose slug contains an excluded word (e.g. a blog post
+ * at /blog/components-in-... matching the "/components" exclusion), and
+ * naively "fixing" it with exact matching pushes variant pages like
+ * /thank-you-call INTO the sitemap while robots.txt still disallows them.
+ *
+ * SITEMAP_EXCLUDE_PATHS — whole path segments: excludes `/x` and `/x/...`
+ * but never `/blog/x-something`. `/preview` is the editor-only SSR draft
+ * tree (SSR routes never appear in the sitemap anyway — this is belt and
+ * braces should any part of it ever prerender).
+ *
+ * SITEMAP_EXCLUDE_PREFIXES — literal prefixes, mirroring how robots.txt
+ * Disallow works: one `/thank-you` entry covers /thank-you, /thank-you-call,
+ * /thank-you-worksheet, etc.
  */
-const SITEMAP_EXCLUDE_PATHS = [...DEV_ONLY_PATHS, "/thank-you"];
+const SITEMAP_EXCLUDE_PATHS = [...DEV_ONLY_PATHS, "/preview"];
+const SITEMAP_EXCLUDE_PREFIXES = ["/thank-you"];
 
 function excludeDevOnlyPages() {
   return {
@@ -136,15 +93,21 @@ const redirects = {};
 
 // https://astro.build/config
 export default defineConfig({
-  // Static by default. Individual routes opt into SSR with
-  // `export const prerender = false;` in their frontmatter:
-  //   - `src/pages/blog/**`, `src/pages/case-studies/**`, `src/pages/glossary/**`
-  //     — so the Presentation tool can show drafts via the sanity-preview-mode
-  //     cookie (per-request fetch with `drafts` perspective).
-  //   - `src/pages/api/draft-mode/*` — cookie set/clear routes (called by the
-  //     hosted Studio's Presentation tool to toggle draft mode cross-origin).
-  // Every other page (index, about, contact, services, legal, etc.) stays
-  // prerendered. New pages default to static automatically.
+  // Static by default — INCLUDING the CMS content routes (blog, case
+  // studies, glossary), which enumerate their slugs with `getStaticPaths`
+  // (helpers in src/sanity/lib/page-data.ts) and ship as prerendered HTML at
+  // zero Worker CPU. Only two kinds of routes opt into SSR with
+  // `export const prerender = false;`:
+  //   - `src/pages/preview/**` — the draft-preview twins that Sanity's
+  //     Presentation tool iframes (per-request fetch, drafts perspective via
+  //     the sanity-preview-mode cookie). Drafts CANNOT be served on the
+  //     prerendered public URLs: the Cloudflare adapter returns static
+  //     assets before Astro middleware ever runs, so a cookie-keyed rewrite
+  //     there is impossible — hence the parallel /preview tree.
+  //   - `src/pages/api/**` — the scorecard endpoint and the draft-mode
+  //     cookie set/clear routes.
+  // Publishing content triggers a rebuild via the rebuild-debounce Worker
+  // (workers/rebuild-debounce/) — prerendered content ships on the next build.
   output: "static",
   adapter: cloudflare({
     inspectorPort: false,
@@ -152,16 +115,23 @@ export default defineConfig({
     // Pre-optimize images at build time with sharp, serve them via a
     // passthrough endpoint at runtime. Without this the adapter defaults to
     // `cloudflare-binding` mode, which requires a paid Cloudflare Images
-    // binding for SSR pages — any <Image> on /blog, /case-studies, or
-    // /glossary would otherwise fail to render.
+    // binding for SSR pages — any <Image> on the /preview draft-preview
+    // routes would otherwise fail to render.
     imageService: "compile",
   }),
   redirects,
   integrations: [
     excludeDevOnlyPages(),
     sitemap({
-      filter: (page) => !SITEMAP_EXCLUDE_PATHS.some((p) => page.includes(p)),
-      customPages: sanityCustomPages,
+      filter: (page) => {
+        const { pathname } = new URL(page);
+        if (SITEMAP_EXCLUDE_PREFIXES.some((p) => pathname.startsWith(p))) {
+          return false;
+        }
+        return !SITEMAP_EXCLUDE_PATHS.some(
+          (p) => pathname === p || pathname.startsWith(`${p}/`),
+        );
+      },
     }),
     // React must be registered BEFORE Sanity — the visual-editing islands
     // (SanityVisualEditing / DisableDraftMode) are React components that need

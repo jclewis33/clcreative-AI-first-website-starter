@@ -21,11 +21,11 @@ const SECURITY_HEADERS: Record<string, string> = {
     "frame-ancestors https://*.sanity.io https://*.sanity.studio http://localhost:3333",
 };
 
-// Runs for every SSR route (prerendered pages are served as static assets and
-// skip middleware at request time, but Astro still invokes middleware during
-// the prerender build phase — guard against that to avoid touching cookies).
-// Sets Cache-Control so Cloudflare's edge caches public responses while
-// editors in draft mode always get fresh content.
+// Runs for every SSR route — with the content routes prerendered, that means
+// only /api/* and the /preview/* draft-preview tree (prerendered pages are
+// served as static assets by the assets binding and get their headers from
+// public/_headers instead; Astro still invokes middleware during the
+// prerender build phase — guard against that to avoid touching cookies).
 export const onRequest = defineMiddleware(async (context, next) => {
   const response = await next();
 
@@ -35,20 +35,22 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (context.isPrerendered) return response;
 
   const isDraftMode = context.cookies.has(perspectiveCookieName);
+  const isPreviewRoute = context.url.pathname.startsWith("/preview");
 
-  // Editors inside the Presentation iframe: never cache — draft edits must
-  // reflect immediately on the next fetch.
+  // /preview is never cached — REGARDLESS of whether the draft cookie is
+  // present. Cloudflare's edge cache does not vary on cookies: if a
+  // cookie-less request ever populated the cache with a published render of
+  // /preview/blog/x, that stale non-draft HTML would be served back to an
+  // editor who DOES have the cookie — Presentation silently shows stale
+  // content and "preview looks broken" with nothing in the logs. Forcing
+  // private,no-cache on the whole tree closes that hole.
   //
-  // Public traffic: cache the rendered HTML at the CF edge for 5 minutes,
-  // then serve stale for 24 hours while revalidating in the background.
-  // Publish visibility: updates become visible to the public within ~5 min.
-  // After that window, the first visitor gets the stale cached version
-  // instantly while CF fetches fresh in the background; visitor #2 onwards
-  // sees the new content. SWR=24hr keeps the cache "warm" for a full day
-  // even with no traffic, so sparse visits never pay cold-cache costs.
-  const cacheControl = isDraftMode
-    ? "private, no-cache"
-    : "public, s-maxage=300, stale-while-revalidate=86400";
+  // Other SSR responses (i.e. /api/*): cache for 5 minutes at the edge,
+  // serve stale for 24h while revalidating in the background.
+  const cacheControl =
+    isDraftMode || isPreviewRoute
+      ? "private, no-cache"
+      : "public, s-maxage=300, stale-while-revalidate=86400";
 
   // `wrangler dev` occasionally returns responses with sealed Headers objects,
   // which throws "Can't modify immutable headers" on `.set()`. Production CF
@@ -57,6 +59,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const headersToSet: Record<string, string> = {
     ...SECURITY_HEADERS,
     "Cache-Control": cacheControl,
+    // /preview must never be indexed. robots.txt's Disallow only stops
+    // crawling — a URL discovered elsewhere (a shared link, a stray mention)
+    // can still be indexed without it. noindex closes that gap; the third
+    // layer is the sitemap exclusion in astro.config.mjs.
+    ...(isPreviewRoute ? { "X-Robots-Tag": "noindex, nofollow" } : {}),
   };
   try {
     for (const [name, value] of Object.entries(headersToSet)) {

@@ -197,9 +197,14 @@ interface Props {
   /**
    * Accessible label for the clickable overlay.
    * This is the text screen readers announce — the visible `.button_main_text`
-   * is set to `aria-hidden="true"`.
+   * is set to `aria-hidden="true"`. On link buttons it is ALSO rendered as a
+   * visually-hidden `<span class="u-sr-only">` inside the `<a>`, so crawlers
+   * see real anchor text (an `aria-label` alone leaves the anchor textless
+   * for SEO).
    *
-   * **Required** — always pass the readable button text here.
+   * **Required** — always pass the readable button text here. If omitted,
+   * the component falls back to the button's slot text so the link is never
+   * nameless.
    *
    * @example ariaLabel="Book your free strategy call"
    */
@@ -225,15 +230,6 @@ interface Props {
    * ```
    */
   square?: boolean;
-
-  /**
-   * @deprecated No longer needed — a `<Button>` with no `href` already renders
-   * as a plain `<button>`. This prop is now a no-op, kept only so existing
-   * usage doesn't break. Simply omit `href` for an action/modal/form button.
-   *
-   * @default false
-   */
-  action?: boolean;
 
   /**
    * Stretches the button to 100% width of its parent (block display).
@@ -320,7 +316,6 @@ const {
   ariaLabel,
   type = "button",
   square = false,
-  action = false,
   fullWidth = false,
   hoverTheme,
   supportText,
@@ -334,7 +329,15 @@ const {
    or any on-page JS action. Those attributes flow through `...rest` onto the
    element below; there is no default navigation. */
 const resolvedHref = href;
-const resolvedAriaLabel = ariaLabel;
+
+/* Never render a nameless control: fall back to the slot's text content when
+   no ariaLabel is passed. (Rendering the slot here is fine — Astro slots can
+   be rendered more than once.) */
+const slotText = (await Astro.slots.render("default"))
+  ?.replace(/<[^>]*>/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+const resolvedAriaLabel = ariaLabel ?? (slotText || undefined);
 
 /* Wrapper classes */
 const wrapClasses = [
@@ -379,7 +382,11 @@ const hasIcon = Astro.slots.has("icon");
               target={linkTarget}
               rel={linkRel}
               {...rest}
-            />
+            >
+              {/* Real anchor text for crawlers — the visible label is
+                  aria-hidden, and an aria-label alone is invisible to SEO. */}
+              <span class="u-sr-only">{resolvedAriaLabel}</span>
+            </a>
           ) : (
             <button
               class="clickable_btn"
@@ -423,7 +430,11 @@ const hasIcon = Astro.slots.has("icon");
             target={linkTarget}
             rel={linkRel}
             {...rest}
-          />
+          >
+            {/* Real anchor text for crawlers — the visible label is
+                aria-hidden, and an aria-label alone is invisible to SEO. */}
+            <span class="u-sr-only">{resolvedAriaLabel}</span>
+          </a>
         ) : (
           <button
             class="clickable_btn"

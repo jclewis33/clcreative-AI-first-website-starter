@@ -1,6 +1,10 @@
+# Keep in sync with SITEMAP_EXCLUDE_PATHS / SITEMAP_EXCLUDE_PREFIXES in
+# astro.config.mjs. /preview is the editor-only SSR draft-preview tree — it
+# is also noindexed via X-Robots-Tag in src/middleware.ts (Disallow alone
+# stops crawling, not indexing of a URL discovered elsewhere).
 User-agent: *
 Allow: /
-Disallow: /studio
+Disallow: /preview
 Disallow: /thank-you
 Disallow: /style-guide
 Disallow: /components

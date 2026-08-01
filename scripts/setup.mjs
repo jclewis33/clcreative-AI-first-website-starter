@@ -512,8 +512,8 @@ webclip (public/images/), and the inline SVG logo paths (src/config/logo-paths.t
   4. Finish the dashboard steps in ${c.bold}docs/new-project-checklist.md${c.reset}
      (Sanity CORS, Cloudflare secrets + WAF + domain, GitHub Dependabot).
   5. Deploy the ${c.bold}rebuild-debounce Worker${c.reset} + wire the Sanity publish webhook
-     (${c.dim}workers/rebuild-debounce/README.md${c.reset}) — SSR content needs it to
-     regenerate the sitemap + llms.txt on publish.
+     (${c.dim}workers/rebuild-debounce/README.md${c.reset}) — REQUIRED: content pages are
+     prerendered, so publishing only reaches the live site via this rebuild chain.
 ${c.dim}  The /setup Claude skill automates steps 1–2 and the Sanity project creation.${c.reset}
 `);
 }

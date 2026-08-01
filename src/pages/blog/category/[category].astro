@@ -1,7 +1,8 @@
 ---
-export const prerender = false;
 /**
- * Blog Category Page
+ * Blog Category Page — prerendered. One page per unique category (plus the
+ * "all" archive) is enumerated at build time by getBlogCategoryStaticPaths(),
+ * which passes the display name along as a prop.
  *
  * Displays all blog posts for a specific category with:
  *   1. Hero section — background image + overlay, category name + description
@@ -21,58 +22,52 @@ import ContentWrapper from "../../../components/ui/ContentWrapper.astro";
 import BlogCard from "../../../components/ui/BlogCard.astro";
 
 // Sanity
-import { loadQuery } from "../../../sanity/lib/load-query";
+import { loadPageQuery } from "../../../sanity/lib/page-data";
 import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
 import {
-  BLOG_CATEGORIES_QUERY,
   BLOG_POSTS_QUERY,
   BLOG_POSTS_BY_CATEGORY_QUERY,
   SITE_SETTINGS_QUERY,
 } from "../../../sanity/lib/queries";
+import { getBlogCategoryStaticPaths } from "../../../sanity/lib/page-data";
 import { urlFor } from "../../../sanity/lib/image";
 
 // Styles
 import "../../../styles/pages/blog.css";
 
-/* ── Resolve category slug → display name ── */
+// Must be an imported helper: Astro extracts getStaticPaths into its own
+// module at build time, so frontmatter siblings are not in scope here.
+export const getStaticPaths = getBlogCategoryStaticPaths;
+
+/* ── Category display name rides along from getStaticPaths ── */
 
 const { category: categorySlug } = Astro.params;
 if (!categorySlug) return Astro.redirect("/404");
 
 const draftProps = getDraftModeProps(Astro);
 
-let category: string;
-if (categorySlug === "all") {
-  category = "All";
-} else {
-  const { data: categories } = await loadQuery<string[]>({
-    query: BLOG_CATEGORIES_QUERY,
-    ...draftProps,
-  });
-  const match = (categories ?? []).find(
-    (c) => c.toLowerCase().replace(/\s+/g, "-") === categorySlug,
-  );
-  if (!match) return Astro.redirect("/404");
-  category = match;
-}
+const category: string = (Astro.props as { categoryName?: string })
+  .categoryName ?? "All";
 
 const categoryLabel = category === "All" ? "All" : category;
 
 /* ── Fetch posts — all posts for "All", filtered for specific category ── */
 
-const { data: posts } =
-  category === "All"
-    ? await loadQuery<any[]>({ query: BLOG_POSTS_QUERY, ...draftProps })
-    : await loadQuery<any[]>({
-        query: BLOG_POSTS_BY_CATEGORY_QUERY,
-        params: { category },
-        ...draftProps,
-      });
-
-const { data: settings } = await loadQuery<any>({
-  query: SITE_SETTINGS_QUERY,
-  ...draftProps,
-});
+const [posts, settings] = await Promise.all([
+  loadPageQuery<any[]>({
+    query: category === "All" ? BLOG_POSTS_QUERY : BLOG_POSTS_BY_CATEGORY_QUERY,
+    params: category === "All" ? undefined : { category },
+    draftProps,
+    fallback: [],
+    label: `blog category "${categorySlug}"`,
+  }),
+  loadPageQuery<any>({
+    query: SITE_SETTINGS_QUERY,
+    draftProps,
+    fallback: null,
+    label: "blog category settings",
+  }),
+]);
 const defaultCtaSection = settings?.defaultCtaSection ?? null;
 ---
 

@@ -1,10 +1,12 @@
 # `scripts/`
 
 Standalone Node utilities run with `node scripts/<name>.mjs` (they are **not**
-part of the Astro build). Only `check-schema.mjs` has an npm alias
-(`npm run check:schema`); the migration scripts are run ad-hoc.
+part of the Astro build). npm aliases: `npm run setup` (`setup.mjs`),
+`npm run check:schema` (`check-schema.mjs`), and `npm run check:config`
+(`check-config-sync.mjs`, also run automatically before every build via the
+`prebuild` hook); the migration scripts are run ad-hoc.
 
-All three read Sanity project config the same way: `PUBLIC_SANITY_PROJECT_ID`
+The Sanity-reading scripts get project config the same way: `PUBLIC_SANITY_PROJECT_ID`
 and `PUBLIC_SANITY_DATASET`, resolved from the environment **or** from the
 project's `.env` file (the same vars the app uses — see CLAUDE.md → _Required
 env vars_). Writes additionally need a `SANITY_TOKEN` (Editor or above; create
@@ -12,6 +14,29 @@ one at <https://www.sanity.io/manage> → API → Tokens).
 
 Dev deps used by the migration scripts (`csv-parse`, `node-html-parser`,
 `@sanity/client`) are already in `package.json`.
+
+---
+
+## `setup.mjs` — deterministic fork setup (`npm run setup`)
+
+Interactive (or `--config <json> --yes`, or `--dry-run`) rewriter of the
+per-fork identity values: `src/config/site.shared.mjs`, `src/config/site.ts`,
+both `wrangler.jsonc` files (site + rebuild-debounce Worker names/vars), brand
+color + optional theme/typography variables, `logo-paths.ts`, `sanity.cli.ts`
+(`studioHost`, clears `appId`), and a `.env` scaffold. It only **replaces
+values of declarations that already exist** — it never scaffolds content
+types, routes, or queries (see CLAUDE.md → "Adding a new content type" for
+the four route pieces a new type needs). The `/setup` skill orchestrates this
+script plus the cross-system work (Sanity project creation, schema/Studio
+deploys, CORS, verification).
+
+---
+
+## `check-config-sync.mjs` — wrangler ↔ shared-config guard (`npm run check:config`)
+
+Fails the build if `wrangler.jsonc` `vars` drift from
+`src/config/site.shared.mjs` (JSON can't import the shared module, so this
+check is the sync guarantee). Runs automatically via `prebuild`.
 
 ---
 

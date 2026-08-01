@@ -4,9 +4,10 @@
  * Sits between the Sanity publish webhook and the Cloudflare deploy hook.
  *
  * WHY THIS EXISTS: on this stack the blog / case-study / glossary routes are
- * SSR (`export const prerender = false`), so published content is live
- * instantly — BUT the sitemap and `llms.txt` / `llms-full.txt` are generated
- * at build time, so a Sanity publish must still trigger a Cloudflare rebuild.
+ * PRERENDERED at build time, so a Sanity publish reaches the live site only
+ * through a rebuild (same for the sitemap and `llms.txt` / `llms-full.txt`).
+ * This Worker IS the publish→live path — without it, publishing changes
+ * nothing on production (draft preview under /preview/* still works).
  * The Sanity webhook fires once PER published document, so publishing several
  * docs in a row would kick off several builds. This Worker collapses a burst
  * of publishes into a single build using a Durable Object alarm.

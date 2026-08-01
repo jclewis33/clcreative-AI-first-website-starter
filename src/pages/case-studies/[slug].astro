@@ -1,47 +1,30 @@
 ---
-export const prerender = false;
+/**
+ * Public case study page — PRERENDERED. `getCaseStudyStaticPaths()` already
+ * excludes coming-soon studies, so they simply never build here (no page that
+ * redirects to /404). Editors preview them via the SSR twin at
+ * /preview/case-studies/[slug], which calls the exact same loader.
+ */
 import CaseStudyTemplate from "../../components/templates/CaseStudyTemplate.astro";
-import { loadQuery } from "../../sanity/lib/load-query";
 import { getDraftModeProps } from "../../sanity/lib/draft-mode";
 import {
-  CASE_STUDY_QUERY,
-  CASE_STUDIES_QUERY,
-  SITE_SETTINGS_QUERY,
-} from "../../sanity/lib/queries";
+  loadCaseStudyPage,
+  getCaseStudyStaticPaths,
+} from "../../sanity/lib/page-data";
+
+// Must be an imported helper: Astro extracts getStaticPaths into its own
+// module at build time, so frontmatter siblings are not in scope here.
+export const getStaticPaths = getCaseStudyStaticPaths;
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
-const draftProps = getDraftModeProps(Astro);
-
-const { data: study } = await loadQuery<any>({
-  query: CASE_STUDY_QUERY,
-  params: { slug },
-  ...draftProps,
-});
-
-if (!study) {
-  return Astro.redirect("/404");
-}
-
-if (study.comingSoon) {
-  return Astro.redirect("/404");
-}
-
-const { data: allStudies } = await loadQuery<any[]>({
-  query: CASE_STUDIES_QUERY,
-  ...draftProps,
-});
-
-const { data: settings } = await loadQuery<any>({
-  query: SITE_SETTINGS_QUERY,
-  ...draftProps,
-});
-const defaultCtaSection = settings?.defaultCtaSection ?? null;
+const data = await loadCaseStudyPage(slug, getDraftModeProps(Astro));
+if (!data || data.study.comingSoon) return Astro.redirect("/404");
 ---
 
 <CaseStudyTemplate
-  study={study}
-  allStudies={allStudies}
-  defaultCtaSection={defaultCtaSection}
+  study={data.study}
+  allStudies={data.allStudies}
+  defaultCtaSection={data.defaultCtaSection}
 />

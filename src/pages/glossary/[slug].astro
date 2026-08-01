@@ -1,43 +1,29 @@
 ---
-export const prerender = false;
+/**
+ * Public glossary term page — PRERENDERED. Slugs enumerated at build time;
+ * draft preview lives on the SSR twin at /preview/glossary/[slug], which
+ * calls the exact same loader.
+ */
 import GlossaryTermTemplate from "../../components/templates/GlossaryTermTemplate.astro";
-import { loadQuery } from "../../sanity/lib/load-query";
 import { getDraftModeProps } from "../../sanity/lib/draft-mode";
 import {
-  GLOSSARY_TERM_QUERY,
-  GLOSSARY_TERMS_QUERY,
-  SITE_SETTINGS_QUERY,
-} from "../../sanity/lib/queries";
+  loadGlossaryTermPage,
+  getGlossaryTermStaticPaths,
+} from "../../sanity/lib/page-data";
+
+// Must be an imported helper: Astro extracts getStaticPaths into its own
+// module at build time, so frontmatter siblings are not in scope here.
+export const getStaticPaths = getGlossaryTermStaticPaths;
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
-const draftProps = getDraftModeProps(Astro);
-
-const { data: term } = await loadQuery<any>({
-  query: GLOSSARY_TERM_QUERY,
-  params: { slug },
-  ...draftProps,
-});
-
-if (!term) {
-  return Astro.redirect("/404");
-}
-
-const { data: allTerms } = await loadQuery<any[]>({
-  query: GLOSSARY_TERMS_QUERY,
-  ...draftProps,
-});
-
-const { data: settings } = await loadQuery<any>({
-  query: SITE_SETTINGS_QUERY,
-  ...draftProps,
-});
-const defaultCtaSection = settings?.defaultCtaSection ?? null;
+const data = await loadGlossaryTermPage(slug, getDraftModeProps(Astro));
+if (!data) return Astro.redirect("/404");
 ---
 
 <GlossaryTermTemplate
-  term={term}
-  allTerms={allTerms}
-  defaultCtaSection={defaultCtaSection}
+  term={data.term}
+  allTerms={data.allTerms}
+  defaultCtaSection={data.defaultCtaSection}
 />

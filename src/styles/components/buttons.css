@@ -9,6 +9,8 @@
      <div class="button_main_wrap" data-button-variant="primary" data-button>
        <div class="clickable_wrap u-cover-absolute">
          <a class="clickable_link" href="..." aria-label="…">       ← or <button class="clickable_btn">
+           <span class="u-sr-only">Label</span>                     ← real anchor text for crawlers (links only)
+         </a>
        </div>
        <div class="button_main_element">
          <span class="button_main_text" aria-hidden="true">Label</span>

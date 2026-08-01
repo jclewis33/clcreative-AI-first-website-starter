@@ -1,7 +1,7 @@
 ---
-export const prerender = false;
 /**
- * Blog Listing Page
+ * Blog Listing Page — prerendered (published content at build time; a Sanity
+ * publish triggers a rebuild via the rebuild-debounce Worker webhook).
  *
  * Clay-inspired layout with:
  *   1. Hero — dark background + featured posts slider (cover cards)
@@ -24,8 +24,8 @@ import BlogCard from "../../components/ui/BlogCard.astro";
 import Slider from "../../components/ui/Slider.astro";
 
 // Sanity
-import { loadQuery } from "../../sanity/lib/load-query";
 import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import { loadPageQuery } from "../../sanity/lib/page-data";
 import { BLOG_POSTS_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
 import { urlFor } from "../../sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
@@ -37,15 +37,21 @@ import ContentWrapper from "../../components/ui/ContentWrapper.astro";
 
 /* ── Fetch all posts from Sanity ── */
 
-const { data: allPosts } = await loadQuery<any[]>({
-  query: BLOG_POSTS_QUERY,
-  ...getDraftModeProps(Astro),
-});
-
-const { data: settings } = await loadQuery<any>({
-  query: SITE_SETTINGS_QUERY,
-  ...getDraftModeProps(Astro),
-});
+const draftProps = getDraftModeProps(Astro);
+const [allPosts, settings] = await Promise.all([
+  loadPageQuery<any[]>({
+    query: BLOG_POSTS_QUERY,
+    draftProps,
+    fallback: [],
+    label: "blog index posts",
+  }),
+  loadPageQuery<any>({
+    query: SITE_SETTINGS_QUERY,
+    draftProps,
+    fallback: null,
+    label: "blog index settings",
+  }),
+]);
 const defaultCtaSection = settings?.defaultCtaSection ?? null;
 
 /* ── Featured posts for the hero slider ── */
