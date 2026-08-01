@@ -602,8 +602,19 @@ in place when you run `npx sanity deploy`.
 
 > **When the fork later adds a new document type:** per CLAUDE.md, do all four —
 > add it to `schemaTypes/index.ts`, an `S.listItem()` in the desk resolver, an
-> `icon`, and a Presentation location in `resolve.ts` — or it won't show in the
-> desk / preview. Setup itself doesn't require this; it's for future schema work.
+> `icon`, and a Presentation location in `resolve.ts` (pointing at
+> `/preview/<type>/<slug>`) — or it won't show in the desk / preview. A type
+> with its own detail route additionally needs the **four route pieces** from
+> CLAUDE.md → "Adding a new content type": public prerendered route with
+> `getStaticPaths`, the `/preview` SSR twin, a shared loader in `page-data.ts`,
+> and that `resolve.ts` location (then a Studio re-deploy). Setup itself doesn't
+> require this; it's for future schema work.
+
+> **Deploy order for preview:** Presentation iframes the site's `/preview/*`
+> routes, so the **site** must be deployed before Presentation can connect
+> (locally, `npm run studio:local` + `npm run dev` works immediately). Any later
+> change to `resolve.ts` needs `npx sanity deploy` — a site deploy alone leaves
+> Presentation loading stale URLs.
 
 ### 5. CORS origins (MCP)
 Add all four to the new project (with credentials allowed):
@@ -628,16 +639,24 @@ npm run check:config   # wrangler ↔ site.shared.mjs agree
 npm run build          # full build (re-queries Sanity; empty project is fine)
 ```
 Fix anything that fails before handing off. A brand-new empty Sanity project
-builds clean — content routes just render empty states.
+builds clean — the content routes' `getStaticPaths` enumerate **zero slugs**,
+so no detail pages are emitted and the listing pages render empty states.
+(While the Sanity project id is still the template placeholder, the
+`page-data.ts` helpers warn and return `[]`; once the real id is in, an
+unreachable dataset **fails the build loudly** on purpose — never ship a
+deploy with the content pages silently missing.)
 
 ### 8. Rebuild-debounce Worker + Sanity publish webhook (guide — REQUIRED to surface)
-**Always raise this** — the content routes are SSR, so published content is live
-instantly, but the **sitemap** and **`llms.txt` / `llms-full.txt`** are generated
-at build time. A Sanity **publish** must therefore trigger a Cloudflare rebuild,
-and the webhook fires once per document — so the starter ships a standalone
-**rebuild-debounce Worker** ([workers/rebuild-debounce/](../../../workers/rebuild-debounce/))
+**Always raise this** — the content routes are **prerendered**, so this webhook
+chain is **the only path by which published content reaches the live site**
+(the sitemap and `llms.txt` / `llms-full.txt` regenerate on the same build).
+Until it's wired, clicking Publish changes nothing on production — only draft
+preview under `/preview/*` reflects edits. The webhook fires once per document,
+so the starter ships a standalone **rebuild-debounce Worker**
+([workers/rebuild-debounce/](../../../workers/rebuild-debounce/))
 that collapses a burst of publishes into one build. The chain is:
-**publish → debounce Worker (waits ~5 min) → Cloudflare deploy hook → one build.**
+**publish → debounce Worker (waits ~5 min) → Cloudflare deploy hook → one build**
+(publish-to-live typically lands in ~5–20 minutes).
 
 The CLI (step 3) already renamed the Worker's `wrangler.jsonc` `name` to
 `<worker>-rebuild-debounce`. The remaining work splits into a **Cloudflare side**
@@ -730,9 +749,11 @@ Regardless of path, the webhook itself is configured in Sanity's dashboard
   doc of any type; see the main README).
 - Leave Sanity's **"Secret"** field blank (a different HMAC feature we don't use).
 
-> **If the user defers this**, the site still works and published content is live
-> immediately — but the sitemap and llms.txt won't refresh until the next git
-> push / manual rebuild. Flag that trade-off and record it in the step-9 handoff.
+> **If the user defers this**, warn clearly: with prerendered content routes,
+> **publishing in Sanity will not change the live site at all** until the next
+> git push or manual rebuild — this is not a cosmetic sitemap lag. Draft preview
+> in the Studio keeps working. Treat deferral as a launch blocker to revisit,
+> and record it in the step-9 handoff.
 
 ### 9. Hand off the dashboard checklist (manual)
 You cannot click these; list them and point at the checklist. **Include every

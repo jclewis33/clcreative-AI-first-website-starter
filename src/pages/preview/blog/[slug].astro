@@ -1,0 +1,31 @@
+---
+/**
+ * SSR PREVIEW twin of /blog/[slug] — the route Sanity's Presentation tool
+ * iframes for draft preview (see src/sanity/lib/resolve.ts). Renders the
+ * IDENTICAL template via the IDENTICAL loader as the public prerendered
+ * route; the only difference is that this runs per request, so the
+ * Presentation cookie can switch the fetch to the drafts perspective.
+ *
+ * Editor-only surface: robots.txt disallows /preview, the middleware adds
+ * X-Robots-Tag noindex + private,no-cache, and it's excluded from the
+ * sitemap. Keep this file in sync with src/pages/blog/[slug].astro.
+ */
+export const prerender = false;
+import BlogPostTemplate from "../../../components/templates/BlogPostTemplate.astro";
+import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
+import { loadBlogPostPage } from "../../../sanity/lib/page-data";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const data = await loadBlogPostPage(slug, getDraftModeProps(Astro));
+if (!data) return Astro.redirect("/404");
+---
+
+<BlogPostTemplate
+  post={data.post}
+  relatedPosts={data.relatedPosts}
+  manualRelatedPosts={data.manualRelatedPosts}
+  defaultCta={data.defaultCta}
+  defaultCtaSection={data.defaultCtaSection}
+/>

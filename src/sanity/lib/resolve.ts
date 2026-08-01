@@ -1,6 +1,23 @@
 import { defineLocations } from "sanity/presentation";
 import type { PresentationPluginOptions } from "sanity/presentation";
 
+/**
+ * ⚠️ Two different URL maps live in this file — do NOT conflate them:
+ *
+ * 1. `resolveInternalLinkHref` — hrefs for REAL links rendered inside
+ *    published content (internal-link marks in portable text). These must
+ *    stay PUBLIC URLs (/blog/…, /case-studies/…, /glossary/…).
+ *
+ * 2. `resolve.locations` — the URLs Sanity Presentation iframes for draft
+ *    preview. These must point at the SSR /preview/* twins; the public
+ *    routes are prerendered static files, so middleware (and therefore the
+ *    draft cookie) never runs for them.
+ *
+ * Note: this file is compiled into the HOSTED Studio bundle. Changing
+ * locations requires `npx sanity deploy` (a Studio deploy) — a site deploy
+ * alone won't update Presentation. Deploy order: site first (so /preview/*
+ * exists), then the Studio.
+ */
 export type InternalLinkTarget =
   | {
       _type?: string;
@@ -34,7 +51,7 @@ export const resolve: PresentationPluginOptions["resolve"] = {
         locations: [
           {
             title: doc?.title || "Untitled",
-            href: `/blog/${doc?.slug}`,
+            href: `/preview/blog/${doc?.slug}`,
           },
         ],
       }),
@@ -45,7 +62,7 @@ export const resolve: PresentationPluginOptions["resolve"] = {
         locations: [
           {
             title: doc?.title || "Untitled",
-            href: `/case-studies/${doc?.slug}`,
+            href: `/preview/case-studies/${doc?.slug}`,
           },
         ],
       }),
@@ -56,7 +73,7 @@ export const resolve: PresentationPluginOptions["resolve"] = {
         locations: [
           {
             title: doc?.title || "Untitled",
-            href: `/glossary/${doc?.slug}`,
+            href: `/preview/glossary/${doc?.slug}`,
           },
         ],
       }),

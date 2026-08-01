@@ -254,7 +254,11 @@ const showVisual = variant !== "stacked";
             aria-label={linkLabel}
             target={linkTarget}
             rel={linkRel}
-          />
+          >
+            {/* Real anchor text for crawlers — an aria-label alone leaves
+                the stretched overlay link textless for SEO. */}
+            <span class="u-sr-only">{linkLabel}</span>
+          </a>
         </div>
       )
     }

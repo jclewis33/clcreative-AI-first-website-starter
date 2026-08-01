@@ -3,6 +3,15 @@
   // SSR entry to ./dist/_worker.js/ and copies static assets to ./dist/. The
   // `main` field below points at the adapter's bundled server entry, and the
   // `assets` block tells Workers to serve prerendered/static files directly.
+  // ⚠️ Do NOT add a `limits` block (e.g. `limits: { cpu_ms: N }`) here.
+  // CPU limits are a Workers PAID plan feature. On the Free plan the BUILD
+  // still succeeds — then `wrangler versions upload` fails at deploy time
+  // with "CPU limits are not supported for the Free plan. [code: 100328]",
+  // nothing ships, and production silently keeps serving the previous build.
+  // The green build log makes this failure mode very easy to misread as
+  // broken code. It's also unnecessary on this architecture: the content
+  // routes are prerendered (zero Worker CPU), so the only SSR surface is
+  // /api/* and the editor-only /preview tree.
   "main": "@astrojs/cloudflare/entrypoints/server",
   "name": "your-worker-name",
   "compatibility_date": "2026-04-16",

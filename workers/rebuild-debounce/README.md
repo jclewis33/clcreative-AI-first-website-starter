@@ -3,19 +3,25 @@
 Collapses a burst of Sanity publish webhooks into a **single** Cloudflare
 rebuild.
 
-## Why it exists
+## Why it exists — this Worker is the publish→live path
 
-The blog / case-study / glossary routes are **SSR** (`export const prerender =
-false`), so published content is live instantly. But the **sitemap** and
-**`llms.txt` / `llms-full.txt`** are generated at **build time**, so a Sanity
-publish must still trigger a Cloudflare rebuild.
+The blog / case-study / glossary routes are **prerendered** at build time, so a
+Sanity **publish reaches the live site only through a rebuild** — along with
+the sitemap and `llms.txt` / `llms-full.txt`. Until this Worker and its webhook
+are wired up, clicking Publish in the Studio changes **nothing** on production
+(draft preview still works — `/preview/*` fetches live). Treat it as required
+launch infrastructure, not a nice-to-have.
 
 The Sanity webhook fires **once per published document**, so publishing several
 docs in a row would kick off several builds. This Worker debounces them:
 
 ```
-publish → this Worker (waits ~5 min) → Cloudflare deploy hook → ONE build
+publish → this Worker (waits ~5 min, 15 min cap) → Cloudflare deploy hook → ONE build
 ```
+
+The debounce window is also the floor of your **publish-to-live latency**
+(typically ~5–20 min including the build) — tune `DEBOUNCE_MS` if that
+trade-off should lean faster or cheaper.
 
 The deploy hook stays on the **site** worker; this Worker only calls it. It's a
 standalone Worker (Durable Object alarm), deployed **manually** — it is **not**
@@ -28,7 +34,8 @@ part of the site's CI build.
 > are per-fork.
 
 1. **Name it.** In [`wrangler.jsonc`](wrangler.jsonc), set `name` to match your
-   site worker, e.g. `your-worker-name-rebuild-debounce`.
+   site worker, e.g. `your-worker-name-rebuild-debounce`. (`npm run setup` at
+   the repo root already does this rename for you — verify rather than redo.)
 
 2. **Deploy the Worker:**
 

@@ -1,64 +1,37 @@
 ---
-export const prerender = false;
+/**
+ * Public blog post page — PRERENDERED. Slugs are enumerated at build time by
+ * `getBlogPostStaticPaths()` (a slug-only GROQ query); the page is emitted as
+ * static HTML and served by the Cloudflare assets binding at zero Worker CPU.
+ *
+ * Draft preview does NOT happen here — Sanity's Presentation tool loads the
+ * SSR twin at /preview/blog/[slug], which calls the exact same loader. Keep
+ * the two files in sync (they should differ only in prerender mode and the
+ * getStaticPaths export).
+ */
 import BlogPostTemplate from "../../components/templates/BlogPostTemplate.astro";
-import { loadQuery } from "../../sanity/lib/load-query";
 import { getDraftModeProps } from "../../sanity/lib/draft-mode";
 import {
-  BLOG_POST_QUERY,
-  BLOG_POSTS_QUERY,
-  SITE_SETTINGS_QUERY,
-} from "../../sanity/lib/queries";
-import { urlFor } from "../../sanity/lib/image";
+  loadBlogPostPage,
+  getBlogPostStaticPaths,
+} from "../../sanity/lib/page-data";
+
+// Must be an imported helper: Astro extracts getStaticPaths into its own
+// module at build time, so frontmatter siblings are not in scope here.
+export const getStaticPaths = getBlogPostStaticPaths;
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
-const draftProps = getDraftModeProps(Astro);
-
-const { data: post } = await loadQuery<any>({
-  query: BLOG_POST_QUERY,
-  params: { slug },
-  ...draftProps,
-});
-
-if (!post) {
-  return Astro.redirect("/404");
-}
-
-const { data: allPosts } = await loadQuery<any[]>({
-  query: BLOG_POSTS_QUERY,
-  ...draftProps,
-});
-
-const { data: settings } = await loadQuery<any>({
-  query: SITE_SETTINGS_QUERY,
-  ...draftProps,
-});
-const defaultCta = settings?.defaultBlogCta ?? null;
-const defaultCtaSection = settings?.defaultCtaSection ?? null;
-const relatedPosts = (allPosts ?? []).map((p: any) => ({
-  ...p,
-  image: urlFor(p.image).width(600).url(),
-  authorAvatar: p.authorAvatar
-    ? urlFor(p.authorAvatar).width(80).height(80).url()
-    : undefined,
-}));
-
-const manualRelatedPosts = ((post.relatedPosts ?? []) as any[])
-  .filter((p) => p?.slug)
-  .map((p) => ({
-    ...p,
-    image: urlFor(p.image).width(600).url(),
-    authorAvatar: p.authorAvatar
-      ? urlFor(p.authorAvatar).width(80).height(80).url()
-      : undefined,
-  }));
+// getDraftModeProps short-circuits on prerendered pages → published content.
+const data = await loadBlogPostPage(slug, getDraftModeProps(Astro));
+if (!data) return Astro.redirect("/404");
 ---
 
 <BlogPostTemplate
-  post={post}
-  relatedPosts={relatedPosts}
-  manualRelatedPosts={manualRelatedPosts}
-  defaultCta={defaultCta}
-  defaultCtaSection={defaultCtaSection}
+  post={data.post}
+  relatedPosts={data.relatedPosts}
+  manualRelatedPosts={data.manualRelatedPosts}
+  defaultCta={data.defaultCta}
+  defaultCtaSection={data.defaultCtaSection}
 />

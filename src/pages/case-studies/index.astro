@@ -1,7 +1,7 @@
 ---
-export const prerender = false;
 /**
- * Case Studies Listing Page
+ * Case Studies Listing Page — prerendered (published content at build time; a
+ * Sanity publish triggers a rebuild via the rebuild-debounce Worker webhook).
  *
  * Main case studies index with:
  *   1. Hero section — title + description
@@ -24,7 +24,7 @@ import Text from "../../components/ui/Text.astro";
 import CaseStudyCard from "../../components/ui/CaseStudyCard.astro";
 
 // Sanity
-import { loadQuery } from "../../sanity/lib/load-query";
+import { loadPageQuery } from "../../sanity/lib/page-data";
 import { getDraftModeProps } from "../../sanity/lib/draft-mode";
 import { CASE_STUDIES_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
 import { urlFor, hotspotPosition } from "../../sanity/lib/image";
@@ -35,15 +35,21 @@ import "../../styles/pages/case-studies.css";
 
 /* ── Fetch from Sanity (already sorted by date desc in query) ── */
 
-const { data: sortedCaseStudies } = await loadQuery<any[]>({
-  query: CASE_STUDIES_QUERY,
-  ...getDraftModeProps(Astro),
-});
-
-const { data: settings } = await loadQuery<any>({
-  query: SITE_SETTINGS_QUERY,
-  ...getDraftModeProps(Astro),
-});
+const draftProps = getDraftModeProps(Astro);
+const [sortedCaseStudies, settings] = await Promise.all([
+  loadPageQuery<any[]>({
+    query: CASE_STUDIES_QUERY,
+    draftProps,
+    fallback: [],
+    label: "case studies index",
+  }),
+  loadPageQuery<any>({
+    query: SITE_SETTINGS_QUERY,
+    draftProps,
+    fallback: null,
+    label: "case studies settings",
+  }),
+]);
 const defaultCtaSection = settings?.defaultCtaSection ?? null;
 
 /* ── Derive filter options from actual data ── */

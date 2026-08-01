@@ -8,6 +8,8 @@
     "build": "astro build",
     "prebuild": "node scripts/check-config-sync.mjs",
     "preview": "astro preview",
+    "studio": "sanity dev",
+    "studio:local": "SANITY_STUDIO_PREVIEW_URL=http://localhost:4321 sanity dev",
     "astro": "astro",
     "check": "astro check",
     "check:schema": "node scripts/check-schema.mjs",

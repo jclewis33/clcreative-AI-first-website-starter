@@ -1,0 +1,26 @@
+---
+/**
+ * SSR PREVIEW twin of /glossary/[slug] — iframed by Sanity Presentation for
+ * draft preview. Same template, same loader as the public route; only the
+ * perspective differs.
+ *
+ * Editor-only surface: robots-disallowed, noindexed, never edge-cached.
+ * Keep this file in sync with src/pages/glossary/[slug].astro.
+ */
+export const prerender = false;
+import GlossaryTermTemplate from "../../../components/templates/GlossaryTermTemplate.astro";
+import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
+import { loadGlossaryTermPage } from "../../../sanity/lib/page-data";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const data = await loadGlossaryTermPage(slug, getDraftModeProps(Astro));
+if (!data) return Astro.redirect("/404");
+---
+
+<GlossaryTermTemplate
+  term={data.term}
+  allTerms={data.allTerms}
+  defaultCtaSection={data.defaultCtaSection}
+/>

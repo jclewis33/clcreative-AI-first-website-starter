@@ -1,7 +1,7 @@
 ---
-export const prerender = false;
 /**
- * Glossary Listing Page
+ * Glossary Listing Page — prerendered (published content at build time; a
+ * Sanity publish triggers a rebuild via the rebuild-debounce Worker webhook).
  *
  * Main glossary index with:
  *   1. Hero section — title + description
@@ -22,7 +22,7 @@ import Text from "../../components/ui/Text.astro";
 import Card from "../../components/ui/Card.astro";
 
 // Sanity
-import { loadQuery } from "../../sanity/lib/load-query";
+import { loadPageQuery } from "../../sanity/lib/page-data";
 import { getDraftModeProps } from "../../sanity/lib/draft-mode";
 import { GLOSSARY_TERMS_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
 
@@ -41,15 +41,21 @@ const glossaryCategories = [
 
 /* ── Fetch and group terms ── */
 
-const { data: allTerms } = await loadQuery<any[]>({
-  query: GLOSSARY_TERMS_QUERY,
-  ...getDraftModeProps(Astro),
-});
-
-const { data: settings } = await loadQuery<any>({
-  query: SITE_SETTINGS_QUERY,
-  ...getDraftModeProps(Astro),
-});
+const draftProps = getDraftModeProps(Astro);
+const [allTerms, settings] = await Promise.all([
+  loadPageQuery<any[]>({
+    query: GLOSSARY_TERMS_QUERY,
+    draftProps,
+    fallback: [],
+    label: "glossary index terms",
+  }),
+  loadPageQuery<any>({
+    query: SITE_SETTINGS_QUERY,
+    draftProps,
+    fallback: null,
+    label: "glossary index settings",
+  }),
+]);
 const defaultCtaSection = settings?.defaultCtaSection ?? null;
 
 // Helper: get unique first letters

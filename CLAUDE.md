@@ -369,7 +369,7 @@ import Button from '@/components/ui/Button.astro';
 
 **Architecture:** The component renders three layers:
 1. **Wrapper** (`.button_main_wrap`) — variant/size data attributes + border-radius; the hover/focus target
-2. **Clickable overlay** (`.clickable_wrap > .clickable_link|.clickable_btn`) — invisible `<a>` or `<button>` stretched over wrapper; handles all interaction
+2. **Clickable overlay** (`.clickable_wrap > .clickable_link|.clickable_btn`) — invisible `<a>` or `<button>` stretched over wrapper; handles all interaction. Link overlays contain a visually-hidden `<span class="u-sr-only">{label}</span>` so crawlers see real anchor text — an `aria-label` alone leaves the anchor textless for SEO. `<button>` overlays keep `aria-label` only (anchor text isn't a concept for buttons).
 3. **Visual element** (`.button_main_element`) — displays label and icon; set to `aria-hidden`
 
 | Prop | Type | Default | Description |
@@ -379,7 +379,7 @@ import Button from '@/components/ui/Button.astro';
 | `href` | `string` | — | Renders as `<a>`. Omit to render a plain `<button>` (modal triggers/closes, form submits, JS actions). |
 | `newTab` | `boolean` | `false` | Opens in new tab (adds `rel="noopener noreferrer"`) |
 | `disabled` | `boolean` | `false` | Disables `<button>` (not links) |
-| `ariaLabel` | `string` | — | **Required** — accessible label on the clickable overlay |
+| `ariaLabel` | `string` | — | **Required** — accessible label on the clickable overlay; also rendered as sr-only anchor text inside link overlays. Falls back to the slot text if omitted, so the control is never nameless |
 | `type` | `'button'`\|`'submit'`\|`'reset'` | `'button'` | Native button type (when no `href`) |
 | `square` | `boolean` | `false` | Removes pill radius |
 | `id` | `string` | — | `id` on wrapper |
@@ -1622,7 +1622,9 @@ All site identity lives in **one file**: [src/config/site.ts](src/config/site.ts
 
 ## Deployment, Sanity Studio & Preview
 
-The site runs on a **single** Cloudflare Worker (the `your-worker-name` project). `www.example.com` is the only public URL. The Studio is **hosted by Sanity** (deployed with `npx sanity deploy`), not embedded in the app. Its Presentation tool iframes the live site **cross-origin** for draft preview, via a cookie set by the `/api/draft-mode/enable` route on `www.example.com` — there is still no separate preview environment. Because the frame is cross-origin, the site allows the Studio origin via CSP `frame-ancestors` (in [src/middleware.ts](src/middleware.ts) for SSR responses and [public/_headers](public/_headers) for static assets — keep both in sync), and the enable route sets the cookie `SameSite=None; Secure`.
+The site runs on a **single** Cloudflare Worker (the `your-worker-name` project). `www.example.com` is the only public URL. The public CMS content routes (`/blog/**`, `/case-studies/**`, `/glossary/**`) are **prerendered static HTML** served by the Worker's assets binding at zero CPU; draft preview happens on a parallel **SSR `/preview/*` tree** (`/preview/blog/[slug]`, etc.) that renders the identical templates through the identical loaders — only the perspective differs. A second, tiny Worker (`workers/rebuild-debounce/`) collapses Sanity publish webhooks into a single rebuild so published content ships on the next build. The Studio is **hosted by Sanity** (deployed with `npx sanity deploy`), not embedded in the app. Its Presentation tool iframes the `/preview/*` routes **cross-origin**, via a cookie set by the `/api/draft-mode/enable` route on `www.example.com`. Because the frame is cross-origin, the site allows the Studio origin via CSP `frame-ancestors` (in [src/middleware.ts](src/middleware.ts) for SSR responses and [public/_headers](public/_headers) for static assets — keep both in sync), and the enable route sets the cookie `SameSite=None; Secure`.
+
+**Why a `/preview` tree instead of drafts on the public URLs:** with `@astrojs/cloudflare`, the request handler returns a matching static asset **before** `app.render()` is ever called — Astro middleware never runs for a prerendered path, so a cookie-keyed draft rewrite on the public URL is impossible (including with `run_worker_first`). Serving the CMS routes as SSR just to enable preview is the alternative that was removed: it burned Worker CPU per request and caused real production 503s (`exceededCpu`) under crawler load. Do not regress to either approach.
 
 **Studio URLs (Sanity app model):** the branded host `your-studio.sanity.studio` is a **redirect shim** — it 302s (preserving deep `/intent/...` paths) to the actual app at `https://www.sanity.io/@your-org-id/studio/<appId>`, which is itself sandboxed under `*.sanity.studio` nested inside the `www.sanity.io` dashboard shell. So `frame-ancestors` (in `src/middleware.ts` + `public/_headers`) must allow **both** `https://*.sanity.io` **and** `https://*.sanity.studio` (plus `http://localhost:3333` for `sanity dev`) — NOT just the branded host, and NOT just `www.sanity.io` (an early single-origin value silently blocked Presentation). `stega.studioUrl` can still point at the branded `your-studio.sanity.studio` (overlay deep-links redirect through correctly). The backing app id is pinned in [sanity.cli.ts](sanity.cli.ts) (`deployment.appId`). ⚠️ The cross-site draft cookie can be blocked by Safari/ITP — verify Presentation in Chrome; a same-site `studio.example.com` Studio is the fallback.
 
@@ -1632,21 +1634,33 @@ Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.s
 
 ### How draft mode works
 
-1. Editor opens `your-studio.sanity.studio` and clicks **Presentation** in Studio's left rail.
+1. Editor opens `your-studio.sanity.studio` and clicks **Presentation** in Studio's left rail. Per-document locations ([src/sanity/lib/resolve.ts](src/sanity/lib/resolve.ts)) point at the **`/preview/<type>/<slug>`** SSR twins — never the public URLs, which are static files where the cookie can't do anything.
 2. Presentation calls `/api/draft-mode/enable` ([src/pages/api/draft-mode/enable.ts](src/pages/api/draft-mode/enable.ts)) with a Sanity-signed preview secret. The route validates the secret via `@sanity/preview-url-secret`'s `validatePreviewUrl` against the live dataset — if the request isn't from a legitimate Studio session, it returns 401.
 3. On success the route sets the `sanity-preview-mode` cookie (`perspectiveCookieName` from `@sanity/preview-url-secret/constants`) with the editor's chosen perspective (default `"drafts"`) and redirects to the target path.
-4. The Presentation iframe loads that path. Every page calls `getDraftModeProps(Astro.cookies)` ([src/sanity/lib/draft-mode.ts](src/sanity/lib/draft-mode.ts)) which reads the cookie and spreads `{ perspectiveCookie }` into `loadQuery` ([src/sanity/lib/load-query.ts](src/sanity/lib/load-query.ts)). When present, `loadQuery` fetches drafts with stega encoding and authenticates using `SANITY_API_READ_TOKEN`.
-5. [src/layouts/BaseLayout.astro](src/layouts/BaseLayout.astro) checks `Astro.cookies.has(perspectiveCookieName)` and conditionally mounts [src/components/SanityVisualEditing.tsx](src/components/SanityVisualEditing.tsx) (click-to-edit overlays + history sync + content refresh) and [src/components/DisableDraftMode.tsx](src/components/DisableDraftMode.tsx) (exit button, hidden inside the iframe).
+4. The Presentation iframe loads the `/preview/*` path. The preview route calls the same shared loader as its public twin ([src/sanity/lib/page-data.ts](src/sanity/lib/page-data.ts)), passing `getDraftModeProps(Astro)` ([src/sanity/lib/draft-mode.ts](src/sanity/lib/draft-mode.ts)) which reads the cookie and spreads `{ perspectiveCookie }` into `loadQuery` ([src/sanity/lib/load-query.ts](src/sanity/lib/load-query.ts)). When present, `loadQuery` fetches drafts with stega encoding and authenticates using `SANITY_API_READ_TOKEN`.
+5. [src/layouts/BaseLayout.astro](src/layouts/BaseLayout.astro) checks `Astro.cookies.has(perspectiveCookieName)` (guarded by `Astro.isPrerendered`) and conditionally mounts [src/components/SanityVisualEditing.tsx](src/components/SanityVisualEditing.tsx) (click-to-edit overlays + history sync + content refresh) and [src/components/DisableDraftMode.tsx](src/components/DisableDraftMode.tsx) (exit button, hidden inside the iframe).
 6. When an editor changes a field, `SanityVisualEditing`'s `refresh` callback reloads the page. The server re-fetches with drafts perspective. Content updates.
 7. Clicking "Disable Draft Mode" (only visible outside the iframe) hits `/api/draft-mode/disable`, which clears the cookie.
 
-Public visitors never have the cookie → `loadQuery` always returns `published` content → `<SanityVisualEditing>` isn't mounted. **Drafts can't leak.**
+Public visitors get prerendered HTML with `published` content baked in, and never have the cookie on the SSR routes → `<SanityVisualEditing>` isn't mounted. **Drafts can't leak.**
 
-No content-publish webhook is needed — every request fetches fresh from Sanity (`useCdn: true` puts Sanity's CDN in front).
+The `/preview` tree is invisible to search and never edge-cached, via three required layers: `Disallow: /preview` in [public/robots.txt](public/robots.txt); `X-Robots-Tag: noindex, nofollow` + forced `private, no-cache` from [src/middleware.ts](src/middleware.ts) (forced **regardless of the cookie** — Cloudflare's edge cache doesn't vary on cookies, so a cached published render would otherwise be served back to editors); and exclusion from the sitemap in [astro.config.mjs](astro.config.mjs).
 
-### SSR requirement
+**Publishing requires a rebuild.** Prerendered content ships on the next build, so a Sanity publish must trigger one: Sanity webhook (filter `!(_id in path("drafts.**"))`, on Create/Update/Delete) → the rebuild-debounce Worker ([workers/rebuild-debounce/](workers/rebuild-debounce/README.md), ~5 min quiet period / ~15 min hard cap via a Durable Object alarm) → Cloudflare deploy hook → **one** build. The debounce matters because Sanity fires once per document — publishing a batch without it means one build per document. Publish-to-live lands ~5–20 minutes depending on the debounce window.
 
-`astro.config.mjs` uses `output: "server"` with `@astrojs/cloudflare`. Draft mode requires per-request cookie inspection, so any page that should support draft preview must be SSR. Pages with no Sanity data (legal pages, thank-you pages) can opt into prerendering with `export const prerender = true;` if build-time static output is preferred.
+### Rendering model — prerender public, SSR only /preview and /api
+
+`astro.config.mjs` uses `output: "static"` with `@astrojs/cloudflare`. **All public routes are prerendered**, including the CMS content routes — each dynamic route exports a `getStaticPaths` fed by a minimal slug-only query (helpers in [src/sanity/lib/page-data.ts](src/sanity/lib/page-data.ts)). Only two kinds of routes opt into SSR with `export const prerender = false;`:
+
+- `src/pages/preview/**` — the draft-preview twins that Presentation iframes
+- `src/pages/api/**` — the scorecard endpoint and draft-mode cookie routes
+
+Rules that keep this model healthy:
+
+- **Keep slug queries thin.** `getStaticPaths` fetches the whole collection at build time — enumerate `slug.current` only.
+- **Exclude "not published yet" flags from the slug query** (e.g. `comingSoon != true` on case studies), or you'll build pages that immediately redirect to /404. Those documents remain previewable under `/preview`.
+- **`getStaticPaths` is extracted into its own module at build time.** Only *imports* are in scope inside it — sibling consts in the same frontmatter are **not**. Keep its helpers in an imported module (`page-data.ts`). Symptom of getting this wrong: `<helper> is not defined` at build, pointing into an Astro-generated chunk.
+- **Fresh forks build green:** the `page-data.ts` static-path helpers return `[]` (with a warning) when the Sanity project id is still the template placeholder. For a **real** project id they rethrow — a Sanity outage mid-build must fail the build loudly, not silently ship a site with every content page missing.
 
 ### Trailing slash config
 
@@ -1665,53 +1679,16 @@ URLs must resolve without trailing slashes. Two places must stay in sync:
 
 If only one side is set, you get edge redirects or 404s that don't show up in local dev.
 
-### Sitemap + SSR pages
+### Sitemap
 
-`@astrojs/sitemap` only enumerates **prerendered** routes. Any page with `export const prerender = false;` (or a page under a dynamic SSR route like `[slug].astro`) will be invisible to the sitemap by default — which means Google can't index it via `sitemap-index.xml`.
+Every public route is prerendered, so `@astrojs/sitemap` enumerates the whole site — **including the CMS content routes** — automatically from the route table. There is **no** `customPages` option and **no** `getSanityUrls()` helper; that workaround existed only for SSR routes (which are invisible to the sitemap) and must not come back. A new content type only needs a prerendered route with `getStaticPaths` and it appears in the sitemap on the next build.
 
-To make SSR pages crawlable, feed them into the sitemap's `customPages` option at build time. In [astro.config.mjs](astro.config.mjs) this is handled by a top-level `getSanityUrls()` helper that queries Sanity with `@sanity/client`. Its `projectId`/`dataset`/`apiVersion` and the site host come from the shared leaf module [src/config/site.shared.mjs](src/config/site.shared.mjs) (env-only lookup returns empty strings in Cloudflare Workers Builds CI, so the shared literals are the reliable fallback). It returns an array of fully-qualified URLs:
+**Exclusions** live in [astro.config.mjs](astro.config.mjs) as **two lists with two different matching modes** (a single loose `page.includes(path)` gets it wrong in both directions — it can silently drop a real post like `/blog/components-in-…` via a `/components` exclusion, while exact-only matching pushes `/thank-you-call` variants *into* the sitemap against robots.txt):
 
-```js
-import { createClient } from "@sanity/client";
-import {
-  SANITY_PROJECT_ID, SANITY_DATASET, SANITY_API_VERSION, SITE_URL,
-} from "./src/config/site.shared.mjs";
+- `SITEMAP_EXCLUDE_PATHS` — whole path segments (`/x` and `/x/…`, never `/blog/x-…`): the dev-only pages and `/preview`.
+- `SITEMAP_EXCLUDE_PREFIXES` — literal prefixes mirroring robots.txt `Disallow` semantics: one `/thank-you` entry covers every `/thank-you*` variant.
 
-async function getSanityUrls() {
-  const client = createClient({
-    projectId: SANITY_PROJECT_ID,
-    dataset: SANITY_DATASET,
-    apiVersion: SANITY_API_VERSION,
-    useCdn: true,
-  });
-  const [posts, caseStudies, glossary] = await Promise.all([
-    client.fetch(`*[_type == "blogPost" && defined(slug.current)]{ "slug": slug.current }`),
-    client.fetch(`*[_type == "caseStudy" && defined(slug.current)]{ "slug": slug.current }`),
-    client.fetch(`*[_type == "glossaryTerm" && defined(slug.current)]{ "slug": slug.current }`),
-  ]);
-  return [
-    ...posts.map((p) => `${SITE_URL}/blog/${p.slug}`),
-    ...caseStudies.map((c) => `${SITE_URL}/case-studies/${c.slug}`),
-    ...glossary.map((g) => `${SITE_URL}/glossary/${g.slug}`),
-  ];
-}
-
-const sanityCustomPages = await getSanityUrls();
-
-// ...then inside integrations:
-sitemap({
-  filter: (page) => !SITEMAP_EXCLUDE_PATHS.some((p) => page.includes(p)),
-  customPages: sanityCustomPages,
-}),
-```
-
-**When you add a new SSR page type** (new Sanity schema with its own route, a new dynamic `[slug].astro` under `src/pages/`, etc.):
-
-1. Add a query for it to `getSanityUrls()` in [astro.config.mjs](astro.config.mjs).
-2. Map each result to `https://www.example.com/<route>/${slug}` with no trailing slash.
-3. Run a build and inspect `dist/sitemap-0.xml` (or visit `/sitemap-index.xml` on the deployed site) to confirm entries appear.
-
-Static/prerendered pages do **not** need to be added here — Astro's sitemap picks them up automatically from the route table.
+Keep both lists in sync with [public/robots.txt](public/robots.txt). To verify after a change: run a build and inspect `dist/sitemap-0.xml` — count entries, confirm no robots-disallowed URL appears, confirm no real content page is missing.
 
 ### Studio
 
@@ -1719,7 +1696,7 @@ Sanity Studio is **hosted by Sanity** at `your-studio.sanity.studio` — it is *
 
 **Deploying the Studio:** `npx sanity schema deploy` then `npx sanity deploy` (publishes to `your-studio.sanity.studio` using the `studioHost`/`deployment.appId` already set in [sanity.cli.ts](sanity.cli.ts)). Studio updates ship independently of the site build.
 
-**Local workflow:** run `npx sanity dev` (Studio at `localhost:3333`) and `npm run dev` (site at `localhost:4321`) in separate terminals — there is no `/studio` on the dev site. To drive Presentation locally against the local site, set `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` (the Presentation `previewUrl.initial` falls back to `SITE_URL` — default `https://www.example.com`). `frame-ancestors` already allows `localhost:3333`.
+**Local workflow:** run `npm run studio:local` (Studio at `localhost:3333`, iframing the local site) and `npm run dev` (site at `localhost:4321`) in separate terminals — there is no `/studio` on the dev site. `studio:local` sets `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` inline; a plain `npm run studio` / `sanity dev` falls back to `SITE_URL`, which iframes **production** — local route changes appear to do nothing, and if the route doesn't exist in production yet Presentation shows **"Unable to connect"** (that means "wrong origin", not broken code). The env var lives in `package.json` on purpose — do **not** put `SANITY_STUDIO_PREVIEW_URL` in `.env`, where it leaks into `sanity deploy` and ships a Studio pointing at localhost. `frame-ancestors` already allows `localhost:3333`.
 
 **Staging-first deploy (ship before the real domain exists).** A fork can run on the Worker's free `https://<worker>.<account>.workers.dev` URL — including Sanity Presentation — before any custom domain is attached, with **no per-fork code edits**. The mechanism: `SITE_URL` in [src/config/site.shared.mjs](src/config/site.shared.mjs) is **env-overridable** (`process.env.SITE_URL || "<literal>"`), so the Cloudflare *build* env supplies the staging origin; [sanity.config.ts](sanity.config.ts) drives `presentationTool`'s `previewUrl.initial` and `allowOrigins` from `SITE_URL` plus a `https://*.workers.dev` wildcard, so any staging Worker is trusted automatically. Deploy the Studio with `SANITY_STUDIO_PREVIEW_URL=https://<worker>.<account>.workers.dev npx sanity deploy` (env var on the same line — a plain `npx sanity deploy` bakes in the `SITE_URL` fallback). At launch, change the Cloudflare `SITE_URL` build var to the real origin and redeploy — no code commit. Full per-client runbook: **§4a "Staging-first deploy"** in [docs/new-project-checklist.md](docs/new-project-checklist.md).
 
@@ -1758,7 +1735,7 @@ Frequently-edited types (Blog Posts, Case Studies, Glossary) sit at the top leve
 
 **SEO length nudges.** `blogPost`/`caseStudy` `description` fields return an **array of validation rules**: a hard `required().max(300)` error plus a `max(155).warning(...)` so editors get a non-blocking nudge when the description would be truncated in Google results. Returning an array lets one rule be an error and another a warning. The dedicated `seo.ts` override fields already carry their own length validation.
 
-**When adding a new document type, do all four:** (1) add an `S.listItem()` in the right desk group, (2) set its `icon`, (3) add field `groups` if it's field-heavy, and (4) add a Presentation location (next section) if it's previewable.
+**When adding a new document type, do all four:** (1) add an `S.listItem()` in the right desk group, (2) set its `icon`, (3) add field `groups` if it's field-heavy, and (4) add a Presentation location (next section) if it's previewable. If the type gets its own detail route, it also needs the **four route pieces** — see **Adding a new content type** under Data fetching pattern below.
 
 ### Image alt text (asset-level fallback)
 
@@ -1773,7 +1750,9 @@ Two pieces make this work:
 
 ### Presentation locations
 
-Per-document iframe URLs are mapped in [src/sanity/lib/resolve.ts](src/sanity/lib/resolve.ts) via `defineLocations`. **When adding a previewable schema type:** add a new entry in `resolve.locations` so Presentation knows which front-end URL to load.
+Per-document iframe URLs are mapped in [src/sanity/lib/resolve.ts](src/sanity/lib/resolve.ts) via `defineLocations`. Location hrefs must point at the **`/preview/<type>/<slug>`** SSR twins — the public routes are prerendered static files, so the draft cookie can't affect them. ⚠️ The same file also exports `resolveInternalLinkHref`, which builds **real links inside published content** — that one must keep returning **public** URLs. The two are easy to conflate; don't.
+
+**When adding a previewable schema type:** add a new entry in `resolve.locations`. And remember: `resolve.ts` is compiled into the **hosted Studio bundle**, so location changes require `npx sanity deploy` — a site deploy alone leaves Presentation loading the old URLs (published content, no overlays, reads as "preview broke"). Deploy order: **site first** (so the `/preview` route exists), **then the Studio**.
 
 ### Required env vars
 
@@ -1787,7 +1766,7 @@ The Sanity project must have `https://www.example.com` (and `http://localhost:43
 
 ### Data fetching pattern
 
-Every page and Sanity-fetching component must go through `loadQuery` and forward the perspective cookie via `getDraftModeProps(Astro.cookies)`:
+Every page and Sanity-fetching component goes through `loadQuery` and forwards the perspective via `getDraftModeProps(Astro)` — pass the **whole `Astro` global**, not `Astro.cookies`. The helper checks `isPrerendered` and short-circuits, so the *same call* is safe on prerendered public routes (build time → `published`) and SSR preview routes (request time → cookie perspective). That's what lets one loader serve both trees.
 
 ```astro
 ---
@@ -1797,14 +1776,27 @@ import { BLOG_POSTS_QUERY } from "../sanity/lib/queries";
 
 const { data: posts } = await loadQuery<any[]>({
   query: BLOG_POSTS_QUERY,
-  ...getDraftModeProps(Astro.cookies),
+  ...getDraftModeProps(Astro),
 });
 ---
 ```
 
-Helpers that fetch Sanity data (e.g. [src/sanity/lib/testimonials.ts](src/sanity/lib/testimonials.ts)) accept `perspectiveCookie` as an option, so the calling page can forward `Astro.cookies` via `getDraftModeProps`. The helper itself has no access to request context.
+Helpers that fetch Sanity data (e.g. [src/sanity/lib/testimonials.ts](src/sanity/lib/testimonials.ts)) accept `perspectiveCookie` as an option, so the calling page can forward it via `getDraftModeProps`. The helper itself has no access to request context.
 
-For dynamic routes, read `Astro.params.slug` directly — no `getStaticPaths()` needed since pages render per request.
+**Detail pages use the shared loaders in [src/sanity/lib/page-data.ts](src/sanity/lib/page-data.ts)** — one function per content type, called by both the public prerendered route and its `/preview` twin so the two can never drift. Loader rules:
+
+- Fetch the single document **first** (related-content queries depend on its categories/slug), then `Promise.all` everything independent — never stack sequential awaits.
+- **Related content is filtered in GROQ, never in JS over the whole collection.** Fetching all posts to render 3 related cards is the pattern that caused production `exceededCpu` 503s. Query the few cards you need (`slug.current != $slug && count(categories[@ in $categories]) > 0 | order(date desc) [0...N]`), with a small buffer over the card slot (`[0...4]` for a 2-card slot) when the template applies its own final filter (e.g. a has-image check).
+- Return `null` for "not found" / "not publicly visible" and let the route decide the response.
+
+**Adding a new content type with a detail route needs four pieces:**
+
+1. **Public prerendered route** — `src/pages/<type>/[slug].astro` with `export const getStaticPaths = get<Type>StaticPaths;` (helper in `page-data.ts`; slug-only query, "not published" flags excluded).
+2. **`/preview` SSR twin** — `src/pages/preview/<type>/[slug].astro` with `prerender = false`, same template, same loader.
+3. **Shared loader** — `load<Type>Page()` in [src/sanity/lib/page-data.ts](src/sanity/lib/page-data.ts).
+4. **Presentation location** — a `defineLocations` entry in [src/sanity/lib/resolve.ts](src/sanity/lib/resolve.ts) pointing at `/preview/<type>/<slug>`, followed by a Studio deploy.
+
+The sitemap and llms endpoints pick the new route up automatically (prerendered routes enumerate from the route table; llms endpoints query Sanity directly).
 
 ---
 
@@ -1896,7 +1888,7 @@ The site serves two LLM-facing files at the root, following the [llmstxt.org](ht
 
 ### How they stay current (no manual work for CMS content)
 
-Both are **Astro endpoint routes that prerender to static files at build time** ([src/pages/llms.txt.ts](src/pages/llms.txt.ts), [src/pages/llms-full.txt.ts](src/pages/llms-full.txt.ts)). They re-run their Sanity queries on every build — the same lifecycle as the sitemap — so new/edited/deleted blog posts, case studies, and glossary terms flow through automatically on the next deploy. They reuse the existing queries in [src/sanity/lib/queries.ts](src/sanity/lib/queries.ts) and mirror the sitemap's `comingSoon != true` rule so unpublished case studies stay hidden. The full file uses `portableTextToMarkdown()` in [src/sanity/lib/portable-text.ts](src/sanity/lib/portable-text.ts) to render bodies.
+Both are **Astro endpoint routes that prerender to static files at build time** ([src/pages/llms.txt.ts](src/pages/llms.txt.ts), [src/pages/llms-full.txt.ts](src/pages/llms-full.txt.ts)). They re-run their Sanity queries on every build — the same lifecycle as the sitemap — so new/edited/deleted blog posts, case studies, and glossary terms flow through automatically on the next deploy. They reuse the existing queries in [src/sanity/lib/queries.ts](src/sanity/lib/queries.ts) and mirror the `comingSoon != true` rule used by the case-study `getStaticPaths` slug query, so unpublished case studies stay hidden. The full file uses `portableTextToMarkdown()` in [src/sanity/lib/portable-text.ts](src/sanity/lib/portable-text.ts) to render bodies.
 
 The built files land in `dist/client/` alongside `sitemap-index.xml` and are served at the root by the Cloudflare Worker. They are intentionally **not** added to the XML sitemap.
 
@@ -1946,3 +1938,8 @@ Avoid these when writing CSS and HTML in this project:
 - `paddingTop="page-top"` on any section (heroes included) — `page-top` is **only** for a *fixed* navbar, and this project's nav is **sticky** by default, so the first section doesn't need it. Build heroes/first sections with the normal default padding; only use `page-top` if the nav has been switched to `fixed`
 - Adding `padding="large"` (or any padding override) to a section by default — `<Section>` already defaults to `padding="main"`, which is correct for almost every section. Omit the prop entirely (don't even write `padding="main"`). Only override to `large`/another value when a specific section genuinely needs it *and* it's been asked for or is clearly required by a design — never as a habit
 - Wrapping a `<Visual>` together with other content in a `<Col>` — `<Col>`'s `display: contents` makes `.u-image-wrapper` a direct grid/flex child with a definite height, so its `height: 100%` overrides the `ratio` aspect-ratio and the image balloons (worst on mobile when the column collapses to `display: flex`). Use `<ContentWrapper>` (a real `height: auto` block) for any column that holds a `<Visual>` alongside other content; keep `<Col>` for self-sizing loose elements (Heading / Text / Button) only
+- An `<a>` whose only accessible name is `aria-label` — a stretched clickable overlay, a logo link wrapping an SVG, or an icon-only link (social/share). Crawlers see zero anchor text. Put the label in a visually-hidden child instead: `<span class="u-sr-only">{label}</span>` (SVG siblings get `aria-hidden="true"` so the name isn't announced twice). `<button>` elements are exempt — `aria-label` is correct there
+- Making CMS content routes SSR (`prerender = false`) "so draft preview works" — draft preview lives on the `/preview/*` SSR twins; public content routes are prerendered with `getStaticPaths`. Serving content via SSR burns Worker CPU per request and caused real production `exceededCpu` 503s
+- Fetching a whole collection in a detail route to render a few related cards, or stacking sequential `await`s on independent queries — filter related content in GROQ (`[0...N]` with a small buffer) and `Promise.all` independent fetches; see the shared loaders in `src/sanity/lib/page-data.ts`
+- Re-introducing `sitemap({ customPages })` / a `getSanityUrls()` helper — prerendered routes are enumerated automatically; the workaround only existed for SSR routes
+- Adding `limits: { cpu_ms: N }` to `wrangler.jsonc` — Workers Paid only; on the Free plan the build stays green and the deploy silently fails (nothing ships). It's also unnecessary: the only SSR surface is `/api/*` and the editor-only `/preview` tree

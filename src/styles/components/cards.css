@@ -12,7 +12,9 @@
            </div>
          </div>
          <div class="clickable_wrap u-cover-absolute">
-           <a href="/page" class="clickable_link"></a>
+           <a href="/page" class="clickable_link">
+             <span class="u-sr-only">Label</span>   ← real anchor text for crawlers
+           </a>
          </div>
        </div>
      </div>

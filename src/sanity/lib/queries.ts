@@ -120,7 +120,33 @@ export const BLOG_POST_QUERY = `*[_type == "blogPost" && slug.current == $slug][
 }`;
 
 /** All blog post slugs for getStaticPaths */
-export const BLOG_SLUGS_QUERY = `*[_type == "blogPost"].slug.current`;
+export const BLOG_SLUGS_QUERY = `*[_type == "blogPost" && defined(slug.current)].slug.current`;
+
+/**
+ * Related posts for a blog post detail page — filtered in GROQ, never by
+ * fetching the whole collection and filtering in JS. Matches BlogPostGrid's
+ * `related` variant: shares at least one category (case-insensitive — pass
+ * `$categories` pre-lowercased), excludes the current post and the manually
+ * curated related slugs. `[0...6]` is a small buffer over the 3-card slot so
+ * the template's own filtering still has room to make the final call.
+ */
+export const RELATED_BLOG_POSTS_QUERY = `*[
+  _type == "blogPost"
+  && slug.current != $slug
+  && !(slug.current in $excludeSlugs)
+  && count(categories[string::lower(@) in $categories]) > 0
+] | order(date desc) [0...6] {
+  title,
+  "slug": slug.current,
+  description,
+  categories,
+  image,
+  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),
+  "author": author->name,
+  "authorAvatar": author->avatar,
+  date,
+  featured
+}`;
 
 /** Blog posts filtered by category (category appears in categories array) */
 export const BLOG_POSTS_BY_CATEGORY_QUERY = `*[_type == "blogPost" && $category in categories] | order(date desc) {
@@ -238,8 +264,40 @@ export const CASE_STUDY_QUERY = `*[_type == "caseStudy" && slug.current == $slug
   }
 }`;
 
-/** All case study slugs for getStaticPaths */
-export const CASE_STUDY_SLUGS_QUERY = `*[_type == "caseStudy"].slug.current`;
+/**
+ * Publicly visible case study slugs for getStaticPaths. Coming-soon studies
+ * are EXCLUDED here on purpose — with prerendered routes, enumerating them
+ * would build pages that immediately redirect to /404. They remain editable
+ * and viewable under /preview (which doesn't use this query).
+ */
+export const CASE_STUDY_SLUGS_QUERY = `*[_type == "caseStudy" && defined(slug.current) && comingSoon != true].slug.current`;
+
+/**
+ * Sibling case studies for the "Up next" cards — filtered in GROQ instead of
+ * fetching the whole collection. `[0...4]` is a buffer over the 2-card slot:
+ * the template still applies its own has-image/title check, so we fetch a
+ * couple extra and let it make the final call. Same projection as
+ * CASE_STUDIES_QUERY so CaseStudyCard behavior (incl. comingSoon → liveUrl
+ * links) is unchanged.
+ */
+export const RELATED_CASE_STUDIES_QUERY = `*[
+  _type == "caseStudy"
+  && slug.current != $slug
+  && defined(image.asset)
+] | order(date desc) [0...4] {
+  title,
+  "slug": slug.current,
+  description,
+  client,
+  categories,
+  industries,
+  image,
+  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),
+  date,
+  featured,
+  comingSoon,
+  liveUrl
+}`;
 
 /* ── Glossary Terms ────────────────────────────────────────────────────────── */
 
@@ -286,7 +344,7 @@ export const GLOSSARY_TERM_QUERY = `*[_type == "glossaryTerm" && slug.current ==
 }`;
 
 /** All glossary term slugs for getStaticPaths */
-export const GLOSSARY_SLUGS_QUERY = `*[_type == "glossaryTerm"].slug.current`;
+export const GLOSSARY_SLUGS_QUERY = `*[_type == "glossaryTerm" && defined(slug.current)].slug.current`;
 
 /* ── Testimonials ─────────────────────────────────────────────────────────── */
 

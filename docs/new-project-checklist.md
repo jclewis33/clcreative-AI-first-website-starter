@@ -19,7 +19,7 @@ Work top to bottom. Items marked **🔁 per-fork** must be done for every new pr
 
 Every fork lands on the same proven shape — chosen to lean into what Sanity is actively investing in (Core apps, the hosted Dashboard, an auto-updating hosted Studio) and to keep client builds low-maintenance:
 
-- **Astro hybrid site** on one Cloudflare Worker — static marketing pages + SSR CMS routes (blog / case studies / glossary) with cookie-based draft preview ("Option A").
+- **Astro static-first site** on one Cloudflare Worker — every public page (marketing AND CMS content) prerendered; SSR only for `/api/*` and the editor-only `/preview/*` draft-preview twins that Sanity Presentation iframes (cookie-based drafts perspective). Publishing content triggers a rebuild via the rebuild-debounce Worker (§4.6).
 - **Sanity Studio hosted by Sanity** — a Core app at `<studioHost>.sanity.studio`, deployed with `npx sanity deploy`. **Not embedded** at `/studio` (that's the legacy alternative). Hosting decouples Studio updates from site deploys, removes the React-bundle fragility, and auto-updates.
 - **Cross-origin Presentation** — the hosted Studio iframes the live site for draft preview; the site allows the Sanity app origins via CSP `frame-ancestors` (§3.5).
 - **Org-level hosted Dashboard** for the overview (no in-Studio dashboard plugin), and a **content-first** Studio desk — most-edited types as direct lists at the top, one click to content, Settings pinned at the bottom.
@@ -33,7 +33,7 @@ Full narrative + the embedded alternative: the Notion guide *"Sanity + Astro + C
 
 | Protection | Where it lives | How to verify |
 |---|---|---|
-| HTTP security headers (SSR) | `src/middleware.ts` | `curl -sI` any SSR route → CSP `frame-ancestors` (allows the hosted Studio origin), HSTS, nosniff, Referrer-Policy, Permissions-Policy |
+| HTTP security headers (SSR) | `src/middleware.ts` | `curl -sI` an SSR route (`/preview/blog/<slug>`) → CSP `frame-ancestors` (allows the hosted Studio origin), HSTS, nosniff, Referrer-Policy, Permissions-Policy, plus `X-Robots-Tag: noindex` + `Cache-Control: private, no-cache` on `/preview/*` |
 | HTTP security headers (static) | `public/_headers` | `curl -sI` the homepage after deploy — same five headers |
 | API input hardening | `src/pages/api/scorecard.ts` | 50 KB body cap (413), strict field-by-field validation (400), honeypot fake-success — see §7 test commands |
 | Form honeypot | `MarketingScorecard.tsx` (`company` field) + `.scorecard_hp_field` CSS | Hidden field present in the email-gate form |
@@ -69,6 +69,7 @@ Full narrative + the embedded alternative: the Notion guide *"Sanity + Astro + C
 ## 4. Cloudflare (🔁 per-fork — all dashboard work)
 
 1. **Workers Builds**: create the worker, connect the GitHub repo, production branch = `main`. Set `vars` from wrangler.jsonc; add `SANITY_API_READ_TOKEN` as an **encrypted secret**.
+   - ⚠️ **Never add `limits: { cpu_ms }` to `wrangler.jsonc`** — CPU limits exist only on **Workers Paid**. On the Free plan the build stays green and then `wrangler versions upload` fails (`CPU limits are not supported for the Free plan. [code: 100328]`) — nothing ships and production silently keeps the previous build, which reads as "all my changes broke" during verification. It's unnecessary anyway: the content routes are prerendered, so the only SSR surface is `/api/*` + `/preview/*`.
 2. **Custom domain** attached to the worker; DNS through Cloudflare.
 3. **SSL/TLS → Edge Certificates → "Always Use HTTPS" = On** (pairs with the HSTS header the code already sends).
 4. **WAF rate-limiting rule** (Security → Security rules → Create rule → Rate limiting rule — free plan includes one):
@@ -80,7 +81,7 @@ Full narrative + the embedded alternative: the Notion guide *"Sanity + Astro + C
    - 5 requests / 10 seconds per IP → **Block**, 10 s duration
    - Adjust the path if the fork renames or adds POST endpoints — every public POST endpoint should sit behind a rule like this.
 5. Optional: **Security.txt** (Security → Settings) — publishes `/.well-known/security.txt` with your contact for vulnerability reports.
-6. **Rebuild-debounce Worker + Sanity publish webhook.** The SSR content routes go live instantly, but the sitemap and `llms.txt` / `llms-full.txt` are built at build time, so a Sanity **publish** must trigger a Cloudflare rebuild. A standalone Worker in [`workers/rebuild-debounce/`](../workers/rebuild-debounce/) debounces a burst of publishes into one build. Deploy it and wire the webhook per its own [README](../workers/rebuild-debounce/README.md):
+6. **Rebuild-debounce Worker + Sanity publish webhook — REQUIRED, not optional.** The content routes are **prerendered**, so a Sanity publish reaches the live site only via a rebuild: until this webhook chain is wired, publishing changes **nothing** on production (draft preview in the Studio still works — `/preview/*` fetches live). A standalone Worker in [`workers/rebuild-debounce/`](../workers/rebuild-debounce/) debounces a burst of publishes into one build (~5 min quiet window, so publish-to-live is typically ~5–20 min). Deploy it and wire the webhook per its own [README](../workers/rebuild-debounce/README.md):
    - `cd workers/rebuild-debounce && npm install && npx wrangler deploy` (rename `name` in its `wrangler.jsonc` to match this fork's worker first).
      - ⚠️ If `wrangler deploy` errors with `redirected configuration path … does not exist`, delete the root `.wrangler/deploy/config.json` (a gitignored `@astrojs/cloudflare` artifact) and retry.
    - `wrangler secret put DEPLOY_HOOK_URL` (the site worker's deploy hook: Settings → Builds → Deploy hooks, targeting `main`) and `wrangler secret put WEBHOOK_TOKEN` (random, e.g. `openssl rand -hex 32`).
@@ -147,8 +148,16 @@ Finally: open one trivial PR (or wait for Dependabot's first) and confirm both C
 # Security headers — static page (served via public/_headers)
 curl -sI https://www.<domain>/ | grep -iE "x-frame|strict-transport|x-content-type|referrer|permissions"
 
-# Security headers — SSR page (served via middleware) — use a blog/case-study slug
+# Security headers — content page (prerendered → served via public/_headers)
 curl -sI https://www.<domain>/blog/<slug> | grep -iE "x-frame|cache-control"
+
+# Security + robots headers — SSR preview page (served via middleware):
+# expect X-Robots-Tag: noindex, nofollow and Cache-Control: private, no-cache
+curl -sI https://www.<domain>/preview/blog/<slug> | grep -iE "x-frame|cache-control|x-robots"
+
+# Sitemap sanity: entries present, no /preview or /thank-you URLs
+curl -s https://www.<domain>/sitemap-0.xml | grep -c "<loc>"
+curl -s https://www.<domain>/sitemap-0.xml | grep -E "/preview|/thank-you" || echo "OK: no excluded URLs"
 
 # API validation: bad email -> 400, oversized -> 413, honeypot -> fake 200
 curl -s -w " [%{http_code}]" -X POST https://www.<domain>/api/scorecard \
