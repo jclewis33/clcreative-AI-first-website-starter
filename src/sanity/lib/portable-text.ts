@@ -6,7 +6,10 @@
  * case studies, and glossary term detail pages.
  */
 
-import { resolveInternalLinkHref, type InternalLinkTarget } from "./resolve";
+import {
+  resolveInternalLinkHref,
+  type InternalLinkTarget,
+} from "./internal-links";
 import { urlFor } from "./image";
 import { SITE_URL } from "../../config/site";
 

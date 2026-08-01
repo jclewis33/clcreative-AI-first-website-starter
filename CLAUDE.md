@@ -1706,7 +1706,11 @@ The Studio UI is configured entirely in code — [sanity.config.ts](sanity.confi
 
 **Landing view / Dashboard.** There is **no in-Studio dashboard** — the org-level overview lives in Sanity's **hosted Dashboard**. The deployed Studio is a Core app, so it appears in the org Dashboard at `www.sanity.io` alongside Canvas, Media Library, Content Releases, etc. — that's the overview hub. In `sanity.config.ts`, `structureTool` is the **first plugin**, so opening the Studio lands on the content desk. If you want quick-links/external-shortcut widgets, build them as a **custom widget in the hosted Dashboard** — don't add an in-Studio dashboard plugin (`@sanity/dashboard`).
 
-**Sanity 6 status — stay on v5 for now:** `sanity@6`'s native dep tree breaks `npm ci` on **Linux CI/Cloudflare runners** with `TypeError: Invalid Version:` — an upstream npm bug ([npm/cli#8320](https://github.com/npm/cli/issues/8320)) where `@emnapi/wasi-threads` (an optional peer) is written to the lockfile versionless and Linux dedup throws (passes on macOS; not fixed by lockfile regen, Node 24 / npm 11, or `@emnapi` overrides). v6 runtime itself tests fine (site build, `npx sanity build`, live Studio + visual editing), so the hold is purely the CI installability bug: keep the `sanity`/`@sanity/vision` majors held in Dependabot until it's fixed upstream — see [docs/new-project-checklist.md](docs/new-project-checklist.md) pins. Separately: if an "Invalid hook call" appears in dev after an `@sanity/astro` bump, that's a duplicate-React issue ([sanity-astro#406](https://github.com/sanity-io/sanity-astro/issues/406)) — pin `@sanity/astro` to the last-good version.
+**Sanity version policy — track current.** The Studio runs on **Sanity 6**, and no Sanity package is version-held: majors arrive as normal (cooldown'd) Dependabot PRs. A Sanity major still deserves a real review before merging — re-verify the Studio plugins (`sanity-plugin-media`, `@sanity/code-input`, `visionTool`), the desk structure, and the visual-editing islands — but treat it as an ordinary upgrade, not a blocked one.
+
+When taking a Sanity major, verify in this order: `npm ci` (a clean install on a **Linux** runner, which is where native/optional-peer resolution bugs surface, not macOS) → `npm run check` → `npm run build` → `npx sanity build` → then Presentation in a browser. If an "Invalid hook call" appears in dev after an `@sanity/astro` bump, that's a duplicate-React issue ([sanity-astro#406](https://github.com/sanity-io/sanity-astro/issues/406)) — pin `@sanity/astro` to the last-good version.
+
+⚠️ **Never import `sanity/*` Studio modules from site code.** The Studio dependency tree includes packages that ship CSS imports, which the prerender step cannot load (`Unknown file extension ".css"`) — the build fails at the prerender stage, well after the bundle looks fine. This is why the Presentation location map ([resolve.ts](src/sanity/lib/resolve.ts), Studio-only) and the public content-link helper ([internal-links.ts](src/sanity/lib/internal-links.ts), site-only, zero Studio imports) are **separate modules**. Keep them separate.
 
 **Desk structure** (the `structureTool({ structure })` resolver). Instead of the auto-generated flat type list, the resolver builds an explicit `S.list()`. **Because it's explicit, every new document type must be added here by hand** — a type with no entry will not appear in the desk. The layout:
 
@@ -1748,7 +1752,16 @@ Two pieces make this work:
 
 ### Presentation locations
 
-Per-document iframe URLs are mapped in [src/sanity/lib/resolve.ts](src/sanity/lib/resolve.ts) via `defineLocations`. Location hrefs must point at the **`/preview/<type>/<slug>`** SSR twins — the public routes are prerendered static files, so the draft cookie can't affect them. ⚠️ The same file also exports `resolveInternalLinkHref`, which builds **real links inside published content** — that one must keep returning **public** URLs. The two are easy to conflate; don't.
+Per-document iframe URLs are mapped in [src/sanity/lib/resolve.ts](src/sanity/lib/resolve.ts) via `defineLocations`. Location hrefs must point at the **`/preview/<type>/<slug>`** SSR twins — the public routes are prerendered static files, so the draft cookie can't affect them.
+
+⚠️ **Two URL maps exist and are easy to conflate — they live in separate modules on purpose:**
+
+| Module | Used by | Returns |
+|---|---|---|
+| [resolve.ts](src/sanity/lib/resolve.ts) | the Studio only (imports `sanity/presentation`) | `/preview/<type>/<slug>` — the draft-preview iframe targets |
+| [internal-links.ts](src/sanity/lib/internal-links.ts) | site code only (zero Studio imports) | `/blog/…`, `/case-studies/…`, `/glossary/…` — real links inside published content |
+
+Never import `resolve.ts` from site code: it drags the Studio dependency tree (including CSS-importing packages) into the site build and breaks the prerender step.
 
 **When adding a previewable schema type:** add a new entry in `resolve.locations`. And remember: `resolve.ts` is compiled into the **hosted Studio bundle**, so location changes require `npx sanity deploy` — a site deploy alone leaves Presentation loading the old URLs (published content, no overlays, reads as "preview broke"). Deploy order: **site first** (so the `/preview` route exists), **then the Studio**.
 
