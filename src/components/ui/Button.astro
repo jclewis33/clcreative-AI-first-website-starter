@@ -232,15 +232,6 @@ interface Props {
   square?: boolean;
 
   /**
-   * @deprecated No longer needed — a `<Button>` with no `href` already renders
-   * as a plain `<button>`. This prop is now a no-op, kept only so existing
-   * usage doesn't break. Simply omit `href` for an action/modal/form button.
-   *
-   * @default false
-   */
-  action?: boolean;
-
-  /**
    * Stretches the button to 100% width of its parent (block display).
    * By default buttons are `inline-block` and shrink-wrap their content.
    * @default false
@@ -325,7 +316,6 @@ const {
   ariaLabel,
   type = "button",
   square = false,
-  action = false,
   fullWidth = false,
   hoverTheme,
   supportText,

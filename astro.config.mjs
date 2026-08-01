@@ -24,13 +24,13 @@ const PUBLIC_SANITY_PROJECT_ID =
 const PUBLIC_SANITY_DATASET = env.PUBLIC_SANITY_DATASET || SANITY_DATASET;
 
 /**
- * NOTE: there is deliberately NO `getSanityUrls()` / `sitemap({ customPages })`
- * workaround here anymore. That existed only because the CMS routes were SSR
- * and therefore invisible to `@astrojs/sitemap`. The content routes are now
- * PRERENDERED via `getStaticPaths` (see src/sanity/lib/page-data.ts), so the
- * sitemap enumerates them automatically from the route table — do not
- * re-introduce customPages when adding a new content type; add a
- * getStaticPaths helper instead.
+ * NOTE: the sitemap deliberately has NO `customPages` option and no
+ * `getSanityUrls()`-style helper. A customPages list is only ever needed for
+ * SSR routes (which are invisible to `@astrojs/sitemap`), and every content
+ * route here is PRERENDERED via `getStaticPaths` (see
+ * src/sanity/lib/page-data.ts) — the sitemap enumerates them automatically
+ * from the route table. When adding a new content type, add a getStaticPaths
+ * helper, never a customPages list.
  */
 
 /**

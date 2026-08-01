@@ -68,7 +68,7 @@ export default defineConfig({
   dataset: SANITY_DATASET,
   plugins: [
     // The Studio opens on the content desk (first tool = default tool). The
-    // org-level "overview" experience now lives in Sanity's hosted Dashboard
+    // org-level "overview" experience lives in Sanity's hosted Dashboard
     // (the deployed Studio is a Core app there) rather than an in-Studio
     // dashboard widget.
     structureTool({
