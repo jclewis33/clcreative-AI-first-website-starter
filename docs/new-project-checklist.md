@@ -23,7 +23,7 @@ Every fork lands on the same proven shape — chosen to lean into what Sanity is
 - **Sanity Studio hosted by Sanity** — a Core app at `<studioHost>.sanity.studio`, deployed with `npx sanity deploy`. **Not embedded** at `/studio` (that's the legacy alternative). Hosting decouples Studio updates from site deploys, removes the React-bundle fragility, and auto-updates.
 - **Cross-origin Presentation** — the hosted Studio iframes the live site for draft preview; the site allows the Sanity app origins via CSP `frame-ancestors` (§3.5).
 - **Org-level hosted Dashboard** for the overview (no in-Studio dashboard plugin), and a **content-first** Studio desk — most-edited types as direct lists at the top, one click to content, Settings pinned at the bottom.
-- **Sanity 5** — v6 is **deferred** (a known upstream npm bug blocks it on CI; see the pins note in §8). Stay on v5; the hosted Studio stays current within it.
+- **Sanity 6** — no Sanity package is version-held; majors arrive as normal cooldown'd Dependabot PRs and are reviewed like any other upgrade (see §8).
 
 Full narrative + the embedded alternative: the Notion guide *"Sanity + Astro + Cloudflare: Setup Guide"* and CLAUDE.md's *"Deployment, Sanity Studio & Preview"* section.
 
@@ -169,7 +169,7 @@ curl -s -w " [%{http_code}]" -X POST https://www.<domain>/api/scorecard \
 for i in $(seq 1 9); do curl -s -o /dev/null -w "%{http_code} " -X POST https://www.<domain>/api/scorecard -H 'content-type: application/json' -d '{}'; done; echo
 
 # Dependency health
-npm audit --omit=dev   # expect 0 high / 0 critical
+npm audit --omit=dev --audit-level=critical   # expect 0 critical (matches the CI gate)
 ```
 
 Plus, in a browser: the hosted Studio loads at `https://<studioHost>.sanity.studio` and its Presentation tool previews the live site (click-to-edit overlays appear), and one full form submission delivers the complete notification email.
@@ -184,13 +184,16 @@ Plus, in a browser: the hosted Studio loads at `https://<studioHost>.sanity.stud
 
   | Pin | Why | Remove when |
   |---|---|---|
-  | `sanity` + `@sanity/vision` majors held in Dependabot | **Sanity 6 attempted June 2026 and DEFERRED.** Runtime is fine (site build, `sanity build`, Studio + visual editing), but `sanity@6`'s native dep tree breaks `npm ci` on the **Linux CI/Cloudflare runners** — an upstream npm bug ([npm/cli#8320](https://github.com/npm/cli/issues/8320)): `@emnapi/wasi-threads` (an optional peer) is written to the lockfile versionless, and npm's Linux dedup throws `TypeError: Invalid Version:`. Passes on macOS. Not fixed by clean lockfile regen, Node 24 / npm 11, or `@emnapi` overrides. **Stay on Sanity 5** (it's fully supported; the hosted Studio auto-updates within it). | The npm/@emnapi bug is fixed upstream — then retry v6 (drop these ignores), checking [are-we-v6-yet.sanity.dev](https://are-we-v6-yet.sanity.dev/) |
   | `typescript` ^5 (not 6) | `react-i18next` (inside Sanity Studio) peers typescript ^5 | The Sanity chain accepts TS 6 |
-  | `overrides`: `ws` ^8.21.0, `form-data` ^4.0.6 (June 2026) | Forced patched transitive versions to clear the 6 **high** `audit` advisories (`ws` ≤8.20.1 DoS; `form-data` 4.0.0–4.0.5) reaching us via `@astrojs/cloudflare` (Cloudflare vite-plugin/miniflare/wrangler) and `sanity` → `@sanity/cli`. Same-major patch bumps — avoids npm's `audit fix --force` "fix" which would **downgrade** `@astrojs/cloudflare` 13→12.6.13 and `sanity` 5→3.70.0. Build/CLI tooling only (not in the deployed Worker runtime). | `@astrojs/cloudflare` + `sanity`/`@sanity/cli` ship the patched `ws`/`form-data` themselves — then drop the two overrides and re-run `npm audit --omit=dev --audit-level=high` |
+  | `overrides`: `ws` ^8.21.0, `form-data` ^4.0.6 (June 2026) | Forced patched transitive versions to clear the 6 **high** `audit` advisories (`ws` ≤8.20.1 DoS; `form-data` 4.0.0–4.0.5) reaching us via `@astrojs/cloudflare` (Cloudflare vite-plugin/miniflare/wrangler) and `sanity` → `@sanity/cli`. Same-major patch bumps — avoids npm's `audit fix --force`, whose "fix" is a **major downgrade** of `@astrojs/cloudflare` or `sanity`. Build/CLI tooling only (not in the deployed Worker runtime). | `@astrojs/cloudflare` + `sanity`/`@sanity/cli` ship the patched `ws`/`form-data` themselves — then drop the two overrides and re-run `npm audit --omit=dev` |
 
   > **Note:** `@sanity/astro` rides at `^3.4.1`. If a duplicate-React "Invalid hook call" appears in dev after a bump ([sanity-astro#406](https://github.com/sanity-io/sanity-astro/issues/406)), pin `@sanity/astro` to the last-good version and add a Dependabot ignore until the upstream fix lands.
 
-- **Audit cadence**: the CI `audit` job fails any PR that introduces a high/critical advisory, so the tree stays clean passively. If a transitive CVE blocks merges and can't be fixed quickly, the documented loosening is `--audit-level=critical` in `ci.yml`.
+- **Audit cadence**: the CI `audit` job runs `npm audit --omit=dev --audit-level=critical` and fails any PR that introduces a **critical** advisory in production dependencies.
+
+  The gate sits at `critical`, not `high`, because the standing high advisories in this tree can't be fixed from here: they arrive through the **Sanity CLI** chain (`adm-zip`, `js-yaml`, `@module-federation/*`) and through **Astro's** own `sharp`/`vite` dependencies, and npm's only offered "fix" for each is a **major downgrade** of `sanity` or `astro`. All of them are build/CLI tooling — none ship in the deployed Worker runtime.
+
+  Because the gate no longer catches highs automatically, review them deliberately: run `npm audit --omit=dev --audit-level=high` periodically, and when upstream ships patched releases, tighten `ci.yml` back to `--audit-level=high`.
 
 ---
 
@@ -201,7 +204,7 @@ The `audit` job re-checks dependencies against GitHub's **live** advisory databa
 1. **Severity** — the gate only blocks **high/critical**. Moderate/low are batched later, not urgent.
 2. **Runtime vs. build/dev-only** — *does the package run inside the deployed Worker, or only locally / in CI during the build?* Build tools (esbuild, vite, wrangler, typescript, @astrojs/*) can't be reached by a site visitor — low real-world risk. A flaw in something that runs in the Worker (request handling, page rendering, anything in `src/`) is serious.
 3. **Reachability** — does the flaw apply to how you actually use it? (e.g. a "Deno registry" or "Windows dev server" flaw doesn't apply to a Mac/Cloudflare setup.)
-4. **Fix available?** — if a patched version exists, adopt it (see below). If not, accept temporarily or, as a last resort, loosen the gate to `--audit-level=critical` in `ci.yml`.
+4. **Fix available?** — if a patched version exists, adopt it (see below). If npm's only offered fix is a **major downgrade** of a framework package (`sanity`, `astro`, `@astrojs/cloudflare`), don't take it: note the advisory and wait for an upstream patch.
 
 **Decision:** high/critical **and** runs in production **and** reachable **and** unfixed → drop everything. Anything less → calm, scheduled fix.
 
@@ -212,7 +215,7 @@ The `audit` job re-checks dependencies against GitHub's **live** advisory databa
   ```jsonc
   "overrides": { "esbuild": "^0.28.1" }
   ```
-  After editing: `npm install` (updates the lockfile), then verify `npm audit --omit=dev --audit-level=high`, `npm run check`, and `npm run build` all pass before committing. Revisit/remove the override later once the parent packages catch up on their own.
+  After editing: `npm install` (updates the lockfile), then verify `npm audit --omit=dev --audit-level=critical`, `npm run check`, and `npm run build` all pass before committing. Revisit/remove the override later once the parent packages catch up on their own.
 - **Exact pin** (no caret, e.g. `"pkg": "1.2.3"`) — for a package whose *newer* versions are broken (not vulnerable). Pair with a `dependabot.yml` ignore rule so it isn't re-proposed. (See the `@sanity/astro` pin above.)
 
 ### `npm audit` ≠ malware protection

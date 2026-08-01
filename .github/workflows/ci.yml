@@ -1,6 +1,7 @@
 # Checks-only CI — deploys are handled by Cloudflare Workers Builds, not
-# Actions. The build step fetches Sanity slugs over the network (the sitemap
-# customPages query in astro.config.mjs), which works on GitHub runners.
+# Actions. The build step fetches Sanity slugs over the network (the
+# getStaticPaths queries in src/sanity/lib/page-data.ts), which works on
+# GitHub runners.
 name: CI
 
 on:
@@ -26,10 +27,19 @@ jobs:
       - run: npm run check
       - run: npm run build
 
-  # Fails on any new high/critical advisory in production dependencies.
-  # The tree was brought to 0 high / 0 critical when this gate was added;
-  # if a new transitive CVE blocks merges and can't be fixed promptly,
-  # the documented loosening is --audit-level=critical.
+  # Fails on any critical advisory in production dependencies.
+  #
+  # The gate sits at `critical` rather than `high` because the standing high
+  # advisories in this tree are unfixable from here: they come in through the
+  # Sanity CLI's dependency chain (adm-zip, js-yaml — build tooling, never
+  # shipped in the deployed Worker) and through Astro's own sharp/vite deps,
+  # where npm's only "fix" is a major downgrade of sanity or astro. Tighten
+  # this back to `--audit-level=high` once upstream ships patched releases;
+  # check with `npm audit --omit=dev --audit-level=high`.
+  #
+  # This gate is about the deployed runtime, so it always runs with
+  # `--omit=dev`. Review any NEW high advisory on its merits rather than
+  # assuming this threshold covers it.
   audit:
     runs-on: ubuntu-latest
     steps:
@@ -39,4 +49,4 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm audit --omit=dev --audit-level=high
+      - run: npm audit --omit=dev --audit-level=critical
