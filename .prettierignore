@@ -1,0 +1,16 @@
+# Build output and caches
+dist/
+.astro/
+node_modules/
+.vercel/
+.netlify/
+.wrangler/
+
+# Lockfiles — owned by the package manager
+package-lock.json
+
+# Static assets served as-is
+public/
+
+# Generated / vendored
+.agents/

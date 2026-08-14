@@ -14,6 +14,8 @@
     "check": "astro check",
     "check:schema": "node scripts/check-schema.mjs",
     "check:config": "node scripts/check-config-sync.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "postinstall": "rm -rf node_modules/.vite"
   },
   "dependencies": {
@@ -44,6 +46,8 @@
     "@astrojs/check": "^0.9.9",
     "csv-parse": "^6.2.1",
     "node-html-parser": "^7.1.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.3"
   },
   "overrides": {
