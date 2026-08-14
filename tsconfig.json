@@ -11,6 +11,9 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
-    "types": ["@sanity/astro/module"]
+    "types": ["@sanity/astro/module"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   }
 }
