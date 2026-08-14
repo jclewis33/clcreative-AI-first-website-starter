@@ -356,13 +356,10 @@ const wrapperClasses = [
     : marginTop !== undefined && `u-margin-top-${marginTop}`,
   marginBottom !== undefined && `u-margin-bottom-${marginBottom}`,
   className,
-]
-  .filter(Boolean)
-  .join(" ");
+];
 
 /* Child classes — only clamp (display: -webkit-box conflicts with wrapper flex) */
-const childClasses =
-  [clamp && `u-line-clamp-${clamp}`].filter(Boolean).join(" ") || undefined;
+const childClasses = [clamp && `u-line-clamp-${clamp}`];
 
 /* Merge user-provided style with computed max-width.
    Wrap in var(--unset-medium, …) so the max-width only applies above the
@@ -377,8 +374,8 @@ const mergedStyle = [
   .join("; ");
 ---
 
-<div class={wrapperClasses} style={mergedStyle} {...attrs}>
-  <Tag class={childClasses}>
+<div class:list={wrapperClasses} style={mergedStyle} {...attrs}>
+  <Tag class:list={childClasses}>
     <slot />
   </Tag>
 </div>

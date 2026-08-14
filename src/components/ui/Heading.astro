@@ -232,9 +232,7 @@ const wrapperClasses = [
     : marginTop !== undefined && `u-margin-top-${marginTop}`,
   marginBottom !== undefined && `u-margin-bottom-${marginBottom}`,
   className,
-]
-  .filter(Boolean)
-  .join(" ");
+];
 
 /* Merge user-provided style with computed max-width */
 const { style: userStyle, ...attrs } = rest;
@@ -246,7 +244,7 @@ const mergedStyle = [
   .join("; ");
 ---
 
-<div class={wrapperClasses} style={mergedStyle} {...attrs}>
+<div class:list={wrapperClasses} style={mergedStyle} {...attrs}>
   <Tag>
     <slot />
   </Tag>
