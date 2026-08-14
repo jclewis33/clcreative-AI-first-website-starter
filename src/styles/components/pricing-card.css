@@ -84,8 +84,7 @@
   text-align: center;
   gap: var(--space-2);
   padding-bottom: var(--space-3);
-  border-bottom: var(--border-width-main) solid
-    color-mix(in srgb, var(--border) 50%, transparent);
+  border-bottom: var(--border-width-main) solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 
 /* Description — extra top spacing + constrained width */
@@ -278,8 +277,7 @@
 
 [data-pricing-variant="general"] .pricing_card_cta {
   padding-top: var(--space-5);
-  border-top: var(--border-width-main) solid
-    color-mix(in srgb, var(--border) 50%, transparent);
+  border-top: var(--border-width-main) solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 
 /* ==========================================================================
@@ -299,8 +297,7 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding-block: var(--space-2);
-  border-bottom: var(--border-width-main) solid
-    color-mix(in srgb, var(--border) 50%, transparent);
+  border-bottom: var(--border-width-main) solid color-mix(in srgb, var(--border) 50%, transparent);
 }
 
 .pricing_item_wrap:last-child {

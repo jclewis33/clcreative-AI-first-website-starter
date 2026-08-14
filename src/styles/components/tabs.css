@@ -33,7 +33,6 @@
      line shows only on the active button. Styled directly off .is-active.
    ========================================================================== */
 
-
 /* =====================================================
    TAB WRAPPER — base layout
    ===================================================== */
@@ -46,7 +45,6 @@
   position: relative;
 }
 
-
 /* =====================================================
    TAB LEFT — heading + button list container
    ===================================================== */
@@ -56,7 +54,6 @@
   flex-direction: column;
   gap: var(--space-6);
 }
-
 
 /* =====================================================
    TAB BUTTON LIST — horizontal row of tab triggers
@@ -73,7 +70,6 @@
 .tab_button_list::-webkit-scrollbar {
   display: none;
 }
-
 
 /* =====================================================
    TAB BUTTON ITEM — base (link-style / underline)
@@ -97,7 +93,6 @@
   outline-width: var(--focus-width);
 }
 
-
 /* =====================================================
    TAB BUTTON TEXT — opacity + weight driven by state
    ===================================================== */
@@ -114,7 +109,6 @@
   font-weight: var(--font-weight-bold);
   opacity: 1;
 }
-
 
 /* =====================================================
    TAB BUTTON LINE — underline / progress indicator
@@ -141,7 +135,6 @@
   opacity: 1;
 }
 
-
 /* =====================================================
    TAB RIGHT — content + controls area
    ===================================================== */
@@ -152,7 +145,6 @@
   gap: var(--space-5);
   width: 100%;
 }
-
 
 /* =====================================================
    TAB CONTENT WRAP & LIST
@@ -169,7 +161,6 @@
   width: 100%;
 }
 
-
 /* =====================================================
    TAB PANEL ITEM
    Hidden by default; JS manages display/visibility
@@ -179,7 +170,6 @@
 .tab_panel_item {
   width: 100%;
 }
-
 
 /* =====================================================
    TAB CONTROL WRAP — slider arrows + play/pause
@@ -198,7 +188,6 @@
   align-items: center;
   gap: var(--space-2);
 }
-
 
 /* =====================================================
    SIDE VARIANT — 12-column grid layout
@@ -234,7 +223,9 @@
   min-width: auto;
   flex: none;
   background-color: transparent;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 /* Side: active button gets filled */
@@ -247,7 +238,6 @@
 [data-tab-variant="side"] .tab_button_line {
   display: none;
 }
-
 
 /* =====================================================
    SIDE VARIANT — responsive collapse to stacked
@@ -276,7 +266,6 @@
     margin-right: calc(var(--site-margin) * -1);
   }
 }
-
 
 /* =====================================================
    SLIDER VARIANT — progress line uses GSAP animation

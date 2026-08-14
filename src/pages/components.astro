@@ -55,7 +55,14 @@ import phL6 from "../assets/placeholder-images/placeholder-6.webp";
 import phS1 from "../assets/placeholder-images/placeholder-11.webp";
 import phS2 from "../assets/placeholder-images/placeholder-12.webp";
 import phS3 from "../assets/placeholder-images/placeholder-13.webp";
-const demoLandscape = [phL1.src, phL2.src, phL3.src, phL4.src, phL5.src, phL6.src];
+const demoLandscape = [
+  phL1.src,
+  phL2.src,
+  phL3.src,
+  phL4.src,
+  phL5.src,
+  phL6.src,
+];
 const demoSquare = [phS1.src, phS2.src, phS3.src];
 
 /* ── Fetch testimonials from Sanity (tolerate an empty/unreachable dataset) ── */
@@ -1067,10 +1074,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       <Accordion docs="" slot="col2" openByDefault={1}>
         <AccordionItem question="What is the design system?">
           <Text>
-            A structured CSS and component system. It
-            uses CSS custom properties, a u- utility class layer, and an Astro
-            component layer to give you total design control with fast
-            development speed.
+            A structured CSS and component system. It uses CSS custom
+            properties, a u- utility class layer, and an Astro component layer
+            to give you total design control with fast development speed.
           </Text>
         </AccordionItem>
 

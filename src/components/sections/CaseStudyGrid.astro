@@ -213,7 +213,18 @@ interface Props {
    * @example cardHeadingVariant="h4"
    * @example cardHeadingVariant="h6"
    */
-  cardHeadingVariant?: "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+  cardHeadingVariant?:
+    | "display-xl"
+    | "display-lg"
+    | "display-md"
+    | "display-sm"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "eyebrow";
 
   /**
    * Visual style for each card's description text. Controls the font size
@@ -229,7 +240,23 @@ interface Props {
    * @example cardTextVariant="regular"
    * @example cardTextVariant="tiny"
    */
-  cardTextVariant?: "tiny" | "small" | "regular" | "large" | "xlarge" | "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+  cardTextVariant?:
+    | "tiny"
+    | "small"
+    | "regular"
+    | "large"
+    | "xlarge"
+    | "display-xl"
+    | "display-lg"
+    | "display-md"
+    | "display-sm"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "eyebrow";
 
   /**
    * Section heading text. Renders as `<h2>` with `variant="h2"`.

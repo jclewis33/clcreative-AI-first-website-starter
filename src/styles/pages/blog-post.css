@@ -168,8 +168,7 @@
   padding: var(--space-4);
   margin-block: var(--space-5);
   border-radius: var(--radius-medium);
-  border: var(--border-width-main) solid
-    color-mix(in hsl, var(--callout-accent, currentColor) 25%, transparent);
+  border: var(--border-width-main) solid color-mix(in hsl, var(--callout-accent, currentColor) 25%, transparent);
   background: var(--callout-background, var(--background-2));
   color: var(--callout-text, var(--text));
 }

@@ -51,9 +51,7 @@ interface PortableTextVideoEmbed {
 }
 
 type PortableTextNode =
-  | PortableTextBlock
-  | PortableTextImage
-  | PortableTextVideoEmbed;
+  PortableTextBlock | PortableTextImage | PortableTextVideoEmbed;
 
 function resolveVideoEmbedUrl(url: string): string | null {
   try {
@@ -90,7 +88,7 @@ function renderInternalLinkWithPreview(
   innerHtml: string,
   href: string,
   anchorAttrs: string,
-  target: InternalLinkTarget
+  target: InternalLinkTarget,
 ): string {
   const title = target?.title;
   const description = target?.description;
@@ -107,15 +105,19 @@ function renderInternalLinkWithPreview(
   parts.push(`<span class="internal-link_preview" aria-hidden="true">`);
   if (imageUrl) {
     parts.push(
-      `<span class="internal-link_preview_media"><img src="${escapeAttr(imageUrl)}" alt="" loading="lazy"></span>`
+      `<span class="internal-link_preview_media"><img src="${escapeAttr(imageUrl)}" alt="" loading="lazy"></span>`,
     );
   }
   parts.push(`<span class="internal-link_preview_content">`);
   if (title) {
-    parts.push(`<span class="internal-link_preview_title">${escapeHtml(title)}</span>`);
+    parts.push(
+      `<span class="internal-link_preview_title">${escapeHtml(title)}</span>`,
+    );
   }
   if (description) {
-    parts.push(`<span class="internal-link_preview_text">${escapeHtml(description)}</span>`);
+    parts.push(
+      `<span class="internal-link_preview_text">${escapeHtml(description)}</span>`,
+    );
   }
   parts.push(`</span></span></span>`);
 
@@ -125,7 +127,10 @@ function renderInternalLinkWithPreview(
 /**
  * Convert a Portable Text span's marks to HTML.
  */
-function renderSpan(span: PortableTextSpan, markDefs: PortableTextBlock["markDefs"]): string {
+function renderSpan(
+  span: PortableTextSpan,
+  markDefs: PortableTextBlock["markDefs"],
+): string {
   let html = escapeHtml(span.text);
 
   if (!span.marks?.length) return html;
@@ -193,7 +198,7 @@ function escapeAttr(str: string): string {
  */
 export function portableTextToHtml(
   blocks: PortableTextNode[] | null | undefined,
-  imageUrlFn?: (ref: string) => string
+  imageUrlFn?: (ref: string) => string,
 ): string {
   if (!blocks?.length) return "";
 
@@ -217,7 +222,7 @@ export function portableTextToHtml(
         parts.push(`<figure class="video-embed_wrap">`);
         parts.push(`<div class="video-embed_frame">`);
         parts.push(
-          `<iframe src="${escapeAttr(embedUrl)}" title="${title}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
+          `<iframe src="${escapeAttr(embedUrl)}" title="${title}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`,
         );
         parts.push(`</div>`);
         if (video.caption) {
@@ -312,7 +317,7 @@ export function portableTextToHtml(
 /** Convert a span's marks to inline markdown. */
 function renderSpanMarkdown(
   span: PortableTextSpan,
-  markDefs: PortableTextBlock["markDefs"]
+  markDefs: PortableTextBlock["markDefs"],
 ): string {
   let text = span.text;
   if (!text) return "";
@@ -363,7 +368,7 @@ function renderSpanMarkdown(
  * stays readable rather than pixel-perfect.
  */
 export function portableTextToMarkdown(
-  blocks: PortableTextNode[] | null | undefined
+  blocks: PortableTextNode[] | null | undefined,
 ): string {
   if (!blocks?.length) return "";
 

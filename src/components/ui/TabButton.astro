@@ -54,16 +54,13 @@ interface Props {
   class?: string;
 }
 
-const {
-  label,
-  class: className,
-} = Astro.props;
+const { label, class: className } = Astro.props;
 
-const hasSlot = Astro.slots.has('default');
+const hasSlot = Astro.slots.has("default");
 ---
 
 <button
-  class:list={['tab_button_item', className]}
+  class:list={["tab_button_item", className]}
   role="tab"
   aria-selected="false"
   tabindex="-1"

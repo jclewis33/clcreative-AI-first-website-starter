@@ -218,7 +218,8 @@ export const NAV_MENU: NavMenuItem[] = [
  * A footer link. A bare path uses the page's footer label + path as href.
  * An object overrides the label and/or href (e.g. an anchored link).
  */
-export type FooterLink = string | { path: string; label?: string; href?: string };
+export type FooterLink =
+  string | { path: string; label?: string; href?: string };
 export interface FooterGroup {
   title: string;
   links: FooterLink[];
@@ -248,11 +249,17 @@ export const FOOTER_GROUPS: FooterGroup[] = [
 ];
 
 /** Resolve a FooterLink to a concrete { label, href } pair. */
-export function resolveFooterLink(link: FooterLink): { label: string; href: string } {
+export function resolveFooterLink(link: FooterLink): {
+  label: string;
+  href: string;
+} {
   if (typeof link === "string") {
     return { label: footerLabel(link), href: link };
   }
-  return { label: link.label ?? footerLabel(link.path), href: link.href ?? link.path };
+  return {
+    label: link.label ?? footerLabel(link.path),
+    href: link.href ?? link.path,
+  };
 }
 
 // ── Announcement banner ─────────────────────────────────────────────────────

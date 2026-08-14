@@ -39,30 +39,30 @@
  * ```
  */
 
-import { Image } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 
 /* ── Position types ── */
 
 type PositionPreset =
   /** 50 / 50 — centered (default) */
-  | 'center'
+  | "center"
   /** 50 / 0 — top edge */
-  | 'top'
+  | "top"
   /** 0 / 0 — top-left corner */
-  | 'top-left'
+  | "top-left"
   /** 100 / 0 — top-right corner */
-  | 'top-right'
+  | "top-right"
   /** 50 / 100 — bottom edge */
-  | 'bottom'
+  | "bottom"
   /** 0 / 100 — bottom-left corner */
-  | 'bottom-left'
+  | "bottom-left"
   /** 100 / 100 — bottom-right corner */
-  | 'bottom-right'
+  | "bottom-right"
   /** 0 / 50 — left edge */
-  | 'left'
+  | "left"
   /** 100 / 50 — right edge */
-  | 'right';
+  | "right";
 
 /** Percentage-based focal point — `x` and `y` are 0–100. */
 type FocalPoint = { x: number; y: number };
@@ -70,34 +70,34 @@ type FocalPoint = { x: number; y: number };
 /* ── Ratio presets ── */
 
 type RatioPreset =
-  | 'wide'        // 16 / 9
-  | 'widescreen'  // 21 / 9
-  | 'landscape'   // 3 / 2
-  | 'square'      // 1 / 1
-  | 'portrait'    // 3 / 4
-  | 'tall';       // 2 / 3
+  | "wide" // 16 / 9
+  | "widescreen" // 21 / 9
+  | "landscape" // 3 / 2
+  | "square" // 1 / 1
+  | "portrait" // 3 / 4
+  | "tall"; // 2 / 3
 
 /* ── Radius type ── */
 
 type RadiusSize =
   /** 0 — no rounding */
-  | 'none'
+  | "none"
   /** Subtle rounding */
-  | 'xsmall'
+  | "xsmall"
   /** Slightly rounded */
-  | 'small'
+  | "small"
   /** Moderate rounding */
-  | 'medium'
+  | "medium"
   /** Noticeable rounding */
-  | 'large'
+  | "large"
   /** Very rounded */
-  | 'xlarge'
+  | "xlarge"
   /** Site default radius (--radius-main) */
-  | 'main'
+  | "main"
   /** Fully rounded / pill */
-  | 'full'
+  | "full"
   /** Large section-level rounding */
-  | 'section';
+  | "section";
 
 /* ── Component props ── */
 
@@ -186,7 +186,7 @@ interface Props {
    * @default 'default'
    * @example variant="background"
    */
-  variant?: 'default' | 'background';
+  variant?: "default" | "background";
 
   /**
    * Focal point / object-position.
@@ -216,7 +216,7 @@ interface Props {
    * @default 'cover'
    * @example fit="contain"
    */
-  fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+  fit?: "cover" | "contain" | "fill" | "none" | "scale-down";
 
   /**
    * Loading behavior.
@@ -226,7 +226,7 @@ interface Props {
    * where the image sits inside a chain of absolute-positioned containers.
    * @default 'lazy' (or 'eager' when variant="background")
    */
-  loading?: 'lazy' | 'eager';
+  loading?: "lazy" | "eager";
 
   /**
    * Priority image — sets `loading="eager"` and `fetchpriority="high"`.
@@ -274,13 +274,13 @@ const {
   docs,
   src,
   alt,
-  ratio     = 'landscape',
-  radius    = 'main',
-  variant   = 'default',
-  position  = 'center',
-  fit       = 'cover',
+  ratio = "landscape",
+  radius = "main",
+  variant = "default",
+  position = "center",
+  fit = "cover",
   loading: loadingProp,
-  priority  = false,
+  priority = false,
   transparent = false,
   width,
   height,
@@ -299,39 +299,39 @@ const radiusClass = `u-radius-${radius}`;
    ═══════════════════════════════════════════════════ */
 
 const ratioPresets: Record<string, string> = {
-  'wide':       '16 / 9',
-  'widescreen': '21 / 9',
-  'landscape':  '3 / 2',
-  'square':     '1 / 1',
-  'portrait':   '3 / 4',
-  'tall':       '2 / 3',
+  wide: "16 / 9",
+  widescreen: "21 / 9",
+  landscape: "3 / 2",
+  square: "1 / 1",
+  portrait: "3 / 4",
+  tall: "2 / 3",
 };
 
 const resolvedRatio =
-  variant === 'background'
-    ? undefined                                     // backgrounds fill parent, no ratio
+  variant === "background"
+    ? undefined // backgrounds fill parent, no ratio
     : ratio
-      ? (ratioPresets[ratio] ?? ratio)              // preset or raw string
-      : undefined;                                  // no ratio set
+      ? (ratioPresets[ratio] ?? ratio) // preset or raw string
+      : undefined; // no ratio set
 
 /* ═══════════════════════════════════════════════════
    Resolve focal point
    ═══════════════════════════════════════════════════ */
 
 const positionPresets: Record<string, FocalPoint> = {
-  'center':       { x: 50,  y: 50 },
-  'top':          { x: 50,  y: 0 },
-  'top-left':     { x: 0,   y: 0 },
-  'top-right':    { x: 100, y: 0 },
-  'bottom':       { x: 50,  y: 100 },
-  'bottom-left':  { x: 0,   y: 100 },
-  'bottom-right': { x: 100, y: 100 },
-  'left':         { x: 0,   y: 50 },
-  'right':        { x: 100, y: 50 },
+  center: { x: 50, y: 50 },
+  top: { x: 50, y: 0 },
+  "top-left": { x: 0, y: 0 },
+  "top-right": { x: 100, y: 0 },
+  bottom: { x: 50, y: 100 },
+  "bottom-left": { x: 0, y: 100 },
+  "bottom-right": { x: 100, y: 100 },
+  left: { x: 0, y: 50 },
+  right: { x: 100, y: 50 },
 };
 
 const focal: FocalPoint =
-  typeof position === 'string'
+  typeof position === "string"
     ? (positionPresets[position] ?? { x: 50, y: 50 })
     : position;
 
@@ -339,25 +339,27 @@ const focal: FocalPoint =
    Loading & priority
    ═══════════════════════════════════════════════════ */
 
-const defaultLoading = variant === 'background' ? 'eager' as const : 'lazy' as const;
-const loading = priority ? 'eager' as const : (loadingProp ?? defaultLoading);
-const fetchpriority = priority ? 'high' : 'auto';
+const defaultLoading =
+  variant === "background" ? ("eager" as const) : ("lazy" as const);
+const loading = priority ? ("eager" as const) : (loadingProp ?? defaultLoading);
+const fetchpriority = priority ? "high" : "auto";
 
 /* ═══════════════════════════════════════════════════
    Build inline styles
    ═══════════════════════════════════════════════════ */
 
-const isBackground = variant === 'background';
+const isBackground = variant === "background";
 
 // Wrapper: aspect-ratio + optional object-fit override
 const wrapperParts: string[] = [];
-if (resolvedRatio)   wrapperParts.push(`aspect-ratio: ${resolvedRatio}`);
-if (fit !== 'cover') wrapperParts.push(`object-fit: ${fit}`);
-if (transparent)     wrapperParts.push('background-color: transparent');
+if (resolvedRatio) wrapperParts.push(`aspect-ratio: ${resolvedRatio}`);
+if (fit !== "cover") wrapperParts.push(`object-fit: ${fit}`);
+if (transparent) wrapperParts.push("background-color: transparent");
 
 /* Merge user-provided style with computed wrapper styles */
 const { style: userStyle, ...attrs } = rest;
-const wrapperStyle = [...wrapperParts, userStyle].filter(Boolean).join('; ') || undefined;
+const wrapperStyle =
+  [...wrapperParts, userStyle].filter(Boolean).join("; ") || undefined;
 
 // Image: focal-point custom properties
 const imageStyle = `--x: ${focal.x}; --y: ${focal.y}`;
@@ -366,7 +368,7 @@ const imageStyle = `--x: ${focal.x}; --y: ${focal.y}`;
    Detect remote URL vs imported image
    ═══════════════════════════════════════════════════ */
 
-const isRemote = typeof src === 'string' && src.startsWith('http');
+const isRemote = typeof src === "string" && src.startsWith("http");
 
 /* ═══════════════════════════════════════════════════
    Image props — conditionally include width/height
@@ -375,7 +377,7 @@ const isRemote = typeof src === 'string' && src.startsWith('http');
 const imageProps: Record<string, any> = {
   src,
   alt,
-  class: 'u-image',
+  class: "u-image",
   loading,
   fetchpriority,
   style: imageStyle,
@@ -383,26 +385,22 @@ const imageProps: Record<string, any> = {
 
 if (!isRemote) {
   // Local images use Astro's <Image> with layout
-  imageProps.layout = 'full-width' as const;
+  imageProps.layout = "full-width" as const;
 }
 
-if (width  != null) imageProps.width  = width;
+if (width != null) imageProps.width = width;
 if (height != null) imageProps.height = height;
 ---
 
 <div
   class:list={[
-    'u-image-wrapper',
+    "u-image-wrapper",
     radiusClass,
-    { 'is-background': isBackground },
+    { "is-background": isBackground },
     className,
   ]}
   style={wrapperStyle}
   {...attrs}
 >
-  {isRemote ? (
-    <img {...imageProps} />
-  ) : (
-    <Image {...(imageProps as any)} />
-  )}
+  {isRemote ? <img {...imageProps} /> : <Image {...(imageProps as any)} />}
 </div>

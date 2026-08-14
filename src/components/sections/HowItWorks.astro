@@ -254,8 +254,7 @@ const {
     // (how-it-works.css, inherited onto the dots). Literals are last-resort
     // fallbacks only.
     const cs = getComputedStyle(dots[0]);
-    const BRAND =
-      cs.getPropertyValue("--color-brand-500").trim() || "#f35423";
+    const BRAND = cs.getPropertyValue("--color-brand-500").trim() || "#f35423";
     const INACTIVE =
       cs.getPropertyValue("--how-it-works-dot-inactive").trim() || "#172138";
 

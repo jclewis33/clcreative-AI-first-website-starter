@@ -178,9 +178,7 @@ export const SITE = {
    * derived from `social`) because the LocalBusiness node also lists the
    * company LinkedIn, which isn't in the footer set.
    */
-  sameAs: [
-    "https://www.example.com",
-  ],
+  sameAs: ["https://www.example.com"],
 
   /**
    * Sitewide service area (mirrors the Google Business Profile city list).

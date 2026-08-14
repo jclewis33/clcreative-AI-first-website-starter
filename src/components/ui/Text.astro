@@ -366,10 +366,7 @@ const childClasses = [clamp && `u-line-clamp-${clamp}`];
    medium breakpoint (~58em). Below that, --unset-medium = `unset`, which
    removes the constraint and lets the text fill the available width. */
 const { style: userStyle, ...attrs } = rest;
-const mergedStyle = [
-  `max-width: var(--unset-medium, ${maxWidth})`,
-  userStyle,
-]
+const mergedStyle = [`max-width: var(--unset-medium, ${maxWidth})`, userStyle]
   .filter(Boolean)
   .join("; ");
 ---

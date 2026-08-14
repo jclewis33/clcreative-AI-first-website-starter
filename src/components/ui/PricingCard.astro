@@ -261,7 +261,7 @@ const isGeneral = variant === "general";
   data-pricing-variant={variant}
   {...rest}
 >
-  <div class="pricing_card_element" {...(theme ? { "data-theme": theme } : {})}>
+  <div class="pricing_card_element" {...theme ? { "data-theme": theme } : {}}>
     {
       /* Label banner — full-width callout at top of card (default variant only) */
     }
@@ -310,7 +310,12 @@ const isGeneral = variant === "general";
               </div>
 
               {description && (
-                <Text variant="small" muted={descriptionMuted} marginBottom={0} maxWidth="100%">
+                <Text
+                  variant="small"
+                  muted={descriptionMuted}
+                  marginBottom={0}
+                  maxWidth="100%"
+                >
                   {description}
                 </Text>
               )}

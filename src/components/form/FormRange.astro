@@ -16,7 +16,6 @@
  * ```
  */
 
-
 interface Props {
   /** Label text for the range slider. Always rendered for accessibility. */
   label: string;
@@ -40,7 +39,7 @@ interface Props {
    * Step increment between values. Use `'any'` for continuous.
    * @default 1
    */
-  step?: number | 'any';
+  step?: number | "any";
 
   /**
    * Default value of the range input.
@@ -84,7 +83,7 @@ interface Props {
    * - `'hidden'` — Label is visually hidden (still accessible to screen readers)
    * @default 'default'
    */
-  labelVariant?: 'default' | 'hidden';
+  labelVariant?: "default" | "hidden";
 
   /** Helper text displayed below the input. */
   helperText?: string;
@@ -115,7 +114,7 @@ const {
   prefix,
   required = false,
   disabled = false,
-  labelVariant = 'default',
+  labelVariant = "default",
   helperText,
   errorText,
   id,
@@ -125,31 +124,35 @@ const {
 
 const fieldId = id || `field-${name}`;
 const outputId = `${fieldId}-output`;
-const describedById = (helperText || errorText) ? `${fieldId}-hint` : undefined;
+const describedById = helperText || errorText ? `${fieldId}-hint` : undefined;
 const initialProgress = ((value - min) / (max - min)) * 100;
 ---
 
-<div
-  class:list={['form_label_wrap', 'form_range_wrap', className]}
->
+<div class:list={["form_label_wrap", "form_range_wrap", className]}>
   <div class="form_range_label_row">
     <label
-      class:list={['form_label_text', labelVariant === 'hidden' && 'u-sr-only']}
+      class:list={["form_label_text", labelVariant === "hidden" && "u-sr-only"]}
       for={fieldId}
     >
       {label}
-      {required && <span class="form_required" aria-hidden="true">*</span>}
+      {
+        required && (
+          <span class="form_required" aria-hidden="true">
+            *
+          </span>
+        )
+      }
     </label>
 
-    {showValue && (
-      <output
-        class="form_range_output"
-        id={outputId}
-        for={fieldId}
-      >
-        {prefix}{value}{suffix}
-      </output>
-    )}
+    {
+      showValue && (
+        <output class="form_range_output" id={outputId} for={fieldId}>
+          {prefix}
+          {value}
+          {suffix}
+        </output>
+      )
+    }
   </div>
 
   <input
@@ -164,7 +167,7 @@ const initialProgress = ((value - min) / (max - min)) * 100;
     required={required}
     disabled={disabled}
     aria-describedby={describedById}
-    aria-invalid={errorText ? 'true' : undefined}
+    aria-invalid={errorText ? "true" : undefined}
     style={`--range-progress: ${initialProgress}%`}
     data-output={showValue ? outputId : undefined}
     data-prefix={prefix || undefined}
@@ -172,54 +175,68 @@ const initialProgress = ((value - min) / (max - min)) * 100;
     {...rest}
   />
 
-  {showMinMax && (
-    <div class="form_range_minmax" aria-hidden="true">
-      <span class="form_range_min">{prefix}{min}{suffix}</span>
-      <span class="form_range_max">{prefix}{max}{suffix}</span>
-    </div>
-  )}
+  {
+    showMinMax && (
+      <div class="form_range_minmax" aria-hidden="true">
+        <span class="form_range_min">
+          {prefix}
+          {min}
+          {suffix}
+        </span>
+        <span class="form_range_max">
+          {prefix}
+          {max}
+          {suffix}
+        </span>
+      </div>
+    )
+  }
 
-  {(helperText || errorText) && (
-    <p
-      class:list={['form_helper_text', errorText && 'is-error']}
-      id={describedById}
-    >
-      {errorText || helperText}
-    </p>
-  )}
+  {
+    (helperText || errorText) && (
+      <p
+        class:list={["form_helper_text", errorText && "is-error"]}
+        id={describedById}
+      >
+        {errorText || helperText}
+      </p>
+    )
+  }
 </div>
 
 <script>
   function initFormRanges() {
-    document.querySelectorAll<HTMLInputElement>('.form_range').forEach((input) => {
-      if (input.dataset.rangeInit) return;
-      input.dataset.rangeInit = 'true';
+    document
+      .querySelectorAll<HTMLInputElement>(".form_range")
+      .forEach((input) => {
+        if (input.dataset.rangeInit) return;
+        input.dataset.rangeInit = "true";
 
-      const outputId = input.dataset.output;
-      const output = outputId ? document.getElementById(outputId) : null;
-      const prefix = input.dataset.prefix || '';
-      const suffix = input.dataset.suffix || '';
+        const outputId = input.dataset.output;
+        const output = outputId ? document.getElementById(outputId) : null;
+        const prefix = input.dataset.prefix || "";
+        const suffix = input.dataset.suffix || "";
 
-      function update() {
-        const min = parseFloat(input.min) || 0;
-        const max = parseFloat(input.max) || 100;
-        const val = parseFloat(input.value);
-        const progress = ((val - min) / (max - min)) * 100;
+        function update() {
+          const min = parseFloat(input.min) || 0;
+          const max = parseFloat(input.max) || 100;
+          const val = parseFloat(input.value);
+          const progress = ((val - min) / (max - min)) * 100;
 
-        input.style.setProperty('--range-progress', `${progress}%`);
+          input.style.setProperty("--range-progress", `${progress}%`);
 
-        if (output) {
-          output.textContent = `${prefix}${input.value}${suffix}`;
+          if (output) {
+            output.textContent = `${prefix}${input.value}${suffix}`;
+          }
         }
-      }
 
-      input.addEventListener('input', update);
-      update();
-    });
+        input.addEventListener("input", update);
+        update();
+      });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initFormRanges);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initFormRanges);
   } else {
     initFormRanges();
   }

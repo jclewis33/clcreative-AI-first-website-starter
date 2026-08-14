@@ -760,8 +760,8 @@ export default function MarketingScorecard({
             </p>
             <p className="scorecard_insight_text u-text-style-small u-text-style-muted">
               Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
-              ut enim ad minim veniam, quis nostrud exercitation ullamco
-              laboris nisi ut aliquip ex ea commodo consequat.
+              ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat.
             </p>
           </blockquote>
 

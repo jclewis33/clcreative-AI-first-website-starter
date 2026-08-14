@@ -103,8 +103,7 @@ export const blogPost = defineType({
         "YouTube video URL. When set, the video replaces the featured image on the blog post page.",
       type: "url",
       group: "media",
-      validation: (rule) =>
-        rule.uri({ scheme: ["http", "https"] }),
+      validation: (rule) => rule.uri({ scheme: ["http", "https"] }),
     }),
     defineField({
       name: "author",
@@ -132,7 +131,8 @@ export const blogPost = defineType({
     defineField({
       name: "featured",
       title: "Featured Post",
-      description: "Show this post in the featured section at the top of the blog.",
+      description:
+        "Show this post in the featured section at the top of the blog.",
       type: "boolean",
       group: "meta",
       initialValue: false,

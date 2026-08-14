@@ -33,7 +33,7 @@ interface Props {
    * HTTP method.
    * @default 'POST'
    */
-  method?: 'GET' | 'POST';
+  method?: "GET" | "POST";
 
   /**
    * Success message shown after successful submission.
@@ -60,7 +60,7 @@ interface Props {
 const {
   name,
   action,
-  method = 'POST',
+  method = "POST",
   successMessage,
   errorMessage,
   id,
@@ -69,7 +69,7 @@ const {
 } = Astro.props;
 ---
 
-<div class:list={['form_wrap', className]} id={id}>
+<div class:list={["form_wrap", className]} id={id}>
   <form
     class="form_element"
     name={name}
@@ -80,15 +80,19 @@ const {
     <slot />
   </form>
 
-  {successMessage && (
-    <div class="form_success_wrap" style="display: none;" role="status">
-      <p class="form_success_text">{successMessage}</p>
-    </div>
-  )}
+  {
+    successMessage && (
+      <div class="form_success_wrap" style="display: none;" role="status">
+        <p class="form_success_text">{successMessage}</p>
+      </div>
+    )
+  }
 
-  {errorMessage && (
-    <div class="form_error_wrap" style="display: none;" role="alert">
-      <p class="form_error_text">{errorMessage}</p>
-    </div>
-  )}
+  {
+    errorMessage && (
+      <div class="form_error_wrap" style="display: none;" role="alert">
+        <p class="form_error_text">{errorMessage}</p>
+      </div>
+    )
+  }
 </div>

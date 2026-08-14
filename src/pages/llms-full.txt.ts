@@ -76,7 +76,9 @@ function pageIndex(heading: string, pages: StaticPage[]): string {
 }
 
 /** Render a case study's flexible `content[]` blocks to Markdown. */
-function caseStudyContentToMarkdown(blocks: CaseStudyBlock[] | undefined): string {
+function caseStudyContentToMarkdown(
+  blocks: CaseStudyBlock[] | undefined,
+): string {
   if (!blocks?.length) return "";
   const parts: string[] = [];
   for (const block of blocks) {
@@ -130,9 +132,10 @@ export const GET: APIRoute = async () => {
   const [fullPosts, fullCaseStudies, fullGlossary] = await Promise.all([
     Promise.all(
       postSlugs.map((slug) =>
-        loadQuery<BlogPostFull>({ query: BLOG_POST_QUERY, params: { slug } }).then(
-          (r) => r.data,
-        ),
+        loadQuery<BlogPostFull>({
+          query: BLOG_POST_QUERY,
+          params: { slug },
+        }).then((r) => r.data),
       ),
     ),
     Promise.all(
@@ -205,7 +208,11 @@ export const GET: APIRoute = async () => {
     }
   }
 
-  out.push("---", "## Optional", ...OPTIONAL_PAGES.map((p) => `- [${p.title}](${url(p.path)}): ${p.desc}`));
+  out.push(
+    "---",
+    "## Optional",
+    ...OPTIONAL_PAGES.map((p) => `- [${p.title}](${url(p.path)}): ${p.desc}`),
+  );
 
   const body = out.join("\n\n") + "\n";
 

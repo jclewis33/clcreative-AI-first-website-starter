@@ -39,7 +39,7 @@ interface Props {
   docs?: string;
 
   /** Overlay style. `'solid'` = even scrim; `'gradient'` = vertical top-to-bottom fade. Default: `'solid'`. */
-  variant?: 'solid' | 'gradient';
+  variant?: "solid" | "gradient";
   /** Solid-variant darkness from 0–100. Default: 70. */
   strength?: number;
   /** Gradient top-edge darkness from 0–100. Default: 0 (transparent at top). */
@@ -62,7 +62,7 @@ interface Props {
 
 const {
   docs,
-  variant = 'solid',
+  variant = "solid",
   strength = 70,
   strengthTop = 0,
   strengthMiddle,
@@ -71,27 +71,36 @@ const {
   ...rest
 } = Astro.props;
 
-const isGradient = variant === 'gradient';
-const hasMiddle = isGradient && typeof strengthMiddle === 'number';
+const isGradient = variant === "gradient";
+const hasMiddle = isGradient && typeof strengthMiddle === "number";
 
 const styleParts = isGradient
   ? [
       strengthTop !== 0 ? `--overlay-strength-top: ${strengthTop}` : null,
       hasMiddle ? `--overlay-strength-middle: ${strengthMiddle}` : null,
-      strengthBottom !== 70 ? `--overlay-strength-bottom: ${strengthBottom}` : null,
+      strengthBottom !== 70
+        ? `--overlay-strength-bottom: ${strengthBottom}`
+        : null,
     ]
   : [strength !== 70 ? `--overlay-strength: ${strength}` : null];
 
-const computedStyle = styleParts.filter(Boolean).join('; ') || undefined;
+const computedStyle = styleParts.filter(Boolean).join("; ") || undefined;
 
 /* Merge user-provided style with computed overlay styles */
 const { style: userStyle, ...attrs } = rest;
-const mergedStyle = [computedStyle, userStyle].filter(Boolean).join('; ') || undefined;
+const mergedStyle =
+  [computedStyle, userStyle].filter(Boolean).join("; ") || undefined;
 ---
 
 <div
-  class:list={['u-overlay', isGradient && 'is-gradient', hasMiddle && 'has-middle', className]}
+  class:list={[
+    "u-overlay",
+    isGradient && "is-gradient",
+    hasMiddle && "has-middle",
+    className,
+  ]}
   style={mergedStyle}
   aria-hidden="true"
   {...attrs}
-/>
+>
+</div>

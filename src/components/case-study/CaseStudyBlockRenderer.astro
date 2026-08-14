@@ -31,24 +31,47 @@ const spacingBottom = block.sectionSpacingBottom ?? spacing;
 ---
 
 <Section docs="" paddingTop={spacingTop} paddingBottom={spacingBottom}>
-  {block.type === "fullWidthImage" && (
-    <FullWidthImage image={block.image} imageAlt={block.imageAlt} aspectRatio={block.aspectRatio} transparent={block.transparent} />
-  )}
-  {block.type === "imageGrid" && <ImageGrid images={block.images} aspectRatio={block.aspectRatio} />}
-  {block.type === "richText" && <RichTextBlock html={block.html} maxWidth={block.maxWidth} />}
-  {block.type === "richTextLeft" && <RichTextLeftBlock html={block.html} maxWidth={block.maxWidth} />}
-  {block.type === "richTextColumns" && (
-    <RichTextColumnsBlock html={block.html} />
-  )}
-  {block.type === "richTextWithImage" && (
-    <RichTextWithImageBlock
-      html={block.html}
-      image={block.image}
-      imageAlt={block.imageAlt}
-      aspectRatio={block.aspectRatio}
-      transparent={block.transparent}
-      objectFit={block.objectFit}
-    />
-  )}
+  {
+    block.type === "fullWidthImage" && (
+      <FullWidthImage
+        image={block.image}
+        imageAlt={block.imageAlt}
+        aspectRatio={block.aspectRatio}
+        transparent={block.transparent}
+      />
+    )
+  }
+  {
+    block.type === "imageGrid" && (
+      <ImageGrid images={block.images} aspectRatio={block.aspectRatio} />
+    )
+  }
+  {
+    block.type === "richText" && (
+      <RichTextBlock html={block.html} maxWidth={block.maxWidth} />
+    )
+  }
+  {
+    block.type === "richTextLeft" && (
+      <RichTextLeftBlock html={block.html} maxWidth={block.maxWidth} />
+    )
+  }
+  {
+    block.type === "richTextColumns" && (
+      <RichTextColumnsBlock html={block.html} />
+    )
+  }
+  {
+    block.type === "richTextWithImage" && (
+      <RichTextWithImageBlock
+        html={block.html}
+        image={block.image}
+        imageAlt={block.imageAlt}
+        aspectRatio={block.aspectRatio}
+        transparent={block.transparent}
+        objectFit={block.objectFit}
+      />
+    )
+  }
   {block.type === "stats" && <StatsBlock items={block.items} />}
 </Section>

@@ -1,7 +1,19 @@
 {
   "html.customData": [".vscode/html.custom-data.json"],
   "CSSNavigation.activeHTMLFileExtensions": [
-    "html", "ejs", "erb", "php", "hbs", "js", "ts", "jsx", "tsx", "vue", "twig", "astro", "svelte"
+    "html",
+    "ejs",
+    "erb",
+    "php",
+    "hbs",
+    "js",
+    "ts",
+    "jsx",
+    "tsx",
+    "vue",
+    "twig",
+    "astro",
+    "svelte"
   ],
   "editor.quickSuggestions": {
     "strings": "on"

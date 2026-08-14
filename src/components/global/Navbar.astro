@@ -166,7 +166,8 @@ const workMegaItem: NavLinkMega = {
 const visibleNavItems: NavItem[] = [...navItems];
 if (showMegaMenu) {
   const beforeIdx = visibleNavItems.findIndex(
-    (item) => !isDropdown(item) && !isMega(item) && item.href === "/case-studies",
+    (item) =>
+      !isDropdown(item) && !isMega(item) && item.href === "/case-studies",
   );
   visibleNavItems.splice(
     beforeIdx === -1 ? visibleNavItems.length : beforeIdx,
@@ -309,9 +310,11 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
       <Logo variant="navbar" class="nav_logo_wrap" ariaLabel="Home" />
 
       {/* Desktop Menu */}
-      {/* Links/labels/order come from NAV_MENU in src/data/site-structure.ts
+      {
+        /* Links/labels/order come from NAV_MENU in src/data/site-structure.ts
           (resolved into `visibleNavItems` in the frontmatter above). To change
-          what appears here, edit NAV_MENU there — not this markup. */}
+          what appears here, edit NAV_MENU there — not this markup. */
+      }
       <div class="nav_menu_wrap">
         <ul class="nav_list">
           {
@@ -377,10 +380,7 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
                 /* ── Regular Dropdown ── */
                 <li class="nav_link_item">
                   <div class="nav_dropdown_wrap" data-state="expanded">
-                    <button
-                      class="nav_dropdown_toggle"
-                      aria-expanded="false"
-                    >
+                    <button class="nav_dropdown_toggle" aria-expanded="false">
                       <span>{item.label}</span>
                       <svg
                         class="nav_dropdown_icon"
@@ -444,10 +444,7 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
             showLanguagePicker && (
               <li class="nav_actions_item">
                 <div class="nav_dropdown_wrap" data-state="expanded">
-                  <button
-                    class="nav_language_toggle"
-                    aria-expanded="false"
-                  >
+                  <button class="nav_language_toggle" aria-expanded="false">
                     <span>{currentLang.code}</span>
                     <svg
                       class="nav_dropdown_icon"
@@ -632,9 +629,11 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
       )
     }
 
-    {/* Mobile menu renders the SAME `visibleNavItems` (from NAV_MENU in
+    {
+      /* Mobile menu renders the SAME `visibleNavItems` (from NAV_MENU in
         src/data/site-structure.ts) as the desktop menu above — edit NAV_MENU
-        there and both update together. */}
+        there and both update together. */
+    }
     <ul class="nav_mobile_list">
       {
         visibleNavItems.map((item) =>

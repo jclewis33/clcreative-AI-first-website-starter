@@ -35,27 +35,29 @@ const linkAttrs = newTab
   : {};
 ---
 
-{href ? (
-  <span class="internal-link_wrap">
-    <a href={href} {...linkAttrs} class="internal-link_anchor">
-      <slot />
-    </a>
-    {(title || description || imageUrl) && (
-      <span class="internal-link_preview" aria-hidden="true">
-        {imageUrl && (
-          <span class="internal-link_preview_media">
-            <img src={imageUrl} alt="" loading="lazy" />
-          </span>
-        )}
-        <span class="internal-link_preview_content">
-          {title && <span class="internal-link_preview_title">{title}</span>}
-          {description && (
-            <span class="internal-link_preview_text">{description}</span>
+{
+  href ? (
+    <span class="internal-link_wrap">
+      <a href={href} {...linkAttrs} class="internal-link_anchor">
+        <slot />
+      </a>
+      {(title || description || imageUrl) && (
+        <span class="internal-link_preview" aria-hidden="true">
+          {imageUrl && (
+            <span class="internal-link_preview_media">
+              <img src={imageUrl} alt="" loading="lazy" />
+            </span>
           )}
+          <span class="internal-link_preview_content">
+            {title && <span class="internal-link_preview_title">{title}</span>}
+            {description && (
+              <span class="internal-link_preview_text">{description}</span>
+            )}
+          </span>
         </span>
-      </span>
-    )}
-  </span>
-) : (
-  <slot />
-)}
+      )}
+    </span>
+  ) : (
+    <slot />
+  )
+}

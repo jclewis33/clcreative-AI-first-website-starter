@@ -20,10 +20,35 @@ interface Props {
   position?: { x: number; y: number } | "center";
 }
 
-const { html, image, imageAlt, aspectRatio = "landscape", transparent, objectFit, position } = Astro.props;
+const {
+  html,
+  image,
+  imageAlt,
+  aspectRatio = "landscape",
+  transparent,
+  objectFit,
+  position,
+} = Astro.props;
 ---
 
 <Layout docs="" variant="columns" verticalAlign="start">
-  <div slot="col1" class="u-rich-text" data-fade-in data-prevent-flicker="true" set:html={html} />
-  <Visual slot="col2" docs="" src={image} alt={imageAlt} ratio={aspectRatio} transparent={transparent} fit={objectFit} position={position} data-fade-in data-prevent-flicker="true" />
+  <div
+    slot="col1"
+    class="u-rich-text"
+    data-fade-in
+    data-prevent-flicker="true"
+    set:html={html}
+  />
+  <Visual
+    slot="col2"
+    docs=""
+    src={image}
+    alt={imageAlt}
+    ratio={aspectRatio}
+    transparent={transparent}
+    fit={objectFit}
+    position={position}
+    data-fade-in
+    data-prevent-flicker="true"
+  />
 </Layout>

@@ -76,8 +76,12 @@
   grid-template-columns: minmax(0, var(--col-1, 1fr)) minmax(0, var(--col-2, 1fr));
 }
 
-[data-layout-variant="columns-reversed"] .u-layout-column-1 { order: 2; }
-[data-layout-variant="columns-reversed"] .u-layout-column-2 { order: 1; }
+[data-layout-variant="columns-reversed"] .u-layout-column-1 {
+  order: 2;
+}
+[data-layout-variant="columns-reversed"] .u-layout-column-2 {
+  order: 1;
+}
 
 /* ---- stack — single column ---- */
 
@@ -271,16 +275,24 @@
    target columns directly with higher specificity to override. */
 
 .u-layout.u-align-start .u-layout-column-1,
-.u-layout.u-align-start .u-layout-column-2 { align-self: start; }
+.u-layout.u-align-start .u-layout-column-2 {
+  align-self: start;
+}
 
 .u-layout.u-align-center .u-layout-column-1,
-.u-layout.u-align-center .u-layout-column-2 { align-self: center; }
+.u-layout.u-align-center .u-layout-column-2 {
+  align-self: center;
+}
 
 .u-layout.u-align-end .u-layout-column-1,
-.u-layout.u-align-end .u-layout-column-2 { align-self: end; }
+.u-layout.u-align-end .u-layout-column-2 {
+  align-self: end;
+}
 
 .u-layout.u-align-stretch .u-layout-column-1,
-.u-layout.u-align-stretch .u-layout-column-2 { align-self: stretch; }
+.u-layout.u-align-stretch .u-layout-column-2 {
+  align-self: stretch;
+}
 
 /* ==========================================================================
    RESPONSIVE — collapse resets

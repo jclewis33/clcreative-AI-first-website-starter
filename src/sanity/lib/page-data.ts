@@ -56,7 +56,10 @@ function mapPostCard(p: any) {
 
 /* ── Blog post ─────────────────────────────────────────────────────────────── */
 
-export async function loadBlogPostPage(slug: string, draftProps: DraftProps = {}) {
+export async function loadBlogPostPage(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
   const { data: post } = await loadQuery<any>({
     query: BLOG_POST_QUERY,
     params: { slug },
@@ -94,7 +97,10 @@ export async function loadBlogPostPage(slug: string, draftProps: DraftProps = {}
 
 /* ── Case study ────────────────────────────────────────────────────────────── */
 
-export async function loadCaseStudyPage(slug: string, draftProps: DraftProps = {}) {
+export async function loadCaseStudyPage(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
   const { data: study } = await loadQuery<any>({
     query: CASE_STUDY_QUERY,
     params: { slug },
@@ -227,7 +233,10 @@ export async function loadPageQuery<T>({
 }
 
 export async function getBlogPostStaticPaths() {
-  const slugs = await fetchStaticPathList<string>(BLOG_SLUGS_QUERY, "blog post");
+  const slugs = await fetchStaticPathList<string>(
+    BLOG_SLUGS_QUERY,
+    "blog post",
+  );
   return (slugs ?? []).map((slug) => ({ params: { slug } }));
 }
 
@@ -260,7 +269,9 @@ export async function getBlogCategoryStaticPaths() {
   );
   if (categories === null) return [];
   const seen = new Set<string>();
-  const paths = [{ params: { category: "all" }, props: { categoryName: "All" } }];
+  const paths = [
+    { params: { category: "all" }, props: { categoryName: "All" } },
+  ];
   for (const name of categories) {
     const slug = categoryToSlug(name);
     if (slug === "all" || seen.has(slug)) continue;

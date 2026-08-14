@@ -44,34 +44,31 @@
 
 type SectionTheme =
   /** Inherit the current page / parent theme — no data-theme rendered, section stays transparent */
-  | 'inherit'
-  | 'light'
-  | 'dark'
-  | 'brand';
+  "inherit" | "light" | "dark" | "brand";
 
 type PaddingSize =
   /** No vertical padding */
-  | 'none'
+  | "none"
   /** Extra small — 1.25–2rem fluid */
-  | 'xsmall'
+  | "xsmall"
   /** Small — 3–5rem fluid */
-  | 'small'
+  | "small"
   /** Main — 4–7rem fluid (default) */
-  | 'main'
+  | "main"
   /** Large — 5.5–10rem fluid */
-  | 'large'
+  | "large"
   /** Page top — 10–14rem fluid; fixed-navbar layouts only (rare). Not needed for this project's sticky nav. */
-  | 'page-top';
+  | "page-top";
 
 type ContainerSize =
   /** Standard container — max 90rem / 1440px */
-  | 'default'
+  | "default"
   /** Narrow container — max 48rem / 768px (good for prose) */
-  | 'narrow'
+  | "narrow"
   /** Wide container — max 120rem / 1920px */
-  | 'wide'
+  | "wide"
   /** Full-width — no max-width constraint */
-  | 'full';
+  | "full";
 
 /**
  * Section — full-width page section with theming, fluid padding,
@@ -238,11 +235,11 @@ interface Props {
 const {
   docs,
   theme,
-  padding     = 'main',
+  padding = "main",
   paddingTop,
   paddingBottom,
-  minHeight   = false,
-  container   = 'default',
+  minHeight = false,
+  container = "default",
   gap,
   id,
   class: className,
@@ -250,42 +247,46 @@ const {
 } = Astro.props;
 
 /* Resolve per-side padding, falling back to the shared `padding` prop */
-const topPadding    = paddingTop    ?? padding;
+const topPadding = paddingTop ?? padding;
 const bottomPadding = paddingBottom ?? padding;
 
 /* Container modifier class */
 const containerClass = {
-  'u-container-narrow': container === 'narrow',
-  'u-container-wide':   container === 'wide',
-  'u-container-full':   container === 'full',
+  "u-container-narrow": container === "narrow",
+  "u-container-wide": container === "wide",
+  "u-container-full": container === "full",
 };
 
 /* Check if background slot is used — only renders the slot div when needed */
-const hasBackground = Astro.slots.has('background');
+const hasBackground = Astro.slots.has("background");
 
 /* 'inherit' means "no data-theme" — section stays transparent and picks up
    the parent context. Map it (and undefined) to undefined so Astro omits
    the attribute entirely. */
-const resolvedTheme = theme === 'inherit' ? undefined : theme;
+const resolvedTheme = theme === "inherit" ? undefined : theme;
 ---
 
 <section
-  class:list={['u-section', { 'u-min-height-screen': minHeight }, className]}
+  class:list={["u-section", { "u-min-height-screen": minHeight }, className]}
   data-theme={resolvedTheme}
   data-padding-top={topPadding}
   data-padding-bottom={bottomPadding}
   id={id}
   {...rest}
 >
-  {hasBackground && (
-    <div class="u-background-slot">
-      <slot name="background" />
-    </div>
-  )}
+  {
+    hasBackground && (
+      <div class="u-background-slot">
+        <slot name="background" />
+      </div>
+    )
+  }
 
   <div
-    class:list={['u-container', containerClass]}
-    style={gap !== undefined ? `gap: ${gap === 0 ? '0px' : `var(--space-${gap})`}` : undefined}
+    class:list={["u-container", containerClass]}
+    style={gap !== undefined
+      ? `gap: ${gap === 0 ? "0px" : `var(--space-${gap})`}`
+      : undefined}
   >
     <slot />
   </div>

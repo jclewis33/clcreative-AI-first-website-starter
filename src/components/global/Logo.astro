@@ -30,9 +30,11 @@ const {
 ---
 
 <a href={href} aria-label={ariaLabel} class={className}>
-  {/* An SVG is not anchor text — the sr-only span gives crawlers real text
+  {
+    /* An SVG is not anchor text — the sr-only span gives crawlers real text
       for this link, which sits in the nav/footer of every page. The svg is
-      aria-hidden so screen readers don't announce the label twice. */}
+      aria-hidden so screen readers don't announce the label twice. */
+  }
   <span class="u-sr-only">{ariaLabel}</span>
   <svg
     width={width}

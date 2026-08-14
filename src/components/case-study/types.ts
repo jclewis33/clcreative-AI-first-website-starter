@@ -25,8 +25,19 @@ interface BlockSpacing {
 }
 
 export type ContentBlock =
-  | ({ type: "fullWidthImage"; image: ImageMetadata | string; imageAlt: string; aspectRatio?: string; transparent?: boolean; position?: { x: number; y: number } | "center" } & BlockSpacing)
-  | ({ type: "imageGrid"; images: ImageEntry[]; aspectRatio?: string } & BlockSpacing)
+  | ({
+      type: "fullWidthImage";
+      image: ImageMetadata | string;
+      imageAlt: string;
+      aspectRatio?: string;
+      transparent?: boolean;
+      position?: { x: number; y: number } | "center";
+    } & BlockSpacing)
+  | ({
+      type: "imageGrid";
+      images: ImageEntry[];
+      aspectRatio?: string;
+    } & BlockSpacing)
   | ({ type: "richText"; html: string; maxWidth?: string } & BlockSpacing)
   | ({ type: "richTextLeft"; html: string; maxWidth?: string } & BlockSpacing)
   | ({ type: "richTextColumns"; html: string } & BlockSpacing)
@@ -40,4 +51,7 @@ export type ContentBlock =
       objectFit?: "cover" | "contain";
       position?: { x: number; y: number } | "center";
     } & BlockSpacing)
-  | ({ type: "stats"; items: { value: string; label: string }[] } & BlockSpacing);
+  | ({
+      type: "stats";
+      items: { value: string; label: string }[];
+    } & BlockSpacing);

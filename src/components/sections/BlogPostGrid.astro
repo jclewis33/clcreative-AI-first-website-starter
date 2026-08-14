@@ -485,7 +485,16 @@ let filtered: BlogPost[] = [];
 switch (variant) {
   case "related":
     filtered = allPosts
-      .filter((p) => p.categories?.some((c: string) => currentCategories?.map((cc: string) => cc.toLowerCase()).includes(c.toLowerCase())) && p.slug !== currentSlug && !excludeSet.has(p.slug))
+      .filter(
+        (p) =>
+          p.categories?.some((c: string) =>
+            currentCategories
+              ?.map((cc: string) => cc.toLowerCase())
+              .includes(c.toLowerCase()),
+          ) &&
+          p.slug !== currentSlug &&
+          !excludeSet.has(p.slug),
+      )
       .sort(
         (a, b) =>
           new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
@@ -495,7 +504,11 @@ switch (variant) {
 
   case "recent":
     filtered = allPosts
-      .filter((p) => (currentSlug ? p.slug !== currentSlug : true) && !excludeSet.has(p.slug))
+      .filter(
+        (p) =>
+          (currentSlug ? p.slug !== currentSlug : true) &&
+          !excludeSet.has(p.slug),
+      )
       .sort(
         (a, b) =>
           new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
@@ -507,7 +520,9 @@ switch (variant) {
     filtered = allPosts
       .filter(
         (p) =>
-          p.categories?.some((c: string) => c.toLowerCase() === category?.toLowerCase()) &&
+          p.categories?.some(
+            (c: string) => c.toLowerCase() === category?.toLowerCase(),
+          ) &&
           (currentSlug ? p.slug !== currentSlug : true) &&
           !excludeSet.has(p.slug),
       )
@@ -534,7 +549,7 @@ const hasHeadingSlot = Astro.slots.has("heading");
 const defaultHeadings: Record<GridVariant, string> = {
   related: "Related Posts",
   recent: "Recent Posts",
-  category: `More in ${(category ?? "")}`,
+  category: `More in ${category ?? ""}`,
   manual: "Related Posts",
 };
 

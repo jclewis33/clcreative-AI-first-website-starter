@@ -26,7 +26,10 @@ import Slider from "../../components/ui/Slider.astro";
 // Sanity
 import { getDraftModeProps } from "../../sanity/lib/draft-mode";
 import { loadPageQuery } from "../../sanity/lib/page-data";
-import { BLOG_POSTS_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
+import {
+  BLOG_POSTS_QUERY,
+  SITE_SETTINGS_QUERY,
+} from "../../sanity/lib/queries";
 import { urlFor } from "../../sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
 import { SITE } from "../../config/site";
@@ -78,22 +81,19 @@ const categoryConfig: {
   {
     name: "News",
     slug: "news",
-    description:
-      "Announcements, updates, and the latest from our team.",
+    description: "Announcements, updates, and the latest from our team.",
     theme: "brand",
   },
   {
     name: "Guides",
     slug: "guides",
-    description:
-      "In-depth guides and how-tos to help you get more done.",
+    description: "In-depth guides and how-tos to help you get more done.",
     theme: "dark",
   },
   {
     name: "Insights",
     slug: "insights",
-    description:
-      "Perspectives, trends, and ideas worth sharing.",
+    description: "Perspectives, trends, and ideas worth sharing.",
     theme: "brand",
   },
   {
@@ -172,8 +172,8 @@ function formatDate(dateStr: string) {
           stroke-linejoin="round"
           aria-hidden="true"
         >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
         <input
           type="search"
@@ -497,11 +497,7 @@ function formatDate(dateStr: string) {
     )
   }
 
-  <div
-    id="blog-index-no-results"
-    class="blog_no_results"
-    style="display:none;"
-  >
+  <div id="blog-index-no-results" class="blog_no_results" style="display:none;">
     <Text muted align="center">
       No posts on this page match your search. Try the <a
         href="/blog/category/all"
@@ -541,9 +537,8 @@ function formatDate(dateStr: string) {
     });
 
     sections.forEach((section) => {
-      const sectionCards = section.querySelectorAll<HTMLElement>(
-        "[data-search-card]",
-      );
+      const sectionCards =
+        section.querySelectorAll<HTMLElement>("[data-search-card]");
       const hasVisible = Array.from(sectionCards).some(
         (c) => c.style.display !== "none",
       );

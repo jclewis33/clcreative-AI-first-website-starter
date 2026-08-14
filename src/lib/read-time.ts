@@ -12,7 +12,7 @@ import { stegaClean } from "@sanity/client/stega";
  */
 export function estimateReadTime(
   blocks: any[] | null | undefined,
-  wordsPerMinute = 225
+  wordsPerMinute = 225,
 ): number {
   if (!blocks?.length) return 1;
 

@@ -81,7 +81,7 @@ interface Props {
    * - `'right'` — items move left-to-right
    * @default 'left'
    */
-  direction?: 'left' | 'right';
+  direction?: "left" | "right";
 
   /**
    * Pause the animation when the user hovers over the marquee.
@@ -109,19 +109,19 @@ interface Props {
 
 const {
   docs,
-  speed        = 20,
-  direction    = 'left',
+  speed = 20,
+  direction = "left",
   pauseOnHover = true,
-  gap          = 6,
+  gap = 6,
   class: className,
   ...rest
 } = Astro.props;
 
-const gapValue = gap === 0 ? '0px' : `var(--space-${gap})`;
+const gapValue = gap === 0 ? "0px" : `var(--space-${gap})`;
 ---
 
 <div
-  class:list={['marquee_wrap', className]}
+  class:list={["marquee_wrap", className]}
   data-marquee="component"
   data-marquee-speed={String(speed)}
   data-marquee-direction={direction}
@@ -152,67 +152,72 @@ const gapValue = gap === 0 ? '0px' : `var(--space-${gap})`;
   function initMarquees() {
     const gsap = (window as any).gsap;
     if (!gsap) {
-      console.warn('Marquee: GSAP not found. Make sure GSAP CDN script is loaded.');
+      console.warn(
+        "Marquee: GSAP not found. Make sure GSAP CDN script is loaded.",
+      );
       return;
     }
 
     // Respect reduced motion preference
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    document.querySelectorAll<HTMLElement>('[data-marquee="component"]').forEach((wrap) => {
-      // Guard against double-init (Astro page transitions)
-      if (wrap.dataset.marqueeInit) return;
-      wrap.dataset.marqueeInit = 'true';
+    document
+      .querySelectorAll<HTMLElement>('[data-marquee="component"]')
+      .forEach((wrap) => {
+        // Guard against double-init (Astro page transitions)
+        if (wrap.dataset.marqueeInit) return;
+        wrap.dataset.marqueeInit = "true";
 
-      const track = wrap.querySelector<HTMLElement>('.marquee_track');
-      const inner = wrap.querySelector<HTMLElement>('[data-marquee="inner"]');
-      if (!track || !inner) return;
+        const track = wrap.querySelector<HTMLElement>(".marquee_track");
+        const inner = wrap.querySelector<HTMLElement>('[data-marquee="inner"]');
+        if (!track || !inner) return;
 
-      const speed          = parseFloat(wrap.dataset.marqueeSpeed ?? '20');
-      const direction      = wrap.dataset.marqueeDirection ?? 'left';
-      const shouldPause    = wrap.dataset.marqueePause !== 'false';
+        const speed = parseFloat(wrap.dataset.marqueeSpeed ?? "20");
+        const direction = wrap.dataset.marqueeDirection ?? "left";
+        const shouldPause = wrap.dataset.marqueePause !== "false";
 
-      // Measure one copy
-      const innerWidth = inner.getBoundingClientRect().width;
-      const trackGap   = parseFloat(getComputedStyle(track).gap) || 0;
-      const wrapWidth  = wrap.offsetWidth;
+        // Measure one copy
+        const innerWidth = inner.getBoundingClientRect().width;
+        const trackGap = parseFloat(getComputedStyle(track).gap) || 0;
+        const wrapWidth = wrap.offsetWidth;
 
-      // Always create at least one clone; add more if content is narrow
-      const copyWidth    = innerWidth + trackGap;
-      const copiesNeeded = Math.max(2, Math.ceil(wrapWidth / copyWidth) + 1);
+        // Always create at least one clone; add more if content is narrow
+        const copyWidth = innerWidth + trackGap;
+        const copiesNeeded = Math.max(2, Math.ceil(wrapWidth / copyWidth) + 1);
 
-      for (let i = 1; i < copiesNeeded; i++) {
-        const clone = inner.cloneNode(true) as HTMLElement;
-        clone.removeAttribute('data-marquee');
-        clone.setAttribute('aria-hidden', 'true');
-        track.appendChild(clone);
-      }
+        for (let i = 1; i < copiesNeeded; i++) {
+          const clone = inner.cloneNode(true) as HTMLElement;
+          clone.removeAttribute("data-marquee");
+          clone.setAttribute("aria-hidden", "true");
+          track.appendChild(clone);
+        }
 
-      // Distance for one full cycle (one copy width + one gap)
-      const distance = copyWidth;
+        // Distance for one full cycle (one copy width + one gap)
+        const distance = copyWidth;
 
-      // Create the animation
-      let tween;
-      if (direction === 'right') {
-        tween = gsap.fromTo(track,
-          { x: -distance },
-          { x: 0, ease: 'none', duration: speed, repeat: -1 }
-        );
-      } else {
-        tween = gsap.to(track, {
-          x: -distance,
-          ease: 'none',
-          duration: speed,
-          repeat: -1,
-        });
-      }
+        // Create the animation
+        let tween;
+        if (direction === "right") {
+          tween = gsap.fromTo(
+            track,
+            { x: -distance },
+            { x: 0, ease: "none", duration: speed, repeat: -1 },
+          );
+        } else {
+          tween = gsap.to(track, {
+            x: -distance,
+            ease: "none",
+            duration: speed,
+            repeat: -1,
+          });
+        }
 
-      // Pause on hover
-      if (shouldPause) {
-        wrap.addEventListener('mouseenter', () => tween.pause());
-        wrap.addEventListener('mouseleave', () => tween.resume());
-      }
-    });
+        // Pause on hover
+        if (shouldPause) {
+          wrap.addEventListener("mouseenter", () => tween.pause());
+          wrap.addEventListener("mouseleave", () => tween.resume());
+        }
+      });
   }
 
   // GSAP CDN may load after DOMContentLoaded, so poll briefly
@@ -224,8 +229,8 @@ const gapValue = gap === 0 ? '0px' : `var(--space-${gap})`;
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => waitForGsap());
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => waitForGsap());
   } else {
     waitForGsap();
   }

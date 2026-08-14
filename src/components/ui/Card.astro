@@ -222,7 +222,12 @@ const showVisual = variant !== "stacked";
         {/* Title */}
         {
           (hasTitle || title) && (
-            <div class:list={["card_primary_title", !hasTitle && "u-text-style-h5"]}>
+            <div
+              class:list={[
+                "card_primary_title",
+                !hasTitle && "u-text-style-h5",
+              ]}
+            >
               {hasTitle ? <slot name="title" /> : title}
             </div>
           )

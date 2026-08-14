@@ -88,10 +88,9 @@ const {
 const testimonial =
   rawTestimonial ??
   (fetchName
-    ? await getTestimonialByName(
-        fetchName,
-        getDraftModeProps(Astro),
-      ).catch(() => undefined)
+    ? await getTestimonialByName(fetchName, getDraftModeProps(Astro)).catch(
+        () => undefined,
+      )
     : undefined);
 if (!testimonial) return;
 
@@ -149,11 +148,8 @@ const subtitle = [role, company].filter(Boolean).join(", ");
     </div>
 
     {/* Quote */}
-    <Text
-      data-split-text
-      align="center"
-      variant="h3"
-      weight="regular">{quote}</Text
+    <Text data-split-text align="center" variant="h3" weight="regular"
+      >{quote}</Text
     >
   </ContentWrapper>
 </Section>

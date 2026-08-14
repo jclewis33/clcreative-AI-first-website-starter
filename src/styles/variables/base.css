@@ -25,64 +25,20 @@
   --site-margin-min: 1;
   --site-margin-max: 3;
 
-  --site-margin: clamp(
-    var(--site-margin-min) * 1rem,
-    (
-      (
-          var(--site-margin-min) -
-            (
-              (var(--site-margin-max) - var(--site-margin-min)) /
-                (var(--viewport-max) - var(--viewport-min)) *
-                var(--viewport-min)
-            )
-        ) *
-        1rem +
-        (
-          (var(--site-margin-max) - var(--site-margin-min)) /
-            (var(--viewport-max) - var(--viewport-min))
-        ) *
-        100vw
-    ),
-    var(--site-margin-max) * 1rem
-  );
+  --site-margin: clamp(var(--site-margin-min) * 1rem, ((var(--site-margin-min) - ((var(--site-margin-max) - var(--site-margin-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--site-margin-max) - var(--site-margin-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--site-margin-max) * 1rem);
 
   /* Site gutter — fluid column gap used in column-width calculation */
 
   --site-gutter-min: 1;
   --site-gutter-max: 2;
 
-  --site-gutter: clamp(
-    var(--site-gutter-min) * 1rem,
-    (
-      (
-          var(--site-gutter-min) -
-            (
-              (var(--site-gutter-max) - var(--site-gutter-min)) /
-                (var(--viewport-max) - var(--viewport-min)) *
-                var(--viewport-min)
-            )
-        ) *
-        1rem +
-        (
-          (var(--site-gutter-max) - var(--site-gutter-min)) /
-            (var(--viewport-max) - var(--viewport-min))
-        ) *
-        100vw
-    ),
-    var(--site-gutter-max) * 1rem
-  );
+  --site-gutter: clamp(var(--site-gutter-min) * 1rem, ((var(--site-gutter-min) - ((var(--site-gutter-max) - var(--site-gutter-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--site-gutter-max) - var(--site-gutter-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--site-gutter-max) * 1rem);
 
   /* Column count and computed column width */
 
   --site-column-count: 12;
 
-  --column-width: calc(
-    (
-        min(var(--max-width-main), 100% - var(--site-margin) * 2) -
-          (var(--site-gutter) * (var(--site-column-count) - 1))
-      ) /
-      var(--site-column-count)
-  );
+  --column-width: calc((min(var(--max-width-main), 100% - var(--site-margin) * 2) - (var(--site-gutter) * (var(--site-column-count) - 1))) / var(--site-column-count));
 
   /* =====================================================
      MAX-WIDTH

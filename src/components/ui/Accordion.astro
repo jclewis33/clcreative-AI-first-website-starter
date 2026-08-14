@@ -97,17 +97,17 @@ interface Props {
 
 const {
   docs,
-  closePrevious     = true,
+  closePrevious = true,
   closeOnSecondClick = true,
-  openOnHover        = false,
-  openByDefault      = 0,
+  openOnHover = false,
+  openByDefault = 0,
   class: className,
   ...rest
 } = Astro.props;
 ---
 
 <div
-  class:list={['accordion_wrap', className]}
+  class:list={["accordion_wrap", className]}
   data-close-previous={String(closePrevious)}
   data-close-on-second-click={String(closeOnSecondClick)}
   data-open-on-hover={String(openOnHover)}
@@ -144,103 +144,108 @@ const {
   function initAccordions() {
     const ScrollTrigger = (window as any).ScrollTrigger;
 
-    document.querySelectorAll<HTMLElement>('.accordion_wrap').forEach((wrap) => {
-      const closePrevious      = wrap.dataset.closePrevious      !== 'false';
-      const closeOnSecondClick = wrap.dataset.closeOnSecondClick !== 'false';
-      const openOnHover        = wrap.dataset.openOnHover        === 'true';
-      const openByDefault      = parseInt(wrap.dataset.openByDefault ?? '0', 10);
+    document
+      .querySelectorAll<HTMLElement>(".accordion_wrap")
+      .forEach((wrap) => {
+        const closePrevious = wrap.dataset.closePrevious !== "false";
+        const closeOnSecondClick = wrap.dataset.closeOnSecondClick !== "false";
+        const openOnHover = wrap.dataset.openOnHover === "true";
+        const openByDefault = parseInt(wrap.dataset.openByDefault ?? "0", 10);
 
-      const items = wrap.querySelectorAll<HTMLElement>('.accordion_item');
+        const items = wrap.querySelectorAll<HTMLElement>(".accordion_item");
 
-      function getButton(item: HTMLElement) {
-        return item.querySelector<HTMLButtonElement>('.accordion_toggle_button');
-      }
-
-      function getContent(item: HTMLElement) {
-        return item.querySelector<HTMLElement>('.accordion_content_wrap');
-      }
-
-      function isOpen(item: HTMLElement) {
-        return getButton(item)?.getAttribute('aria-expanded') === 'true';
-      }
-
-      function openItem(item: HTMLElement) {
-        const button = getButton(item);
-        if (!button) return;
-        button.setAttribute('aria-expanded', 'true');
-        item.classList.add('is-active');
-      }
-
-      function closeItem(item: HTMLElement) {
-        const button = getButton(item);
-        if (!button) return;
-        button.setAttribute('aria-expanded', 'false');
-        item.classList.remove('is-active');
-      }
-
-      function toggle(item: HTMLElement) {
-        if (isOpen(item)) {
-          if (closeOnSecondClick) closeItem(item);
-        } else {
-          if (closePrevious) {
-            items.forEach((other) => {
-              if (other !== item && isOpen(other)) closeItem(other);
-            });
-          }
-          openItem(item);
-        }
-      }
-
-      items.forEach((item) => {
-        const button = getButton(item);
-        if (!button) return;
-
-        button.addEventListener('click', () => toggle(item));
-
-        if (openOnHover) {
-          item.addEventListener('mouseenter', () => {
-            if (!isOpen(item)) toggle(item);
-          });
-        }
-
-        // Refresh ScrollTrigger after each open/close animation so it can
-        // recompute positions for any scroll-linked effects below.
-        const content = getContent(item);
-        if (content) {
-          content.addEventListener(
-            'transitionend',
-            (e) => {
-              if (
-                e.target === content &&
-                (e as TransitionEvent).propertyName === 'grid-template-rows' &&
-                ScrollTrigger
-              ) {
-                ScrollTrigger.refresh();
-              }
-            },
-            { passive: true },
+        function getButton(item: HTMLElement) {
+          return item.querySelector<HTMLButtonElement>(
+            ".accordion_toggle_button",
           );
         }
-      });
 
-      // Apply openByDefault state BEFORE the .is-ready class enables
-      // transitions — so the default item renders open without animating in.
-      if (openByDefault > 0 && items[openByDefault - 1]) {
-        openItem(items[openByDefault - 1]);
-      }
+        function getContent(item: HTMLElement) {
+          return item.querySelector<HTMLElement>(".accordion_content_wrap");
+        }
 
-      // Double rAF guarantees the initial state is painted before we
-      // enable CSS transitions on grid-template-rows.
-      requestAnimationFrame(() => {
+        function isOpen(item: HTMLElement) {
+          return getButton(item)?.getAttribute("aria-expanded") === "true";
+        }
+
+        function openItem(item: HTMLElement) {
+          const button = getButton(item);
+          if (!button) return;
+          button.setAttribute("aria-expanded", "true");
+          item.classList.add("is-active");
+        }
+
+        function closeItem(item: HTMLElement) {
+          const button = getButton(item);
+          if (!button) return;
+          button.setAttribute("aria-expanded", "false");
+          item.classList.remove("is-active");
+        }
+
+        function toggle(item: HTMLElement) {
+          if (isOpen(item)) {
+            if (closeOnSecondClick) closeItem(item);
+          } else {
+            if (closePrevious) {
+              items.forEach((other) => {
+                if (other !== item && isOpen(other)) closeItem(other);
+              });
+            }
+            openItem(item);
+          }
+        }
+
+        items.forEach((item) => {
+          const button = getButton(item);
+          if (!button) return;
+
+          button.addEventListener("click", () => toggle(item));
+
+          if (openOnHover) {
+            item.addEventListener("mouseenter", () => {
+              if (!isOpen(item)) toggle(item);
+            });
+          }
+
+          // Refresh ScrollTrigger after each open/close animation so it can
+          // recompute positions for any scroll-linked effects below.
+          const content = getContent(item);
+          if (content) {
+            content.addEventListener(
+              "transitionend",
+              (e) => {
+                if (
+                  e.target === content &&
+                  (e as TransitionEvent).propertyName ===
+                    "grid-template-rows" &&
+                  ScrollTrigger
+                ) {
+                  ScrollTrigger.refresh();
+                }
+              },
+              { passive: true },
+            );
+          }
+        });
+
+        // Apply openByDefault state BEFORE the .is-ready class enables
+        // transitions — so the default item renders open without animating in.
+        if (openByDefault > 0 && items[openByDefault - 1]) {
+          openItem(items[openByDefault - 1]);
+        }
+
+        // Double rAF guarantees the initial state is painted before we
+        // enable CSS transitions on grid-template-rows.
         requestAnimationFrame(() => {
-          wrap.classList.add('is-ready');
+          requestAnimationFrame(() => {
+            wrap.classList.add("is-ready");
+          });
         });
       });
-    });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAccordions);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAccordions);
   } else {
     initAccordions();
   }

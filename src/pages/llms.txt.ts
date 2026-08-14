@@ -91,13 +91,18 @@ export const GET: APIRoute = async () => {
     `> ${SITE_SUMMARY}`,
     ...staticGroups
       .filter(([, pages]) => pages.length)
-      .map(([heading, pages]) => `## ${heading}\n${pages.map(staticLine).join("\n")}`),
+      .map(
+        ([heading, pages]) =>
+          `## ${heading}\n${pages.map(staticLine).join("\n")}`,
+      ),
   ];
 
   if (publishedCaseStudies.length) {
     sections.push(
       `## Case Studies\n${publishedCaseStudies
-        .map((c) => dynamicLine(c.title, `/case-studies/${c.slug}`, c.description))
+        .map((c) =>
+          dynamicLine(c.title, `/case-studies/${c.slug}`, c.description),
+        )
         .join("\n")}`,
     );
   }
@@ -113,7 +118,9 @@ export const GET: APIRoute = async () => {
   if (glossary?.length) {
     sections.push(
       `## Glossary\n${glossary
-        .map((g) => dynamicLine(g.term, `/glossary/${g.slug}`, g.shortDefinition))
+        .map((g) =>
+          dynamicLine(g.term, `/glossary/${g.slug}`, g.shortDefinition),
+        )
         .join("\n")}`,
     );
   }

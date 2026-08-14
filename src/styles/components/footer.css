@@ -252,7 +252,9 @@
   line-height: var(--text-small-line-height);
   text-transform: var(--text-small-text-transform);
   opacity: 1;
-  transition: color 0.3s ease, opacity 0.1s ease;
+  transition:
+    color 0.3s ease,
+    opacity 0.1s ease;
 }
 
 .footer_locations_button:hover,

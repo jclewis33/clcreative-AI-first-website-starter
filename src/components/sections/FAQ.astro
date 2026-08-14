@@ -92,7 +92,13 @@ const {
 >
   <Layout ratio="6-7" verticalAlign="start" variant="columns">
     <Col slot="col1">
-      {eyebrow && <Heading variant="eyebrow" data-prevent-flicker="true" data-fade-in>{eyebrow}</Heading>}
+      {
+        eyebrow && (
+          <Heading variant="eyebrow" data-prevent-flicker="true" data-fade-in>
+            {eyebrow}
+          </Heading>
+        )
+      }
       <Heading data-splittext data-prevent-flicker="true">{heading}</Heading>
     </Col>
     <div slot="col2">

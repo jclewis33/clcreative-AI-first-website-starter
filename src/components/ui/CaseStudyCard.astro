@@ -120,7 +120,18 @@ interface Props {
    * @example headingVariant="h4"
    * @example headingVariant="h6"
    */
-  headingVariant?: "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+  headingVariant?:
+    | "display-xl"
+    | "display-lg"
+    | "display-md"
+    | "display-sm"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "eyebrow";
 
   /**
    * Visual style for the card's description text. Controls the font size
@@ -136,7 +147,23 @@ interface Props {
    * @example textVariant="regular"
    * @example textVariant="tiny"
    */
-  textVariant?: "tiny" | "small" | "regular" | "large" | "xlarge" | "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+  textVariant?:
+    | "tiny"
+    | "small"
+    | "regular"
+    | "large"
+    | "xlarge"
+    | "display-xl"
+    | "display-lg"
+    | "display-md"
+    | "display-sm"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "eyebrow";
 
   /** Image width in pixels — required for remote URL sources. */
   imageWidth?: number;
@@ -239,9 +266,15 @@ const resolvedAriaLabel = isComingSoon
     </span>
   </div>
 
-  {isComingSoon ? (
-    <Text variant={textVariant} muted>Case Study Coming Soon — Visit Website ↗</Text>
-  ) : (
-    <Text variant={textVariant} muted clamp={3}>{description}</Text>
-  )}
+  {
+    isComingSoon ? (
+      <Text variant={textVariant} muted>
+        Case Study Coming Soon — Visit Website ↗
+      </Text>
+    ) : (
+      <Text variant={textVariant} muted clamp={3}>
+        {description}
+      </Text>
+    )
+  }
 </Card>

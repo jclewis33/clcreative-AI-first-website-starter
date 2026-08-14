@@ -81,11 +81,7 @@ const id = `accordion-${Math.random().toString(36).slice(2, 8)}`;
 const contentId = `${id}-content`;
 ---
 
-<div
-  class:list={["accordion_item", className]}
-  role="listitem"
-  {...rest}
->
+<div class:list={["accordion_item", className]} role="listitem" {...rest}>
   <div class="accordion_component">
     <!-- Toggle button -->
     <h3 class="accordion_toggle_heading">

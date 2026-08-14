@@ -61,18 +61,20 @@ const {
 } = Astro.props as Props;
 
 const listClass = [
-  'form_fieldset_list',
-  columns === 2 && 'form_fieldset_list--2col',
-  columns === 3 && 'form_fieldset_list--3col',
+  "form_fieldset_list",
+  columns === 2 && "form_fieldset_list--2col",
+  columns === 3 && "form_fieldset_list--3col",
 ];
 ---
 
-<fieldset class:list={['form_fieldset_wrap', className]}>
-  {legend && (
-    <legend class:list={['form_legend', legendHidden && 'u-sr-only']}>
-      {legend}
-    </legend>
-  )}
+<fieldset class:list={["form_fieldset_wrap", className]}>
+  {
+    legend && (
+      <legend class:list={["form_legend", legendHidden && "u-sr-only"]}>
+        {legend}
+      </legend>
+    )
+  }
   <div class:list={listClass}>
     <slot />
   </div>

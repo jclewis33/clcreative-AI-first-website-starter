@@ -38,15 +38,15 @@
  */
 
 type Columns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-type GapSize  = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+type GapSize = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 type GridVariant =
   /** Standard grid — uses the data-attribute column system */
-  | 'default'
+  | "default"
   /** Auto-fit — columns fill available space at a minimum width, empty tracks collapse */
-  | 'autofit'
+  | "autofit"
   /** Auto-fill — columns fill available space at a minimum width, empty tracks preserved */
-  | 'autofill';
+  | "autofill";
 
 /**
  * Grid — responsive CSS Grid using container-query column counts.
@@ -162,45 +162,61 @@ interface Props {
 
 const {
   docs,
-  largeColumns   = 3,
-  mediumColumns  = 2,
-  smallColumns   = 1,
-  xsmallColumns  = 0,
+  largeColumns = 3,
+  mediumColumns = 2,
+  smallColumns = 1,
+  xsmallColumns = 0,
   rowGap,
   columnGap,
-  variant        = 'default',
+  variant = "default",
   minColWidth,
   class: className,
   ...rest
 } = Astro.props;
 
-const rowGapClass = rowGap != null ? (rowGap > 0 ? `u-gap-row-${rowGap}` : 'u-gap-row-0') : undefined;
-const colGapClass = columnGap != null ? (columnGap > 0 ? `u-gap-column-${columnGap}` : 'u-gap-column-0') : undefined;
+const rowGapClass =
+  rowGap != null
+    ? rowGap > 0
+      ? `u-gap-row-${rowGap}`
+      : "u-gap-row-0"
+    : undefined;
+const colGapClass =
+  columnGap != null
+    ? columnGap > 0
+      ? `u-gap-column-${columnGap}`
+      : "u-gap-column-0"
+    : undefined;
 
-const isAuto = variant === 'autofit' || variant === 'autofill';
-const autoGridClass = variant === 'autofill' ? 'u-grid-autofill' : 'u-grid-autofit';
-const autoStyle = (isAuto && minColWidth)
-  ? `--col-min: ${minColWidth};`
-  : undefined;
+const isAuto = variant === "autofit" || variant === "autofill";
+const autoGridClass =
+  variant === "autofill" ? "u-grid-autofill" : "u-grid-autofit";
+const autoStyle =
+  isAuto && minColWidth ? `--col-min: ${minColWidth};` : undefined;
 ---
 
-<div class:list={['u-grid-wrapper', className]} {...rest}>
-  {variant === 'default' ? (
-    <div
-      class:list={[rowGapClass, colGapClass]}
-      data-large-columns={String(largeColumns)}
-      data-medium-columns={mediumColumns > 0 ? String(mediumColumns) : undefined}
-      data-small-columns={smallColumns > 0  ? String(smallColumns)  : undefined}
-      data-xsmall-columns={xsmallColumns > 0 ? String(xsmallColumns) : undefined}
-    >
-      <slot />
-    </div>
-  ) : (
-    <div
-      class:list={[autoGridClass, rowGapClass, colGapClass]}
-      style={autoStyle}
-    >
-      <slot />
-    </div>
-  )}
+<div class:list={["u-grid-wrapper", className]} {...rest}>
+  {
+    variant === "default" ? (
+      <div
+        class:list={[rowGapClass, colGapClass]}
+        data-large-columns={String(largeColumns)}
+        data-medium-columns={
+          mediumColumns > 0 ? String(mediumColumns) : undefined
+        }
+        data-small-columns={smallColumns > 0 ? String(smallColumns) : undefined}
+        data-xsmall-columns={
+          xsmallColumns > 0 ? String(xsmallColumns) : undefined
+        }
+      >
+        <slot />
+      </div>
+    ) : (
+      <div
+        class:list={[autoGridClass, rowGapClass, colGapClass]}
+        style={autoStyle}
+      >
+        <slot />
+      </div>
+    )
+  }
 </div>

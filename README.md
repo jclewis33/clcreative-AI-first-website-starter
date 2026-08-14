@@ -15,18 +15,18 @@ Both leave the content scaffolding (service areas, socials, location pages, FAQs
 
 All commands are run from the root of the project, from a terminal:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run setup`           | Interactive fork setup — rewrites per-fork identity/config files (see [Forking](#-forking-this-as-a-starter)) |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying (Astro's local server — unrelated to the `/preview` draft-preview routes) |
-| `npm run studio`          | Run Sanity Studio locally at `localhost:3333` (Presentation iframes **production**) |
-| `npm run studio:local`    | Studio at `localhost:3333` with Presentation iframing the **local** site (`localhost:4321`) — use this while developing routes/preview |
-| `npm run check:schema`    | Validate JSON-LD on key pages (dev server must be running) |
-| `npm run check:config`    | Verify `wrangler.jsonc` matches `src/config/site.shared.mjs` (also runs automatically before `build`) |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| Command                | Action                                                                                                                                 |
+| :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm install`          | Installs dependencies                                                                                                                  |
+| `npm run setup`        | Interactive fork setup — rewrites per-fork identity/config files (see [Forking](#-forking-this-as-a-starter))                          |
+| `npm run dev`          | Starts local dev server at `localhost:4321`                                                                                            |
+| `npm run build`        | Build your production site to `./dist/`                                                                                                |
+| `npm run preview`      | Preview your build locally, before deploying (Astro's local server — unrelated to the `/preview` draft-preview routes)                 |
+| `npm run studio`       | Run Sanity Studio locally at `localhost:3333` (Presentation iframes **production**)                                                    |
+| `npm run studio:local` | Studio at `localhost:3333` with Presentation iframing the **local** site (`localhost:4321`) — use this while developing routes/preview |
+| `npm run check:schema` | Validate JSON-LD on key pages (dev server must be running)                                                                             |
+| `npm run check:config` | Verify `wrangler.jsonc` matches `src/config/site.shared.mjs` (also runs automatically before `build`)                                  |
+| `npm run astro ...`    | Run CLI commands like `astro add`, `astro check`                                                                                       |
 
 ## 🏗️ Rendering model — everything public is prerendered
 
@@ -56,14 +56,14 @@ Because the build re-queries Sanity on every run, a rebuild regenerates the cont
 
 Configured at [manage.sanity.io](https://www.sanity.io/manage) → project `your-sanity-project-id` → API → Webhooks.
 
-| Field | Value |
-|---|---|
-| URL | The rebuild-debounce Worker's `*.workers.dev` URL (see [Rebuild-debounce Worker](#rebuild-debounce-worker) below) — **not** the deploy hook directly. The Worker holds the real deploy hook as a secret and calls it after debouncing. |
-| HTTP header | `Authorization: Bearer <WEBHOOK_TOKEN>` (must match the Worker's `WEBHOOK_TOKEN` secret) — leave Sanity's "Secret" field blank (that's a different HMAC feature we don't use) |
-| Dataset | `production` |
-| Trigger on | Create, Update, Delete |
-| HTTP method | `POST` |
-| Filter | `!(_id in path("drafts.**"))` |
+| Field       | Value                                                                                                                                                                                                                                  |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| URL         | The rebuild-debounce Worker's `*.workers.dev` URL (see [Rebuild-debounce Worker](#rebuild-debounce-worker) below) — **not** the deploy hook directly. The Worker holds the real deploy hook as a secret and calls it after debouncing. |
+| HTTP header | `Authorization: Bearer <WEBHOOK_TOKEN>` (must match the Worker's `WEBHOOK_TOKEN` secret) — leave Sanity's "Secret" field blank (that's a different HMAC feature we don't use)                                                          |
+| Dataset     | `production`                                                                                                                                                                                                                           |
+| Trigger on  | Create, Update, Delete                                                                                                                                                                                                                 |
+| HTTP method | `POST`                                                                                                                                                                                                                                 |
+| Filter      | `!(_id in path("drafts.**"))`                                                                                                                                                                                                          |
 
 The filter is intentionally **broad**: it matches any published document of **any type**. The single clause only excludes autosaved drafts so typing in Studio doesn't thrash the build. Clicking **Publish** (or a release going live) writes to the non-draft ID and passes the filter; unpublishing fires it too, so removed content clears on the next build.
 
@@ -106,7 +106,7 @@ That covers identity. For everything else a fork needs — Sanity project + CORS
 This repo is designed to be built on by an AI coding agent (e.g. Claude Code).
 When the agent is set up well, whole pages can be built in roughly one pass —
 most sections correct on the first try, with only spacing/image/color tweaks
-afterward. That outcome comes from *what the agent is given*, not luck. If you
+afterward. That outcome comes from _what the agent is given_, not luck. If you
 want the same result, do these things.
 
 ### Why it works (and what to lean on)
@@ -123,7 +123,7 @@ want the same result, do these things.
    "Match how `index.astro` is built" is worth a paragraph of instructions.
 3. **Give the source of truth, not a description of it.** If you connect design
    and content MCP connectors (Figma for design, a CMS like Sanity/Webflow for
-   copy and images), the agent reads *exact* structure, copy, and design — so
+   copy and images), the agent reads _exact_ structure, copy, and design — so
    almost nothing about content has to be guessed, and therefore almost nothing
    has to be corrected later.
 
@@ -141,10 +141,9 @@ want the same result, do these things.
       about where copy, images, and colors come from, especially if they live in
       different places than the layout. If the page is adapted from an existing
       site (a previous build, a sibling brand, a competitor's structure you're
-      matching), say so and name the split — e.g. *"the layout matches [design
-      source]; pull all copy, images, and colors from [live site URL]."* One
-      sentence like that tells the agent **design = layout, live site = content
-      + color** and prevents a whole class of rework (like copying the wrong
+      matching), say so and name the split — e.g. _"the layout matches [design
+      source]; pull all copy, images, and colors from [live site URL]."_ One
+      sentence like that tells the agent **design = layout, live site = content + color** and prevents a whole class of rework (like copying the wrong
       brand color).
 - [ ] **Where CMS-backed content lives** — "team members come from Sanity,"
       "testimonials are in the CMS," etc., so the agent wires data instead of
@@ -153,7 +152,7 @@ want the same result, do these things.
       for a given slot (e.g. the founder's headshot, a particular logo) rather
       than letting the agent pick. Surgical, concrete feedback on each pass
       ("this section is text-only, no images," "use the dark theme here," "use
-      *that* headshot for the founder") beats "this feels off."
+      _that_ headshot for the founder") beats "this feels off."
 
 ### A prompt that works (template)
 
@@ -190,7 +189,7 @@ Content / images / colors source: [URL or CMS]
 ### Let the agent reach your sources (network allowlist)
 
 MCP connector traffic (Figma/Sanity/Webflow tools) is proxied through Anthropic,
-so **reading** via those tools works with no setup. But when the agent's *shell*
+so **reading** via those tools works with no setup. But when the agent's _shell_
 needs to reach the internet directly — downloading image **bytes**, running
 `npm run build` (which fetches the CMS at build time), or running a
 data-migration script — that's governed by the **environment's network access**
@@ -200,7 +199,7 @@ GitHub only).
 To let those steps through, edit the environment → set **Network access** to
 **Custom** → add one domain per line under **Allowed domains**, and tick **"Also
 include default list of common package managers"** so npm/GitHub still work. Add
-the domains *your* sources live on. For this stack (Sanity CMS + Figma, plus a
+the domains _your_ sources live on. For this stack (Sanity CMS + Figma, plus a
 Webflow live site as a content source) that's:
 
 ```text
@@ -213,7 +212,7 @@ cdn.prod.website-files.com
 
 (Drop or swap any line that doesn't match your sources — e.g. remove the Webflow
 CDN if you're not pulling from a Webflow site.) Without this, the agent can still
-*read* designs/content over MCP and commit code, but can't pull image files into
+_read_ designs/content over MCP and commit code, but can't pull image files into
 the repo or complete a local `npm run build` (it'll 403 on the CMS). Full
 reference: Anthropic's
 [Claude Code on the web — Network access](https://code.claude.com/docs/en/claude-code-on-the-web#network-access)

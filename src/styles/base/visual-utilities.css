@@ -8,9 +8,15 @@
    - u-color-inherit → inherit the theme text color (white on dark, etc.)
    - u-color-brand   → force the brand accent color
    - u-color-faded   → 75% opacity */
-.u-color-inherit { color: inherit; }
-.u-color-brand   { color: var(--heading-accent); }
-.u-color-faded   { opacity: 0.75; }
+.u-color-inherit {
+  color: inherit;
+}
+.u-color-brand {
+  color: var(--heading-accent);
+}
+.u-color-faded {
+  opacity: 0.75;
+}
 
 /* +======================================================
        BACKGROUND COLOR UTILITIES
@@ -101,20 +107,11 @@
    Add .has-middle + --overlay-strength-middle to insert a midpoint color stop at 50%. */
 .u-overlay.is-gradient {
   background-color: transparent;
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in srgb, black calc(var(--overlay-strength-top, 0) * 1%), transparent) 0%,
-    color-mix(in srgb, black calc(var(--overlay-strength-bottom, 70) * 1%), transparent) 100%
-  );
+  background-image: linear-gradient(to bottom, color-mix(in srgb, black calc(var(--overlay-strength-top, 0) * 1%), transparent) 0%, color-mix(in srgb, black calc(var(--overlay-strength-bottom, 70) * 1%), transparent) 100%);
 }
 
 .u-overlay.is-gradient.has-middle {
-  background-image: linear-gradient(
-    to bottom,
-    color-mix(in srgb, black calc(var(--overlay-strength-top, 0) * 1%), transparent) 0%,
-    color-mix(in srgb, black calc(var(--overlay-strength-middle, 35) * 1%), transparent) 50%,
-    color-mix(in srgb, black calc(var(--overlay-strength-bottom, 70) * 1%), transparent) 100%
-  );
+  background-image: linear-gradient(to bottom, color-mix(in srgb, black calc(var(--overlay-strength-top, 0) * 1%), transparent) 0%, color-mix(in srgb, black calc(var(--overlay-strength-middle, 35) * 1%), transparent) 50%, color-mix(in srgb, black calc(var(--overlay-strength-bottom, 70) * 1%), transparent) 100%);
 }
 
 /* =======================================================
@@ -195,38 +192,42 @@
 /* Based on Gradients Start and End colors in Variables File */
 [gradient="1"],
 .u-gradient-1 {
-  background-image: linear-gradient(
-    135deg,
-    var(--gradient-primary-start) 0%,
-    var(--gradient-primary-end) 100%
-  );
+  background-image: linear-gradient(135deg, var(--gradient-primary-start) 0%, var(--gradient-primary-end) 100%);
 }
 
 /* Based on Gradients Start and End colors in Variables File */
 [gradient="2"] {
-  background-image: linear-gradient(
-    135deg,
-    var(--gradient-secondary-start) 0%,
-    var(--gradient-secondary-end) 100%
-  );
+  background-image: linear-gradient(135deg, var(--gradient-secondary-start) 0%, var(--gradient-secondary-end) 100%);
 }
 
 /* ======================================================
        DISPLAY UTILITIES
    ====================================================== */
 
-.u-display-block        { display: block; }
-.u-display-inline       { display: inline; }
-.u-display-inline-block { display: inline-block; }
-.u-display-inline-flex  { display: inline-flex; }
-.u-display-inline-grid  { display: inline-grid; }
+.u-display-block {
+  display: block;
+}
+.u-display-inline {
+  display: inline;
+}
+.u-display-inline-block {
+  display: inline-block;
+}
+.u-display-inline-flex {
+  display: inline-flex;
+}
+.u-display-inline-grid {
+  display: inline-grid;
+}
 .u-display-contents {
   align-items: inherit;
   justify-content: inherit;
   text-align: inherit;
   display: contents;
 }
-.u-display-none { display: none; }
+.u-display-none {
+  display: none;
+}
 
 /* =======================================================
          VISIBILITY UTILITIES
@@ -280,11 +281,21 @@
            OVERFLOW UTILITIES
    ===================================================== */
 
-.u-overflow-visible { overflow: visible; }
-.u-overflow-hidden  { overflow: hidden; }
-.u-overflow-clip    { overflow: clip; }
-.u-overflow-x-auto  { overflow: auto clip; }
-.u-overflow-y-auto  { overflow: clip auto; }
+.u-overflow-visible {
+  overflow: visible;
+}
+.u-overflow-hidden {
+  overflow: hidden;
+}
+.u-overflow-clip {
+  overflow: clip;
+}
+.u-overflow-x-auto {
+  overflow: auto clip;
+}
+.u-overflow-y-auto {
+  overflow: clip auto;
+}
 
 /* Clip content that overflows to the right only (left edge stays sharp) */
 .u-overflow-hidden-left {
@@ -295,14 +306,27 @@
          DIMENSION UTILITIES
    ====================================================== */
 
-.u-height-full    { height: 100%; }
-.u-height-auto    { height: auto; }
-.u-width-full     { width: 100%; }
-.u-width-auto     { width: auto; }
-.u-min-width-auto { min-width: auto; }
+.u-height-full {
+  height: 100%;
+}
+.u-height-auto {
+  height: auto;
+}
+.u-width-full {
+  width: 100%;
+}
+.u-width-auto {
+  width: auto;
+}
+.u-min-width-auto {
+  min-width: auto;
+}
 
 /* Fills parent in both dimensions */
-.u-cover { width: 100%; height: 100%; }
+.u-cover {
+  width: 100%;
+  height: 100%;
+}
 
 /* Fills parent absolutely — parent must be position: relative */
 .u-cover-absolute {
@@ -316,29 +340,62 @@
        POINTER EVENTS
    ====================================================== */
 
-.u-pointer-on  { pointer-events: auto; }
-.u-pointer-off { pointer-events: none; }
+.u-pointer-on {
+  pointer-events: auto;
+}
+.u-pointer-off {
+  pointer-events: none;
+}
 
 /* ====================================================
            Z-INDEX UTILITIES
    =================================================== */
 
-.u-zindex-negative { z-index: -1;   position: relative; }
-.u-zindex-0        { z-index: 0;    position: relative; }
-.u-zindex-unset    { z-index: unset; position: relative; }
-.u-zindex-1        { z-index: 1;    position: relative; }
-.u-zindex-2        { z-index: 2;    position: relative; }
-.u-zindex-3        { z-index: 3;    position: relative; }
+.u-zindex-negative {
+  z-index: -1;
+  position: relative;
+}
+.u-zindex-0 {
+  z-index: 0;
+  position: relative;
+}
+.u-zindex-unset {
+  z-index: unset;
+  position: relative;
+}
+.u-zindex-1 {
+  z-index: 1;
+  position: relative;
+}
+.u-zindex-2 {
+  z-index: 2;
+  position: relative;
+}
+.u-zindex-3 {
+  z-index: 3;
+  position: relative;
+}
 
 /* ======================================================
        POSITION UTILITIES
    ====================================================== */
 
-.u-position-static   { position: static; }
-.u-position-relative { position: relative; }
-.u-position-absolute { position: absolute; }
-.u-position-sticky   { position: sticky; top: 0; }
-.u-position-fixed    { position: fixed; }
+.u-position-static {
+  position: static;
+}
+.u-position-relative {
+  position: relative;
+}
+.u-position-absolute {
+  position: absolute;
+}
+.u-position-sticky {
+  position: sticky;
+  top: 0;
+}
+.u-position-fixed {
+  position: fixed;
+}
 
 /* =====================================================
          RADIUS UTILITIES
@@ -346,8 +403,12 @@
   apply as classes when wanting to change the radius. Pair with an overflow class ex: .u-overflow-hidden */
 
 /* Standard radius values */
-.u-radius-none    { border-radius: 0; }
-.u-radius-inherit { border-radius: inherit; }
+.u-radius-none {
+  border-radius: 0;
+}
+.u-radius-inherit {
+  border-radius: inherit;
+}
 
 .u-radius-xsmall {
   border-radius: var(--radius-xsmall);
@@ -376,8 +437,12 @@
 }
 
 /* Fully rounded (circle or pill shape) */
-.u-radius-full  { border-radius: var(--radius-full); }
-.u-radius-round { border-radius: var(--radius-full); }
+.u-radius-full {
+  border-radius: var(--radius-full);
+}
+.u-radius-round {
+  border-radius: var(--radius-full);
+}
 
 /* Responsive section radius */
 .u-radius-section {
@@ -388,20 +453,38 @@
          ASPECT RATIO UTILITIES
   ======================================================== */
 
-.u-ratio-1-1  { aspect-ratio: 1; }
-.u-ratio-16-9 { aspect-ratio: 16 / 9; }
-.u-ratio-3-2  { aspect-ratio: 3 / 2; }
-.u-ratio-2-3  { aspect-ratio: 2 / 3; }
-.u-ratio-2-1  { aspect-ratio: 2; }
-.u-ratio-5-4  { aspect-ratio: 5 / 4; }
-.u-ratio-4-5  { aspect-ratio: 4 / 5; }
+.u-ratio-1-1 {
+  aspect-ratio: 1;
+}
+.u-ratio-16-9 {
+  aspect-ratio: 16 / 9;
+}
+.u-ratio-3-2 {
+  aspect-ratio: 3 / 2;
+}
+.u-ratio-2-3 {
+  aspect-ratio: 2 / 3;
+}
+.u-ratio-2-1 {
+  aspect-ratio: 2;
+}
+.u-ratio-5-4 {
+  aspect-ratio: 5 / 4;
+}
+.u-ratio-4-5 {
+  aspect-ratio: 4 / 5;
+}
 
 /* =======================================================
        OBJECT FIT
    ======================================================= */
 
-.u-object-fit-cover   { object-fit: cover; }
-.u-object-fit-contain { object-fit: contain; }
+.u-object-fit-cover {
+  object-fit: cover;
+}
+.u-object-fit-contain {
+  object-fit: contain;
+}
 
 /* =======================================================
        MAX WIDTH UTILITIES
@@ -425,8 +508,12 @@
 .u-max-width-xxsmall {
   max-width: 12rem;
 }
-.u-max-width-full { max-width: 100%; }
-.u-max-width-none { max-width: none; }
+.u-max-width-full {
+  max-width: 100%;
+}
+.u-max-width-none {
+  max-width: none;
+}
 
 /* .u-text > * rule lives in base/typography.css (single source of truth) */
 

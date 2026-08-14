@@ -290,13 +290,7 @@ import "../styles/pages/style-guide.css";
             <h3 class="styleguide_subsection_title">Text Sizes</h3>
 
             {
-              [
-                "xlarge",
-                "large",
-                "regular",
-                "small",
-                "tiny",
-              ].map((s) => (
+              ["xlarge", "large", "regular", "small", "tiny"].map((s) => (
                 <div class="styleguide_card_wrap is-row">
                   <span class="tag_wrap">{`.u-text-style-${s}`}</span>
                   <span class={`u-text-style-${s}`}>
@@ -839,8 +833,8 @@ import "../styles/pages/style-guide.css";
           <p class="u-text-style-small u-text-style-muted u-margin-bottom-6">
             Use the <code>&lt;Button&gt;</code> component with <code
               >variant</code
-            > and <code>size</code> props. The component outputs the wrapper
-            pattern with <code>data-trigger</code> and <code>color-mix()</code>
+            > and <code>size</code> props. The component outputs the wrapper pattern
+            with <code>data-trigger</code> and <code>color-mix()</code>
             transitions automatically.
           </p>
 
@@ -1491,8 +1485,9 @@ import "../styles/pages/style-guide.css";
                   Heading with automatic margin (via text style class)
                 </p>
                 <p class="u-text-style-regular">
-                  First paragraph — margins are built into each text style class.
-                  No manual u-margin-heading or u-margin-paragraph needed.
+                  First paragraph — margins are built into each text style
+                  class. No manual u-margin-heading or u-margin-paragraph
+                  needed.
                 </p>
                 <p class="u-text-style-regular">
                   Second paragraph, same automatic spacing. Margin-trim removes
@@ -2715,9 +2710,9 @@ import "../styles/pages/style-guide.css";
               <div class="styleguide_component_wrap">
                 <Accordion openByDefault={1}>
                   <AccordionItem question="What is the design system?">
-                    A structured design system built
-                    around CSS variables, a trigger/state system, and a
-                    consistent class naming convention.
+                    A structured design system built around CSS variables, a
+                    trigger/state system, and a consistent class naming
+                    convention.
                   </AccordionItem>
                   <AccordionItem question="How do themes work?">
                     Apply <code>data-theme="dark"</code> or <code

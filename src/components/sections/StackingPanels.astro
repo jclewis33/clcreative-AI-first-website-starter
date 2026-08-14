@@ -106,7 +106,9 @@ const {
     if (!gsap || !ScrollTrigger) return;
     gsap.registerPlugin(ScrollTrigger);
 
-    const lists = document.querySelectorAll<HTMLElement>(".stacking-panels_list");
+    const lists = document.querySelectorAll<HTMLElement>(
+      ".stacking-panels_list",
+    );
     if (!lists.length) return;
 
     // Animate only on desktop (≥ 50em / 800px) AND only when the user hasn't
@@ -119,9 +121,13 @@ const {
       "(min-width: 800px) and (prefers-reduced-motion: no-preference)",
       () => {
         lists.forEach((list) => {
-          const items = list.querySelectorAll<HTMLElement>(".stacking-panels_item");
+          const items = list.querySelectorAll<HTMLElement>(
+            ".stacking-panels_item",
+          );
           items.forEach((item, i) => {
-            const card = item.querySelector<HTMLElement>(".stacking-panels_card");
+            const card = item.querySelector<HTMLElement>(
+              ".stacking-panels_card",
+            );
             if (!card || i === items.length - 1) return;
 
             gsap.to(card, {

@@ -47,7 +47,7 @@ part of the site's CI build.
 
    > ⚠️ **Gotcha:** if `@astrojs/cloudflare` has generated a
    > `.wrangler/deploy/config.json` at the **repo root** (from a local `astro
-   > build`), `wrangler deploy` in this subfolder follows that redirect and
+build`), `wrangler deploy` in this subfolder follows that redirect and
    > errors with `redirected configuration path … does not exist`. Fix:
    > `rm ../../.wrangler/deploy/config.json`, then deploy again. (It's a
    > gitignored artifact that regenerates — deleting it is safe.)
@@ -77,12 +77,12 @@ part of the site's CI build.
 
 ## Config
 
-| Var / secret      | Type   | Default        | Purpose                                              |
-| ----------------- | ------ | -------------- | ---------------------------------------------------- |
-| `DEPLOY_HOOK_URL` | secret | —              | The real Cloudflare deploy hook this Worker calls    |
-| `WEBHOOK_TOKEN`   | secret | —              | Shared bearer token the Sanity webhook must send     |
-| `DEBOUNCE_MS`     | var    | `300000` (5m)  | Quiet window after the last publish before building  |
-| `MAX_WAIT_MS`     | var    | `900000` (15m) | Hard cap so a steady stream can't defer forever      |
+| Var / secret      | Type   | Default        | Purpose                                             |
+| ----------------- | ------ | -------------- | --------------------------------------------------- |
+| `DEPLOY_HOOK_URL` | secret | —              | The real Cloudflare deploy hook this Worker calls   |
+| `WEBHOOK_TOKEN`   | secret | —              | Shared bearer token the Sanity webhook must send    |
+| `DEBOUNCE_MS`     | var    | `300000` (5m)  | Quiet window after the last publish before building |
+| `MAX_WAIT_MS`     | var    | `900000` (15m) | Hard cap so a steady stream can't defer forever     |
 
 ## Local checks
 

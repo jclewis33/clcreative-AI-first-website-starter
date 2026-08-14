@@ -22,6 +22,7 @@ export function getDraftModeProps(ctx: {
     return { perspectiveCookie: undefined };
   }
   return {
-    perspectiveCookie: ctx.cookies.get(perspectiveCookieName)?.value ?? undefined,
+    perspectiveCookie:
+      ctx.cookies.get(perspectiveCookieName)?.value ?? undefined,
   };
 }

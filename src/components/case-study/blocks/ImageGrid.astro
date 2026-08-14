@@ -14,9 +14,27 @@ interface Props {
 }
 
 const { images, aspectRatio = "landscape" } = Astro.props;
-const columnCount = (images.length === 3 ? 3 : Math.min(images.length, 2)) as 1 | 2 | 3;
+const columnCount = (images.length === 3 ? 3 : Math.min(images.length, 2)) as
+  1 | 2 | 3;
 ---
 
-<Grid largeColumns={columnCount} mediumColumns={1} smallColumns={1} data-fade-list data-prevent-flicker="true">
-  {images.map((img) => <Visual docs="" src={img.src} alt={img.alt} ratio={aspectRatio} transparent={img.transparent} position={img.position} />)}
+<Grid
+  largeColumns={columnCount}
+  mediumColumns={1}
+  smallColumns={1}
+  data-fade-list
+  data-prevent-flicker="true"
+>
+  {
+    images.map((img) => (
+      <Visual
+        docs=""
+        src={img.src}
+        alt={img.alt}
+        ratio={aspectRatio}
+        transparent={img.transparent}
+        position={img.position}
+      />
+    ))
+  }
 </Grid>

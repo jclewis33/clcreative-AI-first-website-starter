@@ -55,25 +55,29 @@ const PROJECT_ID = readEnv("PUBLIC_SANITY_PROJECT_ID");
 const DATASET = readEnv("PUBLIC_SANITY_DATASET") || SANITY_DATASET;
 const API_VERSION = "2024-01-01";
 
-const CSV_PATH = process.argv.slice(2).find((a) => a.toLowerCase().endsWith(".csv"));
+const CSV_PATH = process.argv
+  .slice(2)
+  .find((a) => a.toLowerCase().endsWith(".csv"));
 
 const authorIdx = process.argv.indexOf("--author");
 const AUTHOR_NAME =
-  authorIdx !== -1 ? process.argv[authorIdx + 1] : process.env.AUTHOR_NAME || "Author";
+  authorIdx !== -1
+    ? process.argv[authorIdx + 1]
+    : process.env.AUTHOR_NAME || "Author";
 
 const TOKEN = process.env.SANITY_TOKEN;
 
 if (!PROJECT_ID) {
   console.error(
     "Missing PUBLIC_SANITY_PROJECT_ID.\n" +
-      "Set it in the project's .env (PUBLIC_SANITY_PROJECT_ID=...) or export it before running."
+      "Set it in the project's .env (PUBLIC_SANITY_PROJECT_ID=...) or export it before running.",
   );
   process.exit(1);
 }
 if (!CSV_PATH) {
   console.error(
     "Missing CSV path.\n" +
-      'Usage: SANITY_TOKEN=<token> node scripts/migrate-webflow-blog.mjs <path-to.csv> [--author "Name"]'
+      'Usage: SANITY_TOKEN=<token> node scripts/migrate-webflow-blog.mjs <path-to.csv> [--author "Name"]',
   );
   process.exit(1);
 }
@@ -81,7 +85,7 @@ if (!TOKEN) {
   console.error(
     "Missing SANITY_TOKEN env var.\n" +
       "Create a token at https://www.sanity.io/manage → Project → API → Tokens (Editor or above).\n" +
-      "Then run: SANITY_TOKEN=<token> node scripts/migrate-webflow-blog.mjs <path-to.csv>"
+      "Then run: SANITY_TOKEN=<token> node scripts/migrate-webflow-blog.mjs <path-to.csv>",
   );
   process.exit(1);
 }
@@ -111,19 +115,27 @@ const CATEGORY_MAP = {
 function downloadBuffer(url) {
   return new Promise((resolve, reject) => {
     const lib = url.startsWith("https") ? https : http;
-    lib.get(url, { headers: { "User-Agent": "SanityMigration/1.0" } }, (res) => {
-      // Follow redirects
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return downloadBuffer(res.headers.location).then(resolve).catch(reject);
-      }
-      if (res.statusCode !== 200) {
-        return reject(new Error(`HTTP ${res.statusCode} for ${url}`));
-      }
-      const chunks = [];
-      res.on("data", (chunk) => chunks.push(chunk));
-      res.on("end", () => resolve(Buffer.concat(chunks)));
-      res.on("error", reject);
-    }).on("error", reject);
+    lib
+      .get(url, { headers: { "User-Agent": "SanityMigration/1.0" } }, (res) => {
+        // Follow redirects
+        if (
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location
+        ) {
+          return downloadBuffer(res.headers.location)
+            .then(resolve)
+            .catch(reject);
+        }
+        if (res.statusCode !== 200) {
+          return reject(new Error(`HTTP ${res.statusCode} for ${url}`));
+        }
+        const chunks = [];
+        res.on("data", (chunk) => chunks.push(chunk));
+        res.on("end", () => resolve(Buffer.concat(chunks)));
+        res.on("error", reject);
+      })
+      .on("error", reject);
   });
 }
 
@@ -144,7 +156,8 @@ async function uploadImage(url) {
 
     // Determine content type from URL
     let contentType = "image/webp";
-    if (cleanUrl.includes(".jpg") || cleanUrl.includes(".jpeg")) contentType = "image/jpeg";
+    if (cleanUrl.includes(".jpg") || cleanUrl.includes(".jpeg"))
+      contentType = "image/jpeg";
     else if (cleanUrl.includes(".png")) contentType = "image/png";
     else if (cleanUrl.includes(".gif")) contentType = "image/gif";
     else if (cleanUrl.includes(".avif")) contentType = "image/avif";
@@ -152,14 +165,19 @@ async function uploadImage(url) {
 
     // Extract filename from URL
     const urlPath = new URL(cleanUrl).pathname;
-    const filename = decodeURIComponent(urlPath.split("/").pop() || "image.webp");
+    const filename = decodeURIComponent(
+      urlPath.split("/").pop() || "image.webp",
+    );
 
     const asset = await client.assets.upload("image", buffer, {
       filename,
       contentType,
     });
 
-    const ref = { _type: "image", asset: { _type: "reference", _ref: asset._id } };
+    const ref = {
+      _type: "image",
+      asset: { _type: "reference", _ref: asset._id },
+    };
     imageCache.set(cleanUrl, ref);
     return ref;
   } catch (err) {
@@ -264,7 +282,12 @@ function htmlToPortableText(html) {
           text: "\n",
           marks: [...marks],
         });
-      } else if (tag === "span" || tag === "div" || tag === "label" || tag === "small") {
+      } else if (
+        tag === "span" ||
+        tag === "div" ||
+        tag === "label" ||
+        tag === "small"
+      ) {
         const result = extractSpans(child, markDefs, [...marks]);
         spans.push(...result.spans);
         markDefs = result.markDefs;
@@ -321,7 +344,9 @@ function htmlToPortableText(html) {
       // Check if this heading contains another encoded heading — strip it
       let textContent = node.text || "";
       // Clean up encoded heading patterns like "<h2 id="1">(1) Title</h2>"
-      textContent = textContent.replace(/^<h[2-4][^>]*>/i, "").replace(/<\/h[2-4]>$/i, "");
+      textContent = textContent
+        .replace(/^<h[2-4][^>]*>/i, "")
+        .replace(/<\/h[2-4]>$/i, "");
 
       const block = makeBlock(node, tag);
       blocks.push(block);
@@ -329,7 +354,9 @@ function htmlToPortableText(html) {
       flushList();
       // Check if paragraph contains only an encoded heading tag
       const innerText = node.text || "";
-      const encodedHeadingMatch = innerText.match(/^<(h[2-4])[^>]*>(.*)<\/\1>$/s);
+      const encodedHeadingMatch = innerText.match(
+        /^<(h[2-4])[^>]*>(.*)<\/\1>$/s,
+      );
       if (encodedHeadingMatch) {
         // This is actually a heading, skip or convert
         return;
@@ -341,7 +368,7 @@ function htmlToPortableText(html) {
       const block = makeBlock(node, "normal");
       // Skip if only whitespace
       const hasContent = block.children.some(
-        (c) => c.text && c.text.trim().length > 0
+        (c) => c.text && c.text.trim().length > 0,
       );
       if (hasContent) {
         blocks.push(block);
@@ -411,7 +438,7 @@ function htmlToPortableText(html) {
       flushList();
       const block = makeBlock(node, "normal");
       const hasContent = block.children.some(
-        (c) => c.text && c.text.trim().length > 0
+        (c) => c.text && c.text.trim().length > 0,
       );
       if (hasContent) {
         blocks.push(block);
@@ -471,7 +498,7 @@ async function migrate() {
   console.log(`👤 Creating author document for "${AUTHOR_NAME}"...`);
   const existingAuthor = await client.fetch(
     `*[_type == "author" && name == $name][0]._id`,
-    { name: AUTHOR_NAME }
+    { name: AUTHOR_NAME },
   );
 
   let authorId;
@@ -516,7 +543,7 @@ async function migrate() {
       // Check if post already exists
       const existing = await client.fetch(
         `*[_type == "blogPost" && slug.current == $slug][0]._id`,
-        { slug }
+        { slug },
       );
       if (existing) {
         console.log(`   Already exists, skipping.`);
@@ -525,7 +552,8 @@ async function migrate() {
       }
 
       // Parse categories from semicolon-separated slugs
-      const rawCats = row["Cateogries"]?.trim() || row["Categories"]?.trim() || "";
+      const rawCats =
+        row["Cateogries"]?.trim() || row["Categories"]?.trim() || "";
       const categories = rawCats
         .split(";")
         .map((c) => c.trim())
@@ -538,7 +566,10 @@ async function migrate() {
       }
 
       // Parse date
-      const dateStr = row["Date"]?.trim() || row["Published On"]?.trim() || row["Created On"]?.trim();
+      const dateStr =
+        row["Date"]?.trim() ||
+        row["Published On"]?.trim() ||
+        row["Created On"]?.trim();
       let date = new Date().toISOString().split("T")[0];
       if (dateStr) {
         const parsed = new Date(dateStr);
@@ -552,9 +583,7 @@ async function migrate() {
 
       // Description
       const description =
-        row["Meta Description"]?.trim() ||
-        row["Post Summary"]?.trim() ||
-        "";
+        row["Meta Description"]?.trim() || row["Post Summary"]?.trim() || "";
 
       // Image
       const imageUrl = row["Main Image"]?.trim();
@@ -576,7 +605,7 @@ async function migrate() {
 
       // Upload inline images
       const imageBlocks = body.filter(
-        (b) => b._type === "image" && b._sanityAsset
+        (b) => b._type === "image" && b._sanityAsset,
       );
       if (imageBlocks.length > 0) {
         console.log(`   🖼 Uploading ${imageBlocks.length} inline image(s)...`);

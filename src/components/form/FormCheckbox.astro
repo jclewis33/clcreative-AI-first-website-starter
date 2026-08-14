@@ -61,7 +61,7 @@ interface Props {
 const {
   label,
   name,
-  value = 'on',
+  value = "on",
   checked = false,
   required = false,
   disabled = false,
@@ -73,9 +73,7 @@ const {
 const fieldId = id || `field-${name}-${value}`;
 ---
 
-<div
-  class:list={['form_ui_item', className]}
->
+<div class:list={["form_ui_item", className]}>
   <label class="form_ui_label" for={fieldId}>
     <input
       class="form_ui_input u-sr-only"
@@ -90,17 +88,12 @@ const fieldId = id || `field-${name}-${value}`;
     />
 
     <span class="form_ui_visual_wrap" aria-hidden="true">
-      <svg
-        class="form_ui_visual_icon"
-        viewBox="0 0 11 8"
-        fill="none"
-      >
+      <svg class="form_ui_visual_icon" viewBox="0 0 11 8" fill="none">
         <path
           d="M1 4L4 7L10 1"
           stroke="currentColor"
           vector-effect="non-scaling-stroke"
-          stroke-width="0.125rem"
-        />
+          stroke-width="0.125rem"></path>
       </svg>
     </span>
 

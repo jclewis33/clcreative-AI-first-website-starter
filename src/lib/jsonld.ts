@@ -245,7 +245,7 @@ function youtubeVideoId(url: string | null | undefined): string | null {
  */
 function youtubeVideoObject(
   videoUrl: string,
-  post: { title?: string; description?: string; date?: string }
+  post: { title?: string; description?: string; date?: string },
 ): any {
   const id = youtubeVideoId(videoUrl);
   if (!id) return null;
@@ -308,7 +308,10 @@ export function blogPostJsonLd(post: any, siteUrl: string): any {
           name: f.question,
           acceptedAnswer: {
             "@type": "Answer",
-            text: String(f.answer).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+            text: String(f.answer)
+              .replace(/<[^>]+>/g, " ")
+              .replace(/\s+/g, " ")
+              .trim(),
           },
         })),
     });

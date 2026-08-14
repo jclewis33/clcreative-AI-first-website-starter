@@ -90,7 +90,9 @@ function revealAllStatic() {
 const splitInstances = new WeakMap();
 
 function initSplitText() {
-  const elems = gsap.utils.toArray("[data-splittext], [data-split-text='true']");
+  const elems = gsap.utils.toArray(
+    "[data-splittext], [data-split-text='true']",
+  );
 
   // Wait for fonts before splitting to avoid layout shifts
   const run = () => {
@@ -188,7 +190,7 @@ function initFadeUp() {
       .fromTo(
         el,
         { autoAlpha: 0, y: distance },
-        { autoAlpha: 1, y: 0, duration, delay }
+        { autoAlpha: 1, y: 0, duration, delay },
       );
   });
 }
@@ -226,7 +228,7 @@ function initFadeList() {
     tl.fromTo(
       items,
       { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration, stagger, delay }
+      { opacity: 1, y: 0, duration, stagger, delay },
     );
   });
 }

@@ -15,14 +15,17 @@
 }
 
 .slider_bullet_item {
-  border: .09rem solid var(--border);
+  border: 0.09rem solid var(--border);
   background-color: transparent;
   border-radius: 100vw;
-  width: .5rem;
-  height: .5rem;
+  width: 0.5rem;
+  height: 0.5rem;
   min-width: 0;
   padding: 0;
-  transition: width 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    width 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .slider_bullet_item.is-active {
@@ -44,8 +47,8 @@
 /* Negative margins compensate for the outer slides' padding so the
    first and last slides sit flush with the container edge */
 .slider_offset {
-  margin-left: calc(var(--_gap---size) * -.5);
-  margin-right: calc(var(--_gap---size) * -.5);
+  margin-left: calc(var(--_gap---size) * -0.5);
+  margin-right: calc(var(--_gap---size) * -0.5);
   flex: 1;
   display: flex;
 }
@@ -53,11 +56,25 @@
 /* Map per-breakpoint slide count variables (set inline on .slider_offset)
    to --slide-count, which drives each slide's CSS width.
    Breakpoints mirror the Swiper JS breakpoints. */
-.slider_offset { --slide-count: var(--xs, 1.1); }
+.slider_offset {
+  --slide-count: var(--xs, 1.1);
+}
 
-@media (min-width: 35rem)  { .slider_offset { --slide-count: var(--sm, 1.2); } }
-@media (min-width: 50rem)  { .slider_offset { --slide-count: var(--md, 2);   } }
-@media (min-width: 64rem)  { .slider_offset { --slide-count: var(--lg, 3);   } }
+@media (min-width: 35rem) {
+  .slider_offset {
+    --slide-count: var(--sm, 1.2);
+  }
+}
+@media (min-width: 50rem) {
+  .slider_offset {
+    --slide-count: var(--md, 2);
+  }
+}
+@media (min-width: 64rem) {
+  .slider_offset {
+    --slide-count: var(--lg, 3);
+  }
+}
 
 /* Each slide: width driven by --slide-count, gap created by padding-inline.
    box-sizing: border-box ensures padding is included in the calculated width. */

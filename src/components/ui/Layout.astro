@@ -460,7 +460,12 @@ if (cardPadding) styleParts.push(`--card-padding: ${cardPadding}`);
 const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
 ---
 
-<div class:list={["u-layout-wrapper", className]} data-layout-variant={variant} data-collapse={collapseAt} {...rest}>
+<div
+  class:list={["u-layout-wrapper", className]}
+  data-layout-variant={variant}
+  data-collapse={collapseAt}
+  {...rest}
+>
   <div
     class:list={["u-layout", alignClass, { "u-grid-breakout": isBreakout }]}
     style={inlineStyle}
@@ -470,7 +475,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
     </div>
 
     {
-      Astro.slots.has('col2') && (
+      Astro.slots.has("col2") && (
         <div class="u-layout-column-2">
           <slot name="col2" />
         </div>

@@ -76,7 +76,7 @@ interface Props {
    * @example align="center"
    * @example align="center-mobile"
    */
-  align?: 'inherit' | 'center' | 'left' | 'right' | 'center-mobile';
+  align?: "inherit" | "center" | "left" | "right" | "center-mobile";
 
   /**
    * Max-width constraint on the content inside the wrapper.
@@ -101,7 +101,7 @@ interface Props {
 
 const {
   docs,
-  align = 'inherit',
+  align = "inherit",
   maxWidth,
   class: className,
   ...rest
@@ -109,28 +109,28 @@ const {
 
 /* Map align prop → combo class */
 const alignClassMap: Record<string, string | null> = {
-  'inherit':       null,
-  'center':        'is-center-align',
-  'left':          'is-left-align',
-  'right':         'is-right-align',
-  'center-mobile': 'is-center-align-mobile',
+  inherit: null,
+  center: "is-center-align",
+  left: "is-left-align",
+  right: "is-right-align",
+  "center-mobile": "is-center-align-mobile",
 };
 
-const wrapperClasses = [
-  'u-content-wrapper',
-  alignClassMap[align],
-  className,
-].filter(Boolean).join(' ');
+const wrapperClasses = ["u-content-wrapper", alignClassMap[align], className]
+  .filter(Boolean)
+  .join(" ");
 ---
 
-{maxWidth ? (
-  <div class={wrapperClasses} {...rest}>
-    <div class="u-content-wrapper_inner" style={`max-width: ${maxWidth};`}>
+{
+  maxWidth ? (
+    <div class={wrapperClasses} {...rest}>
+      <div class="u-content-wrapper_inner" style={`max-width: ${maxWidth};`}>
+        <slot />
+      </div>
+    </div>
+  ) : (
+    <div class={wrapperClasses} {...rest}>
       <slot />
     </div>
-  </div>
-) : (
-  <div class={wrapperClasses} {...rest}>
-    <slot />
-  </div>
-)}
+  )
+}

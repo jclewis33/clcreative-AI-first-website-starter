@@ -127,9 +127,7 @@ const {
   class: className,
 } = Astro.props;
 
-const testimonials = limit
-  ? rawTestimonials.slice(0, limit)
-  : rawTestimonials;
+const testimonials = limit ? rawTestimonials.slice(0, limit) : rawTestimonials;
 
 const hasHeadingSlot = Astro.slots.has("heading");
 const showHeading = hasHeadingSlot || heading;
@@ -168,10 +166,6 @@ const showHeading = hasHeadingSlot || heading;
     smallColumns={columnsSm}
     rowGap={6}
   >
-    {
-      testimonials.map((testimonial) => (
-        <TestimonialCard {...testimonial} />
-      ))
-    }
+    {testimonials.map((testimonial) => <TestimonialCard {...testimonial} />)}
   </Grid>
 </Section>

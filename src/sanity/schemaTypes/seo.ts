@@ -24,7 +24,10 @@ export const seo = defineType({
       description:
         "Override the page <title> tag. Leave empty to use the article title.",
       type: "string",
-      validation: (rule) => rule.max(70).warning("Keep under 70 characters for best results in search."),
+      validation: (rule) =>
+        rule
+          .max(70)
+          .warning("Keep under 70 characters for best results in search."),
     }),
     defineField({
       name: "metaDescription",
@@ -33,7 +36,10 @@ export const seo = defineType({
         "Override the meta description. Leave empty to use the article description.",
       type: "text",
       rows: 3,
-      validation: (rule) => rule.max(160).warning("Keep under 160 characters for best results in search."),
+      validation: (rule) =>
+        rule
+          .max(160)
+          .warning("Keep under 160 characters for best results in search."),
     }),
     defineField({
       name: "ogTitle",

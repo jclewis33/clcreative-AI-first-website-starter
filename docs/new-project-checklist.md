@@ -8,7 +8,7 @@ Work top to bottom. Items marked **🔁 per-fork** must be done for every new pr
 >
 > Two helpers automate most of this list so you rarely hand-edit config:
 >
-> - **`/setup` (Claude Code skill)** — *recommended.* In a Claude Code session on the fork, run `/setup`. Claude gathers your identity info, **creates the new Sanity project + dataset, deploys the schema, and adds the CORS origins** via the Sanity MCP, runs the CLI below for the file edits, verifies with a build, then hands you the short list of dashboard items only a human can finish. It also **pulls brand colors from a Figma file** (when a Figma MCP is connected), asks about your **fluid type scale**, and walks you through swapping **fonts, the OG image, favicon, and logos**. This is the only path that automates standing up the Sanity backend. See [.claude/skills/setup/SKILL.md](../.claude/skills/setup/SKILL.md).
+> - **`/setup` (Claude Code skill)** — _recommended._ In a Claude Code session on the fork, run `/setup`. Claude gathers your identity info, **creates the new Sanity project + dataset, deploys the schema, and adds the CORS origins** via the Sanity MCP, runs the CLI below for the file edits, verifies with a build, then hands you the short list of dashboard items only a human can finish. It also **pulls brand colors from a Figma file** (when a Figma MCP is connected), asks about your **fluid type scale**, and walks you through swapping **fonts, the OG image, favicon, and logos**. This is the only path that automates standing up the Sanity backend. See [.claude/skills/setup/SKILL.md](../.claude/skills/setup/SKILL.md).
 > - **`npm run setup` (CLI)** — the deterministic engine. Prompts for each identity value and rewrites `site.shared.mjs`, `site.ts`, `wrangler.jsonc`, `colors.css`, `themes.css`, `typography.css`, `logo-paths.ts`, `sanity.cli.ts`, and `.env`. Also accepts `cssColors` / `themeColors` / `fluidType` maps (via `--config`) so a Figma palette and type scale land deterministically. No AI, no network — works for anyone forking. (`/setup` calls this under the hood.) It does **not** create the Sanity project, swap fonts/images, or touch any dashboard.
 >
 > Both deliberately **leave the content scaffolding** (`areaServed`, `social`, `sameAs`, `faqs.ts`, `site-structure.ts`) in place as a working skeleton — review and replace that copy for your business after setup. The sections below remain the source of truth for the **dashboard work neither tool can perform** (Cloudflare secrets/WAF/domain, GitHub Dependabot, the Sanity Viewer token).
@@ -25,22 +25,22 @@ Every fork lands on the same proven shape — chosen to lean into what Sanity is
 - **Org-level hosted Dashboard** for the overview (no in-Studio dashboard plugin), and a **content-first** Studio desk — most-edited types as direct lists at the top, one click to content, Settings pinned at the bottom.
 - **Sanity 6** — no Sanity package is version-held; majors arrive as normal cooldown'd Dependabot PRs and are reviewed like any other upgrade (see §8).
 
-Full narrative + the embedded alternative: the Notion guide *"Sanity + Astro + Cloudflare: Setup Guide"* and CLAUDE.md's *"Deployment, Sanity Studio & Preview"* section.
+Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + Cloudflare: Setup Guide"_ and CLAUDE.md's _"Deployment, Sanity Studio & Preview"_ section.
 
 ---
 
 ## 1. What carries over with the code (✅ in-code — verify only)
 
-| Protection | Where it lives | How to verify |
-|---|---|---|
-| HTTP security headers (SSR) | `src/middleware.ts` | `curl -sI` an SSR route (`/preview/blog/<slug>`) → CSP `frame-ancestors` (allows the hosted Studio origin), HSTS, nosniff, Referrer-Policy, Permissions-Policy, plus `X-Robots-Tag: noindex` + `Cache-Control: private, no-cache` on `/preview/*` |
-| HTTP security headers (static) | `public/_headers` | `curl -sI` the homepage after deploy — same five headers |
-| API input hardening | `src/pages/api/scorecard.ts` | 50 KB body cap (413), strict field-by-field validation (400), honeypot fake-success — see §7 test commands |
-| Form honeypot | `MarketingScorecard.tsx` (`company` field) + `.scorecard_hp_field` CSS | Hidden field present in the email-gate form |
-| CI gates | `.github/workflows/ci.yml` | Runs automatically on the new repo: config sync, `astro check`, build, `npm audit` (fails on high/critical) |
-| Dependabot config | `.github/dependabot.yml` | Weekly grouped updates + **review the ignore rules** (§8 — they may be obsolete by the time you fork) |
-| Draft-mode security | `@sanity/preview-url-secret` validation, cookie-gated `loadQuery` | Drafts can't leak to public visitors — architecture note in CLAUDE.md |
-| JSON-LD escaping, trailing-slash config, iOS-zoom-safe inputs | Various | Already enforced by code + CLAUDE.md conventions |
+| Protection                                                    | Where it lives                                                         | How to verify                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP security headers (SSR)                                   | `src/middleware.ts`                                                    | `curl -sI` an SSR route (`/preview/blog/<slug>`) → CSP `frame-ancestors` (allows the hosted Studio origin), HSTS, nosniff, Referrer-Policy, Permissions-Policy, plus `X-Robots-Tag: noindex` + `Cache-Control: private, no-cache` on `/preview/*` |
+| HTTP security headers (static)                                | `public/_headers`                                                      | `curl -sI` the homepage after deploy — same five headers                                                                                                                                                                                          |
+| API input hardening                                           | `src/pages/api/scorecard.ts`                                           | 50 KB body cap (413), strict field-by-field validation (400), honeypot fake-success — see §7 test commands                                                                                                                                        |
+| Form honeypot                                                 | `MarketingScorecard.tsx` (`company` field) + `.scorecard_hp_field` CSS | Hidden field present in the email-gate form                                                                                                                                                                                                       |
+| CI gates                                                      | `.github/workflows/ci.yml`                                             | Runs automatically on the new repo: config sync, `astro check`, build, `npm audit` (fails on high/critical)                                                                                                                                       |
+| Dependabot config                                             | `.github/dependabot.yml`                                               | Weekly grouped updates + **review the ignore rules** (§8 — they may be obsolete by the time you fork)                                                                                                                                             |
+| Draft-mode security                                           | `@sanity/preview-url-secret` validation, cookie-gated `loadQuery`      | Drafts can't leak to public visitors — architecture note in CLAUDE.md                                                                                                                                                                             |
+| JSON-LD escaping, trailing-slash config, iOS-zoom-safe inputs | Various                                                                | Already enforced by code + CLAUDE.md conventions                                                                                                                                                                                                  |
 
 ---
 
@@ -125,7 +125,7 @@ On the new repo → Settings → Advanced Security:
 5. **Dependabot version updates** — nothing to click; activates from the committed `dependabot.yml`
 6. Skip: "Automatic dependency submission" (Gradle/Maven ecosystems) and "self-hosted runners"
 
-Account-level (once per GitHub account, not per repo): **Push protection for yourself** ([github.com/settings/security_analysis](https://github.com/settings/security_analysis)) — blocks pushes containing detectable secrets to *any* repo. If already enabled on your account, forks inherit it automatically.
+Account-level (once per GitHub account, not per repo): **Push protection for yourself** ([github.com/settings/security_analysis](https://github.com/settings/security_analysis)) — blocks pushes containing detectable secrets to _any_ repo. If already enabled on your account, forks inherit it automatically.
 
 Know the private-repo limits (GitHub Free): repo-level secret scanning and branch protection rulesets require Pro or a public repo. The compensating controls: account-level push protection (above) + CI visibly red/green on every PR + solo-dev PR discipline.
 
@@ -179,12 +179,12 @@ Plus, in a browser: the hosted Studio loads at `https://<studioHost>.sanity.stud
 ## 8. Ongoing security rhythm (applies to this repo AND every fork)
 
 - **Dependabot PR triage**: CI green → generally merge. **Exception: anything touching `sanity`, `@sanity/*`, `styled-components`, or `react` gets a 60-second local check first** — run `npx sanity dev` and confirm the Studio loads, then `npm run dev`, enter draft preview, and confirm the React visual-editing islands (`SanityVisualEditing` / `DisableDraftMode`) mount without an "Invalid hook call". CI cannot catch this (it's a client-side runtime failure).
-- **"Invalid hook call" in dev** ≠ broken dependencies. If the Studio or the React islands suddenly break mid-session, restart the dev server first (Vite optimizer artifact). Only suspect packages if a *fresh* server with cleared `node_modules/.vite` + `.astro` still fails.
+- **"Invalid hook call" in dev** ≠ broken dependencies. If the Studio or the React islands suddenly break mid-session, restart the dev server first (Vite optimizer artifact). Only suspect packages if a _fresh_ server with cleared `node_modules/.vite` + `.astro` still fails.
 - **Current pins** (review at fork time — these may be resolved by then):
 
-  | Pin | Why | Remove when |
-  |---|---|---|
-  | `typescript` ^5 (not 6) | `react-i18next` (inside Sanity Studio) peers typescript ^5 | The Sanity chain accepts TS 6 |
+  | Pin                                                       | Why                                                                                                                                                                                                                                                                                                                                                                                                                                          | Remove when                                                                                                                                                 |
+  | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `typescript` ^5 (not 6)                                   | `react-i18next` (inside Sanity Studio) peers typescript ^5                                                                                                                                                                                                                                                                                                                                                                                   | The Sanity chain accepts TS 6                                                                                                                               |
   | `overrides`: `ws` ^8.21.0, `form-data` ^4.0.6 (June 2026) | Forced patched transitive versions to clear the 6 **high** `audit` advisories (`ws` ≤8.20.1 DoS; `form-data` 4.0.0–4.0.5) reaching us via `@astrojs/cloudflare` (Cloudflare vite-plugin/miniflare/wrangler) and `sanity` → `@sanity/cli`. Same-major patch bumps — avoids npm's `audit fix --force`, whose "fix" is a **major downgrade** of `@astrojs/cloudflare` or `sanity`. Build/CLI tooling only (not in the deployed Worker runtime). | `@astrojs/cloudflare` + `sanity`/`@sanity/cli` ship the patched `ws`/`form-data` themselves — then drop the two overrides and re-run `npm audit --omit=dev` |
 
   > **Note:** `@sanity/astro` rides at `^3.4.1`. If a duplicate-React "Invalid hook call" appears in dev after a bump ([sanity-astro#406](https://github.com/sanity-io/sanity-astro/issues/406)), pin `@sanity/astro` to the last-good version and add a Dependabot ignore until the upstream fix lands.
@@ -202,7 +202,7 @@ Plus, in a browser: the hosted Studio loads at `https://<studioHost>.sanity.stud
 The `audit` job re-checks dependencies against GitHub's **live** advisory database on every push, so a PR can fail for a vulnerability that has nothing to do with its changes — a new advisory was simply published since the last green run. This is the gate working, not a bug. Triage it in ~60 seconds:
 
 1. **Severity** — the gate only blocks **high/critical**. Moderate/low are batched later, not urgent.
-2. **Runtime vs. build/dev-only** — *does the package run inside the deployed Worker, or only locally / in CI during the build?* Build tools (esbuild, vite, wrangler, typescript, @astrojs/*) can't be reached by a site visitor — low real-world risk. A flaw in something that runs in the Worker (request handling, page rendering, anything in `src/`) is serious.
+2. **Runtime vs. build/dev-only** — _does the package run inside the deployed Worker, or only locally / in CI during the build?_ Build tools (esbuild, vite, wrangler, typescript, @astrojs/*) can't be reached by a site visitor — low real-world risk. A flaw in something that runs in the Worker (request handling, page rendering, anything in `src/`) is serious.
 3. **Reachability** — does the flaw apply to how you actually use it? (e.g. a "Deno registry" or "Windows dev server" flaw doesn't apply to a Mac/Cloudflare setup.)
 4. **Fix available?** — if a patched version exists, adopt it (see below). If npm's only offered fix is a **major downgrade** of a framework package (`sanity`, `astro`, `@astrojs/cloudflare`), don't take it: note the advisory and wait for an upstream patch.
 
@@ -211,12 +211,12 @@ The `audit` job re-checks dependencies against GitHub's **live** advisory databa
 ### Adopting a fix — three tools, in order of preference
 
 - **Plain bump** — `npm install <pkg>@<patched>`. Works when the vulnerable package is a direct dependency.
-- **`overrides`** (in `package.json`) — forces a single *transitive* sub-dependency to a patched version across the whole tree, even when the parents still ask for the old one. Use when `npm audit fix` only offers a breaking parent downgrade. Example (how the esbuild advisory was handled):
+- **`overrides`** (in `package.json`) — forces a single _transitive_ sub-dependency to a patched version across the whole tree, even when the parents still ask for the old one. Use when `npm audit fix` only offers a breaking parent downgrade. Example (how the esbuild advisory was handled):
   ```jsonc
   "overrides": { "esbuild": "^0.28.1" }
   ```
   After editing: `npm install` (updates the lockfile), then verify `npm audit --omit=dev --audit-level=critical`, `npm run check`, and `npm run build` all pass before committing. Revisit/remove the override later once the parent packages catch up on their own.
-- **Exact pin** (no caret, e.g. `"pkg": "1.2.3"`) — for a package whose *newer* versions are broken (not vulnerable). Pair with a `dependabot.yml` ignore rule so it isn't re-proposed. (See the `@sanity/astro` pin above.)
+- **Exact pin** (no caret, e.g. `"pkg": "1.2.3"`) — for a package whose _newer_ versions are broken (not vulnerable). Pair with a `dependabot.yml` ignore rule so it isn't re-proposed. (See the `@sanity/astro` pin above.)
 
 ### `npm audit` ≠ malware protection
 

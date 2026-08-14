@@ -46,8 +46,13 @@ const p = (rel) => join(ROOT, rel);
 
 // ── ANSI helpers ────────────────────────────────────────────────────────────
 const c = {
-  reset: "\x1b[0m", bold: "\x1b[1m", dim: "\x1b[2m",
-  green: "\x1b[32m", yellow: "\x1b[33m", cyan: "\x1b[36m", red: "\x1b[31m",
+  reset: "\x1b[0m",
+  bold: "\x1b[1m",
+  dim: "\x1b[2m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  cyan: "\x1b[36m",
+  red: "\x1b[31m",
 };
 const heading = (s) => console.log(`\n${c.bold}${c.cyan}${s}${c.reset}`);
 const ok = (s) => console.log(`${c.green}✓${c.reset} ${s}`);
@@ -80,9 +85,21 @@ const CLI = "sanity.cli.ts";
 // Fluid type tiers whose size is driven by a --{tier}-min / --{tier}-max pair.
 // (eyebrow is fixed; tiny/small are fixed but still expose min/max.)
 const FLUID_TIERS = new Set([
-  "display-xl", "display-lg", "display-md", "display-sm",
-  "h1", "h2", "h3", "h4", "h5", "h6",
-  "text-tiny", "text-small", "text-regular", "text-large", "text-xlarge",
+  "display-xl",
+  "display-lg",
+  "display-md",
+  "display-sm",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "text-tiny",
+  "text-small",
+  "text-regular",
+  "text-large",
+  "text-xlarge",
 ]);
 
 /** Replace a `--var: ...;` declaration (any value) — first occurrence. */
@@ -120,7 +137,10 @@ function replaceInThemeBlock(src, marker, varName, value) {
   const block = src.slice(braceIdx, closeIdx);
   if (!re.test(block)) return { src, changed: false };
   const next = block.replace(re, `$1${value};`);
-  return { src: src.slice(0, braceIdx) + next + src.slice(closeIdx), changed: true };
+  return {
+    src: src.slice(0, braceIdx) + next + src.slice(closeIdx),
+    changed: true,
+  };
 }
 
 /** Replace the FIRST `key: "..."` (or `key: '...'`) string literal in `src`. */
@@ -157,43 +177,132 @@ const PROMPTS = [
   // A staging https://<worker>.<account>.workers.dev URL is a fine answer here
   // when the real domain isn't ready — SITE_URL is env-overridable at deploy time
   // (see docs/new-project-checklist.md §4a "Staging-first deploy").
-  { key: "siteUrl", q: "Site URL (no trailing slash — a staging *.workers.dev URL is fine pre-launch)", from: [SHARED, "SITE_URL"], validate: (v) => /^https?:\/\/[^/]+$/.test(v) || "Must be an absolute origin like https://www.example.com (no trailing slash)" },
+  {
+    key: "siteUrl",
+    q: "Site URL (no trailing slash — a staging *.workers.dev URL is fine pre-launch)",
+    from: [SHARED, "SITE_URL"],
+    validate: (v) =>
+      /^https?:\/\/[^/]+$/.test(v) ||
+      "Must be an absolute origin like https://www.example.com (no trailing slash)",
+  },
   { key: "email", q: "Primary contact email", from: [SITE, "email"] },
   { key: "founder", q: "Founder / person name", from: [SITE, "founder"] },
-  { key: "tagline", q: "Tagline (appended to <title>)", from: [SITE, "tagline"] },
-  { key: "defaultDescription", q: "Fallback meta description", from: [SITE, "defaultDescription"] },
-  { key: "summary", q: "One-line summary (JSON-LD / llms.txt)", from: [SITE, "summary"] },
-  { key: "localBusinessDescription", q: "LocalBusiness description (JSON-LD)", from: [SITE, "localBusinessDescription"] },
+  {
+    key: "tagline",
+    q: "Tagline (appended to <title>)",
+    from: [SITE, "tagline"],
+  },
+  {
+    key: "defaultDescription",
+    q: "Fallback meta description",
+    from: [SITE, "defaultDescription"],
+  },
+  {
+    key: "summary",
+    q: "One-line summary (JSON-LD / llms.txt)",
+    from: [SITE, "summary"],
+  },
+  {
+    key: "localBusinessDescription",
+    q: "LocalBusiness description (JSON-LD)",
+    from: [SITE, "localBusinessDescription"],
+  },
   { key: "xHandle", q: "X / Twitter handle (@form)", from: [SITE, "xHandle"] },
   // ── Contact / address ─────────────────────────────────────────────────────
-  { key: "phoneDisplay", q: "Phone — display, e.g. (555) 123-4567", from: [SITE, "display"] },
-  { key: "phoneE164", q: "Phone — E.164, e.g. +1-555-123-4567", from: [SITE, "e164"] },
+  {
+    key: "phoneDisplay",
+    q: "Phone — display, e.g. (555) 123-4567",
+    from: [SITE, "display"],
+  },
+  {
+    key: "phoneE164",
+    q: "Phone — E.164, e.g. +1-555-123-4567",
+    from: [SITE, "e164"],
+  },
   { key: "phoneTel", q: "Phone — digits only", from: [SITE, "tel"] },
   { key: "hours", q: "Visible business hours", from: [SITE, "hours"] },
   { key: "addressLocality", q: "City / locality", from: [SITE, "locality"] },
   { key: "addressRegion", q: "State / region", from: [SITE, "region"] },
   { key: "addressCountry", q: "Country code", from: [SITE, "country"] },
-  { key: "priceRange", q: "Price range (schema.org)", from: [SITE, "priceRange"] },
+  {
+    key: "priceRange",
+    q: "Price range (schema.org)",
+    from: [SITE, "priceRange"],
+  },
   // ── Brand ─────────────────────────────────────────────────────────────────
-  { key: "brandColor", q: "Brand color (hex, e.g. #f35423)", from: [COLORS, "--color-brand-500"], css: true, validate: (v) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v) || "Must be a hex color like #1a73e8" },
+  {
+    key: "brandColor",
+    q: "Brand color (hex, e.g. #f35423)",
+    from: [COLORS, "--color-brand-500"],
+    css: true,
+    validate: (v) =>
+      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v) ||
+      "Must be a hex color like #1a73e8",
+  },
   // ── Sanity ────────────────────────────────────────────────────────────────
-  { key: "sanityProjectId", q: "Sanity project id", from: [SHARED, "SANITY_PROJECT_ID"] },
-  { key: "sanityDataset", q: "Sanity dataset", from: [SHARED, "SANITY_DATASET"] },
-  { key: "sanityApiVersion", q: "Sanity API version (date)", from: [SHARED, "SANITY_API_VERSION"] },
-  { key: "studioHost", q: "Sanity studioHost (the <host>.sanity.studio subdomain)", from: [CLI, "studioHost"] },
-  { key: "workerName", q: "Cloudflare Worker name", from: [WRANGLER, "name"], json: true },
+  {
+    key: "sanityProjectId",
+    q: "Sanity project id",
+    from: [SHARED, "SANITY_PROJECT_ID"],
+  },
+  {
+    key: "sanityDataset",
+    q: "Sanity dataset",
+    from: [SHARED, "SANITY_DATASET"],
+  },
+  {
+    key: "sanityApiVersion",
+    q: "Sanity API version (date)",
+    from: [SHARED, "SANITY_API_VERSION"],
+  },
+  {
+    key: "studioHost",
+    q: "Sanity studioHost (the <host>.sanity.studio subdomain)",
+    from: [CLI, "studioHost"],
+  },
+  {
+    key: "workerName",
+    q: "Cloudflare Worker name",
+    from: [WRANGLER, "name"],
+    json: true,
+  },
   // ── Integrations (optional — blank to leave as-is) ─────────────────────────
-  { key: "gtmId", q: "Google Tag Manager id (blank = keep)", from: [SITE, "gtmId"], optional: true },
-  { key: "mailerLiteAccount", q: "MailerLite account id (blank = keep)", from: [SITE, "mailerLiteAccount"], optional: true },
-  { key: "usercentricsId", q: "Usercentrics CMP id (blank = keep)", from: [SITE, "usercentricsId"], optional: true },
-  { key: "honeybookPlacementId", q: "HoneyBook placement id (blank = keep)", from: [SITE, "honeybookPlacementId"], optional: true },
+  {
+    key: "gtmId",
+    q: "Google Tag Manager id (blank = keep)",
+    from: [SITE, "gtmId"],
+    optional: true,
+  },
+  {
+    key: "mailerLiteAccount",
+    q: "MailerLite account id (blank = keep)",
+    from: [SITE, "mailerLiteAccount"],
+    optional: true,
+  },
+  {
+    key: "usercentricsId",
+    q: "Usercentrics CMP id (blank = keep)",
+    from: [SITE, "usercentricsId"],
+    optional: true,
+  },
+  {
+    key: "honeybookPlacementId",
+    q: "HoneyBook placement id (blank = keep)",
+    from: [SITE, "honeybookPlacementId"],
+    optional: true,
+  },
 ];
 
 async function readSrc(rel) {
   return readFile(p(rel), "utf8");
 }
 async function fileExists(rel) {
-  try { await access(p(rel), constants.F_OK); return true; } catch { return false; }
+  try {
+    await access(p(rel), constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function resolveDefault(prompt, cache) {
@@ -210,17 +319,29 @@ async function gatherInteractive() {
   const cache = {};
   const answers = { _cssColors: {}, _themeColors: {}, _fluidType: {} };
   heading("Fork setup — identity & config");
-  info("Press Enter to keep the current value shown in [brackets]. Ctrl-C to abort.\n");
+  info(
+    "Press Enter to keep the current value shown in [brackets]. Ctrl-C to abort.\n",
+  );
   for (const prompt of PROMPTS) {
     const def = await resolveDefault(prompt, cache);
     let value;
     while (true) {
-      const raw = (await rl.question(`${prompt.q}${def ? ` ${c.dim}[${def}]${c.reset}` : ""}: `)).trim();
+      const raw = (
+        await rl.question(
+          `${prompt.q}${def ? ` ${c.dim}[${def}]${c.reset}` : ""}: `,
+        )
+      ).trim();
       value = raw || def;
-      if (prompt.optional && !raw) { value = def; break; }
+      if (prompt.optional && !raw) {
+        value = def;
+        break;
+      }
       if (prompt.validate && value) {
         const res = prompt.validate(value);
-        if (res !== true) { warn(typeof res === "string" ? res : "Invalid value"); continue; }
+        if (res !== true) {
+          warn(typeof res === "string" ? res : "Invalid value");
+          continue;
+        }
       }
       break;
     }
@@ -252,7 +373,9 @@ async function gatherFromConfig(path) {
   // changing cssColors usually re-skins the themes automatically. Use this only
   // to point a theme alias at a different value/swatch.
   answers._themeColors =
-    json.themeColors && typeof json.themeColors === "object" ? json.themeColors : {};
+    json.themeColors && typeof json.themeColors === "object"
+      ? json.themeColors
+      : {};
   // Optional fluid type scale — only the min/max (rem) knobs per tier; the
   // clamp() expressions reference them, so the fluid size recomputes itself:
   //   { "h1": { "min": 2.5, "max": 4 }, "text-regular": { "min": 1, "max": 1.2 } }
@@ -289,7 +412,10 @@ async function buildChanges(a) {
       ["SITE_URL", a.siteUrl],
     ]) {
       const r = replaceAssignedString(src, name, value);
-      if (r.changed && r.src !== src) { src = r.src; edits.push(name); }
+      if (r.changed && r.src !== src) {
+        src = r.src;
+        edits.push(name);
+      }
     }
     changes.push({ rel: SHARED, before, after: src, edits });
   }
@@ -299,19 +425,35 @@ async function buildChanges(a) {
     let src = await readSrc(SITE);
     const edits = [];
     const map = {
-      name: a.siteName, email: a.email, founder: a.founder, tagline: a.tagline,
-      defaultDescription: a.defaultDescription, summary: a.summary,
-      localBusinessDescription: a.localBusinessDescription, xHandle: a.xHandle,
-      display: a.phoneDisplay, e164: a.phoneE164, tel: a.phoneTel, hours: a.hours,
-      locality: a.addressLocality, region: a.addressRegion, country: a.addressCountry,
-      priceRange: a.priceRange, color: brand500,
-      gtmId: a.gtmId, mailerLiteAccount: a.mailerLiteAccount,
-      usercentricsId: a.usercentricsId, honeybookPlacementId: a.honeybookPlacementId,
+      name: a.siteName,
+      email: a.email,
+      founder: a.founder,
+      tagline: a.tagline,
+      defaultDescription: a.defaultDescription,
+      summary: a.summary,
+      localBusinessDescription: a.localBusinessDescription,
+      xHandle: a.xHandle,
+      display: a.phoneDisplay,
+      e164: a.phoneE164,
+      tel: a.phoneTel,
+      hours: a.hours,
+      locality: a.addressLocality,
+      region: a.addressRegion,
+      country: a.addressCountry,
+      priceRange: a.priceRange,
+      color: brand500,
+      gtmId: a.gtmId,
+      mailerLiteAccount: a.mailerLiteAccount,
+      usercentricsId: a.usercentricsId,
+      honeybookPlacementId: a.honeybookPlacementId,
     };
     for (const [key, value] of Object.entries(map)) {
       if (value === undefined) continue;
       const r = replaceKeyedString(src, key, value);
-      if (r.changed) { src = r.src; edits.push(key); }
+      if (r.changed) {
+        src = r.src;
+        edits.push(key);
+      }
     }
     changes.push({ rel: SITE, before: await readSrc(SITE), after: src, edits });
   }
@@ -326,9 +468,17 @@ async function buildChanges(a) {
       ["PUBLIC_SANITY_DATASET", a.sanityDataset],
     ]) {
       const r = replaceJsonString(src, key, value);
-      if (r.changed) { src = r.src; edits.push(key); }
+      if (r.changed) {
+        src = r.src;
+        edits.push(key);
+      }
     }
-    changes.push({ rel: WRANGLER, before: await readSrc(WRANGLER), after: src, edits });
+    changes.push({
+      rel: WRANGLER,
+      before: await readSrc(WRANGLER),
+      after: src,
+      edits,
+    });
   }
 
   // 3b. workers/rebuild-debounce/wrangler.jsonc — keep the standalone debounce
@@ -337,9 +487,18 @@ async function buildChanges(a) {
   //     site worker so the pair is obvious in the Cloudflare dashboard.
   if (a.workerName && (await fileExists(WRANGLER_DEBOUNCE))) {
     const before = await readSrc(WRANGLER_DEBOUNCE);
-    const r = replaceJsonString(before, "name", `${a.workerName}-rebuild-debounce`);
+    const r = replaceJsonString(
+      before,
+      "name",
+      `${a.workerName}-rebuild-debounce`,
+    );
     if (r.changed && r.src !== before) {
-      changes.push({ rel: WRANGLER_DEBOUNCE, before, after: r.src, edits: ["name"] });
+      changes.push({
+        rel: WRANGLER_DEBOUNCE,
+        before,
+        after: r.src,
+        edits: ["name"],
+      });
     }
   }
 
@@ -356,7 +515,10 @@ async function buildChanges(a) {
       const re = new RegExp(`(${name.replace(/[-]/g, "\\$&")}\\s*:\\s*)[^;]+;`);
       if (re.test(after)) {
         const next = after.replace(re, `$1${value};`);
-        if (next !== after) { after = next; edits.push(name); }
+        if (next !== after) {
+          after = next;
+          edits.push(name);
+        }
       } else {
         warn(`colors.css has no ${name} declaration — skipped`);
       }
@@ -372,12 +534,17 @@ async function buildChanges(a) {
     const edits = [];
     for (const [theme, vars] of Object.entries(themeColors)) {
       const marker = THEME_BLOCK_MARKER[theme];
-      if (!marker) { warn(`themes.css: unknown theme "${theme}" — skipped`); continue; }
+      if (!marker) {
+        warn(`themes.css: unknown theme "${theme}" — skipped`);
+        continue;
+      }
       for (const [name, value] of Object.entries(vars || {})) {
         if (!value) continue;
         const r = replaceInThemeBlock(after, marker, name, value);
-        if (r.changed) { after = r.src; edits.push(`${theme}/${name}`); }
-        else warn(`themes.css: ${theme} block has no ${name} — skipped`);
+        if (r.changed) {
+          after = r.src;
+          edits.push(`${theme}/${name}`);
+        } else warn(`themes.css: ${theme} block has no ${name} — skipped`);
       }
     }
     if (after !== before) changes.push({ rel: THEMES, before, after, edits });
@@ -390,15 +557,22 @@ async function buildChanges(a) {
     let after = before;
     const edits = [];
     for (const [tier, bounds] of Object.entries(fluid)) {
-      if (!FLUID_TIERS.has(tier)) { warn(`typography.css: unknown type tier "${tier}" — skipped`); continue; }
+      if (!FLUID_TIERS.has(tier)) {
+        warn(`typography.css: unknown type tier "${tier}" — skipped`);
+        continue;
+      }
       for (const bound of ["min", "max"]) {
         const value = bounds?.[bound];
         if (value === undefined || value === "") continue;
         const r = replaceCssDecl(after, `--${tier}-${bound}`, value);
-        if (r.changed) { after = r.src; edits.push(`--${tier}-${bound}`); }
+        if (r.changed) {
+          after = r.src;
+          edits.push(`--${tier}-${bound}`);
+        }
       }
     }
-    if (after !== before) changes.push({ rel: TYPOGRAPHY, before, after, edits });
+    if (after !== before)
+      changes.push({ rel: TYPOGRAPHY, before, after, edits });
   }
 
   // 4d. logo-paths.ts — keep the logo's accessible label in sync with the name.
@@ -406,7 +580,12 @@ async function buildChanges(a) {
     const before = await readSrc(LOGO_PATHS);
     const r = replaceAssignedString(before, "LOGO_LABEL", a.siteName);
     if (r.changed && r.src !== before) {
-      changes.push({ rel: LOGO_PATHS, before, after: r.src, edits: ["LOGO_LABEL"] });
+      changes.push({
+        rel: LOGO_PATHS,
+        before,
+        after: r.src,
+        edits: ["LOGO_LABEL"],
+      });
     }
   }
 
@@ -415,9 +594,15 @@ async function buildChanges(a) {
     let src = await readSrc(CLI);
     const edits = [];
     const r1 = replaceKeyedString(src, "studioHost", a.studioHost);
-    if (r1.changed) { src = r1.src; edits.push("studioHost"); }
+    if (r1.changed) {
+      src = r1.src;
+      edits.push("studioHost");
+    }
     const r2 = replaceKeyedString(src, "appId", "");
-    if (r2.changed) { src = r2.src; edits.push("appId (cleared — set after first `sanity deploy`)"); }
+    if (r2.changed) {
+      src = r2.src;
+      edits.push("appId (cleared — set after first `sanity deploy`)");
+    }
     changes.push({ rel: CLI, before: await readSrc(CLI), after: src, edits });
   }
 
@@ -432,9 +617,18 @@ async function ensureEnv(a) {
   const example = await readSrc(".env.example");
   const filled = example
     .replace(/^SITE_URL=.*$/m, `SITE_URL=${a.siteUrl}`)
-    .replace(/^PUBLIC_SANITY_PROJECT_ID=.*$/m, `PUBLIC_SANITY_PROJECT_ID=${a.sanityProjectId}`)
-    .replace(/^PUBLIC_SANITY_DATASET=.*$/m, `PUBLIC_SANITY_DATASET=${a.sanityDataset}`);
-  if (DRY_RUN) { info("(dry-run) would create .env from .env.example"); return; }
+    .replace(
+      /^PUBLIC_SANITY_PROJECT_ID=.*$/m,
+      `PUBLIC_SANITY_PROJECT_ID=${a.sanityProjectId}`,
+    )
+    .replace(
+      /^PUBLIC_SANITY_DATASET=.*$/m,
+      `PUBLIC_SANITY_DATASET=${a.sanityDataset}`,
+    );
+  if (DRY_RUN) {
+    info("(dry-run) would create .env from .env.example");
+    return;
+  }
   await writeFile(p(".env"), filled, "utf8");
   ok("Created .env (fill in SANITY_API_READ_TOKEN — it's intentionally blank)");
 }
@@ -442,7 +636,9 @@ async function ensureEnv(a) {
 async function confirm(question) {
   if (ASSUME_YES) return true;
   const rl = createInterface({ input: stdin, output: stdout });
-  const ans = (await rl.question(`${question} ${c.dim}(y/N)${c.reset} `)).trim().toLowerCase();
+  const ans = (await rl.question(`${question} ${c.dim}(y/N)${c.reset} `))
+    .trim()
+    .toLowerCase();
   rl.close();
   return ans === "y" || ans === "yes";
 }
@@ -475,13 +671,18 @@ webclip (public/images/), and the inline SVG logo paths (src/config/logo-paths.t
     return;
   }
 
-  const answers = CONFIG_PATH ? await gatherFromConfig(CONFIG_PATH) : await gatherInteractive();
+  const answers = CONFIG_PATH
+    ? await gatherFromConfig(CONFIG_PATH)
+    : await gatherInteractive();
   const changes = await buildChanges(answers);
 
   heading("Planned changes");
   let totalEdits = 0;
   for (const ch of changes) {
-    if (ch.after === ch.before) { info(`  ${ch.rel} — no change`); continue; }
+    if (ch.after === ch.before) {
+      info(`  ${ch.rel} — no change`);
+      continue;
+    }
     totalEdits += ch.edits.length;
     ok(`${ch.rel} ${c.dim}→ ${ch.edits.join(", ") || "rewritten"}${c.reset}`);
   }

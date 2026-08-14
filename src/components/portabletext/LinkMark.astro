@@ -17,8 +17,14 @@ const { node } = Astro.props;
 const { href, newTab } = node.markDef;
 ---
 
-{newTab ? (
-  <a href={href} target="_blank" rel="noopener noreferrer"><slot /></a>
-) : (
-  <a href={href}><slot /></a>
-)}
+{
+  newTab ? (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      <slot />
+    </a>
+  ) : (
+    <a href={href}>
+      <slot />
+    </a>
+  )
+}

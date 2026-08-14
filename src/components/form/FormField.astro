@@ -22,16 +22,16 @@
  */
 
 type InputType =
-  | 'text'
-  | 'email'
-  | 'password'
-  | 'tel'
-  | 'url'
-  | 'number'
-  | 'date'
-  | 'datetime-local'
-  | 'search'
-  | 'hidden';
+  | "text"
+  | "email"
+  | "password"
+  | "tel"
+  | "url"
+  | "number"
+  | "date"
+  | "datetime-local"
+  | "search"
+  | "hidden";
 
 interface Props {
   /** Label text for the field. Always rendered for accessibility. */
@@ -69,7 +69,7 @@ interface Props {
    *   up above the border when the field is focused or contains a value
    * @default 'default'
    */
-  labelVariant?: 'default' | 'hidden' | 'floating';
+  labelVariant?: "default" | "hidden" | "floating";
 
   /** Default value for the input. */
   value?: string;
@@ -107,11 +107,11 @@ interface Props {
 const {
   label,
   name,
-  type = 'text',
+  type = "text",
   placeholder,
   required = false,
   disabled = false,
-  labelVariant = 'default',
+  labelVariant = "default",
   value,
   autocomplete,
   inputmode,
@@ -123,48 +123,57 @@ const {
 } = Astro.props;
 
 const fieldId = id || `field-${name}`;
-const describedById = (helperText || errorText) ? `${fieldId}-hint` : undefined;
-const isFloating = labelVariant === 'floating';
-const resolvedPlaceholder = isFloating ? (placeholder || ' ') : placeholder;
+const describedById = helperText || errorText ? `${fieldId}-hint` : undefined;
+const isFloating = labelVariant === "floating";
+const resolvedPlaceholder = isFloating ? placeholder || " " : placeholder;
 ---
 
-{type === 'hidden' ? (
-  <input type="hidden" name={name} value={value} id={fieldId} />
-) : (
-  <div
-    class:list={['form_label_wrap', isFloating && 'is-floating', className]}
-  >
-    <label
-      class:list={['form_label_text', labelVariant === 'hidden' && 'u-sr-only']}
-      for={fieldId}
+{
+  type === "hidden" ? (
+    <input type="hidden" name={name} value={value} id={fieldId} />
+  ) : (
+    <div
+      class:list={["form_label_wrap", isFloating && "is-floating", className]}
     >
-      {label}
-      {required && <span class="form_required" aria-hidden="true">*</span>}
-    </label>
-
-    <input
-      class="form_field"
-      type={type}
-      name={name}
-      id={fieldId}
-      placeholder={resolvedPlaceholder}
-      required={required}
-      disabled={disabled}
-      value={value}
-      autocomplete={autocomplete}
-      inputmode={inputmode}
-      aria-describedby={describedById}
-      aria-invalid={errorText ? 'true' : undefined}
-      {...rest}
-    />
-
-    {(helperText || errorText) && (
-      <p
-        class:list={['form_helper_text', errorText && 'is-error']}
-        id={describedById}
+      <label
+        class:list={[
+          "form_label_text",
+          labelVariant === "hidden" && "u-sr-only",
+        ]}
+        for={fieldId}
       >
-        {errorText || helperText}
-      </p>
-    )}
-  </div>
-)}
+        {label}
+        {required && (
+          <span class="form_required" aria-hidden="true">
+            *
+          </span>
+        )}
+      </label>
+
+      <input
+        class="form_field"
+        type={type}
+        name={name}
+        id={fieldId}
+        placeholder={resolvedPlaceholder}
+        required={required}
+        disabled={disabled}
+        value={value}
+        autocomplete={autocomplete}
+        inputmode={inputmode}
+        aria-describedby={describedById}
+        aria-invalid={errorText ? "true" : undefined}
+        {...rest}
+      />
+
+      {(helperText || errorText) && (
+        <p
+          class:list={["form_helper_text", errorText && "is-error"]}
+          id={describedById}
+        >
+          {errorText || helperText}
+        </p>
+      )}
+    </div>
+  )
+}

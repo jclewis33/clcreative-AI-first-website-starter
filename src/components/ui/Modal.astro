@@ -46,11 +46,11 @@
 
 type ModalVariant =
   /** Centered panel — max 800px wide (default) */
-  | 'small'
+  | "small"
   /** Slides in from the right edge — good for filter/settings panels */
-  | 'side-panel'
+  | "side-panel"
   /** Full viewport — use for image viewers or immersive content */
-  | 'full-screen';
+  | "full-screen";
 
 /**
  * Modal — native `<dialog>`-based modal with CSS enter/exit transitions.
@@ -117,64 +117,63 @@ interface Props {
 const {
   docs,
   id,
-  variant   = 'small',
+  variant = "small",
   ariaLabel,
   class: className,
   ...rest
 } = Astro.props;
 
-const hasClose = Astro.slots.has('close');
+const hasClose = Astro.slots.has("close");
 ---
 
 <dialog
-  class:list={['modal_dialog', className]}
+  class:list={["modal_dialog", className]}
   data-modal-variant={variant}
   aria-label={ariaLabel}
   id={id}
   {...rest}
 >
   <div class="modal_inner">
-
     <!-- Backdrop — clicking closes the modal -->
     <div class="modal_backdrop" data-modal-close aria-hidden="true"></div>
 
     <!-- Content panel -->
     <div class="modal_content">
       <div class="modal_scroll">
-
         <!-- Close button -->
         <div class="modal_close_wrap">
-          {hasClose ? (
-            <slot name="close" />
-          ) : (
-            <button
-              class="u-button-reset"
-              data-modal-close
-              aria-label="Close modal"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
+          {
+            hasClose ? (
+              <slot name="close" />
+            ) : (
+              <button
+                class="u-button-reset"
+                data-modal-close
+                aria-label="Close modal"
               >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          )}
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )
+          }
         </div>
 
         <!-- Main content slot -->
         <div class="modal_slot">
           <slot />
         </div>
-
       </div>
     </div>
   </div>
@@ -202,9 +201,9 @@ const hasClose = Astro.slots.has('close');
     const g = (window as any).gsap;
     if (!g) return null;
 
-    const variant = modal.dataset.modalVariant || 'small';
-    const backdrop = modal.querySelector('.modal_backdrop');
-    const content = modal.querySelector('.modal_content');
+    const variant = modal.dataset.modalVariant || "small";
+    const backdrop = modal.querySelector(".modal_backdrop");
+    const content = modal.querySelector(".modal_content");
 
     const tl = g.timeline({
       paused: true,
@@ -212,40 +211,73 @@ const hasClose = Astro.slots.has('close');
         modal.close();
         restoreScroll();
         // Clear GSAP inline styles for a clean next open
-        g.set(backdrop, { clearProps: 'all' });
-        g.set(content, { clearProps: 'all' });
+        g.set(backdrop, { clearProps: "all" });
+        g.set(content, { clearProps: "all" });
       },
     });
 
-    if (variant === 'side-panel') {
-      tl.fromTo(backdrop,
+    if (variant === "side-panel") {
+      tl.fromTo(
+        backdrop,
         { opacity: 0 },
-        { opacity: 1, duration: 0.35, ease: 'power1.out', immediateRender: false }
+        {
+          opacity: 1,
+          duration: 0.35,
+          ease: "power1.out",
+          immediateRender: false,
+        },
       );
-      tl.fromTo(content,
+      tl.fromTo(
+        content,
         { xPercent: 100 },
-        { xPercent: 0, duration: 0.45, ease: 'power2.out', force3D: true, immediateRender: false },
-        '<'
+        {
+          xPercent: 0,
+          duration: 0.45,
+          ease: "power2.out",
+          force3D: true,
+          immediateRender: false,
+        },
+        "<",
       );
-    } else if (variant === 'full-screen') {
-      tl.fromTo(backdrop,
+    } else if (variant === "full-screen") {
+      tl.fromTo(
+        backdrop,
         { opacity: 0 },
-        { opacity: 0, duration: 0.01, immediateRender: false }
+        { opacity: 0, duration: 0.01, immediateRender: false },
       );
-      tl.fromTo(content,
+      tl.fromTo(
+        content,
         { opacity: 0 },
-        { opacity: 1, duration: 0.25, ease: 'power1.out', immediateRender: false }
+        {
+          opacity: 1,
+          duration: 0.25,
+          ease: "power1.out",
+          immediateRender: false,
+        },
       );
     } else {
       // small (default)
-      tl.fromTo(backdrop,
+      tl.fromTo(
+        backdrop,
         { opacity: 0 },
-        { opacity: 1, duration: 0.3, ease: 'power1.out', immediateRender: false }
+        {
+          opacity: 1,
+          duration: 0.3,
+          ease: "power1.out",
+          immediateRender: false,
+        },
       );
-      tl.fromTo(content,
-        { opacity: 0, y: '6rem' },
-        { opacity: 1, y: '0rem', duration: 0.3, ease: 'power1.out', immediateRender: false },
-        '<'
+      tl.fromTo(
+        content,
+        { opacity: 0, y: "6rem" },
+        {
+          opacity: 1,
+          y: "0rem",
+          duration: 0.3,
+          ease: "power1.out",
+          immediateRender: false,
+        },
+        "<",
       );
     }
 
@@ -258,22 +290,22 @@ const hasClose = Astro.slots.has('close');
     // Show the dialog first so GSAP can measure and apply styles
     // (display:none elements can't receive transforms reliably)
     modal.showModal();
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
 
     if (g) {
-      const variant = modal.dataset.modalVariant || 'small';
-      const backdrop = modal.querySelector('.modal_backdrop');
-      const content = modal.querySelector('.modal_content');
+      const variant = modal.dataset.modalVariant || "small";
+      const backdrop = modal.querySelector(".modal_backdrop");
+      const content = modal.querySelector(".modal_content");
 
       // Immediately set hidden state — runs in the same JS task as
       // showModal() so the browser never paints the visible state
       g.set(backdrop, { opacity: 0 });
-      if (variant === 'side-panel') {
+      if (variant === "side-panel") {
         g.set(content, { xPercent: 100 });
-      } else if (variant === 'full-screen') {
+      } else if (variant === "full-screen") {
         g.set(content, { opacity: 0 });
       } else {
-        g.set(content, { opacity: 0, y: '6rem' });
+        g.set(content, { opacity: 0, y: "6rem" });
       }
 
       // Kill any previous timeline to avoid stale tween state
@@ -302,45 +334,55 @@ const hasClose = Astro.slots.has('close');
   }
 
   function restoreScroll() {
-    const openModals = document.querySelectorAll('dialog[open]');
+    const openModals = document.querySelectorAll("dialog[open]");
     if (openModals.length === 0) {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
   }
 
   function initModals() {
     // ---- Trigger: open modal ----
-    document.addEventListener('click', (e) => {
-      const trigger = (e.target as HTMLElement).closest<HTMLElement>('[data-modal-trigger]');
+    document.addEventListener("click", (e) => {
+      const trigger = (e.target as HTMLElement).closest<HTMLElement>(
+        "[data-modal-trigger]",
+      );
       if (!trigger) return;
 
       const targetId = trigger.dataset.modalTrigger;
       if (!targetId) return;
 
-      const dialog = document.getElementById(targetId) as HTMLDialogElement | null;
+      const dialog = document.getElementById(
+        targetId,
+      ) as HTMLDialogElement | null;
       if (!dialog || !(dialog instanceof HTMLDialogElement)) return;
 
       openModal(dialog);
     });
 
     // ---- Close button / backdrop click ----
-    document.addEventListener('click', (e) => {
-      const closeBtn = (e.target as HTMLElement).closest<HTMLElement>('[data-modal-close]');
+    document.addEventListener("click", (e) => {
+      const closeBtn = (e.target as HTMLElement).closest<HTMLElement>(
+        "[data-modal-close]",
+      );
       if (!closeBtn) return;
 
-      const dialog = closeBtn.closest<HTMLDialogElement>('dialog');
+      const dialog = closeBtn.closest<HTMLDialogElement>("dialog");
       if (!dialog) return;
 
       closeModal(dialog);
     });
 
     // ---- ESC key — intercept native cancel to animate close ----
-    document.addEventListener('cancel', (e) => {
-      if (e.target instanceof HTMLDialogElement) {
-        e.preventDefault();
-        closeModal(e.target);
-      }
-    }, true);
+    document.addEventListener(
+      "cancel",
+      (e) => {
+        if (e.target instanceof HTMLDialogElement) {
+          e.preventDefault();
+          closeModal(e.target);
+        }
+      },
+      true,
+    );
   }
 
   // GSAP loads from CDN (deferred), so poll briefly before falling back
@@ -355,8 +397,8 @@ const hasClose = Astro.slots.has('close');
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => waitForGsapAndInit());
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => waitForGsapAndInit());
   } else {
     waitForGsapAndInit();
   }

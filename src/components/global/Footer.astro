@@ -203,10 +203,7 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
                   {group.links.map((link) => {
                     const { label, href } = resolveFooterLink(link);
                     return (
-                      <div
-                        role="listitem"
-                        class="footer_group_item"
-                      >
+                      <div role="listitem" class="footer_group_item">
                         <a href={href} class="footer_link_wrap">
                           <div class="footer_link_text u-text-style-small">
                             {label}
@@ -301,16 +298,15 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
           <span class="footer_year">2026</span>
           <span>&nbsp;Copyright. All Rights Reserved.</span>
         </div>
-        {/* Legal links come from the "optional"-group pages in the registry
+        {
+          /* Legal links come from the "optional"-group pages in the registry
             (OPTIONAL_PAGES, src/data/site-structure.ts). "Privacy Settings"
-            below is a non-page action, so it stays hardcoded here. */}
+            below is a non-page action, so it stays hardcoded here. */
+        }
         <div role="list" class="footer_bottom_list">
           {
             OPTIONAL_PAGES.map((page) => (
-              <div
-                role="listitem"
-                class="footer_bottom_item"
-              >
+              <div role="listitem" class="footer_bottom_item">
                 <a href={page.path} class="footer_bottom_link_wrap">
                   <div class="footer_bottom_link_text u-text-style-small">
                     {footerLabel(page.path)}
@@ -319,10 +315,7 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
               </div>
             ))
           }
-          <div
-            role="listitem"
-            class="footer_bottom_item"
-          >
+          <div role="listitem" class="footer_bottom_item">
             <a
               id="usercentrics-psl"
               href="#"
@@ -360,17 +353,21 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
   // CSS that powers global accordions, but lives inline so it works on
   // every page (the Accordion.astro script only bundles into pages that
   // import it).
-  document.querySelectorAll<HTMLElement>(".footer_locations_wrap").forEach((wrap) => {
-    const button = wrap.querySelector<HTMLButtonElement>(".accordion_toggle_button");
-    if (!button) return;
-    button.addEventListener("click", () => {
-      const open = button.getAttribute("aria-expanded") === "true";
-      button.setAttribute("aria-expanded", open ? "false" : "true");
+  document
+    .querySelectorAll<HTMLElement>(".footer_locations_wrap")
+    .forEach((wrap) => {
+      const button = wrap.querySelector<HTMLButtonElement>(
+        ".accordion_toggle_button",
+      );
+      if (!button) return;
+      button.addEventListener("click", () => {
+        const open = button.getAttribute("aria-expanded") === "true";
+        button.setAttribute("aria-expanded", open ? "false" : "true");
+      });
+      // Enable CSS transitions after initial paint so the closed state
+      // doesn't animate in on first load.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => wrap.classList.add("is-ready"));
+      });
     });
-    // Enable CSS transitions after initial paint so the closed state
-    // doesn't animate in on first load.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => wrap.classList.add("is-ready"));
-    });
-  });
 </script>

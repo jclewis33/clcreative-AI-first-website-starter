@@ -77,10 +77,14 @@ button:not(:disabled) {
    (e.g. the eyebrow's `color: var(--heading-accent)`). */
 
 /* Background — transparent only (theme-aware bg-1/2/skeleton live in visual-utilities.css) */
-.u-background-transparent { background-color: transparent; }
+.u-background-transparent {
+  background-color: transparent;
+}
 
 /* Min-height */
-.u-min-height-screen { min-height: 100svh; }
+.u-min-height-screen {
+  min-height: 100svh;
+}
 
 /* ==========================================================================
    MARGIN TRIM — first-child / last-child margin removal

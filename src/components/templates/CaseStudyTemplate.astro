@@ -36,7 +36,8 @@ interface Props {
 }
 
 const { study, allStudies, defaultCtaSection = null } = Astro.props;
-const resolvedCtaSection = study.ctaSectionOverride ?? defaultCtaSection ?? null;
+const resolvedCtaSection =
+  study.ctaSectionOverride ?? defaultCtaSection ?? null;
 
 const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
 const jsonLd = caseStudyJsonLd(study, siteOrigin);
@@ -132,8 +133,7 @@ const contentBlocks = (study.content ?? [])
   })
   .filter(
     (block: any): block is NonNullable<typeof block> =>
-      Boolean(block) &&
-      (block.type !== "imageGrid" || block.images.length > 0),
+      Boolean(block) && (block.type !== "imageGrid" || block.images.length > 0),
   );
 
 const siblingStudies = (allStudies ?? []).filter(
@@ -158,7 +158,12 @@ const ogDescription = seo.ogDescription || metaDescription;
 const ogImageUrl = seo.ogImage
   ? urlFor(seo.ogImage).width(1200).height(630).format("jpg").quality(90).url()
   : hasImageSource(study.image)
-    ? urlFor(study.image).width(1200).height(630).format("jpg").quality(90).url()
+    ? urlFor(study.image)
+        .width(1200)
+        .height(630)
+        .format("jpg")
+        .quality(90)
+        .url()
     : undefined;
 ---
 
@@ -298,7 +303,9 @@ const ogImageUrl = seo.ogImage
   {
     upNextStudies.length > 0 && (
       <Section docs="" padding="large" class="case-study_detail_up_next_wrap">
-        <Heading tag="h2" variant="h3" marginBottom={0}>Up Next</Heading>
+        <Heading tag="h2" variant="h3" marginBottom={0}>
+          Up Next
+        </Heading>
         <Grid largeColumns={2} mediumColumns={2} smallColumns={1}>
           {upNextStudies.map((entry: any) => (
             <CaseStudyCard

@@ -47,17 +47,19 @@ function getEmbedUrl(url: string): string | null {
 const embedUrl = getEmbedUrl(node.url);
 ---
 
-{embedUrl && (
-  <figure class="video-embed_wrap">
-    <div class="video-embed_frame">
-      <iframe
-        src={embedUrl}
-        title={node.caption || "Video"}
-        loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen
-      />
-    </div>
-    {node.caption && <figcaption>{node.caption}</figcaption>}
-  </figure>
-)}
+{
+  embedUrl && (
+    <figure class="video-embed_wrap">
+      <div class="video-embed_frame">
+        <iframe
+          src={embedUrl}
+          title={node.caption || "Video"}
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        />
+      </div>
+      {node.caption && <figcaption>{node.caption}</figcaption>}
+    </figure>
+  )
+}

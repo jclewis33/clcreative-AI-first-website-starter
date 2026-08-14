@@ -528,10 +528,7 @@ html.is-banner-dismissed .nav_banner_wrap {
 }
 
 .nav_hamburger_wrap[aria-expanded="true"] .nav_hamburger_line_1 {
-  transform: translateY(
-      calc(var(--nav-hamburger-gap) + var(--nav-hamburger-thickness))
-    )
-    rotate(45deg);
+  transform: translateY(calc(var(--nav-hamburger-gap) + var(--nav-hamburger-thickness))) rotate(45deg);
 }
 
 .nav_hamburger_wrap[aria-expanded="true"] .nav_hamburger_line_2 {
@@ -539,10 +536,7 @@ html.is-banner-dismissed .nav_banner_wrap {
 }
 
 .nav_hamburger_wrap[aria-expanded="true"] .nav_hamburger_line_3 {
-  transform: translateY(
-      calc((var(--nav-hamburger-gap) + var(--nav-hamburger-thickness)) * -1)
-    )
-    rotate(-45deg);
+  transform: translateY(calc((var(--nav-hamburger-gap) + var(--nav-hamburger-thickness)) * -1)) rotate(-45deg);
 }
 
 /* =====================================================
@@ -662,8 +656,7 @@ html.is-banner-dismissed .nav_banner_wrap {
 }
 
 /* Open state */
-[data-state="expanded"]:has([aria-expanded="true"])
-  > .nav_mobile_dropdown_list {
+[data-state="expanded"]:has([aria-expanded="true"]) > .nav_mobile_dropdown_list {
   grid-template-rows: 1fr;
 }
 
@@ -809,9 +802,7 @@ html.is-banner-dismissed .nav_banner_wrap {
 
 .nav_mega_scroll {
   margin-top: calc(var(--nav-height) - var(--border-width-main));
-  max-height: calc(
-    100svh - var(--nav-height-total) - var(--nav-spacing-outer-vertical) * 2
-  );
+  max-height: calc(100svh - var(--nav-height-total) - var(--nav-spacing-outer-vertical) * 2);
   overflow: hidden auto;
   background-color: var(--nav-background);
   border: var(--border-width-main) solid var(--border);

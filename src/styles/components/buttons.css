@@ -444,16 +444,8 @@
 
 /* Brand hover — subtle darken */
 [data-button-hover="brand"] {
-  --button-primary-background-hover: color-mix(
-    in srgb,
-    var(--color-brand-text),
-    black 10%
-  );
-  --button-primary-border-hover: color-mix(
-    in srgb,
-    var(--color-brand-text),
-    black 10%
-  );
+  --button-primary-background-hover: color-mix(in srgb, var(--color-brand-text), black 10%);
+  --button-primary-border-hover: color-mix(in srgb, var(--color-brand-text), black 10%);
   --button-primary-text-hover: var(--color-brand-500);
 
   --button-secondary-background-hover: var(--color-brand-text);

@@ -29,7 +29,7 @@ if (elements.length) {
       // crosses 75% from the top of the viewport (25% up from the bottom).
       // -25% bottom margin shrinks the trigger zone by 25% of viewport height.
       rootMargin: "0px 0px -25% 0px",
-    }
+    },
   );
 
   elements.forEach((el) => observer.observe(el));

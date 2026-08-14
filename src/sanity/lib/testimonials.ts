@@ -23,10 +23,7 @@
  */
 
 import { loadQuery } from "./load-query";
-import {
-  TESTIMONIALS_QUERY,
-  FEATURED_TESTIMONIALS_QUERY,
-} from "./queries";
+import { TESTIMONIALS_QUERY, FEATURED_TESTIMONIALS_QUERY } from "./queries";
 
 export interface TestimonialData {
   _id: string;
@@ -93,7 +90,5 @@ export async function getTestimonialByName(
   const all = await getTestimonials({
     perspectiveCookie: options.perspectiveCookie,
   });
-  return all.find(
-    (t) => t.name.toLowerCase() === name.toLowerCase(),
-  );
+  return all.find((t) => t.name.toLowerCase() === name.toLowerCase());
 }

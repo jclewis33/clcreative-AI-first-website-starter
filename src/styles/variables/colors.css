@@ -26,21 +26,9 @@
      ===================================================== */
 
   --color-dark-900: #0c111d;
-  --color-dark-900-o20: color-mix(
-    in srgb,
-    var(--color-dark-900) 20%,
-    transparent
-  );
-  --color-dark-900-o50: color-mix(
-    in srgb,
-    var(--color-dark-900) 50%,
-    transparent
-  );
-  --color-dark-900-o75: color-mix(
-    in srgb,
-    var(--color-dark-900) 75%,
-    transparent
-  );
+  --color-dark-900-o20: color-mix(in srgb, var(--color-dark-900) 20%, transparent);
+  --color-dark-900-o50: color-mix(in srgb, var(--color-dark-900) 50%, transparent);
+  --color-dark-900-o75: color-mix(in srgb, var(--color-dark-900) 75%, transparent);
 
   --color-dark-800: #2f2b2d;
 
@@ -49,21 +37,9 @@
      ===================================================== */
 
   --color-light-100: white;
-  --color-light-100-o20: color-mix(
-    in srgb,
-    var(--color-light-100) 20%,
-    transparent
-  );
-  --color-light-100-o50: color-mix(
-    in srgb,
-    var(--color-light-100) 50%,
-    transparent
-  );
-  --color-light-100-o75: color-mix(
-    in srgb,
-    var(--color-light-100) 75%,
-    transparent
-  );
+  --color-light-100-o20: color-mix(in srgb, var(--color-light-100) 20%, transparent);
+  --color-light-100-o50: color-mix(in srgb, var(--color-light-100) 50%, transparent);
+  --color-light-100-o75: color-mix(in srgb, var(--color-light-100) 75%, transparent);
 
   --color-light-200: #f4f4f4;
 
@@ -85,16 +61,8 @@
 
   /* On-brand text color (light on orange) */
   --color-brand-text: var(--color-light-100);
-  --color-brand-text-o20: color-mix(
-    in srgb,
-    var(--color-brand-text) 20%,
-    transparent
-  );
-  --color-brand-text-o75: color-mix(
-    in srgb,
-    var(--color-brand-text) 75%,
-    transparent
-  );
+  --color-brand-text-o20: color-mix(in srgb, var(--color-brand-text) 20%, transparent);
+  --color-brand-text-o75: color-mix(in srgb, var(--color-brand-text) 75%, transparent);
 
   /* =====================================================
      SYSTEM COLORS

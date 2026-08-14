@@ -36,7 +36,7 @@
  * - `'slider'` — horizontal tabs, slide transition, autoplay + prev/next/play-pause controls
  * - `'fade'`   — alias for `'top'` (identical behavior)
  */
-type TabVariant = 'top' | 'side' | 'slider' | 'fade';
+type TabVariant = "top" | "side" | "slider" | "fade";
 
 /**
  * Tab — tabbed interface with multiple layout and transition variants.
@@ -125,47 +125,49 @@ interface Props {
 }
 
 const {
-  variant          = 'top',
-  duration         = 0.6,
+  variant = "top",
+  duration = 0.6,
   autoplayDuration = 6,
-  pauseOnHover     = true,
-  loopControls     = true,
-  activeTab        = 1,
+  pauseOnHover = true,
+  loopControls = true,
+  activeTab = 1,
   class: className,
 } = Astro.props;
 
-const isSlider    = variant === 'slider';
-const isSide      = variant === 'side';
-const hasHeading  = Astro.slots.has('heading');
+const isSlider = variant === "slider";
+const isSide = variant === "side";
+const hasHeading = Astro.slots.has("heading");
 
 /* Transition mode: slider variant uses horizontal slide; everything else fades */
-const transitionMode = isSlider ? 'slide' : 'fade';
+const transitionMode = isSlider ? "slide" : "fade";
 
 /* Unique ID prefix for ARIA linking */
 const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
 ---
 
 <div
-  class:list={['tab_wrap', className]}
+  class:list={["tab_wrap", className]}
   data-tab-variant={variant}
   data-tab-transition={transitionMode}
   data-duration={String(duration)}
-  data-autoplay-duration={isSlider ? String(autoplayDuration) : ''}
+  data-autoplay-duration={isSlider ? String(autoplayDuration) : ""}
   data-pause-on-hover={String(pauseOnHover)}
   data-loop-controls={String(loopControls)}
   data-active-tab={String(activeTab)}
   data-tab-id={tabId}
 >
   <div class="tab_left">
-    {hasHeading && (
-      <div class="tab_heading_wrap u-margin-trim">
-        <slot name="heading" />
-      </div>
-    )}
+    {
+      hasHeading && (
+        <div class="tab_heading_wrap u-margin-trim">
+          <slot name="heading" />
+        </div>
+      )
+    }
     <div
       class="tab_button_list"
       role="tablist"
-      aria-orientation={isSide ? 'vertical' : 'horizontal'}
+      aria-orientation={isSide ? "vertical" : "horizontal"}
     >
       <slot name="buttons" />
     </div>
@@ -179,63 +181,94 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
     </div>
 
     {/* Slider controls: prev/next arrows + play/pause toggle */}
-    {isSlider && (
-      <div class="tab_control_wrap">
-        <div class="tab_arrow_wrap">
-          {/* Previous arrow — reuses existing button_arrow pattern from buttons.css */}
-          <div class="button_arrow_wrap">
-            <div class="button_arrow_element button_arrow_element--secondary">
-              <div aria-hidden="true" class="button_arrow_icon">
-                <svg viewBox="0 0 33 26" fill="none" stroke="currentColor" stroke-width="3">
-                  <path d="M15 24.8437L2 12.8438L15 0.843749"></path>
-                  <path d="M2.5 13L33 13"></path>
-                </svg>
+    {
+      isSlider && (
+        <div class="tab_control_wrap">
+          <div class="tab_arrow_wrap">
+            {/* Previous arrow — reuses existing button_arrow pattern from buttons.css */}
+            <div class="button_arrow_wrap">
+              <div class="button_arrow_element button_arrow_element--secondary">
+                <div aria-hidden="true" class="button_arrow_icon">
+                  <svg
+                    viewBox="0 0 33 26"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <path d="M15 24.8437L2 12.8438L15 0.843749" />
+                    <path d="M2.5 13L33 13" />
+                  </svg>
+                </div>
+              </div>
+              <div class="clickable_wrap u-cover-absolute">
+                <button
+                  type="button"
+                  class="clickable_btn tab_prev_btn"
+                  aria-label="Previous tab"
+                />
               </div>
             </div>
-            <div class="clickable_wrap u-cover-absolute">
-              <button type="button" class="clickable_btn tab_prev_btn" aria-label="Previous tab"></button>
-            </div>
-          </div>
-          {/* Next arrow */}
-          <div class="button_arrow_wrap">
-            <div class="button_arrow_element button_arrow_element--secondary">
-              <div aria-hidden="true" class="button_arrow_icon">
-                <svg viewBox="0 0 33 26" fill="none" stroke="currentColor" stroke-width="3">
-                  <path d="M18 24.8437L31 12.8438L18 0.843749"></path>
-                  <path d="M30.5 13L0 13"></path>
-                </svg>
+            {/* Next arrow */}
+            <div class="button_arrow_wrap">
+              <div class="button_arrow_element button_arrow_element--secondary">
+                <div aria-hidden="true" class="button_arrow_icon">
+                  <svg
+                    viewBox="0 0 33 26"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <path d="M18 24.8437L31 12.8438L18 0.843749" />
+                    <path d="M30.5 13L0 13" />
+                  </svg>
+                </div>
+              </div>
+              <div class="clickable_wrap u-cover-absolute">
+                <button
+                  type="button"
+                  class="clickable_btn tab_next_btn"
+                  aria-label="Next tab"
+                />
               </div>
             </div>
-            <div class="clickable_wrap u-cover-absolute">
-              <button type="button" class="clickable_btn tab_next_btn" aria-label="Next tab"></button>
-            </div>
           </div>
-        </div>
 
-        {/* Play/Pause toggle — reuses existing button_toggle pattern from buttons.css */}
-        <div class="button_toggle_wrap is-active">
-          <div class="button_toggle_element button_toggle_element--secondary">
-            <div aria-hidden="true" class="button_toggle_icon">
-              <svg class="button_toggle_play u-cover-absolute" viewBox="0 0 1393 1394" fill="none">
-                <path d="M1271 696.5L280 1393L280 -4.3318e-05L1271 696.5Z" fill="currentColor"></path>
-              </svg>
-              <svg class="button_toggle_pause u-cover-absolute" viewBox="0 0 898 1277" fill="none">
-                <rect x="577" width="321" height="1277" fill="currentColor"></rect>
-                <rect width="321" height="1277" fill="currentColor"></rect>
-              </svg>
+          {/* Play/Pause toggle — reuses existing button_toggle pattern from buttons.css */}
+          <div class="button_toggle_wrap is-active">
+            <div class="button_toggle_element button_toggle_element--secondary">
+              <div aria-hidden="true" class="button_toggle_icon">
+                <svg
+                  class="button_toggle_play u-cover-absolute"
+                  viewBox="0 0 1393 1394"
+                  fill="none"
+                >
+                  <path
+                    d="M1271 696.5L280 1393L280 -4.3318e-05L1271 696.5Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                <svg
+                  class="button_toggle_pause u-cover-absolute"
+                  viewBox="0 0 898 1277"
+                  fill="none"
+                >
+                  <rect x="577" width="321" height="1277" fill="currentColor" />
+                  <rect width="321" height="1277" fill="currentColor" />
+                </svg>
+              </div>
+            </div>
+            <div class="clickable_wrap u-cover-absolute">
+              <button
+                type="button"
+                class="clickable_btn tab_toggle_btn"
+                aria-label="Pause automatic tab rotation"
+                aria-pressed="true"
+              />
             </div>
           </div>
-          <div class="clickable_wrap u-cover-absolute">
-            <button
-              type="button"
-              class="clickable_btn tab_toggle_btn"
-              aria-label="Pause automatic tab rotation"
-              aria-pressed="true"
-            ></button>
-          </div>
         </div>
-      </div>
-    )}
+      )
+    }
   </div>
 </div>
 
@@ -263,76 +296,91 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
     const gsap = (window as any).gsap;
     const ScrollTrigger = (window as any).ScrollTrigger;
 
-    document.querySelectorAll<HTMLElement>('.tab_wrap').forEach((wrap) => {
+    document.querySelectorAll<HTMLElement>(".tab_wrap").forEach((wrap) => {
       // Prevent double-init
       if (wrap.dataset.tabInitialized) return;
-      wrap.dataset.tabInitialized = 'true';
+      wrap.dataset.tabInitialized = "true";
 
       // --- Configuration ---
-      const variant         = wrap.dataset.tabVariant ?? 'top';
-      const transitionMode  = wrap.dataset.tabTransition ?? 'fade';
-      const duration        = parseFloat(wrap.dataset.duration ?? '0.6');
-      const autoplayDur     = parseFloat(wrap.dataset.autoplayDuration || '0');
-      const doPauseOnHover  = wrap.dataset.pauseOnHover !== 'false';
-      const doLoop          = wrap.dataset.loopControls !== 'false';
-      const initialActive   = parseInt(wrap.dataset.activeTab ?? '1', 10);
-      const tabId           = wrap.dataset.tabId ?? '';
+      const variant = wrap.dataset.tabVariant ?? "top";
+      const transitionMode = wrap.dataset.tabTransition ?? "fade";
+      const duration = parseFloat(wrap.dataset.duration ?? "0.6");
+      const autoplayDur = parseFloat(wrap.dataset.autoplayDuration || "0");
+      const doPauseOnHover = wrap.dataset.pauseOnHover !== "false";
+      const doLoop = wrap.dataset.loopControls !== "false";
+      const initialActive = parseInt(wrap.dataset.activeTab ?? "1", 10);
+      const tabId = wrap.dataset.tabId ?? "";
 
       // --- Query elements ---
-      const buttons   = Array.from(wrap.querySelectorAll<HTMLButtonElement>('.tab_button_item'));
-      const panels    = Array.from(wrap.querySelectorAll<HTMLElement>('.tab_panel_item'));
-      const prevBtn   = wrap.querySelector<HTMLButtonElement>('.tab_prev_btn');
-      const nextBtn   = wrap.querySelector<HTMLButtonElement>('.tab_next_btn');
-      const toggleBtn = wrap.querySelector<HTMLButtonElement>('.tab_toggle_btn');
-      const toggleWrap = toggleBtn?.closest<HTMLElement>('.button_toggle_wrap') ?? null;
+      const buttons = Array.from(
+        wrap.querySelectorAll<HTMLButtonElement>(".tab_button_item"),
+      );
+      const panels = Array.from(
+        wrap.querySelectorAll<HTMLElement>(".tab_panel_item"),
+      );
+      const prevBtn = wrap.querySelector<HTMLButtonElement>(".tab_prev_btn");
+      const nextBtn = wrap.querySelector<HTMLButtonElement>(".tab_next_btn");
+      const toggleBtn =
+        wrap.querySelector<HTMLButtonElement>(".tab_toggle_btn");
+      const toggleWrap =
+        toggleBtn?.closest<HTMLElement>(".button_toggle_wrap") ?? null;
 
       if (buttons.length === 0 || panels.length === 0) return;
       if (buttons.length !== panels.length) {
-        console.warn('Tab: button count (' + buttons.length + ') does not match panel count (' + panels.length + ').');
+        console.warn(
+          "Tab: button count (" +
+            buttons.length +
+            ") does not match panel count (" +
+            panels.length +
+            ").",
+        );
         return;
       }
 
-      let currentIndex = Math.max(0, Math.min(initialActive - 1, buttons.length - 1));
-      let isAnimating  = false;
-      let isPlaying    = autoplayDur > 0;
+      let currentIndex = Math.max(
+        0,
+        Math.min(initialActive - 1, buttons.length - 1),
+      );
+      let isAnimating = false;
+      let isPlaying = autoplayDur > 0;
       let progressTween: any = null;
 
       // --- Wire up ARIA IDs ---
       buttons.forEach((btn, i) => {
-        const btnId   = `${tabId}-btn-${i + 1}`;
+        const btnId = `${tabId}-btn-${i + 1}`;
         const panelId = `${tabId}-panel-${i + 1}`;
         btn.id = btnId;
-        btn.setAttribute('aria-controls', panelId);
+        btn.setAttribute("aria-controls", panelId);
         panels[i].id = panelId;
-        panels[i].setAttribute('aria-labelledby', btnId);
+        panels[i].setAttribute("aria-labelledby", btnId);
       });
 
       // --- Set active state (no animation, used on init) ---
       function setActiveImmediate(index: number) {
         buttons.forEach((btn, i) => {
           const active = i === index;
-          btn.classList.toggle('is-active', active);
-          btn.setAttribute('aria-selected', String(active));
-          btn.setAttribute('tabindex', active ? '0' : '-1');
+          btn.classList.toggle("is-active", active);
+          btn.setAttribute("aria-selected", String(active));
+          btn.setAttribute("tabindex", active ? "0" : "-1");
         });
 
         panels.forEach((panel, i) => {
           const active = i === index;
-          panel.classList.toggle('is-active', active);
+          panel.classList.toggle("is-active", active);
           panel.hidden = !active;
 
           if (gsap) {
             gsap.set(panel, {
-              display: active ? 'block' : 'none',
+              display: active ? "block" : "none",
               opacity: active ? 1 : 0,
               xPercent: 0,
-              position: active ? 'relative' : 'absolute',
-              top: active ? 'auto' : 0,
-              left: active ? 'auto' : 0,
-              width: '100%',
+              position: active ? "relative" : "absolute",
+              top: active ? "auto" : 0,
+              left: active ? "auto" : 0,
+              width: "100%",
             });
           } else {
-            panel.style.display = active ? 'block' : 'none';
+            panel.style.display = active ? "block" : "none";
           }
         });
 
@@ -345,21 +393,24 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         if (newIndex < 0 || newIndex >= buttons.length) return;
 
         isAnimating = true;
-        const oldIndex  = currentIndex;
+        const oldIndex = currentIndex;
         const direction = newIndex > oldIndex ? 1 : -1;
 
         // Update button states
         buttons.forEach((btn, i) => {
           const active = i === newIndex;
-          btn.classList.toggle('is-active', active);
-          btn.setAttribute('aria-selected', String(active));
-          btn.setAttribute('tabindex', active ? '0' : '-1');
+          btn.classList.toggle("is-active", active);
+          btn.setAttribute("aria-selected", String(active));
+          btn.setAttribute("tabindex", active ? "0" : "-1");
         });
 
         // Scroll active button into view
-        const buttonList = wrap.querySelector<HTMLElement>('.tab_button_list');
+        const buttonList = wrap.querySelector<HTMLElement>(".tab_button_list");
         if (buttonList) {
-          buttonList.scrollTo({ left: buttons[newIndex].offsetLeft, behavior: 'smooth' });
+          buttonList.scrollTo({
+            left: buttons[newIndex].offsetLeft,
+            behavior: "smooth",
+          });
         }
 
         const oldPanel = panels[oldIndex];
@@ -371,12 +422,12 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
 
         if (!gsap) {
           // Fallback: instant switch
-          oldPanel.classList.remove('is-active');
+          oldPanel.classList.remove("is-active");
           oldPanel.hidden = true;
-          oldPanel.style.display = 'none';
-          newPanel.classList.add('is-active');
+          oldPanel.style.display = "none";
+          newPanel.classList.add("is-active");
           newPanel.hidden = false;
-          newPanel.style.display = 'block';
+          newPanel.style.display = "block";
           isAnimating = false;
           return;
         }
@@ -386,73 +437,70 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
             isAnimating = false;
             if (ScrollTrigger) ScrollTrigger.refresh();
           },
-          defaults: { duration: duration, ease: 'power2.inOut' },
+          defaults: { duration: duration, ease: "power2.inOut" },
         });
 
-        if (transitionMode === 'slide') {
+        if (transitionMode === "slide") {
           // --- Slide transition ---
           // Show new panel and position it off-screen
           tl.set(newPanel, {
-            display: 'block',
-            position: 'relative',
+            display: "block",
+            position: "relative",
             opacity: 1,
             xPercent: 120 * direction,
           });
           newPanel.hidden = false;
-          newPanel.classList.add('is-active');
+          newPanel.classList.add("is-active");
 
           // Position old panel for exit
           tl.set(oldPanel, {
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
+            width: "100%",
           });
 
           // Animate both panels simultaneously
-          tl.fromTo(oldPanel,
-            { xPercent: 0 },
-            { xPercent: -120 * direction }
-          );
-          tl.fromTo(newPanel,
+          tl.fromTo(oldPanel, { xPercent: 0 }, { xPercent: -120 * direction });
+          tl.fromTo(
+            newPanel,
             { xPercent: 120 * direction },
             { xPercent: 0 },
-            '<'
+            "<",
           );
 
           // Clean up old panel
-          tl.set(oldPanel, { display: 'none' });
+          tl.set(oldPanel, { display: "none" });
           tl.add(() => {
-            oldPanel.classList.remove('is-active');
+            oldPanel.classList.remove("is-active");
             oldPanel.hidden = true;
           });
-
         } else {
           // --- Fade transition ---
           // Fade out old panel
           tl.to(oldPanel, {
             opacity: 0,
             duration: duration * 0.5,
-            ease: 'power1.inOut',
+            ease: "power1.inOut",
           });
-          tl.set(oldPanel, { display: 'none' });
+          tl.set(oldPanel, { display: "none" });
           tl.add(() => {
-            oldPanel.classList.remove('is-active');
+            oldPanel.classList.remove("is-active");
             oldPanel.hidden = true;
           });
 
           // Fade in new panel
           newPanel.hidden = false;
-          newPanel.classList.add('is-active');
+          newPanel.classList.add("is-active");
           tl.set(newPanel, {
-            display: 'block',
+            display: "block",
             opacity: 0,
-            position: 'relative',
+            position: "relative",
           });
           tl.to(newPanel, {
             opacity: 1,
             duration: duration * 0.5,
-            ease: 'power1.inOut',
+            ease: "power1.inOut",
           });
         }
       }
@@ -464,19 +512,20 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
 
         // Reset all button progress lines to default
         buttons.forEach((btn) => {
-          const line = btn.querySelector<HTMLElement>('.tab_button_line');
-          if (line) line.style.setProperty('--progress', '1');
+          const line = btn.querySelector<HTMLElement>(".tab_button_line");
+          if (line) line.style.setProperty("--progress", "1");
         });
 
         // Animate active button's progress line from 0→1
-        const activeLine = buttons[currentIndex]?.querySelector<HTMLElement>('.tab_button_line');
+        const activeLine =
+          buttons[currentIndex]?.querySelector<HTMLElement>(".tab_button_line");
         if (!activeLine) return;
 
-        activeLine.style.setProperty('--progress', '0');
+        activeLine.style.setProperty("--progress", "0");
         progressTween = gsap.to(activeLine, {
-          '--progress': 1,
+          "--progress": 1,
           duration: autoplayDur,
-          ease: 'none',
+          ease: "none",
           onComplete: () => {
             const next = doLoop
               ? (currentIndex + 1) % buttons.length
@@ -506,10 +555,10 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
 
       function startAutoplay() {
         isPlaying = true;
-        if (toggleWrap) toggleWrap.classList.add('is-active');
+        if (toggleWrap) toggleWrap.classList.add("is-active");
         if (toggleBtn) {
-          toggleBtn.setAttribute('aria-label', 'Pause automatic tab rotation');
-          toggleBtn.setAttribute('aria-pressed', 'true');
+          toggleBtn.setAttribute("aria-label", "Pause automatic tab rotation");
+          toggleBtn.setAttribute("aria-pressed", "true");
         }
         startProgress();
       }
@@ -517,21 +566,21 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
       function stopAutoplay() {
         isPlaying = false;
         stopProgress();
-        if (toggleWrap) toggleWrap.classList.remove('is-active');
+        if (toggleWrap) toggleWrap.classList.remove("is-active");
         if (toggleBtn) {
-          toggleBtn.setAttribute('aria-label', 'Start automatic tab rotation');
-          toggleBtn.setAttribute('aria-pressed', 'false');
+          toggleBtn.setAttribute("aria-label", "Start automatic tab rotation");
+          toggleBtn.setAttribute("aria-pressed", "false");
         }
         // Reset all progress lines to full width
         buttons.forEach((btn) => {
-          const line = btn.querySelector<HTMLElement>('.tab_button_line');
-          if (line) line.style.setProperty('--progress', '1');
+          const line = btn.querySelector<HTMLElement>(".tab_button_line");
+          if (line) line.style.setProperty("--progress", "1");
         });
       }
 
       // --- Event: Tab button click ---
       buttons.forEach((btn, i) => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener("click", () => {
           if (isPlaying) stopProgress();
           goToTab(i);
           // Restart progress for the new tab after transition
@@ -547,13 +596,13 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
       });
 
       // --- Event: Keyboard navigation ---
-      wrap.addEventListener('keydown', (e) => {
+      wrap.addEventListener("keydown", (e) => {
         const target = e.target as HTMLElement;
         if (!target.matches('[role="tab"]')) return;
 
-        const isVertical = variant === 'side';
-        const nextKey = isVertical ? 'ArrowDown' : 'ArrowRight';
-        const prevKey = isVertical ? 'ArrowUp'   : 'ArrowLeft';
+        const isVertical = variant === "side";
+        const nextKey = isVertical ? "ArrowDown" : "ArrowRight";
+        const prevKey = isVertical ? "ArrowUp" : "ArrowLeft";
 
         let newIndex = currentIndex;
 
@@ -567,10 +616,10 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
           newIndex = doLoop
             ? (currentIndex - 1 + buttons.length) % buttons.length
             : Math.max(currentIndex - 1, 0);
-        } else if (e.key === 'Home') {
+        } else if (e.key === "Home") {
           e.preventDefault();
           newIndex = 0;
-        } else if (e.key === 'End') {
+        } else if (e.key === "End") {
           e.preventDefault();
           newIndex = buttons.length - 1;
         }
@@ -590,7 +639,7 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
       });
 
       // --- Event: Prev/Next arrows ---
-      prevBtn?.addEventListener('click', () => {
+      prevBtn?.addEventListener("click", () => {
         const prev = doLoop
           ? (currentIndex - 1 + buttons.length) % buttons.length
           : Math.max(currentIndex - 1, 0);
@@ -606,7 +655,7 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         }
       });
 
-      nextBtn?.addEventListener('click', () => {
+      nextBtn?.addEventListener("click", () => {
         const next = doLoop
           ? (currentIndex + 1) % buttons.length
           : Math.min(currentIndex + 1, buttons.length - 1);
@@ -623,7 +672,7 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
       });
 
       // --- Event: Play/Pause toggle ---
-      toggleBtn?.addEventListener('click', () => {
+      toggleBtn?.addEventListener("click", () => {
         if (isPlaying) {
           stopAutoplay();
         } else {
@@ -637,14 +686,14 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
       if (doPauseOnHover && autoplayDur > 0) {
         let wasPausedByHover = false;
 
-        wrap.addEventListener('mouseenter', () => {
+        wrap.addEventListener("mouseenter", () => {
           if (isPlaying && progressTween) {
             progressTween.pause();
             wasPausedByHover = true;
           }
         });
 
-        wrap.addEventListener('mouseleave', () => {
+        wrap.addEventListener("mouseleave", () => {
           if (isPlaying && wasPausedByHover && progressTween) {
             progressTween.resume();
             wasPausedByHover = false;
@@ -656,30 +705,39 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
       if (autoplayDur > 0) {
         let wasPlayingBeforeHidden = false;
 
-        const observer = new IntersectionObserver((entries) => {
-          const entry = entries[0];
-          if (!entry.isIntersecting && isPlaying) {
-            stopProgress();
-            wasPlayingBeforeHidden = true;
-          } else if (entry.isIntersecting && isPlaying && wasPlayingBeforeHidden) {
-            startProgress();
-            wasPlayingBeforeHidden = false;
-          }
-        }, { threshold: 0 });
+        const observer = new IntersectionObserver(
+          (entries) => {
+            const entry = entries[0];
+            if (!entry.isIntersecting && isPlaying) {
+              stopProgress();
+              wasPlayingBeforeHidden = true;
+            } else if (
+              entry.isIntersecting &&
+              isPlaying &&
+              wasPlayingBeforeHidden
+            ) {
+              startProgress();
+              wasPlayingBeforeHidden = false;
+            }
+          },
+          { threshold: 0 },
+        );
 
         observer.observe(wrap);
       }
 
       // --- Event: Respect prefers-reduced-motion ---
       if (autoplayDur > 0) {
-        const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const motionQuery = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        );
         function handleMotionPref(e: MediaQueryListEvent | MediaQueryList) {
           if (e.matches && isPlaying) {
             stopAutoplay();
           }
         }
         handleMotionPref(motionQuery);
-        motionQuery.addEventListener('change', handleMotionPref);
+        motionQuery.addEventListener("change", handleMotionPref);
       }
 
       // --- Initialize ---
@@ -702,8 +760,8 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => waitForGsap());
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => waitForGsap());
   } else {
     waitForGsap();
   }

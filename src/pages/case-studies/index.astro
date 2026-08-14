@@ -26,7 +26,10 @@ import CaseStudyCard from "../../components/ui/CaseStudyCard.astro";
 // Sanity
 import { loadPageQuery } from "../../sanity/lib/page-data";
 import { getDraftModeProps } from "../../sanity/lib/draft-mode";
-import { CASE_STUDIES_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
+import {
+  CASE_STUDIES_QUERY,
+  SITE_SETTINGS_QUERY,
+} from "../../sanity/lib/queries";
 import { urlFor, hotspotPosition } from "../../sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
 
@@ -113,9 +116,11 @@ const categoryOptions = [
             aria-label="Filter by industry"
           >
             <option value="">All Industries</option>
-            {industryOptions.map((industry) => (
-              <option value={industry}>{industry}</option>
-            ))}
+            {
+              industryOptions.map((industry) => (
+                <option value={industry}>{industry}</option>
+              ))
+            }
           </select>
           <svg
             class="case-study_select_arrow"
@@ -140,9 +145,11 @@ const categoryOptions = [
             aria-label="Filter by category"
           >
             <option value="">All Categories</option>
-            {categoryOptions.map((category) => (
-              <option value={category}>{category}</option>
-            ))}
+            {
+              categoryOptions.map((category) => (
+                <option value={category}>{category}</option>
+              ))
+            }
           </select>
           <svg
             class="case-study_select_arrow"
@@ -218,9 +225,7 @@ const categoryOptions = [
       class="case-study_no_results"
       style="display:none;"
     >
-      <Text muted align="center">
-        No case studies match your filters.
-      </Text>
+      <Text muted align="center"> No case studies match your filters. </Text>
     </div>
   </Section>
 

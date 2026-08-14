@@ -27,12 +27,7 @@
    ========================================================================== */
 
 :root {
-  --gradient-primary: linear-gradient(
-    94deg,
-    var(--color-brand-400) -0.01%,
-    var(--color-brand-500) 51.63%,
-    var(--color-brand-600) 103.27%
-  );
+  --gradient-primary: linear-gradient(94deg, var(--color-brand-400) -0.01%, var(--color-brand-500) 51.63%, var(--color-brand-600) 103.27%);
 }
 
 /* ==========================================================================
@@ -139,9 +134,7 @@
   --button-primary-background: var(--color-brand-500);
   --button-primary-border: var(--color-brand-500);
   --button-primary-text: var(--color-brand-text); /* dark-900       */
-  --button-primary-background-hover: var(
-    --color-light-100
-  ); /* = text: white  */
+  --button-primary-background-hover: var(--color-light-100); /* = text: white  */
   --button-primary-border-hover: var(--color-light-100);
   --button-primary-text-hover: var(--color-dark-900); /* = bg           */
 
@@ -149,9 +142,7 @@
   --button-secondary-background: transparent;
   --button-secondary-border: var(--color-light-100-o20); /* = --border     */
   --button-secondary-text: var(--color-light-100);
-  --button-secondary-background-hover: var(
-    --color-light-100
-  ); /* = text         */
+  --button-secondary-background-hover: var(--color-light-100); /* = text         */
   --button-secondary-border-hover: var(--color-light-100);
   --button-secondary-text-hover: var(--color-dark-900); /* = bg           */
 
@@ -212,25 +203,15 @@
   --button-primary-background: var(--color-brand-text); /* white           */
   --button-primary-border: var(--color-brand-text); /* white           */
   --button-primary-text: var(--color-brand-500); /* brand orange    */
-  --button-primary-background-hover: color-mix(
-    in srgb,
-    var(--color-brand-text),
-    black 10%
-  );
-  --button-primary-border-hover: color-mix(
-    in srgb,
-    var(--color-brand-text),
-    black 10%
-  );
+  --button-primary-background-hover: color-mix(in srgb, var(--color-brand-text), black 10%);
+  --button-primary-border-hover: color-mix(in srgb, var(--color-brand-text), black 10%);
   --button-primary-text-hover: var(--color-brand-500); /* brand stays     */
 
   /* Button — Secondary */
   --button-secondary-background: transparent;
   --button-secondary-border: var(--color-brand-text-o20); /* = --border     */
   --button-secondary-text: var(--color-brand-text); /* dark-900       */
-  --button-secondary-background-hover: var(
-    --color-brand-text
-  ); /* dark-900       */
+  --button-secondary-background-hover: var(--color-brand-text); /* dark-900       */
   --button-secondary-border-hover: var(--color-brand-text);
   --button-secondary-text-hover: var(--color-brand-500); /* = bg brand      */
 

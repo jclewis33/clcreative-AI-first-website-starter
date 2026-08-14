@@ -34,14 +34,19 @@ const json = (b: unknown, s = 200) =>
 
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
-    if (req.method === "GET") return json({ ok: true, service: "rebuild-debounce" });
-    if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
+    if (req.method === "GET")
+      return json({ ok: true, service: "rebuild-debounce" });
+    if (req.method !== "POST")
+      return json({ error: "method not allowed" }, 405);
 
     // The Sanity webhook authenticates with a shared bearer token (set as an
     // HTTP header on the webhook + a Worker secret). Reject anything else so a
     // random POST can't force-trigger builds.
     const expected = `Bearer ${env.WEBHOOK_TOKEN}`;
-    if (!env.WEBHOOK_TOKEN || (req.headers.get("authorization") ?? "") !== expected)
+    if (
+      !env.WEBHOOK_TOKEN ||
+      (req.headers.get("authorization") ?? "") !== expected
+    )
       return json({ error: "unauthorized" }, 401);
 
     const stub = env.REBUILD_DEBOUNCE.get(

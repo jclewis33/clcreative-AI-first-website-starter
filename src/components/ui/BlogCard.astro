@@ -163,16 +163,18 @@ const formattedDate = date
   <Text variant="small" muted clamp={2}>{description}</Text>
 
   <div slot="footer" class="blog_card_footer">
-    {categories?.map((cat: string) => (
-      <Text
-        tag="span"
-        variant="tiny"
-        weight="medium"
-        marginBottom={0}
-        class="blog_card_category"
-      >
-        {cat}
-      </Text>
-    ))}
+    {
+      categories?.map((cat: string) => (
+        <Text
+          tag="span"
+          variant="tiny"
+          weight="medium"
+          marginBottom={0}
+          class="blog_card_category"
+        >
+          {cat}
+        </Text>
+      ))
+    }
   </div>
 </Card>

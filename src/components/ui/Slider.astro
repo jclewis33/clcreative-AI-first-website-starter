@@ -322,15 +322,15 @@ const sliderId = `slider-${Math.random().toString(36).slice(2, 8)}`;
 <!-- Synchronous auto-wrap: runs before first paint so slides have correct
      dimensions immediately — prevents CLS (Cumulative Layout Shift). -->
 <script is:inline define:vars={{ sliderId }}>
-  (function() {
+  (function () {
     var wrap = document.getElementById(sliderId);
     if (!wrap) return;
-    var wrapper = wrap.querySelector('.swiper-wrapper');
+    var wrapper = wrap.querySelector(".swiper-wrapper");
     if (!wrapper) return;
-    Array.from(wrapper.children).forEach(function(child) {
-      if (!child.classList.contains('swiper-slide')) {
-        var slide = document.createElement('div');
-        slide.className = 'swiper-slide';
+    Array.from(wrapper.children).forEach(function (child) {
+      if (!child.classList.contains("swiper-slide")) {
+        var slide = document.createElement("div");
+        slide.className = "swiper-slide";
         wrapper.insertBefore(slide, child);
         slide.appendChild(child);
       }

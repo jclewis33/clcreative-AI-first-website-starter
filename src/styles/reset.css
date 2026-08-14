@@ -119,7 +119,12 @@ a:not([class]) {
 /* Focus State — outline only appears during keyboard navigation.
    A tiny inline script in BaseLayout toggles .using-keyboard on <html>
    (added on Tab keydown, removed on mousedown). */
-a, button, :where([tabindex]), input, textarea, select {
+a,
+button,
+:where([tabindex]),
+input,
+textarea,
+select {
   outline-offset: var(--focus-offset-outer);
 }
 

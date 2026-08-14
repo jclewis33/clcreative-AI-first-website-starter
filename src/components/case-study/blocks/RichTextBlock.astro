@@ -12,9 +12,14 @@ interface Props {
   maxWidth?: string;
 }
 
-const { html, maxWidth = '48rem' } = Astro.props;
+const { html, maxWidth = "48rem" } = Astro.props;
 ---
 
-<div class="case-study_detail_rich_text_wrap" style={`max-width: ${maxWidth}`} data-fade-in data-prevent-flicker="true">
+<div
+  class="case-study_detail_rich_text_wrap"
+  style={`max-width: ${maxWidth}`}
+  data-fade-in
+  data-prevent-flicker="true"
+>
   <div class="u-rich-text" set:html={html} />
 </div>

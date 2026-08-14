@@ -30,11 +30,11 @@
  * ```
  */
 
-import type { ImageMetadata } from 'astro';
-import Visual from './Visual.astro';
-import Heading from './Heading.astro';
-import Text from './Text.astro';
-import Button from './Button.astro';
+import type { ImageMetadata } from "astro";
+import Visual from "./Visual.astro";
+import Heading from "./Heading.astro";
+import Text from "./Text.astro";
+import Button from "./Button.astro";
 
 /** A single scroll-reveal content block. */
 interface ScrollRevealItem {
@@ -87,13 +87,29 @@ interface Props {
    * Aspect ratio for the sticky images (forwarded to Visual).
    * @default 'landscape'
    */
-  imageRatio?: 'wide' | 'widescreen' | 'landscape' | 'square' | 'portrait' | 'tall' | string;
+  imageRatio?:
+    | "wide"
+    | "widescreen"
+    | "landscape"
+    | "square"
+    | "portrait"
+    | "tall"
+    | string;
 
   /**
    * Border radius for the sticky images (forwarded to Visual).
    * @default 'main'
    */
-  imageRadius?: 'none' | 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'main' | 'full' | 'section';
+  imageRadius?:
+    | "none"
+    | "xsmall"
+    | "small"
+    | "medium"
+    | "large"
+    | "xlarge"
+    | "main"
+    | "full"
+    | "section";
 
   /**
    * Column ratio as `"N-M"`. Left = content column, right = image column.
@@ -113,36 +129,82 @@ interface Props {
 const {
   docs,
   items,
-  imageRatio  = 'landscape',
-  imageRadius = 'main',
-  ratio       = '5-7',
+  imageRatio = "landscape",
+  imageRadius = "main",
+  ratio = "5-7",
   class: className,
   ...rest
 } = Astro.props as Props;
 
 // Parse ratio into CSS custom properties
-const [left, right] = ratio.split('-').map(Number);
-const ratioStyle = (left > 0 && right > 0)
-  ? `--sr-col-1: ${left}fr; --sr-col-2: ${right}fr`
-  : undefined;
+const [left, right] = ratio.split("-").map(Number);
+const ratioStyle =
+  left > 0 && right > 0
+    ? `--sr-col-1: ${left}fr; --sr-col-2: ${right}fr`
+    : undefined;
 ---
 
 <div
-  class:list={['scroll_reveal_wrap', className]}
+  class:list={["scroll_reveal_wrap", className]}
   data-scroll-reveal="component"
   style={ratioStyle}
   {...rest}
 >
   {/* ── Content column (left) ── */}
   <div class="scroll_reveal_content">
-    {items.map((item, index) => (
-      <div
-        class:list={['scroll_reveal_block', index === 0 && 'is-first']}
-        data-scroll-reveal="block"
-        data-scroll-reveal-index={String(index)}
-      >
-        {/* Mobile-only image (hidden on desktop via media query) */}
-        <div class="scroll_reveal_mobile_visual">
+    {
+      items.map((item, index) => (
+        <div
+          class:list={["scroll_reveal_block", index === 0 && "is-first"]}
+          data-scroll-reveal="block"
+          data-scroll-reveal-index={String(index)}
+        >
+          {/* Mobile-only image (hidden on desktop via media query) */}
+          <div class="scroll_reveal_mobile_visual">
+            <Visual
+              src={item.image}
+              alt={item.imageAlt}
+              ratio={imageRatio}
+              radius={imageRadius}
+            />
+          </div>
+
+          {/* Text content */}
+          <div class="scroll_reveal_block_content">
+            {item.eyebrow && (
+              <Heading variant="eyebrow">{item.eyebrow}</Heading>
+            )}
+            <Heading tag="h3" variant="h3">
+              {item.heading}
+            </Heading>
+            <Text variant="regular">{item.text}</Text>
+            {item.buttonHref && (
+              <div class="u-button-wrapper">
+                <Button
+                  href={item.buttonHref}
+                  ariaLabel={
+                    item.buttonAriaLabel ?? `Learn more about ${item.heading}`
+                  }
+                >
+                  {item.buttonText ?? "Learn more"}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  {/* ── Sticky image track (right, desktop only) ── */}
+  <div class="scroll_reveal_track">
+    {
+      items.map((item, index) => (
+        <div
+          class:list={["scroll_reveal_panel", index === 0 && "is-active"]}
+          data-scroll-reveal="panel"
+          data-scroll-reveal-index={String(index)}
+        >
           <Visual
             src={item.image}
             alt={item.imageAlt}
@@ -150,45 +212,8 @@ const ratioStyle = (left > 0 && right > 0)
             radius={imageRadius}
           />
         </div>
-
-        {/* Text content */}
-        <div class="scroll_reveal_block_content">
-          {item.eyebrow && (
-            <Heading variant="eyebrow">{item.eyebrow}</Heading>
-          )}
-          <Heading tag="h3" variant="h3">{item.heading}</Heading>
-          <Text variant="regular">{item.text}</Text>
-          {item.buttonHref && (
-            <div class="u-button-wrapper">
-              <Button
-                href={item.buttonHref}
-                ariaLabel={item.buttonAriaLabel ?? `Learn more about ${item.heading}`}
-              >
-                {item.buttonText ?? 'Learn more'}
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-    ))}
-  </div>
-
-  {/* ── Sticky image track (right, desktop only) ── */}
-  <div class="scroll_reveal_track">
-    {items.map((item, index) => (
-      <div
-        class:list={['scroll_reveal_panel', index === 0 && 'is-active']}
-        data-scroll-reveal="panel"
-        data-scroll-reveal-index={String(index)}
-      >
-        <Visual
-          src={item.image}
-          alt={item.imageAlt}
-          ratio={imageRatio}
-          radius={imageRadius}
-        />
-      </div>
-    ))}
+      ))
+    }
   </div>
 </div>
 
@@ -219,62 +244,71 @@ const ratioStyle = (left > 0 && right > 0)
     const ScrollTrigger = (window as any).ScrollTrigger;
 
     if (!gsap || !ScrollTrigger) {
-      console.warn('ScrollReveal: GSAP + ScrollTrigger required.');
+      console.warn("ScrollReveal: GSAP + ScrollTrigger required.");
       return;
     }
 
     gsap.registerPlugin(ScrollTrigger);
 
     // Respect reduced motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    document.querySelectorAll<HTMLElement>('[data-scroll-reveal="component"]').forEach((wrap) => {
-      // Guard against double-init
-      if (wrap.dataset.scrollRevealInit) return;
-      wrap.dataset.scrollRevealInit = 'true';
+    document
+      .querySelectorAll<HTMLElement>('[data-scroll-reveal="component"]')
+      .forEach((wrap) => {
+        // Guard against double-init
+        if (wrap.dataset.scrollRevealInit) return;
+        wrap.dataset.scrollRevealInit = "true";
 
-      const blocks = wrap.querySelectorAll<HTMLElement>('[data-scroll-reveal="block"]');
-      const panels = wrap.querySelectorAll<HTMLElement>('[data-scroll-reveal="panel"]');
+        const blocks = wrap.querySelectorAll<HTMLElement>(
+          '[data-scroll-reveal="block"]',
+        );
+        const panels = wrap.querySelectorAll<HTMLElement>(
+          '[data-scroll-reveal="panel"]',
+        );
 
-      if (blocks.length === 0 || panels.length === 0) return;
+        if (blocks.length === 0 || panels.length === 0) return;
 
-      // Build index map: index → panel element
-      const panelMap = new Map<number, HTMLElement>();
-      panels.forEach((panel) => {
-        const idx = parseInt(panel.dataset.scrollRevealIndex ?? '0', 10);
-        panelMap.set(idx, panel);
-      });
+        // Build index map: index → panel element
+        const panelMap = new Map<number, HTMLElement>();
+        panels.forEach((panel) => {
+          const idx = parseInt(panel.dataset.scrollRevealIndex ?? "0", 10);
+          panelMap.set(idx, panel);
+        });
 
-      let activeIndex = 0;
+        let activeIndex = 0;
 
-      function setActivePanel(index: number) {
-        if (index === activeIndex) return;
-        const current = panelMap.get(activeIndex);
-        if (current) current.classList.remove('is-active');
-        const next = panelMap.get(index);
-        if (next) next.classList.add('is-active');
-        activeIndex = index;
-      }
+        function setActivePanel(index: number) {
+          if (index === activeIndex) return;
+          const current = panelMap.get(activeIndex);
+          if (current) current.classList.remove("is-active");
+          const next = panelMap.get(index);
+          if (next) next.classList.add("is-active");
+          activeIndex = index;
+        }
 
-      // gsap.matchMedia (gsap-core; replaces the deprecated ScrollTrigger.matchMedia)
-      // — synced with CSS @media (max-width: 767px). Auto-reverts the ScrollTriggers
-      // created inside when the query stops matching, then re-runs the cleanup below.
-      const mm = gsap.matchMedia();
-      mm.add('(min-width: 768px)', function () {
+        // gsap.matchMedia (gsap-core; replaces the deprecated ScrollTrigger.matchMedia)
+        // — synced with CSS @media (max-width: 767px). Auto-reverts the ScrollTriggers
+        // created inside when the query stops matching, then re-runs the cleanup below.
+        const mm = gsap.matchMedia();
+        mm.add("(min-width: 768px)", function () {
           // Set initial state
           blocks.forEach((block, i) => {
             gsap.set(block, { opacity: i === 0 ? 1 : 0.15 });
           });
 
           blocks.forEach((block, i) => {
-            const index = parseInt(block.dataset.scrollRevealIndex ?? String(i), 10);
+            const index = parseInt(
+              block.dataset.scrollRevealIndex ?? String(i),
+              10,
+            );
             const isFirst = i === 0;
             const isLast = i === blocks.length - 1;
 
             ScrollTrigger.create({
               trigger: block,
-              start: 'top 80%',
-              end: 'bottom 20%',
+              start: "top 80%",
+              end: "bottom 20%",
               scrub: 0.3,
               onUpdate: (self: any) => {
                 const progress = self.progress;
@@ -282,17 +316,23 @@ const ratioStyle = (left > 0 && right > 0)
 
                 if (isFirst) {
                   // First block: starts visible, fades out in second half
-                  opacity = progress <= 0.5
-                    ? 1
-                    : gsap.utils.mapRange(0.5, 1, 1, 0.15, progress);
+                  opacity =
+                    progress <= 0.5
+                      ? 1
+                      : gsap.utils.mapRange(0.5, 1, 1, 0.15, progress);
                 } else if (isLast) {
                   // Last block: fades in, never fades out
-                  opacity = gsap.utils.clamp(0.15, 1, gsap.utils.mapRange(0, 0.5, 0.15, 1, progress));
+                  opacity = gsap.utils.clamp(
+                    0.15,
+                    1,
+                    gsap.utils.mapRange(0, 0.5, 0.15, 1, progress),
+                  );
                 } else {
                   // Middle blocks: fade in first half, fade out second half
-                  opacity = progress <= 0.5
-                    ? gsap.utils.mapRange(0, 0.5, 0.15, 1, progress)
-                    : gsap.utils.mapRange(0.5, 1, 1, 0.15, progress);
+                  opacity =
+                    progress <= 0.5
+                      ? gsap.utils.mapRange(0, 0.5, 0.15, 1, progress)
+                      : gsap.utils.mapRange(0.5, 1, 1, 0.15, progress);
                 }
 
                 gsap.set(block, { opacity });
@@ -309,15 +349,14 @@ const ratioStyle = (left > 0 && right > 0)
           return function () {
             blocks.forEach((block) => gsap.set(block, { opacity: 1 }));
             panels.forEach((panel, i) => {
-              panel.classList.toggle('is-active', i === 0);
+              panel.classList.toggle("is-active", i === 0);
             });
             activeIndex = 0;
           };
-        }
-      );
+        });
 
-      ScrollTrigger.refresh();
-    });
+        ScrollTrigger.refresh();
+      });
   }
 
   // Poll for GSAP + ScrollTrigger (CDN may load after DOMContentLoaded)
@@ -329,8 +368,8 @@ const ratioStyle = (left > 0 && right > 0)
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => waitForGsap());
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => waitForGsap());
   } else {
     waitForGsap();
   }

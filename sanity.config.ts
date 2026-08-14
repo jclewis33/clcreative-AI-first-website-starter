@@ -126,28 +126,25 @@ export default defineConfig({
                           .filter('_type == "blogPost" && featured == true')
                           .defaultOrdering(DATE_DESC),
                       ),
-                    S.listItem()
-                      .title("Draft Posts")
-                      .icon(EditIcon)
-                      .child(
-                        S.documentList()
-                          .title("Draft Posts")
-                          .schemaType("blogPost")
-                          .apiVersion(STRUCTURE_API_VERSION)
-                          // Filter on _originalId, NOT _id. Studio document
-                          // lists run under the `drafts` perspective, which
-                          // strips the `drafts.` prefix off _id — so
-                          // `_id in path("drafts.**")` matches nothing and this
-                          // view is always empty. _originalId keeps the
-                          // underlying stored id (`drafts.…`), so it correctly
-                          // matches documents that have unpublished changes.
-                          // (Verified: under perspective `drafts` the _id form
-                          // returns 0 rows; drafts only appear under `raw`.)
-                          .filter(
-                            '_type == "blogPost" && _originalId in path("drafts.**")',
-                          )
-                          .defaultOrdering(DATE_DESC),
-                      ),
+                    S.listItem().title("Draft Posts").icon(EditIcon).child(
+                      S.documentList()
+                        .title("Draft Posts")
+                        .schemaType("blogPost")
+                        .apiVersion(STRUCTURE_API_VERSION)
+                        // Filter on _originalId, NOT _id. Studio document
+                        // lists run under the `drafts` perspective, which
+                        // strips the `drafts.` prefix off _id — so
+                        // `_id in path("drafts.**")` matches nothing and this
+                        // view is always empty. _originalId keeps the
+                        // underlying stored id (`drafts.…`), so it correctly
+                        // matches documents that have unpublished changes.
+                        // (Verified: under perspective `drafts` the _id form
+                        // returns 0 rows; drafts only appear under `raw`.)
+                        .filter(
+                          '_type == "blogPost" && _originalId in path("drafts.**")',
+                        )
+                        .defaultOrdering(DATE_DESC),
+                    ),
                     S.listItem()
                       .title("Featured Case Studies")
                       .icon(StarIcon)
@@ -185,9 +182,7 @@ export default defineConfig({
                     S.listItem()
                       .title("Blog CTAs")
                       .icon(BellIcon)
-                      .child(
-                        S.documentTypeList("blogCta").title("Blog CTAs"),
-                      ),
+                      .child(S.documentTypeList("blogCta").title("Blog CTAs")),
                     S.listItem()
                       .title("CTA Sections")
                       .icon(BlockElementIcon)

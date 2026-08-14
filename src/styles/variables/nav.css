@@ -55,7 +55,6 @@
    ========================================================================== */
 
 :root {
-
   /* =====================================================
      OUTER WRAP
      Outermost padding that positions the bar over the page.
@@ -64,7 +63,7 @@
        Change all three together.
      ===================================================== */
 
-  --nav-max-width-outer:          100%;
+  --nav-max-width-outer: 100%;
 
   /* ★ PILL ↔ FULL-WIDTH  — horizontal space around the bar
          pill:       var(--site-margin)
@@ -74,14 +73,14 @@
   /* ★ PILL ↔ FULL-WIDTH  — vertical space around the bar
          pill:       .75rem
          full-width: 0px                                   */
-  --nav-spacing-outer-vertical:   0px;
+  --nav-spacing-outer-vertical: 0px;
 
   /* =====================================================
      INNER BAR
      The visible bar that holds nav elements.
      ===================================================== */
 
-  --nav-max-width-inner:          var(--max-width-main);
+  --nav-max-width-inner: var(--max-width-main);
 
   /* ★ PILL ↔ FULL-WIDTH  — padding inside the colored bar (nav_inner).
          pill:       var(--site-gutter)
@@ -91,7 +90,7 @@
   /* ★ PILL ↔ FULL-WIDTH  — border radius of the bar
          pill:       var(--radius-main)
          full-width: var(--radius-none)                    */
-  --nav-radius:                   var(--radius-none);
+  --nav-radius: var(--radius-none);
 
   /* =====================================================
      HEIGHT
@@ -99,14 +98,10 @@
      account for the fixed nav + banner.
      ===================================================== */
 
-  --nav-height:        3.5rem;   /* 56px — inner bar height                    */
-  --nav-banner-height: 0rem;     /* overridden by html.is-has-banner below     */
+  --nav-height: 3.5rem; /* 56px — inner bar height                    */
+  --nav-banner-height: 0rem; /* overridden by html.is-has-banner below     */
 
-  --nav-height-total: calc(
-    var(--nav-height) +
-    var(--nav-spacing-outer-vertical) * 2 +
-    var(--nav-banner-height)
-  );
+  --nav-height-total: calc(var(--nav-height) + var(--nav-spacing-outer-vertical) * 2 + var(--nav-banner-height));
 
   /* Banner background + text color are in themes.css
      (--nav-banner-background, --nav-banner-color)         */
@@ -115,22 +110,20 @@
      HAMBURGER
      ===================================================== */
 
-  --nav-hamburger-thickness: 0.125rem;   /* 2px  */
-  --nav-hamburger-gap:       0.375rem;   /* 6px  */
+  --nav-hamburger-thickness: 0.125rem; /* 2px  */
+  --nav-hamburger-gap: 0.375rem; /* 6px  */
 
   /* =====================================================
      DROPDOWN
      ===================================================== */
 
-  --nav-dropdown-radius:     var(--radius-main);
-  --nav-dropdown-padding:    var(--space-3);
-  --nav-dropdown-gap:        var(--space-1);
+  --nav-dropdown-radius: var(--radius-main);
+  --nav-dropdown-padding: var(--space-3);
+  --nav-dropdown-gap: var(--space-1);
   --nav-dropdown-background: var(--nav-background);
-  --nav-dropdown-min-width:  12rem;
-  --nav-dropdown-offset:     var(--space-3);
-
+  --nav-dropdown-min-width: 12rem;
+  --nav-dropdown-offset: var(--space-3);
 }
-
 
 /* When banner is visible, include its height in nav offset calculations.
    JS refines this to the actual measured height (for text that wraps). */

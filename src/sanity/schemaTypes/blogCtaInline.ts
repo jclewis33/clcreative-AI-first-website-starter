@@ -8,7 +8,8 @@ export const blogCtaInline = defineType({
     defineField({
       name: "cta",
       title: "CTA",
-      description: "Pick an existing Blog CTA document to embed at this point in the post.",
+      description:
+        "Pick an existing Blog CTA document to embed at this point in the post.",
       type: "reference",
       to: [{ type: "blogCta" }],
       validation: (rule) => rule.required(),

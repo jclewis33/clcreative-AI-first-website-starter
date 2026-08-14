@@ -14,7 +14,21 @@ interface Props {
   position?: { x: number; y: number } | "center";
 }
 
-const { image, imageAlt, aspectRatio = "wide", transparent, position } = Astro.props;
+const {
+  image,
+  imageAlt,
+  aspectRatio = "wide",
+  transparent,
+  position,
+} = Astro.props;
 ---
 
-<Visual src={image} alt={imageAlt} ratio={aspectRatio} transparent={transparent} position={position} data-fade-in data-prevent-flicker="true" />
+<Visual
+  src={image}
+  alt={imageAlt}
+  ratio={aspectRatio}
+  transparent={transparent}
+  position={position}
+  data-fade-in
+  data-prevent-flicker="true"
+/>

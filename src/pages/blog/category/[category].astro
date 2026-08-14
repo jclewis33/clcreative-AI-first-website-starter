@@ -46,8 +46,8 @@ if (!categorySlug) return Astro.redirect("/404");
 
 const draftProps = getDraftModeProps(Astro);
 
-const category: string = (Astro.props as { categoryName?: string })
-  .categoryName ?? "All";
+const category: string =
+  (Astro.props as { categoryName?: string }).categoryName ?? "All";
 
 const categoryLabel = category === "All" ? "All" : category;
 
