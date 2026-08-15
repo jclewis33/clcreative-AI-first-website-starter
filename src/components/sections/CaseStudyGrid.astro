@@ -59,6 +59,7 @@
  */
 
 import Section from "@/components/ui/Section.astro";
+import { slotContent } from "@/lib/slots";
 import Layout from "@/components/ui/Layout.astro";
 import Col from "@/components/ui/Col.astro";
 import Grid from "@/components/ui/Grid.astro";
@@ -419,9 +420,12 @@ filtered = filtered.slice(0, limit);
    Resolve heading text
    ═══════════════════════════════════════════════════ */
 
-const hasHeadingSlot = Astro.slots.has("heading");
+/* Renders anything, vs merely "was passed" — a heading slot holding an
+   empty expression would otherwise emit an empty wrapper. Awaited in the
+   template below, never in frontmatter (see src/lib/slots.ts). */
+const headingContent = slotContent(Astro.slots, "heading");
 const resolvedHeading = heading ?? "Case Studies";
-const showHeading = hasHeadingSlot || resolvedHeading;
+const showHeading = Astro.slots.has("heading") || resolvedHeading;
 
 /* ═══════════════════════════════════════════════════
    Grid column mapping
@@ -455,7 +459,7 @@ const gridProps =
         <Col slot="col1">
           {/* Heading area */}
           {showHeading &&
-            (hasHeadingSlot ? (
+            ((await headingContent) ? (
               <slot name="heading" />
             ) : (
               <>

@@ -23,6 +23,7 @@
  */
 
 import Section from "@/components/ui/Section.astro";
+import { slotContent } from "@/lib/slots";
 import Heading from "@/components/ui/Heading.astro";
 import Slider from "@/components/ui/Slider.astro";
 import ContentWrapper from "@/components/ui/ContentWrapper.astro";
@@ -161,8 +162,11 @@ const {
 
 const testimonials = limit ? rawTestimonials.slice(0, limit) : rawTestimonials;
 
-const hasHeadingSlot = Astro.slots.has("heading");
-const showHeading = hasHeadingSlot || heading;
+/* Renders anything, vs merely "was passed" — a heading slot holding an
+   empty expression would otherwise emit an empty wrapper. Awaited in the
+   template below, never in frontmatter (see src/lib/slots.ts). */
+const headingContent = slotContent(Astro.slots, "heading");
+const showHeading = Astro.slots.has("heading") || heading;
 ---
 
 <Section
@@ -177,7 +181,7 @@ const showHeading = hasHeadingSlot || heading;
   {
     showHeading && (
       <ContentWrapper class="testimonials_header ">
-        {hasHeadingSlot ? (
+        {(await headingContent) ? (
           <slot name="heading" />
         ) : (
           <>

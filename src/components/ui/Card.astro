@@ -67,6 +67,7 @@ type GridColumnSpan = 1 | 2 | 3 | 4;
  * **Slots:** `visual` (image/media), `title` (custom heading), default (body), `footer`.
  */
 import type { HTMLAttributes } from "astro/types";
+import { slotContent } from "@/lib/slots";
 
 interface BaseProps {
   /**
@@ -251,9 +252,18 @@ const linkTarget = newTab ? "_blank" : undefined;
 const linkLabel = ariaLabel ?? title ?? undefined;
 
 /* Check which slots are used */
-const hasVisual = Astro.slots.has("visual");
-const hasTitle = Astro.slots.has("title");
-const hasFooter = Astro.slots.has("footer");
+/* Does each slot RENDER anything, not merely "was it passed"? A footer holding
+   `{posts.length > 0 && <Button/>}` is "passed" even when it emits nothing, and
+   gating the wrapper on Astro.slots.has() then leaves an empty <div> on exactly
+   the CMS pages where the data is missing. See src/lib/slots.ts.
+
+   Resolved here in the template's scope but AWAITED BELOW, inside the markup —
+   awaiting a slot render in frontmatter forces children to render before Astro
+   has set up the render context, and an <Image> inside then crashes the image
+   service. Astro caches the render, so the later <slot /> costs nothing. */
+const visualContent = slotContent(Astro.slots, "visual");
+const titleContent = slotContent(Astro.slots, "title");
+const footerContent = slotContent(Astro.slots, "footer");
 const showVisual = variant !== "stacked";
 
 /* ── Interaction model ────────────────────────────────────────────────────
@@ -279,9 +289,13 @@ const showVisual = variant !== "stacked";
    cannot cover its own buttons. */
 const isSurfaceLink = isClickable && actions !== "multiple";
 /* Its lone action is decorative, so take it out of the tab order. */
-const footerIsAffordance = isSurfaceLink && hasFooter;
+const footerIsAffordance = isSurfaceLink && Astro.slots.has("footer");
 
-if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
+if (
+  import.meta.env.DEV &&
+  isSurfaceLink &&
+  !(Astro.slots.has("title") || title)
+) {
   console.warn(
     "\n[Card] A clickable card needs a `title` (or a title slot) — the title " +
       "carries the link, so without one the card has no anchor text to " +
@@ -306,7 +320,7 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
     >
       {/* Visual / image slot */}
       {
-        showVisual && (hasVisual || variant === "default") && (
+        showVisual && ((await visualContent) || variant === "default") && (
           <div class="card_primary_visual">
             <slot name="visual" />
           </div>
@@ -317,11 +331,11 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
       <div class="card_primary_content u-margin-trim">
         {/* Title */}
         {
-          (hasTitle || title) && (
+          ((await titleContent) || title) && (
             <div
               class:list={[
                 "card_primary_title",
-                !hasTitle && "u-text-style-h5",
+                !(await titleContent) && "u-text-style-h5",
               ]}
             >
               {isSurfaceLink ? (
@@ -330,11 +344,11 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
                   class="card_primary_link"
                   target={linkTarget}
                   rel={linkRel}
-                  aria-label={hasTitle ? linkLabel : undefined}
+                  aria-label={(await titleContent) ? linkLabel : undefined}
                 >
-                  {hasTitle ? <slot name="title" /> : title}
+                  {(await titleContent) ? <slot name="title" /> : title}
                 </a>
-              ) : hasTitle ? (
+              ) : (await titleContent) ? (
                 <slot name="title" />
               ) : (
                 title
@@ -355,7 +369,7 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
 
         {/* Footer */}
         {
-          hasFooter && (
+          (await footerContent) && (
             <div class="card_primary_footer" inert={footerIsAffordance}>
               {/* inert when the card itself is the link: the button is there to
                   say "this goes somewhere", so it must not be a second tab stop

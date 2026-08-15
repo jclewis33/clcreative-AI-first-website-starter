@@ -57,6 +57,7 @@
  */
 
 import type { ImageMetadata } from "astro";
+import { slotContent } from "@/lib/slots";
 import Section from "@/components/ui/Section.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
@@ -544,7 +545,10 @@ switch (variant) {
    Resolve heading text
    ═══════════════════════════════════════════════════ */
 
-const hasHeadingSlot = Astro.slots.has("heading");
+/* Renders anything, vs merely "was passed" — a heading slot holding an
+   empty expression would otherwise emit an empty wrapper. Awaited in the
+   template below, never in frontmatter (see src/lib/slots.ts). */
+const headingContent = slotContent(Astro.slots, "heading");
 
 const defaultHeadings: Record<GridVariant, string> = {
   related: "Related Posts",
@@ -554,7 +558,7 @@ const defaultHeadings: Record<GridVariant, string> = {
 };
 
 const resolvedHeading = heading ?? defaultHeadings[variant];
-const showHeading = hasHeadingSlot || resolvedHeading;
+const showHeading = Astro.slots.has("heading") || resolvedHeading;
 ---
 
 {
@@ -571,7 +575,7 @@ const showHeading = hasHeadingSlot || resolvedHeading;
         <Col slot="col1">
           {/* Heading area */}
           {showHeading &&
-            (hasHeadingSlot ? (
+            ((await headingContent) ? (
               <slot name="heading" />
             ) : (
               <>

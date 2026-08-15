@@ -31,6 +31,7 @@
  */
 
 import Section from "@/components/ui/Section.astro";
+import { slotContent } from "@/lib/slots";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
@@ -208,7 +209,10 @@ if (studies && studies.length >= 3) {
 
 /* ── Heading slot ─────────────────────────────────────────────────────── */
 
-const hasHeadingSlot = Astro.slots.has("heading");
+/* Renders anything, vs merely "was passed" — a heading slot holding an
+   empty expression would otherwise emit an empty wrapper. Awaited in the
+   template below, never in frontmatter (see src/lib/slots.ts). */
+const headingContent = slotContent(Astro.slots, "heading");
 ---
 
 {
@@ -228,7 +232,7 @@ const hasHeadingSlot = Astro.slots.has("heading");
           data-fade-in
           class="case-study-featured_heading"
         >
-          {hasHeadingSlot ? (
+          {(await headingContent) ? (
             <slot name="heading" />
           ) : (
             <>
