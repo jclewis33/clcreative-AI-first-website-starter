@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Accordion — animated expand/collapse list.
  *
@@ -41,7 +42,7 @@
  *
  * **Slot:** default — `<AccordionItem>` children.
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Accordion props:**
    * - `closePrevious` — close open item when another opens (default true)
@@ -86,13 +87,6 @@ interface Props {
 
   /** Extra utility classes to add to the `.accordion_wrap` element. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.accordion_wrap` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {

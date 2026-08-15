@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Col — the standard wrapper for placing multiple loose elements into a single
  * `<Layout>` column slot.
@@ -53,7 +54,7 @@
  * </Col>
  * ```
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Col** — wraps multiple loose elements so they can share one `<Layout>`
    * column slot. Renders `<div class="u-display-contents">`: `display: contents`
@@ -74,12 +75,6 @@ interface Props {
 
   /** Extra custom/utility classes, merged on top of `u-display-contents`. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`slot="col1"`, `style`, `data-*`, `data-animate-in`,
-   * `aria-*`, etc.) are forwarded to the root `.u-display-contents` element.
-   */
-  [key: string]: any;
 }
 
 const { docs, class: className, ...rest } = Astro.props;

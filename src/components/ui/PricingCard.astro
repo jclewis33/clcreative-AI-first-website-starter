@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * PricingCard — pricing tier card with name, price, description, feature
  * items slot, and CTA button.
@@ -96,7 +97,7 @@ type ButtonVariant = "primary" | "secondary" | "text";
  *
  * **Slots:** `label` (badge above name), `default` (PricingItems), `footer` (below button), `icon` (compact only)
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **PricingCard props:**
    * - `name` — package name (optional for general variant)
@@ -219,9 +220,6 @@ interface Props {
 
   /** Extra classes on the outer `.pricing_card_wrap` element. */
   class?: string;
-
-  /** Any additional HTML attributes forwarded to root element. */
-  [key: string]: any;
 }
 
 const {

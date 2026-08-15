@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * TestimonialCard — a single testimonial "card" (stars, quote, author).
  *
@@ -28,7 +29,7 @@
  */
 
 import Text from "./Text.astro";
-import { urlFor } from "../../sanity/lib/image";
+import { urlFor } from "@/sanity/lib/image";
 
 /** Shape of a single testimonial */
 export interface Testimonial {
@@ -46,7 +47,10 @@ export interface Testimonial {
   stars?: number;
 }
 
-interface Props extends Testimonial {
+/* `Testimonial` carries a `role` field — the PERSON's job title — which
+   collides with the DOM `role` attribute, so the ARIA one is omitted from the
+   inherited attributes. The card is a plain <div>; it doesn't need one. */
+interface Props extends Testimonial, Omit<HTMLAttributes<"div">, "role"> {
   /** Optional extra class(es) on the card root (escape hatch). */
   class?: string;
   /**
@@ -57,8 +61,6 @@ interface Props extends Testimonial {
   avatarSize?: number;
   /** JSDoc holder — destructured but unused (keeps it out of `...rest`). */
   docs?: string;
-  /** Any other HTML attribute — spread onto the card root. */
-  [key: string]: any;
 }
 
 const {
@@ -102,7 +104,7 @@ const subtitle = [role, company].filter(Boolean).join(", ");
   }
 
   {/* Quote */}
-  <Text class="testimonial_quote" size="regular">
+  <Text class="testimonial_quote" variant="regular">
     {quote}
   </Text>
 
@@ -121,12 +123,12 @@ const subtitle = [role, company].filter(Boolean).join(", ");
       )
     }
     <div class="testimonial_author_info">
-      <Text tag="span" weight="bold" size="small" marginBottom={0}>
+      <Text tag="span" weight="bold" variant="small" marginBottom={0}>
         {name}
       </Text>
       {
         subtitle && (
-          <Text tag="span" size="small" muted marginBottom={0}>
+          <Text tag="span" variant="small" muted marginBottom={0}>
             {subtitle}
           </Text>
         )

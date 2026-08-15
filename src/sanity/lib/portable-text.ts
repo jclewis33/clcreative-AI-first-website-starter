@@ -11,7 +11,7 @@ import {
   type InternalLinkTarget,
 } from "./internal-links";
 import { urlFor } from "./image";
-import { SITE_URL } from "../../config/site";
+import { SITE_URL } from "@/config/site";
 
 interface PortableTextSpan {
   _type: "span";

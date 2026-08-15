@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Pricing — section with two-column intro, checklist, and full-width image.
  *
@@ -16,23 +17,23 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
-import ContentWrapper from "../ui/ContentWrapper.astro";
-import PricingCard from "../ui/PricingCard.astro";
-import PricingItem from "../ui/PricingItem.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
+import ContentWrapper from "@/components/ui/ContentWrapper.astro";
+import PricingCard from "@/components/ui/PricingCard.astro";
+import PricingItem from "@/components/ui/PricingItem.astro";
 
-import afterLaunchImg from "../../assets/placeholder-images/placeholder-5.webp";
-import Grid from "../ui/Grid.astro";
+import afterLaunchImg from "@/assets/placeholder-images/placeholder-5.webp";
+import Grid from "@/components/ui/Grid.astro";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **Pricing props:**
    * - `theme` — 'light' | 'dark' | 'brand'
@@ -46,7 +47,6 @@ interface Props {
   paddingTop?: PaddingValue;
   paddingBottom?: PaddingValue;
   class?: string;
-  [key: string]: any;
 }
 
 const {

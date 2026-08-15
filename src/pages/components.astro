@@ -6,55 +6,55 @@
  * Visit /components to view it.
  */
 
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Section from "../components/ui/Section.astro";
-import Heading from "../components/ui/Heading.astro";
-import Text from "../components/ui/Text.astro";
-import Layout from "../components/ui/Layout.astro";
-import Col from "../components/ui/Col.astro";
-import Grid from "../components/ui/Grid.astro";
-import Card from "../components/ui/Card.astro";
-import Accordion from "../components/ui/Accordion.astro";
-import AccordionItem from "../components/ui/AccordionItem.astro";
-import Modal from "../components/ui/Modal.astro";
-import Slider from "../components/ui/Slider.astro";
-import Tab from "../components/ui/Tab.astro";
-import TabButton from "../components/ui/TabButton.astro";
-import TabPanel from "../components/ui/TabPanel.astro";
-import Button from "../components/ui/Button.astro";
-import TestimonialsSlider from "../components/sections/TestimonialsSlider.astro";
-import TestimonialsGrid from "../components/sections/TestimonialsGrid.astro";
-import { getTestimonials } from "../sanity/lib/testimonials";
-import Form from "../components/form/Form.astro";
-import FormField from "../components/form/FormField.astro";
-import FormFieldset from "../components/form/FormFieldset.astro";
-import FormTextarea from "../components/form/FormTextarea.astro";
-import FormSelect from "../components/form/FormSelect.astro";
-import FormCheckbox from "../components/form/FormCheckbox.astro";
-import FormRadio from "../components/form/FormRadio.astro";
-import FormRange from "../components/form/FormRange.astro";
-import Visual from "../components/ui/Visual.astro";
-import BlogPostGrid from "../components/sections/BlogPostGrid.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Card from "@/components/ui/Card.astro";
+import Accordion from "@/components/ui/Accordion.astro";
+import AccordionItem from "@/components/ui/AccordionItem.astro";
+import Modal from "@/components/ui/Modal.astro";
+import Slider from "@/components/ui/Slider.astro";
+import Tab from "@/components/ui/Tab.astro";
+import TabButton from "@/components/ui/TabButton.astro";
+import TabPanel from "@/components/ui/TabPanel.astro";
+import Button from "@/components/ui/Button.astro";
+import TestimonialsSlider from "@/components/sections/TestimonialsSlider.astro";
+import TestimonialsGrid from "@/components/sections/TestimonialsGrid.astro";
+import { getTestimonials } from "@/sanity/lib/testimonials";
+import Form from "@/components/form/Form.astro";
+import FormField from "@/components/form/FormField.astro";
+import FormFieldset from "@/components/form/FormFieldset.astro";
+import FormTextarea from "@/components/form/FormTextarea.astro";
+import FormSelect from "@/components/form/FormSelect.astro";
+import FormCheckbox from "@/components/form/FormCheckbox.astro";
+import FormRadio from "@/components/form/FormRadio.astro";
+import FormRange from "@/components/form/FormRange.astro";
+import Visual from "@/components/ui/Visual.astro";
+import BlogPostGrid from "@/components/sections/BlogPostGrid.astro";
 
-import humanTouch from "../assets/placeholder-images/placeholder-15.webp";
-import manCouch from "../assets/placeholder-images/placeholder-16.webp";
-import CaseStudyGrid from "../components/sections/CaseStudyGrid.astro";
-import ContentWrapper from "../components/ui/ContentWrapper.astro";
-import PricingCard from "../components/ui/PricingCard.astro";
-import PricingItem from "../components/ui/PricingItem.astro";
-import Marquee from "../components/ui/Marquee.astro";
-import ScrollReveal from "../components/ui/ScrollReveal.astro";
+import humanTouch from "@/assets/placeholder-images/placeholder-15.webp";
+import manCouch from "@/assets/placeholder-images/placeholder-16.webp";
+import CaseStudyGrid from "@/components/sections/CaseStudyGrid.astro";
+import ContentWrapper from "@/components/ui/ContentWrapper.astro";
+import PricingCard from "@/components/ui/PricingCard.astro";
+import PricingItem from "@/components/ui/PricingItem.astro";
+import Marquee from "@/components/ui/Marquee.astro";
+import ScrollReveal from "@/components/ui/ScrollReveal.astro";
 
 /* ── Demo image pools (from the shared placeholder library) ── */
-import phL1 from "../assets/placeholder-images/placeholder-1.webp";
-import phL2 from "../assets/placeholder-images/placeholder-2.webp";
-import phL3 from "../assets/placeholder-images/placeholder-3.webp";
-import phL4 from "../assets/placeholder-images/placeholder-4.webp";
-import phL5 from "../assets/placeholder-images/placeholder-5.webp";
-import phL6 from "../assets/placeholder-images/placeholder-6.webp";
-import phS1 from "../assets/placeholder-images/placeholder-11.webp";
-import phS2 from "../assets/placeholder-images/placeholder-12.webp";
-import phS3 from "../assets/placeholder-images/placeholder-13.webp";
+import phL1 from "@/assets/placeholder-images/placeholder-1.webp";
+import phL2 from "@/assets/placeholder-images/placeholder-2.webp";
+import phL3 from "@/assets/placeholder-images/placeholder-3.webp";
+import phL4 from "@/assets/placeholder-images/placeholder-4.webp";
+import phL5 from "@/assets/placeholder-images/placeholder-5.webp";
+import phL6 from "@/assets/placeholder-images/placeholder-6.webp";
+import phS1 from "@/assets/placeholder-images/placeholder-11.webp";
+import phS2 from "@/assets/placeholder-images/placeholder-12.webp";
+import phS3 from "@/assets/placeholder-images/placeholder-13.webp";
 const demoLandscape = [
   phL1.src,
   phL2.src,
@@ -66,7 +66,7 @@ const demoLandscape = [
 const demoSquare = [phS1.src, phS2.src, phS3.src];
 
 /* ── Fetch testimonials from Sanity (tolerate an empty/unreachable dataset) ── */
-import { getDraftModeProps } from "../sanity/lib/draft-mode";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
   () => [],
 );

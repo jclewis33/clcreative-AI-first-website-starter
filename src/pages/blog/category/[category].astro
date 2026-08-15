@@ -11,29 +11,29 @@
  * Content is fetched from Sanity CMS, filtered by category.
  */
 
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import SanityCtaSection from "../../../components/sections/SanityCtaSection.astro";
-import Section from "../../../components/ui/Section.astro";
-import Layout from "../../../components/ui/Layout.astro";
-import Grid from "../../../components/ui/Grid.astro";
-import Heading from "../../../components/ui/Heading.astro";
-import Text from "../../../components/ui/Text.astro";
-import ContentWrapper from "../../../components/ui/ContentWrapper.astro";
-import BlogCard from "../../../components/ui/BlogCard.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import ContentWrapper from "@/components/ui/ContentWrapper.astro";
+import BlogCard from "@/components/ui/BlogCard.astro";
 
 // Sanity
-import { loadPageQuery } from "../../../sanity/lib/page-data";
-import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
+import { loadPageQuery } from "@/sanity/lib/page-data";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import {
   BLOG_POSTS_QUERY,
   BLOG_POSTS_BY_CATEGORY_QUERY,
   SITE_SETTINGS_QUERY,
-} from "../../../sanity/lib/queries";
-import { getBlogCategoryStaticPaths } from "../../../sanity/lib/page-data";
-import { urlFor } from "../../../sanity/lib/image";
+} from "@/sanity/lib/queries";
+import { getBlogCategoryStaticPaths } from "@/sanity/lib/page-data";
+import { urlFor } from "@/sanity/lib/image";
 
 // Styles
-import "../../../styles/pages/blog.css";
+import "@/styles/pages/blog.css";
 
 // Must be an imported helper: Astro extracts getStaticPaths into its own
 // module at build time, so frontmatter siblings are not in scope here.

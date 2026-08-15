@@ -19,12 +19,12 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import { urlFor } from "../../sanity/lib/image";
-import { getTestimonials as fetchTestimonials } from "../../sanity/lib/testimonials";
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import { urlFor } from "@/sanity/lib/image";
+import { getTestimonials as fetchTestimonials } from "@/sanity/lib/testimonials";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 
 export interface Testimonial {
   quote: string;
@@ -150,13 +150,13 @@ const sliderId = `tsc-${Math.random().toString(36).slice(2, 8)}`;
                         <Text
                           tag="span"
                           weight="bold"
-                          size="regular"
+                          variant="regular"
                           marginBottom={0}
                         >
                           {name}
                         </Text>
                         {subtitle && (
-                          <Text tag="span" size="regular" marginBottom={0}>
+                          <Text tag="span" variant="regular" marginBottom={0}>
                             {subtitle}
                           </Text>
                         )}

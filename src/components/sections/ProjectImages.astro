@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * ProjectImages — scrolling marquee of project screenshots.
  *
@@ -7,17 +8,17 @@
  * Built on top of the Marquee component.
  */
 
-import Section from "../ui/Section.astro";
-import Marquee from "../ui/Marquee.astro";
+import Section from "@/components/ui/Section.astro";
+import Marquee from "@/components/ui/Marquee.astro";
 import { Image } from "astro:assets";
 
-import img1 from "../../assets/placeholder-images/placeholder-7.webp";
-import img2 from "../../assets/placeholder-images/placeholder-12.webp";
-import img3 from "../../assets/placeholder-images/placeholder-8.webp";
-import img4 from "../../assets/placeholder-images/placeholder-13.webp";
-import img5 from "../../assets/placeholder-images/placeholder-9.webp";
+import img1 from "@/assets/placeholder-images/placeholder-7.webp";
+import img2 from "@/assets/placeholder-images/placeholder-12.webp";
+import img3 from "@/assets/placeholder-images/placeholder-8.webp";
+import img4 from "@/assets/placeholder-images/placeholder-13.webp";
+import img5 from "@/assets/placeholder-images/placeholder-9.webp";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **ProjectImages props:**
    * - `theme` — 'light' | 'dark' | 'brand'
@@ -37,8 +38,6 @@ interface Props {
 
   /** Extra classes on the section. */
   class?: string;
-
-  [key: string]: any;
 }
 
 const {

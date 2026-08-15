@@ -75,6 +75,8 @@
  * - `'secondary'` — outlined / ghost button
  * - `'text'`      — text-link style, no background or side borders
  */
+import type { HTMLAttributes } from "astro/types";
+
 type ButtonVariant = "primary" | "secondary" | "text";
 
 /**
@@ -120,22 +122,36 @@ type ButtonHoverTheme = "light" | "dark" | "brand";
  * </Button>
  * ```
  */
-interface Props {
+/* Props are a DISCRIMINATED UNION on `href`, following the Lumos pattern:
+   the presence of href picks the <a> branch, its absence picks the <button>
+   branch, and each branch pulls in the real DOM attributes for that element
+   via HTMLAttributes. Props that only make sense on the other branch are
+   typed `never`, so misuse is an editor error at the call site:
+
+     <Button type="submit" href="/x">   ❌ type is a button-only prop
+     <Button newTab>                    ❌ newTab needs an href
+     <Button disabled href="/x">        ❌ links cannot be disabled
+
+   There is deliberately NO index signature — the old `[key: string]: any`
+   made every typo type-check. Arbitrary `data-*` attributes still pass
+   (HTMLAttributes carries a `data-\${string}` index), and standard DOM
+   attributes (`style`, `aria-*`, `id`, `class`) are inherited and CHECKED. */
+interface BaseProps {
   /**
    * **Button props:**
    * - `variant` — `'primary'` | `'secondary'` | `'text'` (default `'primary'`)
    * - `size` — `'default'` | `'small'` | `'large'` (default `'default'`)
-   * - `href` — link URL (renders `<a>`)
-   * - `newTab` — open in new tab
-   * - `disabled` — disable button
-   * - `ariaLabel` — accessible label (required)
-   * - `type` — `'button'` | `'submit'` | `'reset'` (default `'button'`)
+   * - `href` — link URL (renders `<a>`; without it renders `<button>`)
+   * - `newTab` — open in new tab (link buttons only)
+   * - `disabled` / `type` — native button behavior (non-link buttons only)
+   * - `ariaLabel` — accessible name for ICON-ONLY buttons (ignored when the
+   *   button has visible text — the text is the accessible name)
    * - `square` — removes pill radius
-   * - `fullWidth` — stretches button to 100% width (block display) (default `false`)
-   * - `hoverTheme` — `'light'` | `'dark'` | `'brand'` — override hover colours with a different theme's tokens. Useful when a button sits on a differently-themed container (e.g. brand button on dark card → pass `hoverTheme="brand"` to avoid dark hover).
-   * - `id` — wrapper id
-   * - `class` — extra classes
-   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to clickable overlay (`<a>` or `<button>`)
+   * - `fullWidth` — stretches button to 100% width (default `false`)
+   * - `hoverTheme` — `'light'` | `'dark'` | `'brand'` — hover tokens override
+   * - `supportText` — small muted line under the button
+   * - Also accepts the standard attributes of the element it renders
+   *   (`style`, `data-*`, `aria-*`, …) — spread onto the root `<a>`/`<button>`
    *
    * **Slots:** default (label text), `icon` (after label)
    */
@@ -146,9 +162,9 @@ interface Props {
    *
    * | Value | Description |
    * |-------|-------------|
-   * | `'primary'` | Filled button — uses `--button-primary-*` theme tokens. Lime on light, lime on dark, inverted on brand. |
-   * | `'secondary'` | Outlined / ghost — uses `--button-secondary-*` theme tokens. Transparent bg with border. |
-   * | `'text'` | Text-link style — no background, no side borders, bottom border only. Uses `--link-*` theme tokens. |
+   * | `'primary'` | Filled button — uses `--button-primary-*` theme tokens. |
+   * | `'secondary'` | Outlined / ghost — uses `--button-secondary-*` theme tokens. |
+   * | `'text'` | Text-link style — no background, bottom border only, draws its own chevron. Uses `--link-*` theme tokens. |
    *
    * @default 'primary'
    */
@@ -168,67 +184,22 @@ interface Props {
   size?: ButtonSize;
 
   /**
-   * Turns the button into a link (`<a>` tag).
-   * When set, the clickable overlay renders as an `<a>` element.
-   * When omitted, it renders as a `<button>` element.
+   * Accessible name for an ICON-ONLY button — one with no visible text, where
+   * there is nothing else to announce.
    *
-   * @example
-   * ```astro
-   * <Button href="/about" ariaLabel="About us">About</Button>
-   * ```
-   */
-  href?: string;
-
-  /**
-   * Opens the link in a new tab. Only applies when `href` is set.
-   * Automatically adds `rel="noopener noreferrer"` for security.
-   * @default false
-   */
-  newTab?: boolean;
-
-  /**
-   * Disables the button. Only applies to `<button>` elements (not links).
-   * When disabled, the wrapper gets `opacity: 0.4`, `cursor: not-allowed`,
-   * via `.button_main_wrap:disabled`. A native disabled <button> also stops
-   * receiving pointer and keyboard events on its own.
-   * @default false
-   */
-  disabled?: boolean;
-
-  /**
-   * Accessible label for the clickable overlay.
-   * This is the text screen readers announce — the visible `.button_main_text`
-   * is set to `aria-hidden="true"`. On link buttons it is ALSO rendered as a
-   * visually-hidden `<span class="u-sr-only">` inside the `<a>`, so crawlers
-   * see real anchor text (an `aria-label` alone leaves the anchor textless
-   * for SEO).
+   * When the button HAS visible text, that text is the accessible name and
+   * this prop is ignored (a dev warning fires if both are present): an
+   * aria-label that disagrees with the visible text is a WCAG 2.5.3
+   * ("Label in Name") failure for voice-control users.
    *
-   * **Required** — always pass the readable button text here. If omitted,
-   * the component falls back to the button's slot text so the link is never
-   * nameless.
-   *
-   * @example ariaLabel="Book your free strategy call"
+   * @example ariaLabel="Close dialog"
    */
   ariaLabel?: string;
-
-  /**
-   * Native button type. Only applies when `href` is **not** set.
-   * - `'button'` — generic (default)
-   * - `'submit'` — submits the nearest `<form>`
-   * - `'reset'`  — resets the nearest `<form>`
-   * @default 'button'
-   */
-  type?: "button" | "submit" | "reset";
 
   /**
    * Removes the default pill radius (sets `border-radius: 0`).
    * Applies the `button_main_wrap--no-radius` modifier.
    * @default false
-   *
-   * @example
-   * ```astro
-   * <Button square href="/pricing" ariaLabel="View pricing">Pricing</Button>
-   * ```
    */
   square?: boolean;
 
@@ -236,11 +207,6 @@ interface Props {
    * Stretches the button to 100% width of its parent (block display).
    * By default buttons are `inline-block` and shrink-wrap their content.
    * @default false
-   *
-   * @example
-   * ```astro
-   * <Button fullWidth href="/start" ariaLabel="Get started">Get Started</Button>
-   * ```
    */
   fullWidth?: boolean;
 
@@ -255,28 +221,8 @@ interface Props {
    * | `'light'` | Hover uses the light theme's button tokens (hover to dark) |
    * | `'dark'`  | Hover uses the dark theme's button tokens (hover to white) |
    * | `'brand'` | Hover uses the brand theme's button tokens (subtle darken) |
-   *
-   * @example
-   * ```astro
-   * <Button hoverTheme="brand" href="#" ariaLabel="CTA">Get the guide</Button>
-   * ```
    */
   hoverTheme?: ButtonHoverTheme;
-
-  /**
-   * HTML `id` attribute applied to the wrapper element.
-   *
-   * @example id="hero-cta"
-   */
-  id?: string;
-
-  /**
-   * Extra classes appended to the outer `.button_main_wrap` wrapper.
-   * Use for spacing utilities or layout overrides.
-   *
-   * @example class="u-margin-top-4"
-   */
-  class?: string;
 
   /**
    * Optional supporting copy displayed below the button.
@@ -291,21 +237,55 @@ interface Props {
    * ```
    */
   supportText?: string;
-
-  /**
-   * Catch-all for additional HTML attributes.
-   * Any extra props are spread onto the clickable overlay element (`<a>` or `<button>`).
-   * Useful for `data-modal-trigger`, `data-modal-close`, etc.
-   *
-   * @example
-   * ```astro
-   * <Button data-modal-trigger="contact-modal" ariaLabel="Open contact form">
-   *   Contact Us
-   * </Button>
-   * ```
-   */
-  [key: string]: any;
 }
+
+type Props = BaseProps &
+  (
+    | ({
+        /** Link URL — this branch renders an `<a>`. */
+        href: string;
+        /**
+         * Opens the link in a new tab; adds `rel="noopener noreferrer"`.
+         * @default false
+         */
+        newTab?: boolean;
+        /** Button-only prop — a link has no form type. */
+        type?: never;
+        /** Button-only prop — a link cannot be disabled; omit the href instead. */
+        disabled?: never;
+      } & HTMLAttributes<"a">)
+    | ({
+        /** No href — this branch renders a `<button>`. */
+        href?: never;
+        /** Link-only prop — a `<button>` has no destination to open in a tab. */
+        newTab?: never;
+        /**
+         * Native button type. `'submit'` submits the nearest form.
+         * @default 'button'
+         */
+        type?: "button" | "submit" | "reset";
+        /**
+         * Disables the button: `opacity: 0.4`, `cursor: not-allowed` via
+         * `.button_main_wrap:disabled`; a native disabled button also stops
+         * receiving pointer and keyboard events on its own.
+         * @default false
+         */
+        disabled?: boolean;
+      } & HTMLAttributes<"button">)
+  );
+
+/* The strict union is for CALLERS. Inside the component TypeScript cannot
+   know which branch it is in, so the implementation reads props through this
+   flat, permissive shape instead — the standard companion to a discriminated
+   union (Lumos does the same). */
+type AllProps = BaseProps & {
+  href?: string;
+  newTab?: boolean;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  id?: string;
+  class?: string;
+};
 
 const {
   docs,
@@ -323,7 +303,7 @@ const {
   id,
   class: className,
   ...rest
-} = Astro.props;
+} = Astro.props as AllProps;
 
 /* Renders as <a> when an href is provided, otherwise a plain <button> — for
    modal triggers/closes (data-modal-trigger / data-modal-close), form submits,

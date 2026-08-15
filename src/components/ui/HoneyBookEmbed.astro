@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * HoneyBookEmbed — reusable HoneyBook form widget.
  *
@@ -11,9 +12,9 @@
  * ```
  */
 
-import { SITE } from "../../config/site";
+import { SITE } from "@/config/site";
 
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **HoneyBookEmbed props:**
    * - `class` — extra classes on the wrapper div
@@ -21,7 +22,6 @@ interface Props {
   docs?: string;
 
   class?: string;
-  [key: string]: any;
 }
 
 const { docs, class: className, ...rest } = Astro.props;

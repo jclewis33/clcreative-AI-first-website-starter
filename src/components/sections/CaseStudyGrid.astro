@@ -58,23 +58,23 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Grid from "../ui/Grid.astro";
-import Heading from "../ui/Heading.astro";
-import CaseStudyCard from "../ui/CaseStudyCard.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
 
 // Data fallback — same source used by the listing and detail pages
-import { caseStudies as allCaseStudiesData } from "../../data/case-studies";
+import { caseStudies as allCaseStudiesData } from "@/data/case-studies";
 
 /* ── Re-export the shared type ───────────────────────────────────────────
    Single source of truth in case-studies.ts. Other pages can import
    from here or from the data file directly.
    ────────────────────────────────────────────────────────────────────── */
 
-export type { CaseStudy } from "../../data/case-studies";
-import type { CaseStudy } from "../../data/case-studies";
+export type { CaseStudy } from "@/data/case-studies";
+import type { CaseStudy } from "@/data/case-studies";
 
 /* ── Shared types ── */
 

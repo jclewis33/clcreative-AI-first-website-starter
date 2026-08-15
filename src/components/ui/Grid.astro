@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Grid — responsive CSS Grid using container-query column counts.
  *
@@ -66,7 +67,7 @@ type GridVariant =
  *
  * **Slot:** default — grid children (Cards, etc.)
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Grid props:**
    * - `largeColumns` — 1-12 at default size (default 3)
@@ -151,13 +152,6 @@ interface Props {
    * @example class="u-margin-top-8"
    */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.u-grid-wrapper` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {

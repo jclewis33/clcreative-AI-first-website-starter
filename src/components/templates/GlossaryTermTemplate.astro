@@ -7,22 +7,22 @@
  * (`src/pages/glossary/[slug].astro`).
  */
 
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import SanityCtaSection from "../sections/SanityCtaSection.astro";
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Grid from "../ui/Grid.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Card from "../ui/Card.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Card from "@/components/ui/Card.astro";
 
-import { urlFor } from "../../sanity/lib/image";
-import { portableTextToHtml } from "../../sanity/lib/portable-text";
-import { glossaryTermJsonLd } from "../../lib/jsonld";
-import JsonLd from "../global/JsonLd.astro";
+import { urlFor } from "@/sanity/lib/image";
+import { portableTextToHtml } from "@/sanity/lib/portable-text";
+import { glossaryTermJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/global/JsonLd.astro";
 
-import "../../styles/pages/glossary.css";
+import "@/styles/pages/glossary.css";
 
 interface Props {
   term: any;

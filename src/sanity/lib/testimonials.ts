@@ -6,7 +6,7 @@
  *
  * Usage:
  * ```astro
- * import { getTestimonials } from "../sanity/lib/testimonials";
+ * import { getTestimonials } from"@/sanity/sanity/lib/testimonials";
  *
  * // All testimonials (sorted by sortOrder)
  * const all = await getTestimonials();

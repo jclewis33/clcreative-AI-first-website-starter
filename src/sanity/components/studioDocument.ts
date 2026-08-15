@@ -14,7 +14,7 @@ import type {
   DocumentBadgeComponent,
   DocumentBadgeProps,
 } from "sanity";
-import { SITE_URL } from "../../config/site";
+import { SITE_URL } from "@/config/site";
 
 const ROUTE_BY_TYPE: Record<string, string> = {
   blogPost: "/blog",

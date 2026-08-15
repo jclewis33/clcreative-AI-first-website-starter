@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * FormField — label + input for standard form fields.
  *
@@ -33,7 +34,7 @@ type InputType =
   | "search"
   | "hidden";
 
-interface Props {
+interface Props extends HTMLAttributes<"input"> {
   /** Label text for the field. Always rendered for accessibility. */
   label: string;
 
@@ -99,9 +100,6 @@ interface Props {
 
   /** Extra classes on the outer `.form_label_wrap` element. */
   class?: string;
-
-  /** Catch-all for extra attributes spread onto the `<input>`. */
-  [key: string]: any;
 }
 
 const {

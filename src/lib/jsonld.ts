@@ -8,8 +8,8 @@
  * from calling templates.
  */
 
-import { urlFor } from "../sanity/lib/image";
-import { SITE } from "../config/site";
+import { urlFor } from "@/sanity/lib/image";
+import { SITE } from "@/config/site";
 
 const ORG_NAME = SITE.name;
 const ORG_LOGO_PATH = SITE.logoPath;

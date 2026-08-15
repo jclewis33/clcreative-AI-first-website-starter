@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * FAQ — two-column layout with heading left, accordion right.
  *
@@ -12,25 +13,25 @@
  *
  * @example Web development page
  * ```astro
- * import { webDevFaqs, generalFaqs } from "../data/faqs";
+ * import { webDevFaqs, generalFaqs } from"@/components/data/faqs";
  * <FAQ items={[...webDevFaqs, ...generalFaqs]} />
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Accordion from "../ui/Accordion.astro";
-import AccordionItem from "../ui/AccordionItem.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Accordion from "@/components/ui/Accordion.astro";
+import AccordionItem from "@/components/ui/AccordionItem.astro";
 
-import type { FAQItem } from "../../data/faqs";
-import { generalFaqs } from "../../data/faqs";
+import type { FAQItem } from "@/data/faqs";
+import { generalFaqs } from "@/data/faqs";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **FAQ props:**
    * - `items` — array of `{ question, answer }` objects (default: general FAQs). Answers support inline HTML (`<br><br>`, `<strong>`, etc.)
@@ -63,7 +64,6 @@ interface Props {
   paddingBottom?: PaddingValue;
   id?: string;
   class?: string;
-  [key: string]: any;
 }
 
 const {

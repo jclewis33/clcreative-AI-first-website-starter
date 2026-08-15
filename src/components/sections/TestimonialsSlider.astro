@@ -22,11 +22,13 @@
  *   heading  — override the heading area with custom markup
  */
 
-import Section from "../ui/Section.astro";
-import Heading from "../ui/Heading.astro";
-import Slider from "../ui/Slider.astro";
-import ContentWrapper from "../ui/ContentWrapper.astro";
-import TestimonialCard, { type Testimonial } from "../ui/TestimonialCard.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Slider from "@/components/ui/Slider.astro";
+import ContentWrapper from "@/components/ui/ContentWrapper.astro";
+import TestimonialCard, {
+  type Testimonial,
+} from "@/components/ui/TestimonialCard.astro";
 
 // Re-export the type from its new home so existing imports keep working.
 export type { Testimonial };

@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * WhyWorkWithUs — breakout-reversed section with numbered value props.
  *
@@ -16,19 +17,19 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
 
-import whyImage from "../../assets/placeholder-images/placeholder-11.webp";
+import whyImage from "@/assets/placeholder-images/placeholder-11.webp";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **WhyWorkWithUs props:**
    * - `theme` — 'light' | 'dark' | 'brand'
@@ -48,8 +49,6 @@ interface Props {
 
   /** Extra classes on the section. */
   class?: string;
-
-  [key: string]: any;
 }
 
 const {

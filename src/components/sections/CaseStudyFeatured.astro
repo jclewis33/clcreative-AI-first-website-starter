@@ -30,15 +30,15 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
 
-import { loadQuery } from "../../sanity/lib/load-query";
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
-import { urlFor } from "../../sanity/lib/image";
+import { loadQuery } from "@/sanity/lib/load-query";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import { urlFor } from "@/sanity/lib/image";
 
 type SectionTheme = "light" | "dark" | "brand";
 type PaddingSize = "none" | "small" | "main" | "large" | "page-top";

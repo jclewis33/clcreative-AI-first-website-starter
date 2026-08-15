@@ -38,7 +38,7 @@ import {
   GLOSSARY_SLUGS_QUERY,
   SITE_SETTINGS_QUERY,
 } from "./queries";
-import { SANITY_PROJECT_ID } from "../../config/site.shared.mjs";
+import { SANITY_PROJECT_ID } from "@/config/site.shared.mjs";
 
 /** Perspective forwarding — the return shape of `getDraftModeProps(Astro)`. */
 export type DraftProps = { perspectiveCookie?: string | undefined };

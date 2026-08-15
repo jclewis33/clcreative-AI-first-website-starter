@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Heading — separates semantic tag (`h1`–`h6`, `p`) from visual style.
  *
@@ -74,7 +75,7 @@ type HeadingVariant =
  *
  * **Slot:** default — heading text content (supports `<strong>` for accent).
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Heading props:**
    * - `tag` — h1-h6 or p (default 'h2') semantic level
@@ -179,14 +180,6 @@ interface Props {
    * @example class="u-margin-bottom-4"
    */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.u-text` wrapper element.
-   * User-provided `style` is merged with computed max-width styles.
-   * @example data-animate="fade" style="--custom: value"
-   */
-  [key: string]: any;
 }
 
 const {

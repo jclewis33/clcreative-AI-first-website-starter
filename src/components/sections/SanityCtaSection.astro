@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * SanityCtaSection — Sanity-driven version of the bottom-of-page CTA, used only
  * on SSR pages (blog posts, case studies, glossary terms).
@@ -24,15 +25,15 @@
  */
 
 import { stegaClean } from "@sanity/client/stega";
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Visual from "../ui/Visual.astro";
-import Overlay from "../ui/Overlay.astro";
-import Button from "../ui/Button.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import { urlFor, hotspotPosition } from "../../sanity/lib/image";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
+import Button from "@/components/ui/Button.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import { urlFor, hotspotPosition } from "@/sanity/lib/image";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
@@ -48,14 +49,13 @@ interface Cta {
   overlayStrength?: number;
 }
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /** Resolved Sanity `ctaSection` document (override ?? site default). */
   cta: Cta;
   /** Section vertical padding. @default 'small' */
   padding?: PaddingValue;
   paddingTop?: PaddingValue;
   paddingBottom?: PaddingValue;
-  [key: string]: any;
 }
 
 const {

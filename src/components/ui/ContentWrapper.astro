@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * ContentWrapper — block-level alignment wrapper for content.
  *
@@ -50,7 +51,7 @@
  *
  * **Slot:** default — content (Heading, Text, Button, etc.)
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **ContentWrapper props:**
    * - `align` — inherit, center, left, right, center-mobile (default 'inherit')
@@ -90,13 +91,6 @@ interface Props {
 
   /** Extra utility classes. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.u-content-wrapper` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {

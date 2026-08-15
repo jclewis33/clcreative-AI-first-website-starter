@@ -11,9 +11,9 @@
  * sitemap. Keep this file in sync with src/pages/blog/[slug].astro.
  */
 export const prerender = false;
-import BlogPostTemplate from "../../../components/templates/BlogPostTemplate.astro";
-import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
-import { loadBlogPostPage } from "../../../sanity/lib/page-data";
+import BlogPostTemplate from "@/components/templates/BlogPostTemplate.astro";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import { loadBlogPostPage } from "@/sanity/lib/page-data";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");

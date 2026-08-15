@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * ScrollReveal — scroll-linked reveal with sticky image cross-fade.
  *
@@ -68,7 +69,7 @@ interface ScrollRevealItem {
  *
  * **Slot:** none — content is driven by the `items` array
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **ScrollReveal props:**
    * - `items` — array of { image, imageAlt, heading, text, eyebrow?, buttonHref?, buttonText? }
@@ -121,9 +122,6 @@ interface Props {
 
   /** Extra utility classes on the `.scroll_reveal_wrap` element. */
   class?: string;
-
-  /** Any additional HTML attributes forwarded to root element. */
-  [key: string]: any;
 }
 
 const {

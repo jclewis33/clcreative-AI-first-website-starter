@@ -6,49 +6,52 @@
  * posts. Used by the production route (`src/pages/blog/[slug].astro`).
  */
 
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import SanityCtaSection from "../sections/SanityCtaSection.astro";
-import AdditionalPost from "../sections/BlogPostGrid.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import AdditionalPost from "@/components/sections/BlogPostGrid.astro";
 
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Overlay from "../ui/Overlay.astro";
-import Card from "../ui/Card.astro";
-import Button from "../ui/Button.astro";
-import Accordion from "../ui/Accordion.astro";
-import AccordionItem from "../ui/AccordionItem.astro";
-import TableOfContents from "../ui/TableOfContents.astro";
-import BlogCta from "../blog/BlogCta.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
+import Card from "@/components/ui/Card.astro";
+import Button from "@/components/ui/Button.astro";
+import Accordion from "@/components/ui/Accordion.astro";
+import AccordionItem from "@/components/ui/AccordionItem.astro";
+import TableOfContents from "@/components/ui/TableOfContents.astro";
+import BlogCta from "@/components/blog/BlogCta.astro";
 
-import "../../styles/pages/blog-post.css";
+import "@/styles/pages/blog-post.css";
 
-import ctaImage from "../../assets/placeholder-images/placeholder-17.webp";
+import ctaImage from "@/assets/placeholder-images/placeholder-17.webp";
 
-import { urlFor } from "../../sanity/lib/image";
-import { buildToc } from "../../lib/toc";
-import { estimateReadTime } from "../../lib/read-time";
-import { blogPostJsonLd } from "../../lib/jsonld";
-import JsonLd from "../global/JsonLd.astro";
+import { urlFor } from "@/sanity/lib/image";
+import { buildToc } from "@/lib/toc";
+import { estimateReadTime } from "@/lib/read-time";
+import { blogPostJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/global/JsonLd.astro";
 
 import { PortableText } from "astro-portabletext";
 
-const { default: CodeBlock } = await import("../portabletext/CodeBlock.astro");
+const { default: CodeBlock } =
+  await import("@/components/portabletext/CodeBlock.astro");
 const { default: SanityImage } =
-  await import("../portabletext/SanityImage.astro");
-const { default: LinkMark } = await import("../portabletext/LinkMark.astro");
+  await import("@/components/portabletext/SanityImage.astro");
+const { default: LinkMark } =
+  await import("@/components/portabletext/LinkMark.astro");
 const { default: InternalLinkMark } =
-  await import("../portabletext/InternalLinkMark.astro");
+  await import("@/components/portabletext/InternalLinkMark.astro");
 const { default: BlockHeading2 } =
-  await import("../portabletext/BlockHeading2.astro");
+  await import("@/components/portabletext/BlockHeading2.astro");
 const { default: VideoEmbed } =
-  await import("../portabletext/VideoEmbed.astro");
-const { default: Callout } = await import("../portabletext/Callout.astro");
+  await import("@/components/portabletext/VideoEmbed.astro");
+const { default: Callout } =
+  await import("@/components/portabletext/Callout.astro");
 const { default: BlogCtaInline } =
-  await import("../portabletext/BlogCtaInline.astro");
+  await import("@/components/portabletext/BlogCtaInline.astro");
 
 interface Props {
   post: any;

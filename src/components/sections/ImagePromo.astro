@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * ImagePromo — brand-themed promo card pairing copy with an image.
  *
@@ -12,19 +13,19 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
 
-import promoImg from "../../assets/placeholder-images/placeholder-3.webp";
+import promoImg from "@/assets/placeholder-images/placeholder-3.webp";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **ImagePromo props:**
    * - `padding` / `paddingTop` / `paddingBottom` — section padding
@@ -53,7 +54,6 @@ interface Props {
   imageRatio?: string;
   /** Extra classes on the outer Section */
   class?: string;
-  [key: string]: any;
 }
 
 const {

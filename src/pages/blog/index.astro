@@ -13,30 +13,27 @@
  * own archive page at /blog/category/<slug>, just no section on this index.
  */
 
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import SanityCtaSection from "../../components/sections/SanityCtaSection.astro";
-import Section from "../../components/ui/Section.astro";
-import Grid from "../../components/ui/Grid.astro";
-import Heading from "../../components/ui/Heading.astro";
-import Text from "../../components/ui/Text.astro";
-import Button from "../../components/ui/Button.astro";
-import BlogCard from "../../components/ui/BlogCard.astro";
-import Slider from "../../components/ui/Slider.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Button from "@/components/ui/Button.astro";
+import BlogCard from "@/components/ui/BlogCard.astro";
+import Slider from "@/components/ui/Slider.astro";
 
 // Sanity
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
-import { loadPageQuery } from "../../sanity/lib/page-data";
-import {
-  BLOG_POSTS_QUERY,
-  SITE_SETTINGS_QUERY,
-} from "../../sanity/lib/queries";
-import { urlFor } from "../../sanity/lib/image";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import { loadPageQuery } from "@/sanity/lib/page-data";
+import { BLOG_POSTS_QUERY, SITE_SETTINGS_QUERY } from "@/sanity/lib/queries";
+import { urlFor } from "@/sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
-import { SITE } from "../../config/site";
+import { SITE } from "@/config/site";
 
 // Styles
-import "../../styles/pages/blog.css";
-import ContentWrapper from "../../components/ui/ContentWrapper.astro";
+import "@/styles/pages/blog.css";
+import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 
 /* ── Fetch all posts from Sanity ── */
 

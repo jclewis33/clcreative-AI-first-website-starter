@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * SecondaryCtaPrompt — brand-themed low-commitment fallback CTA. Offers a
  * secondary "send a note" path beneath a primary call-to-action.
@@ -14,14 +15,14 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Heading from "../ui/Heading.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Heading from "@/components/ui/Heading.astro";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **SecondaryCtaPrompt props:**
    * - `heading` — lead-in text before the link
@@ -49,7 +50,6 @@ interface Props {
   paddingBottom?: PaddingValue;
   /** Extra classes on the outer Section. */
   class?: string;
-  [key: string]: any;
 }
 
 const {

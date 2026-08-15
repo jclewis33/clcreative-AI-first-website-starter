@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Section — full-width page section with theming, fluid padding,
  * optional background slot, and a constrained container.
@@ -87,7 +88,7 @@ type ContainerSize =
  *
  * **Slots:** `background` (absolute overlay for images/videos), default (content inside container).
  */
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **Section props:**
    * - `theme` — inherit, light, dark, brand (cascades to children)
@@ -211,25 +212,6 @@ interface Props {
    * @example gap={4}
    */
   gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-
-  /**
-   * HTML `id` for same-page anchor links.
-   * @example id="about"
-   */
-  id?: string;
-
-  /**
-   * Extra classes on the `<section>` element.
-   * @example class="u-background-1"
-   */
-  class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `<section>` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {

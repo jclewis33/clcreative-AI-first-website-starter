@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Visual — image component wrapping Astro `<Image />` with aspect ratio,
  * focal-point positioning, border-radius, and variant support.
@@ -120,7 +121,7 @@ type RadiusSize =
  * - `height` — image height in px (required for remote URLs)
  * - `class` — extra classes on the wrapper
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Visual props:**
    * - `src` — ImageMetadata or URL string (required)
@@ -260,14 +261,6 @@ interface Props {
 
   /** Extra classes on the outer `.u-image-wrapper` div. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.u-image-wrapper` element.
-   * User-provided `style` is merged with computed aspect-ratio styles.
-   * @example data-animate="fade" aria-label="Hero image"
-   */
-  [key: string]: any;
 }
 
 const {

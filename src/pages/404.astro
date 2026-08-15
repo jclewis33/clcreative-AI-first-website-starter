@@ -1,11 +1,11 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Section from "../components/ui/Section.astro";
-import Layout from "../components/ui/Layout.astro";
-import Col from "../components/ui/Col.astro";
-import Heading from "../components/ui/Heading.astro";
-import Text from "../components/ui/Text.astro";
-import Button from "../components/ui/Button.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Button from "@/components/ui/Button.astro";
 ---
 
 <BaseLayout
@@ -16,7 +16,7 @@ import Button from "../components/ui/Button.astro";
     <Layout variant="stack-centered">
       <Col slot="col1">
         <Heading tag="h1" variant="display-lg">404</Heading>
-        <Text size="large" align="center">
+        <Text variant="large" align="center">
           The page you're looking for doesn't exist or has been moved.
         </Text>
         <div class="u-button-wrapper">

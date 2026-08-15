@@ -23,12 +23,12 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import ContentWrapper from "../ui/ContentWrapper.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Grid from "../ui/Grid.astro";
-import Button from "../ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import ContentWrapper from "@/components/ui/ContentWrapper.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Button from "@/components/ui/Button.astro";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
@@ -79,11 +79,11 @@ const {
       >
     </Heading>
     <slot name="intro">
-      <Text data-fade-in size="regular" maxWidth="60ch">
+      <Text data-fade-in variant="regular" maxWidth="60ch">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore.
       </Text>
-      <Text data-fade-in size="regular" maxWidth="60ch" marginBottom={0}>
+      <Text data-fade-in variant="regular" maxWidth="60ch" marginBottom={0}>
         Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
         ut aliquip ex ea commodo consequat duis aute irure dolor.
       </Text>
@@ -100,7 +100,7 @@ const {
     <div class="framework_card">
       <span class="framework_card_number u-font-mono">01</span>
       <Heading tag="h4" variant="h4" marginBottom={0}>Lorem Ipsum One</Heading>
-      <Text size="regular">
+      <Text variant="regular">
         <slot name="card1Body"
           >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua.</slot
@@ -110,7 +110,7 @@ const {
     <div class="framework_card">
       <span class="framework_card_number u-font-mono">02</span>
       <Heading tag="h4" variant="h4" marginBottom={0}>Lorem Ipsum Two</Heading>
-      <Text size="regular">
+      <Text variant="regular">
         <slot name="card2Body"
           >Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
           nisi ut aliquip ex ea commodo consequat.</slot
@@ -121,7 +121,7 @@ const {
       <span class="framework_card_number u-font-mono">03</span>
       <Heading tag="h4" variant="h4" marginBottom={0}>Lorem Ipsum Three</Heading
       >
-      <Text size="regular">
+      <Text variant="regular">
         <slot name="card3Body"
           >Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
           dolore eu fugiat nulla pariatur excepteur sint.</slot

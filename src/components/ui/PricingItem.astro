@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * PricingItem — feature line item for use inside PricingCard.
  *
@@ -29,7 +30,7 @@
  *
  * **Slots:** `icon` (defaults to checkmark SVG), `default` (text content)
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **PricingItem props:**
    * - `class` — extra classes
@@ -41,9 +42,6 @@ interface Props {
 
   /** Extra classes on the outer `.pricing_item_wrap` element. */
   class?: string;
-
-  /** Any additional HTML attributes forwarded to root element. */
-  [key: string]: any;
 }
 
 const { docs, class: className, ...rest } = Astro.props;

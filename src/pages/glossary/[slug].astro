@@ -4,12 +4,12 @@
  * draft preview lives on the SSR twin at /preview/glossary/[slug], which
  * calls the exact same loader.
  */
-import GlossaryTermTemplate from "../../components/templates/GlossaryTermTemplate.astro";
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import GlossaryTermTemplate from "@/components/templates/GlossaryTermTemplate.astro";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import {
   loadGlossaryTermPage,
   getGlossaryTermStaticPaths,
-} from "../../sanity/lib/page-data";
+} from "@/sanity/lib/page-data";
 
 // Must be an imported helper: Astro extracts getStaticPaths into its own
 // module at build time, so frontmatter siblings are not in scope here.

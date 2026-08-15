@@ -13,28 +13,25 @@
  * study appear in the dropdowns.
  */
 
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import SanityCtaSection from "../../components/sections/SanityCtaSection.astro";
-import Section from "../../components/ui/Section.astro";
-import Layout from "../../components/ui/Layout.astro";
-import Col from "../../components/ui/Col.astro";
-import Grid from "../../components/ui/Grid.astro";
-import Heading from "../../components/ui/Heading.astro";
-import Text from "../../components/ui/Text.astro";
-import CaseStudyCard from "../../components/ui/CaseStudyCard.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
 
 // Sanity
-import { loadPageQuery } from "../../sanity/lib/page-data";
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
-import {
-  CASE_STUDIES_QUERY,
-  SITE_SETTINGS_QUERY,
-} from "../../sanity/lib/queries";
-import { urlFor, hotspotPosition } from "../../sanity/lib/image";
+import { loadPageQuery } from "@/sanity/lib/page-data";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import { CASE_STUDIES_QUERY, SITE_SETTINGS_QUERY } from "@/sanity/lib/queries";
+import { urlFor, hotspotPosition } from "@/sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
 
 // Styles
-import "../../styles/pages/case-studies.css";
+import "@/styles/pages/case-studies.css";
 
 /* ── Fetch from Sanity (already sorted by date desc in query) ── */
 

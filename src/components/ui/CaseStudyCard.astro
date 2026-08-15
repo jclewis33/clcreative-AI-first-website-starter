@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * CaseStudyCard — portfolio/case study card built on top of the Card component.
  *
@@ -46,7 +47,7 @@ import { stegaClean } from "@sanity/client/stega";
  *
  * Uses Card component internally with `default` variant (image top, content below).
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **CaseStudyCard props:**
    * - `title` — project title, clamped at 2 lines (required)
@@ -180,12 +181,6 @@ interface Props {
 
   /** Extra classes on the outer wrapper. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the underlying `Card` component.
-   */
-  [key: string]: any;
 }
 
 const {

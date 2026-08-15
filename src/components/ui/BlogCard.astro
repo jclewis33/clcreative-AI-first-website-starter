@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * BlogCard — blog post card built on top of the Card component.
  *
@@ -63,7 +64,7 @@ import Text from "./Text.astro";
  *
  * Uses Card component internally with `default` variant (image top, content below).
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **BlogCard props:**
    * - `title` — post title, clamped at 2 lines (required)
@@ -109,13 +110,6 @@ interface Props {
 
   /** Extra classes on the outer wrapper. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the underlying `Card` component.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {

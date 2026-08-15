@@ -8,13 +8,13 @@
  */
 
 import type { APIRoute } from "astro";
-import { loadQuery } from "../sanity/lib/load-query";
+import { loadQuery } from "@/sanity/lib/load-query";
 import {
   BLOG_POSTS_QUERY,
   CASE_STUDIES_QUERY,
   GLOSSARY_TERMS_QUERY,
-} from "../sanity/lib/queries";
-import { SITE_URL, SITE_NAME, SITE_SUMMARY } from "../config/site";
+} from "@/sanity/lib/queries";
+import { SITE_URL, SITE_NAME, SITE_SUMMARY } from "@/config/site";
 import {
   MAIN_PAGES,
   SERVICE_PAGES,
@@ -22,7 +22,7 @@ import {
   INDEX_PAGES,
   OPTIONAL_PAGES,
   type StaticPage,
-} from "../data/site-structure";
+} from "@/data/site-structure";
 
 export const prerender = true;
 

@@ -16,13 +16,13 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import { urlFor } from "../../sanity/lib/image";
-import ContentWrapper from "../ui/ContentWrapper.astro";
-import { getTestimonialByName } from "../../sanity/lib/testimonials";
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import { urlFor } from "@/sanity/lib/image";
+import ContentWrapper from "@/components/ui/ContentWrapper.astro";
+import { getTestimonialByName } from "@/sanity/lib/testimonials";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 
 interface TestimonialData {
   name: string;

@@ -1,18 +1,19 @@
 ---
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Visual from "../ui/Visual.astro";
-import Overlay from "../ui/Overlay.astro";
-import Button from "../ui/Button.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
+import type { HTMLAttributes } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
+import Button from "@/components/ui/Button.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
 
-import defaultCtaImage from "../../assets/placeholder-images/placeholder-6.webp";
+import defaultCtaImage from "@/assets/placeholder-images/placeholder-6.webp";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **CTASection props:**
    * - `heading` — Main heading text
@@ -53,8 +54,6 @@ interface Props {
   padding?: PaddingValue;
   paddingTop?: PaddingValue;
   paddingBottom?: PaddingValue;
-
-  [key: string]: any;
 }
 
 const {

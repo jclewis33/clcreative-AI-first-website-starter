@@ -7,27 +7,27 @@
  * (`src/pages/case-studies/[slug].astro`).
  */
 
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import SanityCtaSection from "../sections/SanityCtaSection.astro";
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Grid from "../ui/Grid.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
-import Slider from "../ui/Slider.astro";
-import CaseStudyCard from "../ui/CaseStudyCard.astro";
-import CaseStudyBlockRenderer from "../case-study/CaseStudyBlockRenderer.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
+import Slider from "@/components/ui/Slider.astro";
+import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
+import CaseStudyBlockRenderer from "@/components/case-study/CaseStudyBlockRenderer.astro";
 
-import { urlFor, hotspotPosition } from "../../sanity/lib/image";
+import { urlFor, hotspotPosition } from "@/sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
-import { portableTextToHtml } from "../../sanity/lib/portable-text";
-import { caseStudyJsonLd } from "../../lib/jsonld";
-import JsonLd from "../global/JsonLd.astro";
+import { portableTextToHtml } from "@/sanity/lib/portable-text";
+import { caseStudyJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/global/JsonLd.astro";
 
-import "../../styles/pages/case-study-detail.css";
+import "@/styles/pages/case-study-detail.css";
 
 interface Props {
   study: any;
@@ -208,22 +208,27 @@ const ogImageUrl = seo.ogImage
 
         <div class="case-study_detail_meta">
           <div class="case-study_detail_meta_item">
-            <Text tag="span" size="regular" weight="bold" marginBottom={0}>
+            <Text tag="span" variant="regular" weight="bold" marginBottom={0}>
               Client:
             </Text>
-            <Text tag="span" size="regular" weight="medium" marginBottom={0}>
+            <Text tag="span" variant="regular" weight="medium" marginBottom={0}>
               {study.client || "Not set"}
             </Text>
           </div>
           {
             study.timeline && (
               <div class="case-study_detail_meta_item">
-                <Text tag="span" size="regular" weight="bold" marginBottom={0}>
+                <Text
+                  tag="span"
+                  variant="regular"
+                  weight="bold"
+                  marginBottom={0}
+                >
                   Time:
                 </Text>
                 <Text
                   tag="span"
-                  size="regular"
+                  variant="regular"
                   weight="medium"
                   marginBottom={0}
                 >

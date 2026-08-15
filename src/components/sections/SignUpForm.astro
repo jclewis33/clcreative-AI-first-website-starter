@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * SignUpForm — centered card with heading, subtext, and a simple contact form.
  *
@@ -16,18 +17,18 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import ContentWrapper from "../ui/ContentWrapper.astro";
-import Button from "../ui/Button.astro";
-import Form from "../form/Form.astro";
-import FormField from "../form/FormField.astro";
-import FormTextarea from "../form/FormTextarea.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import ContentWrapper from "@/components/ui/ContentWrapper.astro";
+import Button from "@/components/ui/Button.astro";
+import Form from "@/components/form/Form.astro";
+import FormField from "@/components/form/FormField.astro";
+import FormTextarea from "@/components/form/FormTextarea.astro";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **SignUpForm props:**
    * - `theme` — 'light' | 'dark' | 'brand' (default 'light')
@@ -43,7 +44,6 @@ interface Props {
   paddingBottom?: PaddingValue;
   id?: string;
   class?: string;
-  [key: string]: any;
 }
 
 const {

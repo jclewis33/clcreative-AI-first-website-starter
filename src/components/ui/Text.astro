@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Text — body copy with design-system size, weight, and alignment tokens.
  *
@@ -100,7 +101,7 @@ type TextAlign =
  *
  * **Slot:** default — text content.
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Text props:**
    * - `tag` — p, span, div, label, figcaption, li, dt, dd, caption (default 'p')
@@ -309,14 +310,6 @@ interface Props {
    * @example class="u-background-1"
    */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.u-text` wrapper element.
-   * User-provided `style` is merged with computed max-width styles.
-   * @example data-animate="fade" style="--custom: value"
-   */
-  [key: string]: any;
 }
 
 const {

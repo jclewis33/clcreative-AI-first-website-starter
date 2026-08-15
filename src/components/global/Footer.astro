@@ -37,13 +37,13 @@
  */
 
 import Logo from "./Logo.astro";
-import { SITE } from "../../config/site";
+import { SITE } from "@/config/site";
 import {
   FOOTER_GROUPS,
   OPTIONAL_PAGES,
   footerLabel,
   resolveFooterLink,
-} from "../../data/site-structure";
+} from "@/data/site-structure";
 
 const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
 ---

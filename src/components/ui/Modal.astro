@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Modal — native `<dialog>`-based modal with CSS enter/exit transitions.
  *
@@ -66,7 +67,7 @@ type ModalVariant =
  *
  * **Slots:** default (scrollable content), `close` (override the default close button).
  */
-interface Props {
+interface Props extends HTMLAttributes<"dialog"> {
   /**
    * **Modal props:**
    * - `id` — must match `data-modal-trigger` value (required)
@@ -105,13 +106,6 @@ interface Props {
 
   /** Extra utility classes to add to the `<dialog>` element. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `<dialog>` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {

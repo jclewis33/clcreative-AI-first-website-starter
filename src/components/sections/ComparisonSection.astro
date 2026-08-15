@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * ComparisonSection — "Same Designer Hours. Two Very Different Websites."
  *
@@ -6,16 +7,16 @@
  * All copy is identical across the location pages, so everything is a default;
  * a page typically only passes `leftImage` + `rightImage`.
  */
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Visual from "../ui/Visual.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Button from "../ui/Button.astro";
-import ContentWrapper from "../ui/ContentWrapper.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Button from "@/components/ui/Button.astro";
+import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **ComparisonSection props:**
    * - `leftImage` / `rightImage` — the two comparison Visuals (required)
@@ -53,8 +54,6 @@ interface Props {
   buttonText?: string;
   /** CTA button link. @default '/contact' */
   buttonHref?: string;
-
-  [key: string]: any;
 }
 
 const {

@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * StackingPanel — a single card inside `<StackingPanels>`.
  *
@@ -7,7 +8,7 @@
  * left and content on the right (desktop only — on mobile the image always
  * sits on top).
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **StackingPanel** — one card in a `<StackingPanels>` stack.
    *
@@ -25,8 +26,6 @@ interface Props {
   reversed?: boolean;
   /** Extra classes on the panel item. */
   class?: string;
-
-  [key: string]: any;
 }
 
 const { docs, reversed = false, class: className, ...rest } = Astro.props;

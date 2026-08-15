@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Slider component — a touch/swipe carousel powered by Swiper v12.
  *
@@ -56,7 +57,7 @@ type SliderVariant =
  *
  * **Slots:** default (`.swiper-slide` divs), `controls` (override controls row).
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Slider props:**
    * - `variant` — crop-left, crop-right, crop-both, overflow-visible (default 'crop-left')
@@ -187,13 +188,6 @@ interface Props {
 
   /** Extra utility classes to add to the `.slider_wrap` element. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.slider_wrap` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {

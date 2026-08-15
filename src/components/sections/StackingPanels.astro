@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * StackingPanels — scroll-stacking card section (any number of panels).
  *
@@ -27,13 +28,13 @@
  *   </StackingPanel>
  * </StackingPanels>
  */
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Col from "@/components/ui/Col.astro";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **StackingPanels** — scroll-stacking card section.
    *
@@ -61,8 +62,6 @@ interface Props {
   paddingBottom?: PaddingValue;
   /** Extra classes on the Section. */
   class?: string;
-
-  [key: string]: any;
 }
 
 const {
