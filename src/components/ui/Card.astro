@@ -344,7 +344,12 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
         }
 
         {/* Body */}
-        <div class="card_primary_text">
+        {
+          /* u-margin-trim: the slot's last <Text>/<p> carries its own margin-bottom;
+            trimmed here so the block ends clean and the footer's padding-top is
+            the single source of text-to-action space. */
+        }
+        <div class="card_primary_text u-margin-trim">
           <slot />
         </div>
 
@@ -386,7 +391,7 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
              <h3 class="card_primary_title u-text-style-h4">
                <a class="card_primary_link" href="/page">Title</a>
              </h3>
-             <div class="card_primary_text">Body text</div>
+             <div class="card_primary_text u-margin-trim">Body text</div>
            </div>
          </div>
        </div>
@@ -562,17 +567,27 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
       padding: var(--space-5);
       display: flex;
       flex-direction: column;
-      gap: var(--space-2);
+      /* NO gap here — text rhythm belongs to the text elements' own
+         margin-bottom (the Lumos model: one spacing mechanism). This box used
+         to add gap: var(--space-2) ON TOP of those margins, so a title with
+         its 24px margin sat 36px above the body. u-margin-trim on the content
+         and text wrappers strips the leading/trailing margins at the edges. */
+
       /* Absorb the card's spare height so the footer sits on the floor. In a
          row of cards with different amounts of copy, this is what lines their
          buttons up instead of leaving each one hanging under its own text. */
       flex-grow: 1;
     }
 
-    /* Push the footer down once the content above it has taken its natural
-       height — the pairing that actually floors the button. */
+    /* margin-top: auto floors the footer once the content above has taken its
+       natural height. padding-top is the DELIBERATE minimum between the last
+       line of text and the action — in the tallest card of a row auto
+       collapses to zero, and without this the button would touch the copy.
+       (The text block's own trailing margin is trimmed away — see the
+       u-margin-trim on .card_primary_text in the markup.) */
     .card_primary_footer {
       margin-top: auto;
+      padding-top: var(--space-4);
     }
 
     .card_primary_title {
