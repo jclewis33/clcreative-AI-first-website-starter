@@ -339,14 +339,14 @@ const isIconOnly = !Astro.slots.has("default");
 const resolvedAriaLabel = ariaLabel ?? undefined;
 
 /* Wrapper classes */
+/* Array + class:list (the project's one class-merge idiom — see CLAUDE.md).
+   class:list drops the falsy entries itself. */
 const wrapClasses = [
   "button_main_wrap",
   square && "button_main_wrap--no-radius",
   fullWidth && "button_main_wrap--full-width",
   className,
-]
-  .filter(Boolean)
-  .join(" ");
+];
 
 /* Data attributes for variant/size (CSS selectors in buttons.css) */
 const dataVariant = variant;
@@ -371,7 +371,7 @@ const tagAttrs = resolvedHref
   supportText ? (
     <div class="button_support_wrap">
       <Tag
-        class={wrapClasses}
+        class:list={wrapClasses}
         data-button-variant={dataVariant}
         data-button-size={dataSize}
         data-button-hover={dataHoverTheme}
@@ -398,7 +398,7 @@ const tagAttrs = resolvedHref
     </div>
   ) : (
     <Tag
-      class={wrapClasses}
+      class:list={wrapClasses}
       data-button-variant={dataVariant}
       data-button-size={dataSize}
       data-button-hover={dataHoverTheme}

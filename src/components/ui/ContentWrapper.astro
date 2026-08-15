@@ -110,20 +110,21 @@ const alignClassMap: Record<string, string | null> = {
   "center-mobile": "is-center-align-mobile",
 };
 
-const wrapperClasses = ["u-content-wrapper", alignClassMap[align], className]
-  .filter(Boolean)
-  .join(" ");
+/* Built as an array and handed to class:list (the project's one class-merge
+   idiom — see CLAUDE.md). class:list drops falsy entries itself, so no
+   .filter(Boolean).join(" ") by hand. */
+const wrapperClasses = ["u-content-wrapper", alignClassMap[align], className];
 ---
 
 {
   maxWidth ? (
-    <div class={wrapperClasses} {...rest}>
+    <div class:list={wrapperClasses} {...rest}>
       <div class="u-content-wrapper_inner" style={`max-width: ${maxWidth};`}>
         <slot />
       </div>
     </div>
   ) : (
-    <div class={wrapperClasses} {...rest}>
+    <div class:list={wrapperClasses} {...rest}>
       <slot />
     </div>
   )

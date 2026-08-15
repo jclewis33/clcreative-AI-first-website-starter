@@ -16,7 +16,8 @@
     "check:config": "node scripts/check-config-sync.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "postinstall": "rm -rf node_modules/.vite"
+    "postinstall": "rm -rf node_modules/.vite",
+    "css-data": "node scripts/generate-css-custom-data.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.7.0",
