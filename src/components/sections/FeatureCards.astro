@@ -158,3 +158,29 @@ const {
     </div>
   </Grid>
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/feature-cards.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   FEATURE CARDS — 3-col icon + heading + text card grid
+   ========================================================================== */
+
+    .feature-cards_card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding-top: var(--space-5);
+      border-top: 1px solid currentColor;
+    }
+
+    .feature-cards_card_icon {
+      width: 2rem;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      stroke-width: var(--border-width-main);
+    }
+  }
+</style>

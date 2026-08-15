@@ -153,3 +153,32 @@ const subtitle = [role, company].filter(Boolean).join(", ");
     >
   </ContentWrapper>
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/single-testimonial.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   SINGLE TESTIMONIAL
+   — Centered brand section: avatar, name/role, large quote
+   ========================================================================== */
+
+    /* Author block — avatar + name stacked centered */
+    .single_testimonial_author {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+
+    .single_testimonial_avatar {
+      width: 8rem;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-full);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+  }
+</style>

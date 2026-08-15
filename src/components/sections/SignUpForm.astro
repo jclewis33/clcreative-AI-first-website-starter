@@ -84,3 +84,40 @@ const {
     </Form>
   </div>
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/signup-form.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   SIGN UP FORM
+   Dark card with centered content and a form.
+   ========================================================================== */
+
+    .signup_card {
+      background-color: var(--background);
+      color: var(--text);
+      border-radius: var(--radius-medium);
+      padding: var(--space-8) var(--space-4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-8);
+    }
+
+    .signup_form {
+      width: 100%;
+      max-width: 35rem;
+      background-color: white;
+      border-radius: var(--radius-main);
+      padding: var(--space-3);
+    }
+
+    @container (max-width: 39em) {
+      .signup_form {
+        padding: var(--space-1);
+      }
+    }
+  }
+</style>

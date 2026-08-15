@@ -37,6 +37,19 @@ const resolvedTwitterImage = resolvedOgImage;
 <!-- Character Encoding -->
 <meta charset="UTF-8" />
 
+<!-- Cascade layer order — MUST stay identical to the @layer statement in
+     src/styles/global.css. In CSS, whichever declaration of a layer is
+     parsed FIRST fixes its position, and later statements cannot reorder
+     it. Component styles are co-located in <style is:global> blocks and
+     bundled per page, so a component chunk could be parsed before
+     global.css; this inline copy is guaranteed to come first in the
+     document and pins the order no matter how the bundler arranges the
+     stylesheets. is:inline stops Vite from extracting it into one of
+     those very bundles. -->
+<style is:inline>
+  @layer reset, vendor, variables, base, utilities, components, pages, overrides;
+</style>
+
 <!-- Ensure proper scaling on mobile devices -->
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 

@@ -52,42 +52,15 @@
 @import "./base/elements.css" layer(base);
 @import "./base/animate.css" layer(base);
 
-/* Components */
-@import "./components/page.css" layer(components);
-@import "./components/section.css" layer(components);
-@import "./components/layout.css" layer(components);
+/* Components — only styles with NO single owning component live here.
+   Everything else is co-located in its component's <style is:global>
+   block, wrapped in `@layer components { … }` (see CLAUDE.md).
+   forms.css: shared by the contact page and SignUpForm; clickable.css:
+   shared by Button, Card, and Tab; marketing-scorecard.css: owned by a
+   React component (.tsx cannot carry an Astro style block). */
 @import "./components/forms.css" layer(components);
 @import "./components/clickable.css" layer(components);
-@import "./components/slider.css" layer(components);
-@import "./components/cards.css" layer(components);
-@import "./components/pricing-card.css" layer(components);
-@import "./components/buttons.css" layer(components);
-@import "./components/visual.css" layer(components);
-@import "./components/accordion.css" layer(components);
-@import "./components/tabs.css" layer(components);
-@import "./components/nav.css" layer(components);
-@import "./components/modal.css" layer(components);
-@import "./components/footer.css" layer(components);
-@import "./components/testimonials.css" layer(components);
-@import "./components/blog-post-grid.css" layer(components);
-@import "./components/case-study-card.css" layer(components);
-@import "./components/marquee.css" layer(components);
-@import "./components/scroll-reveal.css" layer(components);
-@import "./components/how-it-works.css" layer(components);
-@import "./components/testimonial-showcase.css" layer(components);
-@import "./components/single-testimonial.css" layer(components);
-@import "./components/case-study-featured.css" layer(components);
-@import "./components/split-section.css" layer(components);
-@import "./components/stacking-panels.css" layer(components);
-@import "./components/project-images.css" layer(components);
-@import "./components/why-work-with-us.css" layer(components);
-@import "./components/services.css" layer(components);
-@import "./components/framework-section.css" layer(components);
-@import "./components/feature-cards.css" layer(components);
-@import "./components/post-launch-support.css" layer(components);
-@import "./components/signup-form.css" layer(components);
 @import "./components/marketing-scorecard.css" layer(components);
-@import "./components/blog-cta.css" layer(components);
 
 /* Utilities — u- classes. These sit below components (see the order note
    above). Page CSS in ./pages/ is imported by the pages themselves and

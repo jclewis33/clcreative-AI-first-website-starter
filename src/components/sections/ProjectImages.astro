@@ -86,3 +86,35 @@ const images = [
     }
   </Marquee>
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/project-images.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   PROJECT IMAGES
+   Scrolling marquee of project screenshots with varying aspect ratios.
+   ========================================================================== */
+
+    .project-images_section .marquee_item img {
+      max-height: none;
+    }
+
+    .project-images_section .marquee_inner {
+      align-items: center;
+    }
+
+    .project-images_item {
+      overflow: hidden;
+      border-radius: var(--radius-small);
+    }
+
+    .project-images_img {
+      display: block;
+      height: clamp(10rem, 12vw + 4rem, 20rem);
+      width: auto;
+      border-radius: var(--radius-small);
+    }
+  }
+</style>

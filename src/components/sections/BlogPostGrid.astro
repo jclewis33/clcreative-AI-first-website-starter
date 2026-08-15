@@ -609,3 +609,22 @@ const showHeading = hasHeadingSlot || resolvedHeading;
     </Section>
   )
 }
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/blog-post-grid.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   BLOG POST GRID — section component styles
+   Component: src/components/sections/BlogPostGrid.astro
+   ========================================================================== */
+
+    /* Override the u-container default gap (--space-8) so the heading
+   and card grid sit closer together 
+.blog-post-grid_wrap > .u-container {
+  gap: var(--space-6);
+}
+*/
+  }
+</style>
