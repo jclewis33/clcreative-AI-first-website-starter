@@ -184,15 +184,17 @@ interface BaseProps {
   size?: ButtonSize;
 
   /**
-   * Accessible name for an ICON-ONLY button — one with no visible text, where
-   * there is nothing else to announce.
+   * Accessible name override.
    *
-   * When the button HAS visible text, that text is the accessible name and
-   * this prop is ignored (a dev warning fires if both are present): an
-   * aria-label that disagrees with the visible text is a WCAG 2.5.3
-   * ("Label in Name") failure for voice-control users.
+   * - **Icon-only button** (no visible text): REQUIRED — there is nothing
+   *   else to announce.
+   * - **Button with visible text**: optional. Use it to disambiguate repeated
+   *   labels — six "Learn more" links become "Learn more about Essentials
+   *   Package", etc. WCAG 2.5.3 ("Label in Name") requires the label to
+   *   CONTAIN the visible text: start it with the words on the button. A
+   *   dev-only browser check warns on labels that don't.
    *
-   * @example ariaLabel="Close dialog"
+   * @example ariaLabel="Learn more about Essentials Package"
    */
   ariaLabel?: string;
 
@@ -323,23 +325,18 @@ const resolvedHref = href;
    Astro.slots.render() in frontmatter. */
 const isIconOnly = !Astro.slots.has("default");
 
-/* The accessible name. The visible label IS the accessible name now that the
-   button renders a real <a>/<button>, so aria-label is emitted ONLY when there
-   is no visible text to name it. Emitting it alongside visible text would
-   override that text for screen readers and voice control — how the old
-   overlay markup drifted into WCAG 2.5.3 ("Label in Name") failures. */
-const resolvedAriaLabel = isIconOnly ? (ariaLabel ?? undefined) : undefined;
-
-if (import.meta.env.DEV && ariaLabel && !isIconOnly) {
-  console.warn(
-    `\n[Button] ariaLabel="${ariaLabel}" is ignored — this button has visible ` +
-      `text, and that text is its accessible name now that Button renders a ` +
-      `real <a>/<button>.\n  A label that disagrees with the visible text is a ` +
-      `WCAG 2.5.3 (Label in Name) failure, so it is not emitted. Drop the ` +
-      `ariaLabel, or change the visible text to say what the label said.\n  ` +
-      `ariaLabel is still required for ICON-ONLY buttons.\n`,
-  );
-}
+/* The accessible name. ariaLabel is emitted whenever it is passed:
+   - Icon-only button → it is REQUIRED (there is no visible text to announce).
+   - Button with visible text → it is allowed, and useful for disambiguating
+     repeated labels ("Learn more" × 6 → "Learn more about Essentials
+     Package"). WCAG 2.5.3 ("Label in Name") only demands that the label
+     CONTAIN the visible text; a containing label passes and helps.
+   The failure mode is a label that does NOT contain the visible text — voice
+   control users say what they see and nothing matches. That cannot be checked
+   here (reading the slot means rendering it in frontmatter, which crashes the
+   image service — see the isIconOnly note above), so a dev-only script below
+   checks the RENDERED DOM in the browser instead and flags real mismatches. */
+const resolvedAriaLabel = ariaLabel ?? undefined;
 
 /* Wrapper classes */
 const wrapClasses = [
@@ -425,6 +422,43 @@ const tagAttrs = resolvedHref
   )
 }
 
+<script>
+  /* Dev-only WCAG 2.5.3 ("Label in Name") check. A button's aria-label must
+     CONTAIN its visible text — voice-control users say what they see, and a
+     label like "View archive" on a button reading "All Posts" leaves them with
+     nothing to match. This cannot be validated in frontmatter (reading the
+     slot there means rendering it, which crashes Astro's image service), so it
+     runs against the rendered DOM in the browser. Vite strips the whole block
+     from production builds — import.meta.env.DEV is a compile-time constant. */
+  if (import.meta.env.DEV) {
+    const norm = (t: string) =>
+      t
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    const check = () => {
+      document
+        .querySelectorAll<HTMLElement>("[data-button][aria-label]")
+        .forEach((el) => {
+          const label = el.getAttribute("aria-label") ?? "";
+          const text = norm(el.textContent ?? "");
+          if (text && !norm(label).includes(text)) {
+            console.warn(
+              `[Button] WCAG 2.5.3: aria-label "${label}" does not contain ` +
+                `the visible text "${(el.textContent ?? "").trim()}". Voice ` +
+                `control users say what they see — start the label with the ` +
+                `visible text, or drop it.`,
+              el,
+            );
+          }
+        });
+    };
+    document.readyState === "loading"
+      ? document.addEventListener("DOMContentLoaded", check)
+      : check();
+  }
+</script>
 <style is:global>
   /* Global styles (is:global — classes here are used across the site and by
      child slots), moved from src/styles/components/buttons.css. The layer

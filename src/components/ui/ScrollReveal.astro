@@ -181,7 +181,9 @@ const ratioStyle =
                 <Button
                   href={item.buttonHref}
                   ariaLabel={
-                    item.buttonAriaLabel ?? `Learn more about ${item.heading}`
+                    /* starts with the visible text -> passes WCAG 2.5.3 */
+                    item.buttonAriaLabel ??
+                    `${item.buttonText ?? "Learn more"} — ${item.heading}`
                   }
                 >
                   {item.buttonText ?? "Learn more"}

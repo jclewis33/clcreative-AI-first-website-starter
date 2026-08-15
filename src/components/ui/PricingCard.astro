@@ -244,8 +244,11 @@ const {
   ...rest
 } = Astro.props;
 
-const buttonLabel =
-  ariaLabel ?? (name ? `Learn more about ${name}` : "Learn more");
+/* Auto aria-label starts with the VISIBLE button text so it always passes
+   WCAG 2.5.3 (the label must contain what the button says), then appends the
+   plan name to disambiguate the identical buttons across a pricing row:
+   "Get started — Growth Package". */
+const buttonLabel = ariaLabel ?? (name ? `${buttonText} — ${name}` : undefined);
 const hasItems = Astro.slots.has("default");
 const hasLabel = Astro.slots.has("label");
 const hasFooter = Astro.slots.has("footer");
