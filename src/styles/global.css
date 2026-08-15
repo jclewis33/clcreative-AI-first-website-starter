@@ -55,11 +55,10 @@
 /* Components — only styles with NO single owning component live here.
    Everything else is co-located in its component's <style is:global>
    block, wrapped in `@layer components { … }` (see CLAUDE.md).
-   forms.css: shared by the contact page and SignUpForm; clickable.css:
-   shared by Button, Card, and Tab; marketing-scorecard.css: owned by a
-   React component (.tsx cannot carry an Astro style block). */
+   forms.css: shared by the contact page and SignUpForm;
+   marketing-scorecard.css: owned by a React component (.tsx cannot carry
+   an Astro style block). */
 @import "./components/forms.css" layer(components);
-@import "./components/clickable.css" layer(components);
 @import "./components/marketing-scorecard.css" layer(components);
 
 /* Utilities — u- classes. These sit below components (see the order note

@@ -232,7 +232,6 @@ src/
     │   └── nav.css        # Nav sizing, spacing, radius, banner height, dropdowns
     ├── components/        # ONLY component CSS with no single owner (see below)
     │   ├── forms.css          # Form fields — shared by contact page + SignUpForm
-    │   ├── clickable.css      # Clickable overlay pattern — shared by Button, Card, Tab
     │   └── marketing-scorecard.css # Owned by a React .tsx (can't hold an Astro style block)
     ├── base/              # Utility classes and element defaults
     │   ├── elements.css        # Bare element defaults (h1–h6, p, a, section, button) — `base` layer
@@ -302,7 +301,7 @@ Two hard rules follow from this:
 - **Merging classes**: Always use Astro's `class:list` directive — it takes an array, drops falsy entries, and is the pattern every UI component follows. Build the array with the base class first, conditional modifiers next, and the caller's `className` last, so user classes win: `class:list={["u-text", muted && "u-text-style-muted", className]}`. Do **not** hand-roll the string with `.filter(Boolean).join(" ")`. Merging inline **styles** is a separate problem — `class:list` does not cover it, so `[computed, userStyle].filter(Boolean).join("; ")` stays correct in Heading, Text, Visual, and Overlay.
 - **Formatting**: Prettier owns formatting. Run `npm run format` before committing; `npm run format:check` gates CI. Two files are excluded in `.prettierignore` (`Head.astro`, `BaseLayout.astro`) because prettier-plugin-astro cannot parse their `is:inline` scripts — format those by hand.
 - **Import alias**: `@/` resolves to `src/` (defined in `tsconfig.json` `paths`). Existing files use relative imports; both work.
-- **Extra attributes (rest spread)**: All UI components accept arbitrary HTML attributes (`style`, `data-*`, `aria-*`, etc.) beyond their explicit props — no extra prop needed. The `[key: string]: any` index signature on each interface allows TypeScript to accept any attribute. Internally, each component destructures known props and captures the remainder with `...rest`, then spreads `{...rest}` (or `{...attrs}` for style-merging components) onto the root element. For components that compute inline styles (Heading, Text, Visual, Overlay), user-provided `style` is extracted from `rest` and merged with the computed style string so both apply. **Button is special:** its `...rest` spreads onto the clickable overlay (`<a>` or `<button>`), not the outer wrapper. BlogCard's `...rest` passes through to the underlying `<Card>` component. Each component also has a `docs` prop (destructured but unused) that serves as a JSDoc documentation holder visible in editor autocomplete — it must be destructured to prevent it from leaking into `...rest` as a DOM attribute.
+- **Extra attributes (rest spread)**: All UI components accept arbitrary HTML attributes (`style`, `data-*`, `aria-*`, etc.) beyond their explicit props — no extra prop needed. The `[key: string]: any` index signature on each interface allows TypeScript to accept any attribute. Internally, each component destructures known props and captures the remainder with `...rest`, then spreads `{...rest}` (or `{...attrs}` for style-merging components) onto the root element. For components that compute inline styles (Heading, Text, Visual, Overlay), user-provided `style` is extracted from `rest` and merged with the computed style string so both apply. **Button is special:** it renders a real `<a>`/`<button>` as its root, and `...rest` spreads onto that element. BlogCard's `...rest` passes through to the underlying `<Card>` component. Each component also has a `docs` prop (destructured but unused) that serves as a JSDoc documentation holder visible in editor autocomplete — it must be destructured to prevent it from leaking into `...rest` as a DOM attribute.
 - **SVGs**: Give SVGs their own component class. Put stroke attributes (`stroke`, `stroke-width`, `stroke-linecap`, `stroke-linejoin`) in CSS, not inline. Use `stroke-width: var(--border-width-main)` and `stroke: currentColor`. Decorative SVGs need `aria-hidden="true"`.
 - **Icons & logos**: Icons/logos next to text need `flex-shrink: 0`. Square icons/logos: use `width` + `aspect-ratio: 1/1` — not `width` + `height`. Logos need `object-fit: contain` (overrides the default `cover`).
 - **Image loading placeholders**: The Visual component applies a skeleton background by default. For images with transparency (logos, PNGs), use the `transparent` prop to remove it: `<Visual src={logo} alt="Logo" transparent />`. Pass as a bare keyword — not `transparent="true"`.
@@ -377,7 +376,7 @@ Interactive states — hover, focus, and active/open — are **plain CSS**. Ther
 **Hover / focus:**
 
 - `:hover` and `:focus-visible` for an element's own state.
-- For a parent driving its children (e.g. the clickable overlay sits on top of the visual element), key off the parent: `.button_main_wrap:hover .button_main_element`, or `:has(:focus-visible)` for keyboard focus.
+- For a root element driving its children (e.g. Button's root `<a>`/`<button>` painting `.button_main_element`), key off the root: `.button_main_wrap:hover .button_main_element`, and `:focus-visible` for keyboard focus. Reach for `:has(:focus-visible)` only when the focusable element is genuinely a descendant — if you find yourself needing it, check whether the wrapper should have been the control.
 - `:focus-within` for "this container has focus" (e.g. form-field / search borders).
 
 **Component state — style it directly:**
@@ -452,22 +451,22 @@ import Button from '@/components/ui/Button.astro';
 **Architecture:** The component renders three layers:
 
 1. **Wrapper** (`.button_main_wrap`) — variant/size data attributes + border-radius; the hover/focus target
-2. **Clickable overlay** (`.clickable_wrap > .clickable_link|.clickable_btn`) — invisible `<a>` or `<button>` stretched over wrapper; handles all interaction. Link overlays contain a visually-hidden `<span class="u-sr-only">{label}</span>` so crawlers see real anchor text — an `aria-label` alone leaves the anchor textless for SEO. `<button>` overlays keep `aria-label` only (anchor text isn't a concept for buttons).
+2. **Root element** — the `<a>` (with `href`) or `<button>` IS `.button_main_wrap`. It takes focus, hover, and `...rest`. There is no overlay and no duplicate label.
 3. **Visual element** (`.button_main_element`) — displays label and icon; set to `aria-hidden`
 
-| Prop            | Type                                 | Default     | Description                                                                                                                                                                                   |
-| --------------- | ------------------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `variant`       | `'primary'`\|`'secondary'`\|`'text'` | `'primary'` | Visual style — filled, outlined, or text-link                                                                                                                                                 |
-| `size`          | `'default'`\|`'small'`\|`'large'`    | `'default'` | Padding preset                                                                                                                                                                                |
-| `href`          | `string`                             | —           | Renders as `<a>`. Omit to render a plain `<button>` (modal triggers/closes, form submits, JS actions).                                                                                        |
-| `newTab`        | `boolean`                            | `false`     | Opens in new tab (adds `rel="noopener noreferrer"`)                                                                                                                                           |
-| `disabled`      | `boolean`                            | `false`     | Disables `<button>` (not links)                                                                                                                                                               |
-| `ariaLabel`     | `string`                             | —           | **Required** — accessible label on the clickable overlay; also rendered as sr-only anchor text inside link overlays. Falls back to the slot text if omitted, so the control is never nameless |
-| `type`          | `'button'`\|`'submit'`\|`'reset'`    | `'button'`  | Native button type (when no `href`)                                                                                                                                                           |
-| `square`        | `boolean`                            | `false`     | Removes pill radius                                                                                                                                                                           |
-| `id`            | `string`                             | —           | `id` on wrapper                                                                                                                                                                               |
-| `class`         | `string`                             | —           | Extra classes on wrapper                                                                                                                                                                      |
-| `[key: string]` | `any`                                | —           | Spread onto clickable overlay (`data-modal-trigger`, etc.)                                                                                                                                    |
+| Prop            | Type                                 | Default     | Description                                                                                                                                                                                             |
+| --------------- | ------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `variant`       | `'primary'`\|`'secondary'`\|`'text'` | `'primary'` | Visual style — filled, outlined, or text-link                                                                                                                                                           |
+| `size`          | `'default'`\|`'small'`\|`'large'`    | `'default'` | Padding preset                                                                                                                                                                                          |
+| `href`          | `string`                             | —           | Renders as `<a>`. Omit to render a plain `<button>` (modal triggers/closes, form submits, JS actions).                                                                                                  |
+| `newTab`        | `boolean`                            | `false`     | Opens in new tab (adds `rel="noopener noreferrer"`)                                                                                                                                                     |
+| `disabled`      | `boolean`                            | `false`     | Disables `<button>` (not links)                                                                                                                                                                         |
+| `ariaLabel`     | `string`                             | —           | Only used for **icon-only** buttons. When the button has visible text, that text is the accessible name and `ariaLabel` is ignored (a dev warning fires if they disagree — that mismatch is WCAG 2.5.3) |
+| `type`          | `'button'`\|`'submit'`\|`'reset'`    | `'button'`  | Native button type (when no `href`)                                                                                                                                                                     |
+| `square`        | `boolean`                            | `false`     | Removes pill radius                                                                                                                                                                                     |
+| `id`            | `string`                             | —           | `id` on wrapper                                                                                                                                                                                         |
+| `class`         | `string`                             | —           | Extra classes on wrapper                                                                                                                                                                                |
+| `[key: string]` | `any`                                | —           | Spread onto the root `<a>`/`<button>` (`data-modal-trigger`, etc.)                                                                                                                                      |
 
 **Slots:** default (label text), `icon` (rendered after label)
 
@@ -1160,19 +1159,28 @@ Responsive CSS grid using container-query-based column counts (`@container` on `
 
 ### `<Card>`
 
-Content card with optional image, title, body, footer, and full-surface clickable overlay.
+Content card with optional image, title, body, and footer. Passing `href` makes the whole card surface a link — via a stretched pseudo-element on the title's anchor, not an overlay element.
 
-| Prop        | Type                                | Default     | Description                                        |
-| ----------- | ----------------------------------- | ----------- | -------------------------------------------------- |
-| `variant`   | `'default'`\|`'stacked'`\|`'cover'` | `'default'` | Card layout                                        |
-| `href`      | `string`                            | —           | Makes card fully clickable (renders `<a>` overlay) |
-| `newTab`    | `boolean`                           | `false`     | Open link in new tab                               |
-| `ariaLabel` | `string`                            | —           | Accessible label for the clickable overlay         |
-| `title`     | `string`                            | —           | Convenience title prop (renders as h4)             |
-| `rowSpan`   | `1`–`4`                             | —           | `grid-row: span N`                                 |
-| `colSpan`   | `1`–`4`                             | —           | `grid-column: span N`                              |
-| `radius`    | `string`                            | —           | Border-radius utility class override               |
-| `class`     | `string`                            | —           | Extra classes on outer wrapper                     |
+**Interaction model (automatic).** The card counts the actions (`<a href>` / `<button>`) in its **footer** slot and picks:
+
+| Actions in footer | Result                                                                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 or 1            | Whole card is the link. The lone button is a visual affordance, and the footer is `inert` — **one** tab stop, not two to the same place. |
+| 2 or more         | The card surface is **not** a link (two destinations can't share one surface); the buttons stay real. A dev warning explains it.         |
+
+Override with `actionsOverride="single" \| "multiple"` when that read is wrong. Actions must be in the `footer` slot to be counted.
+
+| Prop        | Type                                | Default     | Description                                                            |
+| ----------- | ----------------------------------- | ----------- | ---------------------------------------------------------------------- |
+| `variant`   | `'default'`\|`'stacked'`\|`'cover'` | `'default'` | Card layout                                                            |
+| `href`      | `string`                            | —           | Makes card fully clickable (renders `<a>` overlay)                     |
+| `newTab`    | `boolean`                           | `false`     | Open link in new tab                                                   |
+| `ariaLabel` | `string`                            | —           | Accessible label for the card link (the title text is the anchor text) |
+| `title`     | `string`                            | —           | Convenience title prop (renders as h4)                                 |
+| `rowSpan`   | `1`–`4`                             | —           | `grid-row: span N`                                                     |
+| `colSpan`   | `1`–`4`                             | —           | `grid-column: span N`                                                  |
+| `radius`    | `string`                            | —           | Border-radius utility class override                                   |
+| `class`     | `string`                            | —           | Extra classes on outer wrapper                                         |
 
 **Variants:**
 
@@ -2111,7 +2119,7 @@ Avoid these when writing CSS and HTML in this project:
 - `paddingTop="page-top"` on any section (heroes included) — `page-top` is **only** for a _fixed_ navbar, and this project's nav is **sticky** by default, so the first section doesn't need it. Build heroes/first sections with the normal default padding; only use `page-top` if the nav has been switched to `fixed`
 - Adding `padding="large"` (or any padding override) to a section by default — `<Section>` already defaults to `padding="main"`, which is correct for almost every section. Omit the prop entirely (don't even write `padding="main"`). Only override to `large`/another value when a specific section genuinely needs it _and_ it's been asked for or is clearly required by a design — never as a habit
 - Wrapping a `<Visual>` together with other content in a `<Col>` — `<Col>`'s `display: contents` makes `.u-image-wrapper` a direct grid/flex child with a definite height, so its `height: 100%` overrides the `ratio` aspect-ratio and the image balloons (worst on mobile when the column collapses to `display: flex`). Use `<ContentWrapper>` (a real `height: auto` block) for any column that holds a `<Visual>` alongside other content; keep `<Col>` for self-sizing loose elements (Heading / Text / Button) only
-- An `<a>` whose only accessible name is `aria-label` — a stretched clickable overlay, a logo link wrapping an SVG, or an icon-only link (social/share). Crawlers see zero anchor text. Put the label in a visually-hidden child instead: `<span class="u-sr-only">{label}</span>` (SVG siblings get `aria-hidden="true"` so the name isn't announced twice). `<button>` elements are exempt — `aria-label` is correct there
+- An `<a>` whose only accessible name is `aria-label` — a logo link wrapping an SVG, or an icon-only link (social/share). Crawlers see zero anchor text. Put the label in a visually-hidden child instead: `<span class="u-sr-only">{label}</span>` (SVG siblings get `aria-hidden="true"` so the name isn't announced twice). `<button>` elements are exempt — `aria-label` is correct there
 - Making CMS content routes SSR (`prerender = false`) "so draft preview works" — draft preview lives on the `/preview/*` SSR twins; public content routes are prerendered with `getStaticPaths`. Serving content via SSR burns Worker CPU per request and caused real production `exceededCpu` 503s
 - Fetching a whole collection in a detail route to render a few related cards, or stacking sequential `await`s on independent queries — filter related content in GROQ (`[0...N]` with a small buffer) and `Promise.all` independent fetches; see the shared loaders in `src/sanity/lib/page-data.ts`
 - A `sitemap({ customPages })` list / `getSanityUrls()`-style helper — prerendered routes are enumerated automatically; customPages is only ever needed for SSR routes, and no content route here is SSR

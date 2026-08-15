@@ -103,6 +103,30 @@ interface Props {
   href?: string;
 
   /**
+   * Override how the card decides between "the whole card is the link" and
+   * "the buttons inside are the links".
+   *
+   * By default the card counts the actions (`<a href>` / `<button>`) in its
+   * slots and picks for you:
+   *
+   * | Actions in the card | Behavior                                            |
+   * |---------------------|-----------------------------------------------------|
+   * | 0 or 1              | Whole card is the link. The lone button is a visual  |
+   * |                     | affordance and the footer is `inert`, so the card is |
+   * |                     | ONE tab stop, not two to the same place.            |
+   * | 2 or more           | Card surface is NOT a link — two destinations cannot |
+   * |                     | share one surface. The buttons stay clickable.       |
+   *
+   * Set this only when that read is wrong:
+   * - `'single'` — force the whole-card link even with several actions
+   *   present (they become `inert`).
+   * - `'multiple'` — keep the buttons real even though there is only one.
+   *
+   * @example actionsOverride="multiple"
+   */
+  actionsOverride?: "single" | "multiple";
+
+  /**
    * Open link in a new tab (adds `rel="noopener noreferrer"`).
    * @default false
    * @example newTab
@@ -175,6 +199,7 @@ const {
   rowSpan,
   colSpan,
   radius,
+  actionsOverride,
   class: className,
   ...rest
 } = Astro.props;
@@ -196,6 +221,66 @@ const hasVisual = Astro.slots.has("visual");
 const hasTitle = Astro.slots.has("title");
 const hasFooter = Astro.slots.has("footer");
 const showVisual = variant !== "stacked";
+
+/* ── How many things in this card can be actioned? ────────────────────────
+   TypeScript cannot answer this: types are erased before anything renders,
+   and slot contents are not part of the type at all. Astro can, though —
+   rendering a slot to HTML and counting the controls in it happens at build
+   time, costs nothing at runtime, and needs no prop from the author.
+
+   The count decides the card's interaction model:
+
+     0-1 actions → the whole card is the link. The lone button is a visual
+                   affordance ("this card goes somewhere"), so the footer is
+                   marked `inert`: one tab stop for the card, not two.
+     2+ actions  → the card is NOT a link. Two destinations cannot live under
+                   one clickable surface, so the buttons stay real and the
+                   card surface does nothing.
+
+   `actionsOverride` forces either model when the automatic read is wrong.
+
+   Only the FOOTER is counted. That is where actions belong, and it is
+   deliberately not the body: rendering the default slot here would pull any
+   <Visual>/<Image> inside it through Astro's image service before that
+   service is ready, throwing "Cannot read properties of undefined (reading
+   'validateOptions')". A control placed directly in the body is not counted —
+   put actions in the footer slot. */
+const slotHtml = hasFooter ? await Astro.slots.render("footer") : "";
+/* Count rendered controls, not <Button> tags — this sees anything actionable
+   a caller drops in, including plain <a href> and <button>. */
+const actionCount = (slotHtml.match(/<a\b[^>]*\shref=|<button\b/g) ?? [])
+  .length;
+
+const wantsSurfaceLink =
+  actionsOverride === "single"
+    ? true
+    : actionsOverride === "multiple"
+      ? false
+      : actionCount <= 1;
+
+/* The card surface is a link only when an href is set AND the content does
+   not carry competing actions. */
+const isSurfaceLink = isClickable && wantsSurfaceLink;
+/* Its lone action is decorative, so take it out of the tab order. */
+const footerIsAffordance = isSurfaceLink && actionCount >= 1;
+
+if (import.meta.env.DEV && isClickable && !wantsSurfaceLink) {
+  console.warn(
+    `\n[Card] href is set but this card holds ${actionCount} actions, so the ` +
+      `card surface is NOT clickable — two destinations cannot share one ` +
+      `surface.\n  The buttons inside stay clickable. Pass ` +
+      `actionsOverride="single" to force the whole-card link anyway (the ` +
+      `footer then becomes inert), or drop href and let the buttons do the ` +
+      `work.\n`,
+  );
+}
+if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
+  console.warn(
+    "\n[Card] A clickable card needs a `title` (or a title slot) — the title " +
+      "carries the link, so without one the card has no anchor text to " +
+      "announce.\n",
+  );
+}
 ---
 
 <div
@@ -228,7 +313,21 @@ const showVisual = variant !== "stacked";
                 !hasTitle && "u-text-style-h5",
               ]}
             >
-              {hasTitle ? <slot name="title" /> : title}
+              {isSurfaceLink ? (
+                <a
+                  href={href}
+                  class="card_primary_link"
+                  target={linkTarget}
+                  rel={linkRel}
+                  aria-label={hasTitle ? linkLabel : undefined}
+                >
+                  {hasTitle ? <slot name="title" /> : title}
+                </a>
+              ) : hasTitle ? (
+                <slot name="title" />
+              ) : (
+                title
+              )}
             </div>
           )
         }
@@ -241,32 +340,17 @@ const showVisual = variant !== "stacked";
         {/* Footer */}
         {
           hasFooter && (
-            <div class="card_primary_footer">
+            <div class="card_primary_footer" inert={footerIsAffordance}>
+              {/* inert when the card itself is the link: the button is there to
+                  say "this goes somewhere", so it must not be a second tab stop
+                  to the same place. Removes it from tab order, the a11y tree,
+                  and hit-testing in one attribute. */}
               <slot name="footer" />
             </div>
           )
         }
       </div>
     </div>
-
-    {/* Full-surface clickable overlay */}
-    {
-      isClickable && (
-        <div class="clickable_wrap u-cover-absolute">
-          <a
-            href={href}
-            class="clickable_link"
-            aria-label={linkLabel}
-            target={linkTarget}
-            rel={linkRel}
-          >
-            {/* Real anchor text for crawlers — an aria-label alone leaves
-                the stretched overlay link textless for SEO. */}
-            <span class="u-sr-only">{linkLabel}</span>
-          </a>
-        </div>
-      )
-    }
   </div>
 </div>
 
@@ -284,17 +368,19 @@ const showVisual = variant !== "stacked";
          <div class="card_primary_element">
            <div class="card_primary_visual">…image…</div>
            <div class="card_primary_content u-margin-trim">
-             <h3 class="card_primary_title u-text-style-h4">Title</h3>
+             <h3 class="card_primary_title u-text-style-h4">
+               <a class="card_primary_link" href="/page">Title</a>
+             </h3>
              <div class="card_primary_text">Body text</div>
            </div>
          </div>
-         <div class="clickable_wrap u-cover-absolute">
-           <a href="/page" class="clickable_link">
-             <span class="u-sr-only">Label</span>   ← real anchor text for crawlers
-           </a>
-         </div>
        </div>
      </div>
+
+   A clickable card has NO overlay element. The title carries a real <a>, and
+   `.card_primary_link::after` stretches that anchor over the whole card — so
+   the card is one link with real anchor text, instead of an invisible
+   duplicate link stacked on top of the content.
 
    Variants: default | stacked | cover
    Grid spans: u-row-span-2, u-column-span-2
@@ -316,6 +402,66 @@ const showVisual = variant !== "stacked";
       border-radius: inherit;
       width: 100%;
       display: flex;
+    }
+
+    /* ---- Stretched card link ----
+       The title holds a real <a>; this pseudo-element stretches its hit area
+       over the whole card. Replaces the old absolutely-positioned overlay
+       <a class="clickable_link"> that duplicated the label in a .u-sr-only
+       span. Benefits: the anchor text is the visible title (nothing to keep
+       in sync), the card is ONE link instead of two stacked ones, and text
+       inside the card stays selectable because no element covers it.
+
+       Only rendered when the card holds 0-1 actions — see the action count
+       in the frontmatter. */
+    .card_primary_link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .card_primary_link::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      border-radius: inherit;
+    }
+
+    /* `inset: 0` resolves against the nearest POSITIONED ancestor. Left alone
+       that is .card_primary_content (position: relative, below), so the hit
+       area would stop at the text and never cover the image. Dropping the
+       positioning on a surface-link card hands the job to
+       .card_primary_group, which is the card itself.
+
+       The cover variant keeps its positioning — there the visual is
+       absolutely positioned behind the text, and content needs the stacking
+       context to stay on top. Its content already spans the whole card, so
+       the stretch still covers the surface. */
+    .card_primary_content:has(.card_primary_link) {
+      position: static;
+      z-index: auto;
+    }
+
+    /* A cover card's content is `position: absolute; bottom: 0` by design (see
+       the cover variant below) — it must keep that, so the rule above must not
+       apply here. It is already positioned, which means `inset: 0` on the
+       stretch would only cover the bottom text strip. Extend the hit area
+       upward instead; `.card_primary_element` has `overflow: hidden` on this
+       variant, so it is clipped back to exactly the card. */
+    [data-card-variant="cover"] .card_primary_content:has(.card_primary_link) {
+      position: absolute;
+    }
+
+    [data-card-variant="cover"] .card_primary_link::after {
+      inset: -100vh 0 0 0;
+    }
+
+    /* Anything genuinely interactive inside a clickable card has to sit above
+       the stretch, or the card would swallow it. The footer of an
+       affordance-only card is `inert`, so this never fights that case. */
+    .card_primary_group :is(a, button):not(.card_primary_link) {
+      position: relative;
+      z-index: 4;
     }
 
     /* ---- Element — inner card surface with border ---- */

@@ -186,9 +186,15 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         <div class="tab_control_wrap">
           <div class="tab_arrow_wrap">
             {/* Previous arrow — reuses existing button_arrow pattern from buttons.css */}
-            <div class="button_arrow_wrap">
-              <div class="button_arrow_element button_arrow_element--secondary">
-                <div aria-hidden="true" class="button_arrow_icon">
+            {/* The control IS the <button> — no stretched overlay. The
+                _element/_icon spans are the painted surface. */}
+            <button
+              type="button"
+              class="button_arrow_wrap tab_prev_btn"
+              aria-label="Previous tab"
+            >
+              <span class="button_arrow_element button_arrow_element--secondary">
+                <span aria-hidden="true" class="button_arrow_icon">
                   <svg
                     viewBox="0 0 33 26"
                     fill="none"
@@ -198,20 +204,19 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
                     <path d="M15 24.8437L2 12.8438L15 0.843749" />
                     <path d="M2.5 13L33 13" />
                   </svg>
-                </div>
-              </div>
-              <div class="clickable_wrap u-cover-absolute">
-                <button
-                  type="button"
-                  class="clickable_btn tab_prev_btn"
-                  aria-label="Previous tab"
-                />
-              </div>
-            </div>
+                </span>
+              </span>
+            </button>
             {/* Next arrow */}
-            <div class="button_arrow_wrap">
-              <div class="button_arrow_element button_arrow_element--secondary">
-                <div aria-hidden="true" class="button_arrow_icon">
+            {/* The control IS the <button> — no stretched overlay. The
+                _element/_icon spans are the painted surface. */}
+            <button
+              type="button"
+              class="button_arrow_wrap tab_next_btn"
+              aria-label="Next tab"
+            >
+              <span class="button_arrow_element button_arrow_element--secondary">
+                <span aria-hidden="true" class="button_arrow_icon">
                   <svg
                     viewBox="0 0 33 26"
                     fill="none"
@@ -221,22 +226,22 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
                     <path d="M18 24.8437L31 12.8438L18 0.843749" />
                     <path d="M30.5 13L0 13" />
                   </svg>
-                </div>
-              </div>
-              <div class="clickable_wrap u-cover-absolute">
-                <button
-                  type="button"
-                  class="clickable_btn tab_next_btn"
-                  aria-label="Next tab"
-                />
-              </div>
-            </div>
+                </span>
+              </span>
+            </button>
           </div>
 
           {/* Play/Pause toggle — reuses existing button_toggle pattern from buttons.css */}
-          <div class="button_toggle_wrap is-active">
-            <div class="button_toggle_element button_toggle_element--secondary">
-              <div aria-hidden="true" class="button_toggle_icon">
+          {/* The control IS the <button> — no stretched overlay. The
+                _element/_icon spans are the painted surface. */}
+          <button
+            type="button"
+            class="button_toggle_wrap is-active tab_toggle_btn"
+            aria-label="Pause automatic tab rotation"
+            aria-pressed="true"
+          >
+            <span class="button_toggle_element button_toggle_element--secondary">
+              <span aria-hidden="true" class="button_toggle_icon">
                 <svg
                   class="button_toggle_play u-cover-absolute"
                   viewBox="0 0 1393 1394"
@@ -255,17 +260,9 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
                   <rect x="577" width="321" height="1277" fill="currentColor" />
                   <rect width="321" height="1277" fill="currentColor" />
                 </svg>
-              </div>
-            </div>
-            <div class="clickable_wrap u-cover-absolute">
-              <button
-                type="button"
-                class="clickable_btn tab_toggle_btn"
-                aria-label="Pause automatic tab rotation"
-                aria-pressed="true"
-              />
-            </div>
-          </div>
+              </span>
+            </span>
+          </button>
         </div>
       )
     }
@@ -322,8 +319,7 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
       const nextBtn = wrap.querySelector<HTMLButtonElement>(".tab_next_btn");
       const toggleBtn =
         wrap.querySelector<HTMLButtonElement>(".tab_toggle_btn");
-      const toggleWrap =
-        toggleBtn?.closest<HTMLElement>(".button_toggle_wrap") ?? null;
+      const toggleWrap = toggleBtn; // the control IS the .button_toggle_wrap element now
 
       if (buttons.length === 0 || panels.length === 0) return;
       if (buttons.length !== panels.length) {
