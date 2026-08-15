@@ -141,6 +141,16 @@ select {
   outline-style: solid;
 }
 
+/* A native <dialog> hands focus back to its trigger on close(), and Chrome
+   flags that restored focus as :focus-visible even when the modal was opened
+   with the mouse — leaving a keyboard ring on a control the user only clicked.
+   Modal.astro marks the trigger `data-focus-silent` for exactly that restore
+   (and clears it on the next Tab or blur), so the ring stays hidden only for
+   the pointer case. */
+[data-focus-silent]:focus-visible {
+  outline: none;
+}
+
 /* Focused, but the browser judged no indicator is warranted (mouse click on a
    button). Clear the UA default so no ring shows. */
 :is(a, button, [role="button"], [tabindex], input, textarea, select):focus:not(:focus-visible) {

@@ -197,6 +197,39 @@ const hasClose = Astro.slots.has("close");
   // Store timelines per modal element (gsap type not available — CDN loaded)
   const modalTimelines = new WeakMap<HTMLDialogElement, any>();
 
+  /* Was this modal opened from the keyboard?
+     A native <dialog> returns focus to the trigger on close(), and Chrome
+     always flags that restored focus as :focus-visible — so a user who opened
+     the modal with the MOUSE got a keyboard focus ring around the trigger
+     afterwards. Record the modality at open time and, when it was a pointer,
+     mark the trigger so the ring stays hidden for exactly that restore. */
+  const openedByKeyboard = new WeakMap<HTMLDialogElement, boolean>();
+  const modalTriggers = new WeakMap<HTMLDialogElement, HTMLElement>();
+
+  function rememberOpener(
+    modal: HTMLDialogElement,
+    trigger: HTMLElement,
+    e: MouseEvent,
+  ) {
+    modalTriggers.set(modal, trigger);
+    /* `detail` is the click count: a real pointer click reports 1+, while a
+       click synthesized by Enter/Space on a button reports 0. That is the
+       reliable read of activation modality — checking :focus-visible here is
+       not, because anything that focused the trigger programmatically before
+       the click would report true. */
+    openedByKeyboard.set(modal, e.detail === 0);
+  }
+
+  function restoreTriggerFocus(modal: HTMLDialogElement) {
+    const trigger = modalTriggers.get(modal);
+    if (!trigger || openedByKeyboard.get(modal)) return;
+    trigger.setAttribute("data-focus-silent", "");
+    const clear = () => trigger.removeAttribute("data-focus-silent");
+    // Any later Tab or blur re-arms the real focus ring.
+    trigger.addEventListener("blur", clear, { once: true });
+    trigger.addEventListener("keydown", clear, { once: true });
+  }
+
   function buildTimeline(modal: HTMLDialogElement): any | null {
     const g = (window as any).gsap;
     if (!g) return null;
@@ -208,6 +241,7 @@ const hasClose = Astro.slots.has("close");
     const tl = g.timeline({
       paused: true,
       onReverseComplete: () => {
+        restoreTriggerFocus(modal);
         modal.close();
         restoreScroll();
         // Clear GSAP inline styles for a clean next open
@@ -328,6 +362,7 @@ const hasClose = Astro.slots.has("close");
       tl.reverse();
     } else {
       // No GSAP — close instantly
+      restoreTriggerFocus(modal);
       modal.close();
       restoreScroll();
     }
@@ -356,6 +391,8 @@ const hasClose = Astro.slots.has("close");
       ) as HTMLDialogElement | null;
       if (!dialog || !(dialog instanceof HTMLDialogElement)) return;
 
+      // Capture the modality BEFORE showModal() moves focus into the dialog.
+      rememberOpener(dialog, trigger, e as MouseEvent);
       openModal(dialog);
     });
 
