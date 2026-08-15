@@ -19,6 +19,16 @@
  *   image's `height: 100%` override its `ratio` aspect-ratio and balloon (see
  *   the `<Col>` note in `Col.astro` / CLAUDE.md).
  *
+ *   Decision table — what is in the column?
+ *   | Column holds                                | Wrapper                    |
+ *   |---------------------------------------------|----------------------------|
+ *   | One component (Visual/Grid/Card/Slider)     | none — `slot` directly     |
+ *   | Loose elements, no Visual                   | `<Col>`                    |
+ *   | Ratio'd `<Visual>` + anything else          | `<ContentWrapper>`         |
+ *   | Background Visual + Overlay                 | `<Col>`                    |
+ *   | Needs its own text alignment                | `<ContentWrapper align>`   |
+ *   Wrong combinations warn in the dev terminal (see Col.astro).
+ *
  * Slots (stack / stack-centered):
  *   - default — all content goes into a single column
  *

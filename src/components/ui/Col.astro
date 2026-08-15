@@ -11,7 +11,8 @@
  *
  * **Why you need it:** a Layout slot (`col1` / `col2`) positions exactly one
  * element. When a column holds several loose elements (Heading + Text + Button,
- * or Visual + Overlay), they must share one slotted parent. A *plain* `<div>`
+ * or a background `<Visual variant="background">` + Overlay), they must share
+ * one slotted parent. A *plain* `<div>`
  * would itself become the grid/flex child — collapsing all your elements into
  * one box and breaking `verticalAlign`, `rowGap`, and margin flow. `<Col>`
  * wraps them for slotting **without** becoming a layout box, so the column
@@ -82,6 +83,36 @@ interface Props {
 }
 
 const { docs, class: className, ...rest } = Astro.props;
+
+/* Dev-only guardrail for the one real footgun in the Layout/Col/ContentWrapper
+   trio: wrapping a ratio'd <Visual> in <Col>. `display: contents` erases the
+   Col box, so the image wrapper becomes a direct grid/flex child with a
+   definite height — its `height: 100%` overrides the `ratio` aspect-ratio and
+   the image balloons. Background visuals (`variant="background"`) are exempt:
+   they're absolute-fill with the ratio unset, and pairing one with an
+   <Overlay> inside <Col> is a legitimate pattern.
+
+   Runs only in `astro dev` (stripped from production builds) and only reads a
+   throwaway render of the slot — the emitted markup is untouched. */
+if (import.meta.env.DEV && Astro.slots.has("default")) {
+  const html = await Astro.slots.render("default");
+  const wrapperTags = html.match(/<div[^>]*u-image-wrapper[^>]*>/g) ?? [];
+  const offender = wrapperTags.find(
+    (tag) => !tag.includes("is-background") && tag.includes("aspect-ratio"),
+  );
+  if (offender) {
+    console.warn(
+      "\n[Col] ⚠ A <Col> wraps a ratio'd <Visual>. Col's display: contents makes " +
+        "the image a direct grid/flex child, where its height: 100% overrides the " +
+        "ratio and the image balloons (worst on mobile).\n" +
+        "  Fix: use <ContentWrapper> for a column mixing a <Visual> with other " +
+        'content, or put slot="col1"/"col2" on the <Visual> itself if it is ' +
+        'alone in the column. Background visuals (variant="background") are fine ' +
+        "in <Col>.\n" +
+        `  Offending element: ${offender.slice(0, 120)}…\n`,
+    );
+  }
+}
 ---
 
 <div class:list={["u-display-contents", className]} {...rest}>

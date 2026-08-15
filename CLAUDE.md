@@ -230,6 +230,10 @@ src/
     │   ├── spacing.css    # --space-1–8, --section-space-*, --margin-*
     │   ├── layout.css     # --grid-*, --gap-*
     │   └── nav.css        # Nav sizing, spacing, radius, banner height, dropdowns
+    ├── components/        # ONLY component CSS with no single owner (see below)
+    │   ├── forms.css          # Form fields — shared by contact page + SignUpForm
+    │   ├── clickable.css      # Clickable overlay pattern — shared by Button, Card, Tab
+    │   └── marketing-scorecard.css # Owned by a React .tsx (can't hold an Astro style block)
     ├── base/              # Utility classes and element defaults
     │   ├── elements.css        # Bare element defaults (h1–h6, p, a, section, button) — `base` layer
     │   ├── utilities.css       # u-sr-only, u-button-reset, misc u- classes
@@ -266,11 +270,25 @@ Two hard rules follow from this:
 
 **Where to write CSS:**
 
+- **Component classes** → co-located in the component's own `.astro` file, at the bottom:
+
+  ```astro
+  <style is:global>
+    @layer components {
+      .my-component_wrap {
+        /* declarations */
+      }
+    }
+  </style>
+  ```
+
+  Both attributes are load-bearing. `is:global` skips Astro's scoping hash so the classes stay targetable from other files and apply to slotted children; `@layer components { … }` slots them into the cascade defined in `styles/global.css`. A bare scoped `<style>` block (no `is:global`, no `@layer`) is still wrong for component classes — it's unlayered, so it would beat every layer in the design system.
+
+- **Component CSS with no single owning component** → `src/styles/components/` (add the file to `global.css` with `layer(components)`). Only three files qualify today; the reasons are listed in `global.css`.
+- **Page-specific classes** → `src/styles/pages/[page-name].css`, opening with `@layer pages { … }` in-file
 - **Utility classes** → `src/styles/base/` (existing files)
 - **Element defaults** (bare `h1`/`p`/`a`-style selectors) → `src/styles/base/elements.css` — never in a utilities file, where the layer would let them beat component classes
 - **CSS variables** → `src/styles/variables/` (existing files)
-- **Custom component classes** → `src/styles/pages/[page-name].css` or a new `src/styles/components/[component-name].css` (add the new file to `global.css` with `layer(components)`)
-- Do **not** use Astro scoped `<style>` blocks for component classes — keep all CSS in the global files so classes remain targetable and overridable
 
 ---
 
@@ -292,7 +310,7 @@ Two hard rules follow from this:
 - **Form inputs**: `<input>`, `<textarea>`, and `<select>` elements must have `font-size` no smaller than `1rem` — sizes below `1rem` trigger auto-zoom on iOS.
 - **Text parent containers**: Direct parents of text elements should not be `display: flex` — flex prevents vertical margin collapsing between text. Use `display: block` or no display override for text wrappers. Add `u-margin-trim` to the direct parent of text elements with margins to prevent unwanted extra space at the edges.
 - **Text spacing**: Bottom-margin-only inside `.u-text` wrappers. Every text style class (`u-text-style-*`, `u-display-*`) declares both `margin-top` and `margin-bottom` via variables, but all `margin-top` variables are `0` — so spacing flows in one direction only (bottom). Inside `.u-text` wrappers, the child's `margin-top` is also forced to `0 !important` by the `.u-text > *` rule. Bare heading tags (`h1`–`h6`) and `p` have `margin-top: 0; margin-bottom: 0;` — so headings and paragraphs used without a text style class (accordion toggles, nav links, footers) carry zero margin. **Rich text** (`.u-rich-text`): a separate vertical rhythm system for CMS/prose content where bare heading and paragraph tags flow without `.u-text` wrappers. Headings get both `margin-top` (section separation) and `margin-bottom` (flow into content); paragraphs get `margin-bottom` only. Values use `--space-*` variables directly (not per-heading typography variables) so you can tune rich-text rhythm independently. Rules live in `src/styles/base/typography.css`. **Margin trim**: containers (`u-container`), layout columns (`u-layout-column`), content wrappers (`u-content-wrapper`), rich text (`u-rich-text`), and any element with `u-margin-trim` automatically remove `margin-top` from the first visible child and `margin-bottom` from the last visible child — preventing extra space at the edges. Add `u-ignore-trim` to any child that should keep its margin. `text-box-trim` is applied as a progressive enhancement inside `.u-text`.
-- **Don't add redundant `marginBottom={0}`**: because of margin-trim (above), the **last child's bottom margin is already auto-zeroed** whenever a `<Text>`/`<Heading>` is the _last child_ of a **trimmed wrapper** — a `<Section>` container, a `<Layout>` column (`slot="col1"`/`"col2"`), `<ContentWrapper>`, `<Col>`, `u-rich-text`, or any element carrying `u-margin-trim` / `u-container*`. In those cases `marginBottom={0}` does **nothing** — do not add it. It is only needed when the element is the last child of a **custom `<div>`** that is _not_ one of those (e.g. a card body `*_content`, a `*_meta` row, an `<li>`). Even then, prefer adding `u-margin-trim` to that custom wrapper once over sprinkling `marginBottom={0}` on each child. The trim rules live in [src/styles/components/section.css](src/styles/components/section.css) (`:last-child { margin-bottom: 0 }`) and [src/styles/base/utilities.css](src/styles/base/utilities.css) (last-visible-child trim).
+- **Don't add redundant `marginBottom={0}`**: because of margin-trim (above), the **last child's bottom margin is already auto-zeroed** whenever a `<Text>`/`<Heading>` is the _last child_ of a **trimmed wrapper** — a `<Section>` container, a `<Layout>` column (`slot="col1"`/`"col2"`), `<ContentWrapper>`, `<Col>`, `u-rich-text`, or any element carrying `u-margin-trim` / `u-container*`. In those cases `marginBottom={0}` does **nothing** — do not add it. It is only needed when the element is the last child of a **custom `<div>`** that is _not_ one of those (e.g. a card body `*_content`, a `*_meta` row, an `<li>`). Even then, prefer adding `u-margin-trim` to that custom wrapper once over sprinkling `marginBottom={0}` on each child. The trim rules live in [src/styles/overrides.css](src/styles/overrides.css) (`:last-child { margin-bottom: 0 }` fallback; the native `margin-trim` half sits in Section.astro's style block) and [src/styles/base/utilities.css](src/styles/base/utilities.css) (last-visible-child trim).
 - **Layout containers space their own children — don't add margins between siblings.** The `<Section>` content container (`.u-container`) is a **flex column with a built-in `gap`** (default `--space-8`, overridable via the Section `gap` prop, `0`–`8`). Its direct children are spaced apart automatically — so when you stack a `<Heading>` above a `<Layout>`, `<Grid>`, `<ContentWrapper>`, another `<Heading>`, or a `<Text>` **directly inside a `<Section>`**, do **not** add `marginBottom` (or any `u-margin-*` utility) to create that gap; the container already does it. The same is true inside a `<Layout>` (CSS grid with a `rowGap`), its `stack`/`stack-centered` variants, and inside `<Col>` (`display: contents`, so its children become the Layout's grid children and inherit that row gap). To change the spacing, **adjust the container's gap** (`<Section gap={N}>` / `<Layout rowGap={N}>`) — never per-child margins. The one exception is `<ContentWrapper>` — a plain block with **no gap**; spacing between its children comes from the text elements' own bottom margins (last one auto-trimmed), so you still don't add extra `marginBottom`. **Net rule:** between direct children of a `<Section>` / `<Layout>` / `<Col>`, spacing is the container's `gap` — leave child margins alone. Only reach for `marginBottom` inside a custom `<div>` _you_ wrote that has no gap and isn't margin-trimmed (e.g. a card body).
 
 ---
@@ -570,13 +588,13 @@ Optionally also change `--nav-background` in `themes.css` (pill uses `--backgrou
 
 ### Key Files
 
-| File                                 | What it controls                                                          |
-| ------------------------------------ | ------------------------------------------------------------------------- |
-| `src/styles/variables/nav.css`       | All nav sizing, spacing, radius, banner height — **edit here to restyle** |
-| `src/styles/variables/themes.css`    | `--nav-background` per theme (light/dark/brand)                           |
-| `src/styles/components/nav.css`      | All nav component styles (layout, animations, responsive)                 |
-| `src/components/global/Navbar.astro` | Markup, nav items array, and all JS (menu, dropdowns, banner)             |
-| `src/layouts/BaseLayout.astro`       | Banner text config, page theme prop, `is-has-banner` class on `<html>`    |
+| File                                    | What it controls                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------- |
+| `src/styles/variables/nav.css`          | All nav sizing, spacing, radius, banner height — **edit here to restyle** |
+| `src/styles/variables/themes.css`       | `--nav-background` per theme (light/dark/brand)                           |
+| `Navbar.astro` (co-located style block) | All nav component styles (layout, animations, responsive)                 |
+| `src/components/global/Navbar.astro`    | Markup, nav items array, and all JS (menu, dropdowns, banner)             |
+| `src/layouts/BaseLayout.astro`          | Banner text config, page theme prop, `is-has-banner` class on `<html>`    |
 
 ### Structure
 
@@ -897,7 +915,7 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
 
 > **`page-top` is for a FIXED nav only — don't use it on this project by default.** `page-top` exists to push a page's first section down so it clears a navbar that's pinned as a fixed overlay. **This project's navbar is `sticky` by default**, so it sits in normal document flow and the first section does _not_ need extra top padding to clear it. Build the first section (hero included) with the normal default padding — omit `paddingTop` entirely. `page-top` stays in the project only for the specific case where someone switches the nav to `fixed`; reach for it then, not before.
 
-**How padding is applied (overriding it):** padding lives **directly on the `<section>`** — the chosen sizes are emitted as `data-padding-top` / `data-padding-bottom` attributes and mapped to `padding-top` / `padding-bottom` in [section.css](src/styles/components/section.css). There are **no spacer divs** — padding is a property of the section itself. The mapping rules are wrapped in `:where()` so they carry **zero specificity** — which means any single component/page class can override section padding without an `!important` or attribute-level selector. This is the supported pattern for sections that need responsive or asymmetric padding the props can't express: pass `padding="none"` and drive it from a class, e.g.
+**How padding is applied (overriding it):** padding lives **directly on the `<section>`** — the chosen sizes are emitted as `data-padding-top` / `data-padding-bottom` attributes and mapped to `padding-top` / `padding-bottom` in [Section.astro's style block](src/components/ui/Section.astro). There are **no spacer divs** — padding is a property of the section itself. The mapping rules are wrapped in `:where()` so they carry **zero specificity** — which means any single component/page class can override section padding without an `!important` or attribute-level selector. This is the supported pattern for sections that need responsive or asymmetric padding the props can't express: pass `padding="none"` and drive it from a class, e.g.
 
 ```css
 /* a section that wants its own responsive vertical rhythm */
@@ -962,6 +980,18 @@ Two-column CSS Grid with 13 named variants. Uses `display: var(--layout-collapse
 | `full-reversed`     | gutter+6/12 + 6/12 | 50/50 — image left bleeds to viewport edge, content right (named-line grid)                                                                                         |
 | `card`              | 1fr                | Centered card: col1 content centered with padding, col2 positioned absolutely as background (rounded, clipped). Use with Visual + Overlay in col2 for CTA sections. |
 | `auto-width`        | auto auto          | Both columns size to content                                                                                                                                        |
+
+**Choosing a column wrapper — the decision table.** For anything going into a `col1`/`col2` slot, answer one question: _what is in the column?_
+
+| What the column holds                                            | Wrapper                                 | Why                                                                                                                                    |
+| ---------------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| One self-contained component (Visual, Grid, Card, Slider)        | **None** — `slot="col1"` on it directly | It's already a single element; a wrapper adds nothing                                                                                  |
+| Multiple loose elements, **no** `<Visual>` (Heading/Text/Button) | **`<Col>`**                             | `display: contents` erases the wrapper so each element is a real grid child — column gap and `verticalAlign` apply per element         |
+| A ratio'd `<Visual>` **plus** anything else                      | **`<ContentWrapper>`**                  | A real block box between column and image; without it the image's `height: 100%` beats its `ratio` and balloons (Col makes this worse) |
+| A background `<Visual variant="background">` + `<Overlay>`       | **`<Col>`**                             | Background visuals are absolute-fill with ratio unset — the balloon hazard doesn't exist                                               |
+| Content that needs its own text alignment (e.g. centered column) | **`<ContentWrapper align="…">`**        | It cascades alignment to children; `<Col>` has no box to align                                                                         |
+
+Getting this wrong is loud in dev: `<Col>` warns in the terminal when it wraps a ratio'd `<Visual>` (see `Col.astro`). In `stack`/`stack-centered` variants none of this applies — put elements in `<Col slot="col1">` and let the variant handle alignment.
 
 **Slots:** `col1` (left) and `col2` (right). **All variants use `slot="col1"`** — including `stack` and `stack-centered`. When placing multiple loose elements (Heading, Text, Button) into a column, wrap them in the **`<Col>` component** (`<Col slot="col1">…</Col>`) — see [`<Col>`](#col) below. `<Col>` renders `<div class="u-display-contents">` so its children behave as direct grid children, with the load-bearing `u-display-contents` class baked in (never hand-write that div). Single components that already have their own wrapper (Visual, Grid, Card) can take `slot` directly — no `<Col>` needed. **Exception:** a column that holds a `<Visual>` _together with other content_ must use `<ContentWrapper>`, not `<Col>` — `<Col>`'s `display: contents` lets the image's `height: 100%` override its `ratio` aspect-ratio and balloon (see the ⚠️ note in the [`<Col>`](#col) section).
 
