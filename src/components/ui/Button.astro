@@ -337,7 +337,33 @@ const slotText = (await Astro.slots.render("default"))
   ?.replace(/<[^>]*>/g, " ")
   .replace(/\s+/g, " ")
   .trim();
-const resolvedAriaLabel = ariaLabel ?? (slotText || undefined);
+/* The accessible name. The visible label IS the accessible name now that the
+   button renders as a real <a>/<button> — so aria-label is emitted ONLY for
+   an icon-only button, where there is no visible text to name it. Emitting it
+   alongside visible text would override that text for screen readers and
+   voice control, which is how the old overlay markup drifted into WCAG 2.5.3
+   ("Label in Name") failures. */
+const isIconOnly = !slotText;
+const resolvedAriaLabel = isIconOnly ? (ariaLabel ?? undefined) : undefined;
+
+if (import.meta.env.DEV && ariaLabel && slotText) {
+  const norm = (t: string) =>
+    t
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  if (!norm(ariaLabel).includes(norm(slotText))) {
+    console.warn(
+      `\n[Button] ariaLabel="${ariaLabel}" is ignored — the visible text ` +
+        `"${slotText}" is the accessible name now that Button renders a real ` +
+        `<a>/<button>.\n  These two disagree, which used to be a WCAG 2.5.3 ` +
+        `(Label in Name) failure. Drop the ariaLabel, or make the visible text ` +
+        `say what the label said.\n  ariaLabel is still required for ICON-ONLY ` +
+        `buttons, which have no visible text.\n`,
+    );
+  }
+}
 
 /* Wrapper classes */
 const wrapClasses = [
@@ -360,45 +386,30 @@ const linkTarget = newTab ? "_blank" : undefined;
 
 /* Check if icon slot is used */
 const hasIcon = Astro.slots.has("icon");
+/* Element + attributes. An href renders an <a>; otherwise a <button> for modal
+   triggers/closes, form submits, or JS actions. */
+const Tag = resolvedHref ? "a" : "button";
+const tagAttrs = resolvedHref
+  ? { href: resolvedHref, target: linkTarget, rel: linkRel }
+  : { type, disabled };
 ---
 
 {
   supportText ? (
     <div class="button_support_wrap">
-      <div
+      <Tag
         class={wrapClasses}
         data-button-variant={dataVariant}
         data-button-size={dataSize}
         data-button-hover={dataHoverTheme}
         data-button
         id={id}
+        aria-label={resolvedAriaLabel}
+        {...tagAttrs}
+        {...rest}
       >
-        <div class="clickable_wrap u-cover-absolute">
-          {resolvedHref ? (
-            <a
-              href={resolvedHref}
-              class="clickable_link"
-              aria-label={resolvedAriaLabel}
-              target={linkTarget}
-              rel={linkRel}
-              {...rest}
-            >
-              {/* Real anchor text for crawlers — the visible label is
-                  aria-hidden, and an aria-label alone is invisible to SEO. */}
-              <span class="u-sr-only">{resolvedAriaLabel}</span>
-            </a>
-          ) : (
-            <button
-              class="clickable_btn"
-              type={type}
-              disabled={disabled}
-              aria-label={resolvedAriaLabel}
-              {...rest}
-            />
-          )}
-        </div>
-        <div class="button_main_element">
-          <span class="button_main_text" aria-hidden="true">
+        <span class="button_main_element">
+          <span class="button_main_text">
             <slot />
           </span>
           {hasIcon && (
@@ -406,47 +417,26 @@ const hasIcon = Astro.slots.has("icon");
               <slot name="icon" />
             </span>
           )}
-        </div>
-      </div>
+        </span>
+      </Tag>
       <p class="button_support_text u-text-style-small u-text-style-muted">
         {supportText}
       </p>
     </div>
   ) : (
-    <div
+    <Tag
       class={wrapClasses}
       data-button-variant={dataVariant}
       data-button-size={dataSize}
       data-button-hover={dataHoverTheme}
       data-button
       id={id}
+      aria-label={resolvedAriaLabel}
+      {...tagAttrs}
+      {...rest}
     >
-      <div class="clickable_wrap u-cover-absolute">
-        {resolvedHref ? (
-          <a
-            href={resolvedHref}
-            class="clickable_link"
-            aria-label={resolvedAriaLabel}
-            target={linkTarget}
-            rel={linkRel}
-            {...rest}
-          >
-            {/* Real anchor text for crawlers — the visible label is
-                aria-hidden, and an aria-label alone is invisible to SEO. */}
-            <span class="u-sr-only">{resolvedAriaLabel}</span>
-          </a>
-        ) : (
-          <button
-            class="clickable_btn"
-            type={type}
-            disabled={disabled}
-            aria-label={resolvedAriaLabel}
-            {...rest}
-          />
-        )}
-      </div>
-      <div class="button_main_element">
-        <span class="button_main_text" aria-hidden="true">
+      <span class="button_main_element">
+        <span class="button_main_text">
           <slot />
         </span>
         {hasIcon && (
@@ -454,8 +444,8 @@ const hasIcon = Astro.slots.has("icon");
             <slot name="icon" />
           </span>
         )}
-      </div>
-    </div>
+      </span>
+    </Tag>
   )
 }
 
@@ -467,22 +457,25 @@ const hasIcon = Astro.slots.has("icon");
     /* ==========================================================================
    BUTTON COMPONENT STYLES
    ==========================================================================
-   The Button component uses a wrapper → clickable overlay → visual element
-   pattern. The wrapper is the hover/focus target (the clickable overlay sits
-   on top of the visual element, so only the wrapper reliably receives :hover).
+   The Button renders a REAL <a> or <button> as its root — no clickable
+   overlay. The visible label is therefore the accessible name, which is why
+   `aria-label` is emitted only for icon-only buttons.
 
    STRUCTURE
-     <div class="button_main_wrap" data-button-variant="primary" data-button>
-       <div class="clickable_wrap u-cover-absolute">
-         <a class="clickable_link" href="..." aria-label="…">       ← or <button class="clickable_btn">
-           <span class="u-sr-only">Label</span>                     ← real anchor text for crawlers (links only)
-         </a>
-       </div>
-       <div class="button_main_element">
-         <span class="button_main_text" aria-hidden="true">Label</span>
-         <span class="button_main_icon">…</span>                    ← optional icon slot
-       </div>
-     </div>
+     <a class="button_main_wrap" href="…" data-button-variant="primary" data-button>
+       <span class="button_main_element">          ← the painted surface (bg, border, padding)
+         <span class="button_main_text">Label</span>
+         <span class="button_main_icon">…</span>   ← optional icon slot
+       </span>
+     </a>
+     …or <button class="button_main_wrap" type="button"> when there is no href.
+
+     This replaced a wrapper → stretched-<a> → aria-hidden-visual structure
+     carried over from Webflow. That shape needed a duplicate .u-sr-only copy
+     of every label (which could drift from the visible text) and a
+     :has(:focus-visible) hop to move focus styling onto the visual element.
+     Both are gone: :focus-visible now applies to the element that is
+     actually focused.
 
    VARIANT SELECTION
      data-button-variant="primary"     (default — lime filled)
@@ -495,10 +488,13 @@ const hasIcon = Astro.slots.has("icon");
      (no attribute = default size)
 
    HOVER / FOCUS
-     Rest colors are declared on the element; the hover colors are applied via
-     `.button_*_wrap:hover .button_*_element` and `…:has(:focus-visible) …`.
-     Those descendant selectors (0-3-0) out-specify the global `a:hover`
-     (0-1-1), so the button colors win even when the element renders as an <a>.
+     Rest colors are declared on the element; hover/focus colors are applied
+     via `[data-button-variant="…"]:hover > .button_main_element` and
+     `…:focus-visible > .button_main_element`. Those descendant selectors
+     (0-2-0+) out-specify the global `a:hover` (0-1-1), so the button colors
+     win even though the root now renders as an <a>.
+     The toggle / arrow / close controls below still use the older
+     wrapper + overlay structure and keep their `:has(:focus-visible)` hop.
    ========================================================================== */
 
     /* =====================================================
@@ -507,10 +503,27 @@ const hasIcon = Astro.slots.has("icon");
    All wrappers default to fully-rounded (pill / circle).
    ===================================================== */
 
+    /* This element IS the <a> or <button> (see the STRUCTURE note above), so it
+       carries the UA resets a bare wrapper div never needed. */
     .button_main_wrap {
       border-radius: var(--radius-main);
       display: inline-block;
       position: relative;
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      color: inherit;
+      text-align: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .button_main_wrap:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
     }
 
     .button_main_wrap--no-radius {
@@ -582,7 +595,7 @@ const hasIcon = Astro.slots.has("icon");
     /* Scoped to the primary variant so the filled-background hover doesn't bleed
    onto the secondary (outlined) or text (no-background) variants. */
     [data-button-variant="primary"]:hover > .button_main_element,
-    [data-button-variant="primary"]:has(:focus-visible) > .button_main_element {
+    [data-button-variant="primary"]:focus-visible > .button_main_element {
       color: var(--button-primary-text-hover);
       background-color: var(--button-primary-background-hover);
       border-color: var(--button-primary-border-hover);
@@ -599,8 +612,7 @@ const hasIcon = Astro.slots.has("icon");
     }
 
     [data-button-variant="secondary"]:hover > .button_main_element,
-    [data-button-variant="secondary"]:has(:focus-visible)
-      > .button_main_element {
+    [data-button-variant="secondary"]:focus-visible > .button_main_element {
       color: var(--button-secondary-text-hover);
       background-color: var(--button-secondary-background-hover);
       border-color: var(--button-secondary-border-hover);
@@ -624,7 +636,7 @@ const hasIcon = Astro.slots.has("icon");
     }
 
     [data-button-variant="text"]:hover > .button_main_element,
-    [data-button-variant="text"]:has(:focus-visible) > .button_main_element {
+    [data-button-variant="text"]:focus-visible > .button_main_element {
       color: var(--link-text-hover);
     }
 
