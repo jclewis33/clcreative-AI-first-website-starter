@@ -543,6 +543,16 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
       display: flex;
       flex-direction: column;
       gap: var(--space-2);
+      /* Absorb the card's spare height so the footer sits on the floor. In a
+         row of cards with different amounts of copy, this is what lines their
+         buttons up instead of leaving each one hanging under its own text. */
+      flex-grow: 1;
+    }
+
+    /* Push the footer down once the content above it has taken its natural
+       height — the pairing that actually floors the button. */
+    .card_primary_footer {
+      margin-top: auto;
     }
 
     .card_primary_title {
@@ -594,17 +604,36 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
       aspect-ratio: unset;
     }
 
+    /* The tint a cover card's text sits on. It belongs on the VISUAL, not on
+       the text box: the text box only covers the bottom of the card, and its
+       gradient reached full transparency right where the title sits — so on a
+       bright photo the title was white-on-white. Covering the visual lets the
+       scrim stay solid behind the text and fade out well above it. Not
+       optional: text over an arbitrary photo needs it to stay readable. */
+    [data-card-variant="cover"] .card_primary_visual::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      /* The text block sits between roughly 5% and 25% up from the floor, so
+         the scrim stays solid past it (35%) before fading out. Stop the solid
+         run at the text and the title lands exactly on the fade — which is how
+         a white title ended up unreadable over a bright photo. */
+      background: linear-gradient(
+        to top,
+        var(--overlay-scrim) 0%,
+        var(--overlay-scrim) 35%,
+        transparent 75%
+      );
+    }
+
     [data-card-variant="cover"] .card_primary_content {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
       padding: var(--space-4);
-      background: linear-gradient(
-        to top,
-        var(--overlay-scrim) 0%,
-        transparent 100%
-      );
       border-radius: 0 0 inherit inherit;
       color: var(--color-light-100);
     }

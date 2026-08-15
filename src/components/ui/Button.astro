@@ -35,7 +35,7 @@
  * @example Text-link button
  * ```astro
  * <Button variant="text" href="/blog" ariaLabel="Read more articles">
- *   Read more →
+ *   Read more
  * </Button>
  * ```
  *
@@ -686,7 +686,9 @@ const tagAttrs = resolvedHref
       width: auto;
     }
 
-    /* Default chevron icon for text variant */
+    /* Default chevron icon for the text variant. It IS the variant's arrow —
+       do not also type one into the label, or the button reads "Read more → ›".
+       A custom icon slot replaces it (rule below). */
     [data-button-variant="text"] > .button_main_element::after {
       content: "\203A"; /* single right-pointing angle quotation mark */
       font-size: 1.4em;
