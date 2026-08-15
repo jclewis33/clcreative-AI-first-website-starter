@@ -4,23 +4,31 @@
    ========================================================================== */
 
 /* Cascade order, lowest priority first. A later layer beats an earlier one
-   whatever the selectors say — so a single-class utility wins over a
-   three-class component rule without needing !important or a specificity
-   arms race. Declared here, before any import, so the order is fixed no
-   matter what order the files actually load in.
+   whatever the selectors say. Declared here, before any import, so the
+   order is fixed no matter what order the files actually load in.
 
-   reset      — normalize, box-sizing, font-face
+   reset      — normalize, element box defaults, font-face
+   vendor     — third-party CSS (Swiper); components must be able to beat it
    variables  — custom property definitions only
-   base       — element/attribute defaults (animation initial states)
+   base       — element/attribute defaults (h1–h6, p, a, animation states)
+   utilities  — u- classes
    components — reusable component styles
    pages      — page-specific overrides of those components
-   utilities  — single-purpose u- classes; must beat everything above
+   overrides  — states & structural corrections that beat everything (see overrides.css)
+
+   NOTE: utilities sit BELOW components — the opposite of the classic
+   Lumos order. This preserves this repo's pre-layer cascade, where
+   utilities loaded first and components overrode them; several u- classes
+   here are multi-property presets (u-text-style-*, u-container) that
+   components legitimately override. Flipping utilities to the top was
+   measured at 488 computed-style changes across the site; this order
+   costs 0. Utilities still beat `base` and `vendor` on any element.
 
    Anything NOT in a layer beats every layer above, so new CSS belongs in
    one of these. The exception is the !important anti-flicker block in
    Head.astro, which is deliberately outside the system. */
 
-@layer reset, vendor, variables, base, utilities, components, pages;
+@layer reset, vendor, variables, base, utilities, components, pages, overrides;
 
 /* Reset */
 @import "./reset.css" layer(reset);
@@ -81,13 +89,16 @@
 @import "./components/marketing-scorecard.css" layer(components);
 @import "./components/blog-cta.css" layer(components);
 
-/* Utilities — single-purpose u- classes. Highest layer: a utility on an
-   element always wins over the component styles underneath it. Page CSS in
-   ./pages/ is imported by the pages themselves and declares layer(pages)
-   inline, since an ESM `import` cannot carry a layer() the way @import can. */
+/* Utilities — u- classes. These sit below components (see the order note
+   above). Page CSS in ./pages/ is imported by the pages themselves and
+   declares layer(pages) in-file, since an ESM `import` cannot carry a
+   layer() the way @import can. */
 @import "./base/utilities.css" layer(utilities);
 @import "./base/typography.css" layer(utilities);
 @import "./base/layout.css" layer(utilities);
 @import "./base/responsive-columns.css" layer(utilities);
 @import "./base/spacing.css" layer(utilities);
 @import "./base/visual-utilities.css" layer(utilities);
+
+/* Overrides — highest layer on purpose; see the comment in the file */
+@import "./overrides.css" layer(overrides);

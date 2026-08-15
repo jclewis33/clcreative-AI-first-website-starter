@@ -174,9 +174,24 @@ export default defineConfig({
     */
 
     layout: "constrained",
-    // Adds small global styles so images resize correctly
 
-    responsiveStyles: true,
+    /* Astro's image styles are injected into the page UNLAYERED, as
+       `:where([data-astro-image]) { … }`. The zero-specificity `:where()` is
+       deliberate on Astro's side — it means any author rule outranks them.
+       That holds right up until the author CSS moves into a cascade layer:
+       unlayered declarations beat every layer regardless of selector, so
+       Astro's defaults suddenly win over the entire design system.
+
+       Concretely, with these on, `:where([data-astro-image]) { height: auto }`
+       beat both `img, picture { height: 100% }` in reset.css and `.u-image` in
+       base/visual-utilities.css, and images stopped filling .u-image-wrapper.
+
+       Turning them off is safe here because the design system already provides
+       the equivalent defaults deliberately — see the comment above the
+       `img, picture` rule in reset.css, and the .u-image / .u-image-wrapper
+       rules in base/visual-utilities.css, whose comments state outright that
+       they are written to out-specify these very styles. */
+    responsiveStyles: false,
 
     // Sharp codec-specific encoder defaults (Astro 6.1+). Applied to every
     // locally processed image at build time. Per-image `quality` props on

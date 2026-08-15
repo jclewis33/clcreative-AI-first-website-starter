@@ -1,0 +1,55 @@
+/* ==========================================================================
+   OVERRIDES
+   ==========================================================================
+   Rules that must beat any static styling a component or page applies to
+   the same element: runtime states and structural corrections. This is the
+   highest layer in the stack (see global.css) - that position is the
+   entire point.
+
+   Before cascade layers these rules won by accident of specificity or
+   source order; each entry documents what it must beat. Keep this file
+   small: a rule belongs here only if a lower layer legitimately styles the
+   same property and the state must still win.
+   ========================================================================== */
+
+/* Placeholder look for selects with an empty-value option selected.
+   Must beat static `color` declarations like
+   .case-study_filter_select { color: var(--text) } (pages layer) -
+   pre-layers this won on specificity, (0,1,1) vs (0,1,0). Moved here
+   from reset.css, where the reset layer would always lose. */
+select:has(option[value=""]:checked) {
+  color: color-mix(in srgb, var(--text) 40%, transparent);
+}
+
+/* Swiper lock states: Swiper adds these classes when there is nothing to
+   navigate (e.g. all slides fit in view) and expects the controls to
+   disappear. Its own rules sit in the vendor layer, so any component rule
+   that sets `display` on an arrow or bullet list - like
+   .testimonial_showcase_arrow { display: flex } - would un-hide dead
+   controls. */
+.swiper-button-lock,
+.swiper-pagination-lock,
+.swiper-scrollbar-lock {
+  display: none;
+}
+
+/* Margin-trim fallback: zero the last child's bottom margin in every
+   content container, in all browsers (native margin-trim is Safari-only;
+   the progressive-enhancement half stays with the containers in
+   section.css). Also handles .u-display-contents slot wrappers — since
+   display: contents elements have no box, their children are the visual
+   last children. Must beat margins set by any layer, including pages —
+   e.g. .styleguide_page_header { margin-bottom: var(--space-8) } — because
+   trimming the container edge is the design system's contract regardless
+   of where the margin came from. Pre-layers this block won on specificity,
+   (0,2,0) vs (0,1,0). */
+.u-container > :last-child,
+.u-container-narrow > :last-child,
+.u-container-wide > :last-child,
+.u-container-full > :last-child,
+.u-layout-column-1 > :last-child,
+.u-layout-column-2 > :last-child,
+.u-margin-trim > :last-child,
+.u-display-contents > :last-child {
+  margin-bottom: 0;
+}

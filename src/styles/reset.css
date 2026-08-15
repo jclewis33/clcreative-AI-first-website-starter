@@ -81,11 +81,6 @@ select {
   font: inherit;
 }
 
-/* Style placeholder option (empty value selected) in selects */
-select:has(option[value=""]:checked) {
-  color: color-mix(in srgb, var(--text) 40%, transparent);
-}
-
 /* Remove all animations, transitions and smooth scroll for people that prefer not to see them */
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {

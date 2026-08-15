@@ -138,16 +138,6 @@
   margin-trim: block-end;
 }
 
-/* Fallback: zero last child's bottom margin in all browsers.
-   Also handles .u-display-contents slot wrappers — since display: contents
-   elements have no box, their children are the visual last children. */
-.u-container > :last-child,
-.u-container-narrow > :last-child,
-.u-container-wide > :last-child,
-.u-container-full > :last-child,
-.u-layout-column-1 > :last-child,
-.u-layout-column-2 > :last-child,
-.u-margin-trim > :last-child,
-.u-display-contents > :last-child {
-  margin-bottom: 0;
-}
+/* The cross-browser fallback for this (zeroing the last child's
+   margin-bottom) lives in overrides.css — it has to beat page-layer
+   margins, which nothing in the components layer can. */

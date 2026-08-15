@@ -209,8 +209,10 @@ src/
 ├── pages/            # Route pages (index.astro, about.astro, etc.)
 ├── scripts/          # JavaScript (GSAP animations, etc.)
 └── styles/
-    ├── global.css         # Master import file — import order matters
+    ├── global.css         # Master import file — assigns every sheet to a cascade layer
     ├── reset.css
+    ├── overrides.css      # Highest layer: runtime states + structural corrections
+    ├── vendor.css         # Third-party CSS (Swiper), wrapped in the low `vendor` layer
     ├── fonts.css
     ├── variables/         # CSS custom properties only
     │   ├── base.css       # ★ Edit here first — screen size, site margin/gutter,
@@ -229,7 +231,8 @@ src/
     │   ├── layout.css     # --grid-*, --gap-*
     │   └── nav.css        # Nav sizing, spacing, radius, banner height, dropdowns
     ├── base/              # Utility classes and element defaults
-    │   ├── utilities.css       # Element resets, u-sr-only, u-button-reset, margin-trim
+    │   ├── elements.css        # Bare element defaults (h1–h6, p, a, section, button) — `base` layer
+    │   ├── utilities.css       # u-sr-only, u-button-reset, misc u- classes
     │   ├── typography.css      # u-text-style-*, u-display-*, u-text wrapper, rich text
     │   ├── layout.css          # u-container, u-grid-*, u-display-flex, u-gap-*, etc.
     │   ├── responsive-columns.css # Responsive column system + responsive flag vars + their :root defaults
@@ -241,11 +244,32 @@ src/
         └── contact.css
 ```
 
+**Cascade layers:** every stylesheet is assigned to a layer in `global.css`:
+`reset, vendor, variables, base, utilities, components, pages, overrides` —
+later beats earlier regardless of selector specificity. Utilities sit BELOW
+components on purpose (several u- classes are multi-property presets that
+components legitimately override — see the order note in `global.css`).
+Two hard rules follow from this:
+
+- **Never write unlayered CSS.** Unlayered rules beat every layer, so a
+  stray unlayered rule silently outranks the whole design system. New
+  stylesheet files must be added to `global.css` with `layer(...)`;
+  page CSS pulled in via ESM `import` must open with `@layer pages { … }`
+  in-file (see any file in `styles/pages/`). Third-party CSS must be
+  imported via `vendor.css`, never as a bare ESM import (that is why
+  swiper's CSS goes through it). `image.responsiveStyles` stays **off** in
+  `astro.config.mjs` — Astro injects those styles unlayered (see the
+  comment there).
+- **A rule that must beat page/component styling goes in `overrides.css`**
+  (swiper lock states, select placeholder color, the margin-trim
+  fallback). Keep that file small — read its header before adding to it.
+
 **Where to write CSS:**
 
 - **Utility classes** → `src/styles/base/` (existing files)
+- **Element defaults** (bare `h1`/`p`/`a`-style selectors) → `src/styles/base/elements.css` — never in a utilities file, where the layer would let them beat component classes
 - **CSS variables** → `src/styles/variables/` (existing files)
-- **Custom component classes** → `src/styles/pages/[page-name].css` or a new `src/styles/components/[component-name].css`
+- **Custom component classes** → `src/styles/pages/[page-name].css` or a new `src/styles/components/[component-name].css` (add the new file to `global.css` with `layer(components)`)
 - Do **not** use Astro scoped `<style>` blocks for component classes — keep all CSS in the global files so classes remain targetable and overridable
 
 ---

@@ -48,13 +48,18 @@
   z-index: 2;
 }
 
-/* Images fill their wrapper — equivalent to u-image */
+/* Images fill their wrapper — equivalent to u-image.
+   object-fit is declared explicitly: it used to come from Astro's injected
+   `:where([data-astro-image])` styles, which are switched off in
+   astro.config.mjs (see the responsiveStyles comment there). Without it these
+   images fall back to `fill` and stretch. */
 .how_it_works_img {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
 /* ==========================================================================
