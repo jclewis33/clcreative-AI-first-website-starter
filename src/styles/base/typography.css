@@ -1,73 +1,10 @@
 /* ==============================================================
-   HEADING STYLES & SEMANTIC TAGS
+   TYPOGRAPHY UTILITIES
+   ==============================================================
+   u- typography classes only. The bare element selectors that used to
+   live at the top of this file (h1-h6, p, a) moved to base/elements.css
+   so they sit in the `base` layer instead of `utilities`.
    ============================================================== */
-
-/* Apply heading variables to semantic heading tags */
-h1 {
-  font-size: var(--h1-size);
-  font-family: var(--h1-font-family);
-  line-height: var(--h1-line-height);
-  font-weight: var(--h1-weight);
-  text-transform: var(--h1-text-transform);
-  margin-top: 0;
-  margin-bottom: 0;
-  display: flow-root;
-}
-
-h2 {
-  font-size: var(--h2-size);
-  font-family: var(--h2-font-family);
-  line-height: var(--h2-line-height);
-  font-weight: var(--h2-weight);
-  text-transform: var(--h2-text-transform);
-  margin-top: 0;
-  margin-bottom: 0;
-  display: flow-root;
-}
-
-h3 {
-  font-size: var(--h3-size);
-  font-family: var(--h3-font-family);
-  line-height: var(--h3-line-height);
-  font-weight: var(--h3-weight);
-  text-transform: var(--h3-text-transform);
-  margin-top: 0;
-  margin-bottom: 0;
-  display: flow-root;
-}
-
-h4 {
-  font-size: var(--h4-size);
-  font-family: var(--h4-font-family);
-  line-height: var(--h4-line-height);
-  font-weight: var(--h4-weight);
-  text-transform: var(--h4-text-transform);
-  margin-top: 0;
-  margin-bottom: 0;
-  display: flow-root;
-}
-
-h5 {
-  font-size: var(--h5-size);
-  font-family: var(--h5-font-family);
-  line-height: var(--h5-line-height);
-  font-weight: var(--h5-weight);
-  text-transform: var(--h5-text-transform);
-  margin-top: 0;
-  margin-bottom: 0;
-  display: flow-root;
-}
-
-h6 {
-  font-size: var(--h6-size);
-  font-family: var(--h6-font-family);
-  line-height: var(--h6-line-height);
-  font-weight: var(--h6-weight);
-  text-transform: var(--h6-text-transform);
-  margin-top: 0;
-  margin-bottom: 0;
-  display: flow-root;
-}
 
 /* ======== Heading utility classes for non-semantic elements ==============
    Applied to .u-text wrappers (not the child heading tag).
@@ -259,36 +196,6 @@ h6 {
    Use for numbers, code snippets, or monospace accents. */
 .u-font-mono {
   font-family: var(--font-tertiary);
-}
-
-/* ===============================================
-   PARAGRAPH STYLES
-   =============================================== */
-/* Base paragraph — zero margin by default. Margin comes from the
-   u-text-style-* class applied to the child element inside .u-text. */
-
-p {
-  font-family: var(--text-regular-font-family);
-  font-size: var(--text-regular-size);
-  line-height: var(--text-regular-line-height);
-  font-weight: var(--text-regular-weight);
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-/* ===============================================
-   LINK STYLES
-   =============================================== */
-
-/* For links that have classes (most will) */
-a {
-  color: var(--link-text);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-a:hover {
-  color: var(--link-text-hover);
 }
 
 /* ==========================================================================

@@ -1,0 +1,14 @@
+/* ==========================================================================
+   VENDOR STYLESHEETS
+   ==========================================================================
+   Third-party CSS, pulled in here so it lands in a cascade layer.
+
+   This matters more than it looks: unlayered CSS beats every layered rule
+   in the document, no matter the selector. Left as a bare `import
+   "swiper/css/bundle"` in swiper-init.js, Swiper's stylesheet would outrank
+   the whole design system - including the .slider_* rules written
+   specifically to override it. Importing it into `vendor` puts it back
+   underneath components, which is where it was before layers existed.
+   ========================================================================== */
+
+@import "swiper/css/bundle" layer(vendor);

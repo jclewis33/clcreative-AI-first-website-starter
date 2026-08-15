@@ -17,7 +17,9 @@
  */
 
 import Swiper from "swiper/bundle";
-import "swiper/css/bundle";
+// Styles come from src/styles/vendor.css, which wraps this stylesheet in
+// the `vendor` cascade layer. Importing it here directly would leave it
+// unlayered, and unlayered CSS outranks every layer in the design system.
 
 // Expose on window so the Slider component (which reads `(window as any).Swiper`)
 // keeps working without per-file refactoring.

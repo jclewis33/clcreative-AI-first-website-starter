@@ -1,63 +1,93 @@
 /* ==========================================================================
    GLOBAL CSS
-   Imports all CSS modules in the correct order
+   Imports all CSS modules and assigns each one to a cascade layer.
    ========================================================================== */
 
-/* Base reset */
-@import "./reset.css";
-@import "./fonts.css";
+/* Cascade order, lowest priority first. A later layer beats an earlier one
+   whatever the selectors say — so a single-class utility wins over a
+   three-class component rule without needing !important or a specificity
+   arms race. Declared here, before any import, so the order is fixed no
+   matter what order the files actually load in.
+
+   reset      — normalize, box-sizing, font-face
+   variables  — custom property definitions only
+   base       — element/attribute defaults (animation initial states)
+   components — reusable component styles
+   pages      — page-specific overrides of those components
+   utilities  — single-purpose u- classes; must beat everything above
+
+   Anything NOT in a layer beats every layer above, so new CSS belongs in
+   one of these. The exception is the !important anti-flicker block in
+   Head.astro, which is deliberately outside the system. */
+
+@layer reset, vendor, variables, base, utilities, components, pages;
+
+/* Reset */
+@import "./reset.css" layer(reset);
+@import "./fonts.css" layer(reset);
+
+/* Third-party CSS — kept low so our components can still override it */
+@import "./vendor.css";
 
 /* Variables */
-@import "./variables/base.css";
-@import "./variables/typography.css";
-@import "./variables/colors.css";
-@import "./variables/themes.css";
-@import "./variables/spacing.css";
-@import "./variables/layout.css";
-@import "./variables/nav.css";
+@import "./variables/base.css" layer(variables);
+@import "./variables/typography.css" layer(variables);
+@import "./variables/colors.css" layer(variables);
+@import "./variables/themes.css" layer(variables);
+@import "./variables/spacing.css" layer(variables);
+@import "./variables/layout.css" layer(variables);
+@import "./variables/nav.css" layer(variables);
 
-/* Base styles */
-@import "./base/utilities.css";
-@import "./base/typography.css";
-@import "./base/layout.css";
-@import "./base/responsive-columns.css";
-@import "./base/spacing.css";
-@import "./base/visual-utilities.css";
-@import "./base/animate.css";
+/* Base — element and attribute defaults that components are meant to override.
+   elements.css must come first: it carries the bare h1-h6/p/a/section/button
+   rules, which every component class needs to be able to beat. */
+@import "./base/elements.css" layer(base);
+@import "./base/animate.css" layer(base);
 
 /* Components */
-@import "./components/page.css";
-@import "./components/section.css";
-@import "./components/layout.css";
-@import "./components/forms.css";
-@import "./components/clickable.css";
-@import "./components/slider.css";
-@import "./components/cards.css";
-@import "./components/pricing-card.css";
-@import "./components/buttons.css";
-@import "./components/visual.css";
-@import "./components/accordion.css";
-@import "./components/tabs.css";
-@import "./components/nav.css";
-@import "./components/modal.css";
-@import "./components/footer.css";
-@import "./components/testimonials.css";
-@import "./components/blog-post-grid.css";
-@import "./components/case-study-card.css";
-@import "./components/marquee.css";
-@import "./components/scroll-reveal.css";
-@import "./components/how-it-works.css";
-@import "./components/testimonial-showcase.css";
-@import "./components/single-testimonial.css";
-@import "./components/case-study-featured.css";
-@import "./components/split-section.css";
-@import "./components/stacking-panels.css";
-@import "./components/project-images.css";
-@import "./components/why-work-with-us.css";
-@import "./components/services.css";
-@import "./components/framework-section.css";
-@import "./components/feature-cards.css";
-@import "./components/post-launch-support.css";
-@import "./components/signup-form.css";
-@import "./components/marketing-scorecard.css";
-@import "./components/blog-cta.css";
+@import "./components/page.css" layer(components);
+@import "./components/section.css" layer(components);
+@import "./components/layout.css" layer(components);
+@import "./components/forms.css" layer(components);
+@import "./components/clickable.css" layer(components);
+@import "./components/slider.css" layer(components);
+@import "./components/cards.css" layer(components);
+@import "./components/pricing-card.css" layer(components);
+@import "./components/buttons.css" layer(components);
+@import "./components/visual.css" layer(components);
+@import "./components/accordion.css" layer(components);
+@import "./components/tabs.css" layer(components);
+@import "./components/nav.css" layer(components);
+@import "./components/modal.css" layer(components);
+@import "./components/footer.css" layer(components);
+@import "./components/testimonials.css" layer(components);
+@import "./components/blog-post-grid.css" layer(components);
+@import "./components/case-study-card.css" layer(components);
+@import "./components/marquee.css" layer(components);
+@import "./components/scroll-reveal.css" layer(components);
+@import "./components/how-it-works.css" layer(components);
+@import "./components/testimonial-showcase.css" layer(components);
+@import "./components/single-testimonial.css" layer(components);
+@import "./components/case-study-featured.css" layer(components);
+@import "./components/split-section.css" layer(components);
+@import "./components/stacking-panels.css" layer(components);
+@import "./components/project-images.css" layer(components);
+@import "./components/why-work-with-us.css" layer(components);
+@import "./components/services.css" layer(components);
+@import "./components/framework-section.css" layer(components);
+@import "./components/feature-cards.css" layer(components);
+@import "./components/post-launch-support.css" layer(components);
+@import "./components/signup-form.css" layer(components);
+@import "./components/marketing-scorecard.css" layer(components);
+@import "./components/blog-cta.css" layer(components);
+
+/* Utilities — single-purpose u- classes. Highest layer: a utility on an
+   element always wins over the component styles underneath it. Page CSS in
+   ./pages/ is imported by the pages themselves and declares layer(pages)
+   inline, since an ESM `import` cannot carry a layer() the way @import can. */
+@import "./base/utilities.css" layer(utilities);
+@import "./base/typography.css" layer(utilities);
+@import "./base/layout.css" layer(utilities);
+@import "./base/responsive-columns.css" layer(utilities);
+@import "./base/spacing.css" layer(utilities);
+@import "./base/visual-utilities.css" layer(utilities);
