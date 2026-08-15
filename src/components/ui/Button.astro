@@ -331,39 +331,34 @@ const {
    element below; there is no default navigation. */
 const resolvedHref = href;
 
-/* Never render a nameless control: fall back to the slot's text content when
-   no ariaLabel is passed. (Rendering the slot here is fine — Astro slots can
-   be rendered more than once.) */
-const slotText = (await Astro.slots.render("default"))
-  ?.replace(/<[^>]*>/g, " ")
-  .replace(/\s+/g, " ")
-  .trim();
+/* Icon-only? Then the button has no visible text and needs an aria-label.
+
+   This asks whether a default slot EXISTS — it never renders one. Rendering a
+   slot from frontmatter forces its children to render before Astro has
+   finished setting up the render context, and if anything in there is an
+   <Image>, the image service is not ready yet and getImage() throws
+   "Cannot read properties of undefined (reading 'validateOptions')". That is a
+   real crash in `astro dev`, and it only shows on the FIRST page rendered
+   after the server starts — which makes it look intermittent. Never call
+   Astro.slots.render() in frontmatter. */
+const isIconOnly = !Astro.slots.has("default");
+
 /* The accessible name. The visible label IS the accessible name now that the
-   button renders as a real <a>/<button> — so aria-label is emitted ONLY for
-   an icon-only button, where there is no visible text to name it. Emitting it
-   alongside visible text would override that text for screen readers and
-   voice control, which is how the old overlay markup drifted into WCAG 2.5.3
-   ("Label in Name") failures. */
-const isIconOnly = !slotText;
+   button renders a real <a>/<button>, so aria-label is emitted ONLY when there
+   is no visible text to name it. Emitting it alongside visible text would
+   override that text for screen readers and voice control — how the old
+   overlay markup drifted into WCAG 2.5.3 ("Label in Name") failures. */
 const resolvedAriaLabel = isIconOnly ? (ariaLabel ?? undefined) : undefined;
 
-if (import.meta.env.DEV && ariaLabel && slotText) {
-  const norm = (t: string) =>
-    t
-      .toLowerCase()
-      .replace(/[^a-z0-9 ]/gi, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  if (!norm(ariaLabel).includes(norm(slotText))) {
-    console.warn(
-      `\n[Button] ariaLabel="${ariaLabel}" is ignored — the visible text ` +
-        `"${slotText}" is the accessible name now that Button renders a real ` +
-        `<a>/<button>.\n  These two disagree, which used to be a WCAG 2.5.3 ` +
-        `(Label in Name) failure. Drop the ariaLabel, or make the visible text ` +
-        `say what the label said.\n  ariaLabel is still required for ICON-ONLY ` +
-        `buttons, which have no visible text.\n`,
-    );
-  }
+if (import.meta.env.DEV && ariaLabel && !isIconOnly) {
+  console.warn(
+    `\n[Button] ariaLabel="${ariaLabel}" is ignored — this button has visible ` +
+      `text, and that text is its accessible name now that Button renders a ` +
+      `real <a>/<button>.\n  A label that disagrees with the visible text is a ` +
+      `WCAG 2.5.3 (Label in Name) failure, so it is not emitted. Drop the ` +
+      `ariaLabel, or change the visible text to say what the label said.\n  ` +
+      `ariaLabel is still required for ICON-ONLY buttons.\n`,
+  );
 }
 
 /* Wrapper classes */

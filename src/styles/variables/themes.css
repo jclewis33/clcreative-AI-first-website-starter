@@ -109,7 +109,12 @@
 .u-theme-dark {
   /* Background */
   --background: var(--color-dark-900); /* #0c111d        */
-  --background-2: var(--color-light-200); /* #2f2b2d        */
+  /* The elevated surface for this theme. This read --color-light-200
+     (#fdfdfd) while the comment said #2f2b2d — a near-white panel paired with
+     this theme's white --text, i.e. invisible content on any elevated surface
+     inside a dark section. --color-dark-800 IS #2f2b2d, which is what the
+     comment always intended. */
+  --background-2: var(--color-dark-800); /* #2f2b2d        */
   --background-skeleton: color-mix(in lab, currentcolor 10%, transparent);
 
   /* Text */

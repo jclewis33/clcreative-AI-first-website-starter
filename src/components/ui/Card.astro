@@ -103,28 +103,41 @@ interface Props {
   href?: string;
 
   /**
-   * Override how the card decides between "the whole card is the link" and
-   * "the buttons inside are the links".
+   * Force a color theme on this card instead of letting it adapt.
    *
-   * By default the card counts the actions (`<a href>` / `<button>`) in its
-   * slots and picks for you:
+   * By default a card is a contrast island: it carries `data-theme-contrast`,
+   * so it takes the light theme inside a dark section and inherits the section
+   * tokens otherwise (see themes.css). That covers the common cases.
    *
-   * | Actions in the card | Behavior                                            |
-   * |---------------------|-----------------------------------------------------|
-   * | 0 or 1              | Whole card is the link. The lone button is a visual  |
-   * |                     | affordance and the footer is `inert`, so the card is |
-   * |                     | ONE tab stop, not two to the same place.            |
-   * | 2 or more           | Card surface is NOT a link — two destinations cannot |
-   * |                     | share one surface. The buttons stay clickable.       |
+   * Set this to pin a card to one theme regardless of its section — the same
+   * `data-theme` values a `<Section>` accepts. It applies a WHOLE token set, so
+   * the card's text, borders, buttons and links all follow it.
    *
-   * Set this only when that read is wrong:
-   * - `'single'` — force the whole-card link even with several actions
-   *   present (they become `inert`).
-   * - `'multiple'` — keep the buttons real even though there is only one.
-   *
-   * @example actionsOverride="multiple"
+   * @example theme="dark"
    */
-  actionsOverride?: "single" | "multiple";
+  theme?: "light" | "dark" | "brand";
+
+  /**
+   * Whether this card holds ONE action or SEVERAL — it decides whether the
+   * card surface is itself a link.
+   *
+   * | Value                | Behavior                                          |
+   * |----------------------|---------------------------------------------------|
+   * | `'single'` (default) | Whole card is the link. A lone footer button is a |
+   * |                      | visual affordance and the footer is `inert`, so   |
+   * |                      | the card is ONE tab stop, not two to the same     |
+   * |                      | place.                                            |
+   * | `'multiple'`         | Card surface is NOT a link — two destinations     |
+   * |                      | cannot share one surface. Buttons stay clickable. |
+   *
+   * Pass `'multiple'` whenever the card holds more than one action. A CSS
+   * safety net also drops the whole-card link if the footer turns out to hold
+   * two or more controls, so a card left on the default can never cover its
+   * own buttons — but set the prop so the footer is not needlessly `inert`.
+   *
+   * @example actions="multiple"
+   */
+  actions?: "single" | "multiple";
 
   /**
    * Open link in a new tab (adds `rel="noopener noreferrer"`).
@@ -199,7 +212,8 @@ const {
   rowSpan,
   colSpan,
   radius,
-  actionsOverride,
+  actions = "single",
+  theme,
   class: className,
   ...rest
 } = Astro.props;
@@ -222,58 +236,31 @@ const hasTitle = Astro.slots.has("title");
 const hasFooter = Astro.slots.has("footer");
 const showVisual = variant !== "stacked";
 
-/* ── How many things in this card can be actioned? ────────────────────────
-   TypeScript cannot answer this: types are erased before anything renders,
-   and slot contents are not part of the type at all. Astro can, though —
-   rendering a slot to HTML and counting the controls in it happens at build
-   time, costs nothing at runtime, and needs no prop from the author.
+/* ── Interaction model ────────────────────────────────────────────────────
+   `actions` says whether this card holds ONE action or SEVERAL, which decides
+   whether the card surface is itself a link:
 
-   The count decides the card's interaction model:
+     "single" (default) → the whole card is the link. A lone button in the
+                          footer is a visual affordance, so the footer is
+                          `inert`: ONE tab stop, not two to the same place.
+     "multiple"         → the card surface is NOT a link. Two destinations
+                          cannot share one surface, so the buttons stay real.
 
-     0-1 actions → the whole card is the link. The lone button is a visual
-                   affordance ("this card goes somewhere"), so the footer is
-                   marked `inert`: one tab stop for the card, not two.
-     2+ actions  → the card is NOT a link. Two destinations cannot live under
-                   one clickable surface, so the buttons stay real and the
-                   card surface does nothing.
+   This used to count the actions itself by rendering the footer slot in
+   frontmatter. That crashed `astro dev`: rendering a slot here forces its
+   children to render before Astro has set up the render context, and an
+   <Image> anywhere inside then hits an uninitialized image service —
+   "Cannot read properties of undefined (reading 'validateOptions')". It only
+   surfaced on the FIRST page rendered after a server start, which made it look
+   intermittent. Never call Astro.slots.render() in frontmatter.
 
-   `actionsOverride` forces either model when the automatic read is wrong.
-
-   Only the FOOTER is counted. That is where actions belong, and it is
-   deliberately not the body: rendering the default slot here would pull any
-   <Visual>/<Image> inside it through Astro's image service before that
-   service is ready, throwing "Cannot read properties of undefined (reading
-   'validateOptions')". A control placed directly in the body is not counted —
-   put actions in the footer slot. */
-const slotHtml = hasFooter ? await Astro.slots.render("footer") : "";
-/* Count rendered controls, not <Button> tags — this sees anything actionable
-   a caller drops in, including plain <a href> and <button>. */
-const actionCount = (slotHtml.match(/<a\b[^>]*\shref=|<button\b/g) ?? [])
-  .length;
-
-const wantsSurfaceLink =
-  actionsOverride === "single"
-    ? true
-    : actionsOverride === "multiple"
-      ? false
-      : actionCount <= 1;
-
-/* The card surface is a link only when an href is set AND the content does
-   not carry competing actions. */
-const isSurfaceLink = isClickable && wantsSurfaceLink;
+   A CSS safety net in this file also drops the stretch whenever the footer
+   actually holds two or more controls, so a card left on the default still
+   cannot cover its own buttons. */
+const isSurfaceLink = isClickable && actions !== "multiple";
 /* Its lone action is decorative, so take it out of the tab order. */
-const footerIsAffordance = isSurfaceLink && actionCount >= 1;
+const footerIsAffordance = isSurfaceLink && hasFooter;
 
-if (import.meta.env.DEV && isClickable && !wantsSurfaceLink) {
-  console.warn(
-    `\n[Card] href is set but this card holds ${actionCount} actions, so the ` +
-      `card surface is NOT clickable — two destinations cannot share one ` +
-      `surface.\n  The buttons inside stay clickable. Pass ` +
-      `actionsOverride="single" to force the whole-card link anyway (the ` +
-      `footer then becomes inert), or drop href and let the buttons do the ` +
-      `work.\n`,
-  );
-}
 if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
   console.warn(
     "\n[Card] A clickable card needs a `title` (or a title slot) — the title " +
@@ -294,7 +281,8 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
   >
     <div
       class="card_primary_element"
-      data-theme-contrast={variant !== "cover" ? "" : undefined}
+      data-theme={theme}
+      data-theme-contrast={variant !== "cover" && !theme ? "" : undefined}
     >
       {/* Visual / image slot */}
       {
@@ -368,7 +356,11 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
    Usage:
      <div class="card_primary_wrap" data-card-variant="default">
        <div class="card_primary_group" data-trigger="hover-if-clickable focus">
-         <div class="card_primary_element" data-theme-contrast={variant !== "cover" ? "" : undefined}>
+         <div
+      class="card_primary_element"
+      data-theme={theme}
+      data-theme-contrast={variant !== "cover" && !theme ? "" : undefined}
+    >
            <div class="card_primary_visual">…image…</div>
            <div class="card_primary_content u-margin-trim">
              <h3 class="card_primary_title u-text-style-h4">
@@ -457,6 +449,21 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
 
     [data-card-variant="cover"] .card_primary_link::after {
       inset: -100vh 0 0 0;
+    }
+
+    /* Safety net for a card left on actions="single" that actually holds two
+       or more controls: drop the stretch so the card cannot cover its own
+       buttons. The prop is still what to set — it also governs `inert`, which
+       CSS cannot reach — but a wrong prop degrades to "buttons work" instead
+       of "buttons unreachable". */
+    .card_primary_footer:has(:is(a[href], button) ~ :is(a[href], button))
+      ~ *
+      .card_primary_link::after,
+    .card_primary_group:has(
+        .card_primary_footer :is(a[href], button) ~ :is(a[href], button)
+      )
+      .card_primary_link::after {
+      content: none;
     }
 
     /* Anything genuinely interactive inside a clickable card has to sit above
