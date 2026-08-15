@@ -176,6 +176,11 @@
      DEMO CARD WRAPPER
      ----------------------------------------------------------------------- */
 
+  /* No `gap` here on purpose. These cards hold type specimens, and each
+     specimen's own margin-bottom is what the page is demonstrating — a gap
+     would stack on top of it and every sample would read further apart than
+     the design system actually spaces it. u-margin-trim clears the first and
+     last edges so the card padding stays even. */
   .styleguide_card_wrap {
     background-color: var(--background-2);
     border: 1px solid var(--border);
@@ -184,7 +189,6 @@
     margin-bottom: var(--space-4);
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
   }
 
   .styleguide_card_wrap.is-row {

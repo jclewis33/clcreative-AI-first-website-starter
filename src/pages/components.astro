@@ -1367,7 +1367,17 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         are individual sections that can be placed directly on the page.
       </Text>
     </ContentWrapper>
-    <BlogPostGrid docs="" paddingTop="none" variant="recent" />
+    {
+      /* paddingBottom="none" too: these are sections nested inside a
+        section, so their own padding stacks on the parent's. The
+        container's gap separates them. */
+    }
+    <BlogPostGrid
+      docs=""
+      paddingTop="none"
+      paddingBottom="none"
+      variant="recent"
+    />
 
     <!-- ============================================================
        Blog Post Grid - Category
@@ -1376,74 +1386,75 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     <BlogPostGrid
       docs=""
       paddingTop="none"
+      paddingBottom="none"
       variant="category"
       category="Development"
     />
-
-    <!-- ============================================================
-       MODALS — rendered once at end of body
-       ============================================================ -->
-
-    <Modal
-      id="comp-modal-small"
-      variant="small"
-      ariaLabel="Component example — small modal"
-    >
-      <Heading tag="h2" variant="h3">Small Modal</Heading>
-      <Text>
-        This is the <strong>small</strong> variant — a centered dialog panel constrained
-        to 800px wide. Use it for confirmations, previews, short forms, or supplementary
-        content.
-      </Text>
-      <Text muted>
-        Close with the × button, the backdrop overlay, or the ESC key.
-      </Text>
-      <div class="u-margin-top-6">
-        <Button data-modal-close>Got it</Button>
-      </div>
-    </Modal>
-
-    <Modal
-      id="comp-modal-side"
-      variant="side-panel"
-      ariaLabel="Component example — side panel"
-    >
-      <Heading tag="h2" variant="h3">Side Panel</Heading>
-      <Text>
-        The <strong>side-panel</strong> variant slides in from the right edge of the
-        screen. Use it for filters, settings drawers, or contextual detail panels.
-      </Text>
-      <Text muted>
-        Close with the × button, the backdrop overlay, or the ESC key.
-      </Text>
-      <div class="u-margin-top-6">
-        <Button data-modal-close ariaLabel="Close panel">Close panel</Button>
-      </div>
-    </Modal>
-
-    <Modal
-      id="comp-modal-full"
-      variant="full-screen"
-      ariaLabel="Component example — full screen modal"
-    >
-      <Layout variant="stack-centered">
-        <Col slot="col1">
-          <Heading tag="h2" variant="h3">Full Screen</Heading>
-          <Text align="center">
-            The <strong>full-screen</strong> variant covers the entire viewport. Use
-            it for image lightboxes, video players, or immersive onboarding flows.
-          </Text>
-          <Text muted align="center">
-            Close with the × button or the ESC key. (Backdrop click is disabled
-            at full screen.)
-          </Text>
-          <div class="u-button-wrapper u-margin-top-6">
-            <Button data-modal-close>Close</Button>
-          </div>
-        </Col>
-      </Layout>
-    </Modal>
   </Section>
+
+  <!-- ============================================================
+     MODALS — rendered once at end of body
+     ============================================================ -->
+
+  <Modal
+    id="comp-modal-small"
+    variant="small"
+    ariaLabel="Component example — small modal"
+  >
+    <Heading tag="h2" variant="h3">Small Modal</Heading>
+    <Text>
+      This is the <strong>small</strong> variant — a centered dialog panel constrained
+      to 800px wide. Use it for confirmations, previews, short forms, or supplementary
+      content.
+    </Text>
+    <Text muted>
+      Close with the × button, the backdrop overlay, or the ESC key.
+    </Text>
+    <div class="u-margin-top-6">
+      <Button data-modal-close>Got it</Button>
+    </div>
+  </Modal>
+
+  <Modal
+    id="comp-modal-side"
+    variant="side-panel"
+    ariaLabel="Component example — side panel"
+  >
+    <Heading tag="h2" variant="h3">Side Panel</Heading>
+    <Text>
+      The <strong>side-panel</strong> variant slides in from the right edge of the
+      screen. Use it for filters, settings drawers, or contextual detail panels.
+    </Text>
+    <Text muted>
+      Close with the × button, the backdrop overlay, or the ESC key.
+    </Text>
+    <div class="u-margin-top-6">
+      <Button data-modal-close ariaLabel="Close panel">Close panel</Button>
+    </div>
+  </Modal>
+
+  <Modal
+    id="comp-modal-full"
+    variant="full-screen"
+    ariaLabel="Component example — full screen modal"
+  >
+    <Layout variant="stack-centered">
+      <Col slot="col1">
+        <Heading tag="h2" variant="h3">Full Screen</Heading>
+        <Text align="center">
+          The <strong>full-screen</strong> variant covers the entire viewport. Use
+          it for image lightboxes, video players, or immersive onboarding flows.
+        </Text>
+        <Text muted align="center">
+          Close with the × button or the ESC key. (Backdrop click is disabled at
+          full screen.)
+        </Text>
+        <div class="u-button-wrapper u-margin-top-6">
+          <Button data-modal-close>Close</Button>
+        </div>
+      </Col>
+    </Layout>
+  </Modal>
 
   <!-- ============================================================
        PRICING CARDS

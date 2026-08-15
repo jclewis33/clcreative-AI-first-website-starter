@@ -247,7 +247,7 @@ import "@/styles/pages/style-guide.css";
 
             {
               [1, 2, 3, 4, 5, 6].map((n) => (
-                <div class="styleguide_card_wrap">
+                <div class="styleguide_card_wrap u-margin-trim">
                   <div class="tag_wrap">{`<h${n}> / .u-text-style-h${n}`}</div>
                   <div class={`u-text-style-h${n}`}>
                     {n === 1 && "Heading One — The Quick Brown Fox"}
@@ -261,7 +261,7 @@ import "@/styles/pages/style-guide.css";
               ))
             }
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">.u-text-style-eyebrow</div>
               <div class="u-text-style-eyebrow">Eyebrow Label</div>
             </div>
@@ -274,7 +274,7 @@ import "@/styles/pages/style-guide.css";
             {
               ["display-xl", "display-lg", "display-md", "display-sm"].map(
                 (v) => (
-                  <div class="styleguide_card_wrap">
+                  <div class="styleguide_card_wrap u-margin-trim">
                     <div class="tag_wrap">{`.u-${v}`}</div>
                     <div class={`u-${v}`}>
                       Display — {v.replace("display-", "").toUpperCase()}
@@ -307,7 +307,7 @@ import "@/styles/pages/style-guide.css";
               Text Styles &amp; Modifiers
             </h3>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [
                   { cls: "u-text-style-bold", label: "Bold text" },
@@ -342,7 +342,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Line Height</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [
                   { cls: "u-line-height-small", label: "small (1)" },
@@ -371,7 +371,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Letter Spacing</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [
                   { cls: "u-letter-spacing-tight", label: "tight (-0.03em)" },
@@ -400,7 +400,7 @@ import "@/styles/pages/style-guide.css";
                   { cls: "u-text-wrap-balance", label: "balance" },
                   { cls: "u-text-wrap-pretty", label: "pretty" },
                 ].map(({ cls, label }) => (
-                  <div class="styleguide_card_wrap">
+                  <div class="styleguide_card_wrap u-margin-trim">
                     <span class="tag_wrap">
                       {`.${cls}`} — {label}
                     </span>
@@ -417,7 +417,7 @@ import "@/styles/pages/style-guide.css";
           <!-- Text Alignment -->
           <div id="type-align">
             <h3 class="styleguide_subsection_title">Text Alignment</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [
                   { cls: "u-text-align-left", label: "Left aligned text" },
@@ -441,7 +441,7 @@ import "@/styles/pages/style-guide.css";
           <!-- Line Clamp -->
           <div id="type-clamp">
             <h3 class="styleguide_subsection_title">Line Clamp</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [1, 2, 3, 4, 5].map((n) => (
                   <div
@@ -466,7 +466,7 @@ import "@/styles/pages/style-guide.css";
           <!-- Heading Accent -->
           <div>
             <h3 class="styleguide_subsection_title">Heading Accent</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 .u-heading-accent (wraps strong in accent color)
               </div>
@@ -790,7 +790,7 @@ import "@/styles/pages/style-guide.css";
                 { theme: "brand" as const, label: "brand" },
               ].map(({ theme, label }) => (
                 <div
-                  class="styleguide_card_wrap"
+                  class="styleguide_card_wrap u-margin-trim"
                   style="margin-bottom:var(--space-4)"
                 >
                   <div class="tag_wrap">{`data-theme="${label}"`}</div>
@@ -1217,7 +1217,7 @@ import "@/styles/pages/style-guide.css";
             <h3 class="styleguide_subsection_title">
               Space Scale (--space-1 to --space-8)
             </h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
                   <div
@@ -1248,7 +1248,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Section Spacing</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [
                   {
@@ -1371,7 +1371,7 @@ import "@/styles/pages/style-guide.css";
           <!-- Padding -->
           <div id="spacing-padding">
             <h3 class="styleguide_subsection_title">Padding Scale</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="u-grid-4" style="gap:var(--space-3)">
                 {
                   [0, 1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
@@ -1393,7 +1393,7 @@ import "@/styles/pages/style-guide.css";
 
             <h3 class="styleguide_subsection_title">Padding Block vs Inline</h3>
             <div class="u-grid-2" style="gap:var(--space-3)">
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-padding-block-4 (vertical only)</span>
                 <div
                   class="styleguide_padding_demo u-padding-block-4"
@@ -1404,7 +1404,7 @@ import "@/styles/pages/style-guide.css";
                   </div>
                 </div>
               </div>
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap"
                   >.u-padding-inline-4 (horizontal only)</span
                 >
@@ -1420,7 +1420,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Named Padding</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [
                   { cls: "u-padding-small", label: "small" },
@@ -1451,7 +1451,7 @@ import "@/styles/pages/style-guide.css";
           <!-- Margin -->
           <div id="spacing-margin">
             <h3 class="styleguide_subsection_title">Margin Scale</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <p class="u-text-style-tiny u-text-style-muted u-margin-bottom-3">
                 The gap between the two bars visualizes the margin size.
               </p>
@@ -1479,7 +1479,7 @@ import "@/styles/pages/style-guide.css";
             <h3 class="styleguide_subsection_title">
               Text Style Margins (automatic)
             </h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div
                 style="background:var(--background); padding:var(--space-4); border-radius:var(--radius-small); border:1px solid var(--border)"
               >
@@ -1499,7 +1499,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Auto Centering</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">.u-margin-inline-auto</span>
               <div
                 class="styleguide_grid_cell u-margin-inline-auto"
@@ -1524,7 +1524,7 @@ import "@/styles/pages/style-guide.css";
           <!-- Containers -->
           <div id="layout-containers">
             <h3 class="styleguide_subsection_title">Container Widths</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [
                   { cls: "u-container", label: "default" },
@@ -1560,7 +1560,7 @@ import "@/styles/pages/style-guide.css";
           <div id="layout-flex">
             <h3 class="styleguide_subsection_title">Flexbox</h3>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">.u-flex .u-flex-row .u-gap-3</div>
               <div class="u-flex u-flex-row u-gap-3">
                 {
@@ -1574,7 +1574,7 @@ import "@/styles/pages/style-guide.css";
               </div>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 .u-flex .u-justify-center .u-align-center .u-gap-3
               </div>
@@ -1590,7 +1590,7 @@ import "@/styles/pages/style-guide.css";
               </div>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 .u-flex .u-justify-between .u-align-end .u-gap-3
               </div>
@@ -1608,7 +1608,7 @@ import "@/styles/pages/style-guide.css";
 
             <h3 class="styleguide_subsection_title">Flex Direction</h3>
             <div class="u-grid-2" style="gap:var(--space-3)">
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-flex .u-flex-row</span>
                 <div class="u-flex u-flex-row u-gap-2">
                   <div
@@ -1628,7 +1628,7 @@ import "@/styles/pages/style-guide.css";
                   </div>
                 </div>
               </div>
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-flex .u-flex-column</span>
                 <div class="u-flex u-flex-column u-gap-2">
                   <div
@@ -1652,7 +1652,7 @@ import "@/styles/pages/style-guide.css";
 
             <h3 class="styleguide_subsection_title">Flex Wrap</h3>
             <div class="u-grid-2" style="gap:var(--space-3)">
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-flex-nowrap</span>
                 <div
                   class="u-flex u-flex-nowrap u-gap-2"
@@ -1668,7 +1668,7 @@ import "@/styles/pages/style-guide.css";
                   }
                 </div>
               </div>
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-flex-wrap</span>
                 <div class="u-flex u-flex-wrap u-gap-2">
                   {
@@ -1692,7 +1692,7 @@ import "@/styles/pages/style-guide.css";
                 { cls: "u-justify-between", label: "between" },
               ].map(({ cls, label }) => (
                 <div
-                  class="styleguide_card_wrap"
+                  class="styleguide_card_wrap u-margin-trim"
                   style="margin-bottom:var(--space-2)"
                 >
                   <span class="tag_wrap">{`.${cls}`}</span>
@@ -1722,7 +1722,7 @@ import "@/styles/pages/style-guide.css";
                   { cls: "u-align-center", label: "center" },
                   { cls: "u-align-end", label: "end" },
                 ].map(({ cls, label }) => (
-                  <div class="styleguide_card_wrap">
+                  <div class="styleguide_card_wrap u-margin-trim">
                     <span class="tag_wrap">{`.${cls}`}</span>
                     <div
                       class={`u-flex ${cls} u-gap-2`}
@@ -1747,7 +1747,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Order</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">.u-order-first / .u-order-last</span>
               <div class="u-flex u-gap-2">
                 <div
@@ -1792,7 +1792,7 @@ import "@/styles/pages/style-guide.css";
 
             {
               [1, 2, 3, 4].map((cols) => (
-                <div class="styleguide_card_wrap">
+                <div class="styleguide_card_wrap u-margin-trim">
                   <div class="tag_wrap">{`.u-grid-${cols}`}</div>
                   <div class={`u-grid-${cols}`}>
                     {Array.from({ length: cols * 2 }).map(() => (
@@ -1806,7 +1806,7 @@ import "@/styles/pages/style-guide.css";
             <h3 class="styleguide_subsection_title">
               Grid Component — Responsive Columns
             </h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 &lt;Grid largeColumns=3 mediumColumns=2 smallColumns=1 /&gt;
               </div>
@@ -1825,7 +1825,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Column Span</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap"
                 >.u-span-2 / .u-span-full on a u-grid-4</span
               >
@@ -1854,7 +1854,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Column Start</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">.u-column-start-* on a u-grid-4</span>
               <div class="u-grid-4">
                 <div
@@ -1881,7 +1881,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Row Span</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">.u-row-span-2 on a u-grid-3</span>
               <div class="u-grid-3">
                 <div
@@ -1902,7 +1902,7 @@ import "@/styles/pages/style-guide.css";
 
             <h3 class="styleguide_subsection_title">Autofit vs Autofill</h3>
             <div class="u-grid-2" style="gap:var(--space-3)">
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-grid-autofit (min 5rem)</span>
                 <div class="u-grid-autofit" style="--col-min:5rem">
                   <div class="styleguide_grid_cell" style="opacity:0.3"></div>
@@ -1913,7 +1913,7 @@ import "@/styles/pages/style-guide.css";
                   3 items — columns stretch to fill space
                 </p>
               </div>
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-grid-autofill (min 5rem)</span>
                 <div class="u-grid-autofill" style="--col-min:5rem">
                   <div class="styleguide_grid_cell" style="opacity:0.3"></div>
@@ -1930,7 +1930,7 @@ import "@/styles/pages/style-guide.css";
           <!-- Gap -->
           <div id="layout-gap">
             <h3 class="styleguide_subsection_title">Gap Utilities</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [0, 1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
                   <div
@@ -1984,7 +1984,7 @@ import "@/styles/pages/style-guide.css";
                 },
                 { variant: "card" as const, label: "card — auto / 1fr" },
               ].map(({ variant, label }) => (
-                <div class="styleguide_card_wrap">
+                <div class="styleguide_card_wrap u-margin-trim">
                   <div class="tag_wrap">{`variant="${variant}"`}</div>
                   <div class="u-text-style-tiny u-text-style-muted">
                     {label}
@@ -2017,7 +2017,7 @@ import "@/styles/pages/style-guide.css";
           <div id="misc-display">
             <h3 class="styleguide_subsection_title">Display</h3>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap"
                 >.u-display-block vs .u-display-inline-block</span
               >
@@ -2053,7 +2053,7 @@ import "@/styles/pages/style-guide.css";
               </div>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">.u-display-none</span>
               <div class="u-flex u-gap-2">
                 <div
@@ -2089,7 +2089,7 @@ import "@/styles/pages/style-guide.css";
               </p>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">Responsive hide classes</span>
               <div class="u-flex u-gap-2 u-flex-wrap">
                 {
@@ -2109,7 +2109,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Position &amp; Z-Index</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">Position utilities</span>
               <div class="styleguide_position_container">
                 <div
@@ -2133,7 +2133,7 @@ import "@/styles/pages/style-guide.css";
               </div>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">.u-cover-absolute</span>
               <div
                 style="position:relative; height:5rem; background:var(--background); border:1px solid var(--border); border-radius:var(--radius-small)"
@@ -2152,7 +2152,7 @@ import "@/styles/pages/style-guide.css";
               </div>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">Z-Index layers</span>
               <div style="position:relative; height:6rem">
                 <div
@@ -2188,7 +2188,7 @@ import "@/styles/pages/style-guide.css";
                   { cls: "u-overflow-clip", label: "clip" },
                   { cls: "u-overflow-x-auto", label: "x-auto (scrollbar)" },
                 ].map(({ cls, label }) => (
-                  <div class="styleguide_card_wrap">
+                  <div class="styleguide_card_wrap u-margin-trim">
                     <span class="tag_wrap">{`.${cls}`}</span>
                     <div class={`styleguide_overflow_container ${cls}`}>
                       <div class="styleguide_overflow_child" />
@@ -2202,7 +2202,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Visibility</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">.u-visible vs .u-invisible</span>
               <div class="u-flex u-gap-3">
                 <div>
@@ -2232,7 +2232,7 @@ import "@/styles/pages/style-guide.css";
               </div>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap">Pointer &amp; accessibility</span>
               <div class="u-flex u-gap-2 u-flex-wrap">
                 {
@@ -2244,7 +2244,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Max Width</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               {
                 [
                   { cls: "u-max-width-xxsmall", label: "12rem" },
@@ -2275,7 +2275,7 @@ import "@/styles/pages/style-guide.css";
           <div id="misc-dimensions">
             <h3 class="styleguide_subsection_title">Dimensions</h3>
             <div class="u-grid-2" style="gap:var(--space-3)">
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-width-full</span>
                 <div
                   class="styleguide_grid_cell u-width-full"
@@ -2284,7 +2284,7 @@ import "@/styles/pages/style-guide.css";
                 </div>
                 <p class="u-text-style-tiny u-text-style-muted">width: 100%</p>
               </div>
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-height-full</span>
                 <div
                   style="height:5rem; border:1px dashed var(--border); border-radius:var(--radius-small)"
@@ -2306,7 +2306,7 @@ import "@/styles/pages/style-guide.css";
           <div id="misc-objectfit">
             <h3 class="styleguide_subsection_title">Object Fit</h3>
             <div class="u-grid-2" style="gap:var(--space-3)">
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-object-fit-cover</span>
                 <div
                   style="width:100%; height:6rem; border:1px solid var(--border); border-radius:var(--radius-small); overflow:hidden"
@@ -2321,7 +2321,7 @@ import "@/styles/pages/style-guide.css";
                   Fills container, crops to fit
                 </p>
               </div>
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-object-fit-contain</span>
                 <div
                   style="width:100%; height:6rem; border:1px solid var(--border); border-radius:var(--radius-small); overflow:hidden; display:flex; align-items:center; justify-content:center"
@@ -2342,7 +2342,7 @@ import "@/styles/pages/style-guide.css";
           <div id="misc-button-wrappers">
             <h3 class="styleguide_subsection_title">Button Wrappers</h3>
             <div class="u-grid-2" style="gap:var(--space-3)">
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-button-wrapper</span>
                 <div class="u-button-wrapper">
                   <Button href="#" ariaLabel="Example single button"
@@ -2350,7 +2350,7 @@ import "@/styles/pages/style-guide.css";
                   >
                 </div>
               </div>
-              <div class="styleguide_card_wrap">
+              <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-button-wrapper (multiple)</span>
                 <div class="u-button-wrapper">
                   <Button href="#" ariaLabel="Primary action">Primary</Button>
@@ -2376,7 +2376,7 @@ import "@/styles/pages/style-guide.css";
               These respond to the <strong>container width</strong>, not the
               viewport.
             </p>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap"
                 >data-large-columns="4" data-medium-columns="2"
                 data-small-columns="1"</span
@@ -2412,7 +2412,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <h3 class="styleguide_subsection_title">Responsive Flags</h3>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <p
                 class="u-text-style-small u-text-style-muted u-margin-bottom-3"
               >
@@ -2503,7 +2503,7 @@ import "@/styles/pages/style-guide.css";
               Use <code>theme="inherit"</code> (or omit the prop) to stay transparent
               and pick up the parent context.
             </p>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 &lt;Section theme="inherit" padding="small" /&gt; — inherits
                 page theme
@@ -2517,7 +2517,7 @@ import "@/styles/pages/style-guide.css";
                 </Section>
               </div>
             </div>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 &lt;Section theme="light" padding="small" /&gt;
               </div>
@@ -2529,7 +2529,7 @@ import "@/styles/pages/style-guide.css";
                 </Section>
               </div>
             </div>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 &lt;Section theme="dark" padding="small" /&gt;
               </div>
@@ -2541,7 +2541,7 @@ import "@/styles/pages/style-guide.css";
                 </Section>
               </div>
             </div>
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 &lt;Section theme="brand" padding="small" /&gt;
               </div>
@@ -2559,7 +2559,7 @@ import "@/styles/pages/style-guide.css";
           <div id="comp-card">
             <h3 class="styleguide_subsection_title">Card Component</h3>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 variant="default" — visual on top, content below
               </div>
@@ -2612,7 +2612,7 @@ import "@/styles/pages/style-guide.css";
               </Grid>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 variant="stacked" — text only, no visual slot
               </div>
@@ -2643,7 +2643,7 @@ import "@/styles/pages/style-guide.css";
               </Grid>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 variant="cover" — visual fills card, content overlays
               </div>
@@ -2705,7 +2705,7 @@ import "@/styles/pages/style-guide.css";
               > rows. Animated with GSAP height transitions.
             </p>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 &lt;Accordion openByDefault=1 /&gt; (first item open)
               </div>
@@ -2732,7 +2732,7 @@ import "@/styles/pages/style-guide.css";
               </div>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 &lt;Accordion closePrevious=false /&gt; (multiple open)
               </div>
@@ -2761,7 +2761,7 @@ import "@/styles/pages/style-guide.css";
               > element.
             </p>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 variant="small" — centered overlay (default)
               </div>
@@ -2776,7 +2776,7 @@ import "@/styles/pages/style-guide.css";
               </div>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 variant="side-panel" — slides in from the right
               </div>
@@ -2791,7 +2791,7 @@ import "@/styles/pages/style-guide.css";
               </div>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 variant="full-screen" — fills the viewport
               </div>
@@ -2827,7 +2827,7 @@ import "@/styles/pages/style-guide.css";
             </p>
 
             <!-- crop-left (default) -->
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 variant="crop-left" (default) — left edge clipped, slides peek
                 from right
@@ -2881,7 +2881,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <!-- crop-right -->
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 variant="crop-right" — right edge clipped, slides peek from left
               </div>
@@ -2934,7 +2934,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <!-- crop-both -->
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 variant="crop-both" — both sides clipped, no overflow visible
               </div>
@@ -2987,7 +2987,7 @@ import "@/styles/pages/style-guide.css";
             </div>
 
             <!-- overflow-visible -->
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 variant="overflow-visible" — all overflow visible on both sides
               </div>
@@ -3049,7 +3049,7 @@ import "@/styles/pages/style-guide.css";
               > to toggle the pagination and navigation UI.
             </p>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 showBullets=false showArrows=false — no controls
               </div>
@@ -3093,7 +3093,7 @@ import "@/styles/pages/style-guide.css";
               </div>
             </div>
 
-            <div class="styleguide_card_wrap">
+            <div class="styleguide_card_wrap u-margin-trim">
               <div class="tag_wrap">
                 showArrows=true showBullets=false — arrows only
               </div>

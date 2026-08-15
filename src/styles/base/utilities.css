@@ -75,6 +75,27 @@
   margin-top: 0;
 }
 
+/* ── Gap owns the rhythm ────────────────────────────────────────────────
+   A container that spaces its children with `gap` must not ALSO carry their
+   own margins: the two stack, so every block sits gap + margin apart instead
+   of gap. .u-container has gap: var(--space-8) (64px), so a child with a 48px
+   margin pushed the next block 112px away — nearly double the intended
+   rhythm. The trim rules below only clear the FIRST and LAST edges; these are
+   the gaps in between them.
+
+   Scoped to the containers that actually declare a gap. Text keeps its own
+   margins everywhere a gap is NOT doing the spacing — inside .u-rich-text,
+   inside card content, in prose. Same principle as Card: one spacing
+   mechanism per box, never two.
+
+   `:not(.u-ignore-trim)` is doing two jobs: it gives the same opt-out the trim
+   rules below use, AND it raises this to (0,2,0) so it beats the (0,1,0)
+   class rules in typography.css — which sits in the SAME @layer and is
+   imported later, so an equal-specificity rule would silently lose. */
+:is([class*="u-container"], [class*="u-grid"]) > :not(.u-ignore-trim) {
+  margin-block: 0;
+}
+
 /* Last visible child — remove bottom margin */
 :is(.u-margin-trim, [class*="u-container"], [class*="u-layout-column"], .u-content-wrapper, .u-rich-text) > :not(:has(~ :not(.u-cover-absolute, .u-ignore-trim))) {
   margin-bottom: 0;
