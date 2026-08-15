@@ -429,7 +429,8 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     <Layout variant="auto-width" verticalAlign="center">
       <Heading slot="col1" tag="h3" variant="h4">Auto-sized</Heading>
       <Text slot="col2" muted
-        >Both columns size to their content — neither stretches to fill.</Text
+        >Each column sizes to its own content, and the row still fills the
+        section width.</Text
       >
     </Layout>
 

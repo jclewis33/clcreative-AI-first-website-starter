@@ -205,7 +205,7 @@ interface Props {
    * | `full`               | 50 / 50        | Right col bleeds to viewport edge               |
    * | `full-reversed`      | 50 / 50        | Left col bleeds to viewport edge                |
    * | `card`               | 1fr            | Centered card; col2 is absolute background      |
-   * | `auto-width`         | auto / auto    | Both columns size to content                    |
+   * | `auto-width`         | auto / auto    | Columns size to content, row fills the section  |
    *
    * @default 'columns'
    * @example variant="contain"
@@ -531,7 +531,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
      full              — 50 / 50, right column bleeds to edge
      full-reversed     — 50 / 50, left column bleeds to edge
      card              — centered content card, col2 as absolute background
-     auto-width        — both columns size to their content
+     auto-width        — columns size to their content; the row still fills
 
    Column ratio:
      Two-column variants (columns, columns-reversed, sticky-left, contain,
@@ -775,8 +775,14 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
     [data-layout-variant="auto-width"] .u-layout {
       display: var(--layout-collapse, grid);
       flex-flow: column;
+      /* `auto` tracks take their size from their own content — that is the
+         point of this variant. Grid then hands the leftover space to those
+         same auto tracks, so the row still spans the section instead of
+         clumping at the left edge.
+         Do NOT add `justify-content: start` here: it opts the tracks out of
+         that free-space distribution, which packed both columns against the
+         left and left the right half of the section empty. */
       grid-template-columns: auto auto;
-      justify-content: start;
     }
 
     /* ---- Vertical alignment — override column base align-self ---- */

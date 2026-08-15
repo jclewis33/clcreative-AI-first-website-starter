@@ -173,18 +173,11 @@ const bannerHref = banner?.href;
         }
       </script>
     )}
-    {/* Keyboard vs mouse focus detection — used by major design systems
-        (Google Material, GitHub Primer) to show focus rings only on Tab.
-        Adds .using-keyboard on Tab keydown, removes on mousedown.
-        Focus outline in reset.css is scoped to html.using-keyboard. */}
-    <script is:inline>
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Tab') document.documentElement.classList.add('using-keyboard');
-      });
-      document.addEventListener('mousedown', function() {
-        document.documentElement.classList.remove('using-keyboard');
-      });
-    </script>
+    {/* Keyboard-vs-mouse focus detection used to live here as a .using-keyboard
+        class toggled on Tab keydown. `:focus-visible` does that natively and
+        also covers the case the script could not: focus moved by script, such
+        as a closing modal returning focus to the trigger that opened it. See
+        the focus rules in reset.css. */}
   </head>
   <body>
     <!-- Google Tag Manager (noscript) — only when a GTM container id is configured -->

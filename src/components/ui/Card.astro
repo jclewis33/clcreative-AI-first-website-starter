@@ -292,7 +292,10 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
     class="card_primary_group"
     data-trigger={isClickable ? "hover-if-clickable focus" : undefined}
   >
-    <div class="card_primary_element">
+    <div
+      class="card_primary_element"
+      data-theme-contrast={variant !== "cover" ? "" : undefined}
+    >
       {/* Visual / image slot */}
       {
         showVisual && (hasVisual || variant === "default") && (
@@ -365,7 +368,7 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
    Usage:
      <div class="card_primary_wrap" data-card-variant="default">
        <div class="card_primary_group" data-trigger="hover-if-clickable focus">
-         <div class="card_primary_element">
+         <div class="card_primary_element" data-theme-contrast={variant !== "cover" ? "" : undefined}>
            <div class="card_primary_visual">…image…</div>
            <div class="card_primary_content u-margin-trim">
              <h3 class="card_primary_title u-text-style-h4">
@@ -471,33 +474,22 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitle || title)) {
    visual (image) can go edge-to-edge; overflow: clip lets the card's
    border-radius shape the image corners.
 
-   Renders as a contrasting "surface" via the --surface-* theme tier, so the
-   card pops and stays readable on any section theme with no per-theme CSS.
-   Re-skin by editing --surface-* in src/styles/variables/themes.css. The
-   cover variant opts out (it's an image overlay) and keeps its own white text. */
+   Reads as a contrasting panel via `data-theme-contrast` (see themes.css).
+   That marker gives the card a WHOLE theme, so its background, text, borders,
+   AND any buttons or links inside it resolve against the card rather than the
+   section behind it. The cover variant opts out — it is an image overlay and
+   keeps its own white-on-scrim text. */
     .card_primary_element {
-      border: var(--border-width-main) solid var(--surface-border);
+      border: var(--border-width-main) solid var(--border);
       border-radius: inherit;
       overflow: clip;
-      background-color: var(--surface-background);
-      color: var(--surface-text);
+      background-color: var(--background-2);
+      color: var(--text);
       flex-flow: column;
       width: 100%;
       height: 100%;
       display: flex;
       position: relative;
-    }
-
-    /* Non-cover cards become a surface island: children (borders, muted text,
-   category tags, etc.) resolve against the card surface, not the parent theme.
-   Cover keeps its own white-on-gradient text (see the cover variant below). */
-    [data-card-variant="default"] .card_primary_content,
-    [data-card-variant="stacked"] .card_primary_content {
-      --background: var(--surface-background);
-      --background-2: var(--surface-background);
-      --text: var(--surface-text);
-      --heading-accent: var(--surface-heading-accent);
-      --border: var(--surface-border);
     }
 
     /* ---- Visual — image/media container ---- */

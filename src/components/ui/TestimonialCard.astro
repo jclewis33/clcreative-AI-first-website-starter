@@ -82,7 +82,7 @@ const avatarUrl = avatar
 const subtitle = [role, company].filter(Boolean).join(", ");
 ---
 
-<div class:list={["testimonial_card", className]} {...rest}>
+<div class:list={["testimonial_card", className]} data-theme-contrast {...rest}>
   {/* Stars */}
   {
     stars != null && stars > 0 && (
@@ -162,28 +162,18 @@ const subtitle = [role, company].filter(Boolean).join(", ");
      </Section>
    ========================================================================== */
 
-    /* Card — a contrasting "surface" that pops and stays readable on light/dark/
-   brand sections. The surface treatment is applied DIRECTLY on this component
-   class (not only via the shared .u-surface utility) so the text color can't
-   depend on a second class resolving — it remaps the standard semantic vars to
-   the --surface-* tier for itself + all descendants (quote, author, stars).
-   This mirrors how .card_primary_* carries its surface. Re-skin a fork by
-   editing --surface-* in src/styles/variables/themes.css. */
+    /* Card — a contrasting panel that stays readable on light/dark/brand
+   sections. `data-theme-contrast` in the markup gives it a WHOLE theme (see
+   themes.css), so the quote, author, stars, borders and any link inside all
+   resolve against the card instead of the section behind it. */
     .testimonial_card {
       display: flex;
       flex-direction: column;
       gap: var(--space-4);
       padding: var(--space-5);
 
-      /* Surface island — remap semantics so descendants follow the card surface */
-      --background: var(--surface-background);
-      --background-2: var(--surface-background);
-      --text: var(--surface-text);
-      --heading-accent: var(--surface-heading-accent);
-      --border: var(--surface-border);
-
-      background: var(--surface-background);
-      color: var(--surface-text);
+      background: var(--background-2);
+      color: var(--text);
       border-radius: var(--radius-main);
       height: 100%;
     }

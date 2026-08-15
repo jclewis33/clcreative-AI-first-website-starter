@@ -111,9 +111,21 @@ a:not([class]) {
   color: var(--link-text);
 }
 
-/* Focus State — outline only appears during keyboard navigation.
-   A tiny inline script in BaseLayout toggles .using-keyboard on <html>
-   (added on Tab keydown, removed on mousedown). */
+/* Focus State — `:focus-visible` is the whole mechanism.
+
+   The browser already decides when a focus indicator is warranted: keyboard
+   navigation yes, a mouse click on a button no, and — importantly —
+   programmatic focus yes, which is how a closed modal returns focus to the
+   control that opened it.
+
+   This used to be gated behind an `html.using-keyboard` class toggled on Tab.
+   That gate is a pre-`:focus-visible` polyfill and it actively broke things:
+   when focus was moved by script rather than by Tab, the class was absent, so
+   the rule below never applied — and because nothing suppressed the default,
+   the browser painted its OWN ring instead (a thin dark 1px outline). Closing
+   a modal left that stray ring around the trigger. Styling `:focus-visible`
+   directly, and explicitly clearing the ring when it does NOT match, means the
+   only ring that can ever appear is this one. */
 a,
 button,
 :where([tabindex]),
@@ -123,16 +135,16 @@ select {
   outline-offset: var(--focus-offset-outer);
 }
 
-html.using-keyboard a:focus-visible,
-html.using-keyboard button:focus-visible,
-html.using-keyboard [role="button"]:focus-visible,
-html.using-keyboard [tabindex]:focus-visible,
-html.using-keyboard input:focus-visible,
-html.using-keyboard textarea:focus-visible,
-html.using-keyboard select:focus-visible {
+:is(a, button, [role="button"], [tabindex], input, textarea, select):focus-visible {
   outline-color: var(--text);
   outline-width: var(--focus-width);
   outline-style: solid;
+}
+
+/* Focused, but the browser judged no indicator is warranted (mouse click on a
+   button). Clear the UA default so no ring shows. */
+:is(a, button, [role="button"], [tabindex], input, textarea, select):focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* Text selection colors — theme-aware */

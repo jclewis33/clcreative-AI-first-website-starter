@@ -37,7 +37,15 @@
 :root,
 [data-theme="base"],
 [data-theme="light"],
-.u-theme-light {
+.u-theme-light,
+/* A contrast island inside a DARK section takes the LIGHT theme wholesale —
+   white paper, dark text, and the light button/link tokens to match. This is
+   the Lumos model: a card carries a real theme rather than a partial "surface"
+   copy of one, so everything nested in it resolves consistently. Light and
+   brand sections need no rule here: an island there already inherits the right
+   tokens, and uses --background-2 as its surface. */
+[data-theme="dark"] [data-theme-contrast],
+.u-theme-dark [data-theme-contrast] {
   /* Background */
   --background: var(--color-light-200); /* #fdfdfd       */
   --background-2: var(--color-light-100); /* white         */
@@ -49,13 +57,6 @@
 
   /* Border */
   --border: var(--color-dark-900-o20);
-
-  /* Surface — how a CONTRASTING card should look on a LIGHT section.
-     White paper, dark text, brand-accent stars. Consumed via .u-surface. */
-  --surface-background: var(--color-light-100); /* white card    */
-  --surface-text: var(--color-dark-900); /* dark text     */
-  --surface-heading-accent: var(--color-brand-500); /* brand stars   */
-  --surface-border: var(--color-dark-900-o20);
 
   /* Selection */
   --selection-background: var(--color-brand-300);
@@ -118,14 +119,6 @@
   /* Border */
   --border: var(--color-light-100-o20);
 
-  /* Surface — how a CONTRASTING card should look on a DARK section.
-     Light "paper" so the card pops off the dark bg; dark text + brand stars.
-     (Reproduces the old `theme==="dark" && u-theme-light` behaviour.) */
-  --surface-background: var(--color-light-100); /* white paper   */
-  --surface-text: var(--color-dark-900); /* dark text     */
-  --surface-heading-accent: var(--color-brand-500); /* brand stars   */
-  --surface-border: var(--color-dark-900-o20);
-
   /* Selection */
   --selection-background: var(--color-brand-300);
   --selection-text: var(--color-brand-text); /* dark-900       */
@@ -187,14 +180,6 @@
   /* Border */
   --border: var(--color-brand-text-o20);
 
-  /* Surface — how a CONTRASTING card should look on a BRAND (orange) section.
-     Slightly-lighter orange card with white text, matching today's look
-     (--background-2 = brand-400; text/accent = brand-text = white). */
-  --surface-background: var(--color-brand-400); /* lighter orange */
-  --surface-text: var(--color-brand-text); /* white          */
-  --surface-heading-accent: var(--color-brand-text); /* white stars    */
-  --surface-border: var(--color-brand-text-o20);
-
   /* Selection */
   --selection-background: var(--color-brand-300);
   --selection-text: var(--color-brand-text); /* dark-900       */
@@ -254,25 +239,14 @@
 }
 
 /* ==========================================================================
-   SURFACE ISLAND
-   Apply .u-surface to a card that should render as the correct CONTRASTING
-   surface for whatever section theme it sits in. It reads the --surface-*
-   tier from the inherited data-theme and re-maps the standard semantic vars
-   so all descendants (text, stars via --heading-accent, borders) follow the
-   surface automatically — zero per-instance logic. Re-skin a fork by editing
-   the --surface-* values in the theme blocks above.
-   (Buttons/links inside a card are out of scope — current cards contain none;
-   extend this with button and link var remaps here if that ever changes.)
+   CONTRAST ISLAND
+   `data-theme-contrast` marks an element that should read as a contrasting
+   panel against its section (a card, a testimonial). It replaced a `--surface-*`
+   tier that copied only background/text/heading-accent/border — that partial
+   copy left buttons and links inside a card resolving against the SECTION
+   theme, which is a mismatch waiting to happen (and did: the card title is now
+   a link). An island takes a whole theme instead, so every token agrees.
+
+   Surface color comes from --background-2, the same token Lumos uses for card
+   backgrounds.
    ========================================================================== */
-
-.u-surface {
-  --background: var(--surface-background);
-  --background-2: var(--surface-background);
-  --text: var(--surface-text);
-  --heading-accent: var(--surface-heading-accent);
-  --border: var(--surface-border);
-
-  background-color: var(--surface-background);
-  color: var(--surface-text);
-  border-color: var(--surface-border);
-}
