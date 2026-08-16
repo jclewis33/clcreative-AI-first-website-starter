@@ -24,13 +24,14 @@ export type GridRowSpan = 1 | 2 | 3 | 4;
 export type GridColumnSpan = 1 | 2 | 3 | 4;
 
 /**
- * Card — content card with optional image, clickable overlay, and 3 layout variants.
+ * Card — content card with optional image and 3 layout variants; `href` makes
+ * the whole surface a link via the title's stretched anchor.
  *
  * **Props:**
  * - `variant` — card layout: default (image top), stacked (text only), cover (image fills, content overlays) (default: `'default'`)
  * - `href` — makes the entire card a clickable link
  * - `newTab` — open link in new tab (default: `false`)
- * - `ariaLabel` — accessible label for clickable overlay (required when `href` is set)
+ * - `ariaLabel` — accessible label for the card link (the visible title is the anchor text)
  * - `title` — convenience title rendered as h4 (or use `title` slot for custom heading)
  * - `rowSpan` — span multiple grid rows, 1–4
  * - `colSpan` — span multiple grid columns, 1–4
@@ -47,7 +48,7 @@ export interface BaseProps {
    * - `variant` — default (image top), stacked (text only), cover (image fills)
    * - `href` — makes entire card clickable
    * - `newTab` — open link in new tab
-   * - `ariaLabel` — accessible label for clickable overlay
+   * - `ariaLabel` — accessible label for the card link
    * - `title` — convenience h4 title (uses `u-text-style-h5` by default)
    * - To override the title style, use the `title` slot with a custom Heading instead of the `title` prop
    * - `rowSpan` — 1-4 grid row span
@@ -157,7 +158,7 @@ export type Props = BaseProps &
          */
         newTab?: boolean;
         /**
-         * Accessible label for the clickable overlay.
+         * Accessible label for the card link (the title carries the anchor).
          * Falls back to `title` prop if omitted. Required when `href` is set.
          * @example ariaLabel="View project details"
          */

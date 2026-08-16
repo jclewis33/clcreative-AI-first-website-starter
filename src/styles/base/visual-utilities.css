@@ -47,9 +47,8 @@
    a Layout column once it collapses to `display: flex`), `height: 100%` wins and
    STRETCHES the image, overriding the aspect-ratio. This is why a Layout column
    holding a <Visual> alongside other content must wrap them in <ContentWrapper>
-   (a real `height: auto` block) and NOT in <Col> (`display: contents` removes its
-   box, so .u-image-wrapper becomes a direct grid/flex child with a definite
-   height). See the <Col> note in CLAUDE.md. */
+   (a real `height: auto` block). The old <Col> wrapper (display: contents)
+   that used to break this is gone — Layout generates real column boxes. */
 .u-image-wrapper {
   position: relative;
   overflow: clip;

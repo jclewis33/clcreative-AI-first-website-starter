@@ -63,8 +63,11 @@ the same. Concretely: put it in
 the **same file**, follow the **same naming convention**, use the **same
 derivation** (a new brand scale uses the same `color-mix` steps as
 `--color-brand-100…900`; a new theme mode replicates a full `[data-theme]` block
-with every semantic alias `var()`-ing the swatches, plus its `--surface-*` tier),
-and keep the **same cascade** (swatch → theme alias → component → `--surface-*`).
+with every semantic alias `var()`-ing the swatches),
+and keep the **same cascade** (swatch → theme alias → component). Contrasting
+cards need no extra tier: a card marked `data-theme-contrast` inside a dark
+section adopts the light theme wholesale (see the CONTRAST ISLAND note in
+themes.css), so a new mode only has to define its full alias block.
 **Copy an existing example as the template — never invent a different approach.**
 If you're unsure how the pattern extends, ask the user rather than guessing.
 
@@ -238,8 +241,9 @@ asking them to type hex codes.
    the **idea/cascade** the project is built on:
 
    > raw swatch (colors.css) → theme alias that `var()`s the swatch (themes.css)
-   > → component/utility that `var()`s the alias → contrasting cards via the
-   > `--surface-*` tier.
+   > → component/utility that `var()`s the alias. Contrasting cards are
+   > `data-theme-contrast` islands that take a WHOLE theme — there is no
+   > separate surface tier to fill in.
 
    Always feed colors in at the swatch layer and let them flow down that chain;
    never hard-code a hex onto a theme block or component.
@@ -259,8 +263,8 @@ asking them to type hex codes.
      secondary-dark/etc., leave that swatch as-is rather than demanding a value.
    - **Only add or drop a mode for a rare, legitimate reason** — and only with the
      user's say-so. If they genuinely need a 4th mode, add it the **same exact way**
-     the others exist: replicate a full `[data-theme]` block (every semantic alias
-     - the `--surface-*` tier) by copying an existing block as the template, and a
+     the others exist: replicate a full `[data-theme]` block (every semantic alias)
+     by copying an existing block as the template, and a
        new swatch goes in [colors.css](../../../src/styles/variables/colors.css) with
        the same naming and (if a scale) the same `color-mix` derivation as
        `--color-brand-100…900`, reaching components only through the cascade. Don't

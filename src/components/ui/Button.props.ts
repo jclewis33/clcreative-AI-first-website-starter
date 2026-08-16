@@ -41,12 +41,12 @@ export type ButtonHoverTheme = "light" | "dark" | "brand";
  * - `href` — turns into a link (`<a>` tag)
  * - `newTab` — open link in new tab (default: `false`)
  * - `disabled` — disable the button, not links (default: `false`)
- * - `ariaLabel` — accessible label on the clickable overlay (**required**)
+ * - `ariaLabel` — accessible name for ICON-ONLY buttons (visible text is the name otherwise)
  * - `type` — native button type: button, submit, reset (default: `'button'`)
  * - `square` — remove pill radius (default: `false`)
  * - `id` — HTML id on wrapper
  * - `class` — extra classes on wrapper
- * - `[key: string]` — extra attributes spread onto clickable overlay (e.g. `data-modal-trigger`)
+ * - standard DOM attributes of the rendered element — spread onto the root `<a>`/`<button>` (e.g. `data-modal-trigger`)
  *
  * **Slots:** default (label text), `icon` (rendered after label).
  *

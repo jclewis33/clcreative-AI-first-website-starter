@@ -5,7 +5,7 @@ import Layout from "@/components/ui/Layout.astro";
  * PricingCard — pricing tier card with name, price, description, feature
  * items slot, and CTA button.
  *
- * Composes ContentWrapper, Heading, Text, and Button internally.
+ * Composes Layout, Heading, Text, and Button internally.
  * No box-shadow is baked in — add `u-box-shadow-*` utility classes yourself.
  *
  * Three variants:
@@ -203,7 +203,7 @@ interface Props extends HTMLAttributes<"div"> {
   featured?: boolean;
 
   /**
-   * Content alignment via ContentWrapper.
+   * Content alignment via the layout column.
    * @default 'inherit'
    */
   align?: ContentAlign;
@@ -495,7 +495,7 @@ const isGeneral = variant === "general";
       border-color: var(--border);
     }
 
-    /* Make ContentWrapper a flex column so margin-top: auto works on CTA */
+    /* Make the content column a flex column so margin-top: auto works on CTA */
     .pricing_card_element > .u-content-wrapper {
       display: flex;
       flex-direction: column;

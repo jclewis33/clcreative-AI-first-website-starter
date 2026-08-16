@@ -77,7 +77,7 @@ import { slotContent } from "@/lib/slots";
  *     <div class="u-button-wrapper">
  *       <Button href="/book-a-call" ariaLabel="Book call">Book a Call</Button>
  *     </div>
- *   <Col slot="column2">
+ *   <Fragment slot="column2">
  *     <Visual src={bgImage} alt="" variant="background" />
  *     <Overlay strength={75} />
  * </Layout>
@@ -185,7 +185,9 @@ const rowGapValue = resolveGap(rowGap);
 
 /* Build inline style for custom properties */
 const styleParts: string[] = [];
-styleParts.push(`--layout-collapse: var(--flex-${collapseAt})`);
+/* --_ prefix = internal to this component (see CLAUDE.md: Variables).
+   Set inline here, consumed only by this file's CSS below. */
+styleParts.push(`--_collapse: var(--flex-${collapseAt})`);
 if (contentSpan) styleParts.push(`--content-span: ${contentSpan}`);
 if (bleedSpan) styleParts.push(`--bleed-span: ${bleedSpan}`);
 
@@ -197,8 +199,8 @@ if (ratio) {
   }
 }
 
-if (columnGapValue) styleParts.push(`--layout-gap: ${columnGapValue}`);
-if (rowGapValue) styleParts.push(`--layout-row-gap: ${rowGapValue}`);
+if (columnGapValue) styleParts.push(`--_gap: ${columnGapValue}`);
+if (rowGapValue) styleParts.push(`--_row-gap: ${rowGapValue}`);
 if (stickyOffset) styleParts.push(`--sticky-offset: ${stickyOffset}`);
 if (cardPadding) styleParts.push(`--card-padding: ${cardPadding}`);
 
@@ -262,7 +264,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
    ==========================================================================
    All variants use CSS Grid at large container widths and collapse to a
    single flex column when the container narrows past a configurable
-   breakpoint. The Layout component sets --layout-collapse on .u-layout
+   breakpoint. The Layout component sets --_collapse on .u-layout
    to either var(--flex-medium) (collapse at ~928px, default) or
    var(--flex-small) (collapse at ~560px) via the collapseAt prop.
    The data-collapse attribute on .u-layout-wrapper scopes the
@@ -300,8 +302,8 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
     /* ---- Base layout shell ---- */
 
     .u-layout-wrapper {
-      grid-column-gap: var(--layout-gap, var(--site-gutter));
-      grid-row-gap: var(--layout-row-gap, var(--space-8));
+      grid-column-gap: var(--_gap, var(--site-gutter));
+      grid-row-gap: var(--_row-gap, var(--space-8));
       justify-content: center;
       align-items: stretch;
       width: 100%;
@@ -309,8 +311,8 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
     }
 
     .u-layout {
-      grid-column-gap: var(--layout-gap, var(--site-gutter));
-      grid-row-gap: var(--layout-row-gap, var(--space-8));
+      grid-column-gap: var(--_gap, var(--site-gutter));
+      grid-row-gap: var(--_row-gap, var(--space-8));
       flex-flow: column;
       grid-template-rows: auto;
       grid-auto-columns: 1fr;
@@ -330,7 +332,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
 
     [data-layout-variant="columns"] .u-layout,
     [data-layout-variant="columns-reversed"] .u-layout {
-      display: var(--layout-collapse, grid);
+      display: var(--_collapse, grid);
       flex-flow: column;
       grid-template-columns: minmax(0, var(--col-1, 1fr)) minmax(
           0,
@@ -371,7 +373,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
     /* ---- sticky-left — 50/50, left column sticks on scroll (or custom ratio) ---- */
 
     [data-layout-variant="sticky-left"] .u-layout {
-      display: var(--layout-collapse, grid);
+      display: var(--_collapse, grid);
       flex-flow: column;
       grid-template-columns: minmax(0, var(--col-1, 1fr)) minmax(
           0,
@@ -394,7 +396,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
 
     [data-layout-variant="contain"] .u-layout,
     [data-layout-variant="contain-reversed"] .u-layout {
-      display: var(--layout-collapse, grid);
+      display: var(--_collapse, grid);
       flex-flow: column;
       grid-template-columns: minmax(0, var(--col-1, 1fr)) minmax(
           0,
@@ -447,7 +449,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
     [data-layout-variant="full"] > .u-layout,
     [data-layout-variant="full-reversed"] > .u-layout {
       --breakout-on: var(--responsive-large, 1);
-      display: var(--layout-collapse, grid);
+      display: var(--_collapse, grid);
       flex-flow: column;
       width: calc(100vw * var(--breakout-on) + 100% * (1 - var(--breakout-on)));
       margin-inline: calc((50% - 50vw) * var(--breakout-on));
@@ -531,7 +533,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
     /* ---- auto-width — both columns size to content ---- */
 
     [data-layout-variant="auto-width"] .u-layout {
-      display: var(--layout-collapse, grid);
+      display: var(--_collapse, grid);
       flex-flow: column;
       /* `auto` tracks take their size from their own content — that is the
          point of this variant. Grid then hands the leftover space to those
@@ -571,7 +573,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
     /* ==========================================================================
    RESPONSIVE — collapse resets
    ==========================================================================
-   The display switch (grid → flex) is handled by --layout-collapse, which
+   The display switch (grid → flex) is handled by --_collapse, which
    resolves automatically via the responsive flag system. These rules handle
    the ADDITIONAL resets that each variant needs when it collapses:
    reversed column order, sticky positioning, breakout viewport expansion,

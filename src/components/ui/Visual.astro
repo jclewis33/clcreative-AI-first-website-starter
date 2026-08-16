@@ -6,7 +6,7 @@
  * Uses `layout="full-width"` so the browser downloads the right srcset
  * size, while CSS controls `object-fit` / `object-position`.
  *
- * Focal-point positioning uses `--x` / `--y` CSS custom properties
+ * Focal-point positioning uses `--_x` / `--_y` CSS custom properties
  * (0–100). Pass a named preset or `{ x, y }` for precise control.
  *
  * Variants:
@@ -154,7 +154,7 @@ const wrapperStyle =
   [...wrapperParts, userStyle].filter(Boolean).join("; ") || undefined;
 
 // Image: focal-point custom properties
-const imageStyle = `--x: ${focal.x}; --y: ${focal.y}`;
+const imageStyle = `--_x: ${focal.x}; --_y: ${focal.y}`;
 
 /* ═══════════════════════════════════════════════════
    Detect remote URL vs imported image

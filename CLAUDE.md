@@ -290,6 +290,7 @@ Two hard rules follow from this:
 - **Animations**: GSAP data attributes (`data-duration`, `data-distance`, `data-stagger`, `data-prevent-flicker`) are used for scroll-triggered animations. These are not classes.
 - **Component props**: Use TypeScript interfaces for component props. Prop names use camelCase.
 - **Layout is the only layout component.** A section's content goes straight inside `<Layout>` — the default slot IS column 1, and `<Layout>` generates the column wrapper itself. A second column takes `slot="column2"`; several loose elements there go in `<Fragment slot="column2">`, which groups without emitting a box. There is no ``and no `<Layout variant="stack">` — both were removed, their jobs absorbed: alignment and measure are now the `align` and `maxWidth` props. Do not reintroduce a wrapper component for columns; the generated column is a real flex box, which is what makes a ratio'd `<Visual>` safe inside one (the old`` used `display: contents`, which erased the box and let images balloon).
+- **Variable naming — `--_` marks internal plumbing.** Two kinds of custom property exist and the name tells them apart. Design tokens (`--space-4`, `--background-2`, `--radius-main`) and the responsive keywords (`--flex-medium`, `--unset-medium`, …) are the public authoring API: use them freely in any component. A property prefixed `--_` (e.g. Layout's `--_collapse`, Visual's `--_x`/`--_y`) is internal to the component that declares it — set and consumed in one file, no outside contract, free to rename. Never reach for another component's `--_` variables; if two components need the same value, promote it to a token. Adopt the prefix incrementally: rename internals as you touch a file, and put a one-line note where the variable is set.
 - **Merging classes**: Always use Astro's `class:list` directive — it takes an array, drops falsy entries, and is the pattern every UI component follows. Build the array with the base class first, conditional modifiers next, and the caller's `className` last, so user classes win: `class:list={["u-text", muted && "u-text-style-muted", className]}`. Do **not** hand-roll the string with `.filter(Boolean).join(" ")`. Merging inline **styles** is a separate problem — `class:list` does not cover it, so `[computed, userStyle].filter(Boolean).join("; ")` stays correct in Heading, Text, Visual, and Overlay.
 - **Formatting**: Prettier owns formatting. Run `npm run format` before committing; `npm run format:check` gates CI. Two files are excluded in `.prettierignore` (`Head.astro`, `BaseLayout.astro`) because prettier-plugin-astro cannot parse their `is:inline` scripts — format those by hand.
 - **Import alias**: `@/` resolves to `src/` (defined in `tsconfig.json` `paths`). Existing files use relative imports; both work.
@@ -695,11 +696,10 @@ These are typed Astro components that wrap the CSS system. Every prop is documen
 ```astro
 import Heading from '@/components/ui/Heading.astro'; import Text from
 '@/components/ui/Text.astro'; import Layout from '@/components/ui/Layout.astro';
-import Section from '@/components/ui/Section.astro'; import Layout from
-'@/components/ui/Layout.astro'; import Col from '@/components/ui/Col.astro';
-import Grid from '@/components/ui/Grid.astro'; import Card from
-'@/components/ui/Card.astro'; import Visual from '@/components/ui/Visual.astro';
-import Overlay from '@/components/ui/Overlay.astro'; import Accordion from
+import Section from '@/components/ui/Section.astro'; import Grid from
+'@/components/ui/Grid.astro'; import Card from '@/components/ui/Card.astro';
+import Visual from '@/components/ui/Visual.astro'; import Overlay from
+'@/components/ui/Overlay.astro'; import Accordion from
 '@/components/ui/Accordion.astro'; import AccordionItem from
 '@/components/ui/AccordionItem.astro'; import Modal from
 '@/components/ui/Modal.astro'; import Slider from
@@ -1822,8 +1822,8 @@ Every public route is prerendered, so `@astrojs/sitemap` enumerates the whole si
 
 **Exclusions** live in [astro.config.mjs](astro.config.mjs) as **two lists with two different matching modes** (a single loose `page.includes(path)` gets it wrong in both directions — it can silently drop a real post like `/blog/components-in-…` via a `/components` exclusion, while exact-only matching pushes `/thank-you-call` variants _into_ the sitemap against robots.txt):
 
-- `SITEMAP_EXCLUDE_PATHS` — whole path segments (`/x` and `/x/…`, never `/blog/x-…`): the dev-only pages and `/preview`.
-- `SITEMAP_EXCLUDE_PREFIXES` — literal prefixes mirroring robots.txt `Disallow` semantics: one `/thank-you` entry covers every `/thank-you*` variant.
+- `NOINDEX_PATHS` (src/config/seo.shared.mjs) — whole path segments (`/x` and `/x/…`, never `/blog/x-…`): the dev-only pages and `/preview`.
+- `NOINDEX_PREFIXES` — literal prefixes mirroring robots.txt `Disallow` semantics: one `/thank-you` entry covers every `/thank-you*` variant. `isNoindexRoute()` combines both and feeds the sitemap filter, the generated `robots.txt`, the `noindex` meta tag, the SSR `X-Robots-Tag`, and the llms.txt index — one fact, five surfaces.
 
 Keep both lists in sync with [public/robots.txt](public/robots.txt). To verify after a change: run a build and inspect `dist/sitemap-0.xml` — count entries, confirm no robots-disallowed URL appears, confirm no real content page is missing.
 
