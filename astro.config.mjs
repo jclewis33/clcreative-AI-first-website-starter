@@ -135,9 +135,16 @@ export default defineConfig({
   image: {
     /* Valid: "constrained" | "full-width" | "fixed"
 
-    Override on a per image basis.
+    NOTE: this default governs raw <Image /> usage only. The <Visual>
+    component — which renders essentially every image on the site — sets
+    layout="full-width" itself, because it always wraps the image in an
+    aspect-ratio box and lets CSS object-fit do the cropping. So `constrained`
+    below applies to the handful of direct <Image /> calls, not to <Visual>.
 
-    EX: Full width hero set: layout="full-width" to override constrained
+    Layout decides the srcset CANDIDATES. Which candidate the browser picks is
+    decided by `sizes`, and <Visual> emits sizes="auto" on lazy images so the
+    browser measures the real laid-out box. That pairing is what keeps a
+    three-up grid from downloading a 1668px source for a 427px slot.
 
     DEFINITIONS:
     - constrained: responsive, but capped at the image’s max size. Great for images sitting inside text/content columns.

@@ -285,11 +285,15 @@ interface Props extends HTMLAttributes<"div"> {
   /**
    * Override the `sizes` attribute.
    *
-   * Normally unnecessary: `layout="full-width"` makes Astro generate a `sizes`
-   * value from the layout. Set this when the image does NOT fill its
-   * container — e.g. `sizes="(min-width: 60rem) 33vw, 100vw"` for a three-up
-   * grid — so the browser stops downloading a full-width source for a
-   * third-width slot.
+   * Normally unnecessary. A lazy image (the default) already gets
+   * `sizes="auto"`, which makes the browser choose the srcset candidate from
+   * the element's real laid-out width — the right size for whatever box it
+   * lands in, with no per-instance configuration.
+   *
+   * Worth setting on an EAGER or `priority` image, where `auto` does not
+   * apply: the browser has no layout to measure yet, so it falls back to
+   * `100vw`. If such an image is not full-bleed, describe it here — e.g.
+   * `sizes="(min-width: 60rem) 33vw, 100vw"`.
    *
    * Ignored on remote URLs, which have no srcset.
    *
@@ -446,6 +450,24 @@ if (!isRemote) {
   if (sizes !== undefined) {
     // Overrides the value `layout` would otherwise generate.
     imageProps.sizes = sizes;
+  } else if (densities === undefined && loading === "lazy") {
+    /* `sizes="auto"` tells the browser to pick the srcset candidate from the
+       element's ACTUAL laid-out width, which is the only thing that knows how
+       big the box really is.
+
+       Without it, `layout` generates sizes="100vw" and a three-up grid
+       downloads a 1668px source for a 427px box — measured, ~4x too wide.
+       With it, the same image resolves to the 640px candidate.
+
+       Only valid on lazy images: the browser needs layout to have happened
+       before it can measure, so an eager image ignores `auto` and falls back
+       to 100vw (also measured). Eager and `priority` images are therefore the
+       case where an explicit `sizes` is worth passing — a genuine full-bleed
+       hero already wants 100vw, so the default is usually right there anyway.
+
+       Browsers without `sizes="auto"` support ignore it and get today's
+       behaviour, so this only ever improves things. */
+    imageProps.sizes = "auto";
   } else if (densities !== undefined) {
     /* Astro rejects densities alongside the width-based srcset that `layout`
        produces, so a densities image opts out of layout entirely.
