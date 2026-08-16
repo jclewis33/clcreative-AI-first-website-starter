@@ -632,6 +632,12 @@ if (height != null) imageProps.height = height;
     [data-layout-variant="contain"] .u-image-wrapper,
     [data-layout-variant="contain-reversed"] .u-image-wrapper {
       border-radius: 0;
+      /* The contain column is `align-self: stretch; height: 100%`, and the
+         image is meant to fill it rather than hold its own ratio. Explicit
+         because the wrapper's default is `height: auto` — see the note in
+         base/visual-utilities.css. */
+      aspect-ratio: unset;
+      height: 100%;
     }
   }
 </style>

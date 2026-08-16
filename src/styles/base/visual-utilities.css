@@ -40,21 +40,29 @@
 /* Wrapper for images — controls dimensions, radius, and overflow.
    Set aspect-ratio inline or via a u-ratio-* utility as needed.
 
-   ⚠️ The `height: 100%` below only behaves as a fixed-ratio image (letting an
-   inline `aspect-ratio`, e.g. from <Visual ratio="…">, size the box) when the
-   PARENT's height is INDEFINITE — then `height: 100%` resolves to `auto` and the
-   aspect-ratio governs. If the parent height is definite (a grid/flex item, e.g.
-   a Layout column once it collapses to `display: flex`), `height: 100%` wins and
-   STRETCHES the image, overriding the aspect-ratio. This is why a column holding
-   a <Visual> alongside other content must use <Layout variant="stack"> — a real
-   `height: auto` block. (ContentWrapper, which used to play that role, and the
-   <Col> wrapper whose `display: contents` caused the bug are both gone; Layout
-   generates real column boxes now.) */
+   `height: auto` is deliberate, and filling a box is opt-in.
+
+   `aspect-ratio` only computes a MISSING dimension. The wrapper already has
+   `width: 100%`, so the moment it also has a definite height the ratio has
+   nothing left to decide and is ignored. That is exactly what `height: 100%`
+   used to do here: harmless while the parent's height was indefinite (it then
+   resolves to `auto` and the ratio governs), but as soon as the parent height
+   became definite — a Layout column holding the image AND a caption, once the
+   layout collapses to one column — the image stretched to the column's full
+   height. A 16/9 visual measured 1.66 instead of 1.78 that way.
+
+   So the default is now `height: auto` (the ratio governs) and every place
+   that genuinely wants the media to FILL its box says so explicitly:
+   `.is-background` below, the `full`/`contain` Layout variants and the
+   case-study card in their own files. This matches Lumos, whose base is
+   `img { height: auto }` with `height: 100%` opted into per pattern.
+   If you need a wrapper to fill, set an explicit height on it — do not
+   restore it here, or the ratio silently stops working everywhere. */
 .u-image-wrapper {
   position: relative;
   overflow: clip;
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: cover;
   background-color: var(--background-skeleton, transparent);
 }
@@ -88,6 +96,10 @@
   position: absolute;
   inset: 0;
   aspect-ratio: unset;
+  /* Explicit, because the wrapper's default is now `height: auto`. `inset: 0`
+     alone would size it, but stating the fill keeps it working if this ever
+     stops being absolutely positioned. */
+  height: 100%;
 }
 
 /* =======================================================

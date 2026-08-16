@@ -595,6 +595,16 @@ if (
       flex-shrink: 0;
     }
 
+    /* The VISUAL BOX owns the shape here — 16/9 on the default variant,
+       absolute-fill on cover — so the image inside fills it rather than
+       holding its own `ratio`. Explicit because `.u-image-wrapper` defaults to
+       `height: auto` (see base/visual-utilities.css); without this the card
+       image reverts to Visual's own ratio and stops matching the card. */
+    .card_primary_visual .u-image-wrapper {
+      aspect-ratio: unset;
+      height: 100%;
+    }
+
     .card_primary_visual img,
     .card_primary_visual .u-image {
       transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);

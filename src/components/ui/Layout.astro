@@ -204,7 +204,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    *
    * **Slots:** the default slot IS column 1 — content goes straight inside `<Layout>` with no slot attribute. The second column is `slot="column2"`; a single component (Visual, Grid, Card) takes it directly, and for several elements you may either repeat `slot="column2"` on each or group them in one `<Fragment slot="column2">` — both put the same children in the column.
    *
-   * KNOWN ISSUE: a `<Visual>` that SHARES a column with other content keeps its `ratio` while the layout is two-column, but once the layout collapses to one column the image grows past its ratio (a 16/9 visual measured 1.66 at 700px). Cause is `height: 100%` on `.u-image-wrapper` resolving against the column's full height instead of the image's own aspect-ratio box. Giving the Visual a column to itself avoids it; `variant="stack"` does NOT fix it (measured — it distorts identically).
+   * A `<Visual>` may share a column with other content freely — it holds its `ratio` at every width. (It used to stretch once the layout collapsed, because `.u-image-wrapper` defaulted to `height: 100%`; the default is now `height: auto` and filling a box is opt-in. See base/visual-utilities.css.)
    */
   docs?: string;
 

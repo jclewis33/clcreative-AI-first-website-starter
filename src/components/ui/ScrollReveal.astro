@@ -468,9 +468,14 @@ const ratioStyle =
       opacity: 1;
     }
 
-    /* Images fill available panel width */
+    /* Images fill the whole sticky panel — the panel's height is what the
+       cross-fade animates against, so the image must match it rather than keep
+       its own ratio. Height is explicit because `.u-image-wrapper` defaults to
+       `height: auto` (see base/visual-utilities.css). */
     .scroll_reveal_panel .u-image-wrapper {
       width: 100%;
+      aspect-ratio: unset;
+      height: 100%;
     }
 
     /* ==========================================================================
