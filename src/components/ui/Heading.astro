@@ -92,6 +92,18 @@ interface Props extends HTMLAttributes<"div"> {
    * **Slot:** default — heading text (supports `<strong>`)
    */
   docs?: string;
+
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — `render={posts.length > 0}` instead of wrapping the element
+   * in `{posts.length > 0 && ( … )}`. Nothing is emitted when false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
   /**
    * HTML tag — sets the semantic level for the document outline.
    * Use `p` when you want heading styles on non-heading content (e.g. prices).
@@ -184,6 +196,7 @@ interface Props extends HTMLAttributes<"div"> {
 }
 
 const {
+  render = true,
   docs,
   tag: Tag = "h2",
   variant = "h2",
@@ -238,8 +251,12 @@ const mergedStyle = [
   .join("; ");
 ---
 
-<div class:list={wrapperClasses} style={mergedStyle} {...attrs}>
-  <Tag>
-    <slot />
-  </Tag>
-</div>
+{
+  render && (
+    <div class:list={wrapperClasses} style={mergedStyle} {...attrs}>
+      <Tag>
+        <slot />
+      </Tag>
+    </div>
+  )
+}

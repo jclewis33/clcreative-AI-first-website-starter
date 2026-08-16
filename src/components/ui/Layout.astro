@@ -183,6 +183,18 @@ interface Props extends HTMLAttributes<"div"> {
   docs?: string;
 
   /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — `render={posts.length > 0}` instead of wrapping the element
+   * in `{posts.length > 0 && ( … )}`. Nothing is emitted when false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
    * Column layout style.
    *
    * | Value                | Columns        | Notes                                           |
@@ -400,6 +412,7 @@ interface Props extends HTMLAttributes<"div"> {
 }
 
 const {
+  render = true,
   docs,
   variant = "columns",
   align = "inherit",
@@ -500,56 +513,52 @@ if (cardPadding) styleParts.push(`--card-padding: ${cardPadding}`);
 const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
 ---
 
-<div
-  class:list={["u-layout-wrapper", className]}
-  data-layout-variant={variant}
-  data-collapse={collapseAt}
-  {...rest}
->
-  <div
-    class:list={["u-layout", alignClass, { "u-grid-breakout": isBreakout }]}
-    style={inlineStyle}
-  >
-    {
-      /* Column 1 is the DEFAULT slot — anything placed inside <Layout> lands
-        here with no wrapper component and no slot attribute to remember. The
-        `u-content-wrapper` classes are the ones ContentWrapper used to apply,
-        reused verbatim so alignment and measure render identically. */
-    }
+{
+  render && (
     <div
-      class:list={[
-        "u-layout-column-1",
-        needsContentWrapper && "u-content-wrapper",
-        textAlignClassMap[effectiveAlign],
-      ]}
+      class:list={["u-layout-wrapper", className]}
+      data-layout-variant={variant}
+      data-collapse={collapseAt}
+      {...rest}
     >
-      {
-        maxWidth ? (
-          <div
-            class="u-content-wrapper_inner"
-            style={`max-width: ${maxWidth};`}
-          >
+      <div
+        class:list={["u-layout", alignClass, { "u-grid-breakout": isBreakout }]}
+        style={inlineStyle}
+      >
+        {/* Column 1 is the DEFAULT slot — anything placed inside <Layout> lands
+            here with no wrapper component and no slot attribute to remember. The
+            `u-content-wrapper` classes are the ones ContentWrapper used to apply,
+            reused verbatim so alignment and measure render identically. */}
+        <div
+          class:list={[
+            "u-layout-column-1",
+            needsContentWrapper && "u-content-wrapper",
+            textAlignClassMap[effectiveAlign],
+          ]}
+        >
+          {maxWidth ? (
+            <div
+              class="u-content-wrapper_inner"
+              style={`max-width: ${maxWidth};`}
+            >
+              <slot />
+            </div>
+          ) : (
             <slot />
-          </div>
-        ) : (
-          <slot />
-        )
-      }
-    </div>
-
-    {
-      /* Only emitted when it renders something — a column2 holding an empty
-        expression would otherwise leave a stray grid cell. */
-    }
-    {
-      (await column2Content) && (
-        <div class="u-layout-column-2">
-          <slot name="column2" />
+          )}
         </div>
-      )
-    }
-  </div>
-</div>
+
+        {/* Only emitted when it renders something — a column2 holding an empty
+            expression would otherwise leave a stray grid cell. */}
+        {(await column2Content) && (
+          <div class="u-layout-column-2">
+            <slot name="column2" />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 <style is:global>
   /* Global styles (is:global — classes here are used across the site and by

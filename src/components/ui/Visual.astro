@@ -141,6 +141,18 @@ interface Props extends HTMLAttributes<"div"> {
   docs?: string;
 
   /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — `render={posts.length > 0}` instead of wrapping the element
+   * in `{posts.length > 0 && ( … )}`. Nothing is emitted when false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
    * Image source — an imported image (`ImageMetadata`) or a URL string.
    * @example src={myImage}
    * @example src="https://example.com/photo.jpg"
@@ -264,6 +276,7 @@ interface Props extends HTMLAttributes<"div"> {
 }
 
 const {
+  render = true,
   docs,
   src,
   alt,
@@ -385,18 +398,22 @@ if (width != null) imageProps.width = width;
 if (height != null) imageProps.height = height;
 ---
 
-<div
-  class:list={[
-    "u-image-wrapper",
-    radiusClass,
-    { "is-background": isBackground },
-    className,
-  ]}
-  style={wrapperStyle}
-  {...attrs}
->
-  {isRemote ? <img {...imageProps} /> : <Image {...(imageProps as any)} />}
-</div>
+{
+  render && (
+    <div
+      class:list={[
+        "u-image-wrapper",
+        radiusClass,
+        { "is-background": isBackground },
+        className,
+      ]}
+      style={wrapperStyle}
+      {...attrs}
+    >
+      {isRemote ? <img {...imageProps} /> : <Image {...(imageProps as any)} />}
+    </div>
+  )
+}
 
 <style is:global>
   /* Global styles (is:global — classes here are used across the site and by

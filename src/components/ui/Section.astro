@@ -117,6 +117,18 @@ interface Props extends HTMLAttributes<"section"> {
   docs?: string;
 
   /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — `render={posts.length > 0}` instead of wrapping the element
+   * in `{posts.length > 0 && ( … )}`. Nothing is emitted when false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
    * Color theme — cascades CSS variables to all children.
    * - `inherit` — transparent, inherits parent theme (same as omitting)
    * - `light`   — light background, dark text
@@ -215,6 +227,7 @@ interface Props extends HTMLAttributes<"section"> {
 }
 
 const {
+  render = true,
   docs,
   theme,
   padding = "main",
@@ -248,31 +261,39 @@ const hasBackground = Astro.slots.has("background");
 const resolvedTheme = theme === "inherit" ? undefined : theme;
 ---
 
-<section
-  class:list={["u-section", { "u-min-height-screen": minHeight }, className]}
-  data-theme={resolvedTheme}
-  data-padding-top={topPadding}
-  data-padding-bottom={bottomPadding}
-  id={id}
-  {...rest}
->
-  {
-    hasBackground && (
-      <div class="u-background-slot">
-        <slot name="background" />
-      </div>
-    )
-  }
+{
+  render && (
+    <section
+      class:list={[
+        "u-section",
+        { "u-min-height-screen": minHeight },
+        className,
+      ]}
+      data-theme={resolvedTheme}
+      data-padding-top={topPadding}
+      data-padding-bottom={bottomPadding}
+      id={id}
+      {...rest}
+    >
+      {hasBackground && (
+        <div class="u-background-slot">
+          <slot name="background" />
+        </div>
+      )}
 
-  <div
-    class:list={["u-container", containerClass]}
-    style={gap !== undefined
-      ? `gap: ${gap === 0 ? "0px" : `var(--space-${gap})`}`
-      : undefined}
-  >
-    <slot />
-  </div>
-</section>
+      <div
+        class:list={["u-container", containerClass]}
+        style={
+          gap !== undefined
+            ? `gap: ${gap === 0 ? "0px" : `var(--space-${gap})`}`
+            : undefined
+        }
+      >
+        <slot />
+      </div>
+    </section>
+  )
+}
 
 <style is:global>
   /* Global styles (is:global — classes here are used across the site and by

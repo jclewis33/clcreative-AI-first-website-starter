@@ -86,6 +86,18 @@ interface Props extends HTMLAttributes<"div"> {
   docs?: string;
 
   /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — `render={posts.length > 0}` instead of wrapping the element
+   * in `{posts.length > 0 && ( … )}`. Nothing is emitted when false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
    * Columns at the large breakpoint (default screen size). 1–12.
    * @default 3
    * @example largeColumns={4}
@@ -155,6 +167,7 @@ interface Props extends HTMLAttributes<"div"> {
 }
 
 const {
+  render = true,
   docs,
   largeColumns = 3,
   mediumColumns = 2,
@@ -188,29 +201,33 @@ const autoStyle =
   isAuto && minColWidth ? `--col-min: ${minColWidth};` : undefined;
 ---
 
-<div class:list={["u-grid-wrapper", className]} {...rest}>
-  {
-    variant === "default" ? (
-      <div
-        class:list={[rowGapClass, colGapClass]}
-        data-large-columns={String(largeColumns)}
-        data-medium-columns={
-          mediumColumns > 0 ? String(mediumColumns) : undefined
-        }
-        data-small-columns={smallColumns > 0 ? String(smallColumns) : undefined}
-        data-xsmall-columns={
-          xsmallColumns > 0 ? String(xsmallColumns) : undefined
-        }
-      >
-        <slot />
-      </div>
-    ) : (
-      <div
-        class:list={[autoGridClass, rowGapClass, colGapClass]}
-        style={autoStyle}
-      >
-        <slot />
-      </div>
-    )
-  }
-</div>
+{
+  render && (
+    <div class:list={["u-grid-wrapper", className]} {...rest}>
+      {variant === "default" ? (
+        <div
+          class:list={[rowGapClass, colGapClass]}
+          data-large-columns={String(largeColumns)}
+          data-medium-columns={
+            mediumColumns > 0 ? String(mediumColumns) : undefined
+          }
+          data-small-columns={
+            smallColumns > 0 ? String(smallColumns) : undefined
+          }
+          data-xsmall-columns={
+            xsmallColumns > 0 ? String(xsmallColumns) : undefined
+          }
+        >
+          <slot />
+        </div>
+      ) : (
+        <div
+          class:list={[autoGridClass, rowGapClass, colGapClass]}
+          style={autoStyle}
+        >
+          <slot />
+        </div>
+      )}
+    </div>
+  )
+}

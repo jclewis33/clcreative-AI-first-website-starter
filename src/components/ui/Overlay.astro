@@ -39,6 +39,18 @@ interface Props extends HTMLAttributes<"div"> {
    */
   docs?: string;
 
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — `render={posts.length > 0}` instead of wrapping the element
+   * in `{posts.length > 0 && ( … )}`. Nothing is emitted when false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
+
   /** Overlay style. `'solid'` = even scrim; `'gradient'` = vertical top-to-bottom fade. Default: `'solid'`. */
   variant?: "solid" | "gradient";
   /** Solid-variant darkness from 0–100. Default: 70. */
@@ -54,6 +66,7 @@ interface Props extends HTMLAttributes<"div"> {
 }
 
 const {
+  render = true,
   docs,
   variant = "solid",
   strength = 70,
@@ -85,15 +98,18 @@ const mergedStyle =
   [computedStyle, userStyle].filter(Boolean).join("; ") || undefined;
 ---
 
-<div
-  class:list={[
-    "u-overlay",
-    isGradient && "is-gradient",
-    hasMiddle && "has-middle",
-    className,
-  ]}
-  style={mergedStyle}
-  aria-hidden="true"
-  {...attrs}
->
-</div>
+{
+  render && (
+    <div
+      class:list={[
+        "u-overlay",
+        isGradient && "is-gradient",
+        hasMiddle && "has-middle",
+        className,
+      ]}
+      style={mergedStyle}
+      aria-hidden="true"
+      {...attrs}
+    />
+  )
+}

@@ -124,6 +124,18 @@ interface Props extends HTMLAttributes<"div"> {
   docs?: string;
 
   /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — `render={posts.length > 0}` instead of wrapping the element
+   * in `{posts.length > 0 && ( … )}`. Nothing is emitted when false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
    * HTML element to render.
    *
    * | Value          | Use case                              |
@@ -314,6 +326,7 @@ interface Props extends HTMLAttributes<"div"> {
 }
 
 const {
+  render = true,
   docs,
   tag: Tag = "p",
   variant = "regular",
@@ -365,8 +378,12 @@ const mergedStyle = [`max-width: var(--unset-medium, ${maxWidth})`, userStyle]
   .join("; ");
 ---
 
-<div class:list={wrapperClasses} style={mergedStyle} {...attrs}>
-  <Tag class:list={childClasses}>
-    <slot />
-  </Tag>
-</div>
+{
+  render && (
+    <div class:list={wrapperClasses} style={mergedStyle} {...attrs}>
+      <Tag class:list={childClasses}>
+        <slot />
+      </Tag>
+    </div>
+  )
+}

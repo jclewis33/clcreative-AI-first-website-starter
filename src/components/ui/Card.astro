@@ -89,6 +89,18 @@ interface BaseProps {
   docs?: string;
 
   /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — `render={posts.length > 0}` instead of wrapping the element
+   * in `{posts.length > 0 && ( … )}`. Nothing is emitted when false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
    * Card layout variant.
    * - `default`  — image on top (16/9), content below
    * - `stacked`  — text only, visual slot hidden
@@ -224,6 +236,7 @@ type AllProps = BaseProps & {
 };
 
 const {
+  render = true,
   docs,
   variant = "default",
   href,
@@ -304,85 +317,81 @@ if (
 }
 ---
 
-<div
-  class:list={["card_primary_wrap", ...spanClasses, radius, className]}
-  data-card-variant={variant}
-  {...rest}
->
-  <div
-    class="card_primary_group"
-    data-trigger={isClickable ? "hover-if-clickable focus" : undefined}
-  >
+{
+  render && (
     <div
-      class="card_primary_element"
-      data-theme={theme}
-      data-theme-contrast={variant !== "cover" && !theme ? "" : undefined}
+      class:list={["card_primary_wrap", ...spanClasses, radius, className]}
+      data-card-variant={variant}
+      {...rest}
     >
-      {/* Visual / image slot */}
-      {
-        showVisual && ((await visualContent) || variant === "default") && (
-          <div class="card_primary_visual">
-            <slot name="visual" />
+      <div
+        class="card_primary_group"
+        data-trigger={isClickable ? "hover-if-clickable focus" : undefined}
+      >
+        <div
+          class="card_primary_element"
+          data-theme={theme}
+          data-theme-contrast={variant !== "cover" && !theme ? "" : undefined}
+        >
+          {/* Visual / image slot */}
+          {showVisual && ((await visualContent) || variant === "default") && (
+            <div class="card_primary_visual">
+              <slot name="visual" />
+            </div>
+          )}
+
+          {/* Content */}
+          <div class="card_primary_content u-margin-trim">
+            {/* Title */}
+            {((await titleContent) || title) && (
+              <div
+                class:list={[
+                  "card_primary_title",
+                  !(await titleContent) && "u-text-style-h5",
+                ]}
+              >
+                {isSurfaceLink ? (
+                  <a
+                    href={href}
+                    class="card_primary_link"
+                    target={linkTarget}
+                    rel={linkRel}
+                    aria-label={(await titleContent) ? linkLabel : undefined}
+                  >
+                    {(await titleContent) ? <slot name="title" /> : title}
+                  </a>
+                ) : (await titleContent) ? (
+                  <slot name="title" />
+                ) : (
+                  title
+                )}
+              </div>
+            )}
+
+            {/* Body */}
+            {/* u-margin-trim: the slot's last <Text>/<p> carries its own margin-bottom;
+                trimmed here so the block ends clean and the footer's padding-top is
+                the single source of text-to-action space. */}
+            <div class="card_primary_text u-margin-trim">
+              <slot />
+            </div>
+
+            {/* Footer */}
+            {(await footerContent) && (
+              <div class="card_primary_footer" inert={footerIsAffordance}>
+                {/* inert when the card itself is the link: the button is there to
+                      say "this goes somewhere", so it must not be a second tab stop
+                      to the same place. Removes it from tab order, the a11y tree,
+                      and hit-testing in one attribute. */}
+                <slot name="footer" />
+              </div>
+            )}
           </div>
-        )
-      }
-
-      {/* Content */}
-      <div class="card_primary_content u-margin-trim">
-        {/* Title */}
-        {
-          ((await titleContent) || title) && (
-            <div
-              class:list={[
-                "card_primary_title",
-                !(await titleContent) && "u-text-style-h5",
-              ]}
-            >
-              {isSurfaceLink ? (
-                <a
-                  href={href}
-                  class="card_primary_link"
-                  target={linkTarget}
-                  rel={linkRel}
-                  aria-label={(await titleContent) ? linkLabel : undefined}
-                >
-                  {(await titleContent) ? <slot name="title" /> : title}
-                </a>
-              ) : (await titleContent) ? (
-                <slot name="title" />
-              ) : (
-                title
-              )}
-            </div>
-          )
-        }
-
-        {/* Body */}
-        {
-          /* u-margin-trim: the slot's last <Text>/<p> carries its own margin-bottom;
-            trimmed here so the block ends clean and the footer's padding-top is
-            the single source of text-to-action space. */
-        }
-        <div class="card_primary_text u-margin-trim">
-          <slot />
         </div>
-
-        {/* Footer */}
-        {
-          (await footerContent) && (
-            <div class="card_primary_footer" inert={footerIsAffordance}>
-              {/* inert when the card itself is the link: the button is there to
-                  say "this goes somewhere", so it must not be a second tab stop
-                  to the same place. Removes it from tab order, the a11y tree,
-                  and hit-testing in one attribute. */}
-              <slot name="footer" />
-            </div>
-          )
-        }
       </div>
     </div>
-  </div>
-</div>
+  )
+}
 
 <style is:global>
   /* Global styles (is:global — classes here are used across the site and by
