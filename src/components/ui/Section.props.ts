@@ -22,8 +22,8 @@ export type SectionTheme =
 
 /**
  * Every padding size the CSS understands (`--section-space-*` in
- * variables/spacing.css). `'main'` exists here because the CSS has it — but
- * props deliberately use {@link PaddingOverride}, which excludes it.
+ * variables/spacing.css). This is the single source for the padding union —
+ * section-wrapper components import it instead of re-declaring their own.
  */
 export type PaddingSize =
   /** No vertical padding */
@@ -32,7 +32,7 @@ export type PaddingSize =
   | "xsmall"
   /** Small — 3–5rem fluid */
   | "small"
-  /** Main — 4–7rem fluid. THE DEFAULT — never written, only omitted. */
+  /** Main — 4–7rem fluid. The default; accepted, but redundant to write. */
   | "main"
   /** Large — 5.5–10rem fluid */
   | "large"
@@ -40,18 +40,22 @@ export type PaddingSize =
   | "page-top";
 
 /**
- * The padding values a caller may WRITE. `'main'` is excluded on purpose:
- * it is the default, so the only way to get it is to omit the prop — writing
- * `padding="main"` is a type error, not a style-review comment. The rendered
- * attribute is likewise omitted at the default, so `data-padding-top="main"`
- * never appears in HTML.
+ * `'main'` is the default AND a legal value, deliberately.
  *
- * Every combination stays expressible without `'main'`:
- * - top X, bottom main  → `paddingTop="X"` alone
- * - top main, bottom X  → `paddingBottom="X"` alone
- * - both X              → `padding="X"`
+ * Excluding it from the type was tried and reverted: it made *returning* to
+ * the default a type error, so switching a section back from `large` meant
+ * deleting the prop rather than editing its value — bad in an editor, worse
+ * in a visual builder whose dropdown offers every size. Authoring must never
+ * have a one-way door.
+ *
+ * Determinism comes from the render instead: Section drops `'main'` when it
+ * emits `data-padding-*`, so the HTML is identical whether a caller wrote
+ * `padding="main"` or nothing at all. Writing it is redundant, never wrong.
+ *
+ * The house rule — "don't add the default, let it default" — therefore lives
+ * in CLAUDE.md and in these docs, not in the type. Types can tell a typo from
+ * a value; they cannot tell a deliberate `main` from a reflexive one.
  */
-export type PaddingOverride = Exclude<PaddingSize, "main">;
 
 export type ContainerSize =
   /** Standard container — max 90rem / 1440px */
@@ -69,8 +73,8 @@ export type ContainerSize =
  *
  * **Props:**
  * - `theme` — color theme: inherit, light, dark, brand
- * - `padding` — vertical padding override: none, xsmall, small, large, page-top.
- *   The default is `'main'` and it is NOT a legal value — omit the prop to get it.
+ * - `padding` — vertical padding: none, xsmall, small, main, large, page-top.
+ *   Defaults to `'main'` — omit the prop rather than writing the default.
  * - `paddingTop` — override top padding only (`'page-top'` is fixed-navbar only — not this project)
  * - `paddingBottom` — override bottom padding only
  * - `minHeight` — full viewport height `min-height: 100svh` (default: `false`)
@@ -86,8 +90,8 @@ export interface Props extends HTMLAttributes<"section"> {
   /**
    * **Section props:**
    * - `theme` — inherit, light, dark, brand (cascades to children)
-   * - `padding` — sets both top + bottom. The default is `'main'` — omit the
-   *   prop for it (writing `"main"` is a type error). Override per-side with
+   * - `padding` — sets both top + bottom. Defaults to `'main'`; omit the prop
+   *   rather than writing the default. Override per-side with
    *   paddingTop / paddingBottom.
    * - `paddingTop` — override top only ('page-top' is fixed-navbar only — not needed for this project's sticky nav)
    * - `paddingBottom` — override bottom only
@@ -101,7 +105,7 @@ export interface Props extends HTMLAttributes<"section"> {
    * **Padding options (fluid values scale with viewport):**
    * | Value        | Height                    | Use case                           |
    * |--------------|---------------------------|------------------------------------|
-   * | *(omitted)*  | 4rem → 7rem (64–112px)    | `'main'` — the default, never written |
+   * | *(omitted)*  | 4rem → 7rem (64–112px)    | `'main'` — the default; don't write it |
    * | `'none'`     | 0px                       | No spacing (flush sections)        |
    * | `'xsmall'`   | 1.25rem → 2rem (20–32px)  | Tight sub-sections (case studies)  |
    * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
@@ -139,21 +143,26 @@ export interface Props extends HTMLAttributes<"section"> {
   theme?: SectionTheme;
 
   /**
-   * Vertical padding (top + bottom). The default is `'main'` (4–7rem fluid) —
-   * omit the prop for it; `"main"` is not a legal value. Override per-side
-   * with `paddingTop` / `paddingBottom`.
+   * Vertical padding (top + bottom). Override per-side with `paddingTop` /
+   * `paddingBottom`.
+   *
+   * Defaults to `'main'` (4–7rem fluid) — **omit the prop** rather than
+   * writing `padding="main"`. Writing it is accepted and produces identical
+   * HTML (Section drops the default before emitting `data-padding-*`), it is
+   * simply noise.
    *
    * | Value        | Height                    | Use case                           |
    * |--------------|---------------------------|------------------------------------|
    * | `'none'`     | 0px                       | No spacing (flush sections)        |
    * | `'xsmall'`   | 1.25rem → 2rem (20–32px)  | Tight sub-sections                 |
    * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
+   * | `'main'`     | 4rem → 7rem (64–112px)    | The default — omit instead         |
    * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
    * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)   |
    *
    * @example padding="small"
    */
-  padding?: PaddingOverride;
+  padding?: PaddingSize;
 
   /**
    * Override top padding only. Same values as `padding`; the other side keeps
@@ -161,7 +170,7 @@ export interface Props extends HTMLAttributes<"section"> {
    *
    * @example paddingTop="none"
    */
-  paddingTop?: PaddingOverride;
+  paddingTop?: PaddingSize;
 
   /**
    * Override bottom padding only. Same values as `padding`; the other side
@@ -169,7 +178,7 @@ export interface Props extends HTMLAttributes<"section"> {
    *
    * @example paddingBottom="none"
    */
-  paddingBottom?: PaddingOverride;
+  paddingBottom?: PaddingSize;
 
   /**
    * Full viewport height (`min-height: 100svh`). Use for hero sections.

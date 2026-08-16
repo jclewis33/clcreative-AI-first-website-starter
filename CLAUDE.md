@@ -902,7 +902,11 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
 - `large` → ~5.5–10rem fluid
 - `page-top` → ~10–14rem fluid _(only for a **fixed** nav — see note below; not for this project by default)_
 
-> **Default padding: leave it on `main` — and the types enforce it.** Every `<Section>` defaults to `main`, and `"main"` is **not a legal prop value**: writing `padding="main"` (or `paddingTop`/`paddingBottom="main"`) is a type error caught by `astro check` — omitting the prop is the only way to express the default, and the `data-padding-*` attributes are never emitted for it. **Do not add `padding="large"` (or any other override) by default.** `main` is the correct rhythm for the overwhelming majority of sections, including content sections, card grids, and listing pages. Only use `large` (or another value) when a specific section genuinely needs more room _and_ you've been asked for it (or it's clearly required by a design) — not as a habit. The padding union lives in one place — `src/components/ui/Section.props.ts` — and every section-wrapper component (TestimonialsSlider, BlogPostGrid, CaseStudyGrid, …) imports it from there; don't re-declare padding value unions in components.
+> **Default padding: leave it on `main`, and don't write it.** Every `<Section>` defaults to `main`. When a section wants the default, **write no padding prop at all** — not `padding="main"`. Never emit the default just to be explicit. **Equally: do not add `padding="large"` (or any other override) by default.** `main` is the correct rhythm for the overwhelming majority of sections, including content sections, card grids, and listing pages. Only use `large` (or another value) when a specific section genuinely needs more room _and_ you've been asked for it (or it's clearly required by a design) — not as a habit.
+>
+> `padding="main"` is deliberately **legal**, not an error: a person returning a section to the default should be able to edit the value, not delete the prop (and a visual builder's dropdown lists every size). It is redundant, not wrong. The rendered HTML is the same either way — Section drops `main` before emitting `data-padding-*`, so `data-padding-top="main"` never appears in output regardless of how the call was authored. That is what makes the build deterministic; the "don't write the default" rule above is about keeping source clean.
+>
+> The padding union lives in one place — `src/components/ui/Section.props.ts` — and every section-wrapper component (TestimonialsSlider, BlogPostGrid, CaseStudyGrid, …) imports it from there; don't re-declare padding value unions in components.
 
 > **`page-top` is for a FIXED nav only — don't use it on this project by default.** `page-top` exists to push a page's first section down so it clears a navbar that's pinned as a fixed overlay. **This project's navbar is `sticky` by default**, so it sits in normal document flow and the first section does _not_ need extra top padding to clear it. Build the first section (hero included) with the normal default padding — omit `paddingTop` entirely. `page-top` stays in the project only for the specific case where someone switches the nav to `fixed`; reach for it then, not before.
 
@@ -931,7 +935,7 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
   <Heading tag="h1" variant="display-xl">Page Title</Heading>
 </Section>
 
-<!-- Prose section — no padding prop: the 'main' default isn't writable -->
+<!-- Prose section — no padding prop: 'main' is the default, so don't write it -->
 <Section container="narrow">
   <Text variant="large">Article body…</Text>
 </Section>
@@ -1631,7 +1635,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 ### Standard content section
 
 ```astro
-<!-- No padding prop — 'main' default, the standard rhythm (writing "main" is a type error) -->
+<!-- No padding prop — 'main' default, the standard rhythm -->
 <Section theme="light">
   <Layout variant="columns" ratio="5-7" verticalAlign="center">
     <Heading variant="eyebrow">Section Label</Heading>
@@ -2087,7 +2091,7 @@ Avoid these when writing CSS and HTML in this project:
 - Hard-coding per-theme card colors (a `[data-theme="dark"] .card …` branch, or force-applying `.u-theme-light`) for a contrasting card — mark it `data-theme-invert` instead (see **Theme invert** under Variables). Define the look once per theme in `themes.css`; the card adapts automatically
 - Putting a contrasting card's `color` only on a child layer while the card's own wrapping class sets just `background` — the inner `.u-text` layers then inherit `color` from `.u-section[data-theme]` (white on a dark section) and the text goes invisible on a light card. Put `data-theme-invert` and `color: var(--text)` on the card's own wrapping class (the layer that contains all the text)
 - `paddingTop="page-top"` on any section (heroes included) — `page-top` is **only** for a _fixed_ navbar, and this project's nav is **sticky** by default, so the first section doesn't need it. Build heroes/first sections with the normal default padding; only use `page-top` if the nav has been switched to `fixed`
-- Adding `padding="large"` (or any padding override) to a section by default — `<Section>` defaults to `main`, which is correct for almost every section. Omit the prop entirely; `padding="main"` doesn't type-check (the union excludes it — see Section.props.ts). Only override to `large`/another value when a specific section genuinely needs it _and_ it's been asked for or is clearly required by a design — never as a habit
+- Adding `padding="large"` (or any padding override) to a section by default — `<Section>` defaults to `main`, which is correct for almost every section. Omit the prop entirely. Writing `padding="main"` is legal but redundant: it renders identically to omitting it, so don't add it either. Only override to `large`/another value when a specific section genuinely needs it _and_ it's been asked for or is clearly required by a design — never as a habit
 - Wrapping a `<Visual>` together with other content in a `—`'s `display: contents` makes `.u-image-wrapper` a direct grid/flex child with a definite height, so its `height: 100%` overrides the `ratio` aspect-ratio and the image balloons (worst on mobile when the column collapses to `display: flex`). Use `<Layout variant="stack">` (a real `height: auto` block) for any column that holds a `<Visual>` alongside other content; keep `` for self-sizing loose elements (Heading / Text / Button) only
 - An `<a>` whose only accessible name is `aria-label` — a logo link wrapping an SVG, or an icon-only link (social/share). Crawlers see zero anchor text. Put the label in a visually-hidden child instead: `<span class="u-sr-only">{label}</span>` (SVG siblings get `aria-hidden="true"` so the name isn't announced twice). `<button>` elements are exempt — `aria-label` is correct there
 - Making CMS content routes SSR (`prerender = false`) "so draft preview works" — draft preview lives on the `/preview/*` SSR twins; public content routes are prerendered with `getStaticPaths`. Serving content via SSR burns Worker CPU per request and caused real production `exceededCpu` 503s

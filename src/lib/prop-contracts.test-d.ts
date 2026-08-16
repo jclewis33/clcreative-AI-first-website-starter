@@ -78,14 +78,12 @@ export const layoutGood3: LayoutProps = {
   cardPadding: "4rem",
 };
 
-/* ── Section: 'main' padding is the default and therefore unwritable ──────── */
+/* ── Section: padding values are closed; 'main' stays legal on purpose ────── */
 
-// @ts-expect-error 'main' is the default — omit the prop instead of writing it
-export const sectionBad1: SectionProps = { padding: "main" };
-// @ts-expect-error same rule per side
-export const sectionBad2: SectionProps = { paddingTop: "main" };
 // @ts-expect-error invented value — the union catches typos ("deep", "big", …)
-export const sectionBad3: SectionProps = { padding: "deep" };
+export const sectionBad1: SectionProps = { padding: "deep" };
+// @ts-expect-error 'medium' is not a size in this system
+export const sectionBad2: SectionProps = { paddingTop: "medium" };
 
 export const sectionGood1: SectionProps = { padding: "large" };
 export const sectionGood2: SectionProps = {
@@ -93,6 +91,13 @@ export const sectionGood2: SectionProps = {
   paddingBottom: "none",
 };
 export const sectionGood3: SectionProps = { padding: "xsmall", theme: "dark" };
+/* 'main' is accepted deliberately: it is the default, but excluding it would
+   make RETURNING to the default a type error, forcing a prop deletion instead
+   of a value edit (and breaking any visual builder whose dropdown lists every
+   size). Redundant-but-harmless is the correct behavior — Section drops it
+   before render, so the HTML matches the omitted case exactly. The "don't
+   write the default" rule is documentation, not a type. */
+export const sectionGood4: SectionProps = { padding: "main" };
 
 /* ── Visual: sizes and densities are mutually exclusive (HTML spec) ───────── */
 

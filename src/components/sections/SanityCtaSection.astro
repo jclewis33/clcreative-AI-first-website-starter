@@ -34,9 +34,8 @@ import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import { urlFor, hotspotPosition } from "@/sanity/lib/image";
 
-/* Single source for the padding union: Section.props.ts. Full PaddingSize
-   here (not PaddingOverride) because this component's own default is NOT
-   "main", so "main" is a meaningful override for callers. */
+/* Single source for the padding union: Section.props.ts — never re-declare
+   these values locally; the copies this replaced had all drifted. */
 type PaddingValue = import("@/components/ui/Section.props").PaddingSize;
 
 interface Cta {
@@ -68,11 +67,6 @@ const {
   ...rest
 } = Astro.props;
 
-/* Section's props refuse the literal "main" (its default is expressed by
-   omission). Callers of THIS component may still write "main" — here it
-   overrides a non-main default — so translate it at the boundary. */
-const pad = (v?: PaddingValue) => (v === "main" ? undefined : v);
-
 
 // Everything is stegaClean'd. The image asset must be cleaned (draft-mode stega
 // chars break the URL builder and silently 404 the image inside Presentation),
@@ -97,9 +91,9 @@ const hasSecondary = Boolean(secondaryLabel && secondaryHref);
 ---
 
 <Section
-  padding={pad(padding)}
-  paddingTop={pad(paddingTop)}
-  paddingBottom={pad(paddingBottom)}
+  padding={padding}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
   {...rest}
 >
   <Layout variant="card">

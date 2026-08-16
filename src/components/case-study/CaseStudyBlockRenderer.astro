@@ -16,7 +16,7 @@ import RichTextLeftBlock from "./blocks/RichTextLeftBlock.astro";
 import RichTextColumnsBlock from "./blocks/RichTextColumnsBlock.astro";
 import RichTextWithImageBlock from "./blocks/RichTextWithImageBlock.astro";
 import StatsBlock from "./blocks/StatsBlock.astro";
-import type { ContentBlock, SectionSpacing } from "./types";
+import type { ContentBlock } from "./types";
 
 interface Props {
   block: ContentBlock;
@@ -28,14 +28,9 @@ const { block } = Astro.props;
 const spacing = block.sectionSpacing ?? "xsmall";
 const spacingTop = block.sectionSpacingTop ?? spacing;
 const spacingBottom = block.sectionSpacingBottom ?? spacing;
-
-/* Section's props refuse the literal "main" (its default is expressed by
-   omission). Block data may still say "main" — translate at the boundary. */
-const pad = (v: SectionSpacing | "page-top") =>
-  v === "main" ? undefined : v;
 ---
 
-<Section docs="" paddingTop={pad(spacingTop)} paddingBottom={pad(spacingBottom)}>
+<Section docs="" paddingTop={spacingTop} paddingBottom={spacingBottom}>
   {
     block.type === "fullWidthImage" && (
       <FullWidthImage

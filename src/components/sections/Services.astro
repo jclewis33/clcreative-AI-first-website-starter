@@ -29,9 +29,9 @@ import imgService4 from "@/assets/placeholder-images/placeholder-10.webp";
 import imgService6 from "@/assets/placeholder-images/placeholder-2.webp";
 import imgService5 from "@/assets/placeholder-images/placeholder-1.webp";
 
-/* Single source for the padding union: Section.props.ts. PaddingOverride
-   excludes "main" — the default is expressed by omitting the prop. */
-type PaddingValue = import("@/components/ui/Section.props").PaddingOverride;
+/* Single source for the padding union: Section.props.ts — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingSize;
 
 interface Props {
   /**

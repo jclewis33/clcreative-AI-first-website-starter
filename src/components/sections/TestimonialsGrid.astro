@@ -29,9 +29,9 @@ import TestimonialCard, {
 } from "@/components/ui/TestimonialCard.astro";
 
 type SectionTheme = "light" | "dark" | "brand";
-/* Single source for the padding union: Section.props.ts. PaddingOverride
-   excludes "main" — the default is expressed by omitting the prop. */
-type PaddingSize = import("@/components/ui/Section.props").PaddingOverride;
+/* Single source for the padding union: Section.props.ts — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingSize = import("@/components/ui/Section.props").PaddingSize;
 
 interface Props {
   /**

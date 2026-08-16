@@ -105,9 +105,9 @@ export interface BlogPost {
 
 type GridVariant = "related" | "recent" | "category" | "manual";
 type SectionTheme = "light" | "dark" | "brand";
-/* Single source for the padding union: Section.props.ts. PaddingOverride
-   excludes "main" — the default is expressed by omitting the prop. */
-type PaddingSize = import("@/components/ui/Section.props").PaddingOverride;
+/* Single source for the padding union: Section.props.ts — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingSize = import("@/components/ui/Section.props").PaddingSize;
 /** Spacing-scale step (`--space-N`) for the gap props. `0` = no gap. */
 type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
