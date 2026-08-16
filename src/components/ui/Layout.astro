@@ -12,9 +12,13 @@ import type { HTMLAttributes } from "astro/types";
  *                is no slot attribute or wrapper component to remember.
  *   `column2`  — the second column, on the two-column variants.
  *
- * A single component takes `slot="column2"` directly. For several loose
- * elements in column 2, use `<Fragment slot="column2">` — it groups them
- * without emitting a box of its own.
+ * A single component takes `slot="column2"` directly. For several elements,
+ * you can either repeat `slot="column2"` on each one — Astro collects them
+ * into that slot in source order — or group them in a single
+ * `<Fragment slot="column2">`. Both produce the SAME children inside the
+ * column (measured; Fragment emits no element of its own). Repeating the
+ * attribute is fine and often reads better; Fragment's only edge is that
+ * repeating leaves an inert `slot` attribute on each rendered element.
  *
  * The column wrappers are generated here, so there is nothing to get wrong.
  * (The old  used `display: contents`, which erased the column box and let
@@ -198,7 +202,9 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
    *
-   * **Slots:** the default slot IS column 1 — content goes straight inside `<Layout>` with no slot attribute. The second column is `slot="column2"`; a single component (Visual, Grid, Card) takes it directly, and several loose elements go in `<Fragment slot="column2">`, which groups without emitting a box. EXCEPTION: a column holding a `<Visual>` alongside other content must use `<Layout variant="stack">` — a `display: contents` wrapper lets the image's `height: 100%` override its `ratio` and balloon.
+   * **Slots:** the default slot IS column 1 — content goes straight inside `<Layout>` with no slot attribute. The second column is `slot="column2"`; a single component (Visual, Grid, Card) takes it directly, and for several elements you may either repeat `slot="column2"` on each or group them in one `<Fragment slot="column2">` — both put the same children in the column.
+   *
+   * KNOWN ISSUE: a `<Visual>` that SHARES a column with other content keeps its `ratio` while the layout is two-column, but once the layout collapses to one column the image grows past its ratio (a 16/9 visual measured 1.66 at 700px). Cause is `height: 100%` on `.u-image-wrapper` resolving against the column's full height instead of the image's own aspect-ratio box. Giving the Visual a column to itself avoids it; `variant="stack"` does NOT fix it (measured — it distorts identically).
    */
   docs?: string;
 
