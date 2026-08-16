@@ -230,17 +230,19 @@ const groupedTerms = groupTermsByLetter(sortedTerms);
                     <Text variant="small" muted clamp={2}>
                       {term.shortDefinition}
                     </Text>
-                    <div slot="footer" class="glossary_card_footer">
-                      <Text
-                        tag="span"
-                        variant="tiny"
-                        weight="medium"
-                        marginBottom={0}
-                        class="glossary_card_category"
-                      >
-                        {term.category}
-                      </Text>
-                    </div>
+                    {term.category && (
+                      <div slot="footer" class="glossary_card_footer">
+                        <Text
+                          tag="span"
+                          variant="tiny"
+                          weight="medium"
+                          marginBottom={0}
+                          class="glossary_card_category"
+                        >
+                          {term.category}
+                        </Text>
+                      </div>
+                    )}
                   </Card>
                 ))}
             </Grid>

@@ -165,9 +165,12 @@ const formattedDate = date
 
   <Text variant="small" muted clamp={2}>{description}</Text>
 
-  <div slot="footer" class="blog_card_footer">
-    {
-      categories?.map((cat: string) => (
+  {/* Decide from DATA, not from the slot: a post with no categories would
+      otherwise pass an empty footer, and .card_primary_footer charges
+      margin-top:auto + padding-top whether or not anything is in it. */}
+  {categories && categories.length > 0 && (
+    <div slot="footer" class="blog_card_footer">
+      {categories.map((cat: string) => (
         <Text
           tag="span"
           variant="tiny"
@@ -177,7 +180,7 @@ const formattedDate = date
         >
           {cat}
         </Text>
-      ))
-    }
-  </div>
+      ))}
+    </div>
+  )}
 </Card>

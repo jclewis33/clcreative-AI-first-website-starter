@@ -165,17 +165,19 @@ tocEntries.forEach(({ text, id }) => {
               <Text variant="small" muted clamp={2}>
                 {related.shortDefinition}
               </Text>
-              <div slot="footer" class="glossary_card_footer">
-                <Text
-                  tag="span"
-                  variant="tiny"
-                  weight="medium"
-                  marginBottom={0}
-                  class="glossary_card_category"
-                >
-                  {related.category}
-                </Text>
-              </div>
+              {related.category && (
+                <div slot="footer" class="glossary_card_footer">
+                  <Text
+                    tag="span"
+                    variant="tiny"
+                    weight="medium"
+                    marginBottom={0}
+                    class="glossary_card_category"
+                  >
+                    {related.category}
+                  </Text>
+                </div>
+              )}
             </Card>
           ))}
         </Grid>
