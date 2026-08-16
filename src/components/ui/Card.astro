@@ -40,7 +40,6 @@
  * ```
  */
 
-import { slotContent } from "@/lib/slots";
 import type {
   AllProps,
   BaseProps,
@@ -83,15 +82,22 @@ const linkLabel = ariaLabel ?? title ?? undefined;
 /* Does each slot RENDER anything, not merely "was it passed"? A footer holding
    `{posts.length > 0 && <Button/>}` is "passed" even when it emits nothing, and
    gating the wrapper on Astro.slots.has() then leaves an empty <div> on exactly
-   the CMS pages where the data is missing. See src/lib/slots.ts.
 
    Resolved here in the template's scope but AWAITED BELOW, inside the markup —
    awaiting a slot render in frontmatter forces children to render before Astro
    has set up the render context, and an <Image> inside then crashes the image
    service. Astro caches the render, so the later <slot /> costs nothing. */
-const visualContent = slotContent(Astro.slots, "visual");
-const titleContent = slotContent(Astro.slots, "title");
-const footerContent = slotContent(Astro.slots, "footer");
+/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
+   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
+   swallows the hoisted `<script>` of every component inside it — page-wide,
+   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
+   left BOTH sliders on the page uninitialized, the unrelated one included.
+   `.has()` only reports whether a slot was passed, which is weaker (a slot
+   holding an empty `{items.map(…)}` still counts as present), and that is the
+   trade we want: a rare empty wrapper beats silently dead client JS. */
+const hasVisualSlot = Astro.slots.has("visual");
+const hasTitleSlot = Astro.slots.has("title");
+const hasFooterSlot = Astro.slots.has("footer");
 const showVisual = variant !== "stacked";
 
 /* ── Interaction model ────────────────────────────────────────────────────
@@ -149,7 +155,7 @@ if (
           data-theme-invert={theme === "invert" ? "" : undefined}
         >
           {/* Visual / image slot */}
-          {showVisual && ((await visualContent) || variant === "default") && (
+          {showVisual && (hasVisualSlot || variant === "default") && (
             <div class="card_primary_visual">
               <slot name="visual" />
             </div>
@@ -158,11 +164,11 @@ if (
           {/* Content */}
           <div class="card_primary_content u-margin-trim">
             {/* Title */}
-            {((await titleContent) || title) && (
+            {(hasTitleSlot || title) && (
               <div
                 class:list={[
                   "card_primary_title",
-                  !(await titleContent) && "u-text-style-h5",
+                  !hasTitleSlot && "u-text-style-h5",
                 ]}
               >
                 {isSurfaceLink ? (
@@ -171,11 +177,11 @@ if (
                     class="card_primary_link"
                     target={linkTarget}
                     rel={linkRel}
-                    aria-label={(await titleContent) ? linkLabel : undefined}
+                    aria-label={hasTitleSlot ? linkLabel : undefined}
                   >
-                    {(await titleContent) ? <slot name="title" /> : title}
+                    {hasTitleSlot ? <slot name="title" /> : title}
                   </a>
-                ) : (await titleContent) ? (
+                ) : hasTitleSlot ? (
                   <slot name="title" />
                 ) : (
                   title
@@ -192,7 +198,7 @@ if (
             </div>
 
             {/* Footer */}
-            {(await footerContent) && (
+            {hasFooterSlot && (
               <div class="card_primary_footer" inert={footerIsAffordance}>
                 {/* inert when the card itself is the link: the button is there to
                       say "this goes somewhere", so it must not be a second tab stop

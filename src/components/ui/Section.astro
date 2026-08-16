@@ -1,5 +1,4 @@
 ---
-import { slotContent } from "@/lib/slots";
 import type { PaddingSize, Props } from "@/components/ui/Section.props";
 /**
  * Section — full-width page section with theming, fluid padding,
@@ -19,8 +18,10 @@ import type { PaddingSize, Props } from "@/components/ui/Section.props";
  * `'page-top'` is ONLY for a *fixed* navbar; this project's nav is sticky, so
  * the first section does not need extra top padding to clear it.
  *
- * A section whose slots render nothing renders nothing itself — an empty CMS
- * map or a comment-only slot leaves no empty `<section>` shell behind.
+ * To skip a section entirely, pass `render={false}` (e.g.
+ * `render={posts.length > 0}`). Gating on *rendered slot content* is not
+ * available: it breaks client scripts inside the slot — see the note in the
+ * template below.
  *
  * The container (`.u-container`) is a flex column with a built-in `gap`
  * (default `--space-8`). Direct children are spaced apart automatically —
@@ -93,16 +94,22 @@ const resolvedTheme = theme === "inherit" ? undefined : theme;
 ---
 
 {
-  /* Self-erasure: gate on what the slots actually RENDER, not on whether they
-     were passed (`Astro.slots.has` counts an empty `{items.map(…)}` as
-     content — see src/lib/slots.ts). A section whose slots all render nothing
-     emits nothing; the container div only renders when the default slot has
-     content. slotContent must be called here in the template, never in
-     frontmatter (image-service init order), and Astro caches the slot render,
-     so the checks below don't render children twice. */
-  render &&
-    ((await slotContent(Astro.slots)) ||
-      (await slotContent(Astro.slots, "background"))) && (
+  /* Gated on the `render` prop only — deliberately NOT on rendered slot
+     content.
+
+     Slot-content gating was implemented here (Lumos' self-erasure) and had to
+     be removed: calling `Astro.slots.render()` on the DEFAULT slot silently
+     drops the hoisted `<script>` of every component inside it. Measured on
+     /components — Swiper never initialized (`el.swiper` undefined, no
+     `swiper-initialized` class, and no console output at all because the
+     component script never ran); bypassing the gate brought it straight back.
+     A Section's default slot holds the entire page, so this took out every
+     interactive component on the site: sliders, tabs, accordions, modals.
+
+     `render` covers the real use case without touching slots: a caller writes
+     `render={posts.length > 0}` and nothing is emitted. Do not reintroduce
+     slot-content gating here without re-testing client scripts. */
+  render && (
       <section
         class:list={[
           "u-section",
@@ -115,13 +122,13 @@ const resolvedTheme = theme === "inherit" ? undefined : theme;
         id={id}
         {...rest}
       >
-        {(await slotContent(Astro.slots, "background")) && (
+        {Astro.slots.has("background") && (
           <div class="u-background-slot">
             <slot name="background" />
           </div>
         )}
 
-        {(await slotContent(Astro.slots)) && (
+        {(
           <div
             class:list={["u-container", containerClass]}
             style={

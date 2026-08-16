@@ -1,5 +1,4 @@
 ---
-import { slotContent } from "@/lib/slots";
 /**
  * Layout — the one component that arranges a section's content.
  *
@@ -149,7 +148,15 @@ const effectiveAlign =
    measure to centre. */
 const needsContentWrapper = effectiveAlign !== "inherit" || Boolean(maxWidth);
 
-const column2Content = slotContent(Astro.slots, "column2");
+/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
+   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
+   swallows the hoisted `<script>` of every component inside it — page-wide,
+   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
+   left BOTH sliders on the page uninitialized, the unrelated one included.
+   `.has()` only reports whether a slot was passed, which is weaker (a slot
+   holding an empty `{items.map(…)}` still counts as present), and that is the
+   trade we want: a rare empty wrapper beats silently dead client JS. */
+const hasColumn2Slot = Astro.slots.has("column2");
 
 const isBreakout = [
   "breakout",
@@ -244,7 +251,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
 
         {/* Only emitted when it renders something — a column2 holding an empty
             expression would otherwise leave a stray grid cell. */}
-        {(await column2Content) && (
+        {hasColumn2Slot && (
           <div class="u-layout-column-2">
             <slot name="column2" />
           </div>

@@ -31,7 +31,6 @@
  */
 
 import Section from "@/components/ui/Section.astro";
-import { slotContent } from "@/lib/slots";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
@@ -211,10 +210,15 @@ if (studies && studies.length >= 3) {
 
 /* ── Heading slot ─────────────────────────────────────────────────────── */
 
-/* Renders anything, vs merely "was passed" — a heading slot holding an
-   empty expression would otherwise emit an empty wrapper. Awaited in the
-   template below, never in frontmatter (see src/lib/slots.ts). */
-const headingContent = slotContent(Astro.slots, "heading");
+/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
+   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
+   swallows the hoisted `<script>` of every component inside it — page-wide,
+   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
+   left BOTH sliders on the page uninitialized, the unrelated one included.
+   `.has()` only reports whether a slot was passed, which is weaker (a slot
+   holding an empty `{items.map(…)}` still counts as present), and that is the
+   trade we want: a rare empty wrapper beats silently dead client JS. */
+const hasHeadingSlot = Astro.slots.has("heading");
 ---
 
 {
@@ -234,7 +238,7 @@ const headingContent = slotContent(Astro.slots, "heading");
           data-fade-in
           class="case-study-featured_heading"
         >
-          {(await headingContent) ? (
+          {hasHeadingSlot ? (
             <slot name="heading" />
           ) : (
             <>

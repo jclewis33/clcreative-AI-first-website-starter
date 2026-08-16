@@ -40,7 +40,6 @@ export type GridColumnSpan = 1 | 2 | 3 | 4;
  *
  * **Slots:** `visual` (image/media), `title` (custom heading), default (body), `footer`.
  */
-import { slotContent } from "@/lib/slots";
 
 export interface BaseProps {
   /**
