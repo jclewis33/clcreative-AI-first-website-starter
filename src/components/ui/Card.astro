@@ -42,13 +42,19 @@ import type { HTMLAttributes } from "astro/types";
  */
 
 /* ── Props contract ──────────────────────────────────────────────────────────
-   Keep the JSDoc below free of brace-wrapped JSX-like expressions. A comment
-   carrying two of them (e.g. `render={posts.length > 0}` alongside
-   `{posts.length > 0 && ( … )}`) silently switched OFF union call-site
-   checking in astro-language-tools — order-dependently, with no diagnostic,
-   while plain-prop errors kept working. Plain `tsc` was never fooled, which is
-   why src/lib/prop-contracts.test-d.ts pins these rules: it imports the types
-   from this file and a regression fails `astro check` outright.
+   Keep the JSDoc below free of STRAY angle brackets. Write comparisons in
+   words ("posts.length is greater than 0"), never with the literal character.
+   A stray less-than or greater-than in a frontmatter comment silently detaches
+   this file's Props type AT THE CALL SITE: every prop loses its hover tooltip
+   and invalid props stop erroring, with no diagnostic anywhere. Balanced
+   tag-like pairs inside @example blocks are safe — it is the odd one out that
+   breaks it, and the exact trigger interacts with the rest of the file, so do
+   not reason about it — measure it.
+   scripts/hover-probe.mjs drives the real language server and fails if any
+   component's `docs` tooltip goes missing; run `npm run check:hover`.
+   Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
+   pins the type rules: it imports the types from this file and a regression
+   fails `astro check` outright.
    ─────────────────────────────────────────────────────────────────────────── */
 type CardVariant =
   /** Standard card — visual on top, content below */
@@ -102,7 +108,7 @@ interface BaseProps {
    * Set to `false` to skip rendering this component and its children.
    *
    * Lets a caller express "only if there is something to show" as data rather
-   * than markup — e.g. `render` set to `posts.length > 0` — instead of
+   * than markup — e.g. `render` set to whether the list has any items — instead of
    * wrapping the element in a conditional block. Nothing is emitted when
    * false, so no
    * empty wrapper is left behind.
@@ -283,7 +289,7 @@ const linkLabel = ariaLabel ?? title ?? undefined;
 
 /* Check which slots are used */
 /* Does each slot RENDER anything, not merely "was it passed"? A footer holding
-   `{posts.length > 0 && <Button/>}` is "passed" even when it emits nothing, and
+   a Button rendered only when there are posts is "passed" even when it emits
    gating the wrapper on Astro.slots.has() then leaves an empty <div> on exactly
 
    Resolved here in the template's scope but AWAITED BELOW, inside the markup —

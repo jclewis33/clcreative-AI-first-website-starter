@@ -93,13 +93,19 @@ import type { HTMLAttributes } from "astro/types";
  */
 
 /* ── Props contract ──────────────────────────────────────────────────────────
-   Keep the JSDoc below free of brace-wrapped JSX-like expressions. A comment
-   carrying two of them (e.g. `render={posts.length > 0}` alongside
-   `{posts.length > 0 && ( … )}`) silently switched OFF union call-site
-   checking in astro-language-tools — order-dependently, with no diagnostic,
-   while plain-prop errors kept working. Plain `tsc` was never fooled, which is
-   why src/lib/prop-contracts.test-d.ts pins these rules: it imports the types
-   from this file and a regression fails `astro check` outright.
+   Keep the JSDoc below free of STRAY angle brackets. Write comparisons in
+   words ("posts.length is greater than 0"), never with the literal character.
+   A stray less-than or greater-than in a frontmatter comment silently detaches
+   this file's Props type AT THE CALL SITE: every prop loses its hover tooltip
+   and invalid props stop erroring, with no diagnostic anywhere. Balanced
+   tag-like pairs inside @example blocks are safe — it is the odd one out that
+   breaks it, and the exact trigger interacts with the rest of the file, so do
+   not reason about it — measure it.
+   scripts/hover-probe.mjs drives the real language server and fails if any
+   component's `docs` tooltip goes missing; run `npm run check:hover`.
+   Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
+   pins the type rules: it imports the types from this file and a regression
+   fails `astro check` outright.
    ─────────────────────────────────────────────────────────────────────────── */
 type LayoutVariant =
   /** Equal 50/50 columns */
@@ -141,6 +147,12 @@ type VerticalAlign =
 
 /** Spacing-scale step (`--space-N`) for the gap props. `0` = no gap. */
 type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+/* Named on purpose — an inline union or `Alias | string` on a prop of this
+   component loses its editor tooltip; the same type behind a named alias keeps
+   it. Guarded by scripts/check-hover.mjs. */
+type GapValue = GapScale | string;
+type LayoutAlign = "inherit" | "center" | "left" | "right" | "center-mobile";
 
 type CollapseBreakpoint =
   /** Collapse to single column at 928px / 58em container width (default) */
@@ -194,7 +206,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * Set to `false` to skip rendering this component and its children.
    *
    * Lets a caller express "only if there is something to show" as data rather
-   * than markup — e.g. `render` set to `posts.length > 0` — instead of
+   * than markup — e.g. `render` set to whether the list has any items — instead of
    * wrapping the element in a conditional block. Nothing is emitted when
    * false, so no
    * empty wrapper is left behind.
@@ -232,7 +244,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * `stack-centered` already centers, so this is for the other variants.
    * @default 'inherit'
    */
-  align?: "inherit" | "center" | "left" | "right" | "center-mobile";
+  align?: LayoutAlign;
 
   /**
    * Optional measure on column 1 — a max-width for readable line length.
@@ -315,7 +327,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * @example columnGap="0px"
    * @example columnGap="3rem"
    */
-  columnGap?: GapScale | string;
+  columnGap?: GapValue;
 
   /**
    * Vertical gap between rows when the layout stacks (collapsed) or
@@ -346,7 +358,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * @example rowGap="0px"
    * @example rowGap="2rem"
    */
-  rowGap?: GapScale | string;
+  rowGap?: GapValue;
 
   /**
    * Extra utility classes on the outer `.u-layout-wrapper` element.

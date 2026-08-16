@@ -50,13 +50,19 @@ import type { ImageMetadata } from "astro";
 /* ── Ratio presets ── */
 
 /* ── Props contract ──────────────────────────────────────────────────────────
-   Keep the JSDoc below free of brace-wrapped JSX-like expressions. A comment
-   carrying two of them (e.g. `render={posts.length > 0}` alongside
-   `{posts.length > 0 && ( … )}`) silently switched OFF union call-site
-   checking in astro-language-tools — order-dependently, with no diagnostic,
-   while plain-prop errors kept working. Plain `tsc` was never fooled, which is
-   why src/lib/prop-contracts.test-d.ts pins these rules: it imports the types
-   from this file and a regression fails `astro check` outright.
+   Keep the JSDoc below free of STRAY angle brackets. Write comparisons in
+   words ("posts.length is greater than 0"), never with the literal character.
+   A stray less-than or greater-than in a frontmatter comment silently detaches
+   this file's Props type AT THE CALL SITE: every prop loses its hover tooltip
+   and invalid props stop erroring, with no diagnostic anywhere. Balanced
+   tag-like pairs inside @example blocks are safe — it is the odd one out that
+   breaks it, and the exact trigger interacts with the rest of the file, so do
+   not reason about it — measure it.
+   scripts/hover-probe.mjs drives the real language server and fails if any
+   component's `docs` tooltip goes missing; run `npm run check:hover`.
+   Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
+   pins the type rules: it imports the types from this file and a regression
+   fails `astro check` outright.
    ─────────────────────────────────────────────────────────────────────────── */
 type PositionPreset =
   /** 50 / 50 — centered (default) */
@@ -110,6 +116,19 @@ type RadiusSize =
   /** Large section-level rounding */
   | "section";
 
+/* Prop types are given NAMES on purpose. In a component whose props are
+   `BaseProps extends HTMLAttributes` intersected with a union, a prop written
+   as an inline union or as `Alias | string` loses its editor tooltip, while
+   the identical type behind a named alias keeps it. Guarded by
+   scripts/check-hover.mjs. */
+type ImageSource = ImageMetadata | string;
+type Ratio = RatioPreset | string;
+type VisualVariant = "default" | "background";
+type Position = PositionPreset | FocalPoint;
+type ObjectFit = "cover" | "contain" | "fill" | "none" | "scale-down";
+type LoadingMode = "lazy" | "eager";
+type Quality = "low" | "mid" | "high" | "max" | number;
+
 /* ── Component props ── */
 
 /**
@@ -154,7 +173,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * Set to `false` to skip rendering this component and its children.
    *
    * Lets a caller express "only if there is something to show" as data rather
-   * than markup — e.g. `render` set to `posts.length > 0` — instead of
+   * than markup — e.g. `render` set to whether the list has any items — instead of
    * wrapping the element in a conditional block. Nothing is emitted when
    * false, so no
    * empty wrapper is left behind.
@@ -168,7 +187,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * @example src={myImage}
    * @example src="https://example.com/photo.jpg"
    */
-  src: ImageMetadata | string;
+  src: ImageSource;
 
   /**
    * Alt text — required for accessibility.
@@ -188,7 +207,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * @example ratio="wide"
    * @example ratio="4/3"
    */
-  ratio?: RatioPreset | string;
+  ratio?: Ratio;
 
   /**
    * Border-radius applied to the image wrapper.
@@ -210,7 +229,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * @default 'default'
    * @example variant="background"
    */
-  variant?: "default" | "background";
+  variant?: VisualVariant;
 
   /**
    * Focal point / object-position.
@@ -232,7 +251,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * @example position="top"
    * @example position={{ x: 30, y: 20 }}
    */
-  position?: PositionPreset | FocalPoint;
+  position?: Position;
 
   /**
    * Object-fit behavior. Overrides the default `cover`.
@@ -240,7 +259,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * @default 'cover'
    * @example fit="contain"
    */
-  fit?: "cover" | "contain" | "fill" | "none" | "scale-down";
+  fit?: ObjectFit;
 
   /**
    * Loading behavior.
@@ -250,7 +269,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * where the image sits inside a chain of absolute-positioned containers.
    * @default 'lazy' (or 'eager' when variant="background")
    */
-  loading?: "lazy" | "eager";
+  loading?: LoadingMode;
 
   /**
    * Priority image — sets `loading="eager"` and `fetchpriority="high"`.
@@ -291,7 +310,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    *
    * @example quality="high"
    */
-  quality?: "low" | "mid" | "high" | "max" | number;
+  quality?: Quality;
 
   transparent?: boolean;
 

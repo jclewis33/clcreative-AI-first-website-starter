@@ -17,7 +17,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "postinstall": "rm -rf node_modules/.vite",
-    "css-data": "node scripts/generate-css-custom-data.mjs"
+    "css-data": "node scripts/generate-css-custom-data.mjs",
+    "check:hover": "node scripts/check-hover.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.7.0",
