@@ -168,6 +168,14 @@ const subtitle = [role, company].filter(Boolean).join(", ");
    sections. `data-theme-contrast` in the markup gives it a WHOLE theme (see
    themes.css), so the quote, author, stars, borders and any link inside all
    resolve against the card instead of the section behind it. */
+    /* The gap owns the rhythm here, so the children must not also carry their
+       own margins — the quote is a <Text>, whose 24px margin-bottom stacked on
+       the 24px gap and set every row 48px apart. Same rule as the containers
+       in utilities.css: one spacing mechanism per box, never two. */
+    .testimonial_card > * {
+      margin-block: 0;
+    }
+
     .testimonial_card {
       display: flex;
       flex-direction: column;
