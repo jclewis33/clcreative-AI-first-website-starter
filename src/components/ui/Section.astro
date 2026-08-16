@@ -18,10 +18,10 @@ import type { PaddingSize, Props } from "@/components/ui/Section.props";
  * `'page-top'` is ONLY for a *fixed* navbar; this project's nav is sticky, so
  * the first section does not need extra top padding to clear it.
  *
- * A section whose content renders nothing collapses to nothing — handled in
- * CSS via `:empty` (see SELF-ERASURE in the style block), so it costs no slot
- * render and cannot break client scripts. To drop the markup entirely rather
- * than just collapse it, decide from data: `render={posts.length > 0}`.
+ * A section whose slots render nothing emits nothing at all — no `<section>`,
+ * no container, no padding. An empty `{items.map(…)}` therefore leaves no
+ * shell behind. `render={false}` (e.g. `render={posts.length > 0}`) skips it
+ * from data instead, without touching slots.
  *
  * The container (`.u-container`) is a flex column with a built-in `gap`
  * (default `--space-8`). Direct children are spaced apart automatically —
@@ -91,18 +91,41 @@ const containerClass = {
    the parent context. Map it (and undefined) to undefined so Astro omits
    the attribute entirely. */
 const resolvedTheme = theme === "inherit" ? undefined : theme;
+
+/* Capture each slot's rendered HTML exactly ONCE and emit that string, rather
+   than rendering to test emptiness and then rendering again through <slot />.
+
+   That second pattern (Lumos' — see utils/slots.ts there) is what breaks
+   client JS: Astro emits a component's hoisted <script> tag as part of its
+   rendered output, so the tag lands in the captured string; discarding the
+   string throws the tag away, and the <slot /> re-render does not re-emit it.
+   Verified by A/B on identical pages — the ONLY difference in emitted markup
+   was the missing `Slider.astro?astro&type=script` tag.
+
+   Emitting the captured string keeps the tag, renders children exactly once,
+   and still lets an empty section erase itself completely. These are promises
+   resolved in the template: awaiting slot renders in FRONTMATTER runs children
+   before the image service initializes and crashes with
+   "Cannot read properties of undefined (reading 'validateOptions')". */
+const slotHtml = async (name?: string) => {
+  if (!Astro.slots.has(name ?? "default")) return "";
+  const html = await Astro.slots.render(name ?? "default");
+  return html.replace(/<!--[\s\S]*?-->/g, "").trim();
+};
+const content = await slotHtml();
+const background = await slotHtml("background");
 ---
 
 {
-  /* Gated on the `render` prop only. NEVER gate this on rendered slot content
-     (`Astro.slots.render()` / a slotContent helper): doing so silently drops
-     the hoisted <script> of every component inside the slot, page-wide, and a
-     Section's default slot holds the whole page — it took out every slider,
-     tab, accordion and modal on the site, with nothing in the console.
-     Reproduced in Lumos' own repo on Astro 7 too, so it is not version-
-     specific. The empty case is handled in CSS instead — see SELF-ERASURE in
-     the style block. */
-  render && (
+  /* Self-erasure: a section with nothing to show emits nothing at all — no
+     <section>, no container, no padding. `render={false}` skips it from data
+     without touching slots.
+
+     The captured strings above are emitted with set:html instead of <slot />.
+     That distinction is load-bearing, not stylistic — see the note on
+     slotHtml. Rendering to test emptiness and then rendering AGAIN through
+     <slot /> is what silently kills client JS. */
+  render && (content || background) && (
       <section
         class:list={[
           "u-section",
@@ -115,22 +138,19 @@ const resolvedTheme = theme === "inherit" ? undefined : theme;
         id={id}
         {...rest}
       >
-        {Astro.slots.has("background") && (
-          <div class="u-background-slot">
-            <slot name="background" />
-          </div>
-        )}
+        {background && <div class="u-background-slot" set:html={background} />}
 
-        <div
-          class:list={["u-container", containerClass]}
-          style={
-            gap !== undefined
-              ? `gap: ${gap === 0 ? "0px" : `var(--space-${gap})`}`
-              : undefined
-          }
-        >
-          <slot />
-        </div>
+        {content && (
+          <div
+            class:list={["u-container", containerClass]}
+            style={
+              gap !== undefined
+                ? `gap: ${gap === 0 ? "0px" : `var(--space-${gap})`}`
+                : undefined
+            }
+            set:html={content}
+          />
+        )}
       </section>
     )
 }
@@ -247,35 +267,6 @@ const resolvedTheme = theme === "inherit" ? undefined : theme;
     }
     :where(.u-section[data-padding-bottom="page-top"]) {
       padding-bottom: var(--section-space-page-top);
-    }
-
-    /* ==========================================================================
-   SELF-ERASURE — a section that renders nothing takes up nothing
-   ==========================================================================
-   The empty case is detected in CSS, not by rendering the slot in JS.
-
-   The obvious approach — render the slot, check whether the string is blank,
-   and skip the <section> — is what Lumos does (Section.astro, via
-   utils/slots.ts) and it is a trap: `Astro.slots.render()` makes Astro drop
-   the hoisted <script> of every component inside that slot, page-wide and
-   with no error. Verified in Lumos' own repo on Astro 7 as well as here on
-   Astro 6, so it is not a version bug and not something to wait out.
-
-   `:empty` gets the same result for free. When a slot renders nothing Astro
-   emits `<div class="u-container"></div>` with NO whitespace between the
-   tags, so `:empty` matches exactly the empty case — and a section holding a
-   bare text node keeps its text node, so it is correctly left alone. The
-   markup still ships (a couple of dozen bytes); what disappears is the box,
-   its padding, and its slot in the flow, which is the thing that actually
-   shows up on the page.
-
-   To drop a section from the HTML entirely, decide from DATA at the call
-   site: `<Section render={posts.length > 0}>`. That needs no slot render, so
-   it is always safe. */
-    .u-section:has(> .u-container:empty):not(
-        :has(> .u-background-slot > *)
-      ) {
-      display: none;
     }
 
     /* Container — ensure content sits above the background slot */
