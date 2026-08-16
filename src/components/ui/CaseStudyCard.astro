@@ -249,7 +249,7 @@ const resolvedAriaLabel = isComingSoon
   />
 
   <div slot="title" class="case-study_card_title_row">
-    <Heading tag="h3" variant={headingVariant} marginBottom={0} maxWidth="100%">
+    <Heading tag="h3" variant={headingVariant} maxWidth="100%">
       <span class="case-study_card_title_clamp u-line-clamp-2">{title}</span>
     </Heading>
     <span class="case-study_card_arrow" aria-hidden="true">
@@ -300,6 +300,14 @@ const resolvedAriaLabel = isComingSoon
     .case-study_card_wrap .card_primary_element {
       border: none;
       background: transparent;
+      /* This card has no surface of its own, so the base element's
+         `border-radius: inherit` shapes nothing — but the `overflow: clip` it
+         pairs with was still cropping content at the rounded corners, and this
+         variant removes the content's horizontal padding so the copy sits flush
+         to the edge. The result was a visible bite out of the lower-left of the
+         description. The visual keeps its own radius. */
+      border-radius: 0;
+      overflow: visible;
     }
 
     /* Remove default content padding — image stands alone, text sits below */

@@ -484,6 +484,14 @@ if (
     .card_primary_link {
       color: inherit;
       text-decoration: none;
+      /* The title slot can hold a block (a Heading, or a wrapper around one).
+         Left inline, this anchor forms no block box, so a heading's
+         margin-bottom inside it contributed nothing and the title sat flush
+         against the body copy — visible on BlogCard and CaseStudyCard, whose
+         titles are wrapped for line-clamping. `display: block` lets the card's
+         text rhythm work the same whether the title is wrapped or bare. The
+         stretched-link ::after is absolutely positioned, so it is unaffected. */
+      display: block;
     }
 
     .card_primary_link::after {

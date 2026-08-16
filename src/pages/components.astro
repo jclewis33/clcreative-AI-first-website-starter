@@ -155,9 +155,6 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       <Heading tag="h3" variant="h2" balance>
         Equal columns, side by side
       </Heading>
-      <Heading tag="h3" variant="h2" balance>
-        Equal columns, side by side
-      </Heading>
       <Text muted>
         Use variant="columns" for a balanced split. Great for feature sections
         where text and visuals share equal weight.
@@ -224,14 +221,13 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         <Button href="#" ariaLabel="Explore">Explore</Button>
       </div>
 
-      <Visual
-        src={phS1}
-        ratio="16/9"
-        alt="layout image"
-        slot="column2"
-        width={1200}
-        height={900}
-      />
+      {/* phL* are 1672x941 (16:9); phS* are 1254x1254 squares. This demo asks
+          for ratio="16/9", so it needs a landscape source. It previously used
+          the square phS1 AND forced width/height to 1200x900 (4:3) — three
+          different aspect ratios fighting, which letterboxed the image.
+          `width`/`height` are only for remote URLs; a local import already
+          carries its dimensions. */}
+      <Visual src={phL3} ratio="16/9" alt="Placeholder image" slot="column2" />
     </Layout>
 
     <!-- ── contain (card layout) ── -->
