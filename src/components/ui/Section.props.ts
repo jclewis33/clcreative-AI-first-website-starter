@@ -84,7 +84,8 @@ export type ContainerSize =
  * - `class` — extra classes on `<section>`
  *
  * **Slots:** `background` (absolute overlay for images/videos), default (content inside container).
- * A section whose slots render nothing renders nothing itself — no empty shell.
+ * A section whose content renders nothing collapses to nothing (CSS `:empty` —
+ * the markup ships but the box, padding and flow position do not).
  */
 export interface Props extends HTMLAttributes<"section"> {
   /**
@@ -124,8 +125,9 @@ export interface Props extends HTMLAttributes<"section"> {
    * wrapping the element in a conditional block. Nothing is emitted when
    * false, so no empty wrapper is left behind.
    *
-   * Independently of this prop, a section whose slots render nothing (empty
-   * map over CMS data, comment-only slot) also renders nothing.
+   * This is the only way to remove the markup itself. A section whose content
+   * merely renders empty still emits its tags — it just collapses to zero
+   * size via CSS `:empty`. Use `render` when you know the count up front.
    *
    * @default true
    */
