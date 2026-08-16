@@ -18,7 +18,7 @@ export interface ImageEntry {
  * contract (single source) minus 'page-top', which is nav plumbing, not
  * block spacing. */
 export type SectionSpacing = Exclude<
-  import("@/components/ui/Section.props").PaddingSize,
+  import("@/components/ui/Section.astro").PaddingSize,
   "page-top"
 >;
 

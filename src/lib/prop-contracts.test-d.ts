@@ -7,18 +7,22 @@
  * fails — deterministically, through plain TypeScript.
  *
  * Why this file exists: astro-language-tools' JSX call-site checking proved
- * unreliable for these unions (an innocuous frontmatter JSDoc comment silently
- * disabled it, order-dependently). The contracts therefore live in .props.ts
- * modules and are pinned here, where nothing but `tsc` semantics applies.
+ * unreliable for these unions — an innocuous frontmatter JSDoc comment carrying
+ * two brace-wrapped JSX-like expressions silently disabled it, order-
+ * dependently and with no diagnostic. Plain `tsc` was never fooled, so pinning
+ * the rules here restores deterministic enforcement: the types are imported
+ * straight from each component's frontmatter, and a regression turns into a
+ * hard `astro check` failure instead of silently vanishing enforcement.
+ * (Verified by drill: weakening a union makes a directive "unused" and fails.)
  *
  * This file is types-only: everything is erased at build time and nothing is
  * imported at runtime.
  */
-import type { Props as ButtonProps } from "@/components/ui/Button.props";
-import type { Props as CardProps } from "@/components/ui/Card.props";
-import type { Props as LayoutProps } from "@/components/ui/Layout.props";
-import type { Props as SectionProps } from "@/components/ui/Section.props";
-import type { Props as VisualProps } from "@/components/ui/Visual.props";
+import type { Props as ButtonProps } from "@/components/ui/Button.astro";
+import type { Props as CardProps } from "@/components/ui/Card.astro";
+import type { Props as LayoutProps } from "@/components/ui/Layout.astro";
+import type { Props as SectionProps } from "@/components/ui/Section.astro";
+import type { Props as VisualProps } from "@/components/ui/Visual.astro";
 
 type ImageMetadata = import("astro").ImageMetadata;
 declare const img: ImageMetadata;

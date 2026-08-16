@@ -33,9 +33,9 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Section vertical padding. @default 'small' */
   /* Single source for the padding union: Section.props.ts. */
-  padding?: import("@/components/ui/Section.props").PaddingSize;
-  paddingTop?: import("@/components/ui/Section.props").PaddingSize;
-  paddingBottom?: import("@/components/ui/Section.props").PaddingSize;
+  padding?: import("@/components/ui/Section.astro").PaddingSize;
+  paddingTop?: import("@/components/ui/Section.astro").PaddingSize;
+  paddingBottom?: import("@/components/ui/Section.astro").PaddingSize;
 
   /** Extra classes on the section. */
   class?: string;

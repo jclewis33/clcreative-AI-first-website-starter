@@ -28,7 +28,7 @@ import whyImage from "@/assets/placeholder-images/placeholder-11.webp";
 
 /* Single source for the padding union: Section.props.ts — never re-declare
    these values locally; the copies this replaced had all drifted. */
-type PaddingValue = import("@/components/ui/Section.props").PaddingSize;
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
 interface Props extends HTMLAttributes<"section"> {
   /**
