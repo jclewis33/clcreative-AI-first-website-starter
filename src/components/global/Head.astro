@@ -1,6 +1,7 @@
 ---
 // src/components/Head.astro
 import { Font } from "astro:assets";
+import { isNoindexRoute } from "@/config/seo.shared.mjs";
 import { SITE } from"@/config/site";
 
 // Destructure props with default values.
@@ -19,6 +20,8 @@ const {
 // Pages can still pass an explicit `canonical` prop to override.
 const resolvedCanonical =
   canonical || new URL(Astro.url.pathname, Astro.site).toString();
+
+const noindex = isNoindexRoute(Astro.url.pathname);
 
 // OG/Twitter fallback chain: explicit OG → meta title/description
 const resolvedOgTitle = ogTitle || title;
@@ -70,6 +73,12 @@ const resolvedTwitterImage = resolvedOgImage;
 <link rel="sitemap" href="/sitemap-index.xml" />
 
 <!-- Canonical URL: auto-derived from Astro.url + Astro.site, overridable via prop -->
+{/* Kept out of search results — same predicate the sitemap filter and
+    robots.txt read (src/config/seo.shared.mjs). A robots.txt Disallow stops
+    crawling but NOT indexing of a URL discovered elsewhere; this closes that
+    gap. */}
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
 <link rel="canonical" href={resolvedCanonical} />
 
 <!-- Page Title and Meta Description for SEO -->

@@ -13,6 +13,7 @@ import {
   SANITY_API_VERSION,
   SITE_URL,
 } from "./src/config/site.shared.mjs";
+import { DEV_ONLY_PATHS, isNoindexRoute } from "./src/config/seo.shared.mjs";
 
 const env = loadEnv(process.env.NODE_ENV ?? "", process.cwd(), "");
 // Fallbacks come from the shared leaf module (src/config/site.shared.mjs) —
@@ -39,28 +40,9 @@ const PUBLIC_SANITY_DATASET = env.PUBLIC_SANITY_DATASET || SANITY_DATASET;
  * appear in the sitemap. The `excludeDevOnlyPages` integration deletes the
  * built directories from `dist/client` after build completes.
  */
-const DEV_ONLY_PATHS = ["/style-guide", "/components"];
 
-/**
- * Sitemap exclusions — TWO lists with TWO different matching modes, both
- * mirrored in public/robots.txt (keep them in sync). A single loose
- * `page.includes(path)` check gets this wrong in both directions: it silently
- * drops real content whose slug contains an excluded word (e.g. a blog post
- * at /blog/components-in-... matching the "/components" exclusion), and
- * naively "fixing" it with exact matching pushes variant pages like
- * /thank-you-call INTO the sitemap while robots.txt still disallows them.
- *
- * SITEMAP_EXCLUDE_PATHS — whole path segments: excludes `/x` and `/x/...`
- * but never `/blog/x-something`. `/preview` is the editor-only SSR draft
- * tree (SSR routes never appear in the sitemap anyway — this is belt and
- * braces should any part of it ever prerender).
- *
- * SITEMAP_EXCLUDE_PREFIXES — literal prefixes, mirroring how robots.txt
- * Disallow works: one `/thank-you` entry covers /thank-you, /thank-you-call,
- * /thank-you-worksheet, etc.
- */
-const SITEMAP_EXCLUDE_PATHS = [...DEV_ONLY_PATHS, "/preview"];
-const SITEMAP_EXCLUDE_PREFIXES = ["/thank-you"];
+/* Sitemap exclusions live in src/config/seo.shared.mjs, alongside the
+   robots.txt route and the noindex meta tag that must agree with them. */
 
 function excludeDevOnlyPages() {
   return {
@@ -123,15 +105,7 @@ export default defineConfig({
   integrations: [
     excludeDevOnlyPages(),
     sitemap({
-      filter: (page) => {
-        const { pathname } = new URL(page);
-        if (SITEMAP_EXCLUDE_PREFIXES.some((p) => pathname.startsWith(p))) {
-          return false;
-        }
-        return !SITEMAP_EXCLUDE_PATHS.some(
-          (p) => pathname === p || pathname.startsWith(`${p}/`),
-        );
-      },
+      filter: (page) => !isNoindexRoute(new URL(page).pathname),
     }),
     // React must be registered BEFORE Sanity — the visual-editing islands
     // (SanityVisualEditing / DisableDraftMode) are React components that need

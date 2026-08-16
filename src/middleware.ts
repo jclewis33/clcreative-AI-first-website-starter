@@ -1,4 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
+import { isNoindexRoute } from "@/config/seo.shared.mjs";
 import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
 
 // Security headers for every SSR response. Static assets bypass the worker
@@ -36,6 +37,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const isDraftMode = context.cookies.has(perspectiveCookieName);
   const isPreviewRoute = context.url.pathname.startsWith("/preview");
+  /* Same list the sitemap, robots.txt and the noindex meta read. */
+  const isNoindex = isNoindexRoute(context.url.pathname);
 
   // /preview is never cached — REGARDLESS of whether the draft cookie is
   // present. Cloudflare's edge cache does not vary on cookies: if a
@@ -63,7 +66,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // crawling — a URL discovered elsewhere (a shared link, a stray mention)
     // can still be indexed without it. noindex closes that gap; the third
     // layer is the sitemap exclusion in astro.config.mjs.
-    ...(isPreviewRoute ? { "X-Robots-Tag": "noindex, nofollow" } : {}),
+    ...(isNoindex ? { "X-Robots-Tag": "noindex, nofollow" } : {}),
   };
   try {
     for (const [name, value] of Object.entries(headersToSet)) {
