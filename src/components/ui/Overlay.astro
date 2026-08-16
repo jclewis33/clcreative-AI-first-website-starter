@@ -43,8 +43,9 @@ interface Props extends HTMLAttributes<"div"> {
    * Set to `false` to skip rendering this component and its children.
    *
    * Lets a caller express "only if there is something to show" as data rather
-   * than markup — `render={posts.length > 0}` instead of wrapping the element
-   * in `{posts.length > 0 && ( … )}`. Nothing is emitted when false, so no
+   * than markup — e.g. `render` set to `posts.length > 0` — instead of
+   * wrapping the element in a conditional block. Nothing is emitted when
+   * false, so no
    * empty wrapper is left behind.
    *
    * @default true

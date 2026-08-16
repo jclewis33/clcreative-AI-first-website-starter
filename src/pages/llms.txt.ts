@@ -23,6 +23,7 @@ import {
   OPTIONAL_PAGES,
   type StaticPage,
 } from "@/data/site-structure";
+import { isNoindexRoute } from "@/config/seo.shared.mjs";
 
 export const prerender = true;
 
@@ -46,6 +47,14 @@ interface GlossaryTerm {
 /** `/contact` → `${SITE_URL}/contact`; `/` → site root. */
 function url(path: string): string {
   return path === "/" ? SITE_URL : `${SITE_URL}${path}`;
+}
+
+/* Belt-and-braces: a page kept out of search results has no business in the
+   LLM index either. The registry should never contain one, but if an entry is
+   added there, the same predicate the sitemap / robots.txt / noindex meta use
+   filters it here too — one fact, now five surfaces. */
+function indexable(p: StaticPage): boolean {
+  return !isNoindexRoute(p.path);
 }
 
 function staticLine(p: StaticPage): string {
@@ -93,7 +102,7 @@ export const GET: APIRoute = async () => {
       .filter(([, pages]) => pages.length)
       .map(
         ([heading, pages]) =>
-          `## ${heading}\n${pages.map(staticLine).join("\n")}`,
+          `## ${heading}\n${pages.filter(indexable).map(staticLine).join("\n")}`,
       ),
   ];
 
@@ -125,7 +134,9 @@ export const GET: APIRoute = async () => {
     );
   }
 
-  sections.push(`## Optional\n${OPTIONAL_PAGES.map(staticLine).join("\n")}`);
+  sections.push(
+    `## Optional\n${OPTIONAL_PAGES.filter(indexable).map(staticLine).join("\n")}`,
+  );
 
   const body = sections.join("\n\n") + "\n";
 
