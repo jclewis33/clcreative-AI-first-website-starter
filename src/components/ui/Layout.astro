@@ -168,7 +168,7 @@ type BreakoutColumns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
  * - `cardPadding` — vertical padding for `card` variant (default: `--section-space-main`, fluid 4-7rem)
  * - `class` — extra utility classes on the wrapper
  *
- * **Slots:** `col1` (left), `col2` (right) for two-column variants; default slot for stack variants.
+ * **Slots:** default slot IS column 1 — put content straight inside `<Layout>`, no slot attribute. The second column is `slot="column2"`.
  */
 interface BaseProps extends HTMLAttributes<"div"> {
   /**
@@ -186,7 +186,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
    *
-   * **Slots:** `col1` (left), `col2` (right). A single component (Visual, Grid, Card) takes `slot` directly; wrap MULTIPLE loose elements in the `` component (`…`) — the standard wrapper that bakes in `u-display-contents`. EXCEPTION: a column holding a `<Visual>` alongside other content must use `<Layout variant="stack">`, not `` (`'s `display: contents` lets the image's `height: 100%` override its `ratio` aspect-ratio and balloon).
+   * **Slots:** the default slot IS column 1 — content goes straight inside `<Layout>` with no slot attribute. The second column is `slot="column2"`; a single component (Visual, Grid, Card) takes it directly, and several loose elements go in `<Fragment slot="column2">`, which groups without emitting a box. EXCEPTION: a column holding a `<Visual>` alongside other content must use `<Layout variant="stack">` — a `display: contents` wrapper lets the image's `height: 100%` override its `ratio` and balloon.
    */
   docs?: string;
 

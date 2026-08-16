@@ -138,9 +138,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       <Heading variant="eyebrow" class="u-margin-bottom-2">Layout</Heading>
       <Heading tag="h2" balance>Flexible two-column layouts</Heading>
       <Text variant="regular" muted maxWidth="48rem">
-        The Layout component provides 13 named two-column variants. Use col1 and
-        col2 named slots to fill each column. All variants collapse to a single
-        column on mobile.
+        The Layout component provides 13 named two-column variants. Content goes
+        straight inside — the default slot is column 1 — and the second column
+        takes slot="column2". All variants collapse to a single column on mobile.
       </Text>
     </Layout>
 

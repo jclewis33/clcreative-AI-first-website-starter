@@ -102,7 +102,7 @@
   justify-content: var(--center-medium, start);
 }
 
-/* Inner wrapper rendered when maxWidth is set on ContentWrapper.
+/* Inner wrapper rendered when maxWidth is set on Layout.
    Must forward alignment from the outer wrapper so .u-text children
    (which use `align-items: inherit`) still see the centering. */
 .u-content-wrapper_inner {

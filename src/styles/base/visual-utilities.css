@@ -45,10 +45,11 @@
    PARENT's height is INDEFINITE — then `height: 100%` resolves to `auto` and the
    aspect-ratio governs. If the parent height is definite (a grid/flex item, e.g.
    a Layout column once it collapses to `display: flex`), `height: 100%` wins and
-   STRETCHES the image, overriding the aspect-ratio. This is why a Layout column
-   holding a <Visual> alongside other content must wrap them in <ContentWrapper>
-   (a real `height: auto` block). The old <Col> wrapper (display: contents)
-   that used to break this is gone — Layout generates real column boxes. */
+   STRETCHES the image, overriding the aspect-ratio. This is why a column holding
+   a <Visual> alongside other content must use <Layout variant="stack"> — a real
+   `height: auto` block. (ContentWrapper, which used to play that role, and the
+   <Col> wrapper whose `display: contents` caused the bug are both gone; Layout
+   generates real column boxes now.) */
 .u-image-wrapper {
   position: relative;
   overflow: clip;
@@ -59,8 +60,11 @@
 }
 
 /* Absolute-fill image inside .u-image-wrapper.
-   Inherits object-fit from wrapper. Focal-point positioning via
-   --x and --y custom properties (0–100, default 50/50 = center).
+   Inherits object-fit from wrapper. Focal-point positioning via the
+   --_x and --_y custom properties (0–100, default 50/50 = center) that
+   Visual.astro writes onto the <img> — keep the two names in step: this rule
+   read the pre-rename `--x`/`--y` for a while and every focal point silently
+   fell back to dead centre, with nothing to show for it in any check.
    object-position is scoped under the wrapper (specificity 0,2,0) so it
    beats Astro's injected [data-astro-image-pos="center"] rule (0,1,0),
    which local <Image layout="…"> stamps on the <img> and would otherwise
@@ -75,7 +79,7 @@
 }
 
 .u-image-wrapper .u-image {
-  object-position: calc(var(--x, 50) * 1%) calc(var(--y, 50) * 1%);
+  object-position: calc(var(--_x, 50) * 1%) calc(var(--_y, 50) * 1%);
 }
 
 /* Background variant — makes wrapper itself absolute-fill.
