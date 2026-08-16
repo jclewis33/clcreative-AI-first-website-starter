@@ -31,7 +31,7 @@ const {
 } = Astro.props;
 ---
 
-<Layout docs="" variant="columns" verticalAlign="start">
+<Layout variant="columns" verticalAlign="start">
   <div
     class="u-rich-text"
     data-fade-in
@@ -40,7 +40,6 @@ const {
   />
   <Visual
     slot="column2"
-    docs=""
     src={image}
     alt={imageAlt}
     ratio={aspectRatio}

@@ -185,8 +185,10 @@ const showHeading = Astro.slots.has("heading") || heading;
     smallColumns={columnsSm}
     rowGap={6}
   >
-    {testimonials.map((testimonial) => (
-      <TestimonialCard {...testimonial} theme={invertCards} />
-    ))}
+    {
+      testimonials.map((testimonial) => (
+        <TestimonialCard {...testimonial} theme={invertCards} />
+      ))
+    }
   </Grid>
 </Section>

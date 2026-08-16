@@ -188,7 +188,7 @@ const hasClose = Astro.slots.has("close");
    * If GSAP is not available, falls back to instant open/close.
    */
 
-  // Store timelines per modal element (gsap type not available — CDN loaded)
+  // Store timelines per modal element (gsap accessed via window, no local type)
   const modalTimelines = new WeakMap<HTMLDialogElement, any>();
 
   /* Was this modal opened from the keyboard?
@@ -416,7 +416,8 @@ const hasClose = Astro.slots.has("close");
     );
   }
 
-  // GSAP loads from CDN (deferred), so poll briefly before falling back
+  // gsap-init.js (npm bundle, separate module script) may not have assigned
+  // window.gsap yet when this runs, so poll briefly before falling back
   function waitForGsapAndInit(retries = 15) {
     if ((window as any).gsap) {
       initModals();

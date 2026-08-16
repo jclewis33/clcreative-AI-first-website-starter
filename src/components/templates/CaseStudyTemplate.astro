@@ -167,7 +167,6 @@ const ogImageUrl = seo.ogImage
 ---
 
 <BaseLayout
-  docs=""
   theme="light"
   title={`${metaTitle} | Astro Starter`}
   description={metaDescription}
@@ -176,7 +175,7 @@ const ogImageUrl = seo.ogImage
   ogImage={ogImageUrl}
 >
   <JsonLd data={jsonLd} />
-  <Section docs="" theme="dark" class="case-study_detail_hero_wrap">
+  <Section theme="dark" class="case-study_detail_hero_wrap">
     <Layout variant="stack" verticalAlign="center">
       <a href="/case-studies" class="case-study_detail_back_link">
         <svg
@@ -196,7 +195,7 @@ const ogImageUrl = seo.ogImage
         All Case Studies
       </a>
 
-      <Heading docs="" tag="h1" variant="h6" marginBottom={2} maxWidth="50ch">
+      <Heading tag="h1" variant="h6" marginBottom={2} maxWidth="50ch">
         {study.title || "Untitled Case Study"}
       </Heading>
 
@@ -267,7 +266,6 @@ const ogImageUrl = seo.ogImage
 
       <div slot="column2" class="case-study_detail_slider">
         <Slider
-          docs=""
           slidesLg={2}
           slidesMd={2}
           slidesSm={1}
@@ -280,7 +278,6 @@ const ogImageUrl = seo.ogImage
             galleryImages.map((img: any) => (
               <div class="swiper-slide">
                 <Visual
-                  docs=""
                   src={urlFor(img).width(1400).url()}
                   alt={img.alt || study.galleryImagesAlt || ""}
                   position={hotspotPosition(img)}
@@ -299,7 +296,7 @@ const ogImageUrl = seo.ogImage
 
   {
     upNextStudies.length > 0 && (
-      <Section docs="" padding="large" class="case-study_detail_up_next_wrap">
+      <Section padding="large" class="case-study_detail_up_next_wrap">
         <Heading tag="h2" variant="h3" marginBottom={0}>
           Up Next
         </Heading>

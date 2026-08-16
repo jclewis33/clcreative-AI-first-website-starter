@@ -26,7 +26,7 @@
  *   - default   — TabPanel instances
  *
  * Animation uses GSAP for smooth transitions between panels.
- * Requires GSAP to be available on the page (loaded via Head.astro CDN).
+ * Requires GSAP on window (bundled from npm by src/scripts/gsap-init.js).
  */
 
 /**
@@ -744,7 +744,7 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
     });
   }
 
-  // Wait for GSAP (CDN loaded with defer), then initialize
+  // Wait for gsap-init.js to assign window.gsap, then initialize
   function waitForGsap(retries = 10) {
     if ((window as any).gsap) {
       initTabs();

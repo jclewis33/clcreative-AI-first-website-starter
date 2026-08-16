@@ -171,7 +171,6 @@
   margin-bottom: 0;
   padding: 0 0.9rem;
   display: block;
-  outline: none !important;
 }
 
 .form_field::placeholder {

@@ -77,12 +77,8 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
   <!-- ============================================================
        1. HERO
        ============================================================ -->
-  <Section
-    docs=""
-    theme="brand"
-    id="hero"
-  >
-    <Layout docs="" variant="stack-centered">
+  <Section theme="brand" id="hero">
+    <Layout variant="stack-centered">
       <Heading variant="eyebrow">Component Library</Heading>
       <Heading tag="h1" variant="display-lg" balance accent>
         Build faster with <strong>reusable components</strong>
@@ -107,22 +103,19 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     </Layout>
   </Section>
 
-  <Section docs="" minHeight>
-    <Layout docs="">
-      <Heading docs="" variant="h2"
-        >Build faster with reusable components</Heading
-      >
-      <Text docs="">
+  <Section minHeight>
+    <Layout>
+      <Heading variant="h2">Build faster with reusable components</Heading>
+      <Text>
         Every component in this library is built with Astro and styled with the
         design system. Composable, accessible, and ready to ship.</Text
       >
       <div class="u-button-wrapper">
-        <Button docs="" href="#" ariaLabel="Sign up now">Sign Up Now</Button>
+        <Button href="#" ariaLabel="Sign up now">Sign Up Now</Button>
       </div>
 
       <Visual
         slot="column2"
-        docs=""
         src={manCouch}
         alt="man on couch looking at computer"
         ratio="square"
@@ -140,7 +133,8 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       <Text variant="regular" muted maxWidth="48rem">
         The Layout component provides 13 named two-column variants. Content goes
         straight inside — the default slot is column 1 — and the second column
-        takes slot="column2". All variants collapse to a single column on mobile.
+        takes slot="column2". All variants collapse to a single column on
+        mobile.
       </Text>
     </Layout>
 
@@ -221,12 +215,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         <Button href="#" ariaLabel="Explore">Explore</Button>
       </div>
 
-      {/* phL* are 1672x941 (16:9); phS* are 1254x1254 squares. This demo asks
+      {
+        /* phL* are 1672x941 (16:9); phS* are 1254x1254 squares. This demo asks
           for ratio="16/9", so it needs a landscape source. It previously used
           the square phS1 AND forced width/height to 1200x900 (4:3) — three
           different aspect ratios fighting, which letterboxed the image.
           `width`/`height` are only for remote URLs; a local import already
-          carries its dimensions. */}
+          carries its dimensions. */
+      }
       <Visual src={phL3} ratio="16/9" alt="Placeholder image" slot="column2" />
     </Layout>
 
@@ -549,7 +545,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
   </Section>
 
   <!-- cover cards -->
-  <CaseStudyGrid docs="" limit={6} />
+  <CaseStudyGrid limit={6} />
 
   <!-- ============================================================
        4. SLIDER
@@ -1026,7 +1022,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         >
       </div>
 
-      <Accordion docs="" slot="column2" openByDefault={1}>
+      <Accordion slot="column2" openByDefault={1}>
         <AccordionItem question="What is the design system?">
           <Text>
             A structured CSS and component system. It uses CSS custom
@@ -1322,19 +1318,13 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         section, so their own padding stacks on the parent's. The
         container's gap separates them. */
     }
-    <BlogPostGrid
-      docs=""
-      paddingTop="none"
-      paddingBottom="none"
-      variant="recent"
-    />
+    <BlogPostGrid paddingTop="none" paddingBottom="none" variant="recent" />
 
     <!-- ============================================================
        Blog Post Grid - Category
        ============================================================ -->
 
     <BlogPostGrid
-      docs=""
       paddingTop="none"
       paddingBottom="none"
       variant="category"

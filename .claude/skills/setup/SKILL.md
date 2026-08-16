@@ -73,7 +73,7 @@ described below.
 **A new theme mode owes the invert map one line.** `data-theme-invert` is not
 a token, it is a pair of selector lists, so a mode that defines only its own
 block will silently do nothing under an invert island. When you add a mode,
-decide which theme it should flip TO and add its selectors to *that* theme's
+decide which theme it should flip TO and add its selectors to _that_ theme's
 block:
 
 ```css
@@ -286,11 +286,11 @@ asking them to type hex codes.
      user's say-so. If they genuinely need a 4th mode, add it the **same exact way**
      the others exist: replicate a full `[data-theme]` block (every semantic alias)
      by copying an existing block as the template, and a
-       new swatch goes in [colors.css](../../../src/styles/variables/colors.css) with
-       the same naming and (if a scale) the same `color-mix` derivation as
-       `--color-brand-100…900`, reaching components only through the cascade. Don't
-       reinvent a different approach. Dropping a mode is likewise rare and structural
-       — discuss it; the default is to keep all three defined even if one goes unused.
+     new swatch goes in [colors.css](../../../src/styles/variables/colors.css) with
+     the same naming and (if a scale) the same `color-mix` derivation as
+     `--color-brand-100…900`, reaching components only through the cascade. Don't
+     reinvent a different approach. Dropping a mode is likewise rare and structural
+     — discuss it; the default is to keep all three defined even if one goes unused.
 
 5. **Per-theme overrides (only if needed).** If the design assigns a theme role that
    a swatch swap can't express — e.g. the brand section should use a darker bg, or

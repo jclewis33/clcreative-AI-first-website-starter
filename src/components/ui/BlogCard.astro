@@ -146,7 +146,6 @@ const formattedDate = date
 ---
 
 <Card
-  docs=""
   theme={theme}
   href={href}
   ariaLabel={`Read ${title}`}
@@ -165,22 +164,26 @@ const formattedDate = date
 
   <Text variant="small" muted clamp={2}>{description}</Text>
 
-  {/* Decide from DATA, not from the slot: a post with no categories would
+  {
+    /* Decide from DATA, not from the slot: a post with no categories would
       otherwise pass an empty footer, and .card_primary_footer charges
-      margin-top:auto + padding-top whether or not anything is in it. */}
-  {categories && categories.length > 0 && (
-    <div slot="footer" class="blog_card_footer">
-      {categories.map((cat: string) => (
-        <Text
-          tag="span"
-          variant="tiny"
-          weight="medium"
-          marginBottom={0}
-          class="blog_card_category"
-        >
-          {cat}
-        </Text>
-      ))}
-    </div>
-  )}
+      margin-top:auto + padding-top whether or not anything is in it. */
+  }
+  {
+    categories && categories.length > 0 && (
+      <div slot="footer" class="blog_card_footer">
+        {categories.map((cat: string) => (
+          <Text
+            tag="span"
+            variant="tiny"
+            weight="medium"
+            marginBottom={0}
+            class="blog_card_category"
+          >
+            {cat}
+          </Text>
+        ))}
+      </div>
+    )
+  }
 </Card>

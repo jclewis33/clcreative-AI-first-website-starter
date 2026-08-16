@@ -145,7 +145,7 @@ const portableTextComponents = {
         All Posts
       </Button>
     </div>
-    <Layout docs="" variant="stack-centered">
+    <Layout variant="stack-centered">
       <Text variant="small" muted>{formattedDate}</Text>
 
       <Heading tag="h1" variant="h1" balance>{post.title}</Heading>
@@ -313,7 +313,6 @@ const portableTextComponents = {
           </div>
         ) : (
           <Visual
-            docs=""
             slot="column2"
             src={urlFor(post.image).width(1200).url()}
             alt={post.imageAlt}
@@ -348,7 +347,6 @@ const portableTextComponents = {
               class="u-image u-object-fit-cover"
             />
             <Overlay
-              docs=""
               variant="gradient"
               strengthBottom={100}
               strengthMiddle={30}
@@ -368,7 +366,6 @@ const portableTextComponents = {
           </Text>
           <div slot="footer">
             <Button
-              docs=""
               href="/contact"
               ariaLabel="Get in touch"
               fullWidth
@@ -426,7 +423,6 @@ const portableTextComponents = {
   {
     manualRelatedPosts.length > 0 && (
       <AdditionalPost
-        docs=""
         theme="dark"
         paddingTop="small"
         variant="manual"
@@ -438,7 +434,6 @@ const portableTextComponents = {
   }
 
   <AdditionalPost
-    docs=""
     paddingTop="small"
     variant="related"
     heading="Other posts in this category"

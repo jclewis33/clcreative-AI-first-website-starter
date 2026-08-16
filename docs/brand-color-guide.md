@@ -6,9 +6,9 @@ This guide explains how to update the color system so all three themes (light, d
 
 ## Files involved
 
-| File                              | What it contains                                                                                                              |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `src/styles/variables/colors.css` | Raw color swatches (brand scale, dark/light palettes)                                                                         |
+| File                              | What it contains                                                                                                                             |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/styles/variables/colors.css` | Raw color swatches (brand scale, dark/light palettes)                                                                                        |
 | `src/styles/variables/themes.css` | Semantic theme mappings that reference the raw swatches (includes footer variables + the `data-theme-invert` flip used by contrasting cards) |
 
 You will almost always only need to edit **`colors.css`**. The theme file references the color variables, so it updates automatically.
@@ -98,13 +98,13 @@ Here's everything that flows from `--color-brand-500` and `--color-brand-text` t
 
 ### Contrasting cards — `data-theme-invert` (testimonials, primary `<Card>`)
 
-A card that sits inside a themed section often needs to read **against** it (so it pops) while staying legible. That is one attribute, not a set of variables: mark the element `data-theme-invert` and it flips to the *opposite* of the ground it sits on — dark or brand section → light card, light or unthemed → dark card. Everything nested inside follows, because a theme here is just inherited custom properties.
+A card that sits inside a themed section often needs to read **against** it (so it pops) while staying legible. That is one attribute, not a set of variables: mark the element `data-theme-invert` and it flips to the _opposite_ of the ground it sits on — dark or brand section → light card, light or unthemed → dark card. Everything nested inside follows, because a theme here is just inherited custom properties.
 
 There is nothing to fill in per card. The island takes a **whole theme**, so its background is that theme's `--background-2`, its text is `--text`, and — this is the part that matters — any button or link inside it resolves against the card too.
 
 > **Why there is no `--surface-*` tier any more.** There used to be one, copying four values (background / text / heading-accent / border) per theme. Because the copy was partial, buttons and links inside a card still resolved against the **section**, which shipped as white-on-white. A whole theme has no such gap. If you are looking for `--surface-background` and friends, they are gone and nothing replaces them — see THEME INVERT in `variables/themes.css`.
 
-**Adding a new theme mode?** It owes the invert map one selector: add the new mode to the selector list of the theme it should flip *to*. See the same note in `themes.css`.
+**Adding a new theme mode?** It owes the invert map one selector: add the new mode to the selector list of the theme it should flip _to_. See the same note in `themes.css`.
 
 ---
 

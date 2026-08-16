@@ -583,7 +583,7 @@ const showHeading = Astro.slots.has("heading") || resolvedHeading;
       id={id}
       class:list={["blog-post-grid_wrap", className]}
     >
-      <Layout docs="" variant="stack" columnGap={columnGap} rowGap={rowGapProp}>
+      <Layout variant="stack" columnGap={columnGap} rowGap={rowGapProp}>
         {/* Heading area */}
         {showHeading &&
           (hasHeadingSlot ? (

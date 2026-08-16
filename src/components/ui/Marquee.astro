@@ -7,7 +7,8 @@ import type { HTMLAttributes } from "astro/types";
  * Each direct child should have the `marquee_item` class for proper spacing
  * and flex behavior.
  *
- * GSAP is loaded globally via CDN (Head.astro). No additional scripts needed.
+ * GSAP is bundled from npm by src/scripts/gsap-init.js (imported in BaseLayout)
+ * and exposed as window.gsap. No additional scripts needed.
  *
  * @example Text marquee
  * ```astro
@@ -134,7 +135,7 @@ const gapValue = gap === 0 ? "0px" : `var(--space-${gap})`;
   /**
    * Marquee JavaScript — initializes GSAP-driven infinite scroll
    *
-   * GSAP is loaded globally from CDN (added to Head.astro).
+   * GSAP is bundled from npm by src/scripts/gsap-init.js and exposed on window.
    * This script polls for window.gsap availability, then initializes
    * each [data-marquee="component"] element.
    *
@@ -148,7 +149,7 @@ const gapValue = gap === 0 ? "0px" : `var(--space-${gap})`;
     const gsap = (window as any).gsap;
     if (!gsap) {
       console.warn(
-        "Marquee: GSAP not found. Make sure GSAP CDN script is loaded.",
+        "Marquee: GSAP not found on window. Is gsap-init.js still imported in BaseLayout?",
       );
       return;
     }
@@ -215,7 +216,8 @@ const gapValue = gap === 0 ? "0px" : `var(--space-${gap})`;
       });
   }
 
-  // GSAP CDN may load after DOMContentLoaded, so poll briefly
+  // gsap-init.js is a separate module script, so window.gsap may not be
+  // assigned yet when this script runs — poll briefly
   function waitForGsap(retries = 10) {
     if ((window as any).gsap) {
       initMarquees();

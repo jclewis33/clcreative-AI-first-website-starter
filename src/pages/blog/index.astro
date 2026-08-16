@@ -132,7 +132,6 @@ function formatDate(dateStr: string) {
 ---
 
 <BaseLayout
-  docs=""
   theme="light"
   title="Blog | Astro Starter"
   description={SITE.defaultDescription}
@@ -142,7 +141,7 @@ function formatDate(dateStr: string) {
       HERO — dark theme, left-aligned, category nav + featured slider
       ================================================================ */
   }
-  <Section gap={4} docs="" theme="dark" class="blog_hero_wrap">
+  <Section gap={4} theme="dark" class="blog_hero_wrap">
     {/* Category nav tabs + search */}
     <div class="blog_top_bar">
       <nav class="blog_category_nav" aria-label="Blog categories">
@@ -262,7 +261,6 @@ function formatDate(dateStr: string) {
 
       return (
         <Section
-          docs=""
           gap={6}
           theme={cat.theme}
           id={cat.slug}
@@ -391,12 +389,7 @@ function formatDate(dateStr: string) {
   }
   {
     latestPosts.length > 0 && (
-      <Section
-        docs=""
-        gap={6}
-        id="latest"
-        class="blog_category_section"
-      >
+      <Section gap={6} id="latest" class="blog_category_section">
         <div class="blog_section_header">
           <Heading data-prevent-flicker="true" data-split-text marginBottom={0}>
             Latest
