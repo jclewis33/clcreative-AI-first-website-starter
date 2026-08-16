@@ -36,7 +36,7 @@
  * ```
  */
 
-import { Image } from "astro:assets";
+import Visual from "@/components/ui/Visual.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Section from "@/components/ui/Section.astro";
@@ -85,26 +85,29 @@ const {
   {/* ── Image cluster ── */}
   <div class="how_it_works_images">
     <div class="how_it_works_img_center">
-      <Image
+      <Visual
         src={imgCenter}
         alt="Placeholder project work imagery"
-        class="how_it_works_img"
+        variant="background"
+        loading="lazy"
         data-fade-in
       />
     </div>
     <div class="how_it_works_img_right">
-      <Image
+      <Visual
         src={imgRight}
         alt="One CMS architecture powering case study, blog, and service page layouts"
-        class="how_it_works_img"
+        variant="background"
+        loading="lazy"
         data-fade-in
       />
     </div>
     <div class="how_it_works_img_left">
-      <Image
+      <Visual
         src={imgLeft}
         alt="A single ideal customer highlighted within a crowd, connected by a network"
-        class="how_it_works_img"
+        variant="background"
+        loading="lazy"
         data-fade-in
       />
     </div>
@@ -473,14 +476,11 @@ const {
    `:where([data-astro-image])` styles, which are switched off in
    astro.config.mjs (see the responsiveStyles comment there). Without it these
    images fall back to `fill` and stretch. */
-    .how_it_works_img {
-      position: absolute;
-      inset: 0;
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    /* .how_it_works_img is gone: these render through <Visual
+       variant="background">, whose wrapper is already absolute-fill and whose
+       .u-image handles object-fit. Going through Visual also means these get
+       sizes="auto", so the browser stops fetching a 1254px source for a 403px
+       box. */
 
     /* ==========================================================================
    SECTION HEADER
