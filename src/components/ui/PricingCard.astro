@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import Layout from "@/components/ui/Layout.astro";
 /**
  * PricingCard — pricing tier card with name, price, description, feature
  * items slot, and CTA button.
@@ -76,7 +77,6 @@ import type { HTMLAttributes } from "astro/types";
  * ```
  */
 
-import ContentWrapper from "./ContentWrapper.astro";
 import Heading from "./Heading.astro";
 import Text from "./Text.astro";
 import Button from "./Button.astro";
@@ -274,7 +274,7 @@ const isGeneral = variant === "general";
       )
     }
 
-    <ContentWrapper align={align}>
+    <Layout variant="stack" align={align}>
       {
         /* Header — general:  price row only (priceLabel left, price right)
                    compact:  price row → name → description
@@ -431,7 +431,7 @@ const isGeneral = variant === "general";
           </div>
         )
       }
-    </ContentWrapper>
+    </Layout>
   </div>
 </div>
 

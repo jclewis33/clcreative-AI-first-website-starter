@@ -24,7 +24,7 @@
  */
 
 import Section from "@/components/ui/Section.astro";
-import ContentWrapper from "@/components/ui/ContentWrapper.astro";
+import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Grid from "@/components/ui/Grid.astro";
@@ -69,7 +69,7 @@ const {
   id="framework"
 >
   <div class="framework_watermark" aria-hidden="true">Flow</div>
-  <ContentWrapper class="framework_content">
+  <Layout variant="stack" class="framework_content">
     <Heading data-fade-in variant="eyebrow" maxWidth="30ch">
       Lorem ipsum eyebrow
     </Heading>
@@ -88,7 +88,7 @@ const {
         ut aliquip ex ea commodo consequat duis aute irure dolor.
       </Text>
     </slot>
-  </ContentWrapper>
+  </Layout>
   <Grid
     data-fade-list
     largeColumns={3}
@@ -130,11 +130,11 @@ const {
     </div>
   </Grid>
 
-  <ContentWrapper align="center">
+  <Layout variant="stack-centered">
     <div class="u-button-wrapper" data-fade-in>
       <Button href="/contact" ariaLabel="Learn more"> Learn More </Button>
     </div>
-  </ContentWrapper>
+  </Layout>
 </Section>
 
 <style is:global>

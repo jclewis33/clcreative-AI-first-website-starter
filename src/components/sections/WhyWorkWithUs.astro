@@ -19,7 +19,6 @@ import type { HTMLAttributes } from "astro/types";
 
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
@@ -94,42 +93,36 @@ const items = [
     variant="full-reversed"
     verticalAlign="center"
   >
-    <Col slot="col1">
-      <div class="why-work_content">
-        <Heading data-fade-in variant="eyebrow"> Why Work With Us </Heading>
-        <Heading data-split-text variant="h3">
-          Lorem ipsum dolor sit amet consectetur adipiscing elit
-        </Heading>
+    <div class="why-work_content">
+      <Heading data-fade-in variant="eyebrow"> Why Work With Us </Heading>
+      <Heading data-split-text variant="h3">
+        Lorem ipsum dolor sit amet consectetur adipiscing elit
+      </Heading>
 
-        <div class="why-work_list">
-          {
-            items.map((item) => (
-              <div class="why-work_row" data-fade-in>
-                <p class="why-work_number">{item.number}</p>
-                <div class="why-work_item_content">
-                  <Heading
-                    maxWidth="none"
-                    tag="h3"
-                    variant="h5"
-                    marginBottom={0}
-                  >
-                    {item.title}
-                  </Heading>
-                  <Text marginBottom={0} set:html={item.text} />
-                </div>
+      <div class="why-work_list">
+        {
+          items.map((item) => (
+            <div class="why-work_row" data-fade-in>
+              <p class="why-work_number">{item.number}</p>
+              <div class="why-work_item_content">
+                <Heading maxWidth="none" tag="h3" variant="h5" marginBottom={0}>
+                  {item.title}
+                </Heading>
+                <Text marginBottom={0} set:html={item.text} />
               </div>
-            ))
-          }
-        </div>
-
-        <div class="u-button-wrapper">
-          <Button href="/contact" ariaLabel="Get started"> Get Started </Button>
-        </div>
+            </div>
+          ))
+        }
       </div>
-    </Col>
+
+      <div class="u-button-wrapper">
+        <Button href="/contact" ariaLabel="Get started"> Get Started </Button>
+      </div>
+    </div>
+
     <Visual
       radius="none"
-      slot="col2"
+      slot="column2"
       src={whyImage}
       alt="Why work with us"
       ratio="portrait"

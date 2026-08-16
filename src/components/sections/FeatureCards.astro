@@ -13,7 +13,6 @@ import type { HTMLAttributes } from "astro/types";
  */
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Visual from "@/components/ui/Visual.astro";
 import Grid from "@/components/ui/Grid.astro";
@@ -54,29 +53,26 @@ const {
 
 <Section theme="dark" {...rest}>
   <Layout variant="stack">
-    <Col slot="col1">
-      <Heading
-        data-split-text
-        data-prevent-flicker="true"
-        tag="h2"
-        variant="h2"
-        maxWidth="40ch"
-      >
-        {heading}
-      </Heading>
-    </Col>
+    <Heading
+      data-split-text
+      data-prevent-flicker="true"
+      tag="h2"
+      variant="h2"
+      maxWidth="40ch"
+    >
+      {heading}
+    </Heading>
   </Layout>
 
   <Layout data-fade-list variant="columns" ratio="4-8" verticalAlign="start">
-    <Col slot="col1">
-      <slot name="intro" />
-    </Col>
-    <Visual slot="col2" src={portraitImage} alt={portraitAlt} ratio="3/2" />
+    <slot name="intro" />
+
+    <Visual slot="column2" src={portraitImage} alt={portraitAlt} ratio="3/2" />
   </Layout>
 
   <Layout data-fade-list variant="columns" ratio="5-7" verticalAlign="center">
-    <Visual slot="col1" src={mediaImage} alt={mediaAlt} />
-    <div slot="col2" class="u-rich-text">
+    <Visual src={mediaImage} alt={mediaAlt} />
+    <div slot="column2" class="u-rich-text">
       <slot name="media" />
     </div>
   </Layout>

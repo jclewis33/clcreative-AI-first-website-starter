@@ -11,7 +11,6 @@ import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Card from "@/components/ui/Card.astro";
 import Accordion from "@/components/ui/Accordion.astro";
@@ -39,7 +38,6 @@ import BlogPostGrid from "@/components/sections/BlogPostGrid.astro";
 import humanTouch from "@/assets/placeholder-images/placeholder-15.webp";
 import manCouch from "@/assets/placeholder-images/placeholder-16.webp";
 import CaseStudyGrid from "@/components/sections/CaseStudyGrid.astro";
-import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 import PricingCard from "@/components/ui/PricingCard.astro";
 import PricingItem from "@/components/ui/PricingItem.astro";
 import Marquee from "@/components/ui/Marquee.astro";
@@ -87,50 +85,45 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     id="hero"
   >
     <Layout docs="" variant="stack-centered">
-      <Col slot="col1">
-        <Heading variant="eyebrow">Component Library</Heading>
-        <Heading tag="h1" variant="display-lg" balance accent>
-          Build faster with <strong>reusable components</strong>
-        </Heading>
-        <Text variant="large" align="center" muted maxWidth="32rem">
-          Every component in this library is built with Astro and styled with
-          the design system. Composable, accessible, and ready to ship.
-        </Text>
-        <div class="u-button-wrapper">
-          <Button
-            href="/style-guide"
-            size="large"
-            ariaLabel="Browse style guide">Browse Style Guide</Button
-          >
-          <Button
-            variant="secondary"
-            size="large"
-            data-modal-trigger="comp-modal-small"
-            ariaLabel="Open a modal"
-          >
-            Open a Modal
-          </Button>
-        </div>
-      </Col>
+      <Heading variant="eyebrow">Component Library</Heading>
+      <Heading tag="h1" variant="display-lg" balance accent>
+        Build faster with <strong>reusable components</strong>
+      </Heading>
+      <Text variant="large" align="center" muted maxWidth="32rem">
+        Every component in this library is built with Astro and styled with the
+        design system. Composable, accessible, and ready to ship.
+      </Text>
+      <div class="u-button-wrapper">
+        <Button href="/style-guide" size="large" ariaLabel="Browse style guide"
+          >Browse Style Guide</Button
+        >
+        <Button
+          variant="secondary"
+          size="large"
+          data-modal-trigger="comp-modal-small"
+          ariaLabel="Open a modal"
+        >
+          Open a Modal
+        </Button>
+      </div>
     </Layout>
   </Section>
 
   <Section docs="" minHeight>
     <Layout docs="">
-      <Col slot="col1">
-        <Heading docs="" variant="h2"
-          >Build faster with reusable components</Heading
-        >
-        <Text docs="">
-          Every component in this library is built with Astro and styled with
-          the design system. Composable, accessible, and ready to ship.</Text
-        >
-        <div class="u-button-wrapper">
-          <Button docs="" href="#" ariaLabel="Sign up now">Sign Up Now</Button>
-        </div>
-      </Col>
+      <Heading docs="" variant="h2"
+        >Build faster with reusable components</Heading
+      >
+      <Text docs="">
+        Every component in this library is built with Astro and styled with the
+        design system. Composable, accessible, and ready to ship.</Text
+      >
+      <div class="u-button-wrapper">
+        <Button docs="" href="#" ariaLabel="Sign up now">Sign Up Now</Button>
+      </div>
+
       <Visual
-        slot="col2"
+        slot="column2"
         docs=""
         src={manCouch}
         alt="man on couch looking at computer"
@@ -143,7 +136,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        2. LAYOUT VARIANTS
        ============================================================ -->
   <Section padding="large" theme="light" id="layout">
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading variant="eyebrow" class="u-margin-bottom-2">Layout</Heading>
       <Heading tag="h2" balance>Flexible two-column layouts</Heading>
       <Text variant="regular" muted maxWidth="48rem">
@@ -151,36 +144,35 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         col2 named slots to fill each column. All variants collapse to a single
         column on mobile.
       </Text>
-    </ContentWrapper>
+    </Layout>
 
     <!-- ── columns ── -->
     <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
       >columns</Heading
     >
     <Layout variant="columns" verticalAlign="center">
-      <Col slot="col1">
-        <Heading variant="eyebrow" class="u-margin-bottom-3"
-          >50 / 50 split</Heading
+      <Heading variant="eyebrow" class="u-margin-bottom-3"
+        >50 / 50 split</Heading
+      >
+      <Heading tag="h3" variant="h2" balance>
+        Equal columns, side by side
+      </Heading>
+      <Heading tag="h3" variant="h2" balance>
+        Equal columns, side by side
+      </Heading>
+      <Text muted>
+        Use variant="columns" for a balanced split. Great for feature sections
+        where text and visuals share equal weight.
+      </Text>
+      <div class="u-button-wrapper">
+        <Button href="#" ariaLabel="Get started">Get started</Button>
+        <Button variant="secondary" href="#" ariaLabel="Learn more"
+          >Learn more</Button
         >
-        <Heading tag="h3" variant="h2" balance>
-          Equal columns, side by side
-        </Heading>
-        <Heading tag="h3" variant="h2" balance>
-          Equal columns, side by side
-        </Heading>
-        <Text muted>
-          Use variant="columns" for a balanced split. Great for feature sections
-          where text and visuals share equal weight.
-        </Text>
-        <div class="u-button-wrapper">
-          <Button href="#" ariaLabel="Get started">Get started</Button>
-          <Button variant="secondary" href="#" ariaLabel="Learn more"
-            >Learn more</Button
-          >
-        </div>
-      </Col>
+      </div>
+
       <img
-        slot="col2"
+        slot="column2"
         src={phL1.src}
         alt="Placeholder image"
         loading="lazy"
@@ -193,24 +185,22 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       >columns-reversed</Heading
     >
     <Layout variant="columns-reversed" verticalAlign="center">
-      <Col slot="col1">
-        <Heading variant="eyebrow" class="u-margin-bottom-3"
-          >Reversed order</Heading
-        >
-        <Heading tag="h3" variant="h2" balance>
-          Image left, content right
-        </Heading>
-        <Text muted>
-          Use variant="columns-reversed" to visually flip the columns on
-          desktop. Column 2 appears on the left. Great for alternating feature
-          sections.
-        </Text>
-        <div class="u-button-wrapper">
-          <Button href="#" ariaLabel="Explore">Explore</Button>
-        </div>
-      </Col>
+      <Heading variant="eyebrow" class="u-margin-bottom-3"
+        >Reversed order</Heading
+      >
+      <Heading tag="h3" variant="h2" balance>
+        Image left, content right
+      </Heading>
+      <Text muted>
+        Use variant="columns-reversed" to visually flip the columns on desktop.
+        Column 2 appears on the left. Great for alternating feature sections.
+      </Text>
+      <div class="u-button-wrapper">
+        <Button href="#" ariaLabel="Explore">Explore</Button>
+      </div>
+
       <img
-        slot="col2"
+        slot="column2"
         src={phL2.src}
         alt="Placeholder image"
         loading="lazy"
@@ -223,27 +213,24 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       >breakout</Heading
     >
     <Layout variant="breakout" verticalAlign="center">
-      <Col slot="col1">
-        <Heading variant="eyebrow" class="u-margin-bottom-3">Edge bleed</Heading
-        >
-        <Heading tag="h3" variant="h2" balance>
-          Narrow accent, wide content
-        </Heading>
-        <Text muted>
-          Use variant="breakout" when you want a narrow left accent panel with a
-          wide right content area — great for feature callouts. The image column
-          bleeds to the viewport edge.
-        </Text>
-        <div class="u-button-wrapper">
-          <Button href="#" ariaLabel="Explore">Explore</Button>
-        </div>
-      </Col>
+      <Heading variant="eyebrow" class="u-margin-bottom-3">Edge bleed</Heading>
+      <Heading tag="h3" variant="h2" balance>
+        Narrow accent, wide content
+      </Heading>
+      <Text muted>
+        Use variant="breakout" when you want a narrow left accent panel with a
+        wide right content area — great for feature callouts. The image column
+        bleeds to the viewport edge.
+      </Text>
+      <div class="u-button-wrapper">
+        <Button href="#" ariaLabel="Explore">Explore</Button>
+      </div>
 
       <Visual
         src={phS1}
         ratio="16/9"
         alt="layout image"
-        slot="col2"
+        slot="column2"
         width={1200}
         height={900}
       />
@@ -254,24 +241,21 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       >contain</Heading
     >
     <Layout variant="contain">
-      <Col slot="col1">
-        <Heading variant="eyebrow" class="u-margin-bottom-3"
-          >Card layout</Heading
-        >
-        <Heading tag="h3" variant="h2" balance>
-          Content and image in a card
-        </Heading>
-        <Text muted>
-          Use variant="contain" to wrap both columns in a rounded card with a
-          background color. The left column is padded content; the right clips
-          an image to the card shape.
-        </Text>
-        <div class="u-button-wrapper">
-          <Button href="#" ariaLabel="Learn more">Learn more</Button>
-        </div>
-      </Col>
+      <Heading variant="eyebrow" class="u-margin-bottom-3">Card layout</Heading>
+      <Heading tag="h3" variant="h2" balance>
+        Content and image in a card
+      </Heading>
+      <Text muted>
+        Use variant="contain" to wrap both columns in a rounded card with a
+        background color. The left column is padded content; the right clips an
+        image to the card shape.
+      </Text>
+      <div class="u-button-wrapper">
+        <Button href="#" ariaLabel="Learn more">Learn more</Button>
+      </div>
+
       <img
-        slot="col2"
+        slot="column2"
         src={phL3.src}
         alt="Placeholder image"
         loading="lazy"
@@ -285,13 +269,12 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     >
     <Layout variant="contain-reversed">
       <img
-        slot="col1"
         src={phL4.src}
         alt="Placeholder image"
         loading="lazy"
         style="width: 100%; height: 100%; object-fit: cover; display: block;"
       />
-      <Col slot="col2">
+      <Fragment slot="column2">
         <Heading variant="eyebrow" class="u-margin-bottom-3"
           >Reversed card</Heading
         >
@@ -305,7 +288,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         <div class="u-button-wrapper">
           <Button href="#" ariaLabel="Explore">Explore</Button>
         </div>
-      </Col>
+      </Fragment>
     </Layout>
 
     <!-- ── sticky-left ── -->
@@ -313,20 +296,17 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       >sticky-left</Heading
     >
     <Layout variant="sticky-left" verticalAlign="start">
-      <Col slot="col1">
-        <Heading variant="eyebrow" class="u-margin-bottom-3"
-          >Sticky column</Heading
-        >
-        <Heading tag="h3" variant="h2" balance>
-          Left column stays fixed
-        </Heading>
-        <Text muted>
-          Use variant="sticky-left" when the left column should stay visible
-          while the right column scrolls. Perfect for table of contents, labels,
-          or navigation.
-        </Text>
-      </Col>
-      <Col slot="col2">
+      <Heading variant="eyebrow" class="u-margin-bottom-3"
+        >Sticky column</Heading
+      >
+      <Heading tag="h3" variant="h2" balance> Left column stays fixed </Heading>
+      <Text muted>
+        Use variant="sticky-left" when the left column should stay visible while
+        the right column scrolls. Perfect for table of contents, labels, or
+        navigation.
+      </Text>
+
+      <Fragment slot="column2">
         <Text class="u-margin-bottom-5">
           Scroll this column to see the left side stay in place. This pattern
           works great for FAQ layouts, documentation sidebars, and feature
@@ -341,7 +321,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           You can combine this with the ratio prop for asymmetric splits, like
           ratio="4-8" for a narrow label column and wide content area.
         </Text>
-      </Col>
+      </Fragment>
     </Layout>
 
     <!-- ── columns + ratio ── -->
@@ -349,19 +329,17 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       >columns + ratio</Heading
     >
     <Layout variant="columns" ratio="5-7" verticalAlign="start">
-      <Col slot="col1">
-        <Heading variant="eyebrow" class="u-margin-bottom-3"
-          >Custom ratio</Heading
-        >
-        <Heading tag="h3" variant="h2" balance>
-          Label left, content right
-        </Heading>
-        <Text muted>
-          Add ratio="5-7" to any two-column variant for a custom split. Works
-          with columns, columns-reversed, sticky-left, and contain.
-        </Text>
-      </Col>
-      <Grid slot="col2" variant="autofit" minColWidth="12rem" rowGap={4}>
+      <Heading variant="eyebrow" class="u-margin-bottom-3">Custom ratio</Heading
+      >
+      <Heading tag="h3" variant="h2" balance>
+        Label left, content right
+      </Heading>
+      <Text muted>
+        Add ratio="5-7" to any two-column variant for a custom split. Works with
+        columns, columns-reversed, sticky-left, and contain.
+      </Text>
+
+      <Grid slot="column2" variant="autofit" minColWidth="12rem" rowGap={4}>
         <Card variant="stacked" title="01">
           <Text weight="bold">Discovery</Text>
           <Text muted
@@ -388,15 +366,13 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       >stack</Heading
     >
     <Layout variant="stack">
-      <Col slot="col1">
-        <Heading tag="h3" variant="h2" balance
-          >Single column, left-aligned</Heading
-        >
-        <Text muted>
-          Use variant="stack" for a single-column layout that aligns content to
-          the left. Great for article content or simple text sections.
-        </Text>
-      </Col>
+      <Heading tag="h3" variant="h2" balance
+        >Single column, left-aligned</Heading
+      >
+      <Text muted>
+        Use variant="stack" for a single-column layout that aligns content to
+        the left. Great for article content or simple text sections.
+      </Text>
     </Layout>
 
     <!-- ── stack-centered ── -->
@@ -404,18 +380,17 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       >stack-centered</Heading
     >
     <Layout variant="stack-centered">
-      <Col slot="col1">
-        <Heading tag="h3" variant="h2" balance>Single column, centered</Heading>
-        <Text align="center" muted>
-          Use variant="stack-centered" for a centered single-column layout.
-          Perfect for hero sections, CTAs, and centered introductions.
-        </Text>
-        <div class="u-button-wrapper">
-          <Button href="#" ariaLabel="Get started">Get started</Button>
-        </div>
-      </Col>
+      <Heading tag="h3" variant="h2" balance>Single column, centered</Heading>
+      <Text align="center" muted>
+        Use variant="stack-centered" for a centered single-column layout.
+        Perfect for hero sections, CTAs, and centered introductions.
+      </Text>
+      <div class="u-button-wrapper">
+        <Button href="#" ariaLabel="Get started">Get started</Button>
+      </div>
+
       <Visual
-        slot="col2"
+        slot="column2"
         src={humanTouch}
         alt="human touch image"
         ratio="wide"
@@ -427,8 +402,8 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       >auto-width</Heading
     >
     <Layout variant="auto-width" verticalAlign="center">
-      <Heading slot="col1" tag="h3" variant="h4">Auto-sized</Heading>
-      <Text slot="col2" muted
+      <Heading tag="h3" variant="h4">Auto-sized</Heading>
+      <Text slot="column2" muted
         >Each column sizes to its own content, and the row still fills the
         section width.</Text
       >
@@ -439,17 +414,15 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       >card (centered card with background)</Heading
     >
     <Layout variant="card">
-      <Col slot="col1">
-        <Heading tag="h3" variant="h3">Centered card layout</Heading>
-        <Text>
-          Use variant="card" for a rounded, clipped card. Content in col1 is
-          centered with padding. Col2 is positioned absolutely as the background
-          — place a Visual and Overlay there for a background image CTA.
-        </Text>
-        <div class="u-button-wrapper">
-          <Button href="#">Example CTA</Button>
-        </div>
-      </Col>
+      <Heading tag="h3" variant="h3">Centered card layout</Heading>
+      <Text>
+        Use variant="card" for a rounded, clipped card. Content in col1 is
+        centered with padding. Col2 is positioned absolutely as the background —
+        place a Visual and Overlay there for a background image CTA.
+      </Text>
+      <div class="u-button-wrapper">
+        <Button href="#">Example CTA</Button>
+      </div>
     </Layout>
   </Section>
 
@@ -457,14 +430,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        3. CARDS
        ============================================================ -->
   <Section padding="large" theme="dark" id="cards">
-    <ContentWrapper data-animate-in>
+    <Layout variant="stack" data-animate-in>
       <Heading variant="eyebrow" class="u-margin-bottom-2">Card</Heading>
       <Heading tag="h2" balance>Three card variants</Heading>
       <Text variant="regular" muted maxWidth="48rem">
         The Card component supports default, stacked, and cover variants. Use
         href to make the entire card surface a clickable link.
       </Text>
-    </ContentWrapper>
+    </Layout>
 
     <!-- default cards -->
     <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-5"
@@ -588,7 +561,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        4. SLIDER
        ============================================================ -->
   <Section padding="large" theme="dark" id="slider">
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading variant="eyebrow" class="u-margin-bottom-2">Slider</Heading>
       <Heading tag="h2" balance>Touch-friendly card carousel</Heading>
       <Text variant="regular" muted maxWidth="48rem">
@@ -596,7 +569,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         div. Control per-breakpoint slide counts with slidesLg, slidesMd, and
         slidesSm.
       </Text>
-    </ContentWrapper>
+    </Layout>
 
     <div class="u-margin-top-8">
       <Slider
@@ -663,14 +636,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        MARQUEE
        ============================================================ -->
   <Section padding="large" theme="dark" id="marquee">
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading variant="eyebrow" class="u-margin-bottom-2">Marquee</Heading>
       <Heading tag="h2" balance>Infinite scrolling ticker</Heading>
       <Text variant="regular" muted maxWidth="48rem">
         The Marquee component uses GSAP for smooth infinite horizontal
         scrolling. Drop in text, logos, or any content. Pauses on hover.
       </Text>
-    </ContentWrapper>
+    </Layout>
 
     <div class="u-margin-top-8">
       <Marquee>
@@ -711,7 +684,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        SCROLL REVEAL
        ============================================================ -->
   <Section padding="large" theme="dark" id="scroll-reveal">
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading variant="eyebrow" class="u-margin-bottom-2"
         >Scroll Reveal</Heading
       >
@@ -721,7 +694,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         right cross-fades to match the active block. Collapses to inline images
         on mobile.
       </Text>
-    </ContentWrapper>
+    </Layout>
 
     <div class="u-margin-top-8">
       <ScrollReveal
@@ -763,14 +736,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        5. TABS
        ============================================================ -->
   <Section padding="large" theme="light" id="tabs">
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading variant="eyebrow" class="u-margin-bottom-2">Tab</Heading>
       <Heading tag="h2" balance>Four tab variants</Heading>
       <Text variant="regular" muted maxWidth="48rem">
         The Tab component supports top, side, slider, and fade variants. Compose
         with TabButton and TabPanel.
       </Text>
-    </ContentWrapper>
+    </Layout>
 
     <!-- ── Top Tabs (default) ── -->
     <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
@@ -783,16 +756,15 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
 
       <TabPanel>
         <Layout variant="columns" verticalAlign="center">
-          <Col slot="col1">
-            <Heading tag="h3" variant="h3">Powerful features</Heading>
-            <Text muted>
-              Every component is typed with TypeScript. Editor autocomplete and
-              inline docs are built in so you never have to guess a prop name or
-              variant.
-            </Text>
-          </Col>
+          <Heading tag="h3" variant="h3">Powerful features</Heading>
+          <Text muted>
+            Every component is typed with TypeScript. Editor autocomplete and
+            inline docs are built in so you never have to guess a prop name or
+            variant.
+          </Text>
+
           <img
-            slot="col2"
+            slot="column2"
             src={phL5.src}
             alt="Features"
             loading="lazy"
@@ -803,15 +775,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
 
       <TabPanel>
         <Layout variant="columns" verticalAlign="center">
-          <Col slot="col1">
-            <Heading tag="h3" variant="h3">Simple pricing</Heading>
-            <Text muted>
-              One plan, unlimited projects. No per-seat fees, no hidden costs.
-              Start building today and scale as your team grows.
-            </Text>
-          </Col>
+          <Heading tag="h3" variant="h3">Simple pricing</Heading>
+          <Text muted>
+            One plan, unlimited projects. No per-seat fees, no hidden costs.
+            Start building today and scale as your team grows.
+          </Text>
+
           <img
-            slot="col2"
+            slot="column2"
             src={phL6.src}
             alt="Pricing"
             loading="lazy"
@@ -822,15 +793,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
 
       <TabPanel>
         <Layout variant="columns" verticalAlign="center">
-          <Col slot="col1">
-            <Heading tag="h3" variant="h3">Dedicated support</Heading>
-            <Text muted>
-              Our team is available around the clock to help you ship faster.
-              Reach out through Slack, email, or schedule a call anytime.
-            </Text>
-          </Col>
+          <Heading tag="h3" variant="h3">Dedicated support</Heading>
+          <Text muted>
+            Our team is available around the clock to help you ship faster.
+            Reach out through Slack, email, or schedule a call anytime.
+          </Text>
+
           <img
-            slot="col2"
+            slot="column2"
             src={phL1.src}
             alt="Support"
             loading="lazy"
@@ -909,16 +879,15 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
 
       <TabPanel>
         <Layout variant="columns" verticalAlign="center">
-          <Col slot="col1">
-            <Heading tag="h3" variant="h3">Discovery</Heading>
-            <Text muted>
-              Understand the audience, goals, and competitive landscape.
-              Research-driven strategy sets the foundation for everything that
-              follows.
-            </Text>
-          </Col>
+          <Heading tag="h3" variant="h3">Discovery</Heading>
+          <Text muted>
+            Understand the audience, goals, and competitive landscape.
+            Research-driven strategy sets the foundation for everything that
+            follows.
+          </Text>
+
           <img
-            slot="col2"
+            slot="column2"
             src={phL5.src}
             alt="Discovery phase"
             loading="lazy"
@@ -929,16 +898,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
 
       <TabPanel>
         <Layout variant="columns" verticalAlign="center">
-          <Col slot="col1">
-            <Heading tag="h3" variant="h3">Design</Heading>
-            <Text muted>
-              Pixel-perfect layouts grounded in a cohesive brand identity.
-              Design systems, not just screens — so every page feels
-              intentional.
-            </Text>
-          </Col>
+          <Heading tag="h3" variant="h3">Design</Heading>
+          <Text muted>
+            Pixel-perfect layouts grounded in a cohesive brand identity. Design
+            systems, not just screens — so every page feels intentional.
+          </Text>
+
           <img
-            slot="col2"
+            slot="column2"
             src={phL6.src}
             alt="Design phase"
             loading="lazy"
@@ -949,15 +916,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
 
       <TabPanel>
         <Layout variant="columns" verticalAlign="center">
-          <Col slot="col1">
-            <Heading tag="h3" variant="h3">Develop</Heading>
-            <Text muted>
-              Production-ready Astro code that's fast, accessible, and
-              maintainable. Every component is tested and typed.
-            </Text>
-          </Col>
+          <Heading tag="h3" variant="h3">Develop</Heading>
+          <Text muted>
+            Production-ready Astro code that's fast, accessible, and
+            maintainable. Every component is tested and typed.
+          </Text>
+
           <img
-            slot="col2"
+            slot="column2"
             src={phL1.src}
             alt="Development phase"
             loading="lazy"
@@ -968,15 +934,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
 
       <TabPanel>
         <Layout variant="columns" verticalAlign="center">
-          <Col slot="col1">
-            <Heading tag="h3" variant="h3">Launch</Heading>
-            <Text muted>
-              Go live with performance monitoring, analytics, and ongoing
-              support. Iterate and optimise based on real data.
-            </Text>
-          </Col>
+          <Heading tag="h3" variant="h3">Launch</Heading>
+          <Text muted>
+            Go live with performance monitoring, analytics, and ongoing support.
+            Iterate and optimise based on real data.
+          </Text>
+
           <img
-            slot="col2"
+            slot="column2"
             src={phL2.src}
             alt="Launch phase"
             loading="lazy"
@@ -1055,24 +1020,21 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        ============================================================ -->
   <Section padding="large" theme="brand" id="accordion">
     <Layout variant="sticky-left" verticalAlign="start">
-      <Col slot="col1">
-        <Heading variant="eyebrow" class="u-margin-bottom-3">Accordion</Heading>
-        <Heading tag="h2" variant="h1" balance accent>
-          Common questions, <strong>answered</strong>
-        </Heading>
-        <Text variant="regular">
-          The Accordion and AccordionItem components animate with GSAP for
-          smooth height transitions. Set openByDefault to pre-expand an item on
-          load.
-        </Text>
-        <div class="u-button-wrapper">
-          <Button href="/style-guide" ariaLabel="View style guide"
-            >View style guide</Button
-          >
-        </div>
-      </Col>
+      <Heading variant="eyebrow" class="u-margin-bottom-3">Accordion</Heading>
+      <Heading tag="h2" variant="h1" balance accent>
+        Common questions, <strong>answered</strong>
+      </Heading>
+      <Text variant="regular">
+        The Accordion and AccordionItem components animate with GSAP for smooth
+        height transitions. Set openByDefault to pre-expand an item on load.
+      </Text>
+      <div class="u-button-wrapper">
+        <Button href="/style-guide" ariaLabel="View style guide"
+          >View style guide</Button
+        >
+      </div>
 
-      <Accordion docs="" slot="col2" openByDefault={1}>
+      <Accordion docs="" slot="column2" openByDefault={1}>
         <AccordionItem question="What is the design system?">
           <Text>
             A structured CSS and component system. It uses CSS custom
@@ -1123,7 +1085,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        8. FORMS
        ============================================================ -->
   <Section padding="large" theme="light" id="forms">
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading variant="eyebrow" class="u-margin-bottom-2"
         >Form Components</Heading
       >
@@ -1133,7 +1095,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         FormRadio, and FormRange. All support label variants and validation
         states.
       </Text>
-    </ContentWrapper>
+    </Layout>
 
     <!-- Default label variant -->
     <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
@@ -1269,7 +1231,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        9. MODALS
        ============================================================ -->
   <Section padding="large" theme="light" id="modals">
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading variant="eyebrow" class="u-margin-bottom-2">Modal</Heading>
       <Heading tag="h2" balance>Three modal variants</Heading>
       <Text variant="regular" muted maxWidth="48rem">
@@ -1277,7 +1239,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         backdrop click close it automatically. The side-panel variant slides in
         from the right; full-screen fills the entire viewport.
       </Text>
-    </ContentWrapper>
+    </Layout>
     <Grid
       largeColumns={3}
       mediumColumns={1}
@@ -1329,29 +1291,25 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        ============================================================ -->
   <Section padding="large" theme="dark" id="cta">
     <Layout variant="stack-centered">
-      <Col slot="col1">
-        <Heading variant="eyebrow">Get Started</Heading>
-        <Heading tag="h2" variant="display-md" balance accent>
-          Ready to build something <strong>exceptional?</strong>
-        </Heading>
-        <Text variant="large" align="center" muted maxWidth="32rem">
-          This design system gives you everything you need to ship high-quality
-          Astro sites faster than ever before.
-        </Text>
-        <div class="u-button-wrapper">
-          <Button
-            href="/style-guide"
-            size="large"
-            ariaLabel="Browse style guide">Browse style guide</Button
-          >
-          <Button
-            variant="secondary"
-            href="/"
-            size="large"
-            ariaLabel="Back to home">Back to home</Button
-          >
-        </div>
-      </Col>
+      <Heading variant="eyebrow">Get Started</Heading>
+      <Heading tag="h2" variant="display-md" balance accent>
+        Ready to build something <strong>exceptional?</strong>
+      </Heading>
+      <Text variant="large" align="center" muted maxWidth="32rem">
+        This design system gives you everything you need to ship high-quality
+        Astro sites faster than ever before.
+      </Text>
+      <div class="u-button-wrapper">
+        <Button href="/style-guide" size="large" ariaLabel="Browse style guide"
+          >Browse style guide</Button
+        >
+        <Button
+          variant="secondary"
+          href="/"
+          size="large"
+          ariaLabel="Back to home">Back to home</Button
+        >
+      </div>
     </Layout>
   </Section>
 
@@ -1359,14 +1317,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        Blog Post Grid - Recent
        ============================================================ -->
   <Section id="blogpostgrid">
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading variant="eyebrow">Blog</Heading>
       <Heading tag="h2">Blog Post Grid Variants</Heading>
       <Text variant="regular" muted maxWidth="48rem">
         Variants for the blog post grid that can show on different pages. These
         are individual sections that can be placed directly on the page.
       </Text>
-    </ContentWrapper>
+    </Layout>
     {
       /* paddingBottom="none" too: these are sections nested inside a
         section, so their own padding stacks on the parent's. The
@@ -1439,20 +1397,18 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     ariaLabel="Component example — full screen modal"
   >
     <Layout variant="stack-centered">
-      <Col slot="col1">
-        <Heading tag="h2" variant="h3">Full Screen</Heading>
-        <Text align="center">
-          The <strong>full-screen</strong> variant covers the entire viewport. Use
-          it for image lightboxes, video players, or immersive onboarding flows.
-        </Text>
-        <Text muted align="center">
-          Close with the × button or the ESC key. (Backdrop click is disabled at
-          full screen.)
-        </Text>
-        <div class="u-button-wrapper u-margin-top-6">
-          <Button data-modal-close>Close</Button>
-        </div>
-      </Col>
+      <Heading tag="h2" variant="h3">Full Screen</Heading>
+      <Text align="center">
+        The <strong>full-screen</strong> variant covers the entire viewport. Use it
+        for image lightboxes, video players, or immersive onboarding flows.
+      </Text>
+      <Text muted align="center">
+        Close with the × button or the ESC key. (Backdrop click is disabled at
+        full screen.)
+      </Text>
+      <div class="u-button-wrapper u-margin-top-6">
+        <Button data-modal-close>Close</Button>
+      </div>
     </Layout>
   </Modal>
 
@@ -1461,7 +1417,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        ============================================================ -->
   <Section theme="light" padding="large" id="pricing-cards">
     <Layout variant="stack">
-      <ContentWrapper>
+      <Layout variant="stack">
         <Heading variant="eyebrow">Pricing Cards</Heading>
         <Heading tag="h2" variant="h2" balance>
           PricingCard + PricingItem
@@ -1470,7 +1426,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           Three variants: detailed cards with feature items, compact quick-view
           cards, and a general pricing card with 2-column items.
         </Text>
-      </ContentWrapper>
+      </Layout>
     </Layout>
 
     {/* ---- Detailed cards (autofit grid) ---- */}
@@ -1532,9 +1488,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
 
     {/* ---- General pricing card ---- */}
     <Layout variant="stack" class="u-margin-top-8">
-      <ContentWrapper>
+      <Layout variant="stack">
         <Heading tag="h3" variant="h4">General pricing card</Heading>
-      </ContentWrapper>
+      </Layout>
     </Layout>
     <PricingCard
       variant="general"
@@ -1555,9 +1511,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
 
     {/* ---- Compact quick-view cards ---- */}
     <Layout variant="stack" class="u-margin-top-8">
-      <ContentWrapper>
+      <Layout variant="stack">
         <Heading tag="h3" variant="h4">Compact quick-view cards</Heading>
-      </ContentWrapper>
+      </Layout>
     </Layout>
     <Grid variant="autofit" minColWidth="16rem" rowGap={6}>
       <PricingCard

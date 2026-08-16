@@ -17,7 +17,6 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
@@ -84,17 +83,15 @@ const categoryOptions = [
   }
   <Section docs="" theme="dark" class="case-studies_hero_wrap">
     <Layout variant="stack-centered">
-      <Col slot="col1">
-        <Heading
-          data-fade-in
-          data-prevent-flicker="true"
-          tag="h1"
-          variant="display-sm">Case Studies</Heading
-        >
-        <Text data-fade-in data-prevent-flicker="true" variant="large">
-          A selection of recent client projects and the results we delivered.
-        </Text>
-      </Col>
+      <Heading
+        data-fade-in
+        data-prevent-flicker="true"
+        tag="h1"
+        variant="display-sm">Case Studies</Heading
+      >
+      <Text data-fade-in data-prevent-flicker="true" variant="large">
+        A selection of recent client projects and the results we delivered.
+      </Text>
     </Layout>
   </Section>
 

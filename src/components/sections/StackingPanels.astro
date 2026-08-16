@@ -30,7 +30,6 @@ import type { HTMLAttributes } from "astro/types";
  */
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
 
@@ -84,9 +83,7 @@ const {
   {...rest}
 >
   <Layout variant="stack-centered">
-    <Col slot="col1">
-      <slot name="heading" />
-    </Col>
+    <slot name="heading" />
   </Layout>
   <div class="stacking-panels_wrap">
     <div class="stacking-panels_list">

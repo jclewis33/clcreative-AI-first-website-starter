@@ -27,7 +27,6 @@ import type { HTMLAttributes } from "astro/types";
 import { stegaClean } from "@sanity/client/stega";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Visual from "@/components/ui/Visual.astro";
 import Overlay from "@/components/ui/Overlay.astro";
 import Button from "@/components/ui/Button.astro";
@@ -95,7 +94,7 @@ const hasSecondary = Boolean(secondaryLabel && secondaryHref);
   {...rest}
 >
   <Layout variant="card">
-    <Col slot="col1" class="u-theme-dark">
+    <div class="u-display-contents u-theme-dark">
       <Heading data-split-text maxWidth="30ch">{heading}</Heading>
       <Text variant="large" data-fade-in data-delay="0.2">{text}</Text>
       <div data-fade-in data-delay="0.3" class="u-button-wrapper">
@@ -114,8 +113,8 @@ const hasSecondary = Boolean(secondaryLabel && secondaryHref);
           )
         }
       </div>
-    </Col>
-    <Col slot="col2">
+    </div>
+    <Fragment slot="column2">
       <Visual
         src={imageUrl}
         alt={imageAlt}
@@ -123,6 +122,6 @@ const hasSecondary = Boolean(secondaryLabel && secondaryHref);
         position={imagePosition}
       />
       <Overlay strength={overlayStrength} />
-    </Col>
+    </Fragment>
   </Layout>
 </Section>

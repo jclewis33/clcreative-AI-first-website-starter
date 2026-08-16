@@ -61,7 +61,6 @@
 import Section from "@/components/ui/Section.astro";
 import { slotContent } from "@/lib/slots";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
@@ -456,23 +455,21 @@ const gridProps =
       class:list={["case-study-grid_wrap", className]}
     >
       <Layout docs="" variant="stack" columnGap={columnGap} rowGap={rowGapProp}>
-        <Col slot="col1">
-          {/* Heading area */}
-          {showHeading &&
-            ((await headingContent) ? (
-              <slot name="heading" />
-            ) : (
-              <>
-                {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
-                <Heading tag="h2" variant="h2">
-                  {resolvedHeading}
-                </Heading>
-              </>
-            ))}
-        </Col>
+        {/* Heading area */}
+        {showHeading &&
+          ((await headingContent) ? (
+            <slot name="heading" />
+          ) : (
+            <>
+              {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+              <Heading tag="h2" variant="h2">
+                {resolvedHeading}
+              </Heading>
+            </>
+          ))}
 
         {/* Case study card grid */}
-        <Grid slot="col2" {...gridProps} rowGap={6}>
+        <Grid slot="column2" {...gridProps} rowGap={6}>
           {filtered.map((study) => (
             <CaseStudyCard
               title={study.title}

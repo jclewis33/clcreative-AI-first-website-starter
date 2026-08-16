@@ -2,7 +2,6 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Button from "@/components/ui/Button.astro";
@@ -72,80 +71,73 @@ const TRUST_BADGES = [
       <div class="scorecard_phase scorecard_phase_hero">
         <Layout variant="columns" ratio="6-4" verticalAlign="center">
           <!-- Left column -->
-          <Col slot="col1">
-            <p class="scorecard_hero_eyebrow u-text-style-eyebrow">
-              <span class="scorecard_hero_eyebrow_dot" aria-hidden="true"
-              ></span>
-              The Starter Scorecard
-            </p>
 
-            <Heading tag="h1" variant="h1">
-              Lorem ipsum dolor sit amet consectetur adipiscing elit
-            </Heading>
+          <p class="scorecard_hero_eyebrow u-text-style-eyebrow">
+            <span class="scorecard_hero_eyebrow_dot" aria-hidden="true"></span>
+            The Starter Scorecard
+          </p>
 
-            <Text variant="large">
-              Answer a few quick questions across 7 key areas and get a
-              personalized breakdown of your results — in about 5 minutes.
-            </Text>
+          <Heading tag="h1" variant="h1">
+            Lorem ipsum dolor sit amet consectetur adipiscing elit
+          </Heading>
 
-            <Grid
-              largeColumns={3}
-              mediumColumns={3}
-              smallColumns={1}
-              rowGap={4}
-            >
-              {
-                BENEFITS.map((b) => (
-                  <div class="scorecard_hero_benefit">
-                    <div class="scorecard_hero_benefit_icon" aria-hidden="true">
-                      ✓
-                    </div>
-                    <p class="scorecard_hero_benefit_title u-text-style-regular">
-                      <strong>{b.title}</strong>
-                    </p>
-                    <p class="scorecard_hero_benefit_text u-text-style-small u-text-style-muted">
-                      {b.text}
-                    </p>
+          <Text variant="large">
+            Answer a few quick questions across 7 key areas and get a
+            personalized breakdown of your results — in about 5 minutes.
+          </Text>
+
+          <Grid largeColumns={3} mediumColumns={3} smallColumns={1} rowGap={4}>
+            {
+              BENEFITS.map((b) => (
+                <div class="scorecard_hero_benefit">
+                  <div class="scorecard_hero_benefit_icon" aria-hidden="true">
+                    ✓
                   </div>
-                ))
-              }
-            </Grid>
+                  <p class="scorecard_hero_benefit_title u-text-style-regular">
+                    <strong>{b.title}</strong>
+                  </p>
+                  <p class="scorecard_hero_benefit_text u-text-style-small u-text-style-muted">
+                    {b.text}
+                  </p>
+                </div>
+              ))
+            }
+          </Grid>
 
-            <div class="u-button-wrapper">
-              <Button
-                data-scorecard-start
-                href="#scorecard-section"
-                ariaLabel="Start the scorecard"
-              >
-                Start the Scorecard
-                <svg
-                  slot="icon"
-                  viewBox="0 0 14 10"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                  class="scorecard_hero_btn_arrow"
-                >
-                  <line x1="0" y1="5" x2="12" y2="5"></line>
-                  <polyline points="8,1 12,5 8,9"></polyline>
-                </svg>
-              </Button>
-            </div>
-
-            <p
-              class="scorecard_hero_microcopy u-text-style-small u-text-style-muted"
+          <div class="u-button-wrapper">
+            <Button
+              data-scorecard-start
+              href="#scorecard-section"
+              ariaLabel="Start the scorecard"
             >
-              <span aria-hidden="true">⏱</span> Takes 5 minutes
-              <span aria-hidden="true" class="scorecard_hero_dot">·</span>
-              <span aria-hidden="true">🔒</span> Get your personalized score and next
-              steps by email.
-            </p>
-          </Col>
+              Start the Scorecard
+              <svg
+                slot="icon"
+                viewBox="0 0 14 10"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                class="scorecard_hero_btn_arrow"
+              >
+                <line x1="0" y1="5" x2="12" y2="5"></line>
+                <polyline points="8,1 12,5 8,9"></polyline>
+              </svg>
+            </Button>
+          </div>
+
+          <p
+            class="scorecard_hero_microcopy u-text-style-small u-text-style-muted"
+          >
+            <span aria-hidden="true">⏱</span> Takes 5 minutes
+            <span aria-hidden="true" class="scorecard_hero_dot">·</span>
+            <span aria-hidden="true">🔒</span> Get your personalized score and next
+            steps by email.
+          </p>
 
           <!-- Right column -->
-          <div slot="col2" class="scorecard_hero_rooms_card">
+          <div slot="column2" class="scorecard_hero_rooms_card">
             <p class="scorecard_hero_rooms_label u-text-style-eyebrow">
               You'll score 7 sections
             </p>

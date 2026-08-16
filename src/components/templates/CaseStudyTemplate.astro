@@ -11,7 +11,6 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
@@ -179,101 +178,94 @@ const ogImageUrl = seo.ogImage
   <JsonLd data={jsonLd} />
   <Section docs="" theme="dark" class="case-study_detail_hero_wrap">
     <Layout variant="stack" verticalAlign="center">
-      <Col slot="col1">
-        <a href="/case-studies" class="case-study_detail_back_link">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M15 18L9 12L15 6"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"></path>
-          </svg>
-          All Case Studies
-        </a>
+      <a href="/case-studies" class="case-study_detail_back_link">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M15 18L9 12L15 6"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+        All Case Studies
+      </a>
 
-        <Heading docs="" tag="h1" variant="h6" marginBottom={2} maxWidth="50ch">
-          {study.title || "Untitled Case Study"}
-        </Heading>
+      <Heading docs="" tag="h1" variant="h6" marginBottom={2} maxWidth="50ch">
+        {study.title || "Untitled Case Study"}
+      </Heading>
 
-        <Heading tag="h2" variant="h3" maxWidth="40ch">
-          {study.description || "This draft does not have a description yet."}
-        </Heading>
+      <Heading tag="h2" variant="h3" maxWidth="40ch">
+        {study.description || "This draft does not have a description yet."}
+      </Heading>
 
-        <div class="case-study_detail_meta">
-          <div class="case-study_detail_meta_item">
-            <Text tag="span" variant="regular" weight="bold" marginBottom={0}>
-              Client:
-            </Text>
-            <Text tag="span" variant="regular" weight="medium" marginBottom={0}>
-              {study.client || "Not set"}
-            </Text>
-          </div>
-          {
-            study.timeline && (
-              <div class="case-study_detail_meta_item">
-                <Text
-                  tag="span"
-                  variant="regular"
-                  weight="bold"
-                  marginBottom={0}
-                >
-                  Time:
-                </Text>
-                <Text
-                  tag="span"
-                  variant="regular"
-                  weight="medium"
-                  marginBottom={0}
-                >
-                  {study.timeline}
-                </Text>
-              </div>
-            )
-          }
-          {
-            study.liveUrl && (
-              <div class="case-study_detail_meta_item">
-                <Button
-                  variant="text"
-                  href={study.liveUrl}
-                  newTab
-                  ariaLabel={`Visit ${study.client} website`}
-                >
-                  Visit Website
-                  <svg
-                    slot="icon"
-                    aria-hidden="true"
-                    viewBox="0 0 10 10"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  >
-                    <line x1="0" y1="5" x2="8" y2="5" />
-                    <polyline points="5,2 8,5 5,8" />
-                  </svg>
-                </Button>
-              </div>
-            )
-          }
+      <div class="case-study_detail_meta">
+        <div class="case-study_detail_meta_item">
+          <Text tag="span" variant="regular" weight="bold" marginBottom={0}>
+            Client:
+          </Text>
+          <Text tag="span" variant="regular" weight="medium" marginBottom={0}>
+            {study.client || "Not set"}
+          </Text>
         </div>
+        {
+          study.timeline && (
+            <div class="case-study_detail_meta_item">
+              <Text tag="span" variant="regular" weight="bold" marginBottom={0}>
+                Time:
+              </Text>
+              <Text
+                tag="span"
+                variant="regular"
+                weight="medium"
+                marginBottom={0}
+              >
+                {study.timeline}
+              </Text>
+            </div>
+          )
+        }
+        {
+          study.liveUrl && (
+            <div class="case-study_detail_meta_item">
+              <Button
+                variant="text"
+                href={study.liveUrl}
+                newTab
+                ariaLabel={`Visit ${study.client} website`}
+              >
+                Visit Website
+                <svg
+                  slot="icon"
+                  aria-hidden="true"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <line x1="0" y1="5" x2="8" y2="5" />
+                  <polyline points="5,2 8,5 5,8" />
+                </svg>
+              </Button>
+            </div>
+          )
+        }
+      </div>
 
-        <div class="case-study_detail_categories">
-          {
-            categories.map((cat: string) => (
-              <span class="case-study_detail_category_tag">{cat}</span>
-            ))
-          }
-        </div>
-      </Col>
+      <div class="case-study_detail_categories">
+        {
+          categories.map((cat: string) => (
+            <span class="case-study_detail_category_tag">{cat}</span>
+          ))
+        }
+      </div>
 
-      <div slot="col2" class="case-study_detail_slider">
+      <div slot="column2" class="case-study_detail_slider">
         <Slider
           docs=""
           slidesLg={2}

@@ -14,7 +14,6 @@ import type { HTMLAttributes } from "astro/types";
 
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
@@ -66,13 +65,12 @@ const items = [
   {...rest}
 >
   <Layout variant="columns" verticalAlign="start">
-    <Col slot="col1">
-      <Heading data-fade-in maxWidth="40ch" variant="eyebrow"
-        >Lorem ipsum eyebrow</Heading
-      >
-      <Heading data-split-text>Lorem ipsum dolor sit amet consectetur</Heading>
-    </Col>
-    <Col slot="col2">
+    <Heading data-fade-in maxWidth="40ch" variant="eyebrow"
+      >Lorem ipsum eyebrow</Heading
+    >
+    <Heading data-split-text>Lorem ipsum dolor sit amet consectetur</Heading>
+
+    <Fragment slot="column2">
       <Text data-fade-in variant="large"
         >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua.</Text
@@ -132,7 +130,7 @@ const items = [
           </svg>
         </Button>
       </div>
-    </Col>
+    </Fragment>
   </Layout>
 
   <Visual

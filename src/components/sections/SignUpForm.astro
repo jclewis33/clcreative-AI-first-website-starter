@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import Layout from "@/components/ui/Layout.astro";
 /**
  * SignUpForm — centered card with heading, subtext, and a simple contact form.
  *
@@ -20,7 +21,6 @@ import type { HTMLAttributes } from "astro/types";
 import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
-import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 import Button from "@/components/ui/Button.astro";
 import Form from "@/components/form/Form.astro";
 import FormField from "@/components/form/FormField.astro";
@@ -68,13 +68,13 @@ const {
   {...rest}
 >
   <div data-fade-in class="signup_card" data-theme="dark">
-    <ContentWrapper align="center">
+    <Layout variant="stack-centered">
       <Heading variant="h3">Lorem ipsum dolor sit amet consectetur?</Heading>
       <Text align="center"
         >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua.</Text
       >
-    </ContentWrapper>
+    </Layout>
 
     <Form name="signup" class="signup_form">
       <FormField label="Name" name="name" required />

@@ -15,7 +15,6 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
@@ -98,12 +97,10 @@ const groupedTerms = groupTermsByLetter(sortedTerms);
   }
   <Section theme="dark" class="glossary_hero_wrap">
     <Layout variant="stack-centered">
-      <Col slot="col1">
-        <Heading tag="h1" variant="display-sm">Glossary</Heading>
-        <Text variant="large" align="center">
-          A glossary of key terms and concepts.
-        </Text>
-      </Col>
+      <Heading tag="h1" variant="display-sm">Glossary</Heading>
+      <Text variant="large" align="center">
+        A glossary of key terms and concepts.
+      </Text>
     </Layout>
   </Section>
 

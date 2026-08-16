@@ -19,12 +19,10 @@ import type { HTMLAttributes } from "astro/types";
 
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
 import Button from "@/components/ui/Button.astro";
-import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 import PricingCard from "@/components/ui/PricingCard.astro";
 import PricingItem from "@/components/ui/PricingItem.astro";
 
@@ -69,18 +67,16 @@ const {
 >
   {/* ---- General pricing card ---- */}
   <Layout verticalAlign="start" variant="columns">
-    <Col slot="col1">
-      <Heading variant="eyebrow"> Investment</Heading>
-      <Heading tag="h3" variant="h2">Lorem ipsum dolor sit amet.</Heading>
-      <Text
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua ut enim ad minim
-        veniam.</Text
-      >
-    </Col>
-    <Layout rowGap="var(--space-5)" slot="col2" variant="stack">
+    <Heading variant="eyebrow"> Investment</Heading>
+    <Heading tag="h3" variant="h2">Lorem ipsum dolor sit amet.</Heading>
+    <Text
+      >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+      tempor incididunt ut labore et dolore magna aliqua ut enim ad minim
+      veniam.</Text
+    >
+
+    <Layout rowGap="var(--space-5)" slot="column2" variant="stack">
       <PricingCard
-        slot="col1"
         theme="light"
         variant="general"
         price="$5,000"
@@ -99,7 +95,7 @@ const {
         <PricingItem>Exercitation ullamco laboris nisi</PricingItem>
         <PricingItem>Duis aute irure dolor in reprehenderit</PricingItem>
       </PricingCard>
-      <ContentWrapper slot="col2">
+      <Layout variant="stack" slot="column2">
         <Text variant="h5">Looking for add-ons?</Text>
         <!-- Add-on cards -->
         <Grid largeColumns={2} mediumColumns={2} smallColumns={1} rowGap={3}>
@@ -132,7 +128,7 @@ const {
             style="grid-column: 1 / -1;"
           /></Grid
         >
-      </ContentWrapper>
+      </Layout>
     </Layout>
   </Layout>
 </Section>

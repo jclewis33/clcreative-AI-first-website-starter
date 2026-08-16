@@ -4,7 +4,6 @@ import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 
 import "@/styles/pages/home.css";
 import HowItWorks from "@/components/sections/HowItWorks.astro";
@@ -18,7 +17,6 @@ import CTASection from "@/components/sections/CTASection.astro";
 
 import CaseStudyFeatured from "@/components/sections/CaseStudyFeatured.astro";
 import Visual from "@/components/ui/Visual.astro";
-import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Button from "@/components/ui/Button.astro";
 import ImagePromo from "@/components/sections/ImagePromo.astro";
@@ -48,7 +46,7 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
       class="home-hero_layout home-hero_content"
       variant="columns"
     >
-      <Col docs="" slot="col1" class="home-hero_text">
+      <div class="u-display-contents home-hero_text">
         <Heading tag="h1" maxWidth="none" variant="eyebrow"
           >Lorem ipsum dolor sit amet</Heading
         >
@@ -73,9 +71,9 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
             ariaLabel="Take the scorecard">Take the Scorecard</Button
           >
         </div>
-      </Col>
+      </div>
       <Visual
-        slot="col2"
+        slot="column2"
         src={theFixImage}
         alt="Placeholder hero image"
         ratio="landscape"
@@ -94,14 +92,13 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
       <Heading
         data-prevent-flicker="true"
         data-split-text
-        slot="col1"
         tag="h2"
         variant="h2"
         maxWidth="16ch"
       >
         Lorem ipsum dolor sit amet consectetur.
       </Heading>
-      <Col slot="col2">
+      <Fragment slot="column2">
         <Heading
           data-fade-in
           data-prevent-flicker="true"
@@ -115,7 +112,7 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
           Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
           nisi ut aliquip ex ea commodo consequat.
         </Text>
-      </Col>
+      </Fragment>
     </Layout>
     <Visual
       src={problemImage}
@@ -129,7 +126,8 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
 
   <!-- Agitation Section -->
   <Section padding="small" theme="brand">
-    <ContentWrapper
+    <Layout
+      variant="stack"
       data-prevent-flicker="true"
       data-fade-list
       align="left"
@@ -142,17 +140,17 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
         >Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
         ut aliquip ex ea commodo consequat duis aute irure dolor.
       </Text>
-    </ContentWrapper>
+    </Layout>
   </Section>
 
   <!-- The Fix Section -->
   <Section gap={8}>
     <Layout variant="columns" ratio="6.5-5.5" rowGap="var(--space-4)">
-      <Heading maxWidth="none" slot="col1" data-fade-in tag="h2" variant="h3">
+      <Heading maxWidth="none" data-fade-in tag="h2" variant="h3">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod.
       </Heading>
 
-      <ContentWrapper slot="col2">
+      <Layout variant="stack" slot="column2">
         <Text data-fade-in>
           Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
           nisi ut aliquip ex ea commodo consequat.
@@ -161,7 +159,7 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
           Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
           dolore eu fugiat nulla pariatur.
         </Text>
-      </ContentWrapper>
+      </Layout>
     </Layout>
     <Visual
       src={theFixImage}
@@ -169,11 +167,11 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
       data-fade-in
       ratio="landscape"
     />
-    <ContentWrapper align="center">
+    <Layout variant="stack-centered">
       <div class="u-button-wrapper">
         <Button href="/contact" ariaLabel="Get started">Get Started</Button>
       </div>
-    </ContentWrapper>
+    </Layout>
   </Section>
 
   <!-- Framework Section -->
@@ -181,20 +179,15 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
 
   <!--Stakes Section -->
   <Section>
-    <ContentWrapper align="center">
+    <Layout variant="stack-centered">
       <Heading tag="h2" variant="h2" maxWidth="25ch">
         Lorem ipsum dolor sit amet consectetur adipiscing elit.
       </Heading>
-    </ContentWrapper>
+    </Layout>
 
     <Layout variant="columns" verticalAlign="center">
-      <Visual
-        slot="col1"
-        src={stakes1}
-        alt="Placeholder image"
-        ratio="landscape"
-      />
-      <Col slot="col2">
+      <Visual src={stakes1} alt="Placeholder image" ratio="landscape" />
+      <Fragment slot="column2">
         <Heading tag="h3" variant="h3">
           Lorem ipsum dolor sit amet consectetur adipiscing.
         </Heading>
@@ -205,17 +198,12 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
           Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
           nisi ut aliquip ex ea commodo consequat.
         </Text>
-      </Col>
+      </Fragment>
     </Layout>
 
     <Layout variant="columns-reversed" verticalAlign="center">
-      <Visual
-        slot="col1"
-        src={stakes2}
-        alt="Placeholder image"
-        ratio="landscape"
-      />
-      <Col slot="col2">
+      <Visual src={stakes2} alt="Placeholder image" ratio="landscape" />
+      <Fragment slot="column2">
         <Heading maxWidth="30ch" tag="h3" variant="h3">
           Duis aute irure dolor in reprehenderit in voluptate velit esse.
         </Heading>
@@ -226,14 +214,14 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
           Sed ut perspiciatis unde omnis iste natus error sit voluptatem
           accusantium doloremque laudantium totam rem aperiam.
         </Text>
-      </Col>
+      </Fragment>
     </Layout>
 
-    <ContentWrapper align="center">
+    <Layout variant="stack-centered">
       <div class="u-button-wrapper">
         <Button href="/contact" ariaLabel="Get started">Get Started</Button>
       </div>
-    </ContentWrapper>
+    </Layout>
   </Section>
 
   <!-- Case Study Featured Section -->
@@ -264,24 +252,23 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
   <Section>
     <div class="future_card u-theme-brand">
       <Layout ratio="35-65" variant="columns" verticalAlign="center">
-        <Col slot="col1">
-          <Heading tag="h2" variant="h3">
-            Lorem ipsum dolor sit amet consectetur adipiscing elit.
-          </Heading>
-          <Text variant="large">
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-            nisi ut aliquip ex ea commodo consequat duis aute irure dolor in
-            reprehenderit.
-          </Text>
+        <Heading tag="h2" variant="h3">
+          Lorem ipsum dolor sit amet consectetur adipiscing elit.
+        </Heading>
+        <Text variant="large">
+          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+          nisi ut aliquip ex ea commodo consequat duis aute irure dolor in
+          reprehenderit.
+        </Text>
 
-          <div class="u-button-wrapper">
-            <Button variant="primary" href="/contact" ariaLabel="Get started"
-              >Get Started</Button
-            >
-          </div>
-        </Col>
+        <div class="u-button-wrapper">
+          <Button variant="primary" href="/contact" ariaLabel="Get started"
+            >Get Started</Button
+          >
+        </div>
+
         <Grid
-          slot="col2"
+          slot="column2"
           largeColumns={3}
           mediumColumns={3}
           smallColumns={2}

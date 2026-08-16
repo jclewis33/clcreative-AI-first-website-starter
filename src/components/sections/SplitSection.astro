@@ -28,7 +28,6 @@ import type { HTMLAttributes } from "astro/types";
  */
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Visual from "@/components/ui/Visual.astro";
 import Button from "@/components/ui/Button.astro";
 
@@ -119,25 +118,21 @@ const {
   {...rest}
 >
   <Layout variant="full-reversed" verticalAlign="center" columnGap={gap}>
-    <Col slot="col1">
-      <div class="split_content">
-        <slot />
-        {
-          buttonText && (
-            <div class="u-button-wrapper">
-              <Button
-                href={buttonHref}
-                ariaLabel={buttonAriaLabel ?? buttonText}
-              >
-                {buttonText}
-              </Button>
-            </div>
-          )
-        }
-      </div>
-    </Col>
+    <div class="split_content">
+      <slot />
+      {
+        buttonText && (
+          <div class="u-button-wrapper">
+            <Button href={buttonHref} ariaLabel={buttonAriaLabel ?? buttonText}>
+              {buttonText}
+            </Button>
+          </div>
+        )
+      }
+    </div>
+
     <Visual
-      slot="col2"
+      slot="column2"
       src={image}
       alt={imageAlt}
       ratio={imageRatio}

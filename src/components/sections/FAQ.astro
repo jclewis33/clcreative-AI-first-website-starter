@@ -20,7 +20,6 @@ import type { HTMLAttributes } from "astro/types";
 
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Accordion from "@/components/ui/Accordion.astro";
@@ -91,17 +90,16 @@ const {
   {...rest}
 >
   <Layout ratio="6-7" verticalAlign="start" variant="columns">
-    <Col slot="col1">
-      {
-        eyebrow && (
-          <Heading variant="eyebrow" data-prevent-flicker="true" data-fade-in>
-            {eyebrow}
-          </Heading>
-        )
-      }
-      <Heading data-splittext data-prevent-flicker="true">{heading}</Heading>
-    </Col>
-    <div slot="col2">
+    {
+      eyebrow && (
+        <Heading variant="eyebrow" data-prevent-flicker="true" data-fade-in>
+          {eyebrow}
+        </Heading>
+      )
+    }
+    <Heading data-splittext data-prevent-flicker="true">{heading}</Heading>
+
+    <div slot="column2">
       <Accordion openByDefault={openByDefault} closePrevious>
         {
           items.map((faq) => (

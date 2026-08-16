@@ -4,9 +4,9 @@
  * Renders stat callouts in a responsive grid.
  */
 import Grid from "@/components/ui/Grid.astro";
+import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
-import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 
 interface StatItem {
   value: string;
@@ -30,14 +30,14 @@ const columns = Math.min(items.length, 4) as 1 | 2 | 3 | 4;
 >
   {
     items.map((stat) => (
-      <ContentWrapper align="center">
+      <Layout variant="stack-centered">
         <Heading tag="p" variant="h1" marginBottom={0}>
           {stat.value}
         </Heading>
         <Text variant="small" muted>
           {stat.label}
         </Text>
-      </ContentWrapper>
+      </Layout>
     ))
   }
 </Grid>

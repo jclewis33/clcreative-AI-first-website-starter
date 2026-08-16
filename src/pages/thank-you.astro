@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Layout from "@/components/ui/Layout.astro";
 import Section from "@/components/ui/Section.astro";
-import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 ---
@@ -11,11 +11,11 @@ import Text from "@/components/ui/Text.astro";
   description="Thank you for getting in touch."
 >
   <Section>
-    <ContentWrapper align="center" maxWidth="48rem">
+    <Layout variant="stack-centered" maxWidth="48rem">
       <Heading>Thank You</Heading>
       <Text>We will be in contact soon. </Text>
       <div class="redirect-time"></div>
-    </ContentWrapper>
+    </Layout>
   </Section>
   <script is:inline>
     document.addEventListener("DOMContentLoaded", function () {

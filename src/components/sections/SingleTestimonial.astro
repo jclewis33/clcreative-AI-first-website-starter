@@ -17,10 +17,10 @@
  */
 
 import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import { urlFor } from "@/sanity/lib/image";
-import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 import { getTestimonialByName } from "@/sanity/lib/testimonials";
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 
@@ -112,7 +112,7 @@ const subtitle = [role, company].filter(Boolean).join(", ");
   id={id}
   class:list={["single_testimonial_section", className]}
 >
-  <ContentWrapper align="center" maxWidth="48rem">
+  <Layout variant="stack-centered" maxWidth="48rem">
     {/* Avatar + name block */}
     <div class="single_testimonial_author">
       {
@@ -151,7 +151,7 @@ const subtitle = [role, company].filter(Boolean).join(", ");
     <Text data-split-text align="center" variant="h3" weight="regular"
       >{quote}</Text
     >
-  </ContentWrapper>
+  </Layout>
 </Section>
 
 <style is:global>

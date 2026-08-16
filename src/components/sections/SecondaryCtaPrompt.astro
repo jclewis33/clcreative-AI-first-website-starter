@@ -17,7 +17,6 @@ import type { HTMLAttributes } from "astro/types";
 
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Heading from "@/components/ui/Heading.astro";
 
 type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
@@ -74,13 +73,11 @@ const {
   {...rest}
 >
   <Layout variant="stack">
-    <Col slot="col1">
-      <Heading tag="h2" variant="h4">
-        {heading}
-        <a href={linkHref} class="u-text-style-underline">
-          {linkText}
-        </a>
-      </Heading>
-    </Col>
+    <Heading tag="h2" variant="h4">
+      {heading}
+      <a href={linkHref} class="u-text-style-underline">
+        {linkText}
+      </a>
+    </Heading>
   </Layout>
 </Section>

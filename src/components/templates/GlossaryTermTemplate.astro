@@ -11,7 +11,6 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
@@ -88,21 +87,19 @@ tocEntries.forEach(({ text, id }) => {
   <JsonLd data={jsonLd} />
   <Section paddingTop="small" theme="dark" class="glossary_term_hero_wrap">
     <Layout variant="stack">
-      <Col slot="col1">
-        <nav class="glossary_term_breadcrumbs" aria-label="Breadcrumb">
-          <a href="/glossary" class="glossary_term_breadcrumb_link">Glossary</a>
-          <span class="glossary_term_breadcrumb_sep" aria-hidden="true">/</span>
-          <span class="glossary_term_breadcrumb_current" aria-current="page">
-            {term.term}
-          </span>
-        </nav>
+      <nav class="glossary_term_breadcrumbs" aria-label="Breadcrumb">
+        <a href="/glossary" class="glossary_term_breadcrumb_link">Glossary</a>
+        <span class="glossary_term_breadcrumb_sep" aria-hidden="true">/</span>
+        <span class="glossary_term_breadcrumb_current" aria-current="page">
+          {term.term}
+        </span>
+      </nav>
 
-        <span class="glossary_term_category_tag">{term.category}</span>
+      <span class="glossary_term_category_tag">{term.category}</span>
 
-        <Heading tag="h1" variant="h1" balance>{term.term}</Heading>
+      <Heading tag="h1" variant="h1" balance>{term.term}</Heading>
 
-        <Text variant="large">{term.shortDefinition}</Text>
-      </Col>
+      <Text variant="large">{term.shortDefinition}</Text>
     </Layout>
   </Section>
 
@@ -116,11 +113,7 @@ tocEntries.forEach(({ text, id }) => {
     >
       {
         tocEntries.length > 0 && (
-          <nav
-            slot="col1"
-            class="glossary_term_toc"
-            aria-label="Table of contents"
-          >
+          <nav class="glossary_term_toc" aria-label="Table of contents">
             <Heading tag="h2" variant="h6" marginBottom={0}>
               On this page
             </Heading>
@@ -138,7 +131,7 @@ tocEntries.forEach(({ text, id }) => {
       }
 
       <div
-        slot="col2"
+        slot="column2"
         class="glossary_term_prose u-rich-text"
         set:html={processedContent}
       />

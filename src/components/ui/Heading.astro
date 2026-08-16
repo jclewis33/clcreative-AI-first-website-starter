@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import Layout from "@/components/ui/Layout.astro";
 /**
  * Heading — separates semantic tag (`h1`–`h6`, `p`) from visual style.
  *
@@ -157,7 +158,7 @@ interface Props extends HTMLAttributes<"div"> {
    *
    * NOTE: `marginBottom={0}` is **usually redundant**. Margin-trim already
    * zeroes the bottom margin of the LAST child of a trimmed wrapper — a
-   * `<Section>` container, a `<Layout>` column, `<ContentWrapper>`, `<Col>`,
+   * `<Section>` container, a `<Layout>` column, `<Layout variant="stack">`, ``,
    * `u-rich-text`, or any `u-margin-trim`/`u-container*` element. Only set it
    * when this is the last child of a *custom* `<div>` that isn't auto-trimmed
    * (e.g. a card body); even then, prefer `u-margin-trim` on that wrapper.

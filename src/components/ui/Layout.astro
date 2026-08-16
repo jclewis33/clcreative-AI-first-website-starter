@@ -1,46 +1,48 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { slotContent } from "@/lib/slots";
 /**
- * Layout — two-column CSS Grid with 13 named variants.
+ * Layout — the one component that arranges a section's content.
  *
- * All two-column variants collapse to a single stacked column when the
- * nearest `.u-container` is narrower than 58em (928px) by default.
- * Use `collapseAt="small"` to keep columns until 560px instead.
+ * Absorbed the old ContentWrapper (text alignment + measure) and replaced the
+ * old Col: a section is now ONE decision instead of choosing between two
+ * overlapping components and remembering a column wrapper.
  *
- * Slots (two-column variants):
- *   - `col1` — left column content
- *   - `col2` — right column content
- *   A single component (Visual, Grid, Card) takes `slot="col1"`/`slot="col2"`
- *   directly. To put MULTIPLE loose elements in one column, wrap them in the
- *   `<Col>` component (`src/components/ui/Col.astro`) — the standard wrapper.
- *   Do NOT use a bare `<div slot="col1">` (it becomes the grid child and breaks
- *   alignment/gap); `<Col>` bakes in the required `u-display-contents`.
- *   EXCEPTION: a column holding a `<Visual>` *together with other content* must
- *   use `<ContentWrapper>`, NOT `<Col>` — `<Col>`'s `display: contents` lets the
- *   image's `height: 100%` override its `ratio` aspect-ratio and balloon (see
- *   the `<Col>` note in `Col.astro` / CLAUDE.md).
+ * SLOTS
+ *   default    — column 1. Anything placed inside <Layout> lands here; there
+ *                is no slot attribute or wrapper component to remember.
+ *   `column2`  — the second column, on the two-column variants.
  *
- *   Decision table — what is in the column?
- *   | Column holds                                | Wrapper                    |
- *   |---------------------------------------------|----------------------------|
- *   | One component (Visual/Grid/Card/Slider)     | none — `slot` directly     |
- *   | Loose elements, no Visual                   | `<Col>`                    |
- *   | Ratio'd `<Visual>` + anything else          | `<ContentWrapper>`         |
- *   | Background Visual + Overlay                 | `<Col>`                    |
- *   | Needs its own text alignment                | `<ContentWrapper align>`   |
- *   Wrong combinations warn in the dev terminal (see Col.astro).
+ * A single component takes `slot="column2"` directly. For several loose
+ * elements in column 2, use `<Fragment slot="column2">` — it groups them
+ * without emitting a box of its own.
  *
- * Slots (stack / stack-centered):
- *   - default — all content goes into a single column
+ * The column wrappers are generated here, so there is nothing to get wrong.
+ * (The old  used `display: contents`, which erased the column box and let
+ * a ratio'd <Visual> balloon — a hazard that needed a dev-time guardrail.
+ * A generated column is a real flex box, so that failure cannot occur.)
  *
- * @example 50/50 two-column layout (multiple elements → wrap in <Col>)
+ * All two-column variants collapse to a single stacked column when the nearest
+ * `.u-container` is narrower than 58em (928px). Use `collapseAt="small"` to
+ * keep columns until 560px instead.
+ *
+ * @example Two columns — content and an image
  * ```astro
  * <Layout variant="columns" verticalAlign="center">
- *   <Col slot="col1">
- *     <Heading tag="h2" variant="h2">Title</Heading>
- *     <Text>Description</Text>
- *   </Col>
- *   <Visual slot="col2" src={img} alt="Photo" ratio="landscape" />
+ *   <Heading tag="h2" variant="h2">Title</Heading>
+ *   <Text>Description</Text>
+ *   <Visual slot="column2" src={img} alt="Photo" ratio="landscape" />
+ * </Layout>
+ * ```
+ *
+ * @example Several elements in column 2
+ * ```astro
+ * <Layout variant="columns">
+ *   <Heading tag="h2">Title</Heading>
+ *   <Fragment slot="column2">
+ *     <Visual src={img} alt="" ratio="landscape" />
+ *     <Text variant="small">Caption</Text>
+ *   </Fragment>
  * </Layout>
  * ```
  *
@@ -52,50 +54,41 @@ import type { HTMLAttributes } from "astro/types";
  * </Layout>
  * ```
  *
- * @example Card layout (contain)
+ * @example Single column with a readable measure
  * ```astro
- * <Layout variant="contain">
- *   <Col slot="col1">
- *     <Heading>Feature</Heading>
- *     <Text>Description</Text>
- *   </Col>
- *   <Visual slot="col2" src={img} alt="" />
+ * <Layout variant="stack" maxWidth="48rem">
+ *   <Text>Long-form copy constrained to a comfortable line length.</Text>
  * </Layout>
  * ```
  *
  * @example Breakout — image bleeds to viewport edge
  * ```astro
  * <Layout variant="breakout" contentSpan={7} bleedSpan={6}>
- *   <Col slot="col1">
  *     <Heading tag="h2">Content side</Heading>
  *     <Text>Stays in the container.</Text>
- *   </Col>
- *   <Visual slot="col2" src={img} alt="" />
+ *   <Visual slot="column2" src={img} alt="" />
  * </Layout>
  * ```
  *
  * @example Centered card with background image (CTA pattern)
  * ```astro
  * <Layout variant="card">
- *   <Col slot="col1">
  *     <Heading tag="h2" variant="display-sm" accent>Ready to <strong>start</strong>?</Heading>
  *     <Text size="large" align="center">Book a free strategy call.</Text>
  *     <div class="u-button-wrapper">
  *       <Button href="/book-a-call" ariaLabel="Book call">Book a Call</Button>
  *     </div>
- *   </Col>
- *   <Col slot="col2">
+ *   <Col slot="column2">
  *     <Visual src={bgImage} alt="" variant="background" />
  *     <Overlay strength={75} />
- *   </Col>
  * </Layout>
  * ```
  *
  * @example Custom column ratio
  * ```astro
  * <Layout variant="columns" ratio="5-7" verticalAlign="start">
- *   <Heading slot="col1" variant="eyebrow">Label</Heading>
- *   <Text slot="col2" variant="large">Body text.</Text>
+ *   <Heading variant="eyebrow">Label</Heading>
+ *   <Text slot="column2" variant="large">Body text.</Text>
  * </Layout>
  * ```
  */
@@ -185,7 +178,7 @@ interface Props extends HTMLAttributes<"div"> {
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
    *
-   * **Slots:** `col1` (left), `col2` (right). A single component (Visual, Grid, Card) takes `slot` directly; wrap MULTIPLE loose elements in the `<Col>` component (`<Col slot="col1">…</Col>`) — the standard wrapper that bakes in `u-display-contents`. EXCEPTION: a column holding a `<Visual>` alongside other content must use `<ContentWrapper>`, not `<Col>` (`<Col>`'s `display: contents` lets the image's `height: 100%` override its `ratio` aspect-ratio and balloon).
+   * **Slots:** `col1` (left), `col2` (right). A single component (Visual, Grid, Card) takes `slot` directly; wrap MULTIPLE loose elements in the `` component (`…`) — the standard wrapper that bakes in `u-display-contents`. EXCEPTION: a column holding a `<Visual>` alongside other content must use `<Layout variant="stack">`, not `` (`'s `display: contents` lets the image's `height: 100%` override its `ratio` aspect-ratio and balloon).
    */
   docs?: string;
 
@@ -212,6 +205,19 @@ interface Props extends HTMLAttributes<"div"> {
    * @example variant="contain"
    */
   variant?: LayoutVariant;
+
+  /**
+   * Text alignment for column 1. Absorbed from the old ContentWrapper.
+   * `stack-centered` already centers, so this is for the other variants.
+   * @default 'inherit'
+   */
+  align?: "inherit" | "center" | "left" | "right" | "center-mobile";
+
+  /**
+   * Optional measure on column 1 — a max-width for readable line length.
+   * @example maxWidth="48rem"
+   */
+  maxWidth?: string;
 
   /**
    * Vertical alignment of columns relative to each other.
@@ -396,6 +402,8 @@ interface Props extends HTMLAttributes<"div"> {
 const {
   docs,
   variant = "columns",
+  align = "inherit",
+  maxWidth,
   verticalAlign,
   collapseAt = "medium",
   contentSpan,
@@ -410,6 +418,34 @@ const {
 } = Astro.props;
 
 /* Breakout/full variants use the u-grid-breakout utility for their named-line grid */
+/* Absorbed from the old ContentWrapper: text alignment and an optional
+   measure. Kept as props rather than a second component so a section is one
+   decision — see CLAUDE.md. */
+const textAlignClassMap: Record<string, string | undefined> = {
+  inherit: undefined,
+  center: "is-center-align",
+  left: "is-left-align",
+  right: "is-right-align",
+  "center-mobile": "is-center-align-mobile",
+};
+
+/* `stack-centered` centers by name, so it implies align="center" — otherwise
+   a centered stack with a `maxWidth` measure would constrain the box but
+   leave it (and its text) hugging the left edge. An explicit `align` still
+   wins, so a caller can override the variant's implication. */
+const effectiveAlign =
+  align !== "inherit"
+    ? align
+    : variant === "stack-centered"
+      ? "center"
+      : "inherit";
+
+/* The alignment classes need a host whenever there is something to align OR a
+   measure to centre. */
+const needsContentWrapper = effectiveAlign !== "inherit" || Boolean(maxWidth);
+
+const column2Content = slotContent(Astro.slots, "column2");
+
 const isBreakout = [
   "breakout",
   "breakout-reversed",
@@ -474,14 +510,41 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
     class:list={["u-layout", alignClass, { "u-grid-breakout": isBreakout }]}
     style={inlineStyle}
   >
-    <div class="u-layout-column-1">
-      <slot name="col1" />
+    {
+      /* Column 1 is the DEFAULT slot — anything placed inside <Layout> lands
+        here with no wrapper component and no slot attribute to remember. The
+        `u-content-wrapper` classes are the ones ContentWrapper used to apply,
+        reused verbatim so alignment and measure render identically. */
+    }
+    <div
+      class:list={[
+        "u-layout-column-1",
+        needsContentWrapper && "u-content-wrapper",
+        textAlignClassMap[effectiveAlign],
+      ]}
+    >
+      {
+        maxWidth ? (
+          <div
+            class="u-content-wrapper_inner"
+            style={`max-width: ${maxWidth};`}
+          >
+            <slot />
+          </div>
+        ) : (
+          <slot />
+        )
+      }
     </div>
 
     {
-      Astro.slots.has("col2") && (
+      /* Only emitted when it renders something — a column2 holding an empty
+        expression would otherwise leave a stray grid cell. */
+    }
+    {
+      (await column2Content) && (
         <div class="u-layout-column-2">
-          <slot name="col2" />
+          <slot name="column2" />
         </div>
       )
     }

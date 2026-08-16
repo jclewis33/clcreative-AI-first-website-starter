@@ -71,7 +71,6 @@ import blogImage1 from "@/assets/placeholder-images/placeholder-9.webp";
 import blogImage2 from "@/assets/placeholder-images/placeholder-10.webp";
 import blogImage3 from "@/assets/placeholder-images/placeholder-1.webp";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 
 /* ── Exported post type ────────────────────────────────────────────────────
    Reusable across the project. When connecting a CMS, import this type
@@ -572,24 +571,22 @@ const showHeading = Astro.slots.has("heading") || resolvedHeading;
       class:list={["blog-post-grid_wrap", className]}
     >
       <Layout docs="" variant="stack" columnGap={columnGap} rowGap={rowGapProp}>
-        <Col slot="col1">
-          {/* Heading area */}
-          {showHeading &&
-            ((await headingContent) ? (
-              <slot name="heading" />
-            ) : (
-              <>
-                {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
-                <Heading tag="h2" variant="h2">
-                  {resolvedHeading}
-                </Heading>
-              </>
-            ))}
-        </Col>
+        {/* Heading area */}
+        {showHeading &&
+          ((await headingContent) ? (
+            <slot name="heading" />
+          ) : (
+            <>
+              {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+              <Heading tag="h2" variant="h2">
+                {resolvedHeading}
+              </Heading>
+            </>
+          ))}
 
         {/* Blog card grid — 3 → 2 → 1 responsive */}
         <Grid
-          slot="col2"
+          slot="column2"
           largeColumns={3}
           mediumColumns={2}
           smallColumns={1}

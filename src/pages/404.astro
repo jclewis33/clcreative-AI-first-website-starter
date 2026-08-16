@@ -2,7 +2,6 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Col from "@/components/ui/Col.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Button from "@/components/ui/Button.astro";
@@ -14,15 +13,13 @@ import Button from "@/components/ui/Button.astro";
 >
   <Section minHeight>
     <Layout variant="stack-centered">
-      <Col slot="col1">
-        <Heading tag="h1" variant="display-lg">404</Heading>
-        <Text variant="large" align="center">
-          The page you're looking for doesn't exist or has been moved.
-        </Text>
-        <div class="u-button-wrapper">
-          <Button href="/">Back to Home</Button>
-        </div>
-      </Col>
+      <Heading tag="h1" variant="display-lg">404</Heading>
+      <Text variant="large" align="center">
+        The page you're looking for doesn't exist or has been moved.
+      </Text>
+      <div class="u-button-wrapper">
+        <Button href="/">Back to Home</Button>
+      </div>
     </Layout>
   </Section>
 </BaseLayout>

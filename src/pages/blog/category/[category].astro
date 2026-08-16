@@ -18,7 +18,6 @@ import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
-import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 import BlogCard from "@/components/ui/BlogCard.astro";
 
 // Sanity
@@ -108,7 +107,7 @@ const defaultCtaSection = settings?.defaultCtaSection ?? null;
       Main Blog
     </a>
 
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading tag="h1" variant="h1"
         >{category === "All" ? "All Posts" : categoryLabel}</Heading
       >
@@ -119,7 +118,7 @@ const defaultCtaSection = settings?.defaultCtaSection ?? null;
             : `Browse all ${categoryLabel} blog posts.`
         }
       </Text>
-    </ContentWrapper>
+    </Layout>
   </Section>
 
   {
@@ -193,14 +192,14 @@ const defaultCtaSection = settings?.defaultCtaSection ?? null;
     ) : (
       <Section padding="large">
         <Layout variant="stack-centered">
-          <ContentWrapper slot="col1" align="center">
+          <Layout variant="stack-centered">
             <Heading tag="h2" variant="h3">
               No posts yet
             </Heading>
             <Text variant="regular" align="center">
               Check back soon for {categoryLabel} content.
             </Text>
-          </ContentWrapper>
+          </Layout>
         </Layout>
       </Section>
     )

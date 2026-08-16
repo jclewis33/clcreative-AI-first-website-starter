@@ -17,10 +17,10 @@
  */
 
 import { Image } from "astro:assets";
+import Layout from "@/components/ui/Layout.astro";
 import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
-import ContentWrapper from "@/components/ui/ContentWrapper.astro";
 
 import imgService1 from "@/assets/placeholder-images/placeholder-7.webp";
 import imgService2 from "@/assets/placeholder-images/placeholder-8.webp";
@@ -119,7 +119,7 @@ const services = [
   paddingBottom={paddingBottom}
   class:list={["services_section", className]}
 >
-  <ContentWrapper align="center" class="services_header">
+  <Layout variant="stack-centered" class="services_header">
     <Heading variant="eyebrow" class="u-color-brand" data-fade-in>
       What We Do
     </Heading>
@@ -131,7 +131,7 @@ const services = [
       tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam
       quis nostrud.
     </Text>
-  </ContentWrapper>
+  </Layout>
 
   <div class="services_list" data-services data-fade-in>
     {
