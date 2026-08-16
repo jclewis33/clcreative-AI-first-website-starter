@@ -38,14 +38,16 @@
 [data-theme="base"],
 [data-theme="light"],
 .u-theme-light,
-/* A theme-invert island inside a DARK section takes the LIGHT theme wholesale —
-   white paper, dark text, and the light button/link tokens to match. This is
-   Lumos' relative invert: the island carries a real theme rather than a
-   partial "surface" copy of one, so everything nested in it resolves
-   consistently. Light and brand sections need no rule here: an island there
-   already inherits the right tokens, and uses --background-2 as its surface. */
+/* THEME INVERT, dark/brand -> light half (see the full note at the bottom).
+   An invert island inside a DARK or BRAND ground takes the LIGHT theme
+   wholesale — white paper, dark text, and the matching button/link tokens.
+   Two-descendant specificity (0,2,0) deliberately beats the bare
+   [data-theme-invert] rule in the dark block, which is what makes the flip
+   *relative* rather than absolute. */
 [data-theme="dark"] [data-theme-invert],
-.u-theme-dark [data-theme-invert] {
+.u-theme-dark [data-theme-invert],
+[data-theme="brand"] [data-theme-invert],
+.u-theme-brand [data-theme-invert] {
   /* Background */
   --background: var(--color-light-200); /* #fdfdfd       */
   --background-2: var(--color-light-100); /* white         */
@@ -106,7 +108,12 @@
    ========================================================================== */
 
 [data-theme="dark"],
-.u-theme-dark {
+.u-theme-dark,
+/* THEME INVERT, light -> dark half. Bare (0,1,0) on purpose: it catches an
+   invert island on a LIGHT ground *and* on the page default, which renders no
+   data-theme at all. The dark/brand rules above are (0,2,0), so they win where
+   they apply and the flip resolves relative to whatever ground it sits on. */
+[data-theme-invert] {
   /* Background */
   --background: var(--color-dark-900); /* #0c111d        */
   /* The elevated surface for this theme. This read --color-light-200
@@ -245,22 +252,33 @@
 
 /* ==========================================================================
    THEME INVERT
-   `data-theme-invert` marks an element that inverts against its section — a
-   card or testimonial that must stay readable on any ground. It is Lumos'
-   relative `.theme-invert`, carried as a data attribute. It replaced a
-   `--surface-*` tier that copied only background/text/heading-accent/border —
-   that partial copy left buttons and links inside a card resolving against
-   the SECTION theme, which is a mismatch waiting to happen (and did: the card
-   title is now a link). An invert island takes a whole theme instead, so
-   every token agrees.
+   `data-theme-invert` flips an element to the opposite of the ground it sits
+   on, and every descendant follows, because a theme here is nothing but a set
+   of inherited custom properties:
 
-   Directionality: only the dark→light flip is wired, because cards carry this
-   attribute BY DEFAULT. On light and brand grounds the island inherits the
-   ambient theme and surfaces with --background-2 (white on light, tonal on
-   brand) — wiring Lumos' other directions (light→dark, brand→light) would
-   restyle every default card on those sections, so their absence is a
-   deliberate choice, not an oversight.
+     dark ground   -> light island
+     brand ground  -> light island
+     light ground  -> dark island
+     no ground set -> dark island (the page default is light)
 
-   Surface color comes from --background-2, the same token Lumos uses for card
-   backgrounds.
+   This is Lumos' `.theme-invert` (base.css:255-291) as a data attribute. Put
+   it on ANY wrapper — a card, a panel, a bare <div> around several components
+   — and the whole subtree inverts. There is nothing card-specific about it.
+
+   It is a WHOLE theme, never a partial copy. It replaced a `--surface-*` tier
+   that duplicated only background/text/heading-accent/border, which left
+   buttons and links inside a card resolving against the SECTION instead — a
+   mismatch that shipped (the card title is a link). Every token agrees here by
+   construction.
+
+   How the relative flip works, mechanically: the light block lists invert
+   under dark/brand grounds at (0,2,0); the dark block lists it bare at
+   (0,1,0). Specificity, not source order, picks the winner — so adding a
+   fourth ground later means adding one selector to the block holding the
+   theme it should flip TO.
+
+   Cards do NOT carry this automatically. `<Card theme="invert">` opts in,
+   exactly like Lumos' Card, whose theme union is
+   inherit | light | dark | brand | invert. Left alone, a card surfaces with
+   --background-2 within the ambient theme, which is also what Lumos does.
    ========================================================================== */

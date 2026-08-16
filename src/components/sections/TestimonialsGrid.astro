@@ -132,6 +132,13 @@ const {
   class: className,
 } = Astro.props;
 
+/* Cards read against the section, not with it: on a dark or brand ground they
+   flip to light paper. `invert` is relative, so this is the only decision —
+   the card resolves the actual colors itself (see THEME INVERT in themes.css).
+   On light grounds the cards stay in the ambient theme. */
+const invertCards =
+  theme === "dark" || theme === "brand" ? ("invert" as const) : undefined;
+
 const testimonials = limit ? rawTestimonials.slice(0, limit) : rawTestimonials;
 
 /* Renders anything, vs merely "was passed" — a heading slot holding an
@@ -174,6 +181,8 @@ const showHeading = Astro.slots.has("heading") || heading;
     smallColumns={columnsSm}
     rowGap={6}
   >
-    {testimonials.map((testimonial) => <TestimonialCard {...testimonial} />)}
+    {testimonials.map((testimonial) => (
+      <TestimonialCard {...testimonial} theme={invertCards} />
+    ))}
   </Grid>
 </Section>

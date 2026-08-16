@@ -91,7 +91,7 @@ Reusable, single-purpose classes. Always prefixed with `u-`. Always stacked on t
 | List               | `u-list` — apply to `<ul>` or `<ol>` for bullet/ordered list spacing without the rich-text wrapper. Sets `margin-top: 0`, `margin-bottom: var(--space-4)` (auto-zeroed when `:last-child`), and a default `font-size: var(--text-regular-size)`. The font-size uses `:where()` so any `u-text-style-*` class overrides it (e.g. `<ul class="u-list u-text-style-large">`). Direct `<li>` children get `margin-bottom: var(--space-2)` between items.         |
 | Button             | `u-button-wrapper`, `u-button-reset`                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Color              | `u-inherit-color`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Theme invert       | `data-theme-invert` — marks a card that must invert against its section (Lumos' relative `.theme-invert`, as a data attribute). Takes a whole theme (see **Theme invert** under Variables), so a card pops and stays readable on any section theme — background, text, borders, buttons and links all resolve against the card. Cards and testimonials carry it by default in their markup. |
+| Theme invert       | `data-theme-invert` — flips an element (and everything inside it) to the opposite of the ground it sits on: dark/brand → light, light/unthemed → dark. Lumos' relative `.theme-invert` as a data attribute. Put it on **any** wrapper, not just cards. Takes a whole theme (see **Theme invert** under Variables), so background, text, borders, buttons and links all follow. Opt-in: `<Card theme="invert">`, or the bare attribute on your own markup. |
 | Text shrink        | `u-text-shrink` — add to flex-row parent with icon + Text children to prevent overflow                                                                                                                                                                                                                                                                                                                                                                       |
 | Accessibility      | `u-sr-only`                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
@@ -155,7 +155,16 @@ All fluid values use `clamp()` scaling between 20em (320px) and 90em (1440px) vi
 
 **Theme invert — a card that must invert against its section:**
 
-A card inside a themed `<Section>` often needs to read _against_ it (a white "paper" card on a dark section, a tonal-orange card on a brand section). Mark that element `data-theme-invert` and it takes a **whole theme**, exactly as Lumos' relative `.theme-invert` does — a card carries a real theme, not a partial copy of one:
+`data-theme-invert` flips an element to the **opposite of the ground it sits on**, and every descendant follows, because a theme here is just a set of inherited custom properties:
+
+| Ground it sits on            | What the island becomes |
+| ---------------------------- | ----------------------- |
+| `dark` section               | light                   |
+| `brand` section              | light                   |
+| `light` section              | dark                    |
+| no theme set (page default)  | dark                    |
+
+This is Lumos' `.theme-invert` as a data attribute. Put it on **any** wrapper — a card, a panel, a bare `<div>` around several components — and the whole subtree inverts. There is nothing card-specific about it, and it takes a **whole theme**, not a partial copy:
 
 ```html
 <div class="testimonial_card" data-theme-invert>…</div>
@@ -169,7 +178,9 @@ A card inside a themed `<Section>` often needs to read _against_ it (a white "pa
 }
 ```
 
-The rule lives in [src/styles/variables/themes.css](src/styles/variables/themes.css): `[data-theme="dark"] [data-theme-invert]` is added to the **light** theme's selector list, so an island inside a dark section adopts the light theme wholesale. Islands inside light and brand sections need no rule — they already inherit the right tokens and use `--background-2` as their surface (white on light, tonal on brand). Only the dark→light direction is wired because cards carry the attribute **by default**; Lumos' other flips (light→dark, brand→light) are deliberate omissions — adding either would restyle every default card on those sections.
+The rule lives in [src/styles/variables/themes.css](src/styles/variables/themes.css) as two selector lists, and **specificity is what makes the flip relative**: the light block lists `[data-theme="dark"] [data-theme-invert]` and `[data-theme="brand"] [data-theme-invert]` (two-part, so they win where they apply), while the dark block lists a bare `[data-theme-invert]` (one-part) to catch light and unthemed grounds. Adding a fourth theme mode means adding one selector to the block holding the theme it should flip _to_ — the setup skill documents this.
+
+**On components:** cards do not invert automatically. `<Card theme="invert">` and `<TestimonialCard theme="invert">` opt in — the same shape as Lumos, whose Card theme union is `inherit | light | dark | brand | invert`. Left alone, a card inherits its section's theme and surfaces with `--background-2`. The section wrappers (`<TestimonialsSlider>`, `<TestimonialsGrid>`, `<BlogPostGrid>`, `<CaseStudyGrid>`) pass `invert` for you when their own `theme` is dark or brand, which is why cards keep reading as light paper on dark grounds without anyone writing it per card.
 
 **Why a whole theme and not a `--surface-*` tier.** This replaced a tier that copied only background / text / heading-accent / border. Because the copy was partial, anything else inside a card — buttons, links — still resolved against the **section** theme. That is a mismatch waiting to happen, and it happened: the card title is now a real `<a>`. A whole theme has no such gap; every token agrees by construction.
 
@@ -215,8 +226,8 @@ src/
     │   │                  #   MIRROR for email/<meta theme-color> (can't read CSS) —
     │   │                  #   keep them in sync. JS that has the DOM reads the var.
     │   ├── themes.css     # Semantic theme aliases (--background, --text, --border, etc.)
-    │   │                  #   a theme-invert island inside a dark section takes
-    │   │                  #   the light theme wholesale (data-theme-invert)
+    │   │                  #   data-theme-invert flips an element to the
+    │   │                  #   opposite of whatever ground it sits on
     │   ├── typography.css # Font families, sizes, weights, line-heights, letter-spacing
     │   ├── spacing.css    # --space-1–8, --section-space-*, --margin-*
     │   ├── layout.css     # --grid-*, --gap-*
@@ -2088,8 +2099,8 @@ Avoid these when writing CSS and HTML in this project:
 - `marginBottom={0}` on a `<Text>`/`<Heading>` that is the last child of a trimmed wrapper (Section container, Layout column, Layout, Col, `u-rich-text`, `u-margin-trim`) — margin-trim already zeroes it; the prop does nothing. Only use it (or add `u-margin-trim` to the wrapper) inside a custom `<div>` that isn't auto-trimmed
 - Adding a positive `marginBottom` (or `u-margin-*`) to separate a direct child of a `<Section>`/`<Layout>`/`` from the next sibling — those containers have a built-in `gap`/`rowGap` that already spaces them (Section's `.u-container` defaults to `--space-8`). Change the container's `gap`/`rowGap` instead. (`<Layout variant="stack">` is the exception — a plain block that uses the text elements' own margins.)
 - Adding `maxWidth` to `<Heading>` or `<Text>` by default — both already have built-in defaults (Heading `30ch`, Text `60ch`; `eyebrow` headings have none). Don't add the prop reflexively when building from a design, and never re-state the default value. Only set `maxWidth` when the design needs a _different_ constraint and you've been told (or it's clearly required) to change it
-- Hard-coding per-theme card colors (a `[data-theme="dark"] .card …` branch, or force-applying `.u-theme-light`) for a contrasting card — mark it `data-theme-invert` instead (see **Theme invert** under Variables). Define the look once per theme in `themes.css`; the card adapts automatically
-- Putting a contrasting card's `color` only on a child layer while the card's own wrapping class sets just `background` — the inner `.u-text` layers then inherit `color` from `.u-section[data-theme]` (white on a dark section) and the text goes invisible on a light card. Put `data-theme-invert` and `color: var(--text)` on the card's own wrapping class (the layer that contains all the text)
+- Hard-coding per-theme card colors (a `[data-theme="dark"] .card …` branch, or force-applying `.u-theme-light`) for a contrasting card — use `theme="invert"` (or the `data-theme-invert` attribute on your own wrapper) instead, see **Theme invert** under Variables. Define the look once per theme in `themes.css`; the island resolves against whatever ground it lands on
+- Putting a contrasting card's `color` only on a child layer while the card's own wrapping class sets just `background` — the inner `.u-text` layers then inherit `color` from `.u-section[data-theme]` (white on a dark section) and the text goes invisible on a light card. Put the invert marker and `color: var(--text)` on the card's own wrapping class (the layer that contains all the text)
 - `paddingTop="page-top"` on any section (heroes included) — `page-top` is **only** for a _fixed_ navbar, and this project's nav is **sticky** by default, so the first section doesn't need it. Build heroes/first sections with the normal default padding; only use `page-top` if the nav has been switched to `fixed`
 - Adding `padding="large"` (or any padding override) to a section by default — `<Section>` defaults to `main`, which is correct for almost every section. Omit the prop entirely. Writing `padding="main"` is legal but redundant: it renders identically to omitting it, so don't add it either. Only override to `large`/another value when a specific section genuinely needs it _and_ it's been asked for or is clearly required by a design — never as a habit
 - Wrapping a `<Visual>` together with other content in a `—`'s `display: contents` makes `.u-image-wrapper` a direct grid/flex child with a definite height, so its `height: 100%` overrides the `ratio` aspect-ratio and the image balloons (worst on mobile when the column collapses to `display: flex`). Use `<Layout variant="stack">` (a real `height: auto` block) for any column that holds a `<Visual>` alongside other content; keep `` for self-sizing loose elements (Heading / Text / Button) only

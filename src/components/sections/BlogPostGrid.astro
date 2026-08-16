@@ -377,6 +377,13 @@ const {
   class: className,
 } = Astro.props;
 
+/* Cards read against the section, not with it: on a dark or brand ground they
+   flip to light paper. `invert` is relative, so this is the only decision —
+   the card resolves the actual colors itself (see THEME INVERT in themes.css).
+   On light grounds the cards stay in the ambient theme. */
+const invertCards =
+  theme === "dark" || theme === "brand" ? ("invert" as const) : undefined;
+
 /* ═══════════════════════════════════════════════════
    Sample data — used for previewing when no `posts` prop is passed.
    Replace with CMS query results when connecting a headless CMS.
@@ -596,6 +603,7 @@ const showHeading = Astro.slots.has("heading") || resolvedHeading;
         >
           {filtered.map((post) => (
             <BlogCard
+              theme={invertCards}
               title={post.title}
               description={post.description}
               categories={post.categories}

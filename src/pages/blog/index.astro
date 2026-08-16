@@ -327,6 +327,11 @@ function formatDate(dateStr: string) {
             >
               {smallPosts.map((post: any) => (
                 <BlogCard
+                  theme={
+                    cat.theme === "dark" || cat.theme === "brand"
+                      ? "invert"
+                      : undefined
+                  }
                   data-fade-in
                   data-search-card
                   data-title={stegaClean(post.title)}

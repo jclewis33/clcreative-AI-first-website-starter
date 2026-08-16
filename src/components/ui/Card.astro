@@ -145,8 +145,8 @@ if (
       >
         <div
           class="card_primary_element"
-          data-theme={theme}
-          data-theme-invert={variant !== "cover" && !theme ? "" : undefined}
+          data-theme={theme === "invert" ? undefined : theme}
+          data-theme-invert={theme === "invert" ? "" : undefined}
         >
           {/* Visual / image slot */}
           {showVisual && ((await visualContent) || variant === "default") && (
@@ -221,8 +221,8 @@ if (
        <div class="card_primary_group" data-trigger="hover-if-clickable focus">
          <div
       class="card_primary_element"
-      data-theme={theme}
-      data-theme-invert={variant !== "cover" && !theme ? "" : undefined}
+      data-theme={theme === "invert" ? undefined : theme}
+      data-theme-invert={theme === "invert" ? "" : undefined}
     >
            <div class="card_primary_visual">…image…</div>
            <div class="card_primary_content u-margin-trim">
@@ -344,11 +344,13 @@ if (
    visual (image) can go edge-to-edge; overflow: clip lets the card's
    border-radius shape the image corners.
 
-   Inverts against its section via `data-theme-invert` (see themes.css).
-   That marker gives the card a WHOLE theme, so its background, text, borders,
-   AND any buttons or links inside it resolve against the card rather than the
-   section behind it. The cover variant opts out — it is an image overlay and
-   keeps its own white-on-scrim text. */
+   Colors come from the ambient theme by default (surface = --background-2).
+   `theme="invert"` flips the card to the opposite of its ground and
+   `theme="dark|light|brand"` pins it absolutely; either way it is a WHOLE
+   theme, so the card's background, text, borders AND any buttons or links
+   inside resolve against the card rather than the section behind it. See
+   THEME INVERT in themes.css. The cover variant is an image overlay and keeps
+   its own white-on-scrim text regardless. */
     .card_primary_element {
       border: var(--border-width-main) solid var(--border);
       border-radius: inherit;

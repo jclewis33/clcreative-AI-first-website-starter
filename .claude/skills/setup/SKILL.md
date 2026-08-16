@@ -65,9 +65,29 @@ derivation** (a new brand scale uses the same `color-mix` steps as
 `--color-brand-100…900`; a new theme mode replicates a full `[data-theme]` block
 with every semantic alias `var()`-ing the swatches),
 and keep the **same cascade** (swatch → theme alias → component). Contrasting
-cards need no extra tier: a card marked `data-theme-invert` inside a dark
-section adopts the light theme wholesale (see the THEME INVERT note in
-themes.css), so a new mode only has to define its full alias block.
+cards need no extra tier: `data-theme-invert` flips an element to the opposite
+of the ground it sits on (see the THEME INVERT note in themes.css), so a new
+mode only has to define its full alias block — plus the one invert selector
+described below.
+
+**A new theme mode owes the invert map one line.** `data-theme-invert` is not
+a token, it is a pair of selector lists, so a mode that defines only its own
+block will silently do nothing under an invert island. When you add a mode,
+decide which theme it should flip TO and add its selectors to *that* theme's
+block:
+
+```css
+/* in the block for the theme the new mode flips TO */
+[data-theme="<new-mode>"] [data-theme-invert],
+.u-theme-<new-mode> [data-theme-invert] { … }
+```
+
+Specificity is what makes the flip relative, so keep the shape exactly: the
+grounds that flip to light are two-attribute descendant selectors (0,2,0), which
+beat the bare `[data-theme-invert]` in the dark block (0,1,0) that catches light
+and unthemed grounds. Never collapse those into one list or reach for
+`!important` — the cascade here is load-bearing.
+
 **Copy an existing example as the template — never invent a different approach.**
 If you're unsure how the pattern extends, ask the user rather than guessing.
 
@@ -241,9 +261,10 @@ asking them to type hex codes.
    the **idea/cascade** the project is built on:
 
    > raw swatch (colors.css) → theme alias that `var()`s the swatch (themes.css)
-   > → component/utility that `var()`s the alias. Contrasting cards are
+   > → component/utility that `var()`s the alias. Contrasting panels are
    > `data-theme-invert` islands that take a WHOLE theme — there is no
-   > separate surface tier to fill in.
+   > separate surface tier to fill in. A new mode must also be added to the
+   > invert selector lists (see above), or invert islands inside it do nothing.
 
    Always feed colors in at the swatch layer and let them flow down that chain;
    never hard-code a hex onto a theme block or component.

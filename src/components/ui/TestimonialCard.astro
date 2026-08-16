@@ -7,13 +7,13 @@ import type { HTMLAttributes } from "astro/types";
  * `<TestimonialsGrid>`. Keeping the markup here (instead of duplicating it in
  * each section) means the card design only ever has to change in one place.
  *
- * **Theme-aware readability.** The card is a theme-invert island: it carries
- * `data-theme-invert` in its markup, so inside a dark section it takes the
- * light theme wholesale (light "paper" + dark text), and on light/brand
- * sections it inherits the ambient tokens with `--background-2` as its
- * surface (white on light, tonal orange on brand). No `theme` prop needed —
- * the card reacts automatically. To change how cards look per theme, edit
- * the theme blocks in `src/styles/variables/themes.css`.
+ * **Theming.** Unset, the card inherits its section's theme and surfaces with
+ * `--background-2`. Pass `theme="invert"` to flip it to the opposite of its
+ * ground (light "paper" on a dark or brand section; dark card on a light
+ * one) — the slider and grid wrappers do this for you on their dark/brand
+ * sections. It is a whole theme, so the quote, author, stars, borders and any
+ * link inside all follow. To change how cards look per theme, edit the theme
+ * blocks in `src/styles/variables/themes.css`.
  *
  * Usage:
  * ```astro
@@ -60,10 +60,27 @@ interface Props extends Testimonial, Omit<HTMLAttributes<"div">, "role"> {
   avatarSize?: number;
   /** JSDoc holder — destructured but unused (keeps it out of `...rest`). */
   docs?: string;
+
+  /**
+   * The colors this card carries, whatever section it sits in. Unset, it
+   * inherits the section theme and surfaces with `--background-2`.
+   *
+   * - `"invert"` — flip to the opposite of the ground (dark/brand section →
+   *   light card; light or unthemed → dark card). See THEME INVERT in
+   *   `themes.css`.
+   * - `"light" | "dark" | "brand"` — pin absolutely.
+   *
+   * `<TestimonialsSlider>` and `<TestimonialsGrid>` pass `"invert"` for you on
+   * their dark and brand sections.
+   *
+   * @example theme="invert"
+   */
+  theme?: "light" | "dark" | "brand" | "invert";
 }
 
 const {
   docs,
+  theme,
   quote,
   name,
   role,
@@ -83,7 +100,12 @@ const avatarUrl = avatar
 const subtitle = [role, company].filter(Boolean).join(", ");
 ---
 
-<div class:list={["testimonial_card", className]} data-theme-invert {...rest}>
+<div
+  class:list={["testimonial_card", className]}
+  data-theme={theme === "invert" ? undefined : theme}
+  data-theme-invert={theme === "invert" ? "" : undefined}
+  {...rest}
+>
   {/* Stars */}
   {
     stars != null && stars > 0 && (
@@ -163,10 +185,10 @@ const subtitle = [role, company].filter(Boolean).join(", ");
      </Section>
    ========================================================================== */
 
-    /* Card — a theme-invert island that stays readable on light/dark/brand
-   sections. `data-theme-invert` in the markup gives it a WHOLE theme (see
-   themes.css), so the quote, author, stars, borders and any link inside all
-   resolve against the card instead of the section behind it. */
+    /* Card — surfaces with --background-2 in whatever theme it resolves to.
+   With theme="invert" that theme is the flip of its ground (see THEME INVERT
+   in themes.css), so the quote, author, stars, borders and any link inside
+   all resolve against the card instead of the section behind it. */
     /* The gap owns the rhythm here, so the children must not also carry their
        own margins — the quote is a <Text>, whose 24px margin-bottom stacked on
        the 24px gap and set every row 48px apart. Same rule as the containers

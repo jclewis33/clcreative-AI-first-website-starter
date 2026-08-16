@@ -181,10 +181,18 @@ interface Props extends HTMLAttributes<"div"> {
 
   /** Extra classes on the outer wrapper. */
   class?: string;
+
+  /**
+   * Forwarded to the underlying `<Card>`. `"invert"` flips the card to the
+   * opposite of the ground it sits on; the grid wrappers pass it for you on
+   * dark and brand sections. See THEME INVERT in `themes.css`.
+   */
+  theme?: "light" | "dark" | "brand" | "invert";
 }
 
 const {
   docs,
+  theme,
   title,
   description,
   categories,
@@ -215,6 +223,7 @@ const resolvedAriaLabel = isComingSoon
 
 <Card
   docs=""
+  theme={theme}
   href={resolvedHref}
   newTab={isComingSoon}
   ariaLabel={resolvedAriaLabel}

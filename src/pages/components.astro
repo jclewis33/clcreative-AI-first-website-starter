@@ -461,7 +461,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
             text: "Another line of neutral demo copy to show the card layout.",
           },
         ].map(({ title, text }, i) => (
-          <Card variant="default" title={title} href="#">
+          <Card variant="default" theme="invert" title={title} href="#">
             <img
               slot="visual"
               src={demoLandscape[i % demoLandscape.length]}
@@ -505,7 +505,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
             tag: "A11y",
           },
         ].map(({ title, text, tag }) => (
-          <Card variant="stacked" title={title}>
+          <Card variant="stacked" theme="invert" title={title}>
             <Text muted>{text}</Text>
             <div slot="footer">
               <Heading variant="eyebrow">{tag}</Heading>
@@ -538,7 +538,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
             text: "One more placeholder project line.",
           },
         ].map(({ title, text }, i) => (
-          <Card variant="cover" title={title} href="#">
+          <Card variant="cover" theme="invert" title={title} href="#">
             <img
               slot="visual"
               src={demoSquare[i % demoSquare.length]}
@@ -612,7 +612,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
             },
           ].map(({ title, text }, i) => (
             <div class="swiper-slide">
-              <Card variant="default" title={title} href="#">
+              <Card variant="default" theme="invert" title={title} href="#">
                 <img
                   slot="visual"
                   src={demoLandscape[i % demoLandscape.length]}

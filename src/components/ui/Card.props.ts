@@ -86,19 +86,25 @@ export interface BaseProps {
   variant?: CardVariant;
 
   /**
-   * Force a color theme on this card instead of letting it adapt.
+   * The colors this card carries, whatever section it sits in.
    *
-   * By default a card is a theme-invert island: it carries `data-theme-invert`,
-   * so it takes the light theme inside a dark section and inherits the section
-   * tokens otherwise (see themes.css). That covers the common cases.
+   * Left unset the card inherits its section's theme and surfaces with
+   * `--background-2` — an elevated panel in the ambient palette. This matches
+   * Lumos, whose Card theme union is the same shape.
    *
-   * Set this to pin a card to one theme regardless of its section — the same
-   * `data-theme` values a `<Section>` accepts. It applies a WHOLE token set, so
-   * the card's text, borders, buttons and links all follow it.
+   * - `"invert"` — flip to the OPPOSITE of the ground the card sits on (dark
+   *   or brand section → light card; light section or unthemed page → dark
+   *   card). Relative, so one value works everywhere. See THEME INVERT in
+   *   `themes.css`.
+   * - `"light" | "dark" | "brand"` — pin the card to one theme absolutely,
+   *   regardless of its section.
    *
-   * @example theme="dark"
+   * Either way it is a WHOLE token set, so the card's text, borders, buttons
+   * and links all follow it.
+   *
+   * @example theme="invert"
    */
-  theme?: "light" | "dark" | "brand";
+  theme?: "light" | "dark" | "brand" | "invert";
 
   /**
    * Convenience title — renders as plain text styled with `u-text-style-h5`.
