@@ -431,6 +431,13 @@ if (
        collapses to zero, and without this the button would touch the copy.
        (The text block's own trailing margin is trimmed away — see the
        u-margin-trim on .card_primary_text in the markup.) */
+    /* A footer slot that was passed but rendered nothing would still charge
+   its padding-top and margin-top:auto. Same `:empty` trick as Section — costs
+   no slot render, so it cannot break client scripts inside the slot. */
+    .card_primary_footer:empty {
+      display: none;
+    }
+
     .card_primary_footer {
       margin-top: auto;
       padding-top: var(--space-4);
