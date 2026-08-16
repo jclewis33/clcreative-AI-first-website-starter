@@ -9,7 +9,7 @@ This guide explains how to update the color system so all three themes (light, d
 | File                              | What it contains                                                                                                              |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `src/styles/variables/colors.css` | Raw color swatches (brand scale, dark/light palettes)                                                                         |
-| `src/styles/variables/themes.css` | Semantic theme mappings that reference the raw swatches (includes footer variables + the `--surface-*` contrasting-card tier) |
+| `src/styles/variables/themes.css` | Semantic theme mappings that reference the raw swatches (includes footer variables + the `data-theme-invert` flip used by contrasting cards) |
 
 You will almost always only need to edit **`colors.css`**. The theme file references the color variables, so it updates automatically.
 
@@ -96,18 +96,15 @@ Here's everything that flows from `--color-brand-500` and `--color-brand-text` t
 | `--nav-banner-background`     | Announcement banner fill | `--color-brand-text`                       |
 | `--nav-banner-color`          | Announcement banner text | `--color-brand-500`                        |
 
-### Surface tier — contrasting cards (testimonials, primary `<Card>`)
+### Contrasting cards — `data-theme-invert` (testimonials, primary `<Card>`)
 
-A card that sits inside a themed section often needs to **contrast** with it (so it pops) while staying readable. Those colors are a separate **`--surface-*` tier**, defined once per theme block in `themes.css`. Each card consumes the tier on its own wrapping class, so it adapts to its section's theme automatically.
+A card that sits inside a themed section often needs to read **against** it (so it pops) while staying legible. That is one attribute, not a set of variables: mark the element `data-theme-invert` and it flips to the *opposite* of the ground it sits on — dark or brand section → light card, light or unthemed → dark card. Everything nested inside follows, because a theme here is just inherited custom properties.
 
-| Surface variable           | What it controls                | Source — light / dark               | Source — brand           |
-| -------------------------- | ------------------------------- | ----------------------------------- | ------------------------ |
-| `--surface-background`     | Card background                 | `--color-light-100` (white "paper") | `--color-brand-400`      |
-| `--surface-text`           | Card text                       | `--color-dark-900`                  | `--color-brand-text`     |
-| `--surface-heading-accent` | Accent inside card (e.g. stars) | `--color-brand-500`                 | `--color-brand-text`     |
-| `--surface-border`         | Card border                     | `--color-dark-900-o20`              | `--color-brand-text-o20` |
+There is nothing to fill in per card. The island takes a **whole theme**, so its background is that theme's `--background-2`, its text is `--text`, and — this is the part that matters — any button or link inside it resolves against the card too.
 
-These already cascade from the swatches you change in Steps 1–2 (the brand surface follows `--color-brand-500`/`--color-brand-text`). You only edit `--surface-*` directly if you want to **change the card's look itself** — see "Optional: Change the contrasting card surface" below.
+> **Why there is no `--surface-*` tier any more.** There used to be one, copying four values (background / text / heading-accent / border) per theme. Because the copy was partial, buttons and links inside a card still resolved against the **section**, which shipped as white-on-white. A whole theme has no such gap. If you are looking for `--surface-background` and friends, they are gone and nothing replaces them — see THEME INVERT in `variables/themes.css`.
+
+**Adding a new theme mode?** It owes the invert map one selector: add the new mode to the selector list of the theme it should flip *to*. See the same note in `themes.css`.
 
 ---
 
@@ -122,7 +119,7 @@ After making your changes, check these areas on the site:
 5. **Nav bar** — if using brand theme on nav, check text/logo contrast
 6. **Focus rings** — `--color-focus-state` uses `--color-brand-500` for keyboard focus outlines
 7. **Footer** — links and text should be readable on the footer background (all themes)
-8. **Contrasting cards** — testimonial cards and primary `<Card>` (default/stacked) on a **dark** section: the card surface and its text must contrast (dark text on a light card). This is the one that breaks most visibly if `--surface-text` is wrong
+8. **Contrasting cards** — testimonial cards and primary `<Card>` on a **dark** section, with `theme="invert"`: the card surface and its text must contrast (dark text on a light card), and any button inside it must be legible on the card rather than on the section
 
 ---
 
@@ -180,37 +177,15 @@ For example, to give the brand theme a brand-colored footer:
 
 ---
 
-## Optional: Change the contrasting card surface
+## Optional: Change how a contrasting card looks
 
-Cards that must stand out against a themed section — testimonial cards and the primary `<Card>` (default/stacked variants) — use the **`--surface-*` tier** in `themes.css`. It's defined once per theme block, right after `--border`:
+Cards that must stand out against a themed section carry `data-theme-invert`, which adopts a whole theme rather than a private set of card variables. So there is no card-specific palette to edit: **change the theme, and every invert island follows.**
 
-```css
-/* In each theme block (light / dark / brand) */
---surface-background: var(--color-light-100); /* the card's background    */
---surface-text: var(--color-dark-900); /* the card's text          */
---surface-heading-accent: var(
-  --color-brand-500
-); /* accent inside (e.g. stars) */
---surface-border: var(--color-dark-900-o20); /* the card's border        */
-```
+- Want the white "paper" card on dark sections to be warmer? Edit `--background-2` in the **light** theme block of `themes.css` — that is the surface an invert island uses when it sits on a dark ground.
+- Want the card's text or border to change? Same block: `--text`, `--border`.
+- Want a card pinned to one theme regardless of its section? Pass the theme explicitly: `<Card theme="dark">`. `theme="invert"` is the relative flip; `light` / `dark` / `brand` are absolute.
 
-By default these reproduce the established look: **light/dark** sections → white "paper" card with dark text + brand-accent stars; **brand** section → a tonal `--color-brand-400` card with `--color-brand-text`. They already cascade from your Step 1–2 swatch changes, so you only edit them here to **redesign the card itself** — e.g. to make brand-section cards a white "paper" card instead of tonal orange:
-
-```css
-/* In the brand theme block */
---surface-background: var(--color-light-100); /* white card on orange section */
---surface-text: var(--color-dark-900); /* dark text                    */
---surface-heading-accent: var(
-  --color-brand-500
-); /* orange stars                 */
---surface-border: var(--color-dark-900-o20);
-```
-
-**How it works:** the card's own class (`.testimonial_card` in `components/testimonials.css`, `.card_primary_*` in `components/cards.css`) remaps the standard aliases (`--background`, `--text`, `--heading-accent`, `--border`) to the `--surface-*` values **and sets its own `color`**, so every nested text layer inherits the contrasting color. Editing the four `--surface-*` variables in a theme block is all you need — the cards adapt automatically with no per-instance props. There's also a `.u-surface` utility class that does the same remap for any one-off element.
-
-> **Gotcha when extending this:** the contrasting `color` must live on the card's _own_ wrapping class (the layer that contains all the text). If a card only sets `background` and leaves `color` to a child layer, the inner text inherits `color` straight from the section (`.u-section[data-theme]`) — white on a dark section — and goes invisible on a light card. Mirror the pattern in `.testimonial_card` / `.card_primary_element`.
-
----
+Because the card consumes the same tokens as everything else in that theme, a change here also moves anything else painted with them — which is the point: one definition per theme, no per-component palette to keep in sync.
 
 ## Quick reference: the two-line change
 

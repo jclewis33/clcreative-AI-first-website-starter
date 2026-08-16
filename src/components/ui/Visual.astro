@@ -223,7 +223,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    * (`position={x: 30, y: 20}`) are parsed as a code expression and fail the
    * build with `Unexpected ":"`.
    *
-   * The focal point drives `--x`/`--y` on the `<img>`, consumed by
+   * The focal point drives `--_x`/`--_y` on the `<img>`, consumed by
    * `.u-image-wrapper .u-image { object-position: … }`. That rule is scoped to
    * the wrapper (specificity 0,2,0) on purpose — Astro's `layout="full-width"`
    * stamps `data-astro-image-pos="center"` (0,1,0) on every local image, and a
