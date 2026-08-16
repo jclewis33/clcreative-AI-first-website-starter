@@ -88,7 +88,7 @@ export interface BaseProps {
   /**
    * Force a color theme on this card instead of letting it adapt.
    *
-   * By default a card is a contrast island: it carries `data-theme-contrast`,
+   * By default a card is a theme-invert island: it carries `data-theme-invert`,
    * so it takes the light theme inside a dark section and inherits the section
    * tokens otherwise (see themes.css). That covers the common cases.
    *

@@ -30,7 +30,9 @@ import Text from "@/components/ui/Text.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Button from "@/components/ui/Button.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingOverride;
 
 interface Props {
   /**
@@ -42,7 +44,7 @@ interface Props {
    */
   docs?: string;
 
-  /** Sets both paddingTop and paddingBottom @default 'main' */
+  /** Sets both paddingTop and paddingBottom. Default 'main' — omit the prop for it ("main" is not writable). */
   padding?: PaddingValue;
   /** Override top padding only */
   paddingTop?: PaddingValue;
@@ -54,7 +56,7 @@ interface Props {
 
 const {
   docs,
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   class: className,

@@ -35,7 +35,9 @@ import TestimonialCard, {
 export type { Testimonial };
 
 type SectionTheme = "light" | "dark" | "brand";
-type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingSize = import("@/components/ui/Section.props").PaddingOverride;
 
 interface Props {
   /**
@@ -45,7 +47,7 @@ interface Props {
    * - `heading` — simple heading text (or use `heading` slot for custom markup)
    * - `eyebrow` — small label above heading (e.g. "Testimonials")
    * - `theme` — 'light' | 'dark' | 'brand'
-   * - `padding` — 'none' | 'small' | 'main' | 'large' | 'page-top' (default 'large')
+   * - `padding` — 'none' | 'xsmall' | 'small' | 'large' | 'page-top' (default: omitted → 'main')
    * - `paddingTop` / `paddingBottom` — override top/bottom padding independently
    * - `id` — section id for anchor links
    * - `sliderVariant` — 'crop-left' | 'crop-right' | 'crop-both' | 'overflow-visible' (default 'crop-left')
@@ -147,7 +149,7 @@ const {
   heading,
   eyebrow,
   theme,
-  padding = "large",
+  padding,
   paddingTop,
   paddingBottom,
   id,

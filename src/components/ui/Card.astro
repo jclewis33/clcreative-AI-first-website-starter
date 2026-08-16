@@ -146,7 +146,7 @@ if (
         <div
           class="card_primary_element"
           data-theme={theme}
-          data-theme-contrast={variant !== "cover" && !theme ? "" : undefined}
+          data-theme-invert={variant !== "cover" && !theme ? "" : undefined}
         >
           {/* Visual / image slot */}
           {showVisual && ((await visualContent) || variant === "default") && (
@@ -222,7 +222,7 @@ if (
          <div
       class="card_primary_element"
       data-theme={theme}
-      data-theme-contrast={variant !== "cover" && !theme ? "" : undefined}
+      data-theme-invert={variant !== "cover" && !theme ? "" : undefined}
     >
            <div class="card_primary_visual">…image…</div>
            <div class="card_primary_content u-margin-trim">
@@ -344,7 +344,7 @@ if (
    visual (image) can go edge-to-edge; overflow: clip lets the card's
    border-radius shape the image corners.
 
-   Reads as a contrasting panel via `data-theme-contrast` (see themes.css).
+   Inverts against its section via `data-theme-invert` (see themes.css).
    That marker gives the card a WHOLE theme, so its background, text, borders,
    AND any buttons or links inside it resolve against the card rather than the
    section behind it. The cover variant opts out — it is an image overlay and

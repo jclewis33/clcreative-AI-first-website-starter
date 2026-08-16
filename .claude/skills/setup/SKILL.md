@@ -65,8 +65,8 @@ derivation** (a new brand scale uses the same `color-mix` steps as
 `--color-brand-100…900`; a new theme mode replicates a full `[data-theme]` block
 with every semantic alias `var()`-ing the swatches),
 and keep the **same cascade** (swatch → theme alias → component). Contrasting
-cards need no extra tier: a card marked `data-theme-contrast` inside a dark
-section adopts the light theme wholesale (see the CONTRAST ISLAND note in
+cards need no extra tier: a card marked `data-theme-invert` inside a dark
+section adopts the light theme wholesale (see the THEME INVERT note in
 themes.css), so a new mode only has to define its full alias block.
 **Copy an existing example as the template — never invent a different approach.**
 If you're unsure how the pattern extends, ask the user rather than guessing.
@@ -242,7 +242,7 @@ asking them to type hex codes.
 
    > raw swatch (colors.css) → theme alias that `var()`s the swatch (themes.css)
    > → component/utility that `var()`s the alias. Contrasting cards are
-   > `data-theme-contrast` islands that take a WHOLE theme — there is no
+   > `data-theme-invert` islands that take a WHOLE theme — there is no
    > separate surface tier to fill in.
 
    Always feed colors in at the swatch layer and let them flow down that chain;

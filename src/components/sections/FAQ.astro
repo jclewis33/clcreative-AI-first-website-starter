@@ -28,7 +28,9 @@ import AccordionItem from "@/components/ui/AccordionItem.astro";
 import type { FAQItem } from "@/data/faqs";
 import { generalFaqs } from "@/data/faqs";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingOverride;
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -72,7 +74,7 @@ const {
   heading = "Frequently Asked Questions",
   openByDefault = 0,
   theme,
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   id = "faq",

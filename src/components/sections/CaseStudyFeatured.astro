@@ -42,7 +42,9 @@ import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import { urlFor } from "@/sanity/lib/image";
 
 type SectionTheme = "light" | "dark" | "brand";
-type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingSize = import("@/components/ui/Section.props").PaddingOverride;
 
 /**
  * CaseStudyFeatured — interactive 3-card showcase with hover expand animation.
@@ -138,7 +140,7 @@ interface Props {
 
   /**
    * Section vertical padding.
-   * @default 'main'
+   * @default omitted → 'main'
    */
   padding?: PaddingSize;
 
@@ -178,7 +180,7 @@ const {
   eyebrow = "Proven Results",
   headingVariant = "h6",
   theme,
-  padding = "main",
+  padding,
   paddingTop,
   paddingBottom,
   id,

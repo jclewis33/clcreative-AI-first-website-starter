@@ -26,7 +26,10 @@ import Button from "@/components/ui/Button.astro";
 
 import whyImage from "@/assets/placeholder-images/placeholder-11.webp";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. Full PaddingSize
+   here (not PaddingOverride) because this component's own default is NOT
+   "main", so "main" is a meaningful override for callers. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingSize;
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -41,7 +44,7 @@ interface Props extends HTMLAttributes<"section"> {
   /** Color theme for the section. */
   theme?: "light" | "dark" | "brand";
 
-  /** Section vertical padding. @default 'main' */
+  /** Section vertical padding. @default 'none' (this component is flush by design) */
   padding?: PaddingValue;
   paddingTop?: PaddingValue;
   paddingBottom?: PaddingValue;
@@ -59,6 +62,12 @@ const {
   class: className,
   ...rest
 } = Astro.props;
+
+/* Section's props refuse the literal "main" (its default is expressed by
+   omission). Callers of THIS component may still write "main" — here it
+   overrides a non-main default — so translate it at the boundary. */
+const pad = (v?: PaddingValue) => (v === "main" ? undefined : v);
+
 
 const items = [
   {
@@ -81,9 +90,9 @@ const items = [
 
 <Section
   theme={theme}
-  padding={padding}
-  paddingTop={paddingTop}
-  paddingBottom={paddingBottom}
+  padding={pad(padding)}
+  paddingTop={pad(paddingTop)}
+  paddingBottom={pad(paddingBottom)}
   class:list={["why-work_section", className]}
   {...rest}
 >

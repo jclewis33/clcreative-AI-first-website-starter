@@ -29,7 +29,9 @@ import imgService4 from "@/assets/placeholder-images/placeholder-10.webp";
 import imgService6 from "@/assets/placeholder-images/placeholder-2.webp";
 import imgService5 from "@/assets/placeholder-images/placeholder-1.webp";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingOverride;
 
 interface Props {
   /**
@@ -39,7 +41,7 @@ interface Props {
    */
   docs?: string;
 
-  /** Sets both paddingTop and paddingBottom @default 'main' */
+  /** Sets both paddingTop and paddingBottom. Default 'main' — omit the prop for it ("main" is not writable). */
   padding?: PaddingValue;
   paddingTop?: PaddingValue;
   paddingBottom?: PaddingValue;
@@ -48,7 +50,7 @@ interface Props {
 
 const {
   docs,
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   class: className,

@@ -91,7 +91,7 @@ Reusable, single-purpose classes. Always prefixed with `u-`. Always stacked on t
 | List               | `u-list` — apply to `<ul>` or `<ol>` for bullet/ordered list spacing without the rich-text wrapper. Sets `margin-top: 0`, `margin-bottom: var(--space-4)` (auto-zeroed when `:last-child`), and a default `font-size: var(--text-regular-size)`. The font-size uses `:where()` so any `u-text-style-*` class overrides it (e.g. `<ul class="u-list u-text-style-large">`). Direct `<li>` children get `margin-bottom: var(--space-2)` between items.         |
 | Button             | `u-button-wrapper`, `u-button-reset`                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Color              | `u-inherit-color`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Contrast island    | `data-theme-contrast` — marks a card that must read against its section. Takes a whole theme (see Variables). Reads `--background`/`--text`/`--heading-accent`/`--border` + paints itself, so a card pops and stays readable on any section theme. See **Surface tier** under Variables. (Note: components that wrap text — `.testimonial_card`, `.card_primary_*` — apply the same remap on their _own_ class rather than this utility; see the why below.) |
+| Theme invert       | `data-theme-invert` — marks a card that must invert against its section (Lumos' relative `.theme-invert`, as a data attribute). Takes a whole theme (see **Theme invert** under Variables), so a card pops and stays readable on any section theme — background, text, borders, buttons and links all resolve against the card. Cards and testimonials carry it by default in their markup. |
 | Text shrink        | `u-text-shrink` — add to flex-row parent with icon + Text children to prevent overflow                                                                                                                                                                                                                                                                                                                                                                       |
 | Accessibility      | `u-sr-only`                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
@@ -153,12 +153,12 @@ All fluid values use `clamp()` scaling between 20em (320px) and 90em (1440px) vi
 | `--grid-breakout`                  | Named-line grid for full-bleed layouts (12-col with viewport gutters) | —                       |
 | `--grid-breakout-single`           | Mobile version of breakout grid (single content track)                | —                       |
 
-**Contrast islands — a card that must read against its section:**
+**Theme invert — a card that must invert against its section:**
 
-A card inside a themed `<Section>` often needs to _contrast_ with it (a white "paper" card on a dark section, a tonal-orange card on a brand section). Mark that element `data-theme-contrast` and it takes a **whole theme**, exactly as Lumos does — a card carries a real theme, not a partial copy of one:
+A card inside a themed `<Section>` often needs to read _against_ it (a white "paper" card on a dark section, a tonal-orange card on a brand section). Mark that element `data-theme-invert` and it takes a **whole theme**, exactly as Lumos' relative `.theme-invert` does — a card carries a real theme, not a partial copy of one:
 
 ```html
-<div class="testimonial_card" data-theme-contrast>…</div>
+<div class="testimonial_card" data-theme-invert>…</div>
 ```
 
 ```css
@@ -169,7 +169,7 @@ A card inside a themed `<Section>` often needs to _contrast_ with it (a white "p
 }
 ```
 
-The rule lives in [src/styles/variables/themes.css](src/styles/variables/themes.css): `[data-theme="dark"] [data-theme-contrast]` is added to the **light** theme's selector list, so an island inside a dark section adopts the light theme wholesale. Islands inside light and brand sections need no rule — they already inherit the right tokens and use `--background-2` as their surface.
+The rule lives in [src/styles/variables/themes.css](src/styles/variables/themes.css): `[data-theme="dark"] [data-theme-invert]` is added to the **light** theme's selector list, so an island inside a dark section adopts the light theme wholesale. Islands inside light and brand sections need no rule — they already inherit the right tokens and use `--background-2` as their surface (white on light, tonal on brand). Only the dark→light direction is wired because cards carry the attribute **by default**; Lumos' other flips (light→dark, brand→light) are deliberate omissions — adding either would restyle every default card on those sections.
 
 **Why a whole theme and not a `--surface-*` tier.** This replaced a tier that copied only background / text / heading-accent / border. Because the copy was partial, anything else inside a card — buttons, links — still resolved against the **section** theme. That is a mismatch waiting to happen, and it happened: the card title is now a real `<a>`. A whole theme has no such gap; every token agrees by construction.
 
@@ -215,8 +215,8 @@ src/
     │   │                  #   MIRROR for email/<meta theme-color> (can't read CSS) —
     │   │                  #   keep them in sync. JS that has the DOM reads the var.
     │   ├── themes.css     # Semantic theme aliases (--background, --text, --border, etc.)
-    │   │                  #   a contrast island inside a dark section takes
-    │   │                  #   the light theme wholesale (data-theme-contrast)
+    │   │                  #   a theme-invert island inside a dark section takes
+    │   │                  #   the light theme wholesale (data-theme-invert)
     │   ├── typography.css # Font families, sizes, weights, line-heights, letter-spacing
     │   ├── spacing.css    # --space-1–8, --section-space-*, --margin-*
     │   ├── layout.css     # --grid-*, --gap-*
@@ -902,7 +902,7 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
 - `large` → ~5.5–10rem fluid
 - `page-top` → ~10–14rem fluid _(only for a **fixed** nav — see note below; not for this project by default)_
 
-> **Default padding: leave it on `main`.** Every `<Section>` already defaults to `padding="main"`, so you don't need to write `padding="main"` at all — just omit the prop. **Do not add `padding="large"` (or any other override) by default.** `main` is the correct rhythm for the overwhelming majority of sections, including content sections, card grids, and listing pages. Only use `large` (or another value) when a specific section genuinely needs more room _and_ you've been asked for it (or it's clearly required by a design) — not as a habit. If a section needs more breathing room later, that's a deliberate, manual change.
+> **Default padding: leave it on `main` — and the types enforce it.** Every `<Section>` defaults to `main`, and `"main"` is **not a legal prop value**: writing `padding="main"` (or `paddingTop`/`paddingBottom="main"`) is a type error caught by `astro check` — omitting the prop is the only way to express the default, and the `data-padding-*` attributes are never emitted for it. **Do not add `padding="large"` (or any other override) by default.** `main` is the correct rhythm for the overwhelming majority of sections, including content sections, card grids, and listing pages. Only use `large` (or another value) when a specific section genuinely needs more room _and_ you've been asked for it (or it's clearly required by a design) — not as a habit. The padding union lives in one place — `src/components/ui/Section.props.ts` — and every section-wrapper component (TestimonialsSlider, BlogPostGrid, CaseStudyGrid, …) imports it from there; don't re-declare padding value unions in components.
 
 > **`page-top` is for a FIXED nav only — don't use it on this project by default.** `page-top` exists to push a page's first section down so it clears a navbar that's pinned as a fixed overlay. **This project's navbar is `sticky` by default**, so it sits in normal document flow and the first section does _not_ need extra top padding to clear it. Build the first section (hero included) with the normal default padding — omit `paddingTop` entirely. `page-top` stays in the project only for the specific case where someone switches the nav to `fixed`; reach for it then, not before.
 
@@ -931,7 +931,7 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
   <Heading tag="h1" variant="display-xl">Page Title</Heading>
 </Section>
 
-<!-- Prose section — padding="main" is the default, shown here only for clarity -->
+<!-- Prose section — no padding prop: the 'main' default isn't writable -->
 <Section container="narrow">
   <Text variant="large">Article body…</Text>
 </Section>
@@ -1631,7 +1631,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 ### Standard content section
 
 ```astro
-<!-- No padding prop — defaults to padding="main", the standard rhythm -->
+<!-- No padding prop — 'main' default, the standard rhythm (writing "main" is a type error) -->
 <Section theme="light">
   <Layout variant="columns" ratio="5-7" verticalAlign="center">
     <Heading variant="eyebrow">Section Label</Heading>
@@ -1660,7 +1660,7 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 ### Hero section (first section on page)
 
 ```astro
-<!-- Sticky nav → no page-top; default padding="main". minHeight drives the hero height. -->
+<!-- Sticky nav → no page-top; no padding prop (the 'main' default). minHeight drives the hero height. -->
 <Section theme="dark" minHeight id="hero">
   <Image slot="background" src={heroBg} alt="" class="u-image" />
   <Layout variant="stack-centered">
@@ -2084,10 +2084,10 @@ Avoid these when writing CSS and HTML in this project:
 - `marginBottom={0}` on a `<Text>`/`<Heading>` that is the last child of a trimmed wrapper (Section container, Layout column, Layout, Col, `u-rich-text`, `u-margin-trim`) — margin-trim already zeroes it; the prop does nothing. Only use it (or add `u-margin-trim` to the wrapper) inside a custom `<div>` that isn't auto-trimmed
 - Adding a positive `marginBottom` (or `u-margin-*`) to separate a direct child of a `<Section>`/`<Layout>`/`` from the next sibling — those containers have a built-in `gap`/`rowGap` that already spaces them (Section's `.u-container` defaults to `--space-8`). Change the container's `gap`/`rowGap` instead. (`<Layout variant="stack">` is the exception — a plain block that uses the text elements' own margins.)
 - Adding `maxWidth` to `<Heading>` or `<Text>` by default — both already have built-in defaults (Heading `30ch`, Text `60ch`; `eyebrow` headings have none). Don't add the prop reflexively when building from a design, and never re-state the default value. Only set `maxWidth` when the design needs a _different_ constraint and you've been told (or it's clearly required) to change it
-- Hard-coding per-theme card colors (a `[data-theme="dark"] .card …` branch, or force-applying `.u-theme-light`) for a contrasting card — mark it `data-theme-contrast` instead (see **Contrast islands** under Variables). Define the look once per theme in `themes.css`; the card adapts automatically
-- Putting a contrasting card's `color` only on a child layer while the card's own wrapping class sets just `background` — the inner `.u-text` layers then inherit `color` from `.u-section[data-theme]` (white on a dark section) and the text goes invisible on a light card. Put `data-theme-contrast` and `color: var(--text)` on the card's own wrapping class (the layer that contains all the text)
+- Hard-coding per-theme card colors (a `[data-theme="dark"] .card …` branch, or force-applying `.u-theme-light`) for a contrasting card — mark it `data-theme-invert` instead (see **Theme invert** under Variables). Define the look once per theme in `themes.css`; the card adapts automatically
+- Putting a contrasting card's `color` only on a child layer while the card's own wrapping class sets just `background` — the inner `.u-text` layers then inherit `color` from `.u-section[data-theme]` (white on a dark section) and the text goes invisible on a light card. Put `data-theme-invert` and `color: var(--text)` on the card's own wrapping class (the layer that contains all the text)
 - `paddingTop="page-top"` on any section (heroes included) — `page-top` is **only** for a _fixed_ navbar, and this project's nav is **sticky** by default, so the first section doesn't need it. Build heroes/first sections with the normal default padding; only use `page-top` if the nav has been switched to `fixed`
-- Adding `padding="large"` (or any padding override) to a section by default — `<Section>` already defaults to `padding="main"`, which is correct for almost every section. Omit the prop entirely (don't even write `padding="main"`). Only override to `large`/another value when a specific section genuinely needs it _and_ it's been asked for or is clearly required by a design — never as a habit
+- Adding `padding="large"` (or any padding override) to a section by default — `<Section>` defaults to `main`, which is correct for almost every section. Omit the prop entirely; `padding="main"` doesn't type-check (the union excludes it — see Section.props.ts). Only override to `large`/another value when a specific section genuinely needs it _and_ it's been asked for or is clearly required by a design — never as a habit
 - Wrapping a `<Visual>` together with other content in a `—`'s `display: contents` makes `.u-image-wrapper` a direct grid/flex child with a definite height, so its `height: 100%` overrides the `ratio` aspect-ratio and the image balloons (worst on mobile when the column collapses to `display: flex`). Use `<Layout variant="stack">` (a real `height: auto` block) for any column that holds a `<Visual>` alongside other content; keep `` for self-sizing loose elements (Heading / Text / Button) only
 - An `<a>` whose only accessible name is `aria-label` — a logo link wrapping an SVG, or an icon-only link (social/share). Crawlers see zero anchor text. Put the label in a visually-hidden child instead: `<span class="u-sr-only">{label}</span>` (SVG siblings get `aria-hidden="true"` so the name isn't announced twice). `<button>` elements are exempt — `aria-label` is correct there
 - Making CMS content routes SSR (`prerender = false`) "so draft preview works" — draft preview lives on the `/preview/*` SSR twins; public content routes are prerendered with `getStaticPaths`. Serving content via SSR burns Worker CPU per request and caused real production `exceededCpu` 503s

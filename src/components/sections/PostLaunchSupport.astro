@@ -21,7 +21,9 @@ import Button from "@/components/ui/Button.astro";
 
 import postLaunchImg from "@/assets/placeholder-images/placeholder-4.webp";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingOverride;
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -42,7 +44,7 @@ interface Props extends HTMLAttributes<"section"> {
 const {
   docs,
   theme = "dark",
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   class: className,

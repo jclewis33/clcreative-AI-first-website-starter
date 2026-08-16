@@ -29,7 +29,9 @@ import PricingItem from "@/components/ui/PricingItem.astro";
 import afterLaunchImg from "@/assets/placeholder-images/placeholder-5.webp";
 import Grid from "@/components/ui/Grid.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingOverride;
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -50,7 +52,7 @@ interface Props extends HTMLAttributes<"section"> {
 const {
   docs,
   theme = "brand",
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   class: className,

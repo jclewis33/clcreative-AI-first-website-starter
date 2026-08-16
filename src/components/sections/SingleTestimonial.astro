@@ -32,7 +32,9 @@ interface TestimonialData {
   avatar?: any;
 }
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingOverride;
 
 interface Props {
   /**
@@ -57,7 +59,7 @@ interface Props {
   /** Section color theme @default 'brand' */
   theme?: "light" | "dark" | "brand";
 
-  /** Sets both paddingTop and paddingBottom @default 'main' */
+  /** Sets both paddingTop and paddingBottom. Default 'main' — omit the prop for it ("main" is not writable). */
   padding?: PaddingValue;
 
   /** Override top padding only */
@@ -78,7 +80,7 @@ const {
   name: fetchName,
   testimonial: rawTestimonial,
   theme = "brand",
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   id,

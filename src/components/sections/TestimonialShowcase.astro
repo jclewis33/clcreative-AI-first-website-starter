@@ -34,7 +34,10 @@ export interface Testimonial {
   avatar?: any;
 }
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. Full PaddingSize
+   here (not PaddingOverride) because this component's own default is NOT
+   "main", so "main" is a meaningful override for callers. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingSize;
 
 interface Props {
   /**
@@ -60,7 +63,7 @@ interface Props {
   heading?: string;
   /** Section color theme */
   theme?: "light" | "dark" | "brand";
-  /** Sets both paddingTop and paddingBottom @default 'main' */
+  /** Sets both paddingTop and paddingBottom. @default 'small' */
   padding?: PaddingValue;
   /** Override top padding only */
   paddingTop?: PaddingValue;
@@ -85,6 +88,12 @@ const {
   class: className,
 } = Astro.props;
 
+/* Section's props refuse the literal "main" (its default is expressed by
+   omission). Callers of THIS component may still write "main" — here it
+   overrides a non-main default — so translate it at the boundary. */
+const pad = (v?: PaddingValue) => (v === "main" ? undefined : v);
+
+
 const resolved =
   rawTestimonials ??
   (await fetchTestimonials({
@@ -98,8 +107,8 @@ const sliderId = `tsc-${Math.random().toString(36).slice(2, 8)}`;
 
 <Section
   theme={theme}
-  paddingTop={paddingTop}
-  paddingBottom={paddingBottom}
+  paddingTop={pad(paddingTop)}
+  paddingBottom={pad(paddingBottom)}
   id={id}
   class:list={["testimonial_showcase_section", className]}
 >

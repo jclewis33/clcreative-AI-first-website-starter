@@ -105,7 +105,9 @@ export interface BlogPost {
 
 type GridVariant = "related" | "recent" | "category" | "manual";
 type SectionTheme = "light" | "dark" | "brand";
-type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingSize = import("@/components/ui/Section.props").PaddingOverride;
 /** Spacing-scale step (`--space-N`) for the gap props. `0` = no gap. */
 type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -145,7 +147,7 @@ interface Props {
    * - `heading` — section heading text (auto-generates if omitted)
    * - `eyebrow` — eyebrow text above heading
    * - `theme` — light, dark, brand
-   * - `padding` — none, small, main, large, page-top (default 'large')
+   * - `padding` — none, xsmall, small, large, page-top (default: omitted → 'main')
    * - `paddingTop` / `paddingBottom` — override individual padding
    * - `columnGap` — horizontal gap in inner Layout. Number = `--space-N` scale (0–8), or any CSS length string (default: `--site-gutter`)
    * - `rowGap` — vertical gap between heading and grid. Number = `--space-N` scale (0–8), or any CSS length string (default: `--space-8`)
@@ -273,8 +275,8 @@ interface Props {
    * | `'large'`    | ~5.5–10rem fluid  |
    * | `'page-top'` | ~10–14rem fluid   |
    *
-   * @default 'large'
-   * @example padding="main"
+   * @default omitted → 'main'
+   * @example padding="large"
    */
   padding?: PaddingSize;
 
@@ -366,7 +368,7 @@ const {
   heading,
   eyebrow,
   theme,
-  padding = "large",
+  padding,
   paddingTop,
   paddingBottom,
   columnGap,

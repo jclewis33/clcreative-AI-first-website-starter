@@ -26,7 +26,9 @@ import Form from "@/components/form/Form.astro";
 import FormField from "@/components/form/FormField.astro";
 import FormTextarea from "@/components/form/FormTextarea.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingOverride;
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -49,7 +51,7 @@ interface Props extends HTMLAttributes<"section"> {
 const {
   docs,
   theme = "light",
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   id,

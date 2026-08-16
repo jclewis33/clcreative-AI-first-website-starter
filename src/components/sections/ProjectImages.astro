@@ -32,9 +32,11 @@ interface Props extends HTMLAttributes<"section"> {
   theme?: "light" | "dark" | "brand";
 
   /** Section vertical padding. @default 'small' */
-  padding?: "none" | "small" | "main" | "large" | "page-top";
-  paddingTop?: "none" | "small" | "main" | "large" | "page-top";
-  paddingBottom?: "none" | "small" | "main" | "large" | "page-top";
+  /* Full PaddingSize (single source: Section.props.ts) — this component's
+     own default is "small", so "main" is a meaningful override here. */
+  padding?: import("@/components/ui/Section.props").PaddingSize;
+  paddingTop?: import("@/components/ui/Section.props").PaddingSize;
+  paddingBottom?: import("@/components/ui/Section.props").PaddingSize;
 
   /** Extra classes on the section. */
   class?: string;
@@ -50,6 +52,13 @@ const {
   ...rest
 } = Astro.props;
 
+/* Section's props refuse the literal "main" (its default is expressed by
+   omission). Callers of THIS component may still write "main" — here it
+   overrides the "small" default — so translate it at the boundary. */
+const pad = (v?: import("@/components/ui/Section.props").PaddingSize) =>
+  v === "main" ? undefined : v;
+
+
 const images = [
   { src: img1, alt: "Project screenshot 1" },
   { src: img2, alt: "Project screenshot 2" },
@@ -61,9 +70,9 @@ const images = [
 
 <Section
   theme={theme}
-  padding={padding}
-  paddingTop={paddingTop}
-  paddingBottom={paddingBottom}
+  padding={pad(padding)}
+  paddingTop={pad(paddingTop)}
+  paddingBottom={pad(paddingBottom)}
   container="full"
   class:list={["project-images_section", className]}
   {...rest}

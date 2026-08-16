@@ -17,6 +17,7 @@
 import type { Props as ButtonProps } from "@/components/ui/Button.props";
 import type { Props as CardProps } from "@/components/ui/Card.props";
 import type { Props as LayoutProps } from "@/components/ui/Layout.props";
+import type { Props as SectionProps } from "@/components/ui/Section.props";
 import type { Props as VisualProps } from "@/components/ui/Visual.props";
 
 type ImageMetadata = import("astro").ImageMetadata;
@@ -76,6 +77,22 @@ export const layoutGood3: LayoutProps = {
   variant: "card",
   cardPadding: "4rem",
 };
+
+/* ── Section: 'main' padding is the default and therefore unwritable ──────── */
+
+// @ts-expect-error 'main' is the default — omit the prop instead of writing it
+export const sectionBad1: SectionProps = { padding: "main" };
+// @ts-expect-error same rule per side
+export const sectionBad2: SectionProps = { paddingTop: "main" };
+// @ts-expect-error invented value — the union catches typos ("deep", "big", …)
+export const sectionBad3: SectionProps = { padding: "deep" };
+
+export const sectionGood1: SectionProps = { padding: "large" };
+export const sectionGood2: SectionProps = {
+  paddingTop: "small",
+  paddingBottom: "none",
+};
+export const sectionGood3: SectionProps = { padding: "xsmall", theme: "dark" };
 
 /* ── Visual: sizes and densities are mutually exclusive (HTML spec) ───────── */
 

@@ -31,7 +31,9 @@ import type { HTMLAttributes } from "astro/types";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingValue = import("@/components/ui/Section.props").PaddingOverride;
 
 interface Props extends HTMLAttributes<"section"> {
   /**

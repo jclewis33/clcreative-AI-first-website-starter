@@ -14,8 +14,13 @@ export interface ImageEntry {
   position?: { x: number; y: number } | "center";
 }
 
-/** Section spacing values matching the Section component's PaddingSize type. */
-export type SectionSpacing = "none" | "xsmall" | "small" | "main" | "large";
+/** Section spacing for content blocks — derived from the Section padding
+ * contract (single source) minus 'page-top', which is nav plumbing, not
+ * block spacing. */
+export type SectionSpacing = Exclude<
+  import("@/components/ui/Section.props").PaddingSize,
+  "page-top"
+>;
 
 /** Shared spacing props present on every content block. */
 interface BlockSpacing {

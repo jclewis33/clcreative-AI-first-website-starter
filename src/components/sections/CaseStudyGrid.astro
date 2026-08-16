@@ -79,7 +79,9 @@ import type { CaseStudy } from "@/data/case-studies";
 /* ── Shared types ── */
 
 type SectionTheme = "light" | "dark" | "brand";
-type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.props.ts. PaddingOverride
+   excludes "main" — the default is expressed by omitting the prop. */
+type PaddingSize = import("@/components/ui/Section.props").PaddingOverride;
 /** Spacing-scale step (`--space-N`) for the gap props. `0` = no gap. */
 type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -120,7 +122,7 @@ interface Props {
    * - `heading` — section heading (default "Case Studies")
    * - `eyebrow` — eyebrow text above heading
    * - `theme` — light, dark, brand
-   * - `padding` — none, small, main, large, page-top (default 'main')
+   * - `padding` — none, xsmall, small, large, page-top (default: omitted → 'main')
    * - `paddingTop` / `paddingBottom` — override individual padding
    * - `cardHeadingVariant` — visual style for card title headings (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
    * - `cardTextVariant` — visual style for card description text (default `'small'`). Accepts: tiny, small, regular, large, xlarge, h1–h6, display-xl/lg/md/sm, eyebrow
@@ -300,7 +302,7 @@ interface Props {
    * | `'large'`    | ~5.5–10rem fluid  |
    * | `'page-top'` | ~10–14rem fluid   |
    *
-   * @default 'main'
+   * @default omitted → 'main'
    * @example padding="large"
    */
   padding?: PaddingSize;
@@ -371,7 +373,7 @@ const {
   heading,
   eyebrow,
   theme,
-  padding = "main",
+  padding,
   paddingTop,
   paddingBottom,
   columnGap,
