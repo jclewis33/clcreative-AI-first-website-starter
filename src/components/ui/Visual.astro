@@ -269,6 +269,47 @@ interface Props extends HTMLAttributes<"div"> {
    * @default false
    * @example <Visual src={logo} alt="Logo" transparent />
    */
+  /**
+   * Compression quality passed to Astro's image service — a preset
+   * (`'low' | 'mid' | 'high' | 'max'`) or a number 0–100.
+   *
+   * Left unset, Astro's default applies. Worth lowering on large decorative
+   * photos, and raising on screenshots or anything with fine text.
+   *
+   * Ignored on remote URLs, which are not processed.
+   *
+   * @example quality="high"
+   */
+  quality?: "low" | "mid" | "high" | "max" | number;
+
+  /**
+   * Override the `sizes` attribute.
+   *
+   * Normally unnecessary: `layout="full-width"` makes Astro generate a `sizes`
+   * value from the layout. Set this when the image does NOT fill its
+   * container — e.g. `sizes="(min-width: 60rem) 33vw, 100vw"` for a three-up
+   * grid — so the browser stops downloading a full-width source for a
+   * third-width slot.
+   *
+   * Ignored on remote URLs, which have no srcset.
+   *
+   * @example sizes="(min-width: 60rem) 33vw, 100vw"
+   */
+  sizes?: string;
+
+  /**
+   * Pixel densities to generate instead of width-based srcset entries, e.g.
+   * `[1, 2]`. Use for fixed-size images (logos, avatars, icons) where the
+   * rendered size never changes — a density srcset is smaller than a width
+   * one there.
+   *
+   * Mutually exclusive with Astro's width-based srcset, so it is only applied
+   * when `sizes` is not set. Ignored on remote URLs.
+   *
+   * @example densities={[1, 2]}
+   */
+  densities?: (number | `${number}x`)[];
+
   transparent?: boolean;
 
   /** Extra classes on the outer `.u-image-wrapper` div. */
@@ -287,6 +328,9 @@ const {
   fit = "cover",
   loading: loadingProp,
   priority = false,
+  quality,
+  sizes,
+  densities,
   transparent = false,
   width,
   height,
@@ -392,6 +436,54 @@ const imageProps: Record<string, any> = {
 if (!isRemote) {
   // Local images use Astro's <Image> with layout
   imageProps.layout = "full-width" as const;
+
+  /* Optimisation opt-ins. These only mean anything for processed images, so
+     they are set inside this branch — a remote URL renders a bare <img> with
+     no srcset for `sizes`/`densities` to describe and no pipeline to apply
+     `quality`. */
+  if (quality !== undefined) imageProps.quality = quality;
+
+  if (sizes !== undefined) {
+    // Overrides the value `layout` would otherwise generate.
+    imageProps.sizes = sizes;
+  } else if (densities !== undefined) {
+    /* Astro rejects densities alongside the width-based srcset that `layout`
+       produces, so a densities image opts out of layout entirely.
+       `layout: "none"` — NOT `delete` — because astro.config.mjs sets a global
+       `image.layout: "constrained"` that a deleted prop simply falls back to,
+       leaving the width srcset in place and the densities silently ignored. */
+    imageProps.layout = "none" as const;
+    imageProps.densities = densities;
+  }
+}
+
+if (import.meta.env.DEV) {
+  if (typeof src === "string" && !isRemote) {
+    console.warn(
+      `\n[Visual] src="${src}" is a string path, so this image is NOT ` +
+        `processed — no srcset, no format conversion, no dimensions to ` +
+        `prevent layout shift.\n  Import the file instead so Astro can ` +
+        `optimise it:\n    import photo from "@/assets/…";  <Visual ` +
+        `src={photo} … />\n  Files in public/ cannot be optimised at all; ` +
+        `move them into src/assets/.\n`,
+    );
+  }
+  if (isRemote) {
+    console.warn(
+      `\n[Visual] src="${src}" is a remote URL and renders as a plain <img>: ` +
+        `no srcset, no format conversion, and quality/sizes/densities are ` +
+        `ignored.\n  For a remote image Astro should optimise, add its ` +
+        `domain to \`image.domains\` (or \`image.remotePatterns\`) in ` +
+        `astro.config.mjs.\n`,
+    );
+  }
+  if (sizes !== undefined && densities !== undefined) {
+    console.warn(
+      "\n[Visual] `sizes` and `densities` cannot both apply — a density " +
+        "srcset has no width descriptors for `sizes` to select from. `sizes` " +
+        "wins; drop one.\n",
+    );
+  }
 }
 
 if (width != null) imageProps.width = width;
