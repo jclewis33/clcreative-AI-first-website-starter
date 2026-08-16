@@ -366,18 +366,6 @@
   }
 
   /* Labeled grid cell — centered text, visible background */
-  .styleguide_grid_cell.is-labeled {
-    background-color: var(--text);
-    opacity: 0.15;
-    border-radius: var(--radius-small);
-    min-height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--text-small-size);
-    font-weight: var(--font-weight-medium);
-  }
 
   /* -----------------------------------------------------------------------
      OVERFLOW DEMO
@@ -469,10 +457,4 @@
   /* -----------------------------------------------------------------------
      DIVIDER
      ----------------------------------------------------------------------- */
-
-  .styleguide_divider {
-    height: 1px;
-    background-color: var(--border);
-    margin: var(--space-6) 0;
-  }
 }

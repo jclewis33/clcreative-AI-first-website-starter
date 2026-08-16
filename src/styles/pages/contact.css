@@ -45,20 +45,6 @@
 
   /* ── Here's What Happens Next — full-reversed breakout ──────────────────── */
 
-  .contact_next_content {
-    padding-block: var(--section-space-xsmall);
-  }
-
-  @media (width < 55em) {
-    .contact_next_content {
-      padding-block: 0;
-    }
-
-    .contact_next_section {
-      padding-block: var(--section-space-small);
-    }
-  }
-
   /* Contact form card */
   .contact_form_wrap {
     background-color: var(--background-2);

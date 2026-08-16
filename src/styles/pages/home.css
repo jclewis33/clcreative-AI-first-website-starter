@@ -17,8 +17,7 @@
      ========================================================================== */
 
   .home-hero_text > *,
-  .home-hero_content .video-embed_frame,
-  .home-hero_slider {
+  .home-hero_content .video-embed_frame {
     opacity: 0;
     animation: home-hero-fade 0.6s ease-out forwards;
   }
@@ -51,9 +50,6 @@
     }
   }
 
-  .home-hero_slider {
-    animation-delay: 0.4s;
-  }
 
   @keyframes home-hero-fade {
     to {
@@ -64,8 +60,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .home-hero_text > *,
-    .home-hero_content .video-embed_frame,
-    .home-hero_slider {
+    .home-hero_content .video-embed_frame {
       opacity: 1;
       transform: none;
       animation: none;

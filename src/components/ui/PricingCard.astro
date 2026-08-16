@@ -446,7 +446,9 @@ const isGeneral = variant === "general";
    Usage:
      <div class="pricing_card_wrap" data-pricing-variant="default">
        <div class="pricing_card_element">
-         <div class="u-content-wrapper">
+         <!-- content goes through <Layout>, which emits: -->
+         <div class="u-layout-wrapper"><div class="u-layout">
+         <div class="u-layout-column-1">
            <div class="pricing_card_header">
              <div class="pricing_card_label">…label…</div>
              <Heading>…name…</Heading>

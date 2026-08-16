@@ -43,10 +43,6 @@
 }
 
 /* Modifier: wrapping row */
-.form_fieldset_list--wrap {
-  justify-content: inherit;
-  flex-flow: wrap;
-}
 
 .form_ui_label {
   gap: 0.5rem;

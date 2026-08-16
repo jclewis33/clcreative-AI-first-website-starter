@@ -11,13 +11,15 @@
                         <meta theme-color> can't read CSS vars).
    • Section themes ... --background / --text / --heading-accent / --border per
                         theme → variables/themes.css ([data-theme] blocks).
-   • Contrasting cards  The "surface" colors a card uses to pop & stay readable
-     (testimonials,     on a themed section live in the --surface-* tier (one
-     primary Card) ...  group per theme) in variables/themes.css — NOT here.
-                        Those reference the swatches below (e.g. brand surface =
-                        --color-brand-400, light/dark surface = --color-light-100).
-                        Full how-to: docs/brand-color-guide.md ("contrasting card
-                        surface"); also the "Surface tier" section in CLAUDE.md.
+   • Contrasting cards  A card that must read against its section carries
+     (testimonials,     `data-theme-invert`, which flips it to the OPPOSITE of
+     primary Card) ...  the ground it sits on — a whole theme, not a partial
+                        copy. Defined in variables/themes.css (see THEME
+                        INVERT); its surface is that theme's --background-2.
+                        There is no --surface-* tier any more: it copied only
+                        four tokens, so buttons and links inside a card still
+                        resolved against the SECTION, which shipped as a
+                        white-on-white bug. Nothing to define here.
    ========================================================================== */
 
 :root {
