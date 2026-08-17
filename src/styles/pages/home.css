@@ -15,10 +15,9 @@
      content appears. That creates a visible flash. Pure CSS animations
      start at stylesheet parse time — no wait, no FOUC.
 
-     Hung off the Layout's own content column. This used to target a
-     `.home-hero_text` div wrapping the hero copy — a leftover from the old
-     <Col> component, kept alive only because these selectors needed something
-     to hold on to. The Layout column is that something, so the div is gone.
+     Hung off the Layout's own content column, so the hero copy needs no
+     wrapper div of its own. Anything added to or reordered inside that column
+     changes which element each nth-child delay lands on.
      ========================================================================== */
 
   .home-hero_content .u-layout-column-1 > *,

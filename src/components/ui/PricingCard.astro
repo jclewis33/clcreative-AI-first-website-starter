@@ -498,15 +498,14 @@ const isGeneral = variant === "general";
       border-color: var(--border);
     }
 
-    /* Make the content column a flex column so margin-top: auto works on the CTA.
-       This targeted `> .u-content-wrapper` until ContentWrapper was absorbed into
-       Layout: the card's content now goes through <Layout>, which emits
-       .u-layout-wrapper > .u-layout > .u-layout-column-1 and only adds
-       `u-content-wrapper` when align/maxWidth are set. The old selector stopped
-       matching, the column stayed display:block — where `margin-top: auto`
-       resolves to 0, not "push to the bottom" — and every CTA floated up under
-       its own copy instead of sitting on the card floor. The intermediate Layout
-       boxes need to stretch too, or the column has no free space to absorb. */
+    /* Make the content column a flex column so `margin-top: auto` on the CTA
+       pushes it to the card floor. A block column resolves `auto` to 0 instead,
+       and every CTA floats up under its own copy. The intermediate Layout boxes
+       have to stretch too, or the column has no free space to absorb.
+
+       Match both `.u-content-wrapper` and `.u-layout-column-1`: Layout emits
+       the former only when `align` or `maxWidth` is set, so the latter is the
+       one that is always there. */
     .pricing_card_element > .u-layout-wrapper,
     .pricing_card_element > .u-layout-wrapper > .u-layout {
       flex: 1;

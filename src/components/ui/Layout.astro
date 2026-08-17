@@ -3,9 +3,10 @@ import type { HTMLAttributes } from "astro/types";
 /**
  * Layout — the one component that arranges a section's content.
  *
- * Absorbed the old ContentWrapper (text alignment + measure) and replaced the
- * old Col: a section is now ONE decision instead of choosing between two
- * overlapping components and remembering a column wrapper.
+ * A section's arrangement is ONE decision: pick a variant, put the content in
+ * the default slot. Text alignment and measure are props here, not a second
+ * component, and the columns are generated — there is no column wrapper to
+ * remember.
  *
  * SLOTS
  *   default    — column 1. Anything placed inside <Layout> lands here; there
@@ -246,7 +247,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
   variant?: LayoutVariant;
 
   /**
-   * Text alignment for column 1. Absorbed from the old ContentWrapper.
+   * Text alignment for column 1.
    * `stack-centered` already centers, so this is for the other variants.
    * @default 'inherit'
    */
@@ -513,9 +514,8 @@ const {
 } = Astro.props as AllProps;
 
 /* Breakout/full variants use the u-grid-breakout utility for their named-line grid */
-/* Absorbed from the old ContentWrapper: text alignment and an optional
-   measure. Kept as props rather than a second component so a section is one
-   decision — see CLAUDE.md. */
+/* Text alignment and an optional measure. Props rather than a second
+   component, so a section is one decision — see CLAUDE.md. */
 const textAlignClassMap: Record<string, string | undefined> = {
   inherit: undefined,
   center: "is-center-align",
@@ -618,9 +618,9 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
         style={inlineStyle}
       >
         {/* Column 1 is the DEFAULT slot — anything placed inside <Layout> lands
-            here with no wrapper component and no slot attribute to remember. The
-            `u-content-wrapper` classes are the ones ContentWrapper used to apply,
-            reused verbatim so alignment and measure render identically. */}
+            here with no wrapper component and no slot attribute to remember.
+            The `u-content-wrapper` classes carry alignment and measure, and are
+            emitted only when `align` or `maxWidth` asks for them. */}
         <div
           class:list={[
             "u-layout-column-1",
