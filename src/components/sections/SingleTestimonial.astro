@@ -130,18 +130,12 @@ const subtitle = [role, company].filter(Boolean).join(", ");
         )
       }
       <div class="single_testimonial_author_info">
-        <Text
-          align="center"
-          tag="span"
-          weight="bold"
-          variant="regular"
-          marginBottom={1}
-        >
+        <Text tag="span" weight="bold" variant="regular" marginBottom={1}>
           {name}
         </Text>
         {
           subtitle && (
-            <Text align="center" tag="span" variant="regular" marginBottom={0}>
+            <Text tag="span" variant="regular" marginBottom={0}>
               {subtitle}
             </Text>
           )
@@ -150,9 +144,7 @@ const subtitle = [role, company].filter(Boolean).join(", ");
     </div>
 
     {/* Quote */}
-    <Text data-split-text align="center" variant="h3" weight="regular"
-      >{quote}</Text
-    >
+    <Text data-split-text variant="h3" weight="regular">{quote}</Text>
   </Layout>
 </Section>
 

@@ -207,6 +207,16 @@ interface Props extends HTMLAttributes<"div"> {
    * | `'right'`   | Right-aligned                         |
    * | `'inherit'` | Inherit alignment from parent layout  |
    *
+   * **Do not set `align="center"` inside a centred layout.** `text-align`
+   * inherits, so `<Layout variant="stack-centered">` (and `card`, and any
+   * `.u-content-wrapper.is-center-align`) already centres the text. Setting
+   * it again is not just redundant — it HARD-CODES the alignment, so
+   * changing the Layout variant later silently leaves this element centred.
+   * Measured across 594 text elements: removing 14 such attributes changed
+   * neither computed `text-align` nor geometry anywhere. It is only needed
+   * where the surrounding context is NOT centred — e.g. an empty-state
+   * message inside a left-aligned results grid.
+   *
    * @example align="center"
    * @example align="inherit"
    */
