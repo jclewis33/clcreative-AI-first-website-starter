@@ -215,14 +215,6 @@ const resolvedTwitterImage = resolvedOgImage;
   </style>
 </noscript>
 
-<!-- Form Redirect -->
-
-<script is:inline>
-  if (!location.pathname.startsWith("/thank-you")) {
-    localStorage.setItem("locat", location.href);
-  }
-</script>
-
 <!-- GSAP and Swiper are npm dependencies imported directly by the components
      that use them; the site-wide animation.js loads GSAP dynamically only on
      pages with animation attributes. No window globals. -->
