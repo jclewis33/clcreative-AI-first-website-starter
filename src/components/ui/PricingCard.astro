@@ -80,6 +80,7 @@ import Layout from "@/components/ui/Layout.astro";
 import Heading from "./Heading.astro";
 import Text from "./Text.astro";
 import Button from "./Button.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
 type PricingCardVariant =
   /** Full card with room for feature items */
@@ -409,7 +410,7 @@ const isGeneral = variant === "general";
       {/* CTA Button */}
       {
         href && (
-          <div class="pricing_card_cta u-button-wrapper">
+          <ButtonWrapper class="pricing_card_cta">
             <Button
               href={href}
               variant={buttonVariant}
@@ -419,7 +420,7 @@ const isGeneral = variant === "general";
             >
               {buttonText}
             </Button>
-          </div>
+          </ButtonWrapper>
         )
       }
 
@@ -458,7 +459,7 @@ const isGeneral = variant === "general";
            <div class="pricing_card_items">
              <div class="pricing_item_wrap">…</div>
            </div>
-           <div class="pricing_card_cta u-button-wrapper">…</div>
+           <ButtonWrapper class="pricing_card_cta">…</ButtonWrapper>
            <div class="pricing_card_footer">…</div>
          </div>
        </div>

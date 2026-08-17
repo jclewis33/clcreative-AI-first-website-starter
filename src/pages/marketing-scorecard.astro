@@ -11,6 +11,7 @@ import Scorecard from "@/components/MarketingScorecard";
 
 import heroBG from "@/assets/placeholder-images/placeholder-6.webp";
 import Overlay from "@/components/ui/Overlay.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
 export const prerender = true;
 
@@ -104,7 +105,7 @@ const TRUST_BADGES = [
             }
           </Grid>
 
-          <div class="u-button-wrapper">
+          <ButtonWrapper>
             <Button
               data-scorecard-start
               href="#scorecard-section"
@@ -125,7 +126,7 @@ const TRUST_BADGES = [
                 <polyline points="8,1 12,5 8,9"></polyline>
               </svg>
             </Button>
-          </div>
+          </ButtonWrapper>
 
           <p
             class="scorecard_hero_microcopy u-text-style-small u-text-style-muted"

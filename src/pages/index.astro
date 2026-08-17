@@ -32,6 +32,7 @@ import future3 from "@/assets/placeholder-images/placeholder-13.webp";
 import future4 from "@/assets/placeholder-images/placeholder-14.webp";
 import future5 from "@/assets/placeholder-images/placeholder-15.webp";
 import future6 from "@/assets/placeholder-images/placeholder-16.webp";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 ---
 
 <BaseLayout
@@ -55,7 +56,7 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
           nisi ut aliquip ex ea commodo consequat.
         </Text>
 
-        <div class="u-button-wrapper">
+        <ButtonWrapper>
           <Button
             id="main-cta-home-hero"
             href="/contact"
@@ -66,7 +67,7 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
             href="/marketing-scorecard"
             ariaLabel="Take the scorecard">Take the Scorecard</Button
           >
-        </div>
+        </ButtonWrapper>
       </div>
       <Visual
         slot="column2"
@@ -159,9 +160,9 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
       ratio="landscape"
     />
     <Layout variant="stack-centered">
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="/contact" ariaLabel="Get started">Get Started</Button>
-      </div>
+      </ButtonWrapper>
     </Layout>
   </Section>
 
@@ -209,9 +210,9 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
     </Layout>
 
     <Layout variant="stack-centered">
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="/contact" ariaLabel="Get started">Get Started</Button>
-      </div>
+      </ButtonWrapper>
     </Layout>
   </Section>
 
@@ -252,11 +253,11 @@ import future6 from "@/assets/placeholder-images/placeholder-16.webp";
           reprehenderit.
         </Text>
 
-        <div class="u-button-wrapper">
+        <ButtonWrapper>
           <Button variant="primary" href="/contact" ariaLabel="Get started"
             >Get Started</Button
           >
-        </div>
+        </ButtonWrapper>
 
         <Grid
           slot="column2"

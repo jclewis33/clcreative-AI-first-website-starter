@@ -65,6 +65,7 @@ const demoSquare = [phS1.src, phS2.src, phS3.src];
 
 /* ── Fetch testimonials from Sanity (tolerate an empty/unreachable dataset) ── */
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
   () => [],
 );
@@ -87,7 +88,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         Every component in this library is built with Astro and styled with the
         design system. Composable, accessible, and ready to ship.
       </Text>
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="/style-guide" size="large" ariaLabel="Browse style guide"
           >Browse Style Guide</Button
         >
@@ -99,7 +100,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         >
           Open a Modal
         </Button>
-      </div>
+      </ButtonWrapper>
     </Layout>
   </Section>
 
@@ -110,9 +111,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         Every component in this library is built with Astro and styled with the
         design system. Composable, accessible, and ready to ship.</Text
       >
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="#" ariaLabel="Sign up now">Sign Up Now</Button>
-      </div>
+      </ButtonWrapper>
 
       <Visual
         slot="column2"
@@ -153,12 +154,12 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         Use variant="columns" for a balanced split. Great for feature sections
         where text and visuals share equal weight.
       </Text>
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="#" ariaLabel="Get started">Get started</Button>
         <Button variant="secondary" href="#" ariaLabel="Learn more"
           >Learn more</Button
         >
-      </div>
+      </ButtonWrapper>
 
       <img
         slot="column2"
@@ -184,9 +185,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         Use variant="columns-reversed" to visually flip the columns on desktop.
         Column 2 appears on the left. Great for alternating feature sections.
       </Text>
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="#" ariaLabel="Explore">Explore</Button>
-      </div>
+      </ButtonWrapper>
 
       <img
         slot="column2"
@@ -211,9 +212,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         wide right content area — great for feature callouts. The image column
         bleeds to the viewport edge.
       </Text>
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="#" ariaLabel="Explore">Explore</Button>
-      </div>
+      </ButtonWrapper>
 
       {
         /* phL* are 1672x941 (16:9); phS* are 1254x1254 squares. This demo asks
@@ -240,9 +241,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         background color. The left column is padded content; the right clips an
         image to the card shape.
       </Text>
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="#" ariaLabel="Learn more">Learn more</Button>
-      </div>
+      </ButtonWrapper>
 
       <img
         slot="column2"
@@ -275,9 +276,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           Use variant="contain-reversed" to flip the card layout. The image
           clips to the left side and the padded content sits on the right.
         </Text>
-        <div class="u-button-wrapper">
+        <ButtonWrapper>
           <Button href="#" ariaLabel="Explore">Explore</Button>
-        </div>
+        </ButtonWrapper>
       </Fragment>
     </Layout>
 
@@ -375,9 +376,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         Use variant="stack-centered" for a centered single-column layout.
         Perfect for hero sections, CTAs, and centered introductions.
       </Text>
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="#" ariaLabel="Get started">Get started</Button>
-      </div>
+      </ButtonWrapper>
 
       <Visual
         slot="column2"
@@ -410,9 +411,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         centered with padding. Col2 is positioned absolutely as the background —
         place a Visual and Overlay there for a background image CTA.
       </Text>
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="#">Example CTA</Button>
-      </div>
+      </ButtonWrapper>
     </Layout>
   </Section>
 
@@ -1016,11 +1017,11 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         The Accordion and AccordionItem components animate with GSAP for smooth
         height transitions. Set openByDefault to pre-expand an item on load.
       </Text>
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="/style-guide" ariaLabel="View style guide"
           >View style guide</Button
         >
-      </div>
+      </ButtonWrapper>
 
       <Accordion slot="column2" openByDefault={1}>
         <AccordionItem question="What is the design system?">
@@ -1287,7 +1288,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         This design system gives you everything you need to ship high-quality
         Astro sites faster than ever before.
       </Text>
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="/style-guide" size="large" ariaLabel="Browse style guide"
           >Browse style guide</Button
         >
@@ -1297,7 +1298,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           size="large"
           ariaLabel="Back to home">Back to home</Button
         >
-      </div>
+      </ButtonWrapper>
     </Layout>
   </Section>
 
@@ -1388,9 +1389,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         Close with the × button or the ESC key. (Backdrop click is disabled at
         full screen.)
       </Text>
-      <div class="u-button-wrapper u-margin-top-6">
+      <ButtonWrapper marginTop={6}>
         <Button data-modal-close>Close</Button>
-      </div>
+      </ButtonWrapper>
     </Layout>
   </Modal>
 

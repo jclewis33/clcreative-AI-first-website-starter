@@ -563,12 +563,23 @@
    BUTTON WRAPPER UTILITIES
    ======================================================= */
 
+/* Rendered by <ButtonWrapper>. The class stays here rather than co-located
+   in that component because it is also applied directly by PricingCard and
+   by page markup.
+
+   Alignment: `inherit` works only when this row is a DIRECT child of the
+   element carrying the alignment, because justify-content is not an
+   inherited property — `inherit` just copies the parent's computed value, so
+   one wrapping div breaks it. --_buttons-justify is the same inheriting
+   signal the text side uses (--_text-inline-margin, see base/layout.css),
+   set wherever a layout declares centring, and it survives nesting. The
+   `inherit` fallback keeps the old behaviour anywhere the signal is absent. */
 .u-button-wrapper {
   column-gap: var(--space-2);
   row-gap: var(--space-2);
   align-content: center;
   align-items: center;
-  justify-content: inherit;
+  justify-content: var(--_buttons-justify, inherit);
   flex-flow: wrap;
   display: flex;
 }

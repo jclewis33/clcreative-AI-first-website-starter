@@ -20,6 +20,7 @@ import Slider from "@/components/ui/Slider.astro";
 import Button from "@/components/ui/Button.astro";
 
 import "@/styles/pages/style-guide.css";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 ---
 
 <BaseLayout
@@ -2343,22 +2344,22 @@ import "@/styles/pages/style-guide.css";
             <div class="u-grid-2" style="gap:var(--space-3)">
               <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-button-wrapper</span>
-                <div class="u-button-wrapper">
+                <ButtonWrapper>
                   <Button href="#" ariaLabel="Example single button"
                     >Single Button</Button
                   >
-                </div>
+                </ButtonWrapper>
               </div>
               <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-button-wrapper (multiple)</span>
-                <div class="u-button-wrapper">
+                <ButtonWrapper>
                   <Button href="#" ariaLabel="Primary action">Primary</Button>
                   <Button
                     variant="secondary"
                     href="#"
                     ariaLabel="Secondary action">Secondary</Button
                   >
-                </div>
+                </ButtonWrapper>
               </div>
             </div>
           </div>

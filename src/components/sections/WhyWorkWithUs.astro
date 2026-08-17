@@ -25,6 +25,7 @@ import Visual from "@/components/ui/Visual.astro";
 import Button from "@/components/ui/Button.astro";
 
 import whyImage from "@/assets/placeholder-images/placeholder-11.webp";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
 /* Single source for the padding union: Section.astro — never re-declare
    these values locally; the copies this replaced had all drifted. */
@@ -116,9 +117,9 @@ const items = [
         }
       </div>
 
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <Button href="/contact" ariaLabel="Get started"> Get Started </Button>
-      </div>
+      </ButtonWrapper>
     </div>
 
     <Visual

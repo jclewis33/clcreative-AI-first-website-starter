@@ -39,6 +39,7 @@ import Button from "@/components/ui/Button.astro";
 import { loadQuery } from "@/sanity/lib/load-query";
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import { urlFor } from "@/sanity/lib/image";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
 type SectionTheme = "light" | "dark" | "brand";
 /* Single source for the padding union: Section.astro — never re-declare
@@ -299,12 +300,12 @@ const hasHeadingSlot = Astro.slots.has("heading");
             </a>
           ))}
         </div>
-        <div class="u-button-wrapper">
+        <ButtonWrapper>
           {" "}
           <Button href="/case-studies" ariaLabel="View All Case Studies">
             View All Case Studies
           </Button>{" "}
-        </div>
+        </ButtonWrapper>
       </div>
     </Section>
   )

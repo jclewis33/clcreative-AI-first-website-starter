@@ -1,0 +1,126 @@
+---
+import type { HTMLAttributes } from "astro/types";
+/**
+ * ButtonWrapper — the row that buttons sit in.
+ *
+ * Wraps one or more `<Button>`s (or links styled as buttons) in a flex row
+ * that wraps onto multiple lines, spaces them, and carries the standard
+ * `margin-top` that separates a button row from the text above it.
+ *
+ * **Alignment is inherited, not configured.** The row follows whatever the
+ * surrounding layout asks for — `<Layout variant="stack-centered">` centres
+ * its buttons with no prop, exactly as it centres its text. Do not add an
+ * alignment class to make that happen; if the buttons are not aligned the
+ * way you expect, the layout is the thing to change.
+ *
+ * @example Default (follows the layout)
+ * ```astro
+ * <ButtonWrapper>
+ *   <Button href="/contact">Get started</Button>
+ *   <Button href="/work" variant="secondary">See our work</Button>
+ * </ButtonWrapper>
+ * ```
+ *
+ * @example Centred — nothing extra needed
+ * ```astro
+ * <Layout variant="stack-centered">
+ *   <Heading tag="h2">Ready to talk?</Heading>
+ *   <ButtonWrapper>
+ *     <Button href="/contact">Book a call</Button>
+ *   </ButtonWrapper>
+ * </Layout>
+ * ```
+ *
+ * @example Pinned to the bottom of a card
+ * ```astro
+ * <ButtonWrapper marginTop="auto">
+ *   <Button href="/pricing">Choose plan</Button>
+ * </ButtonWrapper>
+ * ```
+ */
+
+type WrapperMargin =
+  /** Keep the standard gap above the row */
+  | "default"
+  /** `--space-N` step, 0–8 */
+  | 0
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5
+  | 6
+  | 7
+  | 8
+  /** Push the row to the bottom of a flex column (card footers) */
+  | "auto";
+
+/**
+ * ButtonWrapper — flex row for one or more buttons.
+ *
+ * **Props:**
+ * - `marginTop` — space above the row: `'default'`, `0`–`8`, or `'auto'` (default: `'default'`)
+ * - `render` — set `false` to skip rendering the row and its buttons
+ * - `class` — extra classes on the row
+ * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.)
+ *
+ * **Slot:** default — the buttons.
+ *
+ * Alignment comes from the surrounding layout; there is no `align` prop.
+ */
+interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **ButtonWrapper props:**
+   * - `marginTop` — 'default', 0–8, or 'auto' (default 'default')
+   * - `render` — false skips the row entirely
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to the row
+   *
+   * **Slot:** default — the buttons. Alignment is inherited from the layout.
+   */
+  docs?: string;
+
+  /**
+   * Space above the row.
+   * - `'default'` — the standard gap that separates buttons from text above
+   * - `0`–`8` — a `--space-N` step instead
+   * - `'auto'` — push the row to the bottom of a flex column, so button rows
+   *   in a set of cards line up however tall each card grows
+   * @default 'default'
+   * @example marginTop="auto"
+   */
+  marginTop?: WrapperMargin;
+
+  /**
+   * Set to `false` to skip rendering the row and its buttons.
+   * @default true
+   */
+  render?: boolean;
+
+  /** Extra utility classes to add to the row. */
+  class?: string;
+}
+
+const {
+  docs,
+  marginTop = "default",
+  render = true,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && (
+    <div
+      class:list={[
+        "u-button-wrapper",
+        marginTop !== "default" && `u-margin-top-${marginTop}`,
+        className,
+      ]}
+      {...rest}
+    >
+      <slot />
+    </div>
+  )
+}

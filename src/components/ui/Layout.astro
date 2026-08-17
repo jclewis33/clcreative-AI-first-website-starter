@@ -77,10 +77,10 @@ import type { HTMLAttributes } from "astro/types";
  * ```astro
  * <Layout variant="card">
  *     <Heading tag="h2" variant="display-sm" accent>Ready to <strong>start</strong>?</Heading>
- *     <Text size="large" align="center">Book a free strategy call.</Text>
- *     <div class="u-button-wrapper">
+ *     <Text size="large">Book a free strategy call.</Text>
+ *     <ButtonWrapper>
  *       <Button href="/book-a-call" ariaLabel="Book call">Book a Call</Button>
- *     </div>
+ *     </ButtonWrapper>
  *   <Fragment slot="column2">
  *     <Visual src={bgImage} alt="" variant="background" />
  *     <Overlay strength={75} />
@@ -773,6 +773,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
       align-items: center;
       justify-content: center;
       --_text-inline-margin: auto;
+      --_buttons-justify: center;
     }
 
     /* ---- sticky-left — 50/50, left column sticks on scroll (or custom ratio) ---- */
@@ -925,6 +926,7 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
       justify-content: center;
       /* see the stack-centered note above */
       --_text-inline-margin: auto;
+      --_buttons-justify: center;
       padding: var(--card-padding, var(--section-space-main)) var(--space-7);
     }
 

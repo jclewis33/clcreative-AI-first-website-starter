@@ -89,7 +89,7 @@ Reusable, single-purpose classes. Always prefixed with `u-`. Always stacked on t
 | Content wrapper    | `u-content-wrapper`, `.is-center-align`, `.is-left-align`, `.is-right-align`, `.is-center-align-mobile`                                                                                                                                                                                                                                                                                                                                                   |
 | Rich text          | `u-rich-text` — vertical rhythm for CMS/prose content (bare heading + paragraph tags)                                                                                                                                                                                                                                                                                                                                                                     |
 | List               | `u-list` — apply to `<ul>` or `<ol>` for bullet/ordered list spacing without the rich-text wrapper. Sets `margin-top: 0`, `margin-bottom: var(--space-4)` (auto-zeroed when `:last-child`), and a default `font-size: var(--text-regular-size)`. The font-size uses `:where()` so any `u-text-style-*` class overrides it (e.g. `<ul class="u-list u-text-style-large">`). Direct `<li>` children get `margin-bottom: var(--space-2)` between items.      |
-| Button             | `u-button-wrapper`, `u-button-reset`                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Button             | `u-button-reset` (`u-button-wrapper` is applied by `<ButtonWrapper>` — use the component)                                                                                                                                                                                                                                                                                                                                                                 |
 | Color              | `u-inherit-color`                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | Theme invert       | `data-theme-invert` — flips an element (and everything inside it) to the opposite of the ground it sits on: dark/brand → light, light/unthemed → dark. Lumos' relative `.theme-invert` as a data attribute. Put it on **any** wrapper, not just cards. Takes a whole theme (see **Theme invert** under Variables), so background, text, borders, buttons and links all follow. Opt-in: `<Card theme="invert">`, or the bare attribute on your own markup. |
 | Text shrink        | `u-text-shrink` — add to flex-row parent with icon + Text children to prevent overflow                                                                                                                                                                                                                                                                                                                                                                    |
@@ -462,9 +462,9 @@ color: color-mix(in hsl, currentColor 70%, transparent);
       <p class="cta_eyebrow u-text-style-eyebrow u-text-style-muted">Label</p>
       <h2 class="cta_title u-text-style-h2">Heading</h2>
       <p class="cta_text u-text-style-regular">Body copy.</p>
-      <div class="u-button-wrapper">
+      <ButtonWrapper>
         <!-- Button component -->
-      </div>
+      </ButtonWrapper>
     </div>
     <div class="cta_visual u-image-wrapper">
       <!-- Image component -->
@@ -893,9 +893,9 @@ Block-level alignment wrapper for content. Controls `text-align`, `align-items`,
 <Layout variant="stack-centered">
   <Heading tag="h2" variant="h2">Centered Title</Heading>
   <Text variant="large">Centered body text.</Text>
-  <div class="u-button-wrapper">
+  <ButtonWrapper>
     <Button href="/cta" ariaLabel="CTA">Get Started</Button>
-  </div>
+  </ButtonWrapper>
 </Layout>
 
 <!-- Right-aligned content -->
@@ -1037,9 +1037,9 @@ The old `<Col>` wrapper and its `display: contents` are gone: a generated column
 <Layout variant="stack-centered">
   <Heading tag="h1" variant="display-sm">Page Title</Heading>
   <Text variant="large" align="center">Supporting text.</Text>
-  <div class="u-button-wrapper">
+  <ButtonWrapper>
     <Button href="/cta" ariaLabel="CTA">Get Started</Button>
-  </div>
+  </ButtonWrapper>
 </Layout>
 
 <!-- 50/50 — wrap loose elements in  -->
@@ -1047,9 +1047,9 @@ The old `<Col>` wrapper and its `display: contents` are gone: a generated column
   <Heading variant="eyebrow">Label</Heading>
   <Heading tag="h3" variant="h2">Title</Heading>
   <Text>Description text.</Text>
-  <div class="u-button-wrapper">
+  <ButtonWrapper>
     <Button href="#" ariaLabel="CTA">Get started</Button>
-  </div>
+  </ButtonWrapper>
 </Layout>
 <Visual slot="column2" src={img} alt="Description" ratio="landscape" />
 
@@ -1090,9 +1090,9 @@ The old `<Col>` wrapper and its `display: contents` are gone: a generated column
     >Ready to <strong>start</strong>?</Heading
   >
   <Text variant="large" align="center">Book a free strategy call.</Text>
-  <div class="u-button-wrapper">
+  <ButtonWrapper>
     <Button href="/contact" ariaLabel="Book call">Book a Call</Button>
-  </div>
+  </ButtonWrapper>
 </Layout>
 <Fragment slot="column2">
   <Visual src={bgImage} alt="" variant="background" />
@@ -1133,9 +1133,9 @@ The standard wrapper for putting **multiple loose elements** into a single `<Lay
   <Heading variant="eyebrow">Label</Heading>
   <Heading tag="h3" variant="h2">Title</Heading>
   <Text>Description text.</Text>
-  <div class="u-button-wrapper">
+  <ButtonWrapper>
     <Button href="#" ariaLabel="CTA">Get started</Button>
-  </div>
+  </ButtonWrapper>
 </Layout>
 <!-- Single component → slot directly, no  -->
 <Visual slot="column2" src={img} alt="Description" ratio="landscape" />
@@ -1357,6 +1357,31 @@ Accepts any HTML attribute (`style`, `data-*`, `aria-*`). User-provided `style` 
 ```
 
 ---
+
+### `<ButtonWrapper>`
+
+The row that buttons sit in. Flex, wraps onto multiple lines, spaces the buttons, and carries the standard `margin-top` that separates a button row from the text above it. Replaces hand-written `<div class="u-button-wrapper">`.
+
+| Prop        | Type                               | Default     | Description                                              |
+| ----------- | ---------------------------------- | ----------- | -------------------------------------------------------- |
+| `marginTop` | `'default'` \| `0`–`8` \| `'auto'` | `'default'` | Space above the row. `'auto'` pins it to a card's floor. |
+| `render`    | `boolean`                          | `true`      | `false` skips the row and its buttons                    |
+| `class`     | `string`                           | —           | Extra classes on the row                                 |
+
+**Slot:** default — the buttons.
+
+**Alignment is inherited, never configured.** The row follows the surrounding layout, so `<Layout variant="stack-centered">` centres its buttons with no prop — the same way it centres its text. There is deliberately no `align` prop; if the buttons are not aligned as expected, change the layout, don't override the row.
+
+That works through `--_buttons-justify`, an inheriting custom property set wherever a layout declares centring (the `.u-content-wrapper.is-*-align` classes and the `stack-centered` / `card` Layout variants) — the button-side twin of `--_text-inline-margin`. It replaced a bare `justify-content: inherit`, which only worked when the row was a **direct** child of the aligned element: `justify-content` is not an inherited property, so `inherit` merely copies the parent's computed value and a single wrapping `<div>` broke it. Measured — nested two deep, before: `justify-content: normal`, button hard left; after: `center`. **If you add a new centred layout context, set `--_buttons-justify` there too.**
+
+```astro
+<Layout variant="stack-centered">
+  <Heading tag="h2">Ready to talk?</Heading>
+  <ButtonWrapper>
+    <Button href="/contact" ariaLabel="Book a call">Book a Call</Button>
+  </ButtonWrapper>
+</Layout>
+```
 
 ### `<Modal>`
 
@@ -1716,12 +1741,12 @@ Two supporting contracts:
       Page <strong>Headline</strong>
     </Heading>
     <Text variant="large" align="center">Supporting text.</Text>
-    <div class="u-button-wrapper">
+    <ButtonWrapper>
       <Button href="/contact" ariaLabel="Get started">Get Started</Button>
       <Button variant="secondary" href="/case-studies" ariaLabel="Learn more"
         >Learn More</Button
       >
-    </div>
+    </ButtonWrapper>
   </Layout>
 </Section>
 ```

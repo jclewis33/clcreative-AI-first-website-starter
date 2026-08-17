@@ -13,6 +13,7 @@ import Visual from "@/components/ui/Visual.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Button from "@/components/ui/Button.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -112,8 +113,8 @@ const {
   </Layout>
 
   <Layout variant="stack-centered" data-fade-in>
-    <div class="u-button-wrapper">
+    <ButtonWrapper>
       <Button href={buttonHref} ariaLabel={buttonText}>{buttonText}</Button>
-    </div>
+    </ButtonWrapper>
   </Layout>
 </Section>

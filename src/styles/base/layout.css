@@ -119,16 +119,20 @@
    .u-content-wrapper_inner below already used the margin form of this. */
 .u-content-wrapper.is-center-align {
   --_text-inline-margin: auto;
+  --_buttons-justify: center;
 }
 .u-content-wrapper.is-left-align {
   --_text-inline-margin: 0;
+  --_buttons-justify: start;
 }
 /* start: auto, end: 0 — pushes the box to the end edge */
 .u-content-wrapper.is-right-align {
   --_text-inline-margin: auto 0;
+  --_buttons-justify: end;
 }
 .u-content-wrapper.is-center-align-mobile {
   --_text-inline-margin: var(--center-medium-auto, 0);
+  --_buttons-justify: var(--center-medium, start);
 }
 
 /* Inner wrapper rendered when maxWidth is set on Layout.
