@@ -14,29 +14,34 @@
      which waits for the Swiper slider's 6 images to finish before the hero
      content appears. That creates a visible flash. Pure CSS animations
      start at stylesheet parse time — no wait, no FOUC.
+
+     Hung off the Layout's own content column. This used to target a
+     `.home-hero_text` div wrapping the hero copy — a leftover from the old
+     <Col> component, kept alive only because these selectors needed something
+     to hold on to. The Layout column is that something, so the div is gone.
      ========================================================================== */
 
-  .home-hero_text > *,
+  .home-hero_content .u-layout-column-1 > *,
   .home-hero_content .video-embed_frame {
     opacity: 0;
     animation: home-hero-fade 0.6s ease-out forwards;
   }
 
-  .home-hero_text > * {
+  .home-hero_content .u-layout-column-1 > * {
     transform: translateY(20px);
   }
 
   /* Stagger the content column: eyebrow → heading → text → buttons */
-  .home-hero_text > *:nth-child(1) {
+  .home-hero_content .u-layout-column-1 > *:nth-child(1) {
     animation-delay: 0s;
   }
-  .home-hero_text > *:nth-child(2) {
+  .home-hero_content .u-layout-column-1 > *:nth-child(2) {
     animation-delay: 0.1s;
   }
-  .home-hero_text > *:nth-child(3) {
+  .home-hero_content .u-layout-column-1 > *:nth-child(3) {
     animation-delay: 0.2s;
   }
-  .home-hero_text > *:nth-child(4) {
+  .home-hero_content .u-layout-column-1 > *:nth-child(4) {
     animation-delay: 0.3s;
   }
 
@@ -58,7 +63,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .home-hero_text > *,
+    .home-hero_content .u-layout-column-1 > *,
     .home-hero_content .video-embed_frame {
       opacity: 1;
       transform: none;

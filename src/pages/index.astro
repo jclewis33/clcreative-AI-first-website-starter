@@ -43,32 +43,28 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
   <!-- Hero Section -->
   <Section>
     <Layout class="home-hero_layout home-hero_content" variant="columns">
-      <div class="u-display-contents home-hero_text">
-        <Heading tag="h1" maxWidth="none" variant="eyebrow"
-          >Lorem ipsum dolor sit amet</Heading
-        >
-        <Heading variant="h2" maxWidth="40ch"
-          >Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do
-          eiusmod tempor incididunt.</Heading
-        >
-        <Text variant="xlarge">
-          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-          nisi ut aliquip ex ea commodo consequat.
-        </Text>
+      <Heading tag="h1" maxWidth="none" variant="eyebrow"
+        >Lorem ipsum dolor sit amet</Heading
+      >
+      <Heading variant="h2" maxWidth="40ch"
+        >Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod
+        tempor incididunt.</Heading
+      >
+      <Text variant="xlarge">
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+        ut aliquip ex ea commodo consequat.
+      </Text>
 
-        <ButtonWrapper>
-          <Button
-            id="main-cta-home-hero"
-            href="/contact"
-            ariaLabel="Get started">Get Started</Button
-          >
-          <Button
-            variant="secondary"
-            href="/marketing-scorecard"
-            ariaLabel="Take the scorecard">Take the Scorecard</Button
-          >
-        </ButtonWrapper>
-      </div>
+      <ButtonWrapper>
+        <Button id="main-cta-home-hero" href="/contact" ariaLabel="Get started"
+          >Get Started</Button
+        >
+        <Button
+          variant="secondary"
+          href="/marketing-scorecard"
+          ariaLabel="Take the scorecard">Take the Scorecard</Button
+        >
+      </ButtonWrapper>
       <Visual
         slot="column2"
         src={theFixImage}
