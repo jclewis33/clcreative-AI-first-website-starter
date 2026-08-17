@@ -817,13 +817,12 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
     function openMenu() {
       hamburger!.setAttribute("aria-expanded", "true");
       backdrop?.classList.add("is-active");
-      document.body.style.overflow = "hidden";
+      // Scroll lock is CSS, keyed off this aria-expanded — see reset.css.
     }
 
     function closeMenu() {
       hamburger!.setAttribute("aria-expanded", "false");
       backdrop?.classList.remove("is-active");
-      document.body.style.overflow = "";
       // Close any open mobile dropdowns when closing the menu
       closeMobileDropdowns();
     }

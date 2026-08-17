@@ -33,6 +33,23 @@ html {
   scroll-padding-top: var(--nav-height-total, 0px);
 }
 
+/* Scroll lock for anything that covers the page.
+   Derived from what is actually open rather than set imperatively, which is
+   the point: Modal and the mobile nav each used to write
+   `document.body.style.overflow` themselves, so the lock was one flag with
+   two writers and no way to express "two things want this locked" — whichever
+   closed first unlocked the page for both. A selector cannot get out of sync
+   with the state it reads.
+
+   Add any future blocking overlay to this list rather than reintroducing a
+   JS lock. Note the modal side matches `[open]`, so the lock releases when
+   the dialog starts its close transition — the same moment the old
+   `close`-event handler released it. */
+html:has(dialog.modal_dialog[open]),
+html:has(.nav_hamburger_wrap[aria-expanded="true"]) {
+  overflow: hidden;
+}
+
 /* Set core body defaults */
 body {
   min-height: 100vh;

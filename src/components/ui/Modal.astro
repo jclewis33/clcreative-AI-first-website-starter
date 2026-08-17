@@ -229,15 +229,11 @@ const hasClose = Astro.slots.has("close");
     trigger.addEventListener("keydown", clear, { once: true });
   }
 
-  function restoreScroll() {
-    if (document.querySelectorAll("dialog[open]").length === 0) {
-      document.body.style.overflow = "";
-    }
-  }
-
   function openModal(modal: HTMLDialogElement) {
+    // Scroll lock is CSS, keyed off dialog[open] — see reset.css. This used
+    // to set document.body.style.overflow here and clear it on close, which
+    // meant the page-level lock was a single flag shared with the mobile nav.
     modal.showModal();
-    document.body.style.overflow = "hidden";
   }
 
   function closeModal(modal: HTMLDialogElement) {
@@ -288,7 +284,7 @@ const hasClose = Astro.slots.has("close");
       }
     });
 
-    // ---- Escape stays native; these two only keep the side effects right ----
+    // ---- Escape stays native; this only keeps the focus ring right ----
     document.addEventListener(
       "cancel",
       (e) => {
@@ -297,14 +293,6 @@ const hasClose = Astro.slots.has("close");
         // closeModal() does, so the focus ring behaves the same either way.
         if (e.target instanceof HTMLDialogElement)
           restoreTriggerFocus(e.target);
-      },
-      true,
-    );
-
-    document.addEventListener(
-      "close",
-      (e) => {
-        if (e.target instanceof HTMLDialogElement) restoreScroll();
       },
       true,
     );
