@@ -1345,7 +1345,7 @@ Accepts any HTML attribute (`style`, `data-*`, `aria-*`). User-provided `style` 
 
 ### `<Modal>`
 
-Native `<dialog>`-based modal with CSS enter/exit transitions. No extra JS imports required.
+Native `<dialog>`-based modal with CSS enter/exit transitions — **no animation library**. The motion is driven by the `[open]` attribute plus `@starting-style`, with `transition-behavior: allow-discrete` holding `display`/`overlay` so the exit finishes before the dialog is hidden. The scrim is the native `::backdrop`. JS only calls `showModal()`/`close()`, so `Escape` closes natively and nothing about the animation can prevent it.
 
 **Trigger pattern:** Add `data-modal-trigger="modal-id"` to any button or link to open the modal.
 
@@ -1364,7 +1364,9 @@ Native `<dialog>`-based modal with CSS enter/exit transitions. No extra JS impor
 
 **Slots:** default (scrollable content), `close` (override the default close × button)
 
-**Close methods:** close button click, backdrop click, `Escape` key (native `<dialog>`)
+**Close methods:** close button click, click beside the panel, `Escape` key (native `<dialog>`)
+
+Under `prefers-reduced-motion` the modal opens and closes instantly (durations drop to 1ms rather than 0, so `display`/`overlay` still complete and the dialog reliably finishes closing).
 
 ```astro
 <!-- Trigger (anywhere on page) -->
