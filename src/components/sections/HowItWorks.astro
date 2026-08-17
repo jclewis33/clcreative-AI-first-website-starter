@@ -466,15 +466,15 @@ const {
     }
 
     /* Images fill their wrapper — equivalent to u-image.
-   object-fit is declared explicitly: it used to come from Astro's injected
-   `:where([data-astro-image])` styles, which are switched off in
-   astro.config.mjs (see the responsiveStyles comment there). Without it these
-   images fall back to `fill` and stretch. */
-    /* .how_it_works_img is gone: these render through <Visual
-       variant="background">, whose wrapper is already absolute-fill and whose
-       .u-image handles object-fit. Going through Visual also means these get
-       sizes="auto", so the browser stops fetching a 1254px source for a 403px
-       box. */
+       object-fit must be declared explicitly: Astro's injected
+       `:where([data-astro-image])` styles are switched off in astro.config.mjs
+       (see the responsiveStyles comment there), and without it these images
+       fall back to `fill` and stretch.
+
+       These render through <Visual variant="background">, whose wrapper is
+       already absolute-fill and whose .u-image handles object-fit. Going
+       through Visual also gets them sizes="auto", so the browser stops
+       fetching a 1254px source for a 403px box. */
 
     /* ==========================================================================
    SECTION HEADER
@@ -628,7 +628,7 @@ const {
         row-gap: 0;
       }
 
-      /* Hide spacers — no longer needed */
+      /* Hide spacers — not needed at this breakpoint */
       .how_it_works_step_space {
         display: none;
       }

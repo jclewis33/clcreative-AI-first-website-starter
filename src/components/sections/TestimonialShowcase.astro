@@ -104,9 +104,9 @@ const total = testimonials.length;
   id={id}
   class:list={["testimonial_showcase_section", className]}
 >
-  <!-- The script selects on this attribute's PRESENCE, so it carries no value.
-       It used to hold a `Math.random()` id, which was never read and made the
-       built HTML differ on every build. -->
+  <!-- The script selects on this attribute's PRESENCE, so it carries no
+       value. Do not give it a generated id: nothing reads one, and it would
+       make the built HTML differ on every build. -->
   <div class="testimonial_showcase_wrap" data-testimonial-showcase>
     {/* ── Left column: heading ── */}
     <div class="testimonial_showcase_header">
@@ -224,8 +224,8 @@ const total = testimonials.length;
 <script>
   // Swiper imported directly (core + only the modules this config uses) so
   // the chunk ships only on pages that render this section; Vite dedupes it
-  // against Slider's copy. A11y preserved from the old swiper/bundle days —
-  // it is on by default once installed. CSS stays layered in styles/vendor.css.
+  // against Slider's copy. A11y is deliberate — it is on by default once
+  // installed. CSS stays layered in styles/vendor.css.
   import Swiper from "swiper";
   import { Navigation, A11y } from "swiper/modules";
 

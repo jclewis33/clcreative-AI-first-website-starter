@@ -67,7 +67,7 @@
      .u-cover-absolute — absolutely positioned overlays (e.g. clickable overlays)
      .u-ignore-trim    — explicit opt-out for any child
 
-   Margin-trim pattern, simplified for Astro (no Webflow condition-invisible).
+   Margin-trim pattern.
    ========================================================================== */
 
 /* First visible child — remove top margin */

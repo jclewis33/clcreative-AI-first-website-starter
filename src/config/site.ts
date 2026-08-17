@@ -1,14 +1,15 @@
 /**
  * Single source of truth for site identity.
  *
- * Everything that used to be hardcoded across BaseLayout, Head, Footer,
- * jsonld.ts, the scorecard API, the contact pages, and the llms endpoints now
- * lives here. When re-skinning this project for a new site, edit THIS file first.
+ * Site name, URL, contact details, social handles and integration ids all live
+ * here rather than inline in BaseLayout, Head, Footer, jsonld.ts, the scorecard
+ * API, the contact pages or the llms endpoints. When re-skinning this project
+ * for a new site, edit THIS file first.
  *
  * The Sanity project id/dataset and the site URL live in `site.shared.mjs` (a
  * dependency-free leaf module) so the config-load contexts that can't import
  * this file — `astro.config.mjs`, `sanity.config.ts`, `sanity.cli.ts`, the
- * `scripts/*.mjs` — can import the SAME values. No more hand-synced copies.
+ * `scripts/*.mjs` — can import the SAME values. One definition, no hand-synced copies.
  * `wrangler.jsonc` is the lone exception (it's JSON); `scripts/check-config-sync.mjs`
  * guards it.
  */

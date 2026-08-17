@@ -10,10 +10,8 @@ import Layout from "@/components/ui/Layout.astro";
  * heading typography on non-heading content (e.g. prices, stats).
  *
  * Renders ONE bare heading tag carrying `.u-text`, the type class, and any
- * `max-width` — there is no wrapper div. It used to emit
- * `<div class="u-text …"><h2>…</h2></div>`, a Webflow-era shape whose flex
- * box then needed three `!important`s on the child to undo itself. Alignment
- * that the wrapper used to perform now comes from `--_text-inline-margin`
+ * `max-width` — there is no wrapper div, and nothing should add one.
+ * Alignment of the constrained box comes from `--_text-inline-margin`
  * (see base/layout.css).
  *
  * @example Display heading with balance

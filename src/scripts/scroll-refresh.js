@@ -18,9 +18,8 @@
  * page with no GSAP at all the event simply has no listener and costs
  * nothing, which is what lets layout-changers stay GSAP-free.
  *
- * This replaced the `(window as any).ScrollTrigger?.refresh()` calls from
- * the window-global era — those optional chains would have become silent
- * no-ops once the globals were removed.
+ * Call this rather than reaching for a global `ScrollTrigger` — an optional
+ * chain against a global that is not there is a silent no-op.
  */
 export function wireScrollRefresh(ScrollTrigger) {
   const root = document.documentElement;

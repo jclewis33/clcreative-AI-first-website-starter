@@ -44,14 +44,14 @@
 
    `aspect-ratio` only computes a MISSING dimension. The wrapper already has
    `width: 100%`, so the moment it also has a definite height the ratio has
-   nothing left to decide and is ignored. That is exactly what `height: 100%`
-   used to do here: harmless while the parent's height was indefinite (it then
-   resolves to `auto` and the ratio governs), but as soon as the parent height
-   became definite — a Layout column holding the image AND a caption, once the
-   layout collapses to one column — the image stretched to the column's full
-   height. A 16/9 visual measured 1.66 instead of 1.78 that way.
+   nothing left to decide and is ignored. `height: 100%` here would do exactly
+   that: harmless while the parent's height is indefinite (it resolves to
+   `auto` and the ratio governs), but as soon as the parent height is definite
+   — a Layout column holding the image AND a caption, once the layout collapses
+   to one column — the image stretches to the column's full height, and a 16/9
+   visual renders 1.66 instead of 1.78.
 
-   So the default is now `height: auto` (the ratio governs) and every place
+   So the default is `height: auto` (the ratio governs) and every place
    that genuinely wants the media to FILL its box says so explicitly:
    `.is-background` below, the `full`/`contain` Layout variants and the
    case-study card in their own files. This matches Lumos, whose base is
@@ -573,7 +573,7 @@
    one wrapping div breaks it. --_buttons-justify is the same inheriting
    signal the text side uses (--_text-inline-margin, see base/layout.css),
    set wherever a layout declares centring, and it survives nesting. The
-   `inherit` fallback keeps the old behaviour anywhere the signal is absent. */
+   `inherit` fallback covers anywhere the signal is absent. */
 .u-button-wrapper {
   column-gap: var(--space-2);
   row-gap: var(--space-2);

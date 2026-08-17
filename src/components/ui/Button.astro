@@ -147,8 +147,8 @@ type ButtonHoverTheme = "light" | "dark" | "brand";
      <Button newTab>                    ❌ newTab needs an href
      <Button disabled href="/x">        ❌ links cannot be disabled
 
-   There is deliberately NO index signature — the old `[key: string]: any`
-   made every typo type-check. Arbitrary `data-*` attributes still pass
+   There is deliberately NO index signature: a `[key: string]: any` would
+   make every typo type-check. Arbitrary `data-*` attributes still pass
    (HTMLAttributes carries a `data-\${string}` index), and standard DOM
    attributes (`style`, `aria-*`, `id`, `class`) are inherited and CHECKED. */
 interface BaseProps {
@@ -495,12 +495,12 @@ const tagAttrs = resolvedHref
      </a>
      …or <button class="button_main_wrap" type="button"> when there is no href.
 
-     This replaced a wrapper → stretched-<a> → aria-hidden-visual structure
-     carried over from Webflow. That shape needed a duplicate .u-sr-only copy
-     of every label (which could drift from the visible text) and a
-     :has(:focus-visible) hop to move focus styling onto the visual element.
-     Both are gone: :focus-visible now applies to the element that is
-     actually focused.
+     Do not build this as a wrapper → stretched-<a> → aria-hidden-visual
+     structure. That shape needs a duplicate .u-sr-only copy of every label
+     (which drifts from the visible text) and a :has(:focus-visible) hop to
+     move focus styling onto the visual element. Rendering the real control
+     as the root means :focus-visible applies to the element that is actually
+     focused.
 
    VARIANT SELECTION
      data-button-variant="primary"     (default — lime filled)

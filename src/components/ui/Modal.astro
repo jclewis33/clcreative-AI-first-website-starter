@@ -230,9 +230,9 @@ const hasClose = Astro.slots.has("close");
   }
 
   function openModal(modal: HTMLDialogElement) {
-    // Scroll lock is CSS, keyed off dialog[open] — see reset.css. This used
-    // to set document.body.style.overflow here and clear it on close, which
-    // meant the page-level lock was a single flag shared with the mobile nav.
+    // Scroll lock is CSS, keyed off dialog[open] — see reset.css. Do not set
+    // document.body.style.overflow here: that makes the page-level lock a
+    // single flag shared with every other overlay.
     modal.showModal();
   }
 
@@ -361,8 +361,8 @@ const hasClose = Astro.slots.has("close");
     }
 
     /* The scrim is the native ::backdrop — see the ANIMATION section for the
-       colour and its transition. It used to be a real <div> purely because
-       GSAP cannot tween a pseudo-element; CSS can. */
+       colour and its transition. It needs no element of its own; CSS can
+       transition a pseudo-element. */
 
     /* ---- Inner layout — centers the content panel ---- */
 
@@ -481,8 +481,8 @@ const hasClose = Astro.slots.has("close");
      full-screen  no scrim (the panel covers everything); panel fades in
                   over 250ms
 
-   Closing runs the same transitions backwards, which is what `tl.reverse()`
-   used to do. GSAP's power1 is a quadratic curve and power2 a cubic one, so
+   Closing runs the same transitions backwards. GSAP's power1 is a quadratic
+   curve and power2 a cubic one, so
    `power1.out` is the quad ease-out bezier and its reverse is the quad
    ease-in; the eases below are those exact curves, not approximations.
 

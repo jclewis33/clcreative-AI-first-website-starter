@@ -205,7 +205,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
    *
    * **Slots:** the default slot IS column 1 — content goes straight inside `<Layout>` with no slot attribute. The second column is `slot="column2"`; a single component (Visual, Grid, Card) takes it directly, and for several elements you may either repeat `slot="column2"` on each or group them in one `<Fragment slot="column2">` — both put the same children in the column.
    *
-   * A `<Visual>` may share a column with other content freely — it holds its `ratio` at every width. (It used to stretch once the layout collapsed, because `.u-image-wrapper` defaulted to `height: 100%`; the default is now `height: auto` and filling a box is opt-in. See base/visual-utilities.css.)
+   * A `<Visual>` may share a column with other content freely — it holds its `ratio` at every width, because `.u-image-wrapper` defaults to `height: auto` and filling a box is opt-in. See base/visual-utilities.css.
    */
   docs?: string;
 
@@ -763,11 +763,9 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
    justify-content: center, and text-align: center handles inline content.
 
    --_text-inline-margin is the same signal for .u-text. align-items cannot
-   serve it any more: .u-text used to be a flex WRAPPER that consumed the
-   inherited align-items and centred its child, but it is now the text
-   element itself, and a block box ignores its parent's align-items. Without
-   this, a max-width-constrained heading keeps its text centred INSIDE a box
-   that stays hard left. */
+   serve it: .u-text is the text element itself, a block box, and a block box
+   ignores its parent's align-items. Without this, a max-width-constrained
+   heading keeps its text centred INSIDE a box that stays hard left. */
     [data-layout-variant="stack-centered"] .u-layout-column-1 {
       text-align: center;
       align-items: center;

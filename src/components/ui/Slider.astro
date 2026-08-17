@@ -317,9 +317,9 @@ const sliderModifier = variantClassMap[variant];
    * Swiper is imported directly (core + the modules this config actually
    * uses), so the chunk ships only on pages that render a <Slider> and
    * Vite dedupes it against any other Swiper consumer on the page.
-   * A11y is included because `swiper/bundle` used to install it, and it is
-   * ON by default once installed — dropping it would silently remove the
-   * aria-live announcements sliders ship with today.
+   * A11y is deliberate: it is ON by default once installed, so dropping it
+   * from this import list would silently remove the slider's aria-live
+   * announcements.
    * Swiper's CSS stays in styles/vendor.css: importing it here would leave
    * it unlayered, and unlayered CSS beats every layer in the design system.
    *
@@ -350,19 +350,16 @@ const sliderModifier = variantClassMap[variant];
    * Wrap each slot child in a `.swiper-slide` div.
    *
    * Astro cannot enumerate slot children server-side, so this has to happen
-   * in the browser. It used to be a per-instance `<script is:inline>` — one
-   * unbundled, unminified copy per slider per page, keyed by a
-   * `Math.random()` id — because running synchronously before first paint was
-   * how it avoided a layout shift: unwrapped children do not match the
-   * `.swiper-slide` width rule, so they would paint at their natural width
-   * and then jump.
+   * in the browser. It does not need to run before first paint: the width
+   * rule targets `.slider_list > *`, which matches the caller's elements
+   * BEFORE wrapping and the generated slides after, so both states lay out
+   * identically and this function's timing cannot cause a shift. Keep that
+   * selector intact if you touch the width rule — an `.swiper-slide`-only
+   * rule would reintroduce the shift and force this back into an inline
+   * per-instance script.
    *
-   * That constraint is gone: the width rule now targets `.slider_list > *`,
-   * which matches the caller's elements BEFORE wrapping and the generated
-   * slides after, so both states lay out identically and the timing of this
-   * function no longer affects geometry. It can therefore live here — one
-   * bundled, minified, deduped copy per page — and it must run before
-   * initSliders(), which counts and clones real `.swiper-slide` elements.
+   * It must still run before initSliders(), which counts and clones real
+   * `.swiper-slide` elements.
    */
   function wrapSlides() {
     document

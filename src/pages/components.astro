@@ -218,9 +218,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
 
       {
         /* phL* are 1672x941 (16:9); phS* are 1254x1254 squares. This demo asks
-          for ratio="16/9", so it needs a landscape source. It previously used
-          the square phS1 AND forced width/height to 1200x900 (4:3) — three
-          different aspect ratios fighting, which letterboxed the image.
+          for ratio="16/9", so it needs a landscape source. Pairing a square
+          source with a forced 4:3 width/height would put three aspect ratios
+          in conflict and letterbox the image.
           `width`/`height` are only for remote URLs; a local import already
           carries its dimensions. */
       }

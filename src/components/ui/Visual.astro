@@ -319,9 +319,8 @@ interface BaseProps extends HTMLAttributes<"div"> {
 }
 
 /* `sizes` and `densities` are mutually exclusive BY THE HTML SPEC — a density
-   srcset has no width descriptors for `sizes` to choose between. This used to
-   be a dev-console warning; encoded as a union it is an editor error at the
-   call site instead. */
+   srcset has no width descriptors for `sizes` to choose between. Encoded as
+   a union so it is an editor error at the call site, not a runtime warning. */
 export type Props = BaseProps &
   (
     | ({ densities?: never } & {

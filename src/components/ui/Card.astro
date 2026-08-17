@@ -319,13 +319,14 @@ const showVisual = variant !== "stacked";
      "multiple"         → the card surface is NOT a link. Two destinations
                           cannot share one surface, so the buttons stay real.
 
-   This used to count the actions itself by rendering the footer slot in
-   frontmatter. That crashed `astro dev`: rendering a slot here forces its
-   children to render before Astro has set up the render context, and an
-   <Image> anywhere inside then hits an uninitialized image service —
-   "Cannot read properties of undefined (reading 'validateOptions')". It only
-   surfaced on the FIRST page rendered after a server start, which made it look
-   intermittent. Never call Astro.slots.render() in frontmatter.
+   The count is a prop rather than something this component works out for
+   itself, because working it out would mean rendering the footer slot in
+   frontmatter. Never call Astro.slots.render() in frontmatter: it forces the
+   slot's children to render before Astro has set up the render context, and
+   an <Image> anywhere inside then hits an uninitialized image service —
+   "Cannot read properties of undefined (reading 'validateOptions')". It
+   surfaces only on the FIRST page rendered after a server start, so it looks
+   intermittent.
 
    A CSS safety net in this file also drops the stretch whenever the footer
    actually holds two or more controls, so a card left on the default still
@@ -479,11 +480,10 @@ if (
 
     /* ---- Stretched card link ----
        The title holds a real <a>; this pseudo-element stretches its hit area
-       over the whole card. Replaces the old absolutely-positioned overlay
-       <a class="clickable_link"> that duplicated the label in a .u-sr-only
-       span. Benefits: the anchor text is the visible title (nothing to keep
-       in sync), the card is ONE link instead of two stacked ones, and text
-       inside the card stays selectable because no element covers it.
+       over the whole card. Do not reach for an absolutely-positioned overlay
+       <a> instead: that needs the label duplicated in a .u-sr-only span (which
+       drifts from the visible text), makes the card two stacked links, and
+       covers the card so its text stops being selectable.
 
        Only rendered when the card holds 0-1 actions — see the action count
        in the frontmatter. */

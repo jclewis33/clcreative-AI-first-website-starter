@@ -44,8 +44,7 @@
   }
 
   /* .u-text is now the text element itself and carries `width: 100%`, so in
-     this flex row it has to be told to hug its content. Previously these
-     undid the old .u-text WRAPPER's `min-width: 100%`. */
+     this flex row it has to be told to hug its content. */
   .blog_card_footer > .u-text {
     width: auto;
   }

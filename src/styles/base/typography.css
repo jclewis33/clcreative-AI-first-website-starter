@@ -1,9 +1,8 @@
 /* ==============================================================
    TYPOGRAPHY UTILITIES
    ==============================================================
-   u- typography classes only. The bare element selectors that used to
-   live at the top of this file (h1-h6, p, a) moved to base/elements.css
-   so they sit in the `base` layer instead of `utilities`.
+   u- typography classes only. Bare element selectors (h1-h6, p, a) live in
+   base/elements.css so they sit in the `base` layer, not `utilities`.
    ============================================================== */
 
 /* ======== Heading utility classes for non-semantic elements ==============
@@ -202,26 +201,16 @@
    .u-text — THE TEXT ELEMENT ITSELF
    ==========================================================================
    `.u-text` sits directly on the <h1>-<h6>/<p> that <Heading> and <Text>
-   render. It is NOT a wrapper: those components used to emit
-   `<div class="u-text …"><h2>…</h2></div>`, a flex column with
-   `min-width: 100%` whose child then needed
-   `max-width: inherit !important; margin-inline: 0 !important;
-   margin-top: 0 !important` to undo the box it had just been put inside —
-   three of the repo's !important declarations existing only to cancel a
-   wrapper. It also made a flex box the direct parent of every text element,
-   which the house spacing rule explicitly forbids because flex kills the
-   vertical margin collapsing that the rhythm depends on.
+   render. It is the text element, NOT a wrapper around one. Never put a
+   wrapper around a text element: a flex parent kills the vertical margin
+   collapsing the rhythm depends on, and max-width and alignment are things
+   the element can hold itself.
 
-   That shape came from Webflow, where a Text Block cannot carry its own
-   max-width or alignment independently of flow, so you wrap it. In CSS the
-   element can simply hold those properties itself.
-
-   `width: 100%` is the one thing the wrapper genuinely provided: it makes
-   the element fill its column so `text-align` positions the text, rather
-   than the element shrinking to its content and being positioned as a block
-   by the parent's `align-items`. With a `max-width` set, the element is
-   min(100%, max-width) wide and the parent's `align-items` places it —
-   exactly what the wrapper's inherited `align-items` used to do.
+   `width: 100%` makes the element fill its column so `text-align` positions
+   the text, rather than the element shrinking to its content and being
+   positioned as a block by the parent's `align-items`. With a `max-width`
+   set, the element is min(100%, max-width) wide and the parent's
+   `align-items` places it.
    ========================================================================== */
 
 .u-text {
@@ -232,17 +221,15 @@
   /* Progressive enhancement: trims the leading space above the cap-height
      and below the alphabetic baseline, so spacing values mean what they say.
      Unsupported browsers (Firefox) keep the normal line-height box — text is
-     slightly taller but fully readable. Previously applied via `.u-text > *`,
-     i.e. to the wrapper's child; it belongs on the text element itself. */
+     slightly taller but fully readable. */
   text-box-trim: both;
   text-box-edge: cap alphabetic;
 }
 
 /* Allow .u-text to shrink inside explicit flex-row containers (e.g. icon +
-   text patterns). This mattered far more when .u-text was a wrapper with
-   `min-width: 100%`, which could not shrink at all. A plain element's
-   min-width is `auto`, so it already shrinks to its min-content; this only
-   permits going below that. Add u-text-shrink to the flex parent to opt in. */
+   text patterns). An element's min-width is `auto`, so it already shrinks to
+   its min-content; this permits going below that. Add u-text-shrink to the
+   flex parent to opt in. */
 .u-text-shrink > .u-text {
   min-width: 0;
 }
@@ -253,11 +240,9 @@
    Resets p, blockquote and label so they inherit type from their nearest
    typed ancestor instead of carrying browser/UA defaults.
 
-   Headings are no longer listed here. They used to need it because the
-   `.u-text-style-*` class lived on a wrapper and the heading had to inherit
-   through it; the class now sits on the heading itself and beats the UA
-   styles directly. Bare headings still get the same inherit treatment from
-   base/elements.css.
+   Headings are deliberately absent: `.u-text-style-*` sits on the heading
+   itself and beats the UA styles directly, and bare headings get the same
+   inherit treatment from base/elements.css.
    ========================================================================== */
 
 p,

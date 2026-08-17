@@ -49,8 +49,7 @@
    ================================================================ */
 
 /* Defaults — the large tier is active by default; medium/small/xsmall flip
-   to 1 inside their container queries below. (Moved here from the old
-   interactions.css when the trigger/state system was removed.) */
+   to 1 inside their container queries below. */
 :root {
   --responsive-large: 1;
   --responsive-medium: 0;

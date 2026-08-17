@@ -15,8 +15,8 @@
 /* Placeholder look for selects with an empty-value option selected.
    Must beat static `color` declarations like
    .case-study_filter_select { color: var(--text) } (pages layer) -
-   pre-layers this won on specificity, (0,1,1) vs (0,1,0). Moved here
-   from reset.css, where the reset layer would always lose. */
+   Lives in the overrides layer because a rule in the reset layer would
+   always lose to one in pages. */
 select:has(option[value=""]:checked) {
   color: color-mix(in srgb, var(--text) 40%, transparent);
 }
@@ -41,8 +41,7 @@ select:has(option[value=""]:checked) {
    last children. Must beat margins set by any layer, including pages —
    e.g. .styleguide_page_header { margin-bottom: var(--space-8) } — because
    trimming the container edge is the design system's contract regardless
-   of where the margin came from. Pre-layers this block won on specificity,
-   (0,2,0) vs (0,1,0). */
+   of where the margin came from. */
 .u-container > :last-child,
 .u-container-narrow > :last-child,
 .u-container-wide > :last-child,

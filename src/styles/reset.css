@@ -34,17 +34,15 @@ html {
 }
 
 /* Scroll lock for anything that covers the page.
-   Derived from what is actually open rather than set imperatively, which is
-   the point: Modal and the mobile nav each used to write
-   `document.body.style.overflow` themselves, so the lock was one flag with
-   two writers and no way to express "two things want this locked" — whichever
-   closed first unlocked the page for both. A selector cannot get out of sync
-   with the state it reads.
 
-   Add any future blocking overlay to this list rather than reintroducing a
-   JS lock. Note the modal side matches `[open]`, so the lock releases when
-   the dialog starts its close transition — the same moment the old
-   `close`-event handler released it. */
+   Derived from what is actually open rather than set imperatively. A
+   selector cannot get out of sync with the state it reads, and it expresses
+   "two things want this locked" for free — a JS flag cannot, so whichever
+   overlay closed first would unlock the page for both.
+
+   Add any future blocking overlay to this list rather than writing a JS lock.
+   The modal side matches `[open]`, so the lock releases the moment the dialog
+   starts its close transition. */
 html:has(dialog.modal_dialog[open]),
 html:has(.nav_hamburger_wrap[aria-expanded="true"]) {
   overflow: hidden;
@@ -55,11 +53,8 @@ html:has(.nav_hamburger_wrap[aria-expanded="true"]) {
    The body IS the page shell. It is a flex column at least as tall as the
    viewport, so `main` can grow and push the footer to the bottom.
 
-   These four declarations used to sit on a `.page_wrap` div wrapping every
-   page — a Webflow shape, not a CSS requirement. Webflow's canvas cannot
-   style <body>, and its copy/paste model needs one selectable container you
-   can duplicate onto another page. Astro has neither limit: the layout IS the
-   reusable unit. Do not reintroduce a page wrapper. */
+   Do not add a page-wrapper div for this. The layout is the reusable unit;
+   a container around every page buys nothing here. */
 body {
   display: flex;
   flex-direction: column;
@@ -73,7 +68,7 @@ body {
      viewport; leaving `overflow-y` alone means only sideways scrolling is
      stopped. Writing the `overflow: clip` shorthand here would propagate to
      both axes and freeze the page — no vertical scrolling at all. The modal /
-     mobile-nav scroll lock above stays on html, where the shorthand is
+     mobile-nav scroll lock above belongs on html, where the shorthand is
      correct and its `:has()` specificity beats this rule. */
   overflow-x: clip;
   line-height: 1.5;
@@ -167,14 +162,12 @@ a:not([class]) {
    programmatic focus yes, which is how a closed modal returns focus to the
    control that opened it.
 
-   This used to be gated behind an `html.using-keyboard` class toggled on Tab.
-   That gate is a pre-`:focus-visible` polyfill and it actively broke things:
-   when focus was moved by script rather than by Tab, the class was absent, so
-   the rule below never applied — and because nothing suppressed the default,
-   the browser painted its OWN ring instead (a thin dark 1px outline). Closing
-   a modal left that stray ring around the trigger. Styling `:focus-visible`
-   directly, and explicitly clearing the ring when it does NOT match, means the
-   only ring that can ever appear is this one. */
+   Do not gate this behind a Tab-keydown class. Such a gate cannot see focus
+   moved by script, so the rule never applies there and — with nothing
+   suppressing the default — the browser paints its own thin ring instead,
+   leaving a stray outline on a modal's trigger after it closes. Styling
+   `:focus-visible` directly, and explicitly clearing the ring when it does
+   NOT match, means the only ring that can ever appear is this one. */
 a,
 button,
 :where([tabindex]),

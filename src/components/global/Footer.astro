@@ -404,11 +404,10 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
        Text: footer_bottom_text
        Links: footer_bottom_list > footer_bottom_item > footer_bottom_link_wrap
 
-   Footer links render at full opacity. (The prior trigger-based group-hover
-   dim was inert — the markup had no hovered "hover"/"focus" sibling marker for
-   the group rule to key on — so it was removed. To add a real dim, use:
+   Footer links render at full opacity. To dim the siblings of a hovered
+   link, use:
      .footer_group_wrap:has(.footer_group_item:hover) .footer_group_item:not(:hover)
-       { opacity: 0.5; })
+       { opacity: 0.5; }
    ========================================================================== */
 
     .footer_wrap {
