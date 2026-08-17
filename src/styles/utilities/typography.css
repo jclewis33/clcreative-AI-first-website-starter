@@ -1,9 +1,16 @@
-/* ==============================================================
-   TYPOGRAPHY UTILITIES
-   ==============================================================
-   u- typography classes only. Bare element selectors (h1-h6, p, a) live in
-   base/elements.css so they sit in the `base` layer, not `utilities`.
-   ============================================================== */
+/* ==========================================================================
+   TYPOGRAPHY UTILITIES — layer(utilities)
+   ==========================================================================
+   Owns:      .u-text-style-*, .u-display-*, .u-text, .u-rich-text and the
+              rich-text vertical rhythm.
+   Does not:  the sizes/weights these read → variables/typography.css
+              bare h1-h6 / p / a          → ../base/elements.css
+              text color utilities        → utilities/visual-utilities.css
+                                            (loaded after this file so they win)
+
+   Retuning ALL text at once is a variables/typography.css job. Changing one
+   class's treatment is this file's job.
+   ========================================================================== */
 
 /* ======== Heading utility classes for non-semantic elements ==============
    Applied to .u-text wrappers (not the child heading tag).
@@ -216,7 +223,7 @@
 .u-text {
   width: 100%;
   /* Centres/ends the box when a content wrapper asks for it; see the
-     alignment note in base/layout.css. Defaults to the start edge. */
+     alignment note in utilities/layout.css. Defaults to the start edge. */
   margin-inline: var(--_text-inline-margin, 0);
   /* Progressive enhancement: trims the leading space above the cap-height
      and below the alphabetic baseline, so spacing values mean what they say.

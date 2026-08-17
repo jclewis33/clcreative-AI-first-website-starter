@@ -60,7 +60,7 @@ Reusable, single-purpose classes. Always prefixed with `u-`. Always stacked on t
 - Never apply more than 4 utility classes at once — use the custom class for additional styles
 - Never apply a utility class alone without a custom class beneath it
 
-**Available utilities** (see `src/styles/base/` for the full list):
+**Available utilities** (see `src/styles/utilities/` for the full list):
 
 | Category           | Example classes                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -210,44 +210,59 @@ src/
 ├── layouts/          # Page wrapper layouts (BaseLayout.astro)
 ├── pages/            # Route pages (index.astro, about.astro, etc.)
 ├── scripts/          # JavaScript (GSAP animations, etc.)
-└── styles/
-    ├── global.css         # Master import file — assigns every sheet to a cascade layer
-    ├── reset.css
-    ├── overrides.css      # Highest layer: runtime states + structural corrections
-    ├── vendor.css         # Third-party CSS (Swiper), wrapped in the low `vendor` layer
-    ├── fonts.css
-    ├── variables/         # CSS custom properties only
-    │   ├── base.css       # ★ Edit here first — screen size, site margin/gutter,
-    │   │                  #   max-width, radius, border-width, border-colors,
-    │   │                  #   box-shadows, button sizes, focus
+└── styles/            # A DIRECTORY'S NAME IS ITS CASCADE LAYER (see below)
+    ├── global.css         # The index — declares the cascade, imports every global sheet
+    ├── reset.css          # `reset` layer
+    ├── fonts.css          # `reset` layer — @font-face + --font-<name> bindings
+    ├── vendor.css         # `vendor` layer — third-party CSS (Swiper) pass-through
+    ├── overrides.css      # `overrides` layer: runtime states + structural corrections
+    ├── variables/         # → layer(variables). Custom properties only, never a
+    │   │                  #   selector that paints.
+    │   ├── foundation.css # ★ Edit here first — viewport bounds, site margin/gutter,
+    │   │                  #   max-width, radius, border-width, box-shadows,
+    │   │                  #   button sizes, focus. Every clamp() reads these.
     │   ├── colors.css     # Raw color swatches only (no semantic aliases).
     │   │                  #   --color-brand-500 is the canonical brand hex; the
     │   │                  #   SITE.brand.color literal in src/config/site.ts is a
     │   │                  #   MIRROR for email/<meta theme-color> (can't read CSS) —
     │   │                  #   keep them in sync. JS that has the DOM reads the var.
     │   ├── themes.css     # Semantic theme aliases (--background, --text, --border, etc.)
+    │   │                  #   THIS is what a component reads — never a raw swatch.
     │   │                  #   data-theme-invert flips an element to the
     │   │                  #   opposite of whatever ground it sits on
     │   ├── typography.css # Font families, sizes, weights, line-heights, letter-spacing
     │   ├── spacing.css    # --space-1–8, --section-space-*, --margin-*
     │   ├── layout.css     # --grid-*, --gap-*
     │   └── nav.css        # Nav sizing, spacing, radius, banner height, dropdowns
-    ├── components/        # ONLY component CSS with no single owner (see below)
+    ├── base/              # → layer(base). Element and attribute defaults ONLY —
+    │   │                  #   things a component class must be able to override.
+    │   ├── elements.css        # Bare element defaults (h1–h6, p, a, section, button)
+    │   └── animate.css         # [data-animate-in/up], [data-prevent-flicker] defaults
+    ├── utilities/         # → layer(utilities). Every `u-` class.
+    │   │                  #   ⚠ Import order in global.css is load-bearing.
+    │   ├── misc.css            # u-sr-only, u-button-reset, u-heading-accent, …
+    │   ├── margin-trim.css     # u-margin-trim / u-ignore-trim + first/last-child trim
+    │   ├── typography.css      # u-text-style-*, u-display-*, .u-text, rich text
+    │   ├── layout.css          # u-container, u-grid-*, u-display-flex, u-gap-*, etc.
+    │   ├── responsive-columns.css # Responsive column system + flag vars + :root defaults
+    │   ├── spacing.css         # u-padding-*, u-margin-*
+    │   ├── visual-utilities.css # u-background-*, u-box-shadow-*, u-radius-*, u-hide-*
+    │   └── animate.css         # u-hero-fade (pure-CSS staggered entrance)
+    ├── components/        # → layer(components). ONLY component CSS with no single
+    │   │                  #   owner; everything else co-locates (see below).
     │   ├── forms.css          # Form fields — shared by contact page + SignUpForm
     │   └── marketing-scorecard.css # Owned by a React .tsx (can't hold an Astro style block)
-    ├── base/              # Utility classes and element defaults
-    │   ├── elements.css        # Bare element defaults (h1–h6, p, a, section, button) — `base` layer
-    │   ├── utilities.css       # u-sr-only, u-button-reset, misc u- classes
-    │   ├── typography.css      # u-text-style-*, u-display-*, .u-text element, rich text
-    │   ├── layout.css          # u-container, u-grid-*, u-display-flex, u-gap-*, etc.
-    │   ├── responsive-columns.css # Responsive column system + responsive flag vars + their :root defaults
-    │   ├── spacing.css         # u-padding-*, u-margin-*
-    │   ├── visual-utilities.css # u-background-*, u-box-shadow-*, u-radius-*, u-hide-*, etc.
-    │   └── animate.css         # CSS scroll-triggered animations (data-animate-in/up)
-    └── pages/             # Page-specific styles (component custom classes live here)
-        ├── home.css
-        └── contact.css
+    └── pages/             # → layer(pages). Page-specific classes. NOT imported by
+        ├── home.css       #   global.css — each page imports its own and opens with
+        └── contact.css    #   `@layer pages { … }` in-file.
 ```
+
+**A directory's name is its cascade layer.** `variables/` → `layer(variables)`,
+`base/` → `layer(base)`, `utilities/` → `layer(utilities)`, and so on, so the
+layer a file lands in is readable from its path with no lookup. The folder is
+the contract: a `u-` class in `base/` or a bare `h1` rule in `utilities/` is a
+cascade bug even though the CSS is valid. The five single-file sheets sit at
+the top level because they have no siblings.
 
 **Cascade layers:** every stylesheet is assigned to a layer in `global.css`:
 `reset, vendor, variables, base, utilities, components, pages, overrides` —
@@ -287,9 +302,15 @@ Two hard rules follow from this:
 
 - **Component CSS with no single owning component** → `src/styles/components/` (add the file to `global.css` with `layer(components)`). Only three files qualify today; the reasons are listed in `global.css`.
 - **Page-specific classes** → `src/styles/pages/[page-name].css`, opening with `@layer pages { … }` in-file
-- **Utility classes** → `src/styles/base/` (existing files)
-- **Element defaults** (bare `h1`/`p`/`a`-style selectors) → `src/styles/base/elements.css` — never in a utilities file, where the layer would let them beat component classes
+- **Utility classes** (`u-` prefix) → `src/styles/utilities/` (existing files)
+- **Element and attribute defaults** (bare `h1`/`p`/`a` selectors, `[data-*]` initial states) → `src/styles/base/`
 - **CSS variables** → `src/styles/variables/` (existing files)
+
+Each of those directories is its cascade layer, so the choice is the same
+question either way: _must a component class be able to override this?_ Yes →
+`base/`. No → `utilities/`. Every file opens with an `Owns:` / `Does not:`
+header naming what belongs there and where the neighbouring concerns live —
+read it before adding, and extend it when you do.
 
 ---
 
@@ -299,7 +320,7 @@ Two hard rules follow from this:
 - **Alt text — every image needs it**: Every `<Image>`, `<img>`, and `<Visual>` must carry meaningful, descriptive `alt` text. Do **not** ship `alt=""`. SEO crawlers (Ahrefs, etc.) report empty `alt` as a _missing_ alt attribute, so even decorative/duplicate images get flagged — write a real description instead of leaving it blank. For images sourced from data (e.g. a `services`/`posts` array), reuse the existing `imageAlt`/`alt` field rather than hardcoding or blanking it. Inside `aria-hidden="true"` containers (decorative collages, cursor-follower effects) the `alt` is skipped by screen readers but still read by crawlers — so it must be present and descriptive there too. The only acceptable exception is a third-party/external image whose markup we don't render (e.g. the HoneyBook tracking pixel), since we have nothing to set `alt` on.
 - **Slots**: `<Layout>`'s default slot IS column 1 — put content straight inside it, no slot attribute. The second column is `slot="column2"`. A single component (Visual, Grid, Card) takes it directly. For **several elements in column 2 there are two equally valid forms**: repeat `slot="column2"` on each element (Astro collects them into the slot in source order), or group them in one `<Fragment slot="column2">`. These produce the _same_ children inside the column — verified in the rendered DOM. `<Fragment>` emits no element of its own and no `display: contents` wrapper is involved. The only difference: repeating the attribute leaves an inert `slot` attribute on each rendered element. Pick whichever reads better.
   A `<Visual>` may share a column with other content freely — it holds its `ratio` at every width (1.778 for a 16/9 visual at 1440/700/480px in all four arrangements). See the image-fill rule below for what keeps that true.
-- **Images: `height: auto` is the default, filling a box is opt-in.** `aspect-ratio` only computes a **missing** dimension. `.u-image-wrapper` already sets `width: 100%`, so the moment it also has a definite height the ratio has nothing left to decide and is silently ignored. A `height: 100%` here is harmless while the parent's height is indefinite (a percentage against an auto-height parent resolves to `auto`) but stretches the image the moment the parent height becomes definite — e.g. a Layout column holding an image _and_ a caption once collapsed to one column, where a 16/9 visual renders **1.66** instead of 1.78. The base is `height: auto` (`styles/base/visual-utilities.css`), matching Lumos, whose base is `img { height: auto }` with `height: 100%` opted into per pattern.
+- **Images: `height: auto` is the default, filling a box is opt-in.** `aspect-ratio` only computes a **missing** dimension. `.u-image-wrapper` already sets `width: 100%`, so the moment it also has a definite height the ratio has nothing left to decide and is silently ignored. A `height: 100%` here is harmless while the parent's height is indefinite (a percentage against an auto-height parent resolves to `auto`) but stretches the image the moment the parent height becomes definite — e.g. a Layout column holding an image _and_ a caption once collapsed to one column, where a 16/9 visual renders **1.66** instead of 1.78. The base is `height: auto` (`styles/utilities/visual-utilities.css`), matching Lumos, whose base is `img { height: auto }` with `height: 100%` opted into per pattern.
   **So: if a wrapper must FILL its box rather than hold its own ratio, say so explicitly** with `aspect-ratio: unset; height: 100%` on that pattern's own rule. The places that do: `.is-background`, the `full` and `contain` Layout variants (in `Visual.astro`), `.card_primary_visual` (Card), `.scroll_reveal_panel` (ScrollReveal), and the case-study featured card (which sets its own fixed height). Do **not** restore `height: 100%` on the base rule — the ratio then stops working everywhere at once, and nothing in `astro check`, the build, or type-checking notices. The two regressions this flushed out (card visuals reverting to 3/2, ScrollReveal panels shrinking) were caught only by measuring image boxes across pages before and after.
 - **Never call `Astro.slots.render()` to find out whether a slot is empty. Use `:empty` in CSS.** Two independent failures, both silent, both measured:
   1. **It drops client scripts.** Astro emits a component's hoisted `<script>` tag as _part of its rendered output_, so the tag lands inside the string `render()` returns. Discard that string and render again through `<slot />` and the tag is gone — not re-emitted. A/B on two identical pages showed the only difference in emitted HTML was a missing `Slider.astro?astro&type=script` tag. On `<Section>`, whose default slot holds the page, this killed every slider, tab, accordion and modal at once. Reproduced in Lumos' own repo on Astro 7 (his `Section.astro` + `utils/slots.ts` have the same latent flaw — his only scripted components, Nav and Footer, never sit in a Section slot), so an Astro upgrade does not fix it.
@@ -315,7 +336,7 @@ Two hard rules follow from this:
   2. **Give prop types a NAME.** In a component whose props are `BaseProps extends HTMLAttributes<…>` **intersected with a union**, a prop written as an inline union (`variant?: "default" | "background"`) or as alias-plus-string (`ratio?: RatioPreset | string`) loses its tooltip, while the _identical_ type behind a named alias (`variant?: VisualVariant`) keeps it. This is why `Visual` and `Layout` declare `Ratio`, `VisualVariant`, `Position`, `ObjectFit`, `LoadingMode`, `Quality`, `GapValue` and `LayoutAlign` as named aliases rather than inline.
      Neither rule is worth reasoning about at the keyboard — the exact trigger interacts with the rest of the file, so measure it instead of predicting it.
 - **Renaming anything? Grep the old name before you finish.** A rename is the one edit that fails _silently_ — the old selector still parses, the old `var()` still resolves to its fallback, the old slot name is simply ignored. Nothing in `astro check`, the build, or a pixel diff catches it. Three shapes to watch for: documentation that outlives the token tier it describes; a page selector still matching a wrapper class the component stopped emitting (that one silently kills `margin-top: auto` layouts, because the flex context it needed is gone); and a `var()` still reading a pre-rename custom property, which resolves to its fallback everywhere instead of erroring anywhere.
-  After renaming a class, custom property, slot, component, or data attribute, run `grep -rn "<old-name>" src CLAUDE.md .claude` and check every hit. Sort them into: (a) real consumers — update them; (b) deliberate historical notes ("this replaced the old X") — keep, they explain why the code looks the way it does; (c) stale instructions telling an author to use the old thing — these are the dangerous ones, rewrite them. Pay special attention to **cross-file pairs**: a custom property set in a component and read in `styles/base/*` has no compiler tying the two ends together, so both must be changed in the same commit. Do not try to find these by hunting for "unused CSS" — the utilities, `:hover`/`[aria-expanded]`/`.is-*` state rules, and unused-but-valid API are all legitimately unmatched, and drown the signal.
+  After renaming a class, custom property, slot, component, or data attribute, run `grep -rn "<old-name>" src CLAUDE.md .claude` and check every hit. Sort them into: (a) real consumers — update them; (b) deliberate historical notes ("this replaced the old X") — keep, they explain why the code looks the way it does; (c) stale instructions telling an author to use the old thing — these are the dangerous ones, rewrite them. Pay special attention to **cross-file pairs**: a custom property set in a component and read in `styles/utilities/*` has no compiler tying the two ends together, so both must be changed in the same commit. Do not try to find these by hunting for "unused CSS" — the utilities, `:hover`/`[aria-expanded]`/`.is-*` state rules, and unused-but-valid API are all legitimately unmatched, and drown the signal.
 - **Animations**: GSAP data attributes (`data-duration`, `data-distance`, `data-stagger`, `data-prevent-flicker`) are used for scroll-triggered animations. These are not classes.
 - **Component props**: Use TypeScript interfaces for component props. Prop names use camelCase.
 - **Layout is the only layout component.** A section's content goes straight inside `<Layout>` — the default slot IS column 1, and `<Layout>` generates the column wrapper itself. A second column takes `slot="column2"`; several loose elements there go in `<Fragment slot="column2">`, which groups without emitting a box. Alignment and measure are Layout's own `align` and `maxWidth` props. Do not add a wrapper component for columns: the generated column is a real flex box, and that box is what makes a ratio'd `<Visual>` safe inside one — a `display: contents` wrapper would erase it and let images balloon.
@@ -348,15 +369,15 @@ Two hard rules follow from this:
   The modal / mobile-nav scroll lock belongs on `html` (`html:has(dialog.modal_dialog[open]) { overflow: hidden }`), where the shorthand _is_ correct and its `:has()` specificity beats the `body` rule.
 
 - **Text parent containers**: Direct parents of text elements should not be `display: flex` — flex prevents vertical margin collapsing between text. Use `display: block` or no display override for text wrappers. (See **`.u-text` is the text element** below.) Add `u-margin-trim` to the direct parent of text elements with margins to prevent unwanted extra space at the edges.
-- **Text spacing**: Bottom-margin-only. Every text style class (`u-text-style-*`, `u-display-*`) declares both `margin-top` and `margin-bottom` via variables, but all `margin-top` variables are `0` — so spacing flows in one direction only (bottom). `base/elements.css` also zeroes `margin-top`/`margin-bottom` on bare `h1`–`h6`/`p`/`blockquote`/`label`. Bare heading tags (`h1`–`h6`) and `p` have `margin-top: 0; margin-bottom: 0;` — so headings and paragraphs used without a text style class (accordion toggles, nav links, footers) carry zero margin. **Rich text** (`.u-rich-text`): a separate vertical rhythm system for CMS/prose content where bare heading and paragraph tags flow without `.u-text` wrappers. Headings get both `margin-top` (section separation) and `margin-bottom` (flow into content); paragraphs get `margin-bottom` only. Values use `--space-*` variables directly (not per-heading typography variables) so you can tune rich-text rhythm independently. Rules live in `src/styles/base/typography.css`. **Margin trim**: containers (`u-container`), layout columns (`u-layout-column`), content wrappers (`u-content-wrapper`), rich text (`u-rich-text`), and any element with `u-margin-trim` automatically remove `margin-top` from the first visible child and `margin-bottom` from the last visible child — preventing extra space at the edges. Add `u-ignore-trim` to any child that should keep its margin. `text-box-trim` is applied as a progressive enhancement on `.u-text` itself.
-- **Don't add redundant `marginBottom={0}`**: because of margin-trim (above), the **last child's bottom margin is already auto-zeroed** whenever a `<Text>`/`<Heading>` is the _last child_ of a **trimmed wrapper** — a `<Section>` container, a `<Layout>` column (default slot / `slot="column2"`), `<Layout variant="stack">`, `u-rich-text`, or any element carrying `u-margin-trim` / `u-container*`. In those cases `marginBottom={0}` does **nothing** — do not add it. It is only needed when the element is the last child of a **custom `<div>`** that is _not_ one of those (e.g. a card body `*_content`, a `*_meta` row, an `<li>`). Even then, prefer adding `u-margin-trim` to that custom wrapper once over sprinkling `marginBottom={0}` on each child. The trim rules live in [src/styles/overrides.css](src/styles/overrides.css) (`:last-child { margin-bottom: 0 }` fallback; the native `margin-trim` half sits in Section.astro's style block) and [src/styles/base/utilities.css](src/styles/base/utilities.css) (last-visible-child trim).
+- **Text spacing**: Bottom-margin-only. Every text style class (`u-text-style-*`, `u-display-*`) declares both `margin-top` and `margin-bottom` via variables, but all `margin-top` variables are `0` — so spacing flows in one direction only (bottom). `base/elements.css` also zeroes `margin-top`/`margin-bottom` on bare `h1`–`h6`/`p`/`blockquote`/`label`. Bare heading tags (`h1`–`h6`) and `p` have `margin-top: 0; margin-bottom: 0;` — so headings and paragraphs used without a text style class (accordion toggles, nav links, footers) carry zero margin. **Rich text** (`.u-rich-text`): a separate vertical rhythm system for CMS/prose content where bare heading and paragraph tags flow without `.u-text` wrappers. Headings get both `margin-top` (section separation) and `margin-bottom` (flow into content); paragraphs get `margin-bottom` only. Values use `--space-*` variables directly (not per-heading typography variables) so you can tune rich-text rhythm independently. Rules live in `src/styles/utilities/typography.css`. **Margin trim**: containers (`u-container`), layout columns (`u-layout-column`), content wrappers (`u-content-wrapper`), rich text (`u-rich-text`), and any element with `u-margin-trim` automatically remove `margin-top` from the first visible child and `margin-bottom` from the last visible child — preventing extra space at the edges. Add `u-ignore-trim` to any child that should keep its margin. `text-box-trim` is applied as a progressive enhancement on `.u-text` itself.
+- **Don't add redundant `marginBottom={0}`**: because of margin-trim (above), the **last child's bottom margin is already auto-zeroed** whenever a `<Text>`/`<Heading>` is the _last child_ of a **trimmed wrapper** — a `<Section>` container, a `<Layout>` column (default slot / `slot="column2"`), `<Layout variant="stack">`, `u-rich-text`, or any element carrying `u-margin-trim` / `u-container*`. In those cases `marginBottom={0}` does **nothing** — do not add it. It is only needed when the element is the last child of a **custom `<div>`** that is _not_ one of those (e.g. a card body `*_content`, a `*_meta` row, an `<li>`). Even then, prefer adding `u-margin-trim` to that custom wrapper once over sprinkling `marginBottom={0}` on each child. The trim rules live in [src/styles/overrides.css](src/styles/overrides.css) (`:last-child { margin-bottom: 0 }` fallback; the native `margin-trim` half sits in Section.astro's style block) and [src/styles/utilities/margin-trim.css](src/styles/utilities/margin-trim.css) (last-visible-child trim).
 - **Layout containers space their own children — don't add margins between siblings.** The `<Section>` content container (`.u-container`) is a **flex column with a built-in `gap`** (default `--space-8`, overridable via the Section `gap` prop, `0`–`8`). Its direct children are spaced apart automatically — so when you stack a `<Heading>` above a `<Layout>`, `<Grid>`, `<Layout variant="stack">`, another `<Heading>`, or a `<Text>` **directly inside a `<Section>`**, do **not** add `marginBottom` (or any `u-margin-*` utility) to create that gap; the container already does it. The same is true inside a `<Layout>` (CSS grid with a `rowGap`) and its `stack`/`stack-centered` variants — loose children of a Layout column are grid children and inherit that row gap. To change the spacing, **adjust the container's gap** (`<Section gap={N}>` / `<Layout rowGap={N}>`) — never per-child margins. The one exception is `<Layout variant="stack">` — a plain block with **no gap**; spacing between its children comes from the text elements' own bottom margins (last one auto-trimmed), so you still don't add extra `marginBottom`. **Net rule:** between direct children of a `<Section>` or a `<Layout>` column, spacing is the container's `gap` — leave child margins alone. Only reach for `marginBottom` inside a custom `<div>` _you_ wrote that has no gap and isn't margin-trimmed (e.g. a card body).
 
 ---
 
 ## Responsive Variable System
 
-Responsive behavior is driven by CSS custom property flags defined in `src/styles/base/responsive-columns.css`. These flags are set per container-query breakpoint tier on all descendants (`*`), so you can reference them in any component's CSS without writing additional container queries.
+Responsive behavior is driven by CSS custom property flags defined in `src/styles/utilities/responsive-columns.css`. These flags are set per container-query breakpoint tier on all descendants (`*`), so you can reference them in any component's CSS without writing additional container queries.
 
 **Breakpoint tiers** (requires a `container-type: inline-size` ancestor like `u-container`):
 
@@ -1133,7 +1154,7 @@ If you ever find a `<div class="u-display-contents">` around loose Layout childr
 
 **Never wrap them in a plain `<div>`.** A normal `<div>` becomes the grid child itself, collapsing every element into one box and killing the column's alignment and gap. If you genuinely need a wrapper — to carry a theme class whose variables must reach the children, as `<CTASection>` does with `u-theme-dark` — give it `u-display-contents` so it stays out of the box tree.
 
-> ⚠️ **A column holding a `<Visual>` alongside other content needs `<Layout variant="stack">`.** As a direct child of the Layout column, `.u-image-wrapper` is a grid/flex item with a _definite_ height, and its `height: 100%` ([visual-utilities.css](src/styles/base/visual-utilities.css)) **overrides the inline `aspect-ratio`** that `<Visual ratio="…">` sets — the image balloons to a huge near-portrait size and crowds out the text below (worst on mobile, where the column collapses to `display: flex`). `<Layout variant="stack">` inserts a real `height: auto` block between the column and the image, so `height: 100%` has nothing definite to resolve against → it falls back to `auto` → the aspect-ratio governs. A `<Visual>` that is the _only_ thing in its column is fine as-is.
+> ⚠️ **A column holding a `<Visual>` alongside other content needs `<Layout variant="stack">`.** As a direct child of the Layout column, `.u-image-wrapper` is a grid/flex item with a _definite_ height, and its `height: 100%` ([visual-utilities.css](src/styles/utilities/visual-utilities.css)) **overrides the inline `aspect-ratio`** that `<Visual ratio="…">` sets — the image balloons to a huge near-portrait size and crowds out the text below (worst on mobile, where the column collapses to `display: flex`). `<Layout variant="stack">` inserts a real `height: auto` block between the column and the image, so `height: 100%` has nothing definite to resolve against → it falls back to `auto` → the aspect-ratio governs. A `<Visual>` that is the _only_ thing in its column is fine as-is.
 
 ---
 

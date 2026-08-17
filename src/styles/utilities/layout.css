@@ -1,6 +1,16 @@
-/* ============================================================
-     CONTAINER CLASS & UTILITIES
-   ============================================================
+/* ==========================================================================
+   LAYOUT UTILITIES — layer(utilities)
+   ==========================================================================
+   Owns:      .u-container* width variants, .u-content-wrapper alignment,
+              .u-grid-*, .u-display-*, .u-gap-*, .u-layout-column.
+   Does not:  --grid-* / --gap-* values these read → variables/layout.css
+              --site-margin / --site-gutter        → variables/foundation.css
+              per-tier column counts               → utilities/responsive-columns.css
+              padding + margin                     → utilities/spacing.css
+
+   ==========================================================================
+   CONTAINER CLASS & UTILITIES
+   ==========================================================================
    Gutter is applied via width: calc(100% - var(--site-margin) * 2)
    rather than padding, so child elements that span 100% of the
    container never bleed into the gutter, and container-type:

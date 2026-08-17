@@ -1,6 +1,15 @@
-/* ================================================================
-     PADDING UTILITIES
-   ================================================================
+/* ==========================================================================
+   SPACING UTILITIES — layer(utilities)
+   ==========================================================================
+   Owns:      .u-padding-*, .u-margin-* — the classes that apply the scale.
+   Does not:  --space-* / --section-space-* values → variables/spacing.css
+              --gap-* and .u-gap-*                 → variables/layout.css
+                                                     + utilities/layout.css
+              first/last-child margin removal      → utilities/margin-trim.css
+
+   Retuning the whole scale is a variables/spacing.css job. Adding a new
+   class that applies it is this file's job.
+
    All-sides, block (vertical), inline (horizontal), and individual
    side variants. Numbered scale (0–8) maps to --space-*.
    Section-scale variants (small/main/large) map to --section-space-*. */

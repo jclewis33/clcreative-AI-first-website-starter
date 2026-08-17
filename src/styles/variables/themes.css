@@ -1,6 +1,17 @@
 /* ==========================================================================
-   THEME VARIABLES
+   THEMES — layer(variables)
    ==========================================================================
+   Owns:      every semantic color alias — --background, --background-2,
+              --text, --heading-accent, --border, button and link colors —
+              defined once per theme, plus the [data-theme-invert] flip.
+   Does not:  the raw swatches these point at → variables/colors.css
+              nav-specific sizing              → variables/nav.css
+
+   THIS is the file a component reads. Adding a new themed value means
+   adding it to EVERY theme block below, not just the one you are looking
+   at — a token defined in one theme and missing from another inherits the
+   wrong value silently, which is how white-on-white ships.
+
    Mode-switching semantic aliases. Apply data-theme="dark" or
    data-theme="brand" to any section, layout, or component to swap all
    theme values for that subtree. No attribute needed for the base (light)

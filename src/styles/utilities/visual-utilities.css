@@ -1,8 +1,21 @@
-/* +======================================================
-       TEXT COLOR UTILITIES
-   ======================================================= */
+/* ==========================================================================
+   VISUAL UTILITIES — layer(utilities)
+   ==========================================================================
+   Owns:      .u-color-*, .u-background-*, .u-radius-*, .u-box-shadow-*,
+              .u-hide-*, .u-image-wrapper / .u-image, .u-overlay.
+   Does not:  the color values these read     → variables/themes.css
+              raw swatches                     → variables/colors.css
+              --radius-* / --border-width-*    → variables/foundation.css
+              text sizing                      → utilities/typography.css
 
-/* Loaded after base/typography.css so these override text-style color
+   ⚠ This file MUST be imported AFTER utilities/typography.css in
+   global.css — see the note directly below.
+
+   ==========================================================================
+   TEXT COLOR UTILITIES
+   ========================================================================== */
+
+/* Loaded after utilities/typography.css so these override text-style color
    defaults at equal specificity — e.g. recolor an eyebrow (which defaults
    to `var(--heading-accent)`) on a dark section.
    - u-color-inherit → inherit the theme text color (white on dark, etc.)
@@ -530,7 +543,7 @@
   max-width: none;
 }
 
-/* .u-text > * rule lives in base/typography.css (single source of truth) */
+/* .u-text > * rule lives in utilities/typography.css (single source of truth) */
 
 /* =======================================================
        ICON UTILITIES
@@ -571,7 +584,7 @@
    element carrying the alignment, because justify-content is not an
    inherited property — `inherit` just copies the parent's computed value, so
    one wrapping div breaks it. --_buttons-justify is the same inheriting
-   signal the text side uses (--_text-inline-margin, see base/layout.css),
+   signal the text side uses (--_text-inline-margin, see utilities/layout.css),
    set wherever a layout declares centring, and it survives nesting. The
    `inherit` fallback covers anywhere the signal is absent. */
 .u-button-wrapper {

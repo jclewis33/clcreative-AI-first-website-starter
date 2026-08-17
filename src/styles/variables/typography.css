@@ -1,6 +1,17 @@
 /* ==========================================================================
-   TYPOGRAPHY VARIABLES
+   TYPOGRAPHY VARIABLES — layer(variables)
    ==========================================================================
+   Owns:      --font-* families and weights, plus the size, line-height,
+              letter-spacing and margin scales behind --text-* and --display-*.
+   Does not:  @font-face declarations + the --font-<name> file bindings
+                                                → ../fonts.css
+              the .u-text-style-* classes that consume these
+                                                → utilities/typography.css
+              text COLOR                        → variables/themes.css
+
+   Changing a size here restyles every u-text-style-* class and every bare
+   heading at once. Changing one class only is a job for utilities/typography.css.
+
    Calculator used for fluid clamp values: https://geary.co/clamp-calculator/
    Settings: 320px mobile (20em) → 1440px desktop (90em), root font size 100%
    ========================================================================== */

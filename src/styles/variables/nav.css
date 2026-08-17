@@ -1,8 +1,15 @@
 /* ==========================================================================
-   NAV VARIABLES
+   NAV VARIABLES — layer(variables)
    ==========================================================================
+   Owns:      nav sizing, spacing, radius, banner height and dropdown
+              dimensions — the one component with enough knobs to earn its
+              own variables file.
+   Does not:  --nav-background and the other nav COLORS → variables/themes.css
+              (they have to change per theme; these do not)
+              the nav's actual CSS → Nav.astro's <style is:global> block
+
    Navigation-specific sizing and spacing. Adjust these to restyle
-   the navigation without touching nav.css.
+   the navigation without touching Nav.astro.
 
    ┌────────────────────────────────────────────────────────────────────────┐
    │  PILL-SHAPED  vs  FULL-WIDTH                                         │

@@ -1,0 +1,60 @@
+/* ==========================================================================
+   MISC UTILITIES — layer(utilities)
+   ==========================================================================
+   Owns:      the small, single-purpose `u-` classes that belong to no larger
+              system — .u-button-reset, .u-sr-only, .u-heading-accent,
+              .u-background-transparent, .u-min-height-screen.
+   Does not:  colors + backgrounds  → utilities/visual-utilities.css
+              text styles           → utilities/typography.css
+              padding + margin      → utilities/spacing.css
+              first/last-child trim → utilities/margin-trim.css
+
+   Add a class here only if it has no home in one of those files. If two or
+   three related classes accumulate here, promote them to their own file.
+   ========================================================================== */
+
+/* Button reset so you can use a button to wrap items without any button styling. This allows for the accessibility of buttons while ensuring no styles are applied */
+.u-button-reset {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  line-height: 0; /* icons often look better with tight line-height */
+  cursor: pointer;
+  height: fit-content;
+}
+
+/* Screen reader only — visible to assistive tech, hidden visually */
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Heading accent — applies theme accent color to <strong> within the element */
+.u-heading-accent strong {
+  color: var(--heading-accent);
+  font-weight: inherit;
+}
+
+/* Color utilities live in visual-utilities.css so they load *after*
+   utilities/typography.css and can override text-style color defaults
+   (e.g. the eyebrow's `color: var(--heading-accent)`). */
+
+/* Background — transparent only (theme-aware bg-1/2/skeleton live in visual-utilities.css) */
+.u-background-transparent {
+  background-color: transparent;
+}
+
+/* Min-height */
+.u-min-height-screen {
+  min-height: 100svh;
+}

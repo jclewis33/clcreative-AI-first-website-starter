@@ -1,7 +1,26 @@
 /* ==========================================================================
    GLOBAL CSS
-   Imports all CSS modules and assigns each one to a cascade layer.
+   The index for the whole stylesheet system: it declares the cascade order,
+   then imports every global sheet into its layer.
    ========================================================================== */
+
+/* ── THE ONE RULE ───────────────────────────────────────────────────────────
+   A DIRECTORY'S NAME IS ITS CASCADE LAYER.
+
+     styles/variables/*   → layer(variables)
+     styles/base/*        → layer(base)
+     styles/utilities/*   → layer(utilities)
+     styles/components/*  → layer(components)
+     styles/pages/*       → layer(pages)
+
+   So the layer a file lands in is readable from its path, with no lookup.
+   Putting a `u-` class in base/, or a bare `h1` rule in utilities/, is a
+   cascade bug even though the CSS is valid — the folder is the contract.
+
+   The five single-file sheets sit at the top level because they have no
+   siblings: reset.css + fonts.css (reset), vendor.css (vendor, self-wrapped),
+   overrides.css (overrides).
+   ────────────────────────────────────────────────────────────────────────── */
 
 /* Cascade order, lowest priority first. A later layer beats an earlier one
    whatever the selectors say. Declared here, before any import, so the
@@ -30,15 +49,21 @@
 
 @layer reset, vendor, variables, base, utilities, components, pages, overrides;
 
-/* Reset */
+/* The imports below run in layer order, so this list reads as the stack. */
+
+/* ── reset ── */
 @import "./reset.css" layer(reset);
 @import "./fonts.css" layer(reset);
 
-/* Third-party CSS — kept low so our components can still override it */
+/* ── vendor ── third-party CSS, kept low so our components can override it.
+   No layer() here on purpose: vendor.css is a pass-through whose own
+   `@import "swiper/css/bundle" layer(vendor)` does the assigning. */
 @import "./vendor.css";
 
-/* Variables */
-@import "./variables/base.css" layer(variables);
+/* ── variables ── custom properties only; never a selector that paints.
+   foundation.css first: every other file's clamp() reads its viewport
+   bounds and site margin. */
+@import "./variables/foundation.css" layer(variables);
 @import "./variables/typography.css" layer(variables);
 @import "./variables/colors.css" layer(variables);
 @import "./variables/themes.css" layer(variables);
@@ -46,31 +71,44 @@
 @import "./variables/layout.css" layer(variables);
 @import "./variables/nav.css" layer(variables);
 
-/* Base — element and attribute defaults that components are meant to override.
-   elements.css must come first: it carries the bare h1-h6/p/a/section/button
-   rules, which every component class needs to be able to beat. */
+/* ── base ── element and attribute defaults that components are meant to
+   override. elements.css must come first: it carries the bare h1-h6/p/a/
+   section/button rules, which every component class needs to be able to beat. */
 @import "./base/elements.css" layer(base);
 @import "./base/animate.css" layer(base);
 
-/* Components — only styles with NO single owning component live here.
-   Everything else is co-located in its component's <style is:global>
-   block, wrapped in `@layer components { … }` (see CLAUDE.md).
+/* ── utilities ── u- classes. These sit below components (see the order note
+   above).
+
+   ⚠ IMPORT ORDER HERE IS LOAD-BEARING. These files share one layer, so where
+   two rules tie on specificity the later import wins. Two dependencies are
+   documented in the files themselves:
+     • visual-utilities.css must come AFTER typography.css so u-color-*
+       beats the text styles' own color defaults.
+     • margin-trim.css must beat typography.css's (0,1,0) margin rules, which
+       it does on specificity (0,2,0) precisely because it loads earlier.
+   Add new files at the end unless you have a reason not to. */
+@import "./utilities/misc.css" layer(utilities);
+@import "./utilities/margin-trim.css" layer(utilities);
+@import "./utilities/typography.css" layer(utilities);
+@import "./utilities/layout.css" layer(utilities);
+@import "./utilities/responsive-columns.css" layer(utilities);
+@import "./utilities/spacing.css" layer(utilities);
+@import "./utilities/visual-utilities.css" layer(utilities);
+@import "./utilities/animate.css" layer(utilities);
+
+/* ── components ── only styles with NO single owning component live here.
+   Everything else is co-located in its component's <style is:global> block,
+   wrapped in `@layer components { … }` (see CLAUDE.md).
    forms.css: shared by the contact page and SignUpForm;
    marketing-scorecard.css: owned by a React component (.tsx cannot carry
    an Astro style block). */
 @import "./components/forms.css" layer(components);
 @import "./components/marketing-scorecard.css" layer(components);
 
-/* Utilities — u- classes. These sit below components (see the order note
-   above). Page CSS in ./pages/ is imported by the pages themselves and
-   declares layer(pages) in-file, since an ESM `import` cannot carry a
-   layer() the way @import can. */
-@import "./base/utilities.css" layer(utilities);
-@import "./base/typography.css" layer(utilities);
-@import "./base/layout.css" layer(utilities);
-@import "./base/responsive-columns.css" layer(utilities);
-@import "./base/spacing.css" layer(utilities);
-@import "./base/visual-utilities.css" layer(utilities);
+/* ── pages ── NOT imported here. Each sheet in ./pages/ is pulled in by the
+   page or template that owns it, and opens with `@layer pages { … }` in-file,
+   since an ESM `import` cannot carry a layer() the way @import can. */
 
-/* Overrides — highest layer on purpose; see the comment in the file */
+/* ── overrides ── highest layer on purpose; see the comment in the file */
 @import "./overrides.css" layer(overrides);

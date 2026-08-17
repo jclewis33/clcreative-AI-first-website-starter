@@ -1,6 +1,16 @@
-/* ======================================================================
-     GRID & LAYOUT
-   ====================================================================== */
+/* ==========================================================================
+   GRID & LAYOUT — layer(variables)
+   ==========================================================================
+   Owns:      --grid-1..12 (column templates) and --gap-1..7 (named gap
+              aliases onto the space scale).
+   Does not:  --space-1..8, the underlying scale → variables/spacing.css
+              --site-margin, --site-gutter       → variables/foundation.css
+              the .u-grid-* / .u-gap-* classes that consume these
+                                                 → utilities/layout.css
+
+   A new gap value is an ALIAS here plus a step in spacing.css — never a
+   raw clamp() in this file, or the scale and its aliases drift apart.
+   ========================================================================== */
 
 :root {
   /* ========== GRID COLUMNS ========== */

@@ -1,7 +1,19 @@
 /* ==========================================================================
-   COLORS
+   COLORS — layer(variables)
    ==========================================================================
-   Raw color swatches only. No semantic aliases here.
+   Owns:      raw swatches only — --color-dark-*, --color-light-*,
+              --color-brand-*, and the neutral/utility scales.
+   Does not:  --background, --text, --border and every other semantic alias
+                                          → variables/themes.css
+              which theme an element uses  → the data-theme attribute
+              the .u-color-* / .u-background-* classes
+                                          → utilities/visual-utilities.css
+
+   Two-tier tokens, and the tiers are the point: a component NEVER names a
+   swatch from this file. It reads a semantic alias from themes.css, so the
+   same component works on every theme. A raw --color-* in component CSS is
+   a bug, not a shortcut.
+
    Semantic theme mappings → variables/themes.css
 
    RE-SKINNING / FORKING — where each kind of color is changed:

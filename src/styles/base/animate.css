@@ -1,4 +1,15 @@
 /* ==========================================================================
+   ANIMATION DEFAULTS — layer(base)
+   ==========================================================================
+   Owns:      the [data-animate-in] / [data-animate-up] / [data-prevent-flicker]
+              attribute defaults and their reduced-motion overrides.
+   Does not:  .u-hero-fade → ../utilities/animate.css (layer `utilities`,
+              because a `u-` class must be able to beat component CSS)
+
+   These are attribute DEFAULTS, so they belong in `base`: a component's own
+   styles must be able to override them. Anything here that grows a `u-`
+   class name is in the wrong file.
+
    CSS Scroll-Triggered Animations
    Hybrid CSS + IntersectionObserver approach for GSAP-like viewport animations.
 
@@ -87,52 +98,5 @@
   }
   [data-prevent-flicker="true"] {
     visibility: visible;
-  }
-}
-
-/* ==========================================================================
-   Hero entrance — pure CSS, fires at first paint (no JS, no scroll)
-
-   The GSAP / IntersectionObserver systems above wait for window.load or
-   viewport entry before revealing content. For above-the-fold hero content
-   that leaves the headline hidden until the user scrolls — a bad first
-   impression. A pure-CSS staggered fade-up starts at stylesheet parse time,
-   so the hero is always visible on load (mirrors the home page hero).
-
-   Apply `u-hero-fade` to the hero content wrapper; its direct children
-   animate in sequence.
-   ========================================================================== */
-
-.u-hero-fade > * {
-  opacity: 0;
-  transform: translateY(1.25rem);
-  animation: u-hero-fade-in 0.6s ease-out forwards;
-}
-
-.u-hero-fade > *:nth-child(1) {
-  animation-delay: 0s;
-}
-.u-hero-fade > *:nth-child(2) {
-  animation-delay: 0.15s;
-}
-.u-hero-fade > *:nth-child(3) {
-  animation-delay: 0.3s;
-}
-.u-hero-fade > *:nth-child(4) {
-  animation-delay: 0.45s;
-}
-
-@keyframes u-hero-fade-in {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .u-hero-fade > * {
-    opacity: 1;
-    transform: none;
-    animation: none;
   }
 }

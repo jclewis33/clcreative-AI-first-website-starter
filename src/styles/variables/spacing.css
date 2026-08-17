@@ -1,6 +1,12 @@
 /* ==========================================================================
-   SPACING SCALE
+   SPACING SCALE — layer(variables)
    ==========================================================================
+   Owns:      --space-1..8 (the scale), --section-space-*, --margin-*.
+   Does not:  --gap-* aliases onto this scale → variables/layout.css
+              --site-margin, --site-gutter    → variables/foundation.css
+              the .u-padding-* / .u-margin-* classes that consume these
+                                              → utilities/spacing.css
+
    A unified 8-step fluid spacing scale used for margins, padding, and gaps.
    All values use clamp() for smooth scaling between 20em (320px) and 90em (1440px) viewports.
 

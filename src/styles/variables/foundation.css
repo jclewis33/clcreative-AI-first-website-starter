@@ -1,9 +1,21 @@
 /* ==========================================================================
-   BASE — SITE FOUNDATION VARIABLES
+   FOUNDATION — layer(variables)
    ==========================================================================
-   Core site-wide variables: screen sizes, layout dimensions, radius,
-   border, and focus. These are the first things to update when restyling
-   the site — everything else derives from them.
+   Owns:      --viewport-min/max, --site-margin, --site-gutter,
+              --radius-*, --border-width-*, --focus-*.
+   Does not:  --space-1..8, --section-space-*  → variables/spacing.css
+              --grid-*, --gap-*                → variables/layout.css
+              --text-*, --font-*               → variables/typography.css
+              any color                        → variables/colors.css
+
+   ★ Edit here first when restyling. The viewport bounds below are the
+   inputs to every clamp() in the system, and --site-margin/--site-gutter
+   set the page's horizontal rhythm — so a change here moves everything.
+
+   The line between this file and spacing.css: --site-margin and
+   --site-gutter are PAGE STRUCTURE (how wide the content column is), while
+   --space-* is the RHYTHM SCALE used inside it. A new gutter or page-level
+   dimension goes here; a new step on the 1–8 scale goes there.
    ========================================================================== */
 
 :root {

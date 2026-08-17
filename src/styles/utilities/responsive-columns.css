@@ -1,6 +1,19 @@
-/* ================================================================
+/* ==========================================================================
+   RESPONSIVE COLUMNS — layer(utilities)
+   ==========================================================================
+   Owns:      the [data-*-columns] attribute system, the responsive flag
+              variables (--flex-medium, --unset-medium, …) and their :root
+              defaults.
+   Does not:  .u-grid-* / .u-display-* / .u-gap-*  → utilities/layout.css
+              --grid-* templates                    → variables/layout.css
+
+   The flag variables are the public authoring API for container-query
+   responsiveness: set per tier here on all descendants (`*`), read from any
+   component's CSS with no extra container query. Full guide: docs/responsive-columns.md.
+
+   ==========================================================================
    RESPONSIVE COLUMN SYSTEM
-   ================================================================
+   ==========================================================================
    Column count and display are controlled declaratively via
    data attributes on the element itself, not by CSS class names.
    This means a single element can express its layout at every
@@ -130,7 +143,7 @@
     --start-medium: start;
     --center-medium: center;
     /* Margin form of --center-medium, for centring a block whose parent is
-       not a flex container (see .u-text in base/layout.css). */
+       not a flex container (see .u-text in utilities/layout.css). */
     --center-medium-auto: auto;
     --end-medium: end;
     --unset-medium: unset;

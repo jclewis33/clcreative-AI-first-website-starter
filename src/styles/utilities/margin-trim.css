@@ -1,56 +1,14 @@
 /* ==========================================================================
-   GENERAL UTILITIES & ELEMENT STYLES
-   ========================================================================== */
-
-/* Button reset so you can use a button to wrap items without any button styling. This allows for the accessibility of buttons while ensuring no styles are applied */
-.u-button-reset {
-  background: none;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  font: inherit;
-  color: inherit;
-  line-height: 0; /* icons often look better with tight line-height */
-  cursor: pointer;
-  height: fit-content;
-}
-
-/* Screen reader only — visible to assistive tech, hidden visually */
-.u-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* Heading accent — applies theme accent color to <strong> within the element */
-.u-heading-accent strong {
-  color: var(--heading-accent);
-  font-weight: inherit;
-}
-
-/* Color utilities live in visual-utilities.css so they load *after*
-   base/typography.css and can override text-style color defaults
-   (e.g. the eyebrow's `color: var(--heading-accent)`). */
-
-/* Background — transparent only (theme-aware bg-1/2/skeleton live in visual-utilities.css) */
-.u-background-transparent {
-  background-color: transparent;
-}
-
-/* Min-height */
-.u-min-height-screen {
-  min-height: 100svh;
-}
-
-/* ==========================================================================
-   MARGIN TRIM — first-child / last-child margin removal
+   MARGIN TRIM — layer(utilities)
    ==========================================================================
+   Owns:      .u-margin-trim, .u-ignore-trim, and the first/last-visible-child
+              margin removal applied to containers, layout columns, content
+              wrappers and rich text.
+   Does not:  the `:last-child { margin-bottom: 0 }` runtime fallback
+                                                    → ../overrides.css
+              the native `margin-trim` half          → Section.astro
+              the margins being trimmed              → utilities/typography.css
+
    Automatically removes margin-top from the first visible child and
    margin-bottom from the last visible child inside containers and
    layout columns. Prevents unwanted extra space at the top and bottom
@@ -66,8 +24,6 @@
    Skip list (ignored when determining first / last):
      .u-cover-absolute — absolutely positioned overlays (e.g. clickable overlays)
      .u-ignore-trim    — explicit opt-out for any child
-
-   Margin-trim pattern.
    ========================================================================== */
 
 /* First visible child — remove top margin */
@@ -90,8 +46,8 @@
 
    `:not(.u-ignore-trim)` is doing two jobs: it gives the same opt-out the trim
    rules below use, AND it raises this to (0,2,0) so it beats the (0,1,0)
-   class rules in typography.css — which sits in the SAME @layer and is
-   imported later, so an equal-specificity rule would silently lose. */
+   class rules in utilities/typography.css — which sits in the SAME @layer and
+   is imported later, so an equal-specificity rule would silently lose. */
 :is([class*="u-container"], [class*="u-grid"]) > :not(.u-ignore-trim) {
   margin-block: 0;
 }

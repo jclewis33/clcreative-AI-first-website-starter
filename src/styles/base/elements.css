@@ -1,15 +1,20 @@
 /* ==========================================================================
-   ELEMENT DEFAULTS
+   ELEMENT DEFAULTS — layer(base)
    ==========================================================================
-   Bare element-type selectors (h1-h6, p, a, section, button, label). These
-   live in the `base` layer, NOT `utilities`, because a component class must
-   be able to override them. An element selector sitting in the top layer
-   would beat every component class in the codebase - which is exactly the
-   bug this split fixes.
+   Owns:      bare element-type selectors — h1-h6, p, a, section, button,
+              label — and nothing else.
+   Does not:  any `u-` class          → utilities/ (a class here would sit
+                                        below components and lose)
+              the normalize/box-sizing pass → ../reset.css
+              attribute defaults      → base/animate.css
 
-   Extracted from base/utilities.css and base/typography.css; the u- classes
-   stayed behind in those files. Rule order here matches the original import
-   order (utilities.css, then typography.css) so the cascade is unchanged.
+   These live in the `base` layer, NOT `utilities`, because a component class
+   must be able to override them. An element selector sitting in the top
+   layer would beat every component class in the codebase — which is exactly
+   the bug this split fixes.
+
+   Rule order here matches the import order the rules were extracted from,
+   so the cascade is unchanged.
    ========================================================================== */
 
 /* Allow text elements to inherit typography properties from parents */
@@ -50,7 +55,7 @@ button:not(:disabled) {
   cursor: pointer;
 }
 
-/* ---- from base/typography.css: semantic heading + text elements ---- */
+/* ---- from utilities/typography.css: semantic heading + text elements ---- */
 
 /* Apply heading variables to semantic heading tags */
 h1 {
