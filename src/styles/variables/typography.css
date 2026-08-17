@@ -3,8 +3,11 @@
    ==========================================================================
    Owns:      --font-* families and weights, plus the size, line-height,
               letter-spacing and margin scales behind --text-* and --display-*.
-   Does not:  @font-face declarations + the --font-<name> file bindings
-                                                → ../fonts.css
+   Does not:  loading the font FILES — that is the Astro Fonts API, whose
+              `fonts` array in astro.config.mjs defines --font-bdo-grotesk,
+              --font-inter and --font-ibm-plex-mono. This file only maps
+              those onto --font-primary / --font-secondary / --font-tertiary.
+              There is no @font-face anywhere in src/styles.
               the .u-text-style-* classes that consume these
                                                 → utilities/typography.css
               text COLOR                        → variables/themes.css

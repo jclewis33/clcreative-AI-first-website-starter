@@ -305,8 +305,9 @@ asking them to type hex codes.
 Fonts API**, not raw `@font-face`. The registry is the
 `fonts` array in [astro.config.mjs](../../../astro.config.mjs) — three families
 today: `--font-bdo-grotesk` (primary), `--font-inter` (secondary),
-`--font-ibm-plex-mono` (tertiary, eyebrows). [fonts.css](../../../src/styles/fonts.css)
-is just a doc comment.
+`--font-ibm-plex-mono` (tertiary, eyebrows). There is no font stylesheet —
+[variables/typography.css](../../../src/styles/variables/typography.css) just
+maps those variables onto `--font-primary` / `--font-secondary` / `--font-tertiary`.
 
 **Ask the user which typefaces the new brand uses** (primary / secondary / mono,
 or confirm they want to keep BDO Grotesk / Inter / IBM Plex Mono). If they name new

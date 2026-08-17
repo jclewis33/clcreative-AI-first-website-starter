@@ -213,7 +213,6 @@ src/
 └── styles/            # A DIRECTORY'S NAME IS ITS CASCADE LAYER (see below)
     ├── global.css         # The index — declares the cascade, imports every global sheet
     ├── reset.css          # `reset` layer
-    ├── fonts.css          # `reset` layer — @font-face + --font-<name> bindings
     ├── vendor.css         # `vendor` layer — third-party CSS (Swiper) pass-through
     ├── overrides.css      # `overrides` layer: runtime states + structural corrections
     ├── variables/         # → layer(variables). Custom properties only, never a
