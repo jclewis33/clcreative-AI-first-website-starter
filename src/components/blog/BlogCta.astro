@@ -30,8 +30,9 @@ const { cta, class: className } = Astro.props;
 // mode. Without this, the image asset _ref contains stega chars that break
 // the URL builder — the image silently 404s inside Presentation.
 const cleanImage = stegaClean(cta.image);
-const ratio = (stegaClean(cta.aspectRatio) ??
-  "portrait") as NonNullable<Cta["aspectRatio"]>;
+const ratio = (stegaClean(cta.aspectRatio) ?? "portrait") as NonNullable<
+  Cta["aspectRatio"]
+>;
 const linkUrl = stegaClean(cta.linkUrl);
 const linkLabel = stegaClean(cta.linkLabel) ?? "Learn more";
 const imageAlt = stegaClean(cta.imageAlt) ?? "";

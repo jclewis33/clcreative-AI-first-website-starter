@@ -37,7 +37,6 @@ import type {
 
 export const prerender = true;
 
-
 function url(path: string): string {
   return path === "/" ? SITE_URL : `${SITE_URL}${path}`;
 }

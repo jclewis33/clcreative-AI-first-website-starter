@@ -46,7 +46,8 @@ const CTA_SECTION_PROJECTION = `{
 /* ── Blog Posts ────────────────────────────────────────────────────────────── */
 
 /** All blog posts for listing page (no body content needed) */
-export const BLOG_POSTS_QUERY = defineQuery(`*[_type == "blogPost"] | order(date desc) {
+export const BLOG_POSTS_QUERY =
+  defineQuery(`*[_type == "blogPost"] | order(date desc) {
   title,
   "slug": slug.current,
   description,
@@ -61,7 +62,8 @@ export const BLOG_POSTS_QUERY = defineQuery(`*[_type == "blogPost"] | order(date
 }`);
 
 /** Single blog post by slug (includes body for detail page) */
-export const BLOG_POST_QUERY = defineQuery(`*[_type == "blogPost" && slug.current == $slug][0] {
+export const BLOG_POST_QUERY =
+  defineQuery(`*[_type == "blogPost" && slug.current == $slug][0] {
   title,
   "slug": slug.current,
   description,
@@ -122,7 +124,9 @@ export const BLOG_POST_QUERY = defineQuery(`*[_type == "blogPost" && slug.curren
 }`);
 
 /** All blog post slugs for getStaticPaths */
-export const BLOG_SLUGS_QUERY = defineQuery(`*[_type == "blogPost" && defined(slug.current)].slug.current`);
+export const BLOG_SLUGS_QUERY = defineQuery(
+  `*[_type == "blogPost" && defined(slug.current)].slug.current`,
+);
 
 /**
  * Related posts for a blog post detail page — filtered in GROQ, never by
@@ -151,7 +155,8 @@ export const RELATED_BLOG_POSTS_QUERY = defineQuery(`*[
 }`);
 
 /** Blog posts filtered by category (category appears in categories array) */
-export const BLOG_POSTS_BY_CATEGORY_QUERY = defineQuery(`*[_type == "blogPost" && $category in categories] | order(date desc) {
+export const BLOG_POSTS_BY_CATEGORY_QUERY =
+  defineQuery(`*[_type == "blogPost" && $category in categories] | order(date desc) {
   title,
   "slug": slug.current,
   description,
@@ -165,7 +170,9 @@ export const BLOG_POSTS_BY_CATEGORY_QUERY = defineQuery(`*[_type == "blogPost" &
 }`);
 
 /** All unique categories across blog posts */
-export const BLOG_CATEGORIES_QUERY = defineQuery(`array::unique(*[_type == "blogPost"].categories[])`);
+export const BLOG_CATEGORIES_QUERY = defineQuery(
+  `array::unique(*[_type == "blogPost"].categories[])`,
+);
 
 /* ── Site Settings ─────────────────────────────────────────────────────────── */
 
@@ -178,7 +185,8 @@ export const SITE_SETTINGS_QUERY = defineQuery(`*[_type == "siteSettings"][0]{
 /* ── Case Studies ──────────────────────────────────────────────────────────── */
 
 /** All case studies for listing page */
-export const CASE_STUDIES_QUERY = defineQuery(`*[_type == "caseStudy"] | order(date desc) {
+export const CASE_STUDIES_QUERY =
+  defineQuery(`*[_type == "caseStudy"] | order(date desc) {
   title,
   "slug": slug.current,
   description,
@@ -194,7 +202,8 @@ export const CASE_STUDIES_QUERY = defineQuery(`*[_type == "caseStudy"] | order(d
 }`);
 
 /** Single case study by slug (includes all detail fields) */
-export const CASE_STUDY_QUERY = defineQuery(`*[_type == "caseStudy" && slug.current == $slug][0] {
+export const CASE_STUDY_QUERY =
+  defineQuery(`*[_type == "caseStudy" && slug.current == $slug][0] {
   title,
   "slug": slug.current,
   description,
@@ -275,7 +284,9 @@ export const CASE_STUDY_QUERY = defineQuery(`*[_type == "caseStudy" && slug.curr
  * would build pages that immediately redirect to /404. They remain editable
  * and viewable under /preview (which doesn't use this query).
  */
-export const CASE_STUDY_SLUGS_QUERY = defineQuery(`*[_type == "caseStudy" && defined(slug.current) && comingSoon != true].slug.current`);
+export const CASE_STUDY_SLUGS_QUERY = defineQuery(
+  `*[_type == "caseStudy" && defined(slug.current) && comingSoon != true].slug.current`,
+);
 
 /**
  * Sibling case studies for the "Up next" cards — filtered in GROQ instead of
@@ -307,7 +318,8 @@ export const RELATED_CASE_STUDIES_QUERY = defineQuery(`*[
 /* ── Glossary Terms ────────────────────────────────────────────────────────── */
 
 /** All glossary terms for listing page (no body content needed) */
-export const GLOSSARY_TERMS_QUERY = defineQuery(`*[_type == "glossaryTerm"] | order(term asc) {
+export const GLOSSARY_TERMS_QUERY =
+  defineQuery(`*[_type == "glossaryTerm"] | order(term asc) {
   term,
   "slug": slug.current,
   shortDefinition,
@@ -316,7 +328,8 @@ export const GLOSSARY_TERMS_QUERY = defineQuery(`*[_type == "glossaryTerm"] | or
 }`);
 
 /** Single glossary term by slug (includes body for detail page) */
-export const GLOSSARY_TERM_QUERY = defineQuery(`*[_type == "glossaryTerm" && slug.current == $slug][0] {
+export const GLOSSARY_TERM_QUERY =
+  defineQuery(`*[_type == "glossaryTerm" && slug.current == $slug][0] {
   term,
   "slug": slug.current,
   shortDefinition,
@@ -349,7 +362,9 @@ export const GLOSSARY_TERM_QUERY = defineQuery(`*[_type == "glossaryTerm" && slu
 }`);
 
 /** All glossary term slugs for getStaticPaths */
-export const GLOSSARY_SLUGS_QUERY = defineQuery(`*[_type == "glossaryTerm" && defined(slug.current)].slug.current`);
+export const GLOSSARY_SLUGS_QUERY = defineQuery(
+  `*[_type == "glossaryTerm" && defined(slug.current)].slug.current`,
+);
 
 /* ── Testimonials ─────────────────────────────────────────────────────────── */
 
@@ -358,7 +373,8 @@ export const GLOSSARY_SLUGS_QUERY = defineQuery(`*[_type == "glossaryTerm" && de
  * Prefer using `getTestimonials()` from `src/sanity/lib/testimonials.ts`
  * instead of this query directly — it handles featured filtering and limiting.
  */
-export const TESTIMONIALS_QUERY = defineQuery(`*[_type == "testimonial"] | order(sortOrder asc) {
+export const TESTIMONIALS_QUERY =
+  defineQuery(`*[_type == "testimonial"] | order(sortOrder asc) {
   _id,
   name,
   role,
@@ -374,7 +390,8 @@ export const TESTIMONIALS_QUERY = defineQuery(`*[_type == "testimonial"] | order
 /**
  * Featured testimonials only, ordered by sortOrder.
  */
-export const FEATURED_TESTIMONIALS_QUERY = defineQuery(`*[_type == "testimonial" && featured == true] | order(sortOrder asc) {
+export const FEATURED_TESTIMONIALS_QUERY =
+  defineQuery(`*[_type == "testimonial" && featured == true] | order(sortOrder asc) {
   _id,
   name,
   role,
@@ -394,7 +411,8 @@ export const FEATURED_TESTIMONIALS_QUERY = defineQuery(`*[_type == "testimonial"
  * Pass the slugs as `$slugs`; ordering is applied by the caller, since GROQ
  * returns them in document order rather than the order asked for.
  */
-export const FEATURED_CASE_STUDIES_QUERY = defineQuery(`*[_type == "caseStudy" && slug.current in $slugs] {
+export const FEATURED_CASE_STUDIES_QUERY =
+  defineQuery(`*[_type == "caseStudy" && slug.current in $slugs] {
   "slug": slug.current,
   client,
   description,
