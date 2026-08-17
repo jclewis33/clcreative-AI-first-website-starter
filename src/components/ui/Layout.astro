@@ -759,13 +759,20 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
 
     /* Column stays block-level so sibling margins collapse (e.g. text
    margin-bottom + button-wrapper margin-top → max wins).  The alignment
-   properties are set for INHERITANCE only — .u-text inherits
-   align-items: center, .u-button-wrapper inherits justify-content: center.
-   text-align: center handles any remaining inline content. */
+   properties are set for INHERITANCE only — .u-button-wrapper inherits
+   justify-content: center, and text-align: center handles inline content.
+
+   --_text-inline-margin is the same signal for .u-text. align-items cannot
+   serve it any more: .u-text used to be a flex WRAPPER that consumed the
+   inherited align-items and centred its child, but it is now the text
+   element itself, and a block box ignores its parent's align-items. Without
+   this, a max-width-constrained heading keeps its text centred INSIDE a box
+   that stays hard left. */
     [data-layout-variant="stack-centered"] .u-layout-column-1 {
       text-align: center;
       align-items: center;
       justify-content: center;
+      --_text-inline-margin: auto;
     }
 
     /* ---- sticky-left — 50/50, left column sticks on scroll (or custom ratio) ---- */
@@ -916,6 +923,8 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
       text-align: center;
       align-items: center;
       justify-content: center;
+      /* see the stack-centered note above */
+      --_text-inline-margin: auto;
       padding: var(--card-padding, var(--section-space-main)) var(--space-7);
     }
 

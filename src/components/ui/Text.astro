@@ -4,9 +4,9 @@ import Layout from "@/components/ui/Layout.astro";
 /**
  * Text — body copy with design-system size, weight, and alignment tokens.
  *
- * Renders a `.u-text` wrapper around the tag element. The wrapper stays
- * full-width while the child inherits `max-width`. Omit `variant` to inherit
- * from the parent's font size.
+ * Renders ONE bare tag carrying `.u-text`, the type class, and any
+ * `max-width` — there is no wrapper div (see `<Heading>` for why it went).
+ * Omit `variant` to inherit from the parent's font size.
  *
  * @example Lead paragraph
  * ```astro
@@ -261,7 +261,7 @@ interface Props extends HTMLAttributes<"div"> {
   clamp?: 1 | 2 | 3 | 4 | 5 | 6;
 
   /**
-   * Override margin-top on the `.u-text` wrapper.
+   * Override margin-top on the element itself.
    * - `0`–`8` — maps to `u-margin-top-N` (space scale: 6px–64px fluid)
    * - `'auto'` — push element down in flex containers (align bottom edges across columns)
    * @example marginTop={0}
@@ -271,7 +271,7 @@ interface Props extends HTMLAttributes<"div"> {
   marginTop?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "auto";
 
   /**
-   * Override margin-bottom on the `.u-text` wrapper.
+   * Override margin-bottom on the element itself.
    * Maps to `u-margin-bottom-N` (space scale: 6px–64px fluid).
    * Use `0` for tight layouts, higher values for extra breathing room.
    *
@@ -301,7 +301,7 @@ interface Props extends HTMLAttributes<"div"> {
 
   /**
    * Max-width of the text content, with units.
-   * Applied on the `.u-text` wrapper; the child element inherits
+   * Applied on the element itself; descendants inherit
    * this constraint via `max-width: inherit`.
    *
    * Common values:
@@ -318,7 +318,7 @@ interface Props extends HTMLAttributes<"div"> {
   maxWidth?: string;
 
   /**
-   * Extra utility classes to append to the `.u-text` wrapper.
+   * Extra utility classes to append to the rendered element.
    *
    * @example class="u-margin-bottom-4"
    * @example class="u-background-1"
@@ -351,7 +351,7 @@ const variantClass = variant?.startsWith("display-")
   : `u-text-style-${variant}`; // → u-text-style-regular, u-text-style-h3, etc.
 
 /* Wrapper classes — typography, alignment, style modifiers, margin overrides, and user extras */
-const wrapperClasses = [
+const elementClasses = [
   "u-text",
   variant && variantClass,
   weight && `u-weight-${weight}`,
@@ -366,7 +366,8 @@ const wrapperClasses = [
   className,
 ];
 
-/* Child classes — only clamp (display: -webkit-box conflicts with wrapper flex) */
+/* clamp uses display: -webkit-box, so it is kept as a separate class that
+   lands on the same element alongside the type classes. */
 const childClasses = [clamp && `u-line-clamp-${clamp}`];
 
 /* Merge user-provided style with computed max-width.
@@ -381,10 +382,12 @@ const mergedStyle = [`max-width: var(--unset-medium, ${maxWidth})`, userStyle]
 
 {
   render && (
-    <div class:list={wrapperClasses} style={mergedStyle} {...attrs}>
-      <Tag class:list={childClasses}>
-        <slot />
-      </Tag>
-    </div>
+    <Tag
+      class:list={[elementClasses, childClasses]}
+      style={mergedStyle}
+      {...attrs}
+    >
+      <slot />
+    </Tag>
   )
 }

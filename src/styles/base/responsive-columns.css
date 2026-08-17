@@ -130,6 +130,9 @@
     --row-medium: row;
     --start-medium: start;
     --center-medium: center;
+    /* Margin form of --center-medium, for centring a block whose parent is
+       not a flex container (see .u-text in base/layout.css). */
+    --center-medium-auto: auto;
     --end-medium: end;
     --unset-medium: unset;
     --relative-medium: relative;

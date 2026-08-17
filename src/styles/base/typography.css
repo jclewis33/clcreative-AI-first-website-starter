@@ -199,38 +199,67 @@
 }
 
 /* ==========================================================================
-   .u-text TEXT WRAPPER
+   .u-text — THE TEXT ELEMENT ITSELF
    ==========================================================================
-   Flex column wrapper that stays full-width (min-width overrides max-width
-   for rendering) while children inherit the max-width constraint. Inherits
-   align-items from the parent layout (e.g. center from stack-centered).
+   `.u-text` sits directly on the <h1>-<h6>/<p> that <Heading> and <Text>
+   render. It is NOT a wrapper: those components used to emit
+   `<div class="u-text …"><h2>…</h2></div>`, a flex column with
+   `min-width: 100%` whose child then needed
+   `max-width: inherit !important; margin-inline: 0 !important;
+   margin-top: 0 !important` to undo the box it had just been put inside —
+   three of the repo's !important declarations existing only to cancel a
+   wrapper. It also made a flex box the direct parent of every text element,
+   which the house spacing rule explicitly forbids because flex kills the
+   vertical margin collapsing that the rhythm depends on.
+
+   That shape came from Webflow, where a Text Block cannot carry its own
+   max-width or alignment independently of flow, so you wrap it. In CSS the
+   element can simply hold those properties itself.
+
+   `width: 100%` is the one thing the wrapper genuinely provided: it makes
+   the element fill its column so `text-align` positions the text, rather
+   than the element shrinking to its content and being positioned as a block
+   by the parent's `align-items`. With a `max-width` set, the element is
+   min(100%, max-width) wide and the parent's `align-items` places it —
+   exactly what the wrapper's inherited `align-items` used to do.
    ========================================================================== */
 
 .u-text {
-  display: flex;
-  flex-flow: column;
-  min-width: 100%;
-  align-items: inherit;
-  justify-content: start;
+  width: 100%;
+  /* Centres/ends the box when a content wrapper asks for it; see the
+     alignment note in base/layout.css. Defaults to the start edge. */
+  margin-inline: var(--_text-inline-margin, 0);
+  /* Progressive enhancement: trims the leading space above the cap-height
+     and below the alphabetic baseline, so spacing values mean what they say.
+     Unsupported browsers (Firefox) keep the normal line-height box — text is
+     slightly taller but fully readable. Previously applied via `.u-text > *`,
+     i.e. to the wrapper's child; it belongs on the text element itself. */
+  text-box-trim: both;
+  text-box-edge: cap alphabetic;
 }
 
-/* Allow .u-text to shrink inside explicit flex-row containers
-   (e.g. icon + text patterns) where min-width: 100% causes overflow.
-   Add u-text-shrink to the flex parent to opt in. */
+/* Allow .u-text to shrink inside explicit flex-row containers (e.g. icon +
+   text patterns). This mattered far more when .u-text was a wrapper with
+   `min-width: 100%`, which could not shrink at all. A plain element's
+   min-width is `auto`, so it already shrinks to its min-content; this only
+   permits going below that. Add u-text-shrink to the flex parent to opt in. */
 .u-text-shrink > .u-text {
   min-width: 0;
 }
 
 /* ==========================================================================
-   .u-text INHERITANCE BLOCK
+   INHERITANCE BLOCK
    ==========================================================================
-   Resets all type properties on headings inside .u-text to inherit from the
-   container (so .u-text-style-* classes drive everything).
-   Also globally resets p, blockquote, and label so they inherit from their
-   nearest typed ancestor instead of carrying browser or UA defaults.
+   Resets p, blockquote and label so they inherit type from their nearest
+   typed ancestor instead of carrying browser/UA defaults.
+
+   Headings are no longer listed here. They used to need it because the
+   `.u-text-style-*` class lived on a wrapper and the heading had to inherit
+   through it; the class now sits on the heading itself and beats the UA
+   styles directly. Bare headings still get the same inherit treatment from
+   base/elements.css.
    ========================================================================== */
 
-.u-text :is(h1, h2, h3, h4, h5, h6),
 p,
 blockquote,
 label {
@@ -241,29 +270,6 @@ label {
   letter-spacing: inherit;
   text-transform: inherit;
   text-wrap: inherit;
-}
-
-/* ==========================================================================
-   .u-text CHILDREN — sizing, margin reset, text-box trim
-   ==========================================================================
-   • width / max-width: children fill the wrapper and inherit the
-     max-width constraint from the parent .u-text.
-   • margin-inline: 0 prevents horizontal margin on children.
-   • margin-top: 0 enforces bottom-only spacing — all vertical rhythm
-     flows in one direction via margin-bottom from u-text-style-* classes.
-   • text-box-trim: progressive enhancement that removes leading space
-     above the cap-height and trailing space below the alphabetic
-     baseline. Unsupported browsers (Firefox) keep the normal
-     line-height box — text is slightly taller but fully readable.
-   ========================================================================== */
-
-.u-text > * {
-  width: 100%;
-  max-width: inherit !important;
-  margin-inline: 0 !important;
-  margin-top: 0 !important;
-  text-box-trim: both;
-  text-box-edge: cap alphabetic;
 }
 
 /* ==========================================================================

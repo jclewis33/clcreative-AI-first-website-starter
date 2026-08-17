@@ -9,8 +9,12 @@ import Layout from "@/components/ui/Layout.astro";
  * the semantic tag's default styles. Use `tag="p"` when you need
  * heading typography on non-heading content (e.g. prices, stats).
  *
- * Renders a `.u-text` wrapper div around the heading tag. The wrapper
- * stays full-width while the child heading inherits `max-width`.
+ * Renders ONE bare heading tag carrying `.u-text`, the type class, and any
+ * `max-width` — there is no wrapper div. It used to emit
+ * `<div class="u-text …"><h2>…</h2></div>`, a Webflow-era shape whose flex
+ * box then needed three `!important`s on the child to undo itself. Alignment
+ * that the wrapper used to perform now comes from `--_text-inline-margin`
+ * (see base/layout.css).
  *
  * @example Display heading with balance
  * ```astro
@@ -143,7 +147,7 @@ interface Props extends HTMLAttributes<"div"> {
   accent?: boolean;
 
   /**
-   * Override margin-top on the `.u-text` wrapper.
+   * Override margin-top on the heading itself.
    * - `0`–`8` — maps to `u-margin-top-N` (space scale: 6px–64px fluid)
    * - `'auto'` — push element down in flex containers (align bottom edges across columns)
    * @example marginTop={0}
@@ -153,7 +157,7 @@ interface Props extends HTMLAttributes<"div"> {
   marginTop?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "auto";
 
   /**
-   * Override margin-bottom on the `.u-text` wrapper.
+   * Override margin-bottom on the heading itself.
    * Maps to `u-margin-bottom-N` (space scale: 6px–64px fluid).
    * Use `0` for tight layouts, higher values for extra breathing room.
    *
@@ -230,7 +234,7 @@ const variantClassMap: Record<NonNullable<HeadingVariant>, string> = {
 };
 
 /* Wrapper classes — typography, balance, accent, margin overrides, and user extras */
-const wrapperClasses = [
+const elementClasses = [
   "u-text",
   variant ? variantClassMap[variant] : null,
   balance && "u-text-wrap-balance",
@@ -254,10 +258,8 @@ const mergedStyle = [
 
 {
   render && (
-    <div class:list={wrapperClasses} style={mergedStyle} {...attrs}>
-      <Tag>
-        <slot />
-      </Tag>
-    </div>
+    <Tag class:list={elementClasses} style={mergedStyle} {...attrs}>
+      <slot />
+    </Tag>
   )
 }

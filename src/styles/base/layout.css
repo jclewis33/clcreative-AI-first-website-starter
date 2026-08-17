@@ -102,6 +102,35 @@
   justify-content: var(--center-medium, start);
 }
 
+/* ---------------------------------------------------------------
+   Aligning a constrained TEXT element
+   ---------------------------------------------------------------
+   `align-items` above is a hint, not an action: .u-content-wrapper is a
+   block box, so align-items does nothing to its own children. It used to be
+   collected by the .u-text WRAPPER, which was a flex column with
+   `align-items: inherit` and therefore did the centring itself. With that
+   wrapper gone, a max-width-constrained heading or paragraph has to centre
+   its own box — `text-align` only moves the text INSIDE the box, so without
+   this the box stays hard left and centred layouts silently left-align.
+
+   Expressed as an inheriting custom property rather than a `>` rule so it
+   behaves exactly like the `align-items: inherit` it replaces: a nested
+   wrapper with no alignment class of its own keeps its ancestor's value.
+   .u-content-wrapper_inner below already used the margin form of this. */
+.u-content-wrapper.is-center-align {
+  --_text-inline-margin: auto;
+}
+.u-content-wrapper.is-left-align {
+  --_text-inline-margin: 0;
+}
+/* start: auto, end: 0 — pushes the box to the end edge */
+.u-content-wrapper.is-right-align {
+  --_text-inline-margin: auto 0;
+}
+.u-content-wrapper.is-center-align-mobile {
+  --_text-inline-margin: var(--center-medium-auto, 0);
+}
+
 /* Inner wrapper rendered when maxWidth is set on Layout.
    Must forward alignment from the outer wrapper so .u-text children
    (which use `align-items: inherit`) still see the centering. */

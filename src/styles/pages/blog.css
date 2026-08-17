@@ -43,13 +43,19 @@
     margin-top: auto;
   }
 
+  /* .u-text is now the text element itself and carries `width: 100%`, so in
+     this flex row it has to be told to hug its content. Previously these
+     undid the old .u-text WRAPPER's `min-width: 100%`. */
   .blog_card_footer > .u-text {
-    min-width: auto;
+    width: auto;
   }
 
-  /* The .u-text wrapper around category tags needs to shrink too */
-  .u-text:has(.blog_card_category) {
-    min-width: auto;
+  /* The category tag paints a background, so it must size to its text. This
+     was `.u-text:has(.blog_card_category)` back when .u-text was a wrapper
+     AROUND the tag; the two classes now sit on the SAME element, and nothing
+     can :has() itself — the rule silently stopped matching, which widened the
+     tag and grew the card footer by 6px. */
+  .u-text.blog_card_category {
     width: fit-content;
   }
 
