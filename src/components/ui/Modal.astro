@@ -355,7 +355,19 @@ const hasClose = Astro.slots.has("close");
       width: 100vw;
       height: 100vh;
       margin: 0;
-      overflow: hidden;
+      /* `clip`, NOT `hidden`, and the side panel's whole animation depends on
+         it. `overflow: hidden` makes this element a scroll CONTAINER. When
+         showModal() moves focus to the close button inside a panel that is
+         still translated off-screen, the browser scrolls this container to
+         bring the focused element into view — and then keeps following it in,
+         so scrollLeft cancels the translation pixel for pixel. Measured: the
+         transform interpolated 474 → 298 → 179 → 95 → 44 while scrollLeft
+         read 474 → 298 → 179 → 95 → 44, and the panel never visibly moved.
+         `overflow: clip` clips identically but creates no scroll container,
+         so there is nothing to scroll and the slide renders. The vertical
+         variants were never affected because a 100vh panel produces no
+         vertical overflow to scroll toward. */
+      overflow: clip;
       position: fixed;
       inset: 0;
     }
@@ -592,7 +604,7 @@ const hasClose = Astro.slots.has("close");
       --_from-x: 100%;
       --_from-y: 0;
       /* No fade. The panel stays fully opaque and simply travels in from
-         beyond the right edge, where the dialog's `overflow: hidden` clips
+         beyond the right edge, where the dialog's `overflow: clip` hides
          it until it arrives. Fading it in as well makes it appear to
          materialise about a third of the way across and then finish the
          journey, instead of emerging from the edge — the GSAP timeline this
