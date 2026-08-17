@@ -24,6 +24,7 @@ import Button from "@/components/ui/Button.astro";
 import TestimonialsSlider from "@/components/sections/TestimonialsSlider.astro";
 import TestimonialsGrid from "@/components/sections/TestimonialsGrid.astro";
 import { getTestimonials } from "@/sanity/lib/testimonials";
+import type { TestimonialData } from "@/sanity/lib/testimonials";
 import Form from "@/components/form/Form.astro";
 import FormField from "@/components/form/FormField.astro";
 import FormFieldset from "@/components/form/FormFieldset.astro";
@@ -67,7 +68,7 @@ const demoSquare = [phS1.src, phS2.src, phS3.src];
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
-  () => [],
+  (): TestimonialData[] => [],
 );
 ---
 

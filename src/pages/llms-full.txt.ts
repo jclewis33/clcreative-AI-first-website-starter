@@ -28,42 +28,15 @@ import {
   type StaticPage,
 } from "@/data/site-structure";
 
+import type {
+  BLOG_POSTS_QUERY_RESULT,
+  CASE_STUDIES_QUERY_RESULT,
+  GLOSSARY_TERMS_QUERY_RESULT,
+  CASE_STUDY_QUERY_RESULT,
+} from "@/sanity/sanity.types";
+
 export const prerender = true;
 
-interface SlugItem {
-  slug: string;
-  comingSoon?: boolean;
-}
-interface PortableBlock {
-  _type: string;
-  [key: string]: unknown;
-}
-interface BlogPostFull {
-  title: string;
-  slug: string;
-  description?: string;
-  body?: PortableBlock[];
-}
-interface CaseStudyFull {
-  title: string;
-  slug: string;
-  description?: string;
-  client?: string;
-  content?: CaseStudyBlock[];
-}
-interface CaseStudyBlock {
-  _type: string;
-  body?: PortableBlock[];
-  imageAlt?: string;
-  items?: { value?: string; label?: string }[];
-  images?: { alt?: string }[];
-}
-interface GlossaryTermFull {
-  term: string;
-  slug: string;
-  shortDefinition?: string;
-  body?: PortableBlock[];
-}
 
 function url(path: string): string {
   return path === "/" ? SITE_URL : `${SITE_URL}${path}`;
@@ -75,13 +48,28 @@ function pageIndex(heading: string, pages: StaticPage[]): string {
     .join("\n")}`;
 }
 
+/** One entry in a case study's flexible `content[]`, as the query projects it. */
+type CaseStudyBlock = NonNullable<
+  NonNullable<CASE_STUDY_QUERY_RESULT>["content"]
+>[number];
+
 /** Render a case study's flexible `content[]` blocks to Markdown. */
 function caseStudyContentToMarkdown(
-  blocks: CaseStudyBlock[] | undefined,
+  blocks: CaseStudyBlock[] | null | undefined,
 ): string {
   if (!blocks?.length) return "";
   const parts: string[] = [];
-  for (const block of blocks) {
+  for (const b of blocks) {
+    // Each block shape carries a different subset of these fields; the union
+    // only exposes one after `_type` narrowing, and this walker deliberately
+    // probes them instead.
+    const block = b as {
+      _type: string;
+      body?: unknown[] | null;
+      items?: Array<{ value?: string | null; label?: string | null }> | null;
+      imageAlt?: string | null;
+      images?: Array<{ alt?: string | null }> | null;
+    };
     if (block.body?.length) {
       const md = portableTextToMarkdown(block.body as never);
       if (md) parts.push(md);
@@ -111,15 +99,15 @@ export const GET: APIRoute = async () => {
   //    or unreachable dataset (e.g. a fresh fork before `/setup`) — the file
   //    still renders the static page index.
   const [posts, caseStudies, glossary] = await Promise.all([
-    loadQuery<SlugItem[]>({ query: BLOG_POSTS_QUERY })
+    loadQuery({ query: BLOG_POSTS_QUERY })
       .then((r) => r.data)
-      .catch(() => [] as SlugItem[]),
-    loadQuery<SlugItem[]>({ query: CASE_STUDIES_QUERY })
+      .catch((): BLOG_POSTS_QUERY_RESULT => []),
+    loadQuery({ query: CASE_STUDIES_QUERY })
       .then((r) => r.data)
-      .catch(() => [] as SlugItem[]),
-    loadQuery<SlugItem[]>({ query: GLOSSARY_TERMS_QUERY })
+      .catch((): CASE_STUDIES_QUERY_RESULT => []),
+    loadQuery({ query: GLOSSARY_TERMS_QUERY })
       .then((r) => r.data)
-      .catch(() => [] as SlugItem[]),
+      .catch((): GLOSSARY_TERMS_QUERY_RESULT => []),
   ]);
 
   const postSlugs = (posts ?? []).map((p) => p.slug);
@@ -132,7 +120,7 @@ export const GET: APIRoute = async () => {
   const [fullPosts, fullCaseStudies, fullGlossary] = await Promise.all([
     Promise.all(
       postSlugs.map((slug) =>
-        loadQuery<BlogPostFull>({
+        loadQuery({
           query: BLOG_POST_QUERY,
           params: { slug },
         }).then((r) => r.data),
@@ -140,7 +128,7 @@ export const GET: APIRoute = async () => {
     ),
     Promise.all(
       caseStudySlugs.map((slug) =>
-        loadQuery<CaseStudyFull>({
+        loadQuery({
           query: CASE_STUDY_QUERY,
           params: { slug },
         }).then((r) => r.data),
@@ -148,7 +136,7 @@ export const GET: APIRoute = async () => {
     ),
     Promise.all(
       glossarySlugs.map((slug) =>
-        loadQuery<GlossaryTermFull>({
+        loadQuery({
           query: GLOSSARY_TERM_QUERY,
           params: { slug },
         }).then((r) => r.data),

@@ -10,12 +10,15 @@
  * which the prerender step cannot load ("Unknown file extension .css").
  * The Presentation location map lives separately in ./resolve.ts.
  */
+/* What this resolver READS from a dereferenced internal-link target. Every
+   field is nullable because the query projects them straight from documents
+   that an editor may not have completed. */
 export type InternalLinkTarget =
   | {
-      _type?: string;
-      slug?: string;
-      title?: string;
-      description?: string;
+      _type?: string | null;
+      slug?: string | null;
+      title?: string | null;
+      description?: string | null;
       image?: any;
     }
   | null

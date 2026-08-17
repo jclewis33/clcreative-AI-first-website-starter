@@ -13,41 +13,43 @@ import {
 import { urlFor } from "./image";
 import { SITE_URL } from "@/config/site";
 
+/* These describe what this serializer READS, so every field a Sanity query can
+   return as null is nullable here — the walker already guards each access. */
 interface PortableTextSpan {
   _type: "span";
-  text: string;
-  marks?: string[];
+  text?: string | null;
+  marks?: string[] | null;
 }
 
 interface MarkDef {
   _key: string;
   _type: string;
-  href?: string;
-  newTab?: boolean;
-  target?: InternalLinkTarget;
+  href?: string | null;
+  newTab?: boolean | null;
+  target?: InternalLinkTarget | null;
 }
 
 interface PortableTextBlock {
   _type: "block";
   _key?: string;
-  style?: string;
-  children?: PortableTextSpan[];
-  listItem?: "bullet" | "number";
-  level?: number;
-  markDefs?: MarkDef[];
+  style?: string | null;
+  children?: PortableTextSpan[] | null;
+  listItem?: "bullet" | "number" | null;
+  level?: number | null;
+  markDefs?: MarkDef[] | null;
 }
 
 interface PortableTextImage {
   _type: "image";
-  asset: { _ref: string };
-  alt?: string;
-  caption?: string;
+  asset?: { _ref?: string } | null;
+  alt?: string | null;
+  caption?: string | null;
 }
 
 interface PortableTextVideoEmbed {
   _type: "videoEmbed";
-  url: string;
-  caption?: string;
+  url?: string | null;
+  caption?: string | null;
 }
 
 type PortableTextNode =
@@ -131,7 +133,7 @@ function renderSpan(
   span: PortableTextSpan,
   markDefs: PortableTextBlock["markDefs"],
 ): string {
-  let html = escapeHtml(span.text);
+  let html = escapeHtml(span.text ?? "");
 
   if (!span.marks?.length) return html;
 
@@ -216,7 +218,7 @@ export function portableTextToHtml(
       }
 
       const video = node as PortableTextVideoEmbed;
-      const embedUrl = resolveVideoEmbedUrl(video.url);
+      const embedUrl = video.url ? resolveVideoEmbedUrl(video.url) : null;
       if (embedUrl) {
         const title = video.caption ? escapeAttr(video.caption) : "Video";
         parts.push(`<figure class="video-embed_wrap">`);

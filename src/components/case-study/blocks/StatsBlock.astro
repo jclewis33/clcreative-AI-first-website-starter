@@ -9,8 +9,10 @@ import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 
 interface StatItem {
-  value: string;
-  label: string;
+  /* Nullable: a stat row exists as soon as an editor adds it, before either
+     field is filled in. */
+  value: string | null;
+  label: string | null;
 }
 
 interface Props {

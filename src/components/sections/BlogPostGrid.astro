@@ -78,26 +78,28 @@ import Layout from "@/components/ui/Layout.astro";
 
 /** Shape of a single blog post — CMS-ready with ImageMetadata | string. */
 export interface BlogPost {
+  /* Nullable throughout: these usually arrive from Sanity, where a document
+     is incomplete until an editor fills it in. */
   /** Post title */
-  title: string;
+  title: string | null;
   /** URL slug — used for href and exclusion filtering */
-  slug: string;
+  slug: string | null;
   /** Post excerpt / description */
-  description: string;
+  description: string | null;
   /** Category labels (e.g. ["Guides", "News"]) */
-  categories: string[];
+  categories: string[] | null;
   /** Featured image — imported ImageMetadata or URL string */
-  image: ImageMetadata | string;
+  image: ImageMetadata | string | null;
   /** Alt text for the featured image */
-  imageAlt: string;
+  imageAlt: string | null;
   /** Author name (optional — used for CMS sorting) */
-  author?: string;
+  author?: string | null;
   /** Author avatar image (optional) */
-  authorAvatar?: ImageMetadata | string;
+  authorAvatar?: ImageMetadata | string | null;
   /** Publish date as ISO string for sorting (e.g. "2026-03-01") */
-  date?: string;
+  date?: string | null;
   /** Whether this post is featured (optional) */
-  featured?: boolean;
+  featured?: boolean | null;
 }
 
 /* ── Variant & shared types ── */
@@ -487,7 +489,7 @@ const samplePosts: BlogPost[] = [
    ═══════════════════════════════════════════════════ */
 
 const allPosts = posts ?? samplePosts;
-const excludeSet = new Set(excludeSlugs ?? []);
+const excludeSet = new Set<string | null>(excludeSlugs ?? []);
 let filtered: BlogPost[] = [];
 
 switch (variant) {

@@ -40,13 +40,13 @@ import "@/styles/pages/blog.css";
 
 const draftProps = getDraftModeProps(Astro);
 const [allPosts, settings] = await Promise.all([
-  loadPageQuery<any[]>({
+  loadPageQuery({
     query: BLOG_POSTS_QUERY,
     draftProps,
     fallback: [],
     label: "blog index posts",
   }),
-  loadPageQuery<any>({
+  loadPageQuery({
     query: SITE_SETTINGS_QUERY,
     draftProps,
     fallback: null,

@@ -1839,6 +1839,52 @@ import Text from "../components/ui/Text.astro";
 
 ---
 
+## Sanity types — generated, never hand-written
+
+Sanity data is typed from the schema and the queries, by TypeGen. There are no
+hand-written interfaces mirroring a document shape.
+
+**After editing any GROQ query or Sanity schema, run `npm run typegen`.** It
+extracts the schema to `src/sanity/schema.json` (gitignored) and regenerates
+`src/sanity/sanity.types.ts` (committed, so a fresh clone type-checks without
+running anything).
+
+**Every query lives in `src/sanity/lib/queries.ts`, wrapped in `defineQuery()`.**
+TypeGen only finds queries through that call — a bare template literal is
+invisible to it, and a query defined in an `.astro` file is not scanned at all.
+
+`defineQuery()` preserves the query's literal string type, and TypeGen maps
+those literals onto result types, so `loadQuery` infers with no generic:
+
+```ts
+const { data } = await loadQuery({ query: BLOG_POST_QUERY });
+// data: BLOG_POST_QUERY_RESULT | null — a query cannot be paired
+// with the wrong shape, because you never name the shape.
+```
+
+**Templates take their prop types from the loader that feeds them**, so the two
+cannot drift:
+
+```ts
+type PageData = NonNullable<Awaited<ReturnType<typeof loadBlogPostPage>>>;
+interface Props {
+  post: PageData["post"];
+  relatedPosts: PageData["relatedPosts"];
+}
+```
+
+**Sanity fields are nullable.** A document exists the moment an editor creates
+it, before any field is filled in, so the generated types say `string | null`
+almost everywhere. Component prop types must allow that — a contract claiming
+`title: string` is asserting something the CMS does not guarantee. Where a
+component boundary wants `undefined` instead (Astro props, `BaseLayout`), coalesce
+at the call site with `?? undefined` rather than widening the component.
+
+**A field the query does not project does not exist**, however plausibly it reads.
+Two live bugs came from exactly this — a `comingSoon` guard that never fired and a
+`maxWidth` control in the Studio that did nothing — both invisible while the data
+was typed `any`. If a field is missing, add it to the projection and re-run typegen.
+
 ## Site Configuration — `src/config/site.ts`
 
 All site identity lives in **one file**: [src/config/site.ts](src/config/site.ts) exports a typed `SITE` object — name, URL, email, phone (display / e164 / tel), founder, address, business hours, `priceRange`, OG image + logo paths, `brand.color`, the footer `social` array, JSON-LD `sameAs`, the sitewide `areaServed` list, and the Sanity `projectId`/`dataset`/`apiVersion`. It also re-exports `SITE_URL` / `SITE_NAME` / `SITE_SUMMARY` (consumed by the `llms.txt` endpoints).

@@ -30,20 +30,26 @@ import type { HTMLAttributes } from "astro/types";
 import Text from "./Text.astro";
 import { urlFor } from "@/sanity/lib/image";
 
-/** Shape of a single testimonial */
+/**
+ * Shape of a single testimonial. THE definition — TestimonialsSlider,
+ * TestimonialsGrid and TestimonialShowcase all import it from here.
+ *
+ * Every field is nullable: these usually arrive from Sanity, where a document
+ * is incomplete until an editor fills it in, and the query types say so.
+ */
 export interface Testimonial {
   /** The quote / testimonial text */
-  quote: string;
+  quote?: string | null;
   /** Author name */
-  name: string;
+  name?: string | null;
   /** Author role / title (optional) */
-  role?: string;
+  role?: string | null;
   /** Company or organization (optional — appended to role) */
-  company?: string;
+  company?: string | null;
   /** Author avatar — URL string or Sanity image object (optional) */
   avatar?: any;
   /** Number of stars to display — 0–5 (optional, omit to hide stars) */
-  stars?: number;
+  stars?: number | null;
 }
 
 /* `Testimonial` carries a `role` field — the PERSON's job title — which

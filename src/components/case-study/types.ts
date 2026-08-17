@@ -58,5 +58,7 @@ export type ContentBlock =
     } & BlockSpacing)
   | ({
       type: "stats";
-      items: { value: string; label: string }[];
+      /* Nullable: a stat row exists in Sanity as soon as an editor adds it,
+         before either field is filled in. */
+      items: { value: string | null; label: string | null }[];
     } & BlockSpacing);

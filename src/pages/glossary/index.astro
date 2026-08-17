@@ -45,13 +45,13 @@ const glossaryCategories = [
 
 const draftProps = getDraftModeProps(Astro);
 const [allTerms, settings] = await Promise.all([
-  loadPageQuery<any[]>({
+  loadPageQuery({
     query: GLOSSARY_TERMS_QUERY,
     draftProps,
     fallback: [],
     label: "glossary index terms",
   }),
-  loadPageQuery<any>({
+  loadPageQuery({
     query: SITE_SETTINGS_QUERY,
     draftProps,
     fallback: null,

@@ -82,31 +82,31 @@ interface Props extends HTMLAttributes<"div"> {
   docs?: string;
 
   /** Post title — clamped at 2 lines. */
-  title: string;
+  title: string | null;
 
   /** Post excerpt or description — clamped at 2 lines. */
-  description: string;
+  description: string | null;
 
   /** Category labels displayed at the bottom of the card. */
-  categories: string[];
+  categories: string[] | null;
 
   /** Link to the full blog post. */
   href: string;
 
   /** Featured image — imported ImageMetadata or URL string. */
-  image: ImageMetadata | string;
+  image: ImageMetadata | string | null;
 
   /** Alt text for the featured image. */
-  imageAlt: string;
+  imageAlt: string | null;
 
   /** Author name — stored as data attribute for CMS sorting. */
-  author?: string;
+  author?: string | null;
 
   /** Author avatar image — used in featured post layout. */
-  authorAvatar?: ImageMetadata | string;
+  authorAvatar?: ImageMetadata | string | null;
 
   /** Publish date — stored as data attribute for CMS sorting. */
-  date?: string;
+  date?: string | null;
 
   /** Extra classes on the outer wrapper. */
   class?: string;
@@ -145,7 +145,17 @@ const {
   data-date={date}
   {...rest}
 >
-  <Visual slot="visual" src={image} alt={imageAlt} ratio="wide" radius="none" />
+  {
+    image && (
+      <Visual
+        slot="visual"
+        src={image}
+        alt={imageAlt ?? ""}
+        ratio="wide"
+        radius="none"
+      />
+    )
+  }
 
   <div slot="title" class="blog_card_title_wrap">
     <Heading tag="h3" variant="h5" maxWidth="100%">

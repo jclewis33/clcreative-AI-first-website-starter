@@ -10,18 +10,14 @@
 import { stegaClean } from "@sanity/client/stega";
 import Visual from "@/components/ui/Visual.astro";
 import { urlFor } from "@/sanity/lib/image";
+import type { SITE_SETTINGS_QUERY_RESULT } from "@/sanity/sanity.types";
 
-type AspectRatio = "square" | "landscape" | "portrait";
-
-interface Cta {
-  heading: string;
-  body: string;
-  image: any;
-  imageAlt: string;
-  aspectRatio: AspectRatio;
-  linkUrl: string;
-  linkLabel: string;
-}
+/* The resolved `blogCta` document, taken from the query that fetches it
+   rather than restated here — every field is nullable until an editor
+   fills it in. */
+type Cta = NonNullable<
+  NonNullable<SITE_SETTINGS_QUERY_RESULT>["defaultBlogCta"]
+>;
 
 interface Props {
   cta: Cta;
@@ -34,7 +30,8 @@ const { cta, class: className } = Astro.props;
 // mode. Without this, the image asset _ref contains stega chars that break
 // the URL builder — the image silently 404s inside Presentation.
 const cleanImage = stegaClean(cta.image);
-const ratio = (stegaClean(cta.aspectRatio) ?? "portrait") as AspectRatio;
+const ratio = (stegaClean(cta.aspectRatio) ??
+  "portrait") as NonNullable<Cta["aspectRatio"]>;
 const linkUrl = stegaClean(cta.linkUrl);
 const linkLabel = stegaClean(cta.linkLabel) ?? "Learn more";
 const imageAlt = stegaClean(cta.imageAlt) ?? "";

@@ -32,6 +32,7 @@ import { urlFor } from "@/sanity/lib/image";
 import { buildToc } from "@/lib/toc";
 import { estimateReadTime } from "@/lib/read-time";
 import { blogPostJsonLd } from "@/lib/jsonld";
+import type { loadBlogPostPage } from "@/sanity/lib/page-data";
 import JsonLd from "@/components/global/JsonLd.astro";
 
 import { PortableText } from "astro-portabletext";
@@ -53,12 +54,18 @@ const { default: Callout } =
 const { default: BlogCtaInline } =
   await import("@/components/portabletext/BlogCtaInline.astro");
 
+/* Every prop is a slice of what loadBlogPostPage() returns, so the template
+   cannot drift from the loader feeding it. Edit BLOG_POST_QUERY and re-run
+   `npm run typegen`; anything this file reads that the query stopped
+   projecting turns into a type error here. */
+type PageData = NonNullable<Awaited<ReturnType<typeof loadBlogPostPage>>>;
+
 interface Props {
-  post: any;
-  relatedPosts: any[];
-  manualRelatedPosts?: any[];
-  defaultCta?: any;
-  defaultCtaSection?: any;
+  post: PageData["post"];
+  relatedPosts: PageData["relatedPosts"];
+  manualRelatedPosts?: PageData["manualRelatedPosts"];
+  defaultCta?: PageData["defaultCta"];
+  defaultCtaSection?: PageData["defaultCtaSection"];
 }
 
 const {
@@ -72,13 +79,13 @@ const resolvedBlogCta = post.ctaOverride ?? defaultCta ?? null;
 const resolvedCtaSection = post.ctaSectionOverride ?? defaultCtaSection ?? null;
 const manualRelatedSlugs = manualRelatedPosts.map((p) => p.slug);
 
-const seo = post.seo || {};
-const metaTitle = seo.metaTitle || post.title;
-const metaDescription = seo.metaDescription || post.description;
-const ogTitle = seo.ogTitle || metaTitle;
-const ogDescription = seo.ogDescription || metaDescription;
-const ogImageUrl = seo.ogImage
-  ? urlFor(seo.ogImage).width(1200).height(630).format("jpg").quality(90).url()
+const seo = post.seo;
+const metaTitle = seo?.metaTitle || post.title;
+const metaDescription = seo?.metaDescription || post.description;
+const ogTitle = seo?.ogTitle || metaTitle;
+const ogDescription = seo?.ogDescription || metaDescription;
+const ogImageUrl = seo?.ogImage
+  ? urlFor(seo?.ogImage).width(1200).height(630).format("jpg").quality(90).url()
   : urlFor(post.image).width(1200).height(630).format("jpg").quality(90).url();
 
 const { body: processedBody, items: tocItems } = buildToc(post.body ?? []);
@@ -108,10 +115,10 @@ const portableTextComponents = {
 
 <BaseLayout
   title={`${metaTitle} | Blog`}
-  description={metaDescription}
-  ogTitle={ogTitle}
-  ogDescription={ogDescription}
-  ogImage={ogImageUrl}
+  description={metaDescription ?? undefined}
+  ogTitle={ogTitle ?? undefined}
+  ogDescription={ogDescription ?? undefined}
+  ogImage={ogImageUrl ?? undefined}
   theme="light"
 >
   <JsonLd data={jsonLd} />
@@ -381,7 +388,7 @@ const portableTextComponents = {
         </div>
         {resolvedBlogCta && <BlogCta cta={resolvedBlogCta} />}
         {
-          post.faqs?.length > 0 && (
+          (post.faqs?.length ?? 0) > 0 && (
             <div class="blog_post_faq_wrap" id="faq">
               <Heading
                 tag="h2"
@@ -392,11 +399,11 @@ const portableTextComponents = {
                 Questions You Might Be Asking
               </Heading>
               <Accordion closePrevious>
-                {post.faqs.map((faq: { question: string; answer: any }) => (
-                  <AccordionItem question={faq.question}>
+                {(post.faqs ?? []).map((faq) => (
+                  <AccordionItem question={faq.question ?? undefined}>
                     <Text>
                       <PortableText
-                        value={faq.answer}
+                        value={faq.answer ?? []}
                         components={{
                           mark: {
                             link: LinkMark,
@@ -425,7 +432,7 @@ const portableTextComponents = {
         variant="manual"
         heading="Related Posts"
         posts={manualRelatedPosts}
-        currentSlug={post.slug}
+        currentSlug={post.slug ?? undefined}
       />
     )
   }
@@ -435,9 +442,9 @@ const portableTextComponents = {
     variant="related"
     heading="Other posts in this category"
     posts={relatedPosts}
-    currentSlug={post.slug}
-    currentCategories={post.categories}
-    excludeSlugs={manualRelatedSlugs}
+    currentSlug={post.slug ?? undefined}
+    currentCategories={post.categories ?? undefined}
+    excludeSlugs={manualRelatedSlugs.filter((s): s is string => !!s)}
   />
 </BaseLayout>
 

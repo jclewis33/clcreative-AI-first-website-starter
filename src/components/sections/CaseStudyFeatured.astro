@@ -37,6 +37,7 @@ import Visual from "@/components/ui/Visual.astro";
 import Button from "@/components/ui/Button.astro";
 
 import { loadQuery } from "@/sanity/lib/load-query";
+import { FEATURED_CASE_STUDIES_QUERY } from "@/sanity/lib/queries";
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import { urlFor } from "@/sanity/lib/image";
 import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
@@ -165,14 +166,6 @@ export const FEATURED_CASE_STUDIES_SLUGS: [string, string, string] = [
   "case-study-three",
 ];
 
-export const FEATURED_CASE_STUDIES_QUERY = `*[_type == "caseStudy" && slug.current in $slugs] {
-  "slug": slug.current,
-  client,
-  description,
-  image,
-  "imageAlt": coalesce(imageAlt, image.asset->altText, "")
-}`;
-
 const {
   docs,
   slugs = FEATURED_CASE_STUDIES_SLUGS,
@@ -197,7 +190,7 @@ if (studies && studies.length >= 3) {
 } else {
   // Fetch from Sanity (standalone usage). Tolerate an empty/unreachable
   // dataset — the section simply doesn't render when fewer than 3 resolve.
-  const results = await loadQuery<any[]>({
+  const results = await loadQuery({
     query: FEATURED_CASE_STUDIES_QUERY,
     params: { slugs },
     ...getDraftModeProps(Astro),

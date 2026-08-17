@@ -22,11 +22,15 @@ import { glossaryTermJsonLd } from "@/lib/jsonld";
 import JsonLd from "@/components/global/JsonLd.astro";
 
 import "@/styles/pages/glossary.css";
+import type { loadGlossaryTermPage } from "@/sanity/lib/page-data";
+
+/* Slices of what loadGlossaryTermPage() returns — see BlogPostTemplate. */
+type PageData = NonNullable<Awaited<ReturnType<typeof loadGlossaryTermPage>>>;
 
 interface Props {
-  term: any;
-  allTerms: any[];
-  defaultCtaSection?: any;
+  term: PageData["term"];
+  allTerms: PageData["allTerms"];
+  defaultCtaSection?: PageData["defaultCtaSection"];
 }
 
 const { term, allTerms, defaultCtaSection = null } = Astro.props;
@@ -46,7 +50,7 @@ const nextTerm = sortedTerms[(currentIndex + 1) % sortedTerms.length];
 
 const relatedTerms = (term.relatedTerms ?? []).slice(0, 4);
 
-const contentHtml = portableTextToHtml(term.body, (ref) =>
+const contentHtml = portableTextToHtml(term.body ?? [], (ref) =>
   urlFor({ _ref: ref }).width(960).url(),
 );
 
@@ -81,7 +85,7 @@ tocEntries.forEach(({ text, id }) => {
 
 <BaseLayout
   title={`${term.term} | Glossary | Astro Starter`}
-  description={term.shortDefinition}
+  description={term.shortDefinition ?? undefined}
   theme="light"
 >
   <JsonLd data={jsonLd} />

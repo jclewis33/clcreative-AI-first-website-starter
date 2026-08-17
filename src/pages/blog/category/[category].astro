@@ -53,14 +53,14 @@ const categoryLabel = category === "All" ? "All" : category;
 /* ── Fetch posts — all posts for "All", filtered for specific category ── */
 
 const [posts, settings] = await Promise.all([
-  loadPageQuery<any[]>({
+  loadPageQuery({
     query: category === "All" ? BLOG_POSTS_QUERY : BLOG_POSTS_BY_CATEGORY_QUERY,
     params: category === "All" ? undefined : { category },
     draftProps,
     fallback: [],
     label: `blog category "${categorySlug}"`,
   }),
-  loadPageQuery<any>({
+  loadPageQuery({
     query: SITE_SETTINGS_QUERY,
     draftProps,
     fallback: null,

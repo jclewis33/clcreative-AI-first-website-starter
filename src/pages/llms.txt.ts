@@ -25,24 +25,13 @@ import {
 } from "@/data/site-structure";
 import { isNoindexRoute } from "@/config/seo.shared.mjs";
 
-export const prerender = true;
+import type {
+  BLOG_POSTS_QUERY_RESULT,
+  CASE_STUDIES_QUERY_RESULT,
+  GLOSSARY_TERMS_QUERY_RESULT,
+} from "@/sanity/sanity.types";
 
-interface BlogPost {
-  title: string;
-  slug: string;
-  description?: string;
-}
-interface CaseStudy {
-  title: string;
-  slug: string;
-  description?: string;
-  comingSoon?: boolean;
-}
-interface GlossaryTerm {
-  term: string;
-  slug: string;
-  shortDefinition?: string;
-}
+export const prerender = true;
 
 /** `/contact` → `${SITE_URL}/contact`; `/` → site root. */
 function url(path: string): string {
@@ -61,7 +50,22 @@ function staticLine(p: StaticPage): string {
   return `- [${p.title}](${url(p.path)}): ${p.desc}`;
 }
 
-function dynamicLine(title: string, path: string, desc?: string): string {
+/**
+ * A document is only listable once it has both a title and a slug: without a
+ * slug there is no URL to link, and without a title the line would read
+ * `- [null](…)`. Sanity leaves both nullable until an editor fills them in.
+ */
+function listable<T extends { title: string | null; slug: string | null }>(
+  d: T,
+): d is T & { title: string; slug: string } {
+  return !!d.title && !!d.slug;
+}
+
+function dynamicLine(
+  title: string,
+  path: string,
+  desc?: string | null,
+): string {
   const line = `- [${title}](${SITE_URL}${path})`;
   return desc ? `${line}: ${desc}` : line;
 }
@@ -70,15 +74,15 @@ export const GET: APIRoute = async () => {
   // Tolerate an empty or unreachable dataset (e.g. a fresh fork before
   // `/setup`) — the file still renders the static page index.
   const [posts, caseStudies, glossary] = await Promise.all([
-    loadQuery<BlogPost[]>({ query: BLOG_POSTS_QUERY })
+    loadQuery({ query: BLOG_POSTS_QUERY })
       .then((r) => r.data)
-      .catch(() => [] as BlogPost[]),
-    loadQuery<CaseStudy[]>({ query: CASE_STUDIES_QUERY })
+      .catch((): BLOG_POSTS_QUERY_RESULT => []),
+    loadQuery({ query: CASE_STUDIES_QUERY })
       .then((r) => r.data)
-      .catch(() => [] as CaseStudy[]),
-    loadQuery<GlossaryTerm[]>({ query: GLOSSARY_TERMS_QUERY })
+      .catch((): CASE_STUDIES_QUERY_RESULT => []),
+    loadQuery({ query: GLOSSARY_TERMS_QUERY })
       .then((r) => r.data)
-      .catch(() => [] as GlossaryTerm[]),
+      .catch((): GLOSSARY_TERMS_QUERY_RESULT => []),
   ]);
 
   // Mirror the sitemap rule: hide case studies marked "coming soon".
@@ -106,9 +110,10 @@ export const GET: APIRoute = async () => {
       ),
   ];
 
-  if (publishedCaseStudies.length) {
+  const listableCaseStudies = publishedCaseStudies.filter(listable);
+  if (listableCaseStudies.length) {
     sections.push(
-      `## Case Studies\n${publishedCaseStudies
+      `## Case Studies\n${listableCaseStudies
         .map((c) =>
           dynamicLine(c.title, `/case-studies/${c.slug}`, c.description),
         )
@@ -116,17 +121,21 @@ export const GET: APIRoute = async () => {
     );
   }
 
-  if (posts?.length) {
+  const listablePosts = (posts ?? []).filter(listable);
+  if (listablePosts.length) {
     sections.push(
-      `## Blog\n${posts
+      `## Blog\n${listablePosts
         .map((p) => dynamicLine(p.title, `/blog/${p.slug}`, p.description))
         .join("\n")}`,
     );
   }
 
-  if (glossary?.length) {
+  const listableTerms = (glossary ?? []).filter(
+    (g): g is typeof g & { term: string; slug: string } => !!g.term && !!g.slug,
+  );
+  if (listableTerms.length) {
     sections.push(
-      `## Glossary\n${glossary
+      `## Glossary\n${listableTerms
         .map((g) =>
           dynamicLine(g.term, `/glossary/${g.slug}`, g.shortDefinition),
         )

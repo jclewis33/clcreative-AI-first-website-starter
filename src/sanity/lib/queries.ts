@@ -1,3 +1,5 @@
+import { defineQuery } from "groq";
+
 /**
  * GROQ queries for fetching content from Sanity.
  *
@@ -44,7 +46,7 @@ const CTA_SECTION_PROJECTION = `{
 /* ── Blog Posts ────────────────────────────────────────────────────────────── */
 
 /** All blog posts for listing page (no body content needed) */
-export const BLOG_POSTS_QUERY = `*[_type == "blogPost"] | order(date desc) {
+export const BLOG_POSTS_QUERY = defineQuery(`*[_type == "blogPost"] | order(date desc) {
   title,
   "slug": slug.current,
   description,
@@ -56,10 +58,10 @@ export const BLOG_POSTS_QUERY = `*[_type == "blogPost"] | order(date desc) {
   "authorAvatar": author->avatar,
   date,
   featured
-}`;
+}`);
 
 /** Single blog post by slug (includes body for detail page) */
-export const BLOG_POST_QUERY = `*[_type == "blogPost" && slug.current == $slug][0] {
+export const BLOG_POST_QUERY = defineQuery(`*[_type == "blogPost" && slug.current == $slug][0] {
   title,
   "slug": slug.current,
   description,
@@ -117,10 +119,10 @@ export const BLOG_POST_QUERY = `*[_type == "blogPost" && slug.current == $slug][
     ogDescription,
     ogImage
   }
-}`;
+}`);
 
 /** All blog post slugs for getStaticPaths */
-export const BLOG_SLUGS_QUERY = `*[_type == "blogPost" && defined(slug.current)].slug.current`;
+export const BLOG_SLUGS_QUERY = defineQuery(`*[_type == "blogPost" && defined(slug.current)].slug.current`);
 
 /**
  * Related posts for a blog post detail page — filtered in GROQ, never by
@@ -130,7 +132,7 @@ export const BLOG_SLUGS_QUERY = `*[_type == "blogPost" && defined(slug.current)]
  * curated related slugs. `[0...6]` is a small buffer over the 3-card slot so
  * the template's own filtering still has room to make the final call.
  */
-export const RELATED_BLOG_POSTS_QUERY = `*[
+export const RELATED_BLOG_POSTS_QUERY = defineQuery(`*[
   _type == "blogPost"
   && slug.current != $slug
   && !(slug.current in $excludeSlugs)
@@ -146,10 +148,10 @@ export const RELATED_BLOG_POSTS_QUERY = `*[
   "authorAvatar": author->avatar,
   date,
   featured
-}`;
+}`);
 
 /** Blog posts filtered by category (category appears in categories array) */
-export const BLOG_POSTS_BY_CATEGORY_QUERY = `*[_type == "blogPost" && $category in categories] | order(date desc) {
+export const BLOG_POSTS_BY_CATEGORY_QUERY = defineQuery(`*[_type == "blogPost" && $category in categories] | order(date desc) {
   title,
   "slug": slug.current,
   description,
@@ -160,23 +162,23 @@ export const BLOG_POSTS_BY_CATEGORY_QUERY = `*[_type == "blogPost" && $category 
   "authorAvatar": author->avatar,
   date,
   featured
-}`;
+}`);
 
 /** All unique categories across blog posts */
-export const BLOG_CATEGORIES_QUERY = `array::unique(*[_type == "blogPost"].categories[])`;
+export const BLOG_CATEGORIES_QUERY = defineQuery(`array::unique(*[_type == "blogPost"].categories[])`);
 
 /* ── Site Settings ─────────────────────────────────────────────────────────── */
 
 /** Site Settings singleton — default Blog CTA + default CTA Section dereferenced. */
-export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{
+export const SITE_SETTINGS_QUERY = defineQuery(`*[_type == "siteSettings"][0]{
   "defaultBlogCta": defaultBlogCta->${BLOG_CTA_PROJECTION},
   "defaultCtaSection": defaultCtaSection->${CTA_SECTION_PROJECTION}
-}`;
+}`);
 
 /* ── Case Studies ──────────────────────────────────────────────────────────── */
 
 /** All case studies for listing page */
-export const CASE_STUDIES_QUERY = `*[_type == "caseStudy"] | order(date desc) {
+export const CASE_STUDIES_QUERY = defineQuery(`*[_type == "caseStudy"] | order(date desc) {
   title,
   "slug": slug.current,
   description,
@@ -189,10 +191,10 @@ export const CASE_STUDIES_QUERY = `*[_type == "caseStudy"] | order(date desc) {
   featured,
   comingSoon,
   liveUrl
-}`;
+}`);
 
 /** Single case study by slug (includes all detail fields) */
-export const CASE_STUDY_QUERY = `*[_type == "caseStudy" && slug.current == $slug][0] {
+export const CASE_STUDY_QUERY = defineQuery(`*[_type == "caseStudy" && slug.current == $slug][0] {
   title,
   "slug": slug.current,
   description,
@@ -204,6 +206,7 @@ export const CASE_STUDY_QUERY = `*[_type == "caseStudy" && slug.current == $slug
   date,
   _updatedAt,
   featured,
+  comingSoon,
   timeline,
   liveUrl,
   galleryImagesAlt,
@@ -220,6 +223,8 @@ export const CASE_STUDY_QUERY = `*[_type == "caseStudy" && slug.current == $slug
     sectionSpacing,
     sectionSpacingTop,
     sectionSpacingBottom,
+    // richText, richTextLeft — editor-set content width
+    maxWidth,
     // richText, richTextColumns
     body[] {
       ...,
@@ -262,7 +267,7 @@ export const CASE_STUDY_QUERY = `*[_type == "caseStudy" && slug.current == $slug
     ogDescription,
     ogImage
   }
-}`;
+}`);
 
 /**
  * Publicly visible case study slugs for getStaticPaths. Coming-soon studies
@@ -270,7 +275,7 @@ export const CASE_STUDY_QUERY = `*[_type == "caseStudy" && slug.current == $slug
  * would build pages that immediately redirect to /404. They remain editable
  * and viewable under /preview (which doesn't use this query).
  */
-export const CASE_STUDY_SLUGS_QUERY = `*[_type == "caseStudy" && defined(slug.current) && comingSoon != true].slug.current`;
+export const CASE_STUDY_SLUGS_QUERY = defineQuery(`*[_type == "caseStudy" && defined(slug.current) && comingSoon != true].slug.current`);
 
 /**
  * Sibling case studies for the "Up next" cards — filtered in GROQ instead of
@@ -280,7 +285,7 @@ export const CASE_STUDY_SLUGS_QUERY = `*[_type == "caseStudy" && defined(slug.cu
  * CASE_STUDIES_QUERY so CaseStudyCard behavior (incl. comingSoon → liveUrl
  * links) is unchanged.
  */
-export const RELATED_CASE_STUDIES_QUERY = `*[
+export const RELATED_CASE_STUDIES_QUERY = defineQuery(`*[
   _type == "caseStudy"
   && slug.current != $slug
   && defined(image.asset)
@@ -297,21 +302,21 @@ export const RELATED_CASE_STUDIES_QUERY = `*[
   featured,
   comingSoon,
   liveUrl
-}`;
+}`);
 
 /* ── Glossary Terms ────────────────────────────────────────────────────────── */
 
 /** All glossary terms for listing page (no body content needed) */
-export const GLOSSARY_TERMS_QUERY = `*[_type == "glossaryTerm"] | order(term asc) {
+export const GLOSSARY_TERMS_QUERY = defineQuery(`*[_type == "glossaryTerm"] | order(term asc) {
   term,
   "slug": slug.current,
   shortDefinition,
   category,
   "relatedTerms": relatedTerms[]->slug.current
-}`;
+}`);
 
 /** Single glossary term by slug (includes body for detail page) */
-export const GLOSSARY_TERM_QUERY = `*[_type == "glossaryTerm" && slug.current == $slug][0] {
+export const GLOSSARY_TERM_QUERY = defineQuery(`*[_type == "glossaryTerm" && slug.current == $slug][0] {
   term,
   "slug": slug.current,
   shortDefinition,
@@ -341,10 +346,10 @@ export const GLOSSARY_TERM_QUERY = `*[_type == "glossaryTerm" && slug.current ==
     }
   },
   "ctaSectionOverride": ctaSectionOverride->${CTA_SECTION_PROJECTION}
-}`;
+}`);
 
 /** All glossary term slugs for getStaticPaths */
-export const GLOSSARY_SLUGS_QUERY = `*[_type == "glossaryTerm" && defined(slug.current)].slug.current`;
+export const GLOSSARY_SLUGS_QUERY = defineQuery(`*[_type == "glossaryTerm" && defined(slug.current)].slug.current`);
 
 /* ── Testimonials ─────────────────────────────────────────────────────────── */
 
@@ -353,7 +358,7 @@ export const GLOSSARY_SLUGS_QUERY = `*[_type == "glossaryTerm" && defined(slug.c
  * Prefer using `getTestimonials()` from `src/sanity/lib/testimonials.ts`
  * instead of this query directly — it handles featured filtering and limiting.
  */
-export const TESTIMONIALS_QUERY = `*[_type == "testimonial"] | order(sortOrder asc) {
+export const TESTIMONIALS_QUERY = defineQuery(`*[_type == "testimonial"] | order(sortOrder asc) {
   _id,
   name,
   role,
@@ -364,12 +369,12 @@ export const TESTIMONIALS_QUERY = `*[_type == "testimonial"] | order(sortOrder a
   stars,
   featured,
   sortOrder
-}`;
+}`);
 
 /**
  * Featured testimonials only, ordered by sortOrder.
  */
-export const FEATURED_TESTIMONIALS_QUERY = `*[_type == "testimonial" && featured == true] | order(sortOrder asc) {
+export const FEATURED_TESTIMONIALS_QUERY = defineQuery(`*[_type == "testimonial" && featured == true] | order(sortOrder asc) {
   _id,
   name,
   role,
@@ -380,4 +385,19 @@ export const FEATURED_TESTIMONIALS_QUERY = `*[_type == "testimonial" && featured
   stars,
   featured,
   sortOrder
-}`;
+}`);
+
+/* ── Case Studies (featured) ──────────────────────────────────────────────── */
+
+/**
+ * The three case studies shown by `<CaseStudyFeatured>`, looked up by slug.
+ * Pass the slugs as `$slugs`; ordering is applied by the caller, since GROQ
+ * returns them in document order rather than the order asked for.
+ */
+export const FEATURED_CASE_STUDIES_QUERY = defineQuery(`*[_type == "caseStudy" && slug.current in $slugs] {
+  "slug": slug.current,
+  client,
+  description,
+  image,
+  "imageAlt": coalesce(imageAlt, image.asset->altText, "")
+}`);
