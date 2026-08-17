@@ -1,14 +1,17 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 /**
- * Marquee — infinite horizontal scrolling ticker powered by GSAP.
+ * Marquee — infinite horizontal scrolling ticker. Pure CSS, no JavaScript.
  *
  * Place any content in the default slot — text, logos, cards, CMS items.
  * Each direct child should have the `marquee_item` class for proper spacing
  * and flex behavior.
  *
- * GSAP is imported directly by this component's script, so it loads only on
- * pages that render a Marquee. No additional scripts needed.
+ * The content is rendered twice (the second copy is `aria-hidden` + `inert`,
+ * so assistive tech and the keyboard see it once) and the track scrolls by
+ * exactly half its width, which puts copy 2 where copy 1 began — a seamless
+ * loop with no measuring, cloning, or animation library. See the style block
+ * for why the track must be `width: max-content` and `min-width: 200%`.
  *
  * @example Text marquee
  * ```astro
@@ -44,7 +47,7 @@ import type { HTMLAttributes } from "astro/types";
  */
 
 /**
- * Marquee — infinite horizontal scrolling ticker powered by GSAP.
+ * Marquee — infinite horizontal scrolling ticker (pure CSS).
  *
  * **Props:**
  * - `speed` — animation duration in seconds; higher = slower (default: `20`)
@@ -114,107 +117,33 @@ const {
 } = Astro.props;
 
 const gapValue = gap === 0 ? "0px" : `var(--space-${gap})`;
+
+// Both are consumed by CSS only — there is no script in this component.
+const trackStyle = `--marquee-gap: ${gapValue}; --marquee-duration: ${speed}s`;
 ---
 
 <div
   class:list={["marquee_wrap", className]}
   data-marquee="component"
-  data-marquee-speed={String(speed)}
   data-marquee-direction={direction}
   data-marquee-pause={String(pauseOnHover)}
+  style={trackStyle}
   {...rest}
 >
-  <div class="marquee_track" style={`--marquee-gap: ${gapValue}`}>
-    <div class="marquee_inner" data-marquee="inner">
-      <slot />
-    </div>
+  <div class="marquee_track">
+    <div class="marquee_inner"><slot /></div>
+    {
+      /* Copies 2 and 3 are what make the loop seamless. `inert` keeps their
+        links out of the tab order; `aria-hidden` keeps the text out of the
+        accessibility tree, so the content is announced exactly once.
+        Three copies rather than two so that content only has to be half a
+        container wide before the authored `gap` is honored exactly — see the
+        style block. */
+    }
+    <div class="marquee_inner" aria-hidden="true" inert><slot /></div>
+    <div class="marquee_inner" aria-hidden="true" inert><slot /></div>
   </div>
 </div>
-
-<script>
-  /**
-   * Marquee JavaScript — initializes GSAP-driven infinite scroll
-   *
-   * GSAP is imported directly (hard, ordered dependency — no polling) and
-   * initializes each [data-marquee="component"] element.
-   *
-   * Data attributes on .marquee_wrap:
-   *   data-marquee-speed     — duration in seconds
-   *   data-marquee-direction — "left" | "right"
-   *   data-marquee-pause     — "true" | "false" (pause on hover)
-   */
-
-  import { gsap } from "gsap";
-
-  function initMarquees() {
-    // Respect reduced motion preference
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    document
-      .querySelectorAll<HTMLElement>('[data-marquee="component"]')
-      .forEach((wrap) => {
-        // Guard against double-init (Astro page transitions)
-        if (wrap.dataset.marqueeInit) return;
-        wrap.dataset.marqueeInit = "true";
-
-        const track = wrap.querySelector<HTMLElement>(".marquee_track");
-        const inner = wrap.querySelector<HTMLElement>('[data-marquee="inner"]');
-        if (!track || !inner) return;
-
-        const speed = parseFloat(wrap.dataset.marqueeSpeed ?? "20");
-        const direction = wrap.dataset.marqueeDirection ?? "left";
-        const shouldPause = wrap.dataset.marqueePause !== "false";
-
-        // Measure one copy
-        const innerWidth = inner.getBoundingClientRect().width;
-        const trackGap = parseFloat(getComputedStyle(track).gap) || 0;
-        const wrapWidth = wrap.offsetWidth;
-
-        // Always create at least one clone; add more if content is narrow
-        const copyWidth = innerWidth + trackGap;
-        const copiesNeeded = Math.max(2, Math.ceil(wrapWidth / copyWidth) + 1);
-
-        for (let i = 1; i < copiesNeeded; i++) {
-          const clone = inner.cloneNode(true) as HTMLElement;
-          clone.removeAttribute("data-marquee");
-          clone.setAttribute("aria-hidden", "true");
-          track.appendChild(clone);
-        }
-
-        // Distance for one full cycle (one copy width + one gap)
-        const distance = copyWidth;
-
-        // Create the animation
-        let tween;
-        if (direction === "right") {
-          tween = gsap.fromTo(
-            track,
-            { x: -distance },
-            { x: 0, ease: "none", duration: speed, repeat: -1 },
-          );
-        } else {
-          tween = gsap.to(track, {
-            x: -distance,
-            ease: "none",
-            duration: speed,
-            repeat: -1,
-          });
-        }
-
-        // Pause on hover
-        if (shouldPause) {
-          wrap.addEventListener("mouseenter", () => tween.pause());
-          wrap.addEventListener("mouseleave", () => tween.resume());
-        }
-      });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initMarquees);
-  } else {
-    initMarquees();
-  }
-</script>
 
 <style is:global>
   /* Global styles (is:global — classes here are used across the site and by
@@ -224,7 +153,51 @@ const gapValue = gap === 0 ? "0px" : `var(--space-${gap})`;
     /* ==========================================================================
    MARQUEE
    Infinite horizontal scrolling ticker — text, logos, or any content.
-   Animation powered by GSAP (see Marquee.astro script).
+   Pure CSS: three copies of the content and one keyframe. No JavaScript.
+
+   HOW THE SEAMLESS LOOP WORKS
+   The track holds three identical copies, so translating it by -33.3333%
+   moves it left by exactly one copy — putting copy 2 precisely where copy 1
+   started. At that instant the animation restarts from 0 and the result is
+   indistinguishable, so the ticker appears infinite.
+
+   Why three copies and not two: after scrolling one copy away, the copies
+   that REMAIN have to cover the visible strip. With two copies that means
+   content must be a full container wide or the track gets stretched (below);
+   with three, half a container is enough. Since stretching is what makes the
+   authored `gap` grow, the third copy is what keeps `gap` exact for normal
+   content — measured, it is the difference between a 40px gap staying 40px
+   and becoming 84px on a 1344px strip.
+
+   Two sizing rules are load-bearing, and both were established by
+   measurement rather than reasoning:
+
+   1. `width: max-content` on the track. Without it the track is an
+      inline/shrink-to-fit box, which the browser CLAMPS to the wrapper width
+      while its children overflow. The translation would then be a fraction
+      of the WRAPPER rather than of the content, and the loop would jump.
+      (The old GSAP version was immune to this only because it tweened a
+      measured pixel distance instead of a percentage.)
+
+   2. `min-width: 150%` on the track — i.e. the two copies that survive one
+      cycle are together at least one wrapper wide. Without it, content
+      narrower than that would leave a visible blank stretch before the next
+      copy arrived. The percentage resolves against the wrapper, whose width
+      does not depend on the track, so there is no circular sizing.
+
+   `justify-content: space-between` only acts when rule 2 actually stretched
+   the track — with content wider than the wrapper there is no free space, so
+   the authored `gap` is honored exactly. Narrow content is spread evenly
+   instead of bunching at the left with a blank tail, which means `gap`
+   behaves as a MINIMUM once content is narrower than the container.
+
+   It must be space-BETWEEN, not space-around/evenly. Those add half-slots of
+   space at the two ends, which the trailing spacer participates in; the track
+   is then no longer exactly three cycles wide and the translation drifts a
+   few pixels every loop. Measured: space-around left a 15px blank at the seam
+   on a stretched marquee. space-between distributes free space only into the
+   gaps, so a third of the width stays exactly one cycle no matter how much
+   stretching happened.
    ========================================================================== */
 
     .marquee_wrap {
@@ -234,17 +207,76 @@ const gapValue = gap === 0 ? "0px" : `var(--space-${gap})`;
     }
 
     .marquee_track {
-      display: inline-flex;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: var(--marquee-gap, var(--space-6));
+      width: max-content;
+      min-width: 150%;
       white-space: nowrap;
-      will-change: transform;
+      animation: marquee-scroll var(--marquee-duration, 20s) linear infinite;
     }
 
+    /* Zero-width trailing flex item. The track has 3N items and therefore only
+       3N-1 gaps, so its width would be a gap short of three whole cycles and
+       -33.3333% would drift by that much every loop. The spacer adds the
+       missing gap, making the width exactly three cycles. */
+    .marquee_track::after {
+      content: "";
+      flex: 0 0 0px;
+    }
+
+    /* `display: contents` dissolves the copy wrappers so every item becomes a
+       direct flex child of the one track. That is what keeps spacing uniform
+       ACROSS the join between copies — two real flex boxes would space items
+       inside each copy by `gap` but the copies themselves by something else,
+       and each seam would show as a wider gap once per loop. The wrappers
+       still carry aria-hidden/inert, which apply to the subtree regardless. */
     .marquee_inner {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--marquee-gap, var(--space-6));
-      flex-shrink: 0;
+      display: contents;
+    }
+
+    /* Direction and hover-pause are plain attribute selectors — the props are
+       styling hooks now, not JS config. */
+    [data-marquee-direction="right"] .marquee_track {
+      animation-direction: reverse;
+    }
+
+    /* Pause for pointer users on hover, and for keyboard users whenever focus
+       lands inside (a marquee holding links is otherwise impossible to use). */
+    [data-marquee-pause="true"]:hover .marquee_track,
+    [data-marquee-pause="true"]:focus-within .marquee_track {
+      animation-play-state: paused;
+    }
+
+    @keyframes marquee-scroll {
+      to {
+        /* Exactly one of the three copies. */
+        transform: translateX(-33.333333%);
+      }
+    }
+
+    /* Reduced motion: no animation, and the duplicate copies are dropped so
+       there is nothing extra to scroll past. The strip becomes a normal
+       horizontally scrollable row, so all content stays reachable — the
+       previous behavior left it clipped and stranded. */
+    @media (prefers-reduced-motion: reduce) {
+      .marquee_wrap {
+        overflow-x: auto;
+      }
+
+      .marquee_track {
+        animation: none;
+        min-width: 0;
+      }
+
+      .marquee_track::after {
+        content: none;
+      }
+
+      .marquee_inner[aria-hidden="true"] {
+        display: none;
+      }
     }
 
     /* ── Items ── */

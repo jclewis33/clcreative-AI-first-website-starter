@@ -1383,7 +1383,7 @@ Native `<dialog>`-based modal with CSS enter/exit transitions. No extra JS impor
 
 ### `<Marquee>`
 
-Infinite horizontal scrolling ticker powered by GSAP (loaded globally via CDN). Accepts any content — text, logos, cards, CMS items. Each child should have the `marquee_item` class. Automatically clones content to fill the viewport for seamless looping.
+Infinite horizontal scrolling ticker — **pure CSS, no JavaScript**. Accepts any content — text, logos, cards, CMS items. Each child should have the `marquee_item` class. The component renders the slot twice (the second copy `aria-hidden` + `inert`) and animates the track by -50%, so copy 2 lands exactly where copy 1 started. Content narrower than the container is stretched and spread rather than leaving a blank tail. Under `prefers-reduced-motion` the animation is dropped and the strip becomes horizontally scrollable, so all content stays reachable.
 
 | Prop           | Type                | Default  | Description                           |
 | -------------- | ------------------- | -------- | ------------------------------------- |
