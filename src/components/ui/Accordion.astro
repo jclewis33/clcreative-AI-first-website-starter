@@ -136,8 +136,6 @@ const {
    */
 
   function initAccordions() {
-    const ScrollTrigger = (window as any).ScrollTrigger;
-
     document
       .querySelectorAll<HTMLElement>(".accordion_wrap")
       .forEach((wrap) => {
@@ -210,11 +208,14 @@ const {
               (e) => {
                 if (
                   e.target === content &&
-                  (e as TransitionEvent).propertyName ===
-                    "grid-template-rows" &&
-                  ScrollTrigger
+                  (e as TransitionEvent).propertyName === "grid-template-rows"
                 ) {
-                  ScrollTrigger.refresh();
+                  // Nudge any scroll-linked animations without importing GSAP
+                  // here — see src/scripts/scroll-refresh.js. No-op on pages
+                  // that have none.
+                  document.dispatchEvent(
+                    new CustomEvent("scrolltrigger:refresh"),
+                  );
                 }
               },
               { passive: true },

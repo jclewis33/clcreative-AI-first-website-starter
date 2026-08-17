@@ -22,45 +22,46 @@
  * Utilities:
  *   data-refresh             — Fires ScrollTrigger.refresh() once when element enters viewport
  *
+ * Loading (this is the part that keeps GSAP off pages that don't animate):
+ *   This module itself is tiny and runs everywhere from BaseLayout. GSAP,
+ *   ScrollTrigger, and SplitText are DYNAMIC imports, requested only after a
+ *   querySelector confirms the page actually contains animation attributes —
+ *   so /privacy-policy, /404 etc. download none of it. SplitText loads only
+ *   when the page uses data-splittext. Users with prefers-reduced-motion also
+ *   skip the GSAP download entirely: their reveal is plain inline styles.
+ *   Components with their own animations (Marquee, Modal, Tab, ScrollReveal,
+ *   HowItWorks, Services) import gsap statically in their own <script> —
+ *   Vite serves both from the same deduped chunk on pages that have both.
+ *
  * Fallback:
- *   If GSAP fails to load, a `gsap-not-found` class is added to <html> and CSS
- *   fallbacks in Head.astro restore visibility on all data-prevent-flicker elements.
+ *   If the GSAP chunk fails to load, a `gsap-not-found` class is added to
+ *   <html> and CSS fallbacks in Head.astro restore visibility on all
+ *   data-prevent-flicker elements.
  *
  * Dynamic content:
  *   Call window.initScrollAnimations() after injecting new DOM nodes to
- *   pick up any new data-attribute animations.
+ *   pick up any new data-attribute animations (async; loads GSAP on first
+ *   use if the page had none at boot).
  */
 
-///////////////// GSAP READINESS CHECK & PLUGIN REGISTRATION /////////////////
+import { wireScrollRefresh } from "./scroll-refresh.js";
 
-function isGsapReady() {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.gsap !== "undefined" &&
-    typeof window.ScrollTrigger !== "undefined" &&
-    typeof window.SplitText !== "undefined"
-  );
-}
+// Everything the system reacts to. data-prevent-flicker is included even
+// though it is "just a modifier": reset.css hides such elements until a
+// reveal runs, so a page carrying it must never be skipped by the gate.
+const ANIMATION_SELECTOR =
+  "[data-splittext], [data-split-text='true'], [data-fade-in], [data-fade='in'], [data-fade-up], [data-fade='up'], [data-fade-list], [data-refresh], [data-prevent-flicker='true']";
 
-/**
- * Readiness gate. ScrollTrigger + SplitText are already registered in
- * gsap-init.js (which runs first and only exposes gsap/ScrollTrigger/SplitText
- * on window *after* registering them), so we just verify they're present rather
- * than re-registering. Flags the page for the CSS fallback if GSAP failed to load.
- */
-function ensureGsapReady() {
-  if (!isGsapReady()) {
-    document.documentElement.classList.add("gsap-not-found");
-    console.warn("GSAP plugins not found; skipping animation initialization.");
-    return false;
-  }
-  return true;
-}
+const SPLIT_SELECTOR = "[data-splittext], [data-split-text='true']";
+
+// Filled by loadGsap(); every init function below reads these.
+let gsap = null;
+let ScrollTrigger = null;
+let SplitText = null;
 
 /** True when the user has requested reduced motion via the OS/browser. */
 function prefersReducedMotion() {
   return (
-    typeof window !== "undefined" &&
     typeof window.matchMedia === "function" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
@@ -71,18 +72,42 @@ function prefersReducedMotion() {
  * un-transformed state WITHOUT animating, and create no ScrollTriggers.
  *
  * This is required (not just "skip the tweens") because `data-prevent-flicker`
- * elements start `visibility: hidden` via CSS — if we skipped GSAP entirely they
- * would stay hidden forever. `autoAlpha: 1` writes inline `visibility: inherit;
- * opacity: 1`, overriding that. SplitText elements are left unsplit and simply
- * revealed as plain text. The reset.css `prefers-reduced-motion` block only
- * zeroes CSS animations/transitions, so it can't cover these JS-driven tweens.
+ * elements start `visibility: hidden` via CSS — skipping GSAP entirely would
+ * leave them hidden forever. Plain inline styles do the reveal here so the
+ * reduced-motion path never downloads GSAP at all (`visibility: inherit`
+ * matches what gsap's autoAlpha would have written, respecting hidden
+ * ancestors). SplitText elements are left unsplit as plain text.
  */
 function revealAllStatic() {
-  const selector =
-    "[data-splittext], [data-split-text='true'], [data-fade-in], [data-fade='in'], [data-fade-up], [data-fade='up'], [data-fade-list]";
-  gsap.utils.toArray(selector).forEach((el) => {
-    gsap.set(el, { autoAlpha: 1, clearProps: "transform" });
+  document.querySelectorAll(ANIMATION_SELECTOR).forEach((el) => {
+    el.style.visibility = "inherit";
+    el.style.opacity = "1";
+    el.style.transform = "none";
   });
+}
+
+/**
+ * Dynamically import GSAP core + ScrollTrigger (+ SplitText only when the
+ * page splits text). Safe to call repeatedly — after the first resolution
+ * the imports are cached by the module system.
+ */
+async function loadGsap() {
+  const wantsSplit = document.querySelector(SPLIT_SELECTOR) !== null;
+  const [gsapMod, stMod, splitMod] = await Promise.all([
+    import("gsap"),
+    import("gsap/ScrollTrigger"),
+    wantsSplit ? import("gsap/SplitText") : Promise.resolve(null),
+  ]);
+  gsap = gsapMod.gsap;
+  ScrollTrigger = stMod.ScrollTrigger;
+  gsap.registerPlugin(ScrollTrigger);
+  if (splitMod) {
+    SplitText = splitMod.SplitText;
+    gsap.registerPlugin(SplitText);
+  }
+  // This module owns page-wide ScrollTriggers — answer layout-changers'
+  // "scrolltrigger:refresh" events (deduped across owners; see the module).
+  wireScrollRefresh(ScrollTrigger);
 }
 
 ///////////////// SPLITTEXT ANIMATION /////////////////
@@ -90,9 +115,8 @@ function revealAllStatic() {
 const splitInstances = new WeakMap();
 
 function initSplitText() {
-  const elems = gsap.utils.toArray(
-    "[data-splittext], [data-split-text='true']",
-  );
+  if (!SplitText) return;
+  const elems = gsap.utils.toArray(SPLIT_SELECTOR);
 
   // Wait for fonts before splitting to avoid layout shifts
   const run = () => {
@@ -262,10 +286,32 @@ function initManualRefresh() {
 /**
  * Initialises (or re-initialises) all data-attribute scroll animations.
  * Safe to call multiple times — existing animation ScrollTriggers are
- * killed first so elements aren't animated twice.
+ * killed first so elements aren't animated twice. Async because GSAP is
+ * loaded on demand; awaiting it is only needed by callers that must run
+ * code after the triggers exist.
  */
-function initScrollAnimations() {
-  if (!isGsapReady()) return;
+async function initScrollAnimations() {
+  if (!document.querySelector(ANIMATION_SELECTOR)) return;
+
+  // Respect prefers-reduced-motion: reveal content to its final state and
+  // skip everything else — including the GSAP download itself.
+  if (prefersReducedMotion()) {
+    revealAllStatic();
+    return;
+  }
+
+  try {
+    await loadGsap();
+  } catch (err) {
+    // Chunk failed to load — flag the page so the CSS fallback in Head.astro
+    // restores visibility on all data-prevent-flicker elements.
+    document.documentElement.classList.add("gsap-not-found");
+    console.warn(
+      "GSAP failed to load; skipping animation initialization.",
+      err,
+    );
+    return;
+  }
 
   // Kill only animation-related ScrollTriggers (preserve pins, etc.)
   const animationSelector =
@@ -283,14 +329,6 @@ function initScrollAnimations() {
     }
   });
 
-  // Respect prefers-reduced-motion: reveal content to its final state and skip
-  // all GSAP scroll animations + SplitText (gsap-core: skip/disable animation
-  // when the user prefers reduced motion).
-  if (prefersReducedMotion()) {
-    revealAllStatic();
-    return;
-  }
-
   initSplitText();
   initFadeIn();
   initFadeUp();
@@ -300,18 +338,13 @@ function initScrollAnimations() {
   ScrollTrigger.refresh();
 }
 
-// Initialise as soon as HTML is parsed — no wait for images/CDN scripts.
+// Initialise as soon as HTML is parsed — no wait for images.
 // SplitText internally waits for document.fonts.ready before splitting, so
 // font-dependent layout still settles before text is split.
-function bootAnimations() {
-  if (!ensureGsapReady()) return;
-  initScrollAnimations();
-}
-
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", bootAnimations);
+  document.addEventListener("DOMContentLoaded", () => initScrollAnimations());
 } else {
-  bootAnimations();
+  initScrollAnimations();
 }
 
 // Expose for dynamic/CMS-injected content — call after new nodes are in the DOM

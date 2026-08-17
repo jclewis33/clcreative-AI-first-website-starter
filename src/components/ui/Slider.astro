@@ -3,8 +3,9 @@ import type { HTMLAttributes } from "astro/types";
 /**
  * Slider component — a touch/swipe carousel powered by Swiper v12.
  *
- * Swiper is npm-bundled via src/scripts/swiper-init.js (imported in
- * BaseLayout.astro), which exposes `window.Swiper` and pulls in the CSS.
+ * Swiper is imported directly in this component's script (core + only the
+ * modules the config uses), so it loads only on pages that render a Slider.
+ * Its CSS comes from src/styles/vendor.css, where it is layered.
  *
  * Slides are placed in the default slot. Each child is automatically
  * wrapped in a `.swiper-slide` div — no manual wrapping needed:
@@ -336,8 +337,14 @@ const sliderId = `slider-${Math.random().toString(36).slice(2, 8)}`;
   /**
    * Slider JavaScript — initializes Swiper v12 for each .slider_wrap
    *
-   * Swiper is npm-bundled via src/scripts/swiper-init.js (imported in
-   * BaseLayout.astro), which exposes window.Swiper.
+   * Swiper is imported directly (core + the modules this config actually
+   * uses), so the chunk ships only on pages that render a <Slider> and
+   * Vite dedupes it against any other Swiper consumer on the page.
+   * A11y is included because `swiper/bundle` used to install it, and it is
+   * ON by default once installed — dropping it would silently remove the
+   * aria-live announcements sliders ship with today.
+   * Swiper's CSS stays in styles/vendor.css: importing it here would leave
+   * it unlayered, and unlayered CSS beats every layer in the design system.
    *
    * Slide widths and gap are handled entirely by CSS:
    *   - Each slide width: calc(100% / var(--slide-count))
@@ -352,16 +359,17 @@ const sliderId = `slider-${Math.random().toString(36).slice(2, 8)}`;
    *   data-mousewheel      — "true" | "false"
    *   data-slide-to-clicked — "true" | "false"
    */
+  import Swiper from "swiper";
+  import {
+    Navigation,
+    Pagination,
+    Mousewheel,
+    FreeMode,
+    Autoplay,
+    A11y,
+  } from "swiper/modules";
 
   function initSliders() {
-    const Swiper = (window as any).Swiper;
-    if (!Swiper) {
-      console.warn(
-        "Slider: Swiper not found. Make sure src/scripts/swiper-init.js is imported in BaseLayout.",
-      );
-      return;
-    }
-
     document
       .querySelectorAll<HTMLElement>('.slider_wrap[data-slider="component"]')
       .forEach((wrap) => {
@@ -441,6 +449,14 @@ const sliderId = `slider-${Math.random().toString(36).slice(2, 8)}`;
         // Gap and slide count are handled entirely by slider.css via --_gap---size
         // and --slide-count (mapped from the --lg/--md/--sm/--xs vars on .slider_offset).
         const swiper = new Swiper(element, {
+          modules: [
+            Navigation,
+            Pagination,
+            Mousewheel,
+            FreeMode,
+            Autoplay,
+            A11y,
+          ],
           speed,
           freeMode: freeMode ? { enabled: true } : false,
           autoplay: useAutoplay
@@ -488,21 +504,10 @@ const sliderId = `slider-${Math.random().toString(36).slice(2, 8)}`;
       });
   }
 
-  // Swiper is bundled via swiper-init.js, but this component's script may run
-  // before that module sets window.Swiper, so we poll briefly (resolves on the
-  // first tick once it's set).
-  function waitForSwiper(retries = 10) {
-    if ((window as any).Swiper) {
-      initSliders();
-    } else if (retries > 0) {
-      setTimeout(() => waitForSwiper(retries - 1), 100);
-    }
-  }
-
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => waitForSwiper());
+    document.addEventListener("DOMContentLoaded", initSliders);
   } else {
-    waitForSwiper();
+    initSliders();
   }
 </script>
 

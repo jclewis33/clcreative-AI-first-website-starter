@@ -201,15 +201,14 @@ const bannerHref = banner?.href;
     {breadcrumbSchema && <JsonLd data={breadcrumbSchema} />}
     {schema && <JsonLd data={schema} />}
     <script>
-      // gsap-init MUST be imported first — it bundles GSAP/ScrollTrigger/SplitText
-      // from npm and assigns them to window.* so all downstream component scripts
-      // (animation.js, Marquee, Modal, Tab, Accordion, ScrollReveal, HowItWorks)
-      // that read (window as any).gsap keep working without per-file refactoring.
-      import"@/scripts/gsap-init.js";
-      import"@/scripts/swiper-init.js";
-      import"@/scripts/animation.js";
-      import"@/scripts/animate-observer.js";
-      import"@/scripts/social-share.js";
+      // The one deliberately site-wide script. animation.js itself is tiny:
+      // it checks the page for data-fade-*/data-splittext attributes and only
+      // then DYNAMICALLY imports GSAP — so pages without animations download
+      // none of it. Everything else (Swiper, share buttons, the demo
+      // observer, each component's GSAP) is imported by the component or page
+      // that renders it, and Vite dedupes shared chunks per page. Do not add
+      // site-wide libraries here; import them where they are used.
+      import "@/scripts/animation.js";
     </script>
 
     <script is:inline>

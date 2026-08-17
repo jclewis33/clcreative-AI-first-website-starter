@@ -278,7 +278,9 @@ const categoryOptions = [
       noResults.style.display = visibleCount === 0 ? "" : "none";
     }
 
-    (window as any).ScrollTrigger?.refresh();
+    // Filter changed the page height — nudge any scroll-linked animations
+    // without importing GSAP here (see src/scripts/scroll-refresh.js).
+    document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"));
   }
 
   industrySelect?.addEventListener("change", filterCards);

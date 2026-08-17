@@ -223,13 +223,13 @@ const {
    * the JS re-measures positions on resize via ResizeObserver.
    */
 
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { wireScrollRefresh } from "@/scripts/scroll-refresh.js";
+
   function initHowItWorks() {
-    const gsap = (window as any).gsap;
-    const ScrollTrigger = (window as any).ScrollTrigger;
-
-    if (!gsap || !ScrollTrigger) return;
-
     gsap.registerPlugin(ScrollTrigger);
+    wireScrollRefresh(ScrollTrigger);
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -401,20 +401,12 @@ const {
     ro.observe(sec);
   }
 
-  // Poll for GSAP (CDN loaded with defer)
-  function waitForGsap(retries = 15) {
-    if ((window as any).gsap && (window as any).ScrollTrigger) {
-      // Delay slightly so images have rendered and layout is stable
-      requestAnimationFrame(() => initHowItWorks());
-    } else if (retries > 0) {
-      setTimeout(() => waitForGsap(retries - 1), 100);
-    }
-  }
-
+  // rAF delay so images have rendered and layout is stable before measuring
+  const start = () => requestAnimationFrame(() => initHowItWorks());
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => waitForGsap());
+    document.addEventListener("DOMContentLoaded", start);
   } else {
-    waitForGsap();
+    start();
   }
 </script>
 

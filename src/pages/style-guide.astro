@@ -3186,8 +3186,9 @@ import "@/styles/pages/style-guide.css";
    * is currently visible in the viewport, plus smooth-scroll with custom easing.
    * Uses GSAP for sub-list expand/collapse (same technique as Accordion component).
    */
+  import { gsap } from "gsap";
+
   function initNavToggle() {
-    const gsap = (window as any).gsap;
     const sections = document.querySelectorAll<HTMLElement>(
       ".styleguide_section",
     );

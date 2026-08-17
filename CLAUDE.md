@@ -1517,7 +1517,7 @@ Scroll-linked reveal component: text blocks on the left fade in/out as the user 
 
 ### `<Slider>`
 
-Touch/swipe carousel powered by **Swiper v12** (npm-bundled via `src/scripts/swiper-init.js`). Each slide must be a `.swiper-slide` div.
+Touch/swipe carousel powered by **Swiper v12** (imported directly in the component's script — core + only the modules the config uses). Each slide must be a `.swiper-slide` div.
 
 | Prop             | Type                                | Default       | Description                                      |
 | ---------------- | ----------------------------------- | ------------- | ------------------------------------------------ |
@@ -1642,16 +1642,18 @@ from '@/components/ui/PricingItem.astro';
 
 ---
 
-## Bundled Animation/Slider Dependencies
+## Animation/Slider Dependencies — per-component imports, no window globals
 
-GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/` import them and expose them on `window`, both imported from `BaseLayout.astro`'s `<script>` block (gsap-init must come first):
+GSAP and Swiper are npm dependencies imported **directly by the script of every component that uses them** (`import { gsap } from "gsap"`, `import Swiper from "swiper"` + explicit modules). There are no init scripts, no `window.gsap`/`window.Swiper`, and no poll-for-global retry loops — an import is a hard, ordered dependency. Vite dedupes the modules across components on a page and only emits the chunk on pages that render such a component, so pages without animations or sliders ship none of this JS.
 
-| Library                          | Source                                                            | Init script                  | Provides                                                  |
-| -------------------------------- | ----------------------------------------------------------------- | ---------------------------- | --------------------------------------------------------- |
-| GSAP + ScrollTrigger + SplitText | `gsap` (npm)                                                      | `src/scripts/gsap-init.js`   | `window.gsap`, `window.ScrollTrigger`, `window.SplitText` |
-| Swiper 12                        | `swiper` (npm, `swiper/bundle` entry — all modules pre-installed) | `src/scripts/swiper-init.js` | `window.Swiper` — Slider component                        |
+The one site-wide script is `src/scripts/animation.js` (imported in `BaseLayout.astro`): it is tiny, checks the page for `data-fade-*`/`data-splittext`/`data-prevent-flicker` attributes, and only then **dynamically imports** GSAP (SplitText only when the page splits text). Reduced-motion users get a plain-DOM reveal with no GSAP download at all.
 
-**Note:** Component scripts may still run before the bundles attach to `window`. `Accordion.astro` falls back gracefully if GSAP is absent; `Slider.astro` polls for `window.Swiper` with up to 10 retries at 100ms intervals.
+Two supporting contracts:
+
+- **`src/scripts/scroll-refresh.js`** — components that change layout without owning any ScrollTriggers (Accordion, Tab, the blog/case-study filters) dispatch `document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"))` instead of importing GSAP; every ScrollTrigger owner calls `wireScrollRefresh(ScrollTrigger)`, which dedupes to one listener per page. On pages with no GSAP the event has no listener and costs nothing.
+- **Swiper's CSS stays in `src/styles/vendor.css`** (the `vendor` layer). Never `import "swiper/css"` from a script — CSS imported from JS lands unlayered and outranks the whole design system.
+
+**Rule: do not add site-wide libraries to BaseLayout's `<script>` block.** Import them in the component or page that uses them.
 
 ---
 

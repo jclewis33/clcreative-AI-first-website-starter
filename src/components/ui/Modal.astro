@@ -185,10 +185,12 @@ const hasClose = Astro.slots.has("close");
    * Open  → dialog.showModal() + tl.play()
    * Close → tl.reverse() → onReverseComplete calls dialog.close()
    *
-   * If GSAP is not available, falls back to instant open/close.
+   * GSAP is imported directly, so it is always available; the instant
+   * open/close fallback below is kept only for defense in depth.
    */
+  import { gsap } from "gsap";
 
-  // Store timelines per modal element (gsap accessed via window, no local type)
+  // Store timelines per modal element
   const modalTimelines = new WeakMap<HTMLDialogElement, any>();
 
   /* Was this modal opened from the keyboard?
@@ -225,8 +227,7 @@ const hasClose = Astro.slots.has("close");
   }
 
   function buildTimeline(modal: HTMLDialogElement): any | null {
-    const g = (window as any).gsap;
-    if (!g) return null;
+    const g = gsap;
 
     const variant = modal.dataset.modalVariant || "small";
     const backdrop = modal.querySelector(".modal_backdrop");
@@ -313,7 +314,7 @@ const hasClose = Astro.slots.has("close");
   }
 
   function openModal(modal: HTMLDialogElement) {
-    const g = (window as any).gsap;
+    const g = gsap;
 
     // Show the dialog first so GSAP can measure and apply styles
     // (display:none elements can't receive transforms reliably)
@@ -416,23 +417,10 @@ const hasClose = Astro.slots.has("close");
     );
   }
 
-  // gsap-init.js (npm bundle, separate module script) may not have assigned
-  // window.gsap yet when this runs, so poll briefly before falling back
-  function waitForGsapAndInit(retries = 15) {
-    if ((window as any).gsap) {
-      initModals();
-    } else if (retries > 0) {
-      setTimeout(() => waitForGsapAndInit(retries - 1), 100);
-    } else {
-      // GSAP not available — modals still work, just without animation
-      initModals();
-    }
-  }
-
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => waitForGsapAndInit());
+    document.addEventListener("DOMContentLoaded", initModals);
   } else {
-    waitForGsapAndInit();
+    initModals();
   }
 </script>
 

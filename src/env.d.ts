@@ -5,11 +5,9 @@ declare module "cloudflare:workers" {
   export const env: Record<string, string | undefined>;
 }
 
-// Globals assigned to window by src/scripts/gsap-init.js and swiper-init.js
-// (npm bundles imported in BaseLayout.astro) — GSAP, ScrollTrigger, Swiper, etc.
+// GSAP and Swiper are imported directly by the components that use them —
+// there are no library globals on window anymore. The one deliberate global
+// is the escape hatch animation.js assigns for CMS-injected content.
 interface Window {
-  gsap?: any;
-  ScrollTrigger?: any;
-  SplitText?: any;
-  Swiper?: any;
+  initScrollAnimations?: () => Promise<void>;
 }

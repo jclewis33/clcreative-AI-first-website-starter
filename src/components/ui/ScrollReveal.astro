@@ -7,8 +7,8 @@ import type { HTMLAttributes } from "astro/types";
  * while a sticky image on the right cross-fades to match the active text block.
  * On mobile (below 768px), collapses to a single column with images inline.
  *
- * Uses GSAP + ScrollTrigger (bundled from npm by src/scripts/gsap-init.js,
- * exposed as window.gsap / window.ScrollTrigger).
+ * Uses GSAP + ScrollTrigger, imported directly by this component's script —
+ * they load only on pages that render a ScrollReveal.
  *
  * @example
  * ```astro
@@ -240,16 +240,15 @@ const ratioStyle =
    *   data-scroll-reveal-index       — pairs blocks with panels (0-based)
    */
 
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { wireScrollRefresh } from "@/scripts/scroll-refresh.js";
+
   function initScrollReveal() {
-    const gsap = (window as any).gsap;
-    const ScrollTrigger = (window as any).ScrollTrigger;
-
-    if (!gsap || !ScrollTrigger) {
-      console.warn("ScrollReveal: GSAP + ScrollTrigger required.");
-      return;
-    }
-
     gsap.registerPlugin(ScrollTrigger);
+    // This module owns ScrollTriggers on the page — answer layout-changers'
+    // "scrolltrigger:refresh" events (deduped across owners; see the module).
+    wireScrollRefresh(ScrollTrigger);
 
     // Respect reduced motion
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -360,20 +359,10 @@ const ratioStyle =
       });
   }
 
-  // Poll for GSAP + ScrollTrigger (gsap-init.js is a separate module script,
-  // so its window assignments may land after this script starts)
-  function waitForGsap(retries = 15) {
-    if ((window as any).gsap && (window as any).ScrollTrigger) {
-      initScrollReveal();
-    } else if (retries > 0) {
-      setTimeout(() => waitForGsap(retries - 1), 100);
-    }
-  }
-
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => waitForGsap());
+    document.addEventListener("DOMContentLoaded", initScrollReveal);
   } else {
-    waitForGsap();
+    initScrollReveal();
   }
 </script>
 

@@ -26,7 +26,7 @@
  *   - default   — TabPanel instances
  *
  * Animation uses GSAP for smooth transitions between panels.
- * Requires GSAP on window (bundled from npm by src/scripts/gsap-init.js).
+ * GSAP is imported directly in the script below.
  */
 
 /**
@@ -289,10 +289,9 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
    *   data-tab-id             — unique prefix for ARIA id generation
    */
 
-  function initTabs() {
-    const gsap = (window as any).gsap;
-    const ScrollTrigger = (window as any).ScrollTrigger;
+  import { gsap } from "gsap";
 
+  function initTabs() {
     document.querySelectorAll<HTMLElement>(".tab_wrap").forEach((wrap) => {
       // Prevent double-init
       if (wrap.dataset.tabInitialized) return;
@@ -431,7 +430,9 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         const tl = gsap.timeline({
           onComplete: () => {
             isAnimating = false;
-            if (ScrollTrigger) ScrollTrigger.refresh();
+            // Panel height changed — nudge any scroll-linked animations
+            // without importing ScrollTrigger here (scroll-refresh.js).
+            document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"));
           },
           defaults: { duration: duration, ease: "power2.inOut" },
         });
@@ -744,22 +745,10 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
     });
   }
 
-  // Wait for gsap-init.js to assign window.gsap, then initialize
-  function waitForGsap(retries = 10) {
-    if ((window as any).gsap) {
-      initTabs();
-    } else if (retries > 0) {
-      setTimeout(() => waitForGsap(retries - 1), 100);
-    } else {
-      // Fallback: init without GSAP (instant switching, no animations)
-      initTabs();
-    }
-  }
-
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => waitForGsap());
+    document.addEventListener("DOMContentLoaded", initTabs);
   } else {
-    waitForGsap();
+    initTabs();
   }
 </script>
 

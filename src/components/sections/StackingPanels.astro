@@ -98,11 +98,13 @@ const {
   // Scroll-stacking effect (desktop only). Each panel but the last in a list
   // scales down as the next panel scrolls up. Scoped per `.stacking-panels_list`
   // so multiple sections on one page don't chain into each other. Count-agnostic.
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { wireScrollRefresh } from "@/scripts/scroll-refresh.js";
+
   function initStackingPanels() {
-    const gsap = (window as any).gsap;
-    const ScrollTrigger = (window as any).ScrollTrigger;
-    if (!gsap || !ScrollTrigger) return;
     gsap.registerPlugin(ScrollTrigger);
+    wireScrollRefresh(ScrollTrigger);
 
     const lists = document.querySelectorAll<HTMLElement>(
       ".stacking-panels_list",

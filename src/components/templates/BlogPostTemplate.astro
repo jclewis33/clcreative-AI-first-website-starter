@@ -443,3 +443,10 @@ const portableTextComponents = {
     excludeSlugs={manualRelatedSlugs}
   />
 </BaseLayout>
+
+<script>
+  // Share buttons ([data-share]) exist only on blog posts, so their handler
+  // loads here — not site-wide from BaseLayout. Astro includes this once per
+  // page that renders the template.
+  import "@/scripts/social-share.js";
+</script>

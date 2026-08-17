@@ -223,5 +223,6 @@ const resolvedTwitterImage = resolvedOgImage;
   }
 </script>
 
-<!-- GSAP and Swiper are bundled via npm — see src/scripts/gsap-init.js and
-     src/scripts/swiper-init.js, both imported in BaseLayout. -->
+<!-- GSAP and Swiper are npm dependencies imported directly by the components
+     that use them; the site-wide animation.js loads GSAP dynamically only on
+     pages with animation attributes. No window globals. -->

@@ -220,10 +220,14 @@ const sliderId = `tsc-${Math.random().toString(36).slice(2, 8)}`;
 </Section>
 
 <script>
-  function initTestimonialShowcase() {
-    const Swiper = (window as any).Swiper;
-    if (!Swiper) return;
+  // Swiper imported directly (core + only the modules this config uses) so
+  // the chunk ships only on pages that render this section; Vite dedupes it
+  // against Slider's copy. A11y preserved from the old swiper/bundle days —
+  // it is on by default once installed. CSS stays layered in styles/vendor.css.
+  import Swiper from "swiper";
+  import { Navigation, A11y } from "swiper/modules";
 
+  function initTestimonialShowcase() {
     document
       .querySelectorAll<HTMLElement>("[data-testimonial-showcase]")
       .forEach((wrap) => {
@@ -237,6 +241,7 @@ const sliderId = `tsc-${Math.random().toString(36).slice(2, 8)}`;
         if (!swiperEl) return;
 
         const swiper = new Swiper(swiperEl, {
+          modules: [Navigation, A11y],
           slidesPerView: 1,
           spaceBetween: 0,
           loop: true,
@@ -257,18 +262,10 @@ const sliderId = `tsc-${Math.random().toString(36).slice(2, 8)}`;
       });
   }
 
-  function waitForSwiper(retries = 15) {
-    if ((window as any).Swiper) {
-      initTestimonialShowcase();
-    } else if (retries > 0) {
-      setTimeout(() => waitForSwiper(retries - 1), 100);
-    }
-  }
-
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => waitForSwiper());
+    document.addEventListener("DOMContentLoaded", initTestimonialShowcase);
   } else {
-    waitForSwiper();
+    initTestimonialShowcase();
   }
 </script>
 

@@ -221,10 +221,9 @@ const services = [
    * Disabled at < 800px (CSS handles layout shift) and when the user
    * prefers reduced motion or is on a touch-only device.
    */
-  function initServices() {
-    const gsap = (window as any).gsap;
-    if (!gsap) return;
+  import { gsap } from "gsap";
 
+  function initServices() {
     const list = document.querySelector<HTMLElement>("[data-services]");
     if (!list) return;
     if (list.dataset.servicesInit) return;
@@ -360,18 +359,12 @@ const services = [
     });
   }
 
-  function waitForGsap(retries = 15) {
-    if ((window as any).gsap) {
-      requestAnimationFrame(() => initServices());
-    } else if (retries > 0) {
-      setTimeout(() => waitForGsap(retries - 1), 100);
-    }
-  }
-
+  // rAF delay so layout is stable before the hover-follow measures rows
+  const start = () => requestAnimationFrame(() => initServices());
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => waitForGsap());
+    document.addEventListener("DOMContentLoaded", start);
   } else {
-    waitForGsap();
+    start();
   }
 </script>
 

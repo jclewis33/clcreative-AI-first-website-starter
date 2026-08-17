@@ -1527,3 +1527,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     </Grid>
   </Section>
 </BaseLayout>
+
+<script>
+  // The data-animate-in/up demo attributes are used only on this page, so the
+  // IntersectionObserver loads here — not site-wide from BaseLayout.
+  import "@/scripts/animate-observer.js";
+</script>
