@@ -50,9 +50,32 @@ html:has(.nav_hamburger_wrap[aria-expanded="true"]) {
   overflow: hidden;
 }
 
-/* Set core body defaults */
+/* Set core body defaults.
+
+   The body IS the page shell. It is a flex column at least as tall as the
+   viewport, so `main` can grow and push the footer to the bottom.
+
+   These four declarations used to sit on a `.page_wrap` div wrapping every
+   page — a Webflow shape, not a CSS requirement. Webflow's canvas cannot
+   style <body>, and its copy/paste model needs one selectable container you
+   can duplicate onto another page. Astro has neither limit: the layout IS the
+   reusable unit. Do not reintroduce a page wrapper. */
 body {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  /* Clips horizontal overflow (decorative art, marquees) WITHOUT creating a
+     scroll container — `clip` does not scroll, `hidden` would, which is why
+     the wrapper used `clip` too.
+
+     Set on body, not html, and x-axis only, both deliberately. With html's
+     overflow left `visible`, the browser propagates body's overflow to the
+     viewport; leaving `overflow-y` alone means only sideways scrolling is
+     stopped. Writing the `overflow: clip` shorthand here would propagate to
+     both axes and freeze the page — no vertical scrolling at all. The modal /
+     mobile-nav scroll lock above stays on html, where the shorthand is
+     correct and its `:has()` specificity beats this rule. */
+  overflow-x: clip;
   line-height: 1.5;
   font-family: var(--font-primary);
   color: var(--text);
@@ -66,6 +89,15 @@ body {
      that flashes on any tappable element (buttons, links, accordions).
      Focus rings and :active states still provide interaction feedback. */
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Main content area — `flex: 1` is what pushes the footer to the bottom of
+   short pages. Targets the <main> BaseLayout renders as a direct child of
+   <body>; nothing else needs a class. */
+body > main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 /* Make images easier to work with.
