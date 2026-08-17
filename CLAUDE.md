@@ -1373,6 +1373,37 @@ That works through `--_buttons-justify`, an inheriting custom property set where
 </Layout>
 ```
 
+### `<FormattedDate>`
+
+Renders a publish date as a `<time>` element. **Never format a date by hand** — a `new Date(x).toLocaleDateString()` call in a template gets both of these wrong.
+
+| Prop       | Type                        | Default                | Description                                          |
+| ---------- | --------------------------- | ---------------------- | ---------------------------------------------------- |
+| `date`     | `Date \| string`            | —                      | Renders nothing if missing or unparseable            |
+| `format`   | `Intl.DateTimeFormatOptions` | `{ dateStyle: 'long' }` | `'medium'` gives the compact `Mar 14, 2026` form     |
+| `timeZone` | `string`                    | `'UTC'`                | IANA zone the date is *displayed* in                 |
+| `locale`   | `string`                    | `SITE.locale`          | BCP 47 tag                                           |
+| `render`   | `boolean`                   | `true`                 | `false` skips the element                            |
+| `class`    | `string`                    | —                      | Extra classes on the `<time>`                        |
+
+`datetime` is derived from `date` and is not a prop.
+
+**The time zone has to be pinned.** Sanity `date` fields are date-only strings (`"2026-03-14"`), and `new Date()` parses those as **UTC midnight**. Formatting that in the build machine's local zone renders `Mar 13` anywhere west of Greenwich — so the visible date changes depending on who ran the build, or on whether it ran locally or in CI. Formatting happens in UTC unless you pass `timeZone`. (`toIsoDateTime()` in `src/lib/jsonld.ts` already pins the same values for `datePublished`; this is the visible half of that fix.)
+
+**A date-only value keeps its exact string** in the `datetime` attribute rather than being inflated to a midnight timestamp it never carried.
+
+```astro
+<Text variant="small" muted>
+  <FormattedDate date={post.date} />
+</Text>
+
+<FormattedDate
+  date={post.date}
+  format={{ dateStyle: "medium" }}
+  class="blog_featured_card_date"
+/>
+```
+
 ### `<Modal>`
 
 Native `<dialog>`-based modal with CSS enter/exit transitions — **no animation library**. The motion is driven by the `[open]` attribute plus `@starting-style`, with `transition-behavior: allow-discrete` holding `display`/`overlay` so the exit finishes before the dialog is hidden. The scrim is the native `::backdrop`. JS only calls `showModal()`/`close()`, so `Escape` closes natively and nothing about the animation can prevent it.

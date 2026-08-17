@@ -50,6 +50,12 @@ export const SITE = {
   /** Tagline appended to the default page <title> and the OG image alt text. */
   tagline: "Your Tagline",
 
+  /**
+   * BCP 47 locale tag. Used by `<FormattedDate>` for month names and date
+   * ordering. Keep it in step with the `lang` attribute in BaseLayout.
+   */
+  locale: "en-US",
+
   /** Fallback meta description for pages that don't pass their own. */
   defaultDescription: "A short description of your business.",
 

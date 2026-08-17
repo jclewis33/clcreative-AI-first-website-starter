@@ -1,0 +1,164 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { SITE } from "@/config/site";
+/**
+ * FormattedDate — a publish date as a machine-readable `<time>` element.
+ *
+ * Two things this does that hand-rolled `toLocaleDateString()` calls do not:
+ *
+ * **It emits `<time datetime="…">`.** Search engines, feed readers and
+ * assistive tech get the unambiguous value; the reader gets the pretty one.
+ * A bare string in a `<span>` gives neither of them anything to parse.
+ *
+ * **It pins the time zone.** Sanity `date` fields are date-only strings
+ * (`"2026-03-14"`), which `new Date()` parses as *UTC midnight*. Formatting
+ * that in the build machine's local zone renders `Mar 13` anywhere west of
+ * Greenwich — the date silently changes depending on who ran the build.
+ * Formatting happens in UTC unless you ask for another zone, so the output is
+ * the same on your laptop as it is in CI.
+ *
+ * A date-only value keeps its exact `YYYY-MM-DD` string in the `datetime`
+ * attribute rather than being inflated to a timestamp it never carried.
+ *
+ * @example Default — "March 14, 2026"
+ * ```astro
+ * <FormattedDate date={post.date} />
+ * ```
+ *
+ * @example Compact, for card meta — "Mar 14, 2026"
+ * ```astro
+ * <FormattedDate date={post.date} format={{ dateStyle: "medium" }} />
+ * ```
+ *
+ * @example Inside a styled text element
+ * ```astro
+ * <Text variant="small" muted><FormattedDate date={post.date} /></Text>
+ * ```
+ *
+ * @example A real wall-clock time, in the zone it happened in
+ * ```astro
+ * <FormattedDate
+ *   date={event.startsAt}
+ *   timeZone="America/New_York"
+ *   format={{ dateStyle: "long", timeStyle: "short" }}
+ * />
+ * ```
+ */
+
+/**
+ * FormattedDate — publish date as a `<time>` element.
+ *
+ * **Props:**
+ * - `date` — `Date` or ISO string. Nothing renders if it is missing or invalid.
+ * - `format` — `Intl.DateTimeFormatOptions` (default: `{ dateStyle: 'long' }`)
+ * - `timeZone` — IANA zone used for formatting (default: `'UTC'`)
+ * - `locale` — BCP 47 tag (default: `SITE.locale`)
+ * - `render` — set `false` to skip rendering entirely
+ * - `class` — extra classes on the `<time>`
+ * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.)
+ *
+ * The `datetime` attribute is filled in for you — do not pass one.
+ */
+interface Props extends Omit<HTMLAttributes<"time">, "datetime"> {
+  /**
+   * **FormattedDate props:**
+   * - `date` — `Date` or ISO string; renders nothing if missing/invalid
+   * - `format` — `Intl.DateTimeFormatOptions` (default `{ dateStyle: 'long' }`)
+   * - `timeZone` — IANA zone for formatting (default `'UTC'`)
+   * - `locale` — BCP 47 tag (default `SITE.locale`)
+   * - `render` — false skips the element entirely
+   * - `class` — extra classes
+   * - Also accepts any HTML attribute — forwarded to the `<time>`
+   *
+   * `datetime` is derived from `date`; it is not a prop.
+   */
+  docs?: string;
+
+  /**
+   * The date to render — a `Date`, a date-only string (`"2026-03-14"`), or a
+   * full ISO datetime. A date-only string is preserved verbatim in the
+   * `datetime` attribute.
+   * @example date={post.date}
+   */
+  date: Date | string | null | undefined;
+
+  /**
+   * Options passed to `Intl.DateTimeFormat`. `timeZone` here is ignored — use
+   * the `timeZone` prop, which the component has to know about separately to
+   * keep the `datetime` attribute honest.
+   * @default { dateStyle: 'long' }
+   * @example format={{ dateStyle: "medium" }}
+   */
+  format?: Intl.DateTimeFormatOptions;
+
+  /**
+   * IANA time zone the date is *displayed* in. Defaults to UTC so a date-only
+   * value never shifts by a day depending on the machine that built the site.
+   * Override only when a real wall-clock time matters (an event start, say).
+   * @default 'UTC'
+   * @example timeZone="America/New_York"
+   */
+  timeZone?: string;
+
+  /**
+   * BCP 47 locale tag for month names and ordering.
+   * @default SITE.locale
+   * @example locale="fr-FR"
+   */
+  locale?: string;
+
+  /**
+   * Set to `false` to skip rendering the element.
+   * @default true
+   */
+  render?: boolean;
+
+  /** Extra utility classes to add to the `<time>`. */
+  class?: string;
+}
+
+const {
+  docs,
+  date,
+  format = { dateStyle: "long" },
+  timeZone = "UTC",
+  locale = SITE.locale,
+  render = true,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* Sanity `date` fields hand us this shape; anything else is a datetime. */
+const isDateOnly = typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date);
+
+const parsed = date == null ? null : date instanceof Date ? date : new Date(date);
+const isValid = parsed !== null && !Number.isNaN(parsed.getTime());
+
+if (import.meta.env.DEV && render && !isValid) {
+  console.warn(
+    `\n[FormattedDate] date=${JSON.stringify(date)} is missing or unparseable, ` +
+      `so nothing was rendered.\n  Expected a Date, "YYYY-MM-DD", or a full ` +
+      `ISO datetime string.\n`,
+  );
+}
+
+/* A date-only value has no time to report — say exactly what the CMS said
+   rather than inflating it to a midnight timestamp it never carried. */
+const machineValue = isValid
+  ? isDateOnly
+    ? (date as string)
+    : parsed!.toISOString()
+  : "";
+
+const formatted = isValid
+  ? new Intl.DateTimeFormat(locale, { ...format, timeZone }).format(parsed!)
+  : "";
+---
+
+{
+  render && isValid && (
+    <time datetime={machineValue} class:list={[className]} {...rest}>
+      {formatted}
+    </time>
+  )
+}

@@ -22,6 +22,7 @@ import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Button from "@/components/ui/Button.astro";
 import BlogCard from "@/components/ui/BlogCard.astro";
+import FormattedDate from "@/components/ui/FormattedDate.astro";
 import Slider from "@/components/ui/Slider.astro";
 
 // Sanity
@@ -121,14 +122,6 @@ const categorySections = categoryConfig
   }))
   .filter((cat) => cat.posts.length > 0);
 
-/* ── Helper: format date ── */
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 ---
 
 <BaseLayout
@@ -306,9 +299,11 @@ function formatDate(dateStr: string) {
                   </div>
                   <h3 class="blog_featured_card_title">{post.title}</h3>
                   <div class="blog_featured_card_meta">
-                    <span class="blog_featured_card_date">
-                      {formatDate(post.date)}
-                    </span>
+                    <FormattedDate
+                      date={post.date}
+                      format={{ dateStyle: "medium" }}
+                      class="blog_featured_card_date"
+                    />
                   </div>
                 </a>
               ))}

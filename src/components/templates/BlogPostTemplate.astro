@@ -14,6 +14,7 @@ import AdditionalPost from "@/components/sections/BlogPostGrid.astro";
 
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
+import FormattedDate from "@/components/ui/FormattedDate.astro";
 import Visual from "@/components/ui/Visual.astro";
 import Overlay from "@/components/ui/Overlay.astro";
 import Card from "@/components/ui/Card.astro";
@@ -70,12 +71,6 @@ const {
 const resolvedBlogCta = post.ctaOverride ?? defaultCta ?? null;
 const resolvedCtaSection = post.ctaSectionOverride ?? defaultCtaSection ?? null;
 const manualRelatedSlugs = manualRelatedPosts.map((p) => p.slug);
-
-const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
 
 const seo = post.seo || {};
 const metaTitle = seo.metaTitle || post.title;
@@ -146,7 +141,9 @@ const portableTextComponents = {
       </Button>
     </div>
     <Layout variant="stack-centered">
-      <Text variant="small" muted>{formattedDate}</Text>
+      <Text variant="small" muted>
+        <FormattedDate date={post.date} />
+      </Text>
 
       <Heading tag="h1" variant="h1" balance>{post.title}</Heading>
 
