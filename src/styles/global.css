@@ -34,8 +34,8 @@
    pages      — page-specific overrides of those components
    overrides  — states & structural corrections that beat everything (see overrides.css)
 
-   NOTE: utilities sit BELOW components — the opposite of the classic
-   Lumos order. This preserves this repo's pre-layer cascade, where
+   NOTE: utilities sit BELOW components — the opposite of the conventional
+   utilities-win order. This preserves this repo's pre-layer cascade, where
    utilities loaded first and components overrode them; several u- classes
    here are multi-property presets (u-text-style-*, u-container) that
    components legitimately override. Flipping utilities to the top was

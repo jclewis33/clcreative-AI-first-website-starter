@@ -132,8 +132,7 @@ interface BaseProps {
    * The colors this card carries, whatever section it sits in.
    *
    * Left unset the card inherits its section's theme and surfaces with
-   * `--background-2` — an elevated panel in the ambient palette. This matches
-   * Lumos, whose Card theme union is the same shape.
+   * `--background-2` — an elevated panel in the ambient palette.
    *
    * - `"invert"` — flip to the OPPOSITE of the ground the card sits on (dark
    *   or brand section → light card; light section or unthemed page → dark
@@ -185,7 +184,7 @@ interface BaseProps {
   radius?: string;
 }
 
-/* Props are a DISCRIMINATED UNION on `href`, the Lumos pattern: link-only
+/* Props are a DISCRIMINATED UNION on `href`: link-only
    props (`newTab`, `ariaLabel`, `actions`) are typed `never` on a card with
    no href, so passing them without a destination is an editor error instead
    of silently dead markup. There is deliberately NO index signature — the old
@@ -634,7 +633,7 @@ if (
       display: flex;
       flex-direction: column;
       /* NO gap here — text rhythm belongs to the text elements' own
-         margin-bottom (the Lumos model: one spacing mechanism). This box used
+         margin-bottom — one spacing mechanism per box, never two. This box used
          to add gap: var(--space-2) ON TOP of those margins, so a title with
          its 24px margin sat 36px above the body. u-margin-trim on the content
          and text wrappers strips the leading/trailing margins at the edges. */

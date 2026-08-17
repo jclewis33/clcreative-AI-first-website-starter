@@ -67,8 +67,7 @@
    So the default is `height: auto` (the ratio governs) and every place
    that genuinely wants the media to FILL its box says so explicitly:
    `.is-background` below, the `full`/`contain` Layout variants and the
-   case-study card in their own files. This matches Lumos, whose base is
-   `img { height: auto }` with `height: 100%` opted into per pattern.
+   case-study card in their own files.
    If you need a wrapper to fill, set an explicit height on it — do not
    restore it here, or the ratio silently stops working everywhere. */
 .u-image-wrapper {

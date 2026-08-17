@@ -137,8 +137,7 @@ type ButtonHoverTheme = "light" | "dark" | "brand";
  * </Button>
  * ```
  */
-/* Props are a DISCRIMINATED UNION on `href`, following the Lumos pattern:
-   the presence of href picks the <a> branch, its absence picks the <button>
+/* Props are a DISCRIMINATED UNION on `href`: the presence of href picks the <a> branch, its absence picks the <button>
    branch, and each branch pulls in the real DOM attributes for that element
    via HTMLAttributes. Props that only make sense on the other branch are
    typed `never`, so misuse is an editor error at the call site:
@@ -294,7 +293,7 @@ export type Props = BaseProps &
 /* The strict union is for CALLERS. Inside the component TypeScript cannot
    know which branch it is in, so the implementation reads props through this
    flat, permissive shape instead — the standard companion to a discriminated
-   union (Lumos does the same). */
+   union. */
 type AllProps = BaseProps & {
   href?: string;
   newTab?: boolean;

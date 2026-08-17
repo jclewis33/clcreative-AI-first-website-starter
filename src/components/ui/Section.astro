@@ -309,7 +309,7 @@ const resolvedTheme = theme === "inherit" ? undefined : theme;
      the hoisted <script> of every component inside the slot, page-wide, and a
      Section's default slot holds the whole page — it took out every slider,
      tab, accordion and modal on the site, with nothing in the console.
-     Reproduced in Lumos' own repo on Astro 7 too, so it is not version-
+     Reproduced in a separate Astro 7 project too, so it is not version-
      specific. The empty case is handled in CSS instead — see SELF-ERASURE in
      the style block. */
   render && (
@@ -465,11 +465,10 @@ const resolvedTheme = theme === "inherit" ? undefined : theme;
    The empty case is detected in CSS, not by rendering the slot in JS.
 
    The obvious approach — render the slot, check whether the string is blank,
-   and skip the <section> — is what Lumos does (Section.astro, via
-   utils/slots.ts) and it is a trap: `Astro.slots.render()` makes Astro drop
+   and skip the <section> — is a trap: `Astro.slots.render()` makes Astro drop
    the hoisted <script> of every component inside that slot, page-wide and
-   with no error. Verified in Lumos' own repo on Astro 7 as well as here on
-   Astro 6, so it is not a version bug and not something to wait out.
+   with no error. Verified on Astro 7 in a separate project as well as here
+   on Astro 6, so it is not a version bug and not something to wait out.
 
    `:empty` gets the same result for free. When a slot renders nothing Astro
    emits `<div class="u-container"></div>` with NO whitespace between the

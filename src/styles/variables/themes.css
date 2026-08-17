@@ -272,8 +272,7 @@
      light ground  -> dark island
      no ground set -> dark island (the page default is light)
 
-   This is Lumos' `.theme-invert` (base.css:255-291) as a data attribute. Put
-   it on ANY wrapper — a card, a panel, a bare <div> around several components
+   Put it on ANY wrapper — a card, a panel, a bare <div> around several components
    — and the whole subtree inverts. There is nothing card-specific about it.
 
    It is a WHOLE theme, never a partial copy. It replaced a `--surface-*` tier
@@ -288,8 +287,7 @@
    fourth ground later means adding one selector to the block holding the
    theme it should flip TO.
 
-   Cards do NOT carry this automatically. `<Card theme="invert">` opts in,
-   exactly like Lumos' Card, whose theme union is
-   inherit | light | dark | brand | invert. Left alone, a card surfaces with
-   --background-2 within the ambient theme, which is also what Lumos does.
+   Cards do NOT carry this automatically. `<Card theme="invert">` opts in;
+   the Card theme union is inherit | light | dark | brand | invert. Left
+   alone, a card surfaces with --background-2 within the ambient theme.
    ========================================================================== */
