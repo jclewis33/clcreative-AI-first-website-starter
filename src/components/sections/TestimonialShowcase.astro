@@ -95,7 +95,6 @@ const resolved =
   }).catch(() => []));
 const testimonials = limit ? resolved.slice(0, limit) : resolved;
 const total = testimonials.length;
-const sliderId = `tsc-${Math.random().toString(36).slice(2, 8)}`;
 ---
 
 <Section
@@ -105,7 +104,10 @@ const sliderId = `tsc-${Math.random().toString(36).slice(2, 8)}`;
   id={id}
   class:list={["testimonial_showcase_section", className]}
 >
-  <div class="testimonial_showcase_wrap" data-testimonial-showcase={sliderId}>
+  <!-- The script selects on this attribute's PRESENCE, so it carries no value.
+       It used to hold a `Math.random()` id, which was never read and made the
+       built HTML differ on every build. -->
+  <div class="testimonial_showcase_wrap" data-testimonial-showcase>
     {/* ── Left column: heading ── */}
     <div class="testimonial_showcase_header">
       <Heading variant="h3" maxWidth="18ch">

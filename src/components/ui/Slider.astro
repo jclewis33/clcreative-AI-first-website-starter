@@ -224,16 +224,12 @@ const variantClassMap: Record<SliderVariant, string> = {
   "overflow-visible": "",
 };
 const sliderModifier = variantClassMap[variant];
-
-// Unique ID for this slider instance
-const sliderId = `slider-${Math.random().toString(36).slice(2, 8)}`;
 ---
 
 <div
   class:list={["slider_wrap", className]}
   data-slider="component"
   data-slider-variant={variant}
-  id={sliderId}
   {...rest}
 >
   <!-- Offset container — applies per-breakpoint peek margin -->
@@ -314,25 +310,6 @@ const sliderId = `slider-${Math.random().toString(36).slice(2, 8)}`;
   }
 </div>
 
-<!-- Synchronous auto-wrap: runs before first paint so slides have correct
-     dimensions immediately — prevents CLS (Cumulative Layout Shift). -->
-<script is:inline define:vars={{ sliderId }}>
-  (function () {
-    var wrap = document.getElementById(sliderId);
-    if (!wrap) return;
-    var wrapper = wrap.querySelector(".swiper-wrapper");
-    if (!wrapper) return;
-    Array.from(wrapper.children).forEach(function (child) {
-      if (!child.classList.contains("swiper-slide")) {
-        var slide = document.createElement("div");
-        slide.className = "swiper-slide";
-        wrapper.insertBefore(slide, child);
-        slide.appendChild(child);
-      }
-    });
-  })();
-</script>
-
 <script>
   /**
    * Slider JavaScript — initializes Swiper v12 for each .slider_wrap
@@ -369,7 +346,44 @@ const sliderId = `slider-${Math.random().toString(36).slice(2, 8)}`;
     A11y,
   } from "swiper/modules";
 
+  /**
+   * Wrap each slot child in a `.swiper-slide` div.
+   *
+   * Astro cannot enumerate slot children server-side, so this has to happen
+   * in the browser. It used to be a per-instance `<script is:inline>` — one
+   * unbundled, unminified copy per slider per page, keyed by a
+   * `Math.random()` id — because running synchronously before first paint was
+   * how it avoided a layout shift: unwrapped children do not match the
+   * `.swiper-slide` width rule, so they would paint at their natural width
+   * and then jump.
+   *
+   * That constraint is gone: the width rule now targets `.slider_list > *`,
+   * which matches the caller's elements BEFORE wrapping and the generated
+   * slides after, so both states lay out identically and the timing of this
+   * function no longer affects geometry. It can therefore live here — one
+   * bundled, minified, deduped copy per page — and it must run before
+   * initSliders(), which counts and clones real `.swiper-slide` elements.
+   */
+  function wrapSlides() {
+    document
+      .querySelectorAll<HTMLElement>('.slider_wrap[data-slider="component"]')
+      .forEach((wrap) => {
+        const wrapper = wrap.querySelector<HTMLElement>(".swiper-wrapper");
+        if (!wrapper) return;
+        Array.from(wrapper.children).forEach((child) => {
+          if (!child.classList.contains("swiper-slide")) {
+            const slide = document.createElement("div");
+            slide.className = "swiper-slide";
+            wrapper.insertBefore(slide, child);
+            slide.appendChild(child);
+          }
+        });
+      });
+  }
+
   function initSliders() {
+    wrapSlides();
+
     document
       .querySelectorAll<HTMLElement>('.slider_wrap[data-slider="component"]')
       .forEach((wrap) => {
@@ -595,8 +609,16 @@ const sliderId = `slider-${Math.random().toString(36).slice(2, 8)}`;
     }
 
     /* Each slide: width driven by --slide-count, gap created by padding-inline.
-   box-sizing: border-box ensures padding is included in the calculated width. */
-    .slider_list > .swiper-slide {
+   box-sizing: border-box ensures padding is included in the calculated width.
+
+   Deliberately `> *` rather than `> .swiper-slide`. Slot children are wrapped
+   in `.swiper-slide` divs by script, and this selector matches the caller's
+   elements before that happens and the generated wrappers afterwards — so the
+   row has identical geometry in both states. That is what allows the wrapping
+   to run from the bundled component script instead of a synchronous
+   per-instance inline one; without it, unwrapped children would paint at their
+   natural width and then jump. Measured CLS is unchanged either way. */
+    .slider_list > * {
       padding-inline: calc(var(--_gap---size) / 2);
       box-sizing: border-box;
       flex: 0 0 auto;
