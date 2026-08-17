@@ -516,6 +516,9 @@ const hasClose = Astro.slots.has("close");
       /* Where the panel starts from, and returns to on close. */
       --_from-x: 0;
       --_from-y: 6rem;
+      /* Opacity the panel starts from. 0 fades it in; 1 means "do not fade
+         at all", which is what a pure slide needs — see side-panel below. */
+      --_from-opacity: 0;
       /* Fallback matters: ::backdrop only inherits custom properties from its
          originating element in newer engines, so an older one must still get
          a scrim rather than a fully transparent overlay. */
@@ -553,7 +556,7 @@ const hasClose = Astro.slots.has("close");
     /* ---- Panel ---- */
 
     .modal_content {
-      opacity: 0;
+      opacity: var(--_from-opacity);
       transform: translate(var(--_from-x), var(--_from-y));
       transition:
         opacity var(--_content-exit) var(--_ease-content-exit),
@@ -570,7 +573,7 @@ const hasClose = Astro.slots.has("close");
 
     @starting-style {
       .modal_dialog[open] .modal_content {
-        opacity: 0;
+        opacity: var(--_from-opacity);
         transform: translate(var(--_from-x), var(--_from-y));
       }
     }
@@ -588,6 +591,13 @@ const hasClose = Astro.slots.has("close");
       --_ease-content-exit: cubic-bezier(0.32, 0, 0.67, 0);
       --_from-x: 100%;
       --_from-y: 0;
+      /* No fade. The panel stays fully opaque and simply travels in from
+         beyond the right edge, where the dialog's `overflow: hidden` clips
+         it until it arrives. Fading it in as well makes it appear to
+         materialise about a third of the way across and then finish the
+         journey, instead of emerging from the edge — the GSAP timeline this
+         replaced tweened xPercent only, and never touched opacity here. */
+      --_from-opacity: 1;
     }
 
     .modal_dialog[data-modal-variant="full-screen"] {
