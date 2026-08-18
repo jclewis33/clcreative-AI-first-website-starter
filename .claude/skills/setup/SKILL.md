@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Walk a forked copy of this Astro + Sanity + Cloudflare starter through first-time project setup. Use when the user forks/duplicates this repo for a NEW site and says "set up this project/fork", "/setup", "initialize this starter", "rebrand this for my new client", "stand up the Sanity project", or asks how to get a forked copy running. Orchestrates the deterministic `npm run setup` CLI (file edits) PLUS the cross-system work a script can't do: creating the new Sanity project + dataset via MCP, deploying its schema, adding CORS origins, then verifying with a build and printing the human-only dashboard checklist.
+description: Walk a forked copy of this Astro + Sanity + Cloudflare starter through first-time project setup. Use when the user forks/duplicates this repo for a NEW site and says "set up this project/fork", "/setup", "initialize this starter", "rebrand this for my new client", "stand up the Sanity project", or asks how to get a forked copy running. Orchestrates the deterministic `npm run setup` CLI (file edits) PLUS the cross-system work a script can't do: creating the new Sanity project + dataset via MCP, deploying its schema, adding CORS origins, swapping fonts/logos/photography, then running the full CI gate and printing the human-only dashboard checklist.
 license: MIT
 ---
 
@@ -43,10 +43,32 @@ It must **NOT change how the system works**:
 - don't rename, restructure, or change how the existing variables / themes /
   typography / spacing **compute**, or alter selectors, layout, or component
   internals;
+- **don't move a stylesheet between directories, and don't reorder the imports in
+  [global.css](../../../src/styles/global.css)** — see the two rules below;
 - don't edit [CLAUDE.md](../../../CLAUDE.md) or any convention/guardrail doc, the
   component library, or the `check:*` / build scripts that enforce the system;
 - don't refactor, reformat, "improve," or "tidy" anything beyond the targeted
   value swaps and the person's content/assets.
+
+**Two structural rules govern where any CSS you touch lives.** Setup rarely adds
+CSS at all, but when it does (a new swatch, a new theme mode), these decide the
+file — and getting them wrong is a cascade bug the build won't catch:
+
+1. **A directory's name is its cascade layer.** `styles/variables/*` →
+   `layer(variables)`, `styles/base/*` → `layer(base)`, `styles/utilities/*` →
+   `layer(utilities)`, and so on; the full order is declared at the top of
+   [global.css](../../../src/styles/global.css). So the layer a rule lands in is
+   readable from its path. A brand swatch goes in `variables/colors.css` because
+   that is the variables layer — never in a component, a page sheet, or
+   `overrides.css`. Import order _within_ the utilities layer is load-bearing and
+   documented in global.css; leave it alone.
+2. **Component CSS is co-located, not in `styles/components/`.** Each component
+   carries its own styles in a `<style is:global>` block wrapping
+   `@layer components { … }`. Only two shared sheets remain in
+   `styles/components/` (`forms.css`, `marketing-scorecard.css`) because they have
+   no single owning component. If setup ever needs a component-scoped tweak, it
+   goes in that component's own block — don't create a new file in
+   `styles/components/` and don't add an import to global.css.
 
 **Strongly prefer what the starter already provides; adding is rare.** The default
 is to map the new brand into the existing structure — e.g. the three theme modes
@@ -106,7 +128,8 @@ something the CLI bolts on.
 | Deploy the schema to the new project                             | Sanity MCP `deploy_schema`, or `npx sanity schema deploy`                                                                                                        |
 | Deploy the hosted Studio                                         | Sanity MCP `deploy_studio`, or `npx sanity deploy`                                                                                                               |
 | Add CORS origins                                                 | Sanity MCP `add_cors_origin`                                                                                                                                     |
-| Verify config + build                                            | `npm run check:config`, `npm run build`                                                                                                                          |
+| Swap the placeholder photography (step 1f)                       | ⚠️ Manual — you guide the file swaps; the CLI never touches `src/assets/`.                                                                                       |
+| Verify — must match CI                                           | `npm run format`, then `format:check`, `check:config`, `check`, `build` (step 7)                                                                                 |
 | Sanity **Viewer token**                                          | ⚠️ Manual — no MCP tool. Guide the user to create it.                                                                                                            |
 | Cloudflare worker / domain / **encrypted secret** / **WAF rule** | ⚠️ Manual dashboard work. Guide + verify.                                                                                                                        |
 | **Rebuild-debounce Worker** deploy + its two secrets             | ✅ Automatable when `wrangler` is authed — you run `wrangler deploy` + `secret put` via Bash (auth-detect → run-or-print; step 8). CLI keeps its `name` in sync. |
@@ -177,20 +200,25 @@ HoneyBook ids.
 > [docs/new-project-checklist.md](../../../docs/new-project-checklist.md); surface
 > it whenever the domain isn't ready.
 
-> **⚠️ Always ask about fonts and font sizes — do not skip.** Steps **1b (fonts)**
-> and **1c (fluid type scale)** below are **required parts of this conversational
-> gather, not optional add-ons.** Even if the user only gives you the identity
-> values above, you **must** explicitly ask:
+> **⚠️ Four questions are REQUIRED every run — do not skip any.** These are the
+> things that make a fork look like the user's site instead of the starter, and
+> every one of them is invisible in the config the CLI writes. Even if the user
+> only gives you the identity values above, you **must** explicitly ask:
 >
 > 1. **Which typefaces** the new brand uses (or confirm they want to keep the
 >    starter's BDO Grotesk / Inter / IBM Plex Mono) — step 1b.
 > 2. **Whether the heading & body sizes** should change from the default fluid type
 >    scale, showing them the current min→max values — step 1c.
+> 3. **Whether the brand color is light or dark**, which sets `--color-brand-text`
+>    (the text painted on brand-colored sections) — step 1a. Get this wrong and the
+>    brand sections ship unreadable.
+> 4. **Whether they have their own photography** to replace the 20 stock placeholder
+>    images used across 15 files — step 1f. This is the most visible leftover of all.
 >
-> A fork that ships with the wrong fonts or wrong type scale looks unbranded, so
-> surface both questions every run. Don't assume the defaults are wanted — ask, then
-> apply what they choose (fonts via astro.config.mjs, sizes via the `fluidType`
-> CLI map).
+> Don't assume the defaults are wanted — ask, then apply what they choose (fonts via
+> astro.config.mjs, sizes via the `fluidType` CLI map, brand text via `cssColors`,
+> images by file swap). The user may decline any of them; record the declines for
+> the step-9 handoff.
 
 > **Always recommend a starter meta description — don't leave the placeholder.**
 > From what you learn about the business, **draft and propose** a sitewide default
@@ -251,6 +279,25 @@ asking them to type hex codes.
 
    Pass these as a `cssColors` object in the CLI config (step 3). Confirm the
    mapping with the user before writing.
+
+   **⚠️ Then decide `--color-brand-text` — this is the step forks get wrong.**
+   `--color-brand-text` is the color of **text, borders, and icons painted on top
+   of the brand color** (it drives the whole `brand` theme's `--text`,
+   `--heading-accent`, `--border`, and its button/link tokens). It does **not**
+   follow from `--color-brand-500`, so a light brand hue with the shipped default
+   gives you white-on-lime. Ask one question:
+
+   > "Is the brand color light or dark?"
+   >
+   > - **Light** (lime, yellow, pale blue) → `"--color-brand-text": "var(--color-dark-900)"`
+   > - **Dark** (navy, deep green, the default orange) → `"--color-brand-text": "var(--color-light-100)"`
+
+   Pass it in the same `cssColors` object. The CLI computes the brand hue's
+   luminance and **warns** when the two look mismatched, but it never changes it
+   for you — so answer this explicitly rather than relying on the warning. The
+   full decision guide, including multi-color palettes, is
+   [docs/brand-color-guide.md](../../../docs/brand-color-guide.md) — read it before
+   mapping a palette that isn't a single accent.
 
 4. **Map by role, not 1:1 — and keep the same idea.** A brand's palette will
    almost never line up exactly with these swatch names, and that's fine. Map each
@@ -527,6 +574,50 @@ If it shows an `<img …>` or is empty, the rail icon will be broken/tiny.
   inherent, not a bug. For edge-to-edge fill, supply a square mark (symbol only, no
   wordmark).
 
+#### 1f. Placeholder photography — the site's actual images (REQUIRED ASK)
+
+**Always raise this.** Separate from the brand assets in 1d (which are the
+favicon/OG/webclip chrome), the starter ships **20 stock photos** in
+[src/assets/placeholder-images-2/](../../../src/assets/placeholder-images-2/)
+(`ai-first-starter-1…20.webp`), used **55 times across 15 files** — the hero, the
+services grid, pricing, case studies, blog cards, the CTA sections. A fork that
+skips this ships a branded shell full of someone else's photography, and it is the
+single most visible thing left un-swapped. The CLI does **not** touch
+`src/assets/` — this is guided work.
+
+Tell the user where they're used so they know what they're supplying:
+
+| Where                      | Files                                                                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Home page + hero           | `src/pages/index.astro`                                                                                                                |
+| Section components         | `Services`, `Pricing`, `WhyWorkWithUs`, `HowItWorks`, `CTASection`, `ImagePromo`, `PostLaunchSupport`, `ProjectImages`, `BlogPostGrid` |
+| Case-study + blog fixtures | `src/data/case-studies.ts`, `src/components/templates/BlogPostTemplate.astro`                                                          |
+| Other pages                | `contact.astro`, `marketing-scorecard.astro`, `components.astro`                                                                       |
+
+**Two ways to do it — offer both:**
+
+1. **Keep the filenames (simplest).** The user drops their own `.webp` files into
+   `src/assets/placeholder-images-2/` using the same
+   `ai-first-starter-<n>.webp` names. **Zero code changes** — every import keeps
+   resolving. Best when they have a batch of images and don't care which lands
+   where.
+2. **Rename to something meaningful.** Add their images under real names
+   (`hero-workshop.webp`, `service-strategy.webp`) and update the matching
+   `import` statements. Better long-term, but touches all 15 files — so only do
+   this if they ask, and update every import (`npm run check` catches any you miss).
+
+Either way, tell them: **`.webp`, and let Astro handle sizing** — these are
+imported assets going through `<Visual>`/`<Image>`, so supply the largest
+reasonable source and don't pre-resize. Also remind them the **`alt` text lives at
+the call site**, not in the filename — swapping an image without updating its
+`alt` leaves a description of the old photo, which is both an accessibility and an
+SEO regression. Offer to re-draft the `alt` strings once you know what the new
+images show.
+
+> **Any images the user doesn't supply, leave as the placeholder** — a working
+> placeholder is better than a broken import. Record every un-swapped area in the
+> step-9 handoff so it isn't silently forgotten before launch.
+
 ### 2. Create the Sanity project (MCP)
 
 1. `list_organizations` → pick the target org (ask if more than one).
@@ -568,8 +659,16 @@ The CLI rewrites `site.shared.mjs`, `site.ts`, `wrangler.jsonc`, `colors.css`,
 `logo-paths.ts` (the `LOGO_LABEL`), `sanity.cli.ts` (it clears `appId` — the new
 project issues its own on first deploy), and creates `.env` (token left blank). It
 warns and skips any swatch/theme/type var it can't find rather than failing.
-Delete the temp JSON after. **Fonts and image/SVG assets (steps 1b/1d) are not
-written by the CLI — guide those separately.**
+Delete the temp JSON after. **Fonts, image/SVG assets, and the placeholder
+photography (steps 1b/1d/1f) are not written by the CLI — guide those separately.**
+
+**Then re-format.** The CLI writes values in place and does not run Prettier, but
+CI gates on `npm run format:check` — so a fork that skips this gets a red first
+build for whitespace:
+
+```bash
+npm run format
+```
 
 > It deliberately **does not** touch the content scaffolding — `areaServed`,
 > `social`, `sameAs`, FAQs, `site-structure.ts`. Per the starter design those
@@ -684,12 +783,30 @@ project → API → Tokens → create a **Viewer** token. Put it in `.env` as
 `SANITY_API_READ_TOKEN`, and later add it as a Cloudflare **encrypted secret**
 (never a plain wrangler var).
 
-### 7. Verify
+### 7. Verify — run exactly what CI runs
+
+**Run the full gate, not a subset.** [.github/workflows/ci.yml](../../../.github/workflows/ci.yml)
+runs four checks on every push; verifying with only two leaves the fork's first
+build red on something setup caused:
 
 ```bash
-npm run check:config   # wrangler ↔ site.shared.mjs agree
-npm run build          # full build (re-queries Sanity; empty project is fine)
+npm run typegen        # regenerate Sanity types against the new project's schema
+npm run format         # then format:check below should be clean
+npm run format:check   # CI gate 1 — Prettier
+npm run check:config   # CI gate 2 — wrangler ↔ site.shared.mjs agree
+npm run check          # CI gate 3 — astro check (types, incl. the generated Sanity types)
+npm run build          # CI gate 4 — full build (re-queries Sanity; empty project is fine)
 ```
+
+`npm run typegen` first because `npm run check` type-checks against
+`src/sanity/sanity.types.ts`, which is generated from the deployed schema — run it
+after step 4's `sanity schema deploy` so the types match the new project. (The
+generated `sanity.types.ts` is committed; the intermediate `schema.json` is
+gitignored and regenerated each time.)
+
+Two more checks exist and are worth running when relevant, though CI doesn't gate
+on them: `npm run check:schema` (schema/desk consistency) and `npm run check:hover`
+(hover states resolve in every theme — useful after a brand-color swap).
 
 Fix anything that fails before handing off. A brand-new empty Sanity project
 builds clean — the content routes' `getStaticPaths` enumerate **zero slugs**,
@@ -839,6 +956,11 @@ item the user deferred in earlier steps** so nothing is silently dropped:
   scorecard if unused.
 - **CSP `frame-ancestors`** (§3.5): already correct in code — verify Presentation
   loads in Chrome after deploy.
+- **Content & images still holding placeholders**: any un-swapped photography
+  (step 1f), plus the scaffolding the CLI deliberately leaves alone — `areaServed`,
+  `social` / `sameAs`, FAQ copy, and the page `desc` fields in
+  [site-structure.ts](../../../src/data/site-structure.ts). List these
+  specifically; they're invisible until someone reads the live site.
 
 Then run the **§7 post-launch verification** curl block from the checklist.
 
@@ -850,11 +972,19 @@ Then run the **§7 post-launch verification** curl block from the checklist.
   Site Settings singleton + content lists.
 - Studio deployed to `<studioHost>.sanity.studio`; the issued `appId` is written
   back into `sanity.cli.ts` and committed.
-- Config files carry the new identity; `npm run check:config` and `npm run build`
-  pass.
+- Config files carry the new identity, and **all four CI gates pass** —
+  `format:check`, `check:config`, `check`, `build` (step 7), with `npm run typegen`
+  run after the schema deploy.
 - **Fonts and font sizes were explicitly discussed** (steps 1b/1c) — the user
   either confirmed the starter defaults or supplied new typefaces / a new fluid
   type scale, and those were applied.
+- **`--color-brand-text` was decided** (step 1a) — the user confirmed whether the
+  brand color takes light or dark text, rather than leaving the starter default to
+  collide with a new hue.
+- **Placeholder photography was raised** (step 1f) — the user either supplied
+  their own images (filenames kept, or imports updated) or explicitly deferred,
+  with every un-swapped area listed in the handoff. `alt` text was updated
+  wherever an image changed.
 - **Brand assets swapped** (steps 1d/1e) — OG image, favicon, and webclip replaced
   (square versions generated where the logo isn't square), the front-end wordmark
   re-pointed, and the **Sanity Studio navbar logo + dashboard rail icon** show the

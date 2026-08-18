@@ -391,6 +391,26 @@ async function gatherFromConfig(path) {
 // invented. This keeps a fork mechanically identical to the starter; only values
 // differ.
 
+// WCAG relative luminance of a #rgb/#rrggbb hex, 0 (black) → 1 (white).
+// Returns null for anything that isn't a plain hex (a named color or a var()
+// reference), so callers skip the check rather than guessing.
+function relativeLuminance(hex) {
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex).trim());
+  if (!m) return null;
+  const h =
+    m[1].length === 3
+      ? m[1]
+          .split("")
+          .map((ch) => ch + ch)
+          .join("")
+      : m[1];
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const v = parseInt(h.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
 async function buildChanges(a) {
   const changes = []; // { rel, before, after, edits: [labels] }
 
@@ -524,6 +544,30 @@ async function buildChanges(a) {
       }
     }
     changes.push({ rel: COLORS, before, after, edits });
+
+    // Contrast guard. --color-brand-text is the text/border/icon color painted
+    // ON TOP of the brand swatch (the `brand` theme's whole surface), so a light
+    // brand hue with the default light brand-text ships white-on-white, and vice
+    // versa. Nothing here can tell which the fork wants — so warn rather than
+    // guess, and only when the hue moved and the answer wasn't supplied.
+    if (brand500 && !swatches["--color-brand-text"]) {
+      const lum = relativeLuminance(brand500);
+      if (lum !== null) {
+        const wantsDarkText = lum > 0.4;
+        const currentIsDark = /--color-brand-text:\s*var\(--color-dark/.test(
+          after,
+        );
+        if (wantsDarkText !== currentIsDark) {
+          warn(
+            `--color-brand-500 (${brand500}) looks ${wantsDarkText ? "light" : "dark"}, ` +
+              `but --color-brand-text is set to ${currentIsDark ? "dark" : "light"} text. ` +
+              `Consider cssColors["--color-brand-text"] = ` +
+              `"var(${wantsDarkText ? "--color-dark-900" : "--color-light-100"})". ` +
+              `See docs/brand-color-guide.md.`,
+          );
+        }
+      }
+    }
   }
 
   // 4b. themes.css — optional per-theme alias overrides (scoped by block).
@@ -656,17 +700,24 @@ Writes: ${SHARED}, ${SITE}, ${WRANGLER}, ${WRANGLER_DEBOUNCE}, ${COLORS}, ${THEM
 Leaves content scaffolding (areaServed, social, FAQs, site-structure) intact.
 
 Color maps (--config only; e.g. pulled from Figma by the /setup skill):
-  "cssColors":   { "--color-brand-500": "#1a73e8", "--color-dark-900": "#0c111d" }
+  "cssColors":   { "--color-brand-500": "#1a73e8", "--color-brand-text": "var(--color-light-100)" }
   "themeColors": { "brand": { "--background": "var(--color-brand-600)" } }
 cssColors sets the raw swatches in colors.css (the brand scale + themes follow
 via var() references). themeColors overrides a theme alias only when needed.
 
+  ⚠ Set "--color-brand-text" alongside a new brand hue — it is the text/border/
+    icon color painted ON the brand surface, so a light brand color needs
+    var(--color-dark-900) and a dark one needs var(--color-light-100). This CLI
+    warns when the two look mismatched but never changes it for you.
+    Full decision guide: docs/brand-color-guide.md
+
 Fluid type (--config only) — sets only the min/max rem knobs; the clamp()s follow:
   "fluidType":   { "h1": { "min": 2.5, "max": 4 }, "text-regular": { "min": 1, "max": 1.2 } }
 
-Not handled here (binary assets — the /setup skill guides these): font files
+Not handled here (assets + copy — the /setup skill guides these): font files
 (src/assets/fonts/ + astro.config.mjs fonts array), the OG image / favicon /
-webclip (public/images/), and the inline SVG logo paths (src/config/logo-paths.ts).
+webclip (public/images/), the inline SVG logo paths (src/config/logo-paths.ts),
+and the placeholder photography (src/assets/placeholder-images-2/).
 `);
     return;
   }
@@ -707,15 +758,21 @@ webclip (public/images/), and the inline SVG logo paths (src/config/logo-paths.t
   await ensureEnv(answers);
 
   heading("Next steps");
-  console.log(`  1. ${c.bold}npm run check:config${c.reset}   verify wrangler ↔ site.shared.mjs agree
-  2. ${c.bold}npm run build${c.reset}          confirm the site still builds
-  3. Fill ${c.bold}SANITY_API_READ_TOKEN${c.reset} in .env (Sanity → API → Tokens, Viewer role)
-  4. Finish the dashboard steps in ${c.bold}docs/new-project-checklist.md${c.reset}
+  console.log(`  1. ${c.bold}npm run format${c.reset}         re-format the files just written
+  2. ${c.bold}npm run check:config${c.reset}   verify wrangler ↔ site.shared.mjs agree
+  3. ${c.bold}npm run check${c.reset}          type-check (astro check)
+  4. ${c.bold}npm run build${c.reset}          confirm the site still builds
+     ${c.dim}Steps 1–4 are what CI gates on — see .github/workflows/ci.yml.${c.reset}
+  5. Swap the ${c.bold}placeholder photography${c.reset} in src/assets/placeholder-images-2/
+     ${c.dim}(the starter ships stock images on every page — not written by this CLI)${c.reset}
+  6. Fill ${c.bold}SANITY_API_READ_TOKEN${c.reset} in .env (Sanity → API → Tokens, Viewer role)
+  7. Finish the dashboard steps in ${c.bold}docs/new-project-checklist.md${c.reset}
      (Sanity CORS, Cloudflare secrets + WAF + domain, GitHub Dependabot).
-  5. Deploy the ${c.bold}rebuild-debounce Worker${c.reset} + wire the Sanity publish webhook
+  8. Deploy the ${c.bold}rebuild-debounce Worker${c.reset} + wire the Sanity publish webhook
      (${c.dim}workers/rebuild-debounce/README.md${c.reset}) — REQUIRED: content pages are
      prerendered, so publishing only reaches the live site via this rebuild chain.
-${c.dim}  The /setup Claude skill automates steps 1–2 and the Sanity project creation.${c.reset}
+${c.dim}  The /setup Claude skill runs steps 1–4 for you, guides 5, and additionally
+  creates the Sanity project, deploys the schema, and adds the CORS origins.${c.reset}
 `);
 }
 
