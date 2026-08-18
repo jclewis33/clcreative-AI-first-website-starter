@@ -7,10 +7,15 @@
  * no network. It is safe to re-run (idempotent — it replaces values in place).
  *
  * The companion `/setup` Claude Code skill ([.claude/skills/setup/SKILL.md])
- * orchestrates the parts a script can't do — creating the new Sanity project,
- * deploying its schema, adding CORS origins, and verifying with a build — and
- * calls THIS script (via `--config`) for the file writes so the literal values
- * always land deterministically.
+ * orchestrates the parts a script can't do — brand/font/asset swaps, the
+ * OPTIONAL Sanity CMS branch, the CI gate, and the Cloudflare deploy — and calls
+ * THIS script (via `--config`) for the file writes so the literal values always
+ * land deterministically.
+ *
+ * Sanity is optional for a fork. This script writes whatever Sanity ids it is
+ * given and is happy when given none: the repo builds and deploys with the
+ * placeholder project id (see the guard in src/sanity/lib/page-data.ts), so a
+ * no-CMS fork is a supported path, not a broken one.
  *
  * Files this touches:
  *   • src/config/site.shared.mjs       — Sanity projectId/dataset/apiVersion + URL (regenerated)
