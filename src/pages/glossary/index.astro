@@ -11,23 +11,25 @@
  * Content is fetched from Sanity CMS.
  */
 
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import SanityCtaSection from "../../components/sections/SanityCtaSection.astro";
-import Section from "../../components/ui/Section.astro";
-import Layout from "../../components/ui/Layout.astro";
-import Col from "../../components/ui/Col.astro";
-import Grid from "../../components/ui/Grid.astro";
-import Heading from "../../components/ui/Heading.astro";
-import Text from "../../components/ui/Text.astro";
-import Card from "../../components/ui/Card.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Card from "@/components/ui/Card.astro";
 
 // Sanity
-import { loadPageQuery } from "../../sanity/lib/page-data";
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
-import { GLOSSARY_TERMS_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
+import { loadPageQuery } from "@/sanity/lib/page-data";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import {
+  GLOSSARY_TERMS_QUERY,
+  SITE_SETTINGS_QUERY,
+} from "@/sanity/lib/queries";
 
 // Styles
-import "../../styles/pages/glossary.css";
+import "@/styles/pages/glossary.css";
 
 // Category list (matches Sanity schema options)
 const glossaryCategories = [
@@ -43,13 +45,13 @@ const glossaryCategories = [
 
 const draftProps = getDraftModeProps(Astro);
 const [allTerms, settings] = await Promise.all([
-  loadPageQuery<any[]>({
+  loadPageQuery({
     query: GLOSSARY_TERMS_QUERY,
     draftProps,
     fallback: [],
     label: "glossary index terms",
   }),
-  loadPageQuery<any>({
+  loadPageQuery({
     query: SITE_SETTINGS_QUERY,
     draftProps,
     fallback: null,
@@ -95,12 +97,8 @@ const groupedTerms = groupTermsByLetter(sortedTerms);
   }
   <Section theme="dark" class="glossary_hero_wrap">
     <Layout variant="stack-centered">
-      <Col slot="col1">
-        <Heading tag="h1" variant="display-sm">Glossary</Heading>
-        <Text variant="large" align="center">
-          A glossary of key terms and concepts.
-        </Text>
-      </Col>
+      <Heading tag="h1" variant="display-sm">Glossary</Heading>
+      <Text variant="large"> A glossary of key terms and concepts. </Text>
     </Layout>
   </Section>
 
@@ -230,17 +228,19 @@ const groupedTerms = groupTermsByLetter(sortedTerms);
                     <Text variant="small" muted clamp={2}>
                       {term.shortDefinition}
                     </Text>
-                    <div slot="footer" class="glossary_card_footer">
-                      <Text
-                        tag="span"
-                        variant="tiny"
-                        weight="medium"
-                        marginBottom={0}
-                        class="glossary_card_category"
-                      >
-                        {term.category}
-                      </Text>
-                    </div>
+                    {term.category && (
+                      <div slot="footer" class="glossary_card_footer">
+                        <Text
+                          tag="span"
+                          variant="tiny"
+                          weight="medium"
+                          marginBottom={0}
+                          class="glossary_card_category"
+                        >
+                          {term.category}
+                        </Text>
+                      </div>
+                    )}
                   </Card>
                 ))}
             </Grid>
@@ -250,7 +250,7 @@ const groupedTerms = groupTermsByLetter(sortedTerms);
 
     {/* Empty state — shown by JS when search/filter has no results */}
     <div class="glossary_empty_state u-display-none" data-glossary-empty>
-      <Text variant="regular" muted align="center">
+      <Text variant="regular" muted>
         No terms found. Try a different search or filter.
       </Text>
     </div>

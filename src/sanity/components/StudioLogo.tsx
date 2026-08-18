@@ -5,11 +5,7 @@
  * src/config/logo-paths.ts (same source the front-end Logo uses), so a logo
  * redesign is a single edit.
  */
-import {
-  LOGO_VIEWBOX,
-  LOGO_LABEL,
-  LOGO_ALL_PATHS,
-} from "../../config/logo-paths";
+import { LOGO_VIEWBOX, LOGO_LABEL, LOGO_ALL_PATHS } from "@/config/logo-paths";
 
 export function StudioLogo() {
   return (

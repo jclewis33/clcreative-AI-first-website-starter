@@ -1,63 +1,113 @@
 /* ==========================================================================
    GLOBAL CSS
-   Imports all CSS modules in the correct order
+   The index for the whole stylesheet system: it declares the cascade order,
+   then imports every global sheet into its layer.
    ========================================================================== */
 
-/* Base reset */
-@import "./reset.css";
-@import "./fonts.css";
+/* ── THE ONE RULE ───────────────────────────────────────────────────────────
+   A DIRECTORY'S NAME IS ITS CASCADE LAYER.
 
-/* Variables */
-@import "./variables/base.css";
-@import "./variables/typography.css";
-@import "./variables/colors.css";
-@import "./variables/themes.css";
-@import "./variables/spacing.css";
-@import "./variables/layout.css";
-@import "./variables/nav.css";
+     styles/variables/*   → layer(variables)
+     styles/base/*        → layer(base)
+     styles/utilities/*   → layer(utilities)
+     styles/components/*  → layer(components)
+     styles/pages/*       → layer(pages)
 
-/* Base styles */
-@import "./base/utilities.css";
-@import "./base/typography.css";
-@import "./base/layout.css";
-@import "./base/responsive-columns.css";
-@import "./base/spacing.css";
-@import "./base/visual-utilities.css";
-@import "./base/animate.css";
+   So the layer a file lands in is readable from its path, with no lookup.
+   Putting a `u-` class in base/, or a bare `h1` rule in utilities/, is a
+   cascade bug even though the CSS is valid — the folder is the contract.
 
-/* Components */
-@import "./components/page.css";
-@import "./components/section.css";
-@import "./components/layout.css";
-@import "./components/forms.css";
-@import "./components/clickable.css";
-@import "./components/slider.css";
-@import "./components/cards.css";
-@import "./components/pricing-card.css";
-@import "./components/buttons.css";
-@import "./components/visual.css";
-@import "./components/accordion.css";
-@import "./components/tabs.css";
-@import "./components/nav.css";
-@import "./components/modal.css";
-@import "./components/footer.css";
-@import "./components/testimonials.css";
-@import "./components/blog-post-grid.css";
-@import "./components/case-study-card.css";
-@import "./components/marquee.css";
-@import "./components/scroll-reveal.css";
-@import "./components/how-it-works.css";
-@import "./components/testimonial-showcase.css";
-@import "./components/single-testimonial.css";
-@import "./components/case-study-featured.css";
-@import "./components/split-section.css";
-@import "./components/stacking-panels.css";
-@import "./components/project-images.css";
-@import "./components/why-work-with-us.css";
-@import "./components/services.css";
-@import "./components/framework-section.css";
-@import "./components/feature-cards.css";
-@import "./components/post-launch-support.css";
-@import "./components/signup-form.css";
-@import "./components/marketing-scorecard.css";
-@import "./components/blog-cta.css";
+   The three single-file sheets sit at the top level because they have no
+   siblings: reset.css (reset), vendor.css (vendor), overrides.css (overrides).
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Cascade order, lowest priority first. A later layer beats an earlier one
+   whatever the selectors say. Declared here, before any import, so the
+   order is fixed no matter what order the files actually load in.
+
+   reset      — normalize, element box defaults, font-face
+   vendor     — third-party CSS (Swiper); components must be able to beat it
+   variables  — custom property definitions only
+   base       — element/attribute defaults (h1–h6, p, a, animation states)
+   utilities  — u- classes
+   components — reusable component styles
+   pages      — page-specific overrides of those components
+   overrides  — states & structural corrections that beat everything (see overrides.css)
+
+   NOTE: utilities sit BELOW components — the opposite of the conventional
+   utilities-win order. This preserves this repo's pre-layer cascade, where
+   utilities loaded first and components overrode them; several u- classes
+   here are multi-property presets (u-text-style-*, u-container) that
+   components legitimately override. Flipping utilities to the top was
+   measured at 488 computed-style changes across the site; this order
+   costs 0. Utilities still beat `base` and `vendor` on any element.
+
+   Anything NOT in a layer beats every layer above, so new CSS belongs in
+   one of these. The exception is the !important anti-flicker block in
+   Head.astro, which is deliberately outside the system. */
+
+@layer reset, vendor, variables, base, utilities, components, pages, overrides;
+
+/* The imports below run in layer order, so this list reads as the stack. */
+
+/* ── reset ── no @font-face here: fonts are registered in the `fonts` array
+   in astro.config.mjs (Astro Fonts API), which injects its own <style>. */
+@import "./reset.css" layer(reset);
+
+/* ── vendor ── third-party CSS, kept low so our components can override it.
+   No layer() here on purpose: vendor.css is a pass-through whose own
+   `@import "swiper/css/bundle" layer(vendor)` does the assigning. */
+@import "./vendor.css";
+
+/* ── variables ── custom properties only; never a selector that paints.
+   foundation.css first: every other file's clamp() reads its viewport
+   bounds and site margin. */
+@import "./variables/foundation.css" layer(variables);
+@import "./variables/typography.css" layer(variables);
+@import "./variables/colors.css" layer(variables);
+@import "./variables/themes.css" layer(variables);
+@import "./variables/spacing.css" layer(variables);
+@import "./variables/layout.css" layer(variables);
+@import "./variables/nav.css" layer(variables);
+
+/* ── base ── element and attribute defaults that components are meant to
+   override. elements.css must come first: it carries the bare h1-h6/p/a/
+   section/button rules, which every component class needs to be able to beat. */
+@import "./base/elements.css" layer(base);
+@import "./base/animate.css" layer(base);
+
+/* ── utilities ── u- classes. These sit below components (see the order note
+   above).
+
+   ⚠ IMPORT ORDER HERE IS LOAD-BEARING. These files share one layer, so where
+   two rules tie on specificity the later import wins. Two dependencies are
+   documented in the files themselves:
+     • visual-utilities.css must come AFTER typography.css so u-color-*
+       beats the text styles' own color defaults.
+     • margin-trim.css must beat typography.css's (0,1,0) margin rules, which
+       it does on specificity (0,2,0) precisely because it loads earlier.
+   Add new files at the end unless you have a reason not to. */
+@import "./utilities/misc.css" layer(utilities);
+@import "./utilities/margin-trim.css" layer(utilities);
+@import "./utilities/typography.css" layer(utilities);
+@import "./utilities/layout.css" layer(utilities);
+@import "./utilities/responsive-columns.css" layer(utilities);
+@import "./utilities/spacing.css" layer(utilities);
+@import "./utilities/visual-utilities.css" layer(utilities);
+@import "./utilities/animate.css" layer(utilities);
+
+/* ── components ── only styles with NO single owning component live here.
+   Everything else is co-located in its component's <style is:global> block,
+   wrapped in `@layer components { … }` (see CLAUDE.md).
+   forms.css: shared by the contact page and SignUpForm;
+   marketing-scorecard.css: owned by a React component (.tsx cannot carry
+   an Astro style block). */
+@import "./components/forms.css" layer(components);
+@import "./components/marketing-scorecard.css" layer(components);
+
+/* ── pages ── NOT imported here. Each sheet in ./pages/ is pulled in by the
+   page or template that owns it, and opens with `@layer pages { … }` in-file,
+   since an ESM `import` cannot carry a layer() the way @import can. */
+
+/* ── overrides ── highest layer on purpose; see the comment in the file */
+@import "./overrides.css" layer(overrides);

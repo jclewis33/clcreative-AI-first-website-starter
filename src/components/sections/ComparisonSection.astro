@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * ComparisonSection — "Same Designer Hours. Two Very Different Websites."
  *
@@ -6,16 +7,15 @@
  * All copy is identical across the location pages, so everything is a default;
  * a page typically only passes `leftImage` + `rightImage`.
  */
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Visual from "../ui/Visual.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Button from "../ui/Button.astro";
-import ContentWrapper from "../ui/ContentWrapper.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Button from "@/components/ui/Button.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **ComparisonSection props:**
    * - `leftImage` / `rightImage` — the two comparison Visuals (required)
@@ -53,8 +53,6 @@ interface Props {
   buttonText?: string;
   /** CTA button link. @default '/contact' */
   buttonHref?: string;
-
-  [key: string]: any;
 }
 
 const {
@@ -86,37 +84,37 @@ const {
 ---
 
 <Section {...rest}>
-  <ContentWrapper align="center">
+  <Layout variant="stack-centered">
     <Heading data-split-text tag="h2" variant="h2" maxWidth="25ch">
       {title}
     </Heading>
-  </ContentWrapper>
+  </Layout>
 
   <Layout data-fade-list variant="columns" verticalAlign="center">
-    <Visual slot="col1" src={leftImage} alt={leftAlt} ratio="landscape" />
-    <Col slot="col2">
+    <Visual src={leftImage} alt={leftAlt} ratio="landscape" />
+    <Fragment slot="column2">
       <Heading tag="h3" variant="h3">{leftHeading}</Heading>
       <Text variant="xlarge">{leftTagline}</Text>
       <ul class="u-list">
         {leftItems.map((item) => <li>{item}</li>)}
       </ul>
-    </Col>
+    </Fragment>
   </Layout>
 
   <Layout data-fade-list variant="columns-reversed" verticalAlign="center">
-    <Visual slot="col1" src={rightImage} alt={rightAlt} ratio="landscape" />
-    <Col slot="col2">
+    <Visual src={rightImage} alt={rightAlt} ratio="landscape" />
+    <Fragment slot="column2">
       <Heading tag="h3" variant="h3">{rightHeading}</Heading>
       <Text variant="xlarge">{rightTagline}</Text>
       <ul class="u-list">
         {rightItems.map((item) => <li>{item}</li>)}
       </ul>
-    </Col>
+    </Fragment>
   </Layout>
 
-  <ContentWrapper align="center" data-fade-in>
-    <div class="u-button-wrapper">
+  <Layout variant="stack-centered" data-fade-in>
+    <ButtonWrapper>
       <Button href={buttonHref} ariaLabel={buttonText}>{buttonText}</Button>
-    </div>
-  </ContentWrapper>
+    </ButtonWrapper>
+  </Layout>
 </Section>

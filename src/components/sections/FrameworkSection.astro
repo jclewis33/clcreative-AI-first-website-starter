@@ -23,14 +23,17 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import ContentWrapper from "../ui/ContentWrapper.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Grid from "../ui/Grid.astro";
-import Button from "../ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Button from "@/components/ui/Button.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
 interface Props {
   /**
@@ -42,7 +45,7 @@ interface Props {
    */
   docs?: string;
 
-  /** Sets both paddingTop and paddingBottom @default 'main' */
+  /** Sets both paddingTop and paddingBottom. Default 'main' — omit the prop for it ("main" is not writable). */
   padding?: PaddingValue;
   /** Override top padding only */
   paddingTop?: PaddingValue;
@@ -54,7 +57,7 @@ interface Props {
 
 const {
   docs,
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   class: className,
@@ -69,7 +72,7 @@ const {
   id="framework"
 >
   <div class="framework_watermark" aria-hidden="true">Flow</div>
-  <ContentWrapper class="framework_content">
+  <Layout variant="stack" class="framework_content">
     <Heading data-fade-in variant="eyebrow" maxWidth="30ch">
       Lorem ipsum eyebrow
     </Heading>
@@ -79,16 +82,16 @@ const {
       >
     </Heading>
     <slot name="intro">
-      <Text data-fade-in size="regular" maxWidth="60ch">
+      <Text data-fade-in variant="regular" maxWidth="60ch">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore.
       </Text>
-      <Text data-fade-in size="regular" maxWidth="60ch" marginBottom={0}>
+      <Text data-fade-in variant="regular" maxWidth="60ch" marginBottom={0}>
         Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
         ut aliquip ex ea commodo consequat duis aute irure dolor.
       </Text>
     </slot>
-  </ContentWrapper>
+  </Layout>
   <Grid
     data-fade-list
     largeColumns={3}
@@ -100,7 +103,7 @@ const {
     <div class="framework_card">
       <span class="framework_card_number u-font-mono">01</span>
       <Heading tag="h4" variant="h4" marginBottom={0}>Lorem Ipsum One</Heading>
-      <Text size="regular">
+      <Text variant="regular">
         <slot name="card1Body"
           >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
           eiusmod tempor incididunt ut labore et dolore magna aliqua.</slot
@@ -110,7 +113,7 @@ const {
     <div class="framework_card">
       <span class="framework_card_number u-font-mono">02</span>
       <Heading tag="h4" variant="h4" marginBottom={0}>Lorem Ipsum Two</Heading>
-      <Text size="regular">
+      <Text variant="regular">
         <slot name="card2Body"
           >Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
           nisi ut aliquip ex ea commodo consequat.</slot
@@ -119,8 +122,9 @@ const {
     </div>
     <div class="framework_card">
       <span class="framework_card_number u-font-mono">03</span>
-      <Heading tag="h4" variant="h4" marginBottom={0}>Lorem Ipsum Three</Heading>
-      <Text size="regular">
+      <Heading tag="h4" variant="h4" marginBottom={0}>Lorem Ipsum Three</Heading
+      >
+      <Text variant="regular">
         <slot name="card3Body"
           >Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
           dolore eu fugiat nulla pariatur excepteur sint.</slot
@@ -129,11 +133,75 @@ const {
     </div>
   </Grid>
 
-  <ContentWrapper align="center">
-    <div class="u-button-wrapper" data-fade-in>
-      <Button href="/contact" ariaLabel="Learn more">
-        Learn More
-      </Button>
-    </div>
-  </ContentWrapper>
+  <Layout variant="stack-centered">
+    <ButtonWrapper data-fade-in>
+      <Button href="/contact" ariaLabel="Learn more"> Learn More </Button>
+    </ButtonWrapper>
+  </Layout>
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/framework-section.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   FRAMEWORK SECTION — brand/accent, watermark, 3-col numbered grid
+   ========================================================================== */
+
+    /* Section is the positioning context for the watermark */
+    .framework_section {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Large watermark text — top-right, behind content.
+   Clamp follows the same 20em→90em formula used in typography.css:
+   min=8rem, max=20rem → clamp(8rem, 4.57rem + 17.14vw, 20rem) */
+    .framework_watermark {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-family: var(--font-primary);
+      font-size: clamp(8rem, 4.57rem + 17.14vw, 20rem);
+      font-weight: 700;
+      line-height: 1;
+      color: var(--color-brand-700);
+      opacity: 0.15;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+      padding-right: var(--site-margin);
+    }
+
+    /* Content wrapper — top padding replaces section paddingTop="none" */
+    .framework_content {
+      position: relative;
+      z-index: 1;
+      padding-top: var(--section-space-large);
+    }
+
+    /* 3-column card grid */
+    .framework_grid {
+      position: relative;
+      z-index: 1;
+      margin-top: var(--space-8);
+    }
+
+    /* Individual numbered card — top border, stacked content */
+    .framework_card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding-top: var(--space-5);
+      border-top: 1px solid currentColor;
+    }
+
+    /* Number label — IBM Plex Mono, uses h3 size (2rem→2.5rem) from type scale */
+    .framework_card_number {
+      font-size: var(--h3-size);
+      font-weight: 600;
+      line-height: var(--line-height-tight);
+    }
+  }
+</style>

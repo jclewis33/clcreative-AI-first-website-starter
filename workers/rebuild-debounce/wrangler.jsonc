@@ -8,15 +8,15 @@
   "workers_dev": true,
   "vars": {
     "DEBOUNCE_MS": "300000",
-    "MAX_WAIT_MS": "900000"
+    "MAX_WAIT_MS": "900000",
   },
   // DEPLOY_HOOK_URL and WEBHOOK_TOKEN are secrets — set with `wrangler secret
   // put …`, never as plain vars. See README.md in this folder.
   "durable_objects": {
     "bindings": [
-      { "name": "REBUILD_DEBOUNCE", "class_name": "RebuildDebounce" }
-    ]
+      { "name": "REBUILD_DEBOUNCE", "class_name": "RebuildDebounce" },
+    ],
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RebuildDebounce"] }],
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
 }

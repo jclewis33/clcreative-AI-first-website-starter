@@ -5,12 +5,12 @@
  * redirects to /404). Editors preview them via the SSR twin at
  * /preview/case-studies/[slug], which calls the exact same loader.
  */
-import CaseStudyTemplate from "../../components/templates/CaseStudyTemplate.astro";
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import CaseStudyTemplate from "@/components/templates/CaseStudyTemplate.astro";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import {
   loadCaseStudyPage,
   getCaseStudyStaticPaths,
-} from "../../sanity/lib/page-data";
+} from "@/sanity/lib/page-data";
 
 // Must be an imported helper: Astro extracts getStaticPaths into its own
 // module at build time, so frontmatter siblings are not in scope here.

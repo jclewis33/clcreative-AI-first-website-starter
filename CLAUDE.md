@@ -6,6 +6,48 @@ This project uses a structured class-naming and component system. Follow the con
 
 ---
 
+## Contents
+
+The sections run in the order you meet them: how to write markup and CSS, where
+files live, the rules that bite, the component API, then content and shipping.
+
+**Writing markup & CSS**
+[Class Naming System](#class-naming-system) ·
+[Variables](#variables) ·
+[Responsive Variable System](#responsive-variable-system) ·
+[Interactions (plain CSS)](#interactions-plain-css)
+
+**Where code lives**
+[File Structure](#file-structure)
+
+**Rules that bite** — the non-obvious ones, each learned from a real regression
+[Layout & Composition](#layout-composition) ·
+[Text & Spacing](#text-spacing) ·
+[Images, Icons & SVG](#images-icons-svg) ·
+[Props & TypeScript](#props-typescript) ·
+[Working Practices](#working-practices)
+
+**Components**
+[Button](#button-component-srccomponentsuibuttonastro) ·
+[Navbar](#navbar-component-srccomponentsglobalnavbarastro) ·
+[BaseLayout](#baselayout-srclayoutsbaselayoutastro) ·
+[UI Component System](#ui-component-system-srccomponentsui) ·
+[Animation/Slider Dependencies](#animationslider-dependencies-per-component-imports-no-window-globals) ·
+[Common Page Patterns](#common-page-patterns)
+
+**Content & configuration**
+[Sanity types](#sanity-types-generated-never-hand-written) ·
+[Site Configuration](#site-configuration-srcconfigsitets)
+
+**Shipping**
+[Deployment, Sanity Studio & Preview](#deployment-sanity-studio-preview) ·
+[Per-page SEO & Structured Data](#per-page-seo-structured-data) ·
+[LLM Discoverability](#llm-discoverability-llmstxt-llms-fulltxt)
+
+**[Anti-Patterns](#anti-patterns)** — read this one before you write anything.
+
+---
+
 ## Class Naming System
 
 There are three types of classes. Apply them in this order on any element: **custom class first**, then utilities, then combo classes.
@@ -15,6 +57,7 @@ There are three types of classes. Apply them in this order on any element: **cus
 Used to identify an element's role within a component. Always the first class on an element.
 
 **Rules:**
+
 - Use underscores between words: `hero_wrap`, `hero_split_layout`, `card_title`
 - Compound-word prefixes keep their hyphens: `case-study_detail_wrap`, `case-study_card_title`
 - Format: `type_variation_element` (variation is optional)
@@ -28,15 +71,24 @@ Used to identify an element's role within a component. Always the first class on
 - Deeper nesting starts a new subcomponent rather than exceeding 3 underscores
 
 **Examples:**
+
 ```html
 <section class="hero_wrap u-padding-block-main">
-<div class="hero_layout u-container u-grid-2">
-<h1 class="hero_title u-text-style-h1">
-<p class="hero_text u-text-style-regular">
-<div class="card_wrap u-box-shadow-small u-radius-main">
-<h3 class="card_title u-text-style-h3">
-<footer class="footer_wrap u-background-1 u-padding-block-large">
-<div class="footer_link_wrap u-display-flex u-flex-direction-column u-gap-1rem">
+  <div class="hero_layout u-container u-grid-2">
+    <h1 class="hero_title u-text-style-h1">
+      <p class="hero_text u-text-style-regular"></p>
+      <div class="card_wrap u-box-shadow-small u-radius-main">
+        <h3 class="card_title u-text-style-h3">
+          <footer class="footer_wrap u-background-1 u-padding-block-large">
+            <div
+              class="footer_link_wrap u-display-flex u-flex-direction-column u-gap-1rem"
+            ></div>
+          </footer>
+        </h3>
+      </div>
+    </h1>
+  </div>
+</section>
 ```
 
 ### 2. Utility Classes
@@ -44,61 +96,87 @@ Used to identify an element's role within a component. Always the first class on
 Reusable, single-purpose classes. Always prefixed with `u-`. Always stacked on top of a custom class.
 
 **Rules:**
+
 - Always start with `u-`
 - Use dashes between words: `u-text-style-large`, `u-gap-1rem`
 - Never apply more than 4 utility classes at once — use the custom class for additional styles
 - Never apply a utility class alone without a custom class beneath it
 
-**Available utilities** (see `src/styles/base/` for the full list):
+**Available utilities** (see `src/styles/utilities/` for the full list):
 
-| Category | Example classes |
-|---|---|
-| Typography | `u-text-style-h1` through `u-text-style-h6`, `u-text-style-eyebrow`, `u-display-xl/lg/md/sm`, `u-text-style-tiny/small/regular/large/xlarge` |
-| Text style | `u-text-style-bold`, `u-text-style-italic`, `u-text-style-muted`, `u-text-style-strikethrough`, `u-text-style-nowrap` |
-| Text align | `u-text-align-left`, `u-text-align-center`, `u-text-align-right` |
-| Spacing — padding | `u-padding-0` through `u-padding-8`, `u-padding-small/main/large`, `u-padding-sitemargin/gutter`, `u-padding-block-*`, `u-padding-inline-*`, `u-padding-top/bottom/left/right-*` |
-| Spacing — margin | `u-margin-top/bottom-0` through `u-margin-top/bottom-8`, `u-margin-top/bottom-auto/gutter` |
-| Layout — container | `u-container`, `u-container-narrow`, `u-container-wide`, `u-container-full` |
-| Layout — flex | `u-display-flex`, `u-flex-direction-row/column`, `u-flex-wrap`, `u-justify-content-start/center/end/between`, `u-align-items-start/center/end` |
-| Layout — grid | `u-grid-1` through `u-grid-12` |
-| Layout — gap | `u-gap-gutter`, `u-gap-0` through `u-gap-8`, `u-gap-row-0` through `u-gap-row-8`, `u-gap-column-0` through `u-gap-column-8`, `u-gap-inherit` |
-| Background | `u-background-1`, `u-background-2`, `u-background-skeleton` |
-| Gradient | `u-gradient-text`, `u-gradient-light-blue`, `u-gradient-light-blue-reverse` |
-| Shadow | `u-box-shadow-xxsmall/xsmall/small/medium/large/xlarge/xxlarge` |
-| Radius | `u-radius-none/xsmall/small/medium/large/xlarge/main/full/section` |
-| Display | `u-display-flex`, `u-display-none`, `u-display-block`, `u-display-inline-block` |
-| Visibility | `u-visible`, `u-invisible`, `u-hide`, `u-hide-on-xsmall`, `u-hide-on-small`, `u-hide-on-medium`, `u-hide-on-large` |
-| Overflow | `u-overflow-hidden`, `u-overflow-auto`, `u-overflow-visible`, `u-overflow-scroll` |
-| Dimension | `u-w-100`, `u-h-100` |
-| Max width | `u-max-width-xlarge/large/medium/small/xsmall/xxsmall` |
-| Z-index | `u-z-index-1`, `u-z-index-2` |
-| Aspect ratio | `u-aspect-ratio-portrait/landscape/widescreen/square` |
-| Icon | `u-icon-16`, `u-icon-24`, `u-icon-32`, `u-icon-48`, `u-icon-64` |
-| Image | `u-image-wrapper`, `u-image`, `u-image-wrapper.is-background` |
-| Content wrapper | `u-content-wrapper`, `.is-center-align`, `.is-left-align`, `.is-right-align`, `.is-center-align-mobile` |
-| Rich text | `u-rich-text` — vertical rhythm for CMS/prose content (bare heading + paragraph tags) |
-| List | `u-list` — apply to `<ul>` or `<ol>` for bullet/ordered list spacing without the rich-text wrapper. Sets `margin-top: 0`, `margin-bottom: var(--space-4)` (auto-zeroed when `:last-child`), and a default `font-size: var(--text-regular-size)`. The font-size uses `:where()` so any `u-text-style-*` class overrides it (e.g. `<ul class="u-list u-text-style-large">`). Direct `<li>` children get `margin-bottom: var(--space-2)` between items. |
-| Button | `u-button-wrapper`, `u-button-reset` |
-| Color | `u-inherit-color` |
-| Surface | `u-surface` — opt-in "contrasting card" island. Reads the `--surface-*` theme tier and remaps `--background`/`--text`/`--heading-accent`/`--border` + paints itself, so a card pops and stays readable on any section theme. See **Surface tier** under Variables. (Note: components that wrap text — `.testimonial_card`, `.card_primary_*` — apply the same remap on their *own* class rather than this utility; see the why below.) |
-| Text shrink | `u-text-shrink` — add to flex-row parent with icon + Text children to prevent overflow |
-| Accessibility | `u-sr-only` |
+| Category           | Example classes                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Typography         | `u-text-style-h1` through `u-text-style-h6`, `u-text-style-eyebrow`, `u-display-xl/lg/md/sm`, `u-text-style-tiny/small/regular/large/xlarge`                                                                                                                                                                                                                                                                                                         |
+| Text style         | `u-text-style-bold`, `u-text-style-italic`, `u-text-style-muted`, `u-text-style-strikethrough`, `u-text-style-nowrap`                                                                                                                                                                                                                                                                                                                                |
+| Text align         | `u-text-align-left`, `u-text-align-center`, `u-text-align-right`                                                                                                                                                                                                                                                                                                                                                                                     |
+| Spacing — padding  | `u-padding-0` through `u-padding-8`, `u-padding-small/main/large`, `u-padding-sitemargin/gutter`, `u-padding-block-*`, `u-padding-inline-*`, `u-padding-top/bottom/left/right-*`                                                                                                                                                                                                                                                                     |
+| Spacing — margin   | `u-margin-top/bottom-0` through `u-margin-top/bottom-8`, `u-margin-top/bottom-auto/gutter`                                                                                                                                                                                                                                                                                                                                                           |
+| Layout — container | `u-container`, `u-container-narrow`, `u-container-wide`, `u-container-full`                                                                                                                                                                                                                                                                                                                                                                          |
+| Layout — flex      | `u-display-flex`, `u-flex-direction-row/column`, `u-flex-wrap`, `u-justify-content-start/center/end/between`, `u-align-items-start/center/end`                                                                                                                                                                                                                                                                                                       |
+| Layout — grid      | `u-grid-1` through `u-grid-12`                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Layout — gap       | `u-gap-gutter`, `u-gap-0` through `u-gap-8`, `u-gap-row-0` through `u-gap-row-8`, `u-gap-column-0` through `u-gap-column-8`, `u-gap-inherit`                                                                                                                                                                                                                                                                                                         |
+| Background         | `u-background-1`, `u-background-2`, `u-background-skeleton`                                                                                                                                                                                                                                                                                                                                                                                          |
+| Gradient           | `u-gradient-text`, `u-gradient-light-blue`, `u-gradient-light-blue-reverse`                                                                                                                                                                                                                                                                                                                                                                          |
+| Shadow             | `u-box-shadow-xxsmall/xsmall/small/medium/large/xlarge/xxlarge`                                                                                                                                                                                                                                                                                                                                                                                      |
+| Radius             | `u-radius-none/xsmall/small/medium/large/xlarge/main/full/section`                                                                                                                                                                                                                                                                                                                                                                                   |
+| Display            | `u-display-flex`, `u-display-none`, `u-display-block`, `u-display-inline-block`                                                                                                                                                                                                                                                                                                                                                                      |
+| Visibility         | `u-visible`, `u-invisible`, `u-hide`, `u-hide-on-xsmall`, `u-hide-on-small`, `u-hide-on-medium`, `u-hide-on-large`                                                                                                                                                                                                                                                                                                                                   |
+| Overflow           | `u-overflow-hidden`, `u-overflow-auto`, `u-overflow-visible`, `u-overflow-scroll`                                                                                                                                                                                                                                                                                                                                                                    |
+| Dimension          | `u-w-100`, `u-h-100`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Max width          | `u-max-width-xlarge/large/medium/small/xsmall/xxsmall`                                                                                                                                                                                                                                                                                                                                                                                               |
+| Z-index            | `u-z-index-1`, `u-z-index-2`                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Aspect ratio       | `u-aspect-ratio-portrait/landscape/widescreen/square`                                                                                                                                                                                                                                                                                                                                                                                                |
+| Icon               | `u-icon-16`, `u-icon-24`, `u-icon-32`, `u-icon-48`, `u-icon-64`                                                                                                                                                                                                                                                                                                                                                                                      |
+| Image              | `u-image-wrapper`, `u-image`, `u-image-wrapper.is-background`                                                                                                                                                                                                                                                                                                                                                                                        |
+| Content wrapper    | `u-content-wrapper`, `.is-center-align`, `.is-left-align`, `.is-right-align`, `.is-center-align-mobile`                                                                                                                                                                                                                                                                                                                                              |
+| Rich text          | `u-rich-text` — vertical rhythm for CMS/prose content (bare heading + paragraph tags)                                                                                                                                                                                                                                                                                                                                                                |
+| List               | `u-list` — apply to `<ul>` or `<ol>` for bullet/ordered list spacing without the rich-text wrapper. Sets `margin-top: 0`, `margin-bottom: var(--space-4)` (auto-zeroed when `:last-child`), and a default `font-size: var(--text-regular-size)`. The font-size uses `:where()` so any `u-text-style-*` class overrides it (e.g. `<ul class="u-list u-text-style-large">`). Direct `<li>` children get `margin-bottom: var(--space-2)` between items. |
+| Button             | `u-button-reset` (`u-button-wrapper` is applied by `<ButtonWrapper>` — use the component)                                                                                                                                                                                                                                                                                                                                                            |
+| Color              | `u-inherit-color`                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Theme invert       | `data-theme-invert` — flips an element (and everything inside it) to the opposite of the ground it sits on: dark/brand → light, light/unthemed → dark. Put it on **any** wrapper, not just cards. Takes a whole theme (see **Theme invert** under Variables), so background, text, borders, buttons and links all follow. Opt-in: `<Card theme="invert">`, or the bare attribute on your own markup.                                                 |
+| Text shrink        | `u-text-shrink` — add to flex-row parent with icon + Text children to prevent overflow                                                                                                                                                                                                                                                                                                                                                               |
+| Accessibility      | `u-sr-only`                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 ### 3. Combo Classes
 
 Used to apply a specific modification to an existing custom class. Scoped only to that combination.
 
 **Rules:**
+
 - Always start with `is-`
 - Use dashes between words: `is-active`, `is-dark`, `is-open`
 - Always applied on top of a custom class (not utilities)
 - Only affect the specific custom + combo combination
 
 **Examples:**
+
 ```html
 <div class="card_wrap is-featured">
-<button class="nav_link is-active">
-<section class="hero_wrap is-dark">
+  <button class="nav_link is-active">
+    <section class="hero_wrap is-dark"></section>
+  </button>
+</div>
+```
+
+### Putting it together
+
+```html
+<!-- Correct: custom class first, then utilities, then combo -->
+<section class="cta_wrap u-background-1 u-padding-block-large is-dark">
+  <div class="cta_layout u-container u-grid-2 u-gap-gutter">
+    <div class="cta_content">
+      <p class="cta_eyebrow u-text-style-eyebrow u-text-style-muted">Label</p>
+      <h2 class="cta_title u-text-style-h2">Heading</h2>
+      <p class="cta_text u-text-style-regular">Body copy.</p>
+      <ButtonWrapper>
+        <!-- Button component -->
+      </ButtonWrapper>
+    </div>
+    <div class="cta_visual u-image-wrapper">
+      <!-- Image component -->
+    </div>
+  </div>
+</section>
 ```
 
 ---
@@ -117,59 +195,166 @@ CSS custom properties are defined in `src/styles/variables/`. Use them for all o
 Use custom styles or utility classes (not variables directly) for: `display`, width/height, opacity, overflow, and anything not in the variable list.
 
 **Variable naming pattern:**
+
 ```
 --category-subcategory-variant
 ```
+
 Examples: `--color-brand-black`, `--site-margin`, `--space-4`, `--radius-main`, `--site-gutter`
 
 **Spacing system — three tiers:**
 
 All fluid values use `clamp()` scaling between 20em (320px) and 90em (1440px) viewports.
 
-| Variable group | Purpose | Range |
-|---|---|---|
-| `--space-1` … `--space-8` | Fluid micro-spacing (margins, gaps, text spacing) | 6px–64px |
-| `--section-space-small/main/large` | Fluid section vertical padding | 3rem–10rem (48px–160px) |
-| `--gap-1` … `--gap-8` | Gap aliases that map to the space scale | Same as `--space-*` |
-| `--site-margin` | Fluid horizontal container gutter (used in container width calc) | 1rem–3rem |
-| `--site-gutter` | Fluid column gap for column-width calculations | 1rem–2rem |
-| `--grid-breakout` | Named-line grid for full-bleed layouts (12-col with viewport gutters) | — |
-| `--grid-breakout-single` | Mobile version of breakout grid (single content track) | — |
+| Variable group                     | Purpose                                                               | Range                   |
+| ---------------------------------- | --------------------------------------------------------------------- | ----------------------- |
+| `--space-1` … `--space-8`          | Fluid micro-spacing (margins, gaps, text spacing)                     | 6px–64px                |
+| `--section-space-small/main/large` | Fluid section vertical padding                                        | 3rem–10rem (48px–160px) |
+| `--gap-1` … `--gap-8`              | Gap aliases that map to the space scale                               | Same as `--space-*`     |
+| `--site-margin`                    | Fluid horizontal container gutter (used in container width calc)      | 1rem–3rem               |
+| `--site-gutter`                    | Fluid column gap for column-width calculations                        | 1rem–2rem               |
+| `--grid-breakout`                  | Named-line grid for full-bleed layouts (12-col with viewport gutters) | —                       |
+| `--grid-breakout-single`           | Mobile version of breakout grid (single content track)                | —                       |
 
-**Surface tier — forkable "contrasting card" colors:**
+**Theme invert — a card that must invert against its section:**
 
-A card that sits inside a themed `<Section>` often needs to *contrast* with it (so it pops) while staying readable — e.g. a white "paper" card on a dark section, or a tonal-orange card on a brand section. That treatment is centralized in a **`--surface-*` variable tier** defined once per theme block (`light`/`dark`/`brand`) in [src/styles/variables/themes.css](src/styles/variables/themes.css):
+`data-theme-invert` flips an element to the **opposite of the ground it sits on**, and every descendant follows, because a theme here is just a set of inherited custom properties:
 
-| Variable | Meaning (per theme) |
-|---|---|
-| `--surface-background` | The card's background on this theme |
-| `--surface-text` | The card's text color on this theme |
-| `--surface-heading-accent` | Accent color inside the card (e.g. testimonial stars) |
-| `--surface-border` | The card's border color on this theme |
+| Ground it sits on           | What the island becomes |
+| --------------------------- | ----------------------- |
+| `dark` section              | light                   |
+| `brand` section             | light                   |
+| `light` section             | dark                    |
+| no theme set (page default) | dark                    |
 
-Current values: **light/dark** sections → white card + dark text + brand-accent stars; **brand** section → `brand-400` card + white text. **To re-skin a fork, edit these `--surface-*` values in the three theme blocks — one file, no per-component branching.** Never hard-code per-theme card colors in individual components (a `[data-theme="dark"] .card` branch, a force-applied `.u-theme-light`); the tier exists so that branching never has to.
+Put it on **any** wrapper — a card, a panel, a bare `<div>` around several components — and the whole subtree inverts. There is nothing card-specific about it, and it takes a **whole theme**, not a partial copy:
 
-**How to consume the tier — apply it on the card's own wrapping class, not only via `.u-surface`.** The `--surface-*` tier is the source of truth; a component opts in by remapping the standard semantic vars to it on the class that wraps **all** the card's text, e.g.:
+```html
+<div class="testimonial_card" data-theme-invert>…</div>
+```
 
 ```css
-.testimonial_card {            /* also .card_primary_element / .card_primary_content */
-  --background: var(--surface-background);
-  --background-2: var(--surface-background);
-  --text: var(--surface-text);
-  --heading-accent: var(--surface-heading-accent);
-  --border: var(--surface-border);
-  background: var(--surface-background);
-  color: var(--surface-text);     /* ← the load-bearing line */
+.testimonial_card {
+  background: var(--background-2); /* the theme's card background */
+  color: var(--text);
+  border-color: var(--border);
 }
 ```
 
-The `.u-surface` utility (in themes.css) does exactly this and is available as a one-class opt-in, **but card components apply the remap on their own class instead of relying solely on `.u-surface`.** Reason — the **`color` must live on the layer that wraps the text.** If the card layer sets no `color` of its own, the inner `.u-text` wrappers inherit `color` straight from `.u-section[data-theme]` (white on a dark section) and the text renders invisible on a light card. Setting `color: var(--surface-text)` on the card's own wrapping class (the pattern the primary `<Card>` always used) guarantees every nested text layer inherits the contrasting color. Cards react to their section's `data-theme` automatically — no `theme` prop or per-instance logic needed.
+The rule lives in [src/styles/variables/themes.css](src/styles/variables/themes.css) as two selector lists, and **specificity is what makes the flip relative**: the light block lists `[data-theme="dark"] [data-theme-invert]` and `[data-theme="brand"] [data-theme-invert]` (two-part, so they win where they apply), while the dark block lists a bare `[data-theme-invert]` (one-part) to catch light and unthemed grounds. Adding a fourth theme mode means adding one selector to the block holding the theme it should flip _to_ — the setup skill documents this.
 
+**On components:** cards do not invert automatically. `<Card theme="invert">` and `<TestimonialCard theme="invert">` opt in; the theme union is `inherit | light | dark | brand | invert`. Left alone, a card inherits its section's theme and surfaces with `--background-2`. The section wrappers (`<TestimonialsSlider>`, `<TestimonialsGrid>`, `<BlogPostGrid>`, `<CaseStudyGrid>`) pass `invert` for you when their own `theme` is dark or brand, which is why cards keep reading as light paper on dark grounds without anyone writing it per card.
+
+**Why a whole theme and not a `--surface-*` tier.** This replaced a tier that copied only background / text / heading-accent / border. Because the copy was partial, anything else inside a card — buttons, links — still resolved against the **section** theme. That is a mismatch waiting to happen, and it happened: the card title is now a real `<a>`. A whole theme has no such gap; every token agrees by construction.
+
+To re-skin a fork, edit the theme blocks — one file, no per-component branching. Never hard-code per-theme card colors in a component (`[data-theme="dark"] .card …`, or a force-applied `.u-theme-light`); the marker exists so that branching never has to happen. Cards react to their section's `data-theme` automatically — no `theme` prop or per-instance logic.
 **Layout rules:**
+
 - Grid columns: never use bare `1fr` — always `minmax(0, 1fr)`. This applies to every grid: `repeat(2, minmax(0, 1fr))` not `1fr 1fr`, `repeat(3, minmax(0, 1fr))` not `1fr 1fr 1fr`
 - Never apply layout (`display: grid`, `grid-template-columns`, etc.) directly on a `u-container`. Because `u-container` has `container-type: inline-size`, it acts as the container query context — `@container` rules on it affect its children, not itself. Always use a child element (e.g. `_layout` div) for grid/flex layout
 - Any element with `display: grid` or responsive grid (e.g. `display: var(--flex-medium, grid)`) must also have `flex-direction: column` — for when it collapses to flex on smaller viewports
 - Use `grid-column-end: span N` not absolute end values. When both start and span: `grid-column: 1 / span 5`
+
+---
+
+## Responsive Variable System
+
+Responsive behavior is driven by CSS custom property flags defined in `src/styles/utilities/responsive-columns.css`. These flags are set per container-query breakpoint tier on all descendants (`*`), so you can reference them in any component's CSS without writing additional container queries.
+
+**Breakpoint tiers** (requires a `container-type: inline-size` ancestor like `u-container`):
+
+- **large** — default (no query)
+- **medium** — `@container (width < 58em)` (~928px)
+- **small** — `@container (width < 35em)` (~560px)
+- **xsmall** — `@container (width < 20em)` (~320px)
+
+**Available flags per tier** (undefined at larger tiers — use CSS fallback value):
+
+| Flag                  | Value when active           |
+| --------------------- | --------------------------- |
+| `--flex-{tier}`       | `flex`                      |
+| `--none-{tier}`       | `none`                      |
+| `--column-{tier}`     | `column`                    |
+| `--row-{tier}`        | `row`                       |
+| `--start-{tier}`      | `start`                     |
+| `--center-{tier}`     | `center`                    |
+| `--end-{tier}`        | `end`                       |
+| `--unset-{tier}`      | `unset`                     |
+| `--relative-{tier}`   | `relative`                  |
+| `--responsive-{tier}` | `1` (numeric, for `calc()`) |
+
+**Usage patterns — prefer these over `@container` for simple keyword switches:**
+
+```css
+/* Collapse grid to flex stack on medium */
+display: var(--flex-medium, grid);
+flex-direction: column;
+
+/* Switch flex direction on small */
+flex-direction: var(--column-small, row);
+
+/* Conditionally center on medium */
+justify-content: var(--center-medium, flex-start);
+
+/* Hide on small */
+display: var(--none-small, block);
+
+/* Switch sticky to relative on medium */
+position: var(--relative-medium, sticky);
+
+/* Numeric flag for calc — apply a value only at large */
+top: calc(
+  (var(--nav-height-total) + var(--space-2)) * var(--responsive-large, 0)
+);
+```
+
+Only use `@container` when responsive variables can't express the change (e.g. changing `grid-template-columns` values, adjusting padding amounts, or other non-keyword property changes).
+
+---
+
+## Interactions (plain CSS)
+
+Interactive states — hover, focus, and active/open — are **plain CSS**. There is no trigger/state CSS-variable indirection — style the real state directly. The responsive flag variables (`--flex-medium`, `--none-small`, `--responsive-*`, …) are a **separate, still-active** system — see the Responsive Variable System section.
+
+**Hover / focus:**
+
+- `:hover` and `:focus-visible` for an element's own state.
+- For a root element driving its children (e.g. Button's root `<a>`/`<button>` painting `.button_main_element`), key off the root: `.button_main_wrap:hover .button_main_element`, and `:focus-visible` for keyboard focus. Reach for `:has(:focus-visible)` only when the focusable element is genuinely a descendant — if you find yourself needing it, check whether the wrapper should have been the control.
+- `:focus-within` for "this container has focus" (e.g. form-field / search borders).
+
+**Component state — style it directly:**
+
+- **`.is-active`** for JS-driven interactives (tabs, sliders, accordions). JS toggles it; CSS styles it. Always scope to a custom class: `.tabs_link_wrap.is-active { }`, never bare `.is-active { }`. Don't invent `.is-visible` / `.is-open`.
+- **`aria-expanded`** for disclosure state — rotate chevrons via `[aria-expanded="true"] .icon`, and open panels via `.x:has([aria-expanded="true"])` (nav dropdowns, accordions).
+- **`:has(:checked)`** for custom checkbox/radio visuals.
+- Open a **Modal** with `data-modal-trigger="modal-id"`.
+
+**Patterns:**
+
+```css
+/* Fade on hover */
+.card_link {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+.card_link:hover {
+  opacity: 0.6;
+}
+
+/* Parent hover/focus drives a child */
+.button_main_wrap:hover .button_main_element,
+.button_main_wrap:has(:focus-visible) .button_main_element {
+  /* hover tokens */
+}
+
+/* Show only when active */
+.tab_button_item.is-active .tab_button_line {
+  opacity: 1;
+}
+
+/* Faded text */
+color: color-mix(in hsl, currentColor 70%, transparent);
+```
 
 ---
 
@@ -189,172 +374,508 @@ src/
 ├── layouts/          # Page wrapper layouts (BaseLayout.astro)
 ├── pages/            # Route pages (index.astro, about.astro, etc.)
 ├── scripts/          # JavaScript (GSAP animations, etc.)
-└── styles/
-    ├── global.css         # Master import file — import order matters
-    ├── reset.css
-    ├── fonts.css
-    ├── variables/         # CSS custom properties only
-    │   ├── base.css       # ★ Edit here first — screen size, site margin/gutter,
-    │   │                  #   max-width, radius, border-width, border-colors,
-    │   │                  #   box-shadows, button sizes, focus
+└── styles/            # A DIRECTORY'S NAME IS ITS CASCADE LAYER (see below)
+    ├── global.css         # The index — declares the cascade, imports every global sheet
+    ├── reset.css          # `reset` layer
+    ├── vendor.css         # `vendor` layer — third-party CSS (Swiper) pass-through
+    ├── overrides.css      # `overrides` layer: runtime states + structural corrections
+    ├── variables/         # → layer(variables). Custom properties only, never a
+    │   │                  #   selector that paints.
+    │   ├── foundation.css # ★ Edit here first — viewport bounds, site margin/gutter,
+    │   │                  #   max-width, radius, border-width, box-shadows,
+    │   │                  #   button sizes, focus. Every clamp() reads these.
     │   ├── colors.css     # Raw color swatches only (no semantic aliases).
     │   │                  #   --color-brand-500 is the canonical brand hex; the
     │   │                  #   SITE.brand.color literal in src/config/site.ts is a
     │   │                  #   MIRROR for email/<meta theme-color> (can't read CSS) —
     │   │                  #   keep them in sync. JS that has the DOM reads the var.
     │   ├── themes.css     # Semantic theme aliases (--background, --text, --border, etc.)
-    │   │                  #   + the --surface-* tier (forkable contrasting-card
-    │   │                  #   colors per theme) and the .u-surface utility
+    │   │                  #   THIS is what a component reads — never a raw swatch.
+    │   │                  #   data-theme-invert flips an element to the
+    │   │                  #   opposite of whatever ground it sits on
     │   ├── typography.css # Font families, sizes, weights, line-heights, letter-spacing
     │   ├── spacing.css    # --space-1–8, --section-space-*, --margin-*
     │   ├── layout.css     # --grid-*, --gap-*
     │   └── nav.css        # Nav sizing, spacing, radius, banner height, dropdowns
-    ├── base/              # Utility classes and element defaults
-    │   ├── utilities.css       # Element resets, u-sr-only, u-button-reset, margin-trim
-    │   ├── typography.css      # u-text-style-*, u-display-*, u-text wrapper, rich text
+    ├── base/              # → layer(base). Element and attribute defaults ONLY —
+    │   │                  #   things a component class must be able to override.
+    │   ├── elements.css        # Bare element defaults (h1–h6, p, a, section, button)
+    │   └── animate.css         # [data-animate-in/up], [data-prevent-flicker] defaults
+    ├── utilities/         # → layer(utilities). Every `u-` class.
+    │   │                  #   ⚠ Import order in global.css is load-bearing.
+    │   ├── misc.css            # u-sr-only, u-button-reset, u-heading-accent, …
+    │   ├── margin-trim.css     # u-margin-trim / u-ignore-trim + first/last-child trim
+    │   ├── typography.css      # u-text-style-*, u-display-*, .u-text, rich text
     │   ├── layout.css          # u-container, u-grid-*, u-display-flex, u-gap-*, etc.
-    │   ├── responsive-columns.css # Responsive column system + responsive flag vars + their :root defaults
+    │   ├── responsive-columns.css # Responsive column system + flag vars + :root defaults
     │   ├── spacing.css         # u-padding-*, u-margin-*
-    │   ├── visual-utilities.css # u-background-*, u-box-shadow-*, u-radius-*, u-hide-*, etc.
-    │   └── animate.css         # CSS scroll-triggered animations (data-animate-in/up)
-    └── pages/             # Page-specific styles (component custom classes live here)
-        ├── home.css
-        └── contact.css
+    │   ├── visual-utilities.css # u-background-*, u-box-shadow-*, u-radius-*, u-hide-*
+    │   └── animate.css         # u-hero-fade (pure-CSS staggered entrance)
+    ├── components/        # → layer(components). ONLY component CSS with no single
+    │   │                  #   owner; everything else co-locates (see below).
+    │   ├── forms.css          # Form fields — shared by contact page + SignUpForm
+    │   └── marketing-scorecard.css # Owned by a React .tsx (can't hold an Astro style block)
+    └── pages/             # → layer(pages). Page-specific classes. NOT imported by
+        ├── home.css       #   global.css — each page imports its own and opens with
+        └── contact.css    #   `@layer pages { … }` in-file.
 ```
+
+**A directory's name is its cascade layer.** `variables/` → `layer(variables)`,
+`base/` → `layer(base)`, `utilities/` → `layer(utilities)`, and so on, so the
+layer a file lands in is readable from its path with no lookup. The folder is
+the contract: a `u-` class in `base/` or a bare `h1` rule in `utilities/` is a
+cascade bug even though the CSS is valid. The five single-file sheets sit at
+the top level because they have no siblings.
+
+**Cascade layers:** every stylesheet is assigned to a layer in `global.css`:
+`reset, vendor, variables, base, utilities, components, pages, overrides` —
+later beats earlier regardless of selector specificity. Utilities sit BELOW
+components on purpose (several u- classes are multi-property presets that
+components legitimately override — see the order note in `global.css`).
+Two hard rules follow from this:
+
+- **Never write unlayered CSS.** Unlayered rules beat every layer, so a
+  stray unlayered rule silently outranks the whole design system. New
+  stylesheet files must be added to `global.css` with `layer(...)`;
+  page CSS pulled in via ESM `import` must open with `@layer pages { … }`
+  in-file (see any file in `styles/pages/`). Third-party CSS must be
+  imported via `vendor.css`, never as a bare ESM import (that is why
+  swiper's CSS goes through it). `image.responsiveStyles` stays **off** in
+  `astro.config.mjs` — Astro injects those styles unlayered (see the
+  comment there).
+- **A rule that must beat page/component styling goes in `overrides.css`**
+  (swiper lock states, select placeholder color, the margin-trim
+  fallback). Keep that file small — read its header before adding to it.
 
 **Where to write CSS:**
-- **Utility classes** → `src/styles/base/` (existing files)
+
+- **Component classes** → co-located in the component's own `.astro` file, at the bottom:
+
+  ```astro
+  <style is:global>
+    @layer components {
+      .my-component_wrap {
+        /* declarations */
+      }
+    }
+  </style>
+  ```
+
+  Both attributes are load-bearing. `is:global` skips Astro's scoping hash so the classes stay targetable from other files and apply to slotted children; `@layer components { … }` slots them into the cascade defined in `styles/global.css`. A bare scoped `<style>` block (no `is:global`, no `@layer`) is still wrong for component classes — it's unlayered, so it would beat every layer in the design system.
+
+- **Component CSS with no single owning component** → `src/styles/components/` (add the file to `global.css` with `layer(components)`). Only three files qualify today; the reasons are listed in `global.css`.
+- **Page-specific classes** → `src/styles/pages/[page-name].css`, opening with `@layer pages { … }` in-file
+- **Utility classes** (`u-` prefix) → `src/styles/utilities/` (existing files)
+- **Element and attribute defaults** (bare `h1`/`p`/`a` selectors, `[data-*]` initial states) → `src/styles/base/`
 - **CSS variables** → `src/styles/variables/` (existing files)
-- **Custom component classes** → `src/styles/pages/[page-name].css` or a new `src/styles/components/[component-name].css`
-- Do **not** use Astro scoped `<style>` blocks for component classes — keep all CSS in the global files so classes remain targetable and overridable
+
+Each of those directories is its cascade layer, so the choice is the same
+question either way: _must a component class be able to override this?_ Yes →
+`base/`. No → `utilities/`. Every file opens with an `Owns:` / `Does not:`
+header naming what belongs there and where the neighbouring concerns live —
+read it before adding, and extend it when you do.
 
 ---
 
-## Astro-Specific Notes
+## Layout & Composition
 
-- **Images**: Wrap images with `u-image-wrapper` (controls dimensions, radius, overflow) and apply `u-image` to the `<img>` element (absolute-fill with focal-point positioning via `--x`/`--y`). Use `is-background` on the wrapper for Section background slots.
-- **Alt text — every image needs it**: Every `<Image>`, `<img>`, and `<Visual>` must carry meaningful, descriptive `alt` text. Do **not** ship `alt=""`. SEO crawlers (Ahrefs, etc.) report empty `alt` as a *missing* alt attribute, so even decorative/duplicate images get flagged — write a real description instead of leaving it blank. For images sourced from data (e.g. a `services`/`posts` array), reuse the existing `imageAlt`/`alt` field rather than hardcoding or blanking it. Inside `aria-hidden="true"` containers (decorative collages, cursor-follower effects) the `alt` is skipped by screen readers but still read by crawlers — so it must be present and descriptive there too. The only acceptable exception is a third-party/external image whose markup we don't render (e.g. the HoneyBook tracking pixel), since we have nothing to set `alt` on.
-- **Slots**: When placing multiple loose elements into a Layout column, wrap them in the **`<Col>` component** (`<Col slot="col1">…</Col>`) — the standard wrapper. It renders `<div class="u-display-contents">` with that load-bearing class baked in, so it can't be forgotten (a plain `<div>` would become the grid child and break alignment/gap). Do not hand-write `<div slot="col1" class="u-display-contents">`. Single self-contained components (Visual, Grid, Card) take `slot` directly — no `<Col>` needed. **Exception:** don't use `<Col>` to wrap a `<Visual>` *alongside other content* — use `<ContentWrapper>` instead. `<Col>`'s `display: contents` lets the image's `height: 100%` override its `ratio` aspect-ratio and balloon; `<ContentWrapper>` is a real block so the aspect-ratio governs (see the ⚠️ note in the `<Col>` section).
-- **Animations**: GSAP data attributes (`data-duration`, `data-distance`, `data-stagger`, `data-prevent-flicker`) are used for scroll-triggered animations. These are not classes.
-- **Component props**: Use TypeScript interfaces for component props. Prop names use camelCase.
-- **Extra attributes (rest spread)**: All UI components accept arbitrary HTML attributes (`style`, `data-*`, `aria-*`, etc.) beyond their explicit props — no extra prop needed. The `[key: string]: any` index signature on each interface allows TypeScript to accept any attribute. Internally, each component destructures known props and captures the remainder with `...rest`, then spreads `{...rest}` (or `{...attrs}` for style-merging components) onto the root element. For components that compute inline styles (Heading, Text, Visual, Overlay), user-provided `style` is extracted from `rest` and merged with the computed style string so both apply. **Button is special:** its `...rest` spreads onto the clickable overlay (`<a>` or `<button>`), not the outer wrapper. BlogCard's `...rest` passes through to the underlying `<Card>` component. Each component also has a `docs` prop (destructured but unused) that serves as a JSDoc documentation holder visible in editor autocomplete — it must be destructured to prevent it from leaking into `...rest` as a DOM attribute.
-- **SVGs**: Give SVGs their own component class. Put stroke attributes (`stroke`, `stroke-width`, `stroke-linecap`, `stroke-linejoin`) in CSS, not inline. Use `stroke-width: var(--border-width-main)` and `stroke: currentColor`. Decorative SVGs need `aria-hidden="true"`.
-- **Icons & logos**: Icons/logos next to text need `flex-shrink: 0`. Square icons/logos: use `width` + `aspect-ratio: 1/1` — not `width` + `height`. Logos need `object-fit: contain` (overrides the default `cover`).
-- **Image loading placeholders**: The Visual component applies a skeleton background by default. For images with transparency (logos, PNGs), use the `transparent` prop to remove it: `<Visual src={logo} alt="Logo" transparent />`. Pass as a bare keyword — not `transparent="true"`.
-- **Background image loading**: `<Visual variant="background">` defaults to `loading="eager"` (not `lazy`). Background images are structural — they're part of every section that contains them — and native lazy-load can fail to fire reliably when the image sits inside the multi-layer `position: absolute; inset: 0` chain used by Section backgrounds and `Layout variant="card"` col2, especially on SSR routes where HTML streams in. `priority` still upgrades both `loading` to `eager` and `fetchpriority` to `high` for above-the-fold heroes.
-- **Form inputs**: `<input>`, `<textarea>`, and `<select>` elements must have `font-size` no smaller than `1rem` — sizes below `1rem` trigger auto-zoom on iOS.
-- **Text parent containers**: Direct parents of text elements should not be `display: flex` — flex prevents vertical margin collapsing between text. Use `display: block` or no display override for text wrappers. Add `u-margin-trim` to the direct parent of text elements with margins to prevent unwanted extra space at the edges.
-- **Text spacing**: Bottom-margin-only inside `.u-text` wrappers. Every text style class (`u-text-style-*`, `u-display-*`) declares both `margin-top` and `margin-bottom` via variables, but all `margin-top` variables are `0` — so spacing flows in one direction only (bottom). Inside `.u-text` wrappers, the child's `margin-top` is also forced to `0 !important` by the `.u-text > *` rule. Bare heading tags (`h1`–`h6`) and `p` have `margin-top: 0; margin-bottom: 0;` — so headings and paragraphs used without a text style class (accordion toggles, nav links, footers) carry zero margin. **Rich text** (`.u-rich-text`): a separate vertical rhythm system for CMS/prose content where bare heading and paragraph tags flow without `.u-text` wrappers. Headings get both `margin-top` (section separation) and `margin-bottom` (flow into content); paragraphs get `margin-bottom` only. Values use `--space-*` variables directly (not per-heading typography variables) so you can tune rich-text rhythm independently. Rules live in `src/styles/base/typography.css`. **Margin trim**: containers (`u-container`), layout columns (`u-layout-column`), content wrappers (`u-content-wrapper`), rich text (`u-rich-text`), and any element with `u-margin-trim` automatically remove `margin-top` from the first visible child and `margin-bottom` from the last visible child — preventing extra space at the edges. Add `u-ignore-trim` to any child that should keep its margin. `text-box-trim` is applied as a progressive enhancement inside `.u-text`.
-- **Don't add redundant `marginBottom={0}`**: because of margin-trim (above), the **last child's bottom margin is already auto-zeroed** whenever a `<Text>`/`<Heading>` is the *last child* of a **trimmed wrapper** — a `<Section>` container, a `<Layout>` column (`slot="col1"`/`"col2"`), `<ContentWrapper>`, `<Col>`, `u-rich-text`, or any element carrying `u-margin-trim` / `u-container*`. In those cases `marginBottom={0}` does **nothing** — do not add it. It is only needed when the element is the last child of a **custom `<div>`** that is *not* one of those (e.g. a card body `*_content`, a `*_meta` row, an `<li>`). Even then, prefer adding `u-margin-trim` to that custom wrapper once over sprinkling `marginBottom={0}` on each child. The trim rules live in [src/styles/components/section.css](src/styles/components/section.css) (`:last-child { margin-bottom: 0 }`) and [src/styles/base/utilities.css](src/styles/base/utilities.css) (last-visible-child trim).
-- **Layout containers space their own children — don't add margins between siblings.** The `<Section>` content container (`.u-container`) is a **flex column with a built-in `gap`** (default `--space-8`, overridable via the Section `gap` prop, `0`–`8`). Its direct children are spaced apart automatically — so when you stack a `<Heading>` above a `<Layout>`, `<Grid>`, `<ContentWrapper>`, another `<Heading>`, or a `<Text>` **directly inside a `<Section>`**, do **not** add `marginBottom` (or any `u-margin-*` utility) to create that gap; the container already does it. The same is true inside a `<Layout>` (CSS grid with a `rowGap`), its `stack`/`stack-centered` variants, and inside `<Col>` (`display: contents`, so its children become the Layout's grid children and inherit that row gap). To change the spacing, **adjust the container's gap** (`<Section gap={N}>` / `<Layout rowGap={N}>`) — never per-child margins. The one exception is `<ContentWrapper>` — a plain block with **no gap**; spacing between its children comes from the text elements' own bottom margins (last one auto-trimmed), so you still don't add extra `marginBottom`. **Net rule:** between direct children of a `<Section>` / `<Layout>` / `<Col>`, spacing is the container's `gap` — leave child margins alone. Only reach for `marginBottom` inside a custom `<div>` *you* wrote that has no gap and isn't margin-trimmed (e.g. a card body).
+**`<Layout>` is the only layout component.** A section's content goes straight
+inside it — the default slot IS column 1, and `<Layout>` generates the column
+wrapper itself. A second column takes `slot="column2"`.
 
----
+- Several loose elements in column 2 go in `<Fragment slot="column2">`, which
+  groups without emitting a box. Repeating `slot="column2"` on each element is
+  equally valid — Astro collects them in source order, and the rendered children
+  are the same either way. The only difference is an inert `slot` attribute left
+  on each element. Pick whichever reads better.
+- Alignment and measure are Layout's own `align` and `maxWidth` props.
+- **Do not add a wrapper component for columns.** The generated column is a real
+  flex box, and that box is what makes a ratio'd `<Visual>` safe inside one — a
+  `display: contents` wrapper would erase it and let images balloon.
+- A `<Visual>` may share a column with other content freely; it holds its `ratio`
+  at every width (measured 1.778 for a 16/9 visual at 1440/700/480px in all four
+  arrangements). See **Images, Icons & SVG** for the rule that keeps that true.
 
-## Responsive Variable System
+**`<body>` is the page shell — no wrapper div.** BaseLayout renders Navbar,
+`<main>`, and Footer as direct children of `<body>`. The layout is the reusable
+unit; do not wrap them in a container div.
 
-Responsive behavior is driven by CSS custom property flags defined in `src/styles/base/responsive-columns.css`. These flags are set per container-query breakpoint tier on all descendants (`*`), so you can reference them in any component's CSS without writing additional container queries.
+The shell lives on `body` in [src/styles/reset.css](src/styles/reset.css), with
+`body > main { flex: 1 }` below it to push the footer down:
 
-**Breakpoint tiers** (requires a `container-type: inline-size` ancestor like `u-container`):
-- **large** — default (no query)
-- **medium** — `@container (width < 58em)` (~928px)
-- **small** — `@container (width < 35em)` (~560px)
-- **xsmall** — `@container (width < 20em)` (~320px)
+1. **`display: flex; flex-direction: column; min-height: 100svh`** — the
+   full-height column.
+2. **`overflow-x: clip`, and the axis matters.** With `html`'s overflow left
+   `visible`, the browser propagates `body`'s overflow to the viewport. Naming
+   only `overflow-x` stops sideways scrolling (decorative art, marquees) while
+   vertical scrolling stays normal. The `overflow: clip` shorthand on `body`
+   would propagate to **both** axes and freeze the page. Keep it `clip`, never
+   `hidden` — `clip` does not create a scroll container.
 
-**Available flags per tier** (undefined at larger tiers — use CSS fallback value):
+The modal / mobile-nav scroll lock belongs on `html`
+(`html:has(dialog.modal_dialog[open]) { overflow: hidden }`), where the
+shorthand _is_ correct and its `:has()` specificity beats the `body` rule.
 
-| Flag | Value when active |
-|------|-------------------|
-| `--flex-{tier}` | `flex` |
-| `--none-{tier}` | `none` |
-| `--column-{tier}` | `column` |
-| `--row-{tier}` | `row` |
-| `--start-{tier}` | `start` |
-| `--center-{tier}` | `center` |
-| `--end-{tier}` | `end` |
-| `--unset-{tier}` | `unset` |
-| `--relative-{tier}` | `relative` |
-| `--responsive-{tier}` | `1` (numeric, for `calc()`) |
+### Never call `Astro.slots.render()` to test whether a slot is empty
 
-**Usage patterns — prefer these over `@container` for simple keyword switches:**
-```css
-/* Collapse grid to flex stack on medium */
-display: var(--flex-medium, grid);
-flex-direction: column;
+Use `:empty` in CSS instead. Two independent failures, both silent, both
+measured:
 
-/* Switch flex direction on small */
-flex-direction: var(--column-small, row);
+1. **It drops client scripts.** Astro emits a component's hoisted `<script>` tag
+   as _part of its rendered output_, so the tag lands inside the string
+   `render()` returns. Discard that string and render again through `<slot />`
+   and the tag is gone — not re-emitted. A/B on two identical pages showed the
+   only difference in emitted HTML was a missing
+   `Slider.astro?astro&type=script` tag. On `<Section>`, whose default slot
+   holds the page, this killed every slider, tab, accordion and modal at once.
+2. **It breaks images on a cold start.** Rendering a slot containing
+   `<Image>`/`<Visual>` runs those children before the image service is
+   initialized: `Cannot read properties of undefined (reading
+'validateOptions')`. The page still returns 200 — it just silently loses
+   sections (homepage measured at **9 sections instead of 17**). Emitting the
+   captured string with `set:html` fixes failure 1 but not this one, and moving
+   the call from frontmatter into the template does not help either. Both were
+   tried and reverted.
 
-/* Conditionally center on medium */
-justify-content: var(--center-medium, flex-start);
+**What to do instead:**
 
-/* Hide on small */
-display: var(--none-small, block);
-
-/* Switch sticky to relative on medium */
-position: var(--relative-medium, sticky);
-
-/* Numeric flag for calc — apply a value only at large */
-top: calc((var(--nav-height-total) + var(--space-2)) * var(--responsive-large, 0));
-```
-
-Only use `@container` when responsive variables can't express the change (e.g. changing `grid-template-columns` values, adjusting padding amounts, or other non-keyword property changes).
-
----
-
-## Interactions (plain CSS)
-
-Interactive states — hover, focus, and active/open — are **plain CSS**. There is no trigger/state CSS-variable indirection — style the real state directly. The responsive flag variables (`--flex-medium`, `--none-small`, `--responsive-*`, …) are a **separate, still-active** system — see the Responsive Variable System section.
-
-**Hover / focus:**
-- `:hover` and `:focus-visible` for an element's own state.
-- For a parent driving its children (e.g. the clickable overlay sits on top of the visual element), key off the parent: `.button_main_wrap:hover .button_main_element`, or `:has(:focus-visible)` for keyboard focus.
-- `:focus-within` for "this container has focus" (e.g. form-field / search borders).
-
-**Component state — style it directly:**
-- **`.is-active`** for JS-driven interactives (tabs, sliders, accordions). JS toggles it; CSS styles it. Always scope to a custom class: `.tabs_link_wrap.is-active { }`, never bare `.is-active { }`. Don't invent `.is-visible` / `.is-open`.
-- **`aria-expanded`** for disclosure state — rotate chevrons via `[aria-expanded="true"] .icon`, and open panels via `.x:has([aria-expanded="true"])` (nav dropdowns, accordions).
-- **`:has(:checked)`** for custom checkbox/radio visuals.
-- Open a **Modal** with `data-modal-trigger="modal-id"`.
-
-**Patterns:**
-```css
-/* Fade on hover */
-.card_link { opacity: 1; transition: opacity .2s ease; }
-.card_link:hover { opacity: .6; }
-
-/* Parent hover/focus drives a child */
-.button_main_wrap:hover .button_main_element,
-.button_main_wrap:has(:focus-visible) .button_main_element { /* hover tokens */ }
-
-/* Show only when active */
-.tab_button_item.is-active .tab_button_line { opacity: 1; }
-
-/* Faded text */
-color: color-mix(in hsl, currentColor 70%, transparent);
-```
+- **Need a JS-side check?** `Astro.slots.has(name)` reports only whether a slot
+  was _passed_ — cheap, no render, no hazard.
+- **Slot passed but renders nothing?** Let CSS erase it. Astro emits the wrapper
+  with nothing at all between the tags (verified in dev and in the production
+  build — not even whitespace), so `:empty` matches exactly the empty case, and
+  a wrapper holding a bare text node is correctly left alone. `<Section>`
+  collapses itself that way (`.u-section:has(> .u-container:empty)`), and
+  `.card_primary_footer:empty` does the same for a card footer that would
+  otherwise charge its `padding-top` and `margin-top: auto`.
+- **Want the markup gone entirely, not just collapsed?** Decide from **data** at
+  the call site: `<Section render={posts.length > 0}>` — no slot render, always
+  safe.
+- **Passing plain text? Prefer a prop over a slot.** A string prop makes
+  emptiness a frontmatter truthiness check with none of the above in play. Reach
+  for a slot when the caller genuinely needs to pass arbitrary markup.
 
 ---
 
-## Quick Reference
+## Text & Spacing
 
-```html
-<!-- Correct: custom class first, then utilities, then combo -->
-<section class="cta_wrap u-background-1 u-padding-block-large is-dark">
-  <div class="cta_layout u-container u-grid-2 u-gap-gutter">
-    <div class="cta_content">
-      <p class="cta_eyebrow u-text-style-eyebrow u-text-style-muted">Label</p>
-      <h2 class="cta_title u-text-style-h2">Heading</h2>
-      <p class="cta_text u-text-style-regular">Body copy.</p>
-      <div class="u-button-wrapper">
-        <!-- Button component -->
-      </div>
-    </div>
-    <div class="cta_visual u-image-wrapper">
-      <!-- Image component -->
-    </div>
-  </div>
-</section>
-```
+**Spacing between siblings belongs to the container, not the children.** This is
+the single rule behind most of what follows.
+
+- The `<Section>` content container (`.u-container`) is a **flex column with a
+  built-in `gap`** — default `--space-8`, overridable via the Section `gap` prop
+  (`0`–`8`). Its direct children are spaced automatically.
+- A `<Layout>` column is a CSS grid with a `rowGap`; its `stack`/`stack-centered`
+  variants pass that to loose children too.
+- So when you stack a `<Heading>` above a `<Layout>`, `<Grid>`, another
+  `<Heading>`, or a `<Text>` directly inside a `<Section>`, do **not** add
+  `marginBottom` or a `u-margin-*` utility to create the gap.
+- To change spacing, adjust the container: `<Section gap={N}>` /
+  `<Layout rowGap={N}>` — never per-child margins.
+- **Exception:** `<Layout variant="stack">` is a plain block with **no gap**.
+  Spacing there comes from the text elements' own bottom margins (last one
+  auto-trimmed), so you still don't add `marginBottom`.
+- **Net rule:** between direct children of a `<Section>` or a `<Layout>` column,
+  spacing is the container's `gap`. Only reach for `marginBottom` inside a
+  custom `<div>` _you_ wrote that has no gap and isn't margin-trimmed (e.g. a
+  card body).
+
+**Text spacing is bottom-margin-only.** Every text style class
+(`u-text-style-*`, `u-display-*`) declares both `margin-top` and `margin-bottom`
+via variables, but every `margin-top` variable is `0` — so spacing flows in one
+direction.
+
+- `base/elements.css` zeroes both margins on bare `h1`–`h6`/`p`/`blockquote`/
+  `label`, so headings and paragraphs used without a text style class (accordion
+  toggles, nav links, footers) carry no margin at all.
+- **Rich text** (`.u-rich-text`) is a separate rhythm system for CMS/prose
+  content, where bare tags flow without `.u-text` wrappers. Headings get both
+  `margin-top` (section separation) and `margin-bottom` (flow into content);
+  paragraphs get `margin-bottom` only. Values use `--space-*` directly rather
+  than the per-heading typography variables, so rich-text rhythm tunes
+  independently. Rules live in
+  [src/styles/utilities/typography.css](src/styles/utilities/typography.css).
+- **Margin trim:** containers (`u-container`), layout columns
+  (`u-layout-column`), content wrappers (`u-content-wrapper`), rich text
+  (`u-rich-text`), and anything carrying `u-margin-trim` automatically remove
+  `margin-top` from the first visible child and `margin-bottom` from the last.
+  Add `u-ignore-trim` to a child that should keep its margin. `text-box-trim` is
+  applied as a progressive enhancement on `.u-text` itself.
+
+**Don't add redundant `marginBottom={0}`.** Because of margin trim, the last
+child's bottom margin is already zeroed whenever a `<Text>`/`<Heading>` is the
+last child of a trimmed wrapper — a `<Section>` container, a `<Layout>` column
+(default slot or `slot="column2"`), `<Layout variant="stack">`, `u-rich-text`,
+or anything carrying `u-margin-trim` / `u-container*`. There, `marginBottom={0}`
+does nothing.
+
+It is only needed as the last child of a **custom `<div>`** that is none of
+those (a card body `*_content`, a `*_meta` row, an `<li>`). Even then, prefer
+adding `u-margin-trim` to that wrapper once over sprinkling `marginBottom={0}`
+on each child. The trim rules live in
+[src/styles/overrides.css](src/styles/overrides.css) (the
+`:last-child { margin-bottom: 0 }` fallback; the native `margin-trim` half sits
+in Section.astro's style block) and
+[src/styles/utilities/margin-trim.css](src/styles/utilities/margin-trim.css)
+(last-visible-child trim).
+
+**Direct parents of text must not be `display: flex`.** Flex prevents the
+vertical margin collapsing the rhythm above depends on. Use `display: block` or
+no display override. Add `u-margin-trim` to the direct parent of text elements
+with margins to prevent extra space at the edges.
+
+**Don't repeat the layout's alignment on the text.** `text-align` inherits, so
+inside `<Layout variant="stack-centered">` (or `card`, or any
+`.u-content-wrapper.is-center-align`) headings and paragraphs are already
+centred — `align="center"` on the child does nothing. Worse, it **hard-codes**
+the alignment: change the Layout variant later and that element stays centred
+while its siblings follow. Let the layout own alignment. `align` is for when the
+surrounding context is _not_ aligned that way — an empty-state message inside a
+left-aligned results grid (`blog_no_results`). Measured when this was cleaned
+up: 14 redundant `align="center"` attributes removed, 594 text elements checked,
+zero changes to computed `text-align` or geometry.
+
+**`.u-text` is the text element — never wrap text.** `.u-text` sits directly on
+the `<h1>`–`<h6>`/`<p>`/`<span>` that `<Heading>` and `<Text>` render. A wrapper
+div kills margin collapsing (above), and `max-width` and alignment are things
+the element can hold itself. Two jobs a wrapper would otherwise do, and how the
+element does them instead:
+
+1. **Filling the column**, so `text-align` positions the text rather than the box
+   shrinking to its content — `width: 100%` on `.u-text`.
+2. **Centring a `max-width`-constrained box.** Layout containers declare
+   `align-items` as an _inheritance hint_ — they are block boxes, so it does
+   nothing to their own children — and a block element cannot consume it, while
+   `text-align` only moves text _inside_ the box. The signal that does the work
+   is **`--_text-inline-margin`**, an inheriting custom property set alongside
+   every `align-items` hint: `.u-content-wrapper.is-*-align`, and the
+   `stack-centered` / `card` Layout variants. **If you add a new centred layout
+   context, set `--_text-inline-margin: auto` there too, or constrained headings
+   will silently left-align.**
+
+---
+
+## Images, Icons & SVG
+
+**Structure.** Wrap images with `u-image-wrapper` (controls dimensions, radius,
+overflow) and apply `u-image` to the `<img>` (absolute-fill with focal-point
+positioning via `--_x`/`--_y`). Use `is-background` on the wrapper for Section
+background slots.
+
+**Every image needs real alt text.** Do **not** ship `alt=""`.
+
+- SEO crawlers (Ahrefs, etc.) report an empty `alt` as a _missing_ alt
+  attribute, so even decorative or duplicate images get flagged.
+- For images sourced from data (a `services`/`posts` array), reuse the existing
+  `imageAlt`/`alt` field rather than hardcoding or blanking it.
+- Inside `aria-hidden="true"` containers (decorative collages, cursor-follower
+  effects) the `alt` is skipped by screen readers but still read by crawlers —
+  so it must be present and descriptive there too.
+- The only acceptable exception is a third-party image whose markup we don't
+  render (e.g. the HoneyBook tracking pixel), since there is nothing to set
+  `alt` on.
+
+**`height: auto` is the default; filling a box is opt-in.** `aspect-ratio` only
+computes a **missing** dimension. `.u-image-wrapper` already sets `width: 100%`,
+so the moment it also has a definite height the ratio has nothing left to decide
+and is silently ignored.
+
+- A `height: 100%` there is harmless while the parent's height is indefinite (a
+  percentage against an auto-height parent resolves to `auto`), but stretches
+  the image as soon as the parent height becomes definite — e.g. a Layout column
+  holding an image _and_ a caption once collapsed to one column, where a 16/9
+  visual renders **1.66** instead of 1.78.
+- The base is `height: auto`, in
+  [styles/utilities/visual-utilities.css](src/styles/utilities/visual-utilities.css).
+- **If a wrapper must FILL its box rather than hold its own ratio, say so
+  explicitly** with `aspect-ratio: unset; height: 100%` on that pattern's own
+  rule. The places that do: `.is-background`, the `full` and `contain` Layout
+  variants (in `Visual.astro`), `.card_primary_visual` (Card),
+  `.scroll_reveal_panel` (ScrollReveal), and the case-study featured card (which
+  sets its own fixed height).
+- **Do not restore `height: 100%` on the base rule.** The ratio then stops
+  working everywhere at once, and nothing in `astro check`, the build, or
+  type-checking notices. The two regressions this flushed out (card visuals
+  reverting to 3/2, ScrollReveal panels shrinking) were caught only by measuring
+  image boxes across pages before and after.
+
+**Loading.**
+
+- **Skeleton placeholder:** `<Visual>` applies a skeleton background by default.
+  For images with transparency (logos, PNGs) remove it with the `transparent`
+  prop: `<Visual src={logo} alt="Logo" transparent />`. Pass it as a bare
+  keyword — not `transparent="true"`.
+- **Background images load eagerly.** `<Visual variant="background">` defaults to
+  `loading="eager"`, not `lazy`. Background images are structural, and native
+  lazy-load can fail to fire reliably inside the multi-layer
+  `position: absolute; inset: 0` chain used by Section backgrounds and
+  `Layout variant="card"` col2 — especially on SSR routes where HTML streams in.
+  `priority` still upgrades `loading` to `eager` _and_ `fetchpriority` to `high`
+  for above-the-fold heroes.
+
+**Icons & logos.** Icons or logos next to text need `flex-shrink: 0`. For square
+ones use `width` + `aspect-ratio: 1/1`, not `width` + `height`. Logos need
+`object-fit: contain` (overriding the default `cover`).
+
+**SVGs.** Give each SVG its own component class. Put stroke attributes
+(`stroke`, `stroke-width`, `stroke-linecap`, `stroke-linejoin`) in CSS, not
+inline — use `stroke-width: var(--border-width-main)` and `stroke: currentColor`.
+Decorative SVGs need `aria-hidden="true"`.
+
+---
+
+## Props & TypeScript
+
+**Basics.** Component props use TypeScript interfaces; prop names are camelCase.
+Props live in the component's own file — there are no `.props.ts` modules.
+
+**Extra attributes (rest spread).** Every UI component accepts the standard HTML
+attributes of the element it renders (`style`, `data-*`, `aria-*`, …) beyond its
+explicit props, with no extra prop needed.
+
+- Each `Props` interface extends `HTMLAttributes<"tag">` from `astro/types` for
+  the element it spreads onto, so those attributes are **type-checked**, not
+  merely tolerated (`data-*` stays open via the built-in template-literal index).
+- **Never add a `[key: string]: any` index signature** — it silently accepts
+  typos and cancels the checking.
+- Components whose valid props depend on another prop use a **discriminated
+  union**: Button's link-only props (`newTab`) require `href` and its
+  button-only props (`type`, `disabled`) forbid it; Card's link-only props
+  (`newTab`, `ariaLabel`, `actions`) require `href`. Misuse is an editor error at
+  the call site.
+- Internally each component destructures known props, captures the remainder as
+  `...rest`, then spreads `{...rest}` (or `{...attrs}` for style-merging
+  components) onto the root element. For components that compute inline styles
+  (Heading, Text, Visual, Overlay), a user-provided `style` is extracted from
+  `rest` and merged with the computed string so both apply.
+- **Button is special:** it renders a real `<a>`/`<button>` as its root, and
+  `...rest` spreads onto that element. BlogCard's `...rest` passes through to the
+  underlying `<Card>`.
+- Every component also has a `docs` prop — destructured but unused — that holds
+  JSDoc visible in editor autocomplete. It must be destructured, or it leaks into
+  `...rest` as a DOM attribute.
+
+### Exported types in `.astro` frontmatter: never start the type with a leading `|`
+
+1. An `export type X =` whose **first token is a leading pipe on the next line**
+   breaks the _build_ — `Unexpected "export"`, because Astro fails to hoist that
+   declaration out of the component function. `astro check` passes, so only
+   `npm run build` catches it. Verified minimal case:
+   `export type A =\n  | "one"\n  | "two";` fails, while the same union written
+   as `"one" | "two"` (wrapped or not) builds, and a **non-exported**
+   leading-pipe union builds fine. A leading pipe _inside_ parentheses is also
+   fine, which is why `export type Props = BaseProps & ( { … } | { … } )` works.
+2. Prettier only produces the dangerous shape when a union carries **per-member
+   JSDoc**; without it, it wraps to the safe form. So an exported union must
+   document its values in the prop's own JSDoc (a table), not comment-per-member.
+
+**Practical consequence: export only what another file imports** — that is
+`Props` (for `src/lib/prop-contracts.test-d.ts`) and `PaddingSize` (imported by
+every section wrapper). Every other helper type stays unexported, and can then be
+formatted any way Prettier likes.
+
+### Protecting the prop tooltips — run `npm run check:hover`
+
+Every prop carries JSDoc so hovering it in the editor explains what it does. That
+contract breaks in two ways _nothing else notices_: `astro check`, `npm run
+build` and a pixel diff all stay green while every tooltip in a file is silently
+gone, and invalid props stop erroring at the call site too.
+`scripts/check-hover.mjs` drives the real Astro language server over LSP and
+asserts that all 503 documented props still show their description on hover.
+
+Two known causes:
+
+1. **A stray `<` or `>` in a frontmatter comment detaches the whole file's
+   `Props` type at the call site.** Write comparisons in words — "posts.length is
+   greater than 0" — never with the literal character. Balanced tag-like pairs
+   inside `@example` blocks (`<Visual src={img} />`) are safe; it is the odd one
+   out that breaks it. One stray character disables tooltips _and_ call-site prop
+   checking for the entire file — and a warning comment written with the literal
+   characters spreads the problem to every file it is copied into.
+2. **Give prop types a NAME.** In a component whose props are `BaseProps extends
+HTMLAttributes<…>` intersected with a union, a prop written as an inline union
+   (`variant?: "default" | "background"`) or as alias-plus-string
+   (`ratio?: RatioPreset | string`) loses its tooltip, while the _identical_ type
+   behind a named alias (`variant?: VisualVariant`) keeps it. This is why
+   `Visual` and `Layout` declare `Ratio`, `VisualVariant`, `Position`,
+   `ObjectFit`, `LoadingMode`, `Quality`, `GapValue` and `LayoutAlign` as named
+   aliases rather than inline.
+
+Neither rule is worth reasoning about at the keyboard — the exact trigger
+interacts with the rest of the file, so measure it instead of predicting it.
+
+---
+
+## Working Practices
+
+**Imports.** Use the `@/` path alias (mapped to `./src/` in tsconfig.json) for
+any import that leaves the current directory — `import Card from
+"@/components/ui/Card.astro"`, never `../../components/ui/Card.astro`.
+Same-directory `./` imports are fine.
+
+**Formatting.** Prettier owns formatting. Run `npm run format` before
+committing; `npm run format:check` gates CI. Two files are excluded in
+`.prettierignore` (`Head.astro`, `BaseLayout.astro`) because
+prettier-plugin-astro cannot parse their `is:inline` scripts — format those by
+hand.
+
+**Merging classes.** Always use Astro's `class:list` directive — it takes an
+array, drops falsy entries, and is the pattern every UI component follows. Build
+the array with the base class first, conditional modifiers next, and the caller's
+`className` last, so user classes win:
+`class:list={["u-text", muted && "u-text-style-muted", className]}`. Do **not**
+hand-roll the string with `.filter(Boolean).join(" ")`. Merging inline **styles**
+is a separate problem that `class:list` does not cover, so
+`[computed, userStyle].filter(Boolean).join("; ")` stays correct in Heading,
+Text, Visual, and Overlay.
+
+**Variable naming — `--_` marks internal plumbing.** Two kinds of custom property
+exist and the name tells them apart. Design tokens (`--space-4`,
+`--background-2`, `--radius-main`) and the responsive keywords (`--flex-medium`,
+`--unset-medium`, …) are the public authoring API — use them freely anywhere. A
+property prefixed `--_` (Layout's `--_collapse`, Visual's `--_x`/`--_y`) is
+internal to the component that declares it: set and consumed in one file, no
+outside contract, free to rename. Never reach for another component's `--_`
+variables; if two components need the same value, promote it to a token. Adopt
+the prefix incrementally — rename internals as you touch a file, and leave a
+one-line note where the variable is set.
+
+**Animations.** GSAP data attributes (`data-duration`, `data-distance`,
+`data-stagger`, `data-prevent-flicker`) drive scroll-triggered animations. These
+are attributes, not classes.
+
+**Form inputs.** `<input>`, `<textarea>` and `<select>` must have `font-size` no
+smaller than `1rem` — anything below triggers auto-zoom on iOS.
+
+### Renaming anything? Grep the old name before you finish
+
+A rename is the one edit that fails _silently_ — the old selector still parses,
+the old `var()` still resolves to its fallback, the old slot name is simply
+ignored. Nothing in `astro check`, the build, or a pixel diff catches it. Three
+shapes to watch for:
+
+- Documentation that outlives the token tier it describes.
+- A page selector still matching a wrapper class the component stopped emitting.
+  That one silently kills `margin-top: auto` layouts, because the flex context
+  they needed is gone.
+- A `var()` still reading a pre-rename custom property, which resolves to its
+  fallback everywhere instead of erroring anywhere.
+
+After renaming a class, custom property, slot, component, or data attribute, run
+`grep -rn "<old-name>" src CLAUDE.md .claude` and sort every hit into:
+
+1. **Real consumers** — update them.
+2. **Deliberate historical notes** ("this replaced the old X") — keep them; they
+   explain why the code looks the way it does.
+3. **Stale instructions** telling an author to use the old thing — the dangerous
+   ones. Rewrite them.
+
+Pay special attention to **cross-file pairs**: a custom property set in a
+component and read in `styles/utilities/*` has no compiler tying the two ends
+together, so both must change in the same commit. Do not try to find these by
+hunting for "unused CSS" — the utilities, `:hover`/`[aria-expanded]`/`.is-*`
+state rules, and unused-but-valid API are all legitimately unmatched, and drown
+the signal.
 
 ---
 
@@ -363,28 +884,30 @@ color: color-mix(in hsl, currentColor 70%, transparent);
 Theme-aware button using the wrapper pattern. Hover/focus transitions are plain CSS (`.button_main_wrap:hover` / `:has(:focus-visible)`). Automatically adapts to `data-theme="light|dark|brand"` on any ancestor.
 
 **Import:**
+
 ```astro
 import Button from '@/components/ui/Button.astro';
 ```
 
 **Architecture:** The component renders three layers:
+
 1. **Wrapper** (`.button_main_wrap`) — variant/size data attributes + border-radius; the hover/focus target
-2. **Clickable overlay** (`.clickable_wrap > .clickable_link|.clickable_btn`) — invisible `<a>` or `<button>` stretched over wrapper; handles all interaction. Link overlays contain a visually-hidden `<span class="u-sr-only">{label}</span>` so crawlers see real anchor text — an `aria-label` alone leaves the anchor textless for SEO. `<button>` overlays keep `aria-label` only (anchor text isn't a concept for buttons).
+2. **Root element** — the `<a>` (with `href`) or `<button>` IS `.button_main_wrap`. It takes focus, hover, and `...rest`. There is no overlay and no duplicate label.
 3. **Visual element** (`.button_main_element`) — displays label and icon; set to `aria-hidden`
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | `'primary'`\|`'secondary'`\|`'text'` | `'primary'` | Visual style — filled, outlined, or text-link |
-| `size` | `'default'`\|`'small'`\|`'large'` | `'default'` | Padding preset |
-| `href` | `string` | — | Renders as `<a>`. Omit to render a plain `<button>` (modal triggers/closes, form submits, JS actions). |
-| `newTab` | `boolean` | `false` | Opens in new tab (adds `rel="noopener noreferrer"`) |
-| `disabled` | `boolean` | `false` | Disables `<button>` (not links) |
-| `ariaLabel` | `string` | — | **Required** — accessible label on the clickable overlay; also rendered as sr-only anchor text inside link overlays. Falls back to the slot text if omitted, so the control is never nameless |
-| `type` | `'button'`\|`'submit'`\|`'reset'` | `'button'` | Native button type (when no `href`) |
-| `square` | `boolean` | `false` | Removes pill radius |
-| `id` | `string` | — | `id` on wrapper |
-| `class` | `string` | — | Extra classes on wrapper |
-| `[key: string]` | `any` | — | Spread onto clickable overlay (`data-modal-trigger`, etc.) |
+| Prop             | Type                                 | Default     | Description                                                                                                                                                                                             |
+| ---------------- | ------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `variant`        | `'primary'`\|`'secondary'`\|`'text'` | `'primary'` | Visual style — filled, outlined, or text-link                                                                                                                                                           |
+| `size`           | `'default'`\|`'small'`\|`'large'`    | `'default'` | Padding preset                                                                                                                                                                                          |
+| `href`           | `string`                             | —           | Renders as `<a>`. Omit to render a plain `<button>` (modal triggers/closes, form submits, JS actions).                                                                                                  |
+| `newTab`         | `boolean`                            | `false`     | Opens in new tab (adds `rel="noopener noreferrer"`)                                                                                                                                                     |
+| `disabled`       | `boolean`                            | `false`     | Disables `<button>` (not links)                                                                                                                                                                         |
+| `ariaLabel`      | `string`                             | —           | Only used for **icon-only** buttons. When the button has visible text, that text is the accessible name and `ariaLabel` is ignored (a dev warning fires if they disagree — that mismatch is WCAG 2.5.3) |
+| `type`           | `'button'`\|`'submit'`\|`'reset'`    | `'button'`  | Native button type (when no `href`)                                                                                                                                                                     |
+| `square`         | `boolean`                            | `false`     | Removes pill radius                                                                                                                                                                                     |
+| `id`             | `string`                             | —           | `id` on wrapper                                                                                                                                                                                         |
+| `class`          | `string`                             | —           | Extra classes on wrapper                                                                                                                                                                                |
+| _DOM attributes_ | `HTMLAttributes<"a" \| "button">`    | —           | Standard attributes of the rendered element (`data-modal-trigger`, `style`, `aria-*`, …) — type-checked, spread onto the root                                                                           |
 
 **Slots:** default (label text), `icon` (rendered after label)
 
@@ -395,10 +918,14 @@ import Button from '@/components/ui/Button.astro';
 <Button href="/contact" ariaLabel="Contact us">Contact Us</Button>
 
 <!-- Secondary -->
-<Button variant="secondary" href="/case-studies" ariaLabel="Learn more">Learn More</Button>
+<Button variant="secondary" href="/case-studies" ariaLabel="Learn more"
+  >Learn More</Button
+>
 
 <!-- Text-link style -->
-<Button variant="text" href="/blog" ariaLabel="Read articles">Read more →</Button>
+<Button variant="text" href="/blog" ariaLabel="Read articles"
+  >Read more →</Button
+>
 
 <!-- Small size -->
 <Button size="small" href="/login" ariaLabel="Log in">Log In</Button>
@@ -407,15 +934,23 @@ import Button from '@/components/ui/Button.astro';
 <Button type="submit" ariaLabel="Submit form">Send Message</Button>
 
 <!-- Modal trigger (extra data attributes spread onto overlay) -->
-<Button data-modal-trigger="contact-modal" ariaLabel="Open contact form">Contact</Button>
+<Button data-modal-trigger="contact-modal" ariaLabel="Open contact form"
+  >Contact</Button
+>
 
 <!-- With icon slot -->
 <Button href="/start" ariaLabel="Get started">
   Get Started
-  <svg slot="icon" aria-hidden="true" viewBox="0 0 10 10" fill="none"
-    stroke="currentColor" stroke-width="1.5">
-    <line x1="0" y1="5" x2="8" y2="5" />
-    <polyline points="5,2 8,5 5,8" />
+  <svg
+    slot="icon"
+    aria-hidden="true"
+    viewBox="0 0 10 10"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+  >
+    <line x1="0" y1="5" x2="8" y2="5"></line>
+    <polyline points="5,2 8,5 5,8"></polyline>
   </svg>
 </Button>
 ```
@@ -427,19 +962,20 @@ import Button from '@/components/ui/Button.astro';
 Fixed navigation bar with plain-CSS interactions. Container-query responsive (switches at 65em / 1040px). Supports an optional announcement banner, dropdown menus, and a mobile hamburger menu.
 
 **Import (already in BaseLayout):**
+
 ```astro
 import Navbar from '@/components/global/Navbar.astro';
 ```
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `theme` | `'light'`\|`'dark'`\|`'brand'` | — | Override theme on the nav |
-| `class` | `string` | — | Extra classes on nav_wrap |
-| `bannerText` | `string` | — | Announcement banner text (omit to hide) |
-| `bannerHref` | `string` | — | Optional link for banner text |
-| `bannerId` | `string` | `'nav-banner-dismissed'` | sessionStorage key for dismissal |
+| Prop         | Type                           | Default                  | Description                             |
+| ------------ | ------------------------------ | ------------------------ | --------------------------------------- |
+| `theme`      | `'light'`\|`'dark'`\|`'brand'` | —                        | Override theme on the nav               |
+| `class`      | `string`                       | —                        | Extra classes on nav_wrap               |
+| `bannerText` | `string`                       | —                        | Announcement banner text (omit to hide) |
+| `bannerHref` | `string`                       | —                        | Optional link for banner text           |
+| `bannerId`   | `string`                       | `'nav-banner-dismissed'` | sessionStorage key for dismissal        |
 
 ### Editing Nav Items
 
@@ -462,16 +998,18 @@ To add a nav link: add the page to `PAGES` (once), then reference its path in `N
 ### Announcement Banner
 
 The banner is configured in the **`BANNER`** object in [src/data/site-structure.ts](src/data/site-structure.ts) (alongside the nav/footer), with a sitewide default and optional per-page overrides:
+
 ```ts
 // src/data/site-structure.ts
 export const BANNER = {
-  default: { text: "Your announcement text", href: "/link" },  // text: "" hides it everywhere
+  default: { text: "Your announcement text", href: "/link" }, // text: "" hides it everywhere
   overrides: {
-    "/some-page": null,                          // hide the banner on this page
-    "/other": { text: "Custom", href: "/x" },    // replace it on this page
+    "/some-page": null, // hide the banner on this page
+    "/other": { text: "Custom", href: "/x" }, // replace it on this page
   },
 };
 ```
+
 BaseLayout calls `resolveBanner(Astro.url.pathname)` and passes the result to `<Navbar>` — no per-page wiring needed.
 
 The banner renders as a full-width bar fixed to the top of the viewport, independent of the nav shape (pill or full-width). On dismiss, it collapses with a CSS transition and persists via `sessionStorage`. A synchronous `<script is:inline>` in `<head>` prevents any flash on repeat visits.
@@ -480,23 +1018,23 @@ The banner renders as a full-width bar fixed to the top of the viewport, indepen
 
 The navbar supports two layouts controlled entirely by CSS variables in **`src/styles/variables/nav.css`**. To switch, change only these three values:
 
-| Variable | Pill-shaped (default) | Full-width |
-|----------|-----------------------|------------|
-| `--nav-spacing-outer-horizontal` | `var(--site-margin)` | `0px` |
-| `--nav-spacing-outer-vertical` | `.75rem` | `0px` |
-| `--nav-radius` | `var(--radius-main)` | `var(--radius-none)` |
+| Variable                         | Pill-shaped (default) | Full-width           |
+| -------------------------------- | --------------------- | -------------------- |
+| `--nav-spacing-outer-horizontal` | `var(--site-margin)`  | `0px`                |
+| `--nav-spacing-outer-vertical`   | `.75rem`              | `0px`                |
+| `--nav-radius`                   | `var(--radius-main)`  | `var(--radius-none)` |
 
 Optionally also change `--nav-background` in `themes.css` (pill uses `--background-2` for contrast; full-width often uses `--background` to blend with the page).
 
 ### Key Files
 
-| File | What it controls |
-|------|------------------|
-| `src/styles/variables/nav.css` | All nav sizing, spacing, radius, banner height — **edit here to restyle** |
-| `src/styles/variables/themes.css` | `--nav-background` per theme (light/dark/brand) |
-| `src/styles/components/nav.css` | All nav component styles (layout, animations, responsive) |
-| `src/components/global/Navbar.astro` | Markup, nav items array, and all JS (menu, dropdowns, banner) |
-| `src/layouts/BaseLayout.astro` | Banner text config, page theme prop, `is-has-banner` class on `<html>` |
+| File                                    | What it controls                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------- |
+| `src/styles/variables/nav.css`          | All nav sizing, spacing, radius, banner height — **edit here to restyle** |
+| `src/styles/variables/themes.css`       | `--nav-background` per theme (light/dark/brand)                           |
+| `Navbar.astro` (co-located style block) | All nav component styles (layout, animations, responsive)                 |
+| `src/components/global/Navbar.astro`    | Markup, nav items array, and all JS (menu, dropdowns, banner)             |
+| `src/layouts/BaseLayout.astro`          | Banner text config, page theme prop, `is-has-banner` class on `<html>`    |
 
 ### Structure
 
@@ -521,21 +1059,22 @@ Optionally also change `--nav-background` in `themes.css` (pill uses `--backgrou
 
 ## BaseLayout (`src/layouts/BaseLayout.astro`)
 
-Root page wrapper used by every page. Renders `<html>`, `<head>`, Navbar, `<main>` (slot), and Footer. Sets the site-wide default theme via `data-theme` on `<html>`.
+Root layout used by every page. Renders `<html>`, `<head>`, then Navbar, `<main>` (slot), and Footer as direct children of `<body>` — there is no wrapper div; `body` itself is the flex-column page shell (see **`<body>` is the page shell** above). Sets the site-wide default theme via `data-theme` on `<html>`.
 
 **Import:**
+
 ```astro
 import BaseLayout from '../layouts/BaseLayout.astro';
 ```
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `title` | `string` | **required** | Page `<title>` for SEO — shown in browser tab and search results |
-| `description` | `string` | — | Meta description for SEO |
-| `canonical` | `string` | — | Canonical URL for `<link rel="canonical">` |
-| `theme` | `'light'`\|`'dark'`\|`'brand'` | `'light'` | Page-level color theme. Sets `data-theme` on `<html>`, which cascades CSS color variables to all children. Individual `<Section theme="...">` props override for that section only. |
+| Prop          | Type                           | Default      | Description                                                                                                                                                                         |
+| ------------- | ------------------------------ | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`       | `string`                       | **required** | Page `<title>` for SEO — shown in browser tab and search results                                                                                                                    |
+| `description` | `string`                       | —            | Meta description for SEO                                                                                                                                                            |
+| `canonical`   | `string`                       | —            | Canonical URL for `<link rel="canonical">`                                                                                                                                          |
+| `theme`       | `'light'`\|`'dark'`\|`'brand'` | `'light'`    | Page-level color theme. Sets `data-theme` on `<html>`, which cascades CSS color variables to all children. Individual `<Section theme="...">` props override for that section only. |
 
 **Slot:** default — page content rendered inside `<main>`
 
@@ -563,18 +1102,25 @@ To change the default theme for **every page** that doesn't pass an explicit `th
 
 ```typescript
 // In BaseLayout.astro — change 'light' to 'dark' or 'brand'
-const { docs, title, description, canonical, /* … */ theme = 'light', schema } = Astro.props;
+const {
+  docs,
+  title,
+  description,
+  canonical,
+  /* … */ theme = "light",
+  schema,
+} = Astro.props;
 ```
 
 ### Footer Theme
 
 The footer uses its own CSS variables defined per theme in `src/styles/variables/themes.css`:
 
-| Variable | Purpose |
-|----------|---------|
-| `--footer-background` | Footer background color |
-| `--footer-text` | Footer text color |
-| `--footer-border` | Bottom bar divider line color |
+| Variable              | Purpose                       |
+| --------------------- | ----------------------------- |
+| `--footer-background` | Footer background color       |
+| `--footer-text`       | Footer text color             |
+| `--footer-border`     | Bottom bar divider line color |
 
 Each theme block (light, dark, brand) defines these variables. By default, all three themes set the footer to dark values — so the footer stays dark regardless of the page theme. To change the footer's look for a specific theme, update the values in that theme's block in `themes.css`.
 
@@ -590,31 +1136,28 @@ Banner dismiss persists via `sessionStorage('nav-banner-dismissed')`. Nav shape 
 
 ## UI Component System (`src/components/ui/`)
 
-These are typed Astro components that wrap the CSS system. Every prop is documented with JSDoc — your editor will show autocomplete and inline descriptions.
+These are typed Astro components that wrap the CSS system. Every prop is documented with JSDoc — your editor will show autocomplete and inline descriptions. Each component also takes a `docs` prop that exists purely to hold the component's manual: hovering it shows the full prop list and slot rules. Those tooltips are load-bearing documentation and they can break silently, so `npm run check:hover` verifies every one of them (see "Protecting the prop tooltips" in Astro-Specific Notes).
 
 **Import pattern:**
+
 ```astro
-import Heading        from '@/components/ui/Heading.astro';
-import Text           from '@/components/ui/Text.astro';
-import ContentWrapper from '@/components/ui/ContentWrapper.astro';
-import Section        from '@/components/ui/Section.astro';
-import Layout         from '@/components/ui/Layout.astro';
-import Col            from '@/components/ui/Col.astro';
-import Grid           from '@/components/ui/Grid.astro';
-import Card           from '@/components/ui/Card.astro';
-import Visual         from '@/components/ui/Visual.astro';
-import Overlay        from '@/components/ui/Overlay.astro';
-import Accordion      from '@/components/ui/Accordion.astro';
-import AccordionItem  from '@/components/ui/AccordionItem.astro';
-import Modal          from '@/components/ui/Modal.astro';
-import Slider         from '@/components/ui/Slider.astro';
-import Tab            from '@/components/ui/Tab.astro';
-import TabButton      from '@/components/ui/TabButton.astro';
-import TabPanel       from '@/components/ui/TabPanel.astro';
-import CaseStudyCard  from '@/components/ui/CaseStudyCard.astro';
+import Heading from '@/components/ui/Heading.astro'; import Text from
+'@/components/ui/Text.astro'; import Layout from '@/components/ui/Layout.astro';
+import Section from '@/components/ui/Section.astro'; import Grid from
+'@/components/ui/Grid.astro'; import Card from '@/components/ui/Card.astro';
+import Visual from '@/components/ui/Visual.astro'; import Overlay from
+'@/components/ui/Overlay.astro'; import Accordion from
+'@/components/ui/Accordion.astro'; import AccordionItem from
+'@/components/ui/AccordionItem.astro'; import Modal from
+'@/components/ui/Modal.astro'; import Slider from
+'@/components/ui/Slider.astro'; import Tab from '@/components/ui/Tab.astro';
+import TabButton from '@/components/ui/TabButton.astro'; import TabPanel from
+'@/components/ui/TabPanel.astro'; import CaseStudyCard from
+'@/components/ui/CaseStudyCard.astro';
 ```
 
 **Additional component directories:**
+
 - `src/components/form/` — Form, FormField, FormCheckbox, FormRadio, FormSelect, FormTextarea, FormRange, FormFieldset
 - `src/components/sections/` — CTASection, BlogPostGrid, CaseStudyGrid, TestimonialsSlider, TestimonialsGrid, FAQ
 - `src/components/case-study/` — CaseStudyBlockRenderer + block components (FullWidthImage, StatsBlock, RichTextBlock, etc.)
@@ -626,22 +1169,23 @@ import CaseStudyCard  from '@/components/ui/CaseStudyCard.astro';
 
 Separates semantic tag (`tag`) from visual style (`variant`). Always choose the correct `tag` for the document outline, then use `variant` when the visual size should differ.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `tag` | `'h1'`–`'h6'` | `'h2'` | Semantic heading level |
-| `variant` | `'display-xl'`\|`'display-lg'`\|`'display-md'`\|`'display-sm'`\|`'h1'`–`'h6'`\|`'eyebrow'` | — | Visual style. Omit to use semantic tag defaults. |
-| `balance` | `boolean` | `true` | `text-wrap: balance` for even line breaks (on by default) |
-| `accent` | `boolean` | `false` | Makes `<strong>` inside use the accent color |
-| `marginTop` | `0`\|`'auto'` | — | `marginTop={0}` forces zero; `marginTop="auto"` pushes down in flex (align bottom edges) |
-| `marginBottom` | `0`–`8` | — | Override bottom margin. **Usually redundant for `{0}`** — the last child of a trimmed wrapper (Section container, Layout column, ContentWrapper, Col, `u-rich-text`, `u-margin-trim`) is auto-zeroed. Only set `marginBottom={0}` as the last child of a *custom* `<div>` that isn't trimmed. See the **Text spacing** note above. |
-| `maxWidth` | `string` | — | Max-width of heading content, with units (e.g. `'40ch'`, `'40rem'`). **Don't set this by default — see note below.** |
-| `class` | `string` | — | Extra utility classes |
+| Prop           | Type                                                                                       | Default | Description                                                                                                                                                                                                                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tag`          | `'h1'`–`'h6'`                                                                              | `'h2'`  | Semantic heading level                                                                                                                                                                                                                                                                                        |
+| `variant`      | `'display-xl'`\|`'display-lg'`\|`'display-md'`\|`'display-sm'`\|`'h1'`–`'h6'`\|`'eyebrow'` | —       | Visual style. Omit to use semantic tag defaults.                                                                                                                                                                                                                                                              |
+| `balance`      | `boolean`                                                                                  | `true`  | `text-wrap: balance` for even line breaks (on by default)                                                                                                                                                                                                                                                     |
+| `accent`       | `boolean`                                                                                  | `false` | Makes `<strong>` inside use the accent color                                                                                                                                                                                                                                                                  |
+| `marginTop`    | `0`\|`'auto'`                                                                              | —       | `marginTop={0}` forces zero; `marginTop="auto"` pushes down in flex (align bottom edges)                                                                                                                                                                                                                      |
+| `marginBottom` | `0`–`8`                                                                                    | —       | Override bottom margin. **Usually redundant for `{0}`** — the last child of a trimmed wrapper (Section container, Layout column, `u-rich-text`, `u-margin-trim`) is auto-zeroed. Only set `marginBottom={0}` as the last child of a _custom_ `<div>` that isn't trimmed. See the **Text spacing** note above. |
+| `maxWidth`     | `string`                                                                                   | —       | Max-width of heading content, with units (e.g. `'40ch'`, `'40rem'`). **Don't set this by default — see note below.**                                                                                                                                                                                          |
+| `class`        | `string`                                                                                   | —       | Extra utility classes                                                                                                                                                                                                                                                                                         |
 
 > **Don't add `maxWidth` by default.** `<Heading>` already applies a built-in default (`30ch`; `eyebrow` has none). Only pass `maxWidth` when the design genuinely needs a different constraint — never re-state the default, and don't add it reflexively when building from a design. Work with the defaults unless explicitly told otherwise.
 
-**Structure:** Renders a `.u-text` wrapper div around the heading tag. The wrapper stays full-width (`min-width: 100%`), while the child heading inherits the `max-width` constraint. `align-items: inherit` flows alignment from the parent layout.
+**Structure:** Renders **one bare heading tag** carrying `.u-text`, the type class, and any inline `max-width`. There is no wrapper div — see **The `.u-text` element** under Classes.
 
 **Variants:**
+
 - `display-xl` → hero / feature intro (3→6rem fluid)
 - `display-lg` → major section opening (3→5rem fluid)
 - `display-md` → feature callout (3→4.5rem fluid)
@@ -667,7 +1211,8 @@ Separates semantic tag (`tag`) from visual style (`variant`). Always choose the 
 <Heading variant="eyebrow">Our Story</Heading>
 
 <!-- Custom max-width (only when the design needs a non-default; default is 30ch) -->
-<Heading tag="h2" variant="h2" maxWidth="40ch">A longer section heading</Heading>
+<Heading tag="h2" variant="h2" maxWidth="40ch">A longer section heading</Heading
+>
 
 <!-- Zero bottom margin — use {0} for the number value -->
 <Heading tag="h4" variant="h5" marginBottom={0}>Author Name</Heading>
@@ -682,52 +1227,57 @@ Separates semantic tag (`tag`) from visual style (`variant`). Always choose the 
 
 Body text with configurable size, weight, alignment, and line clamping.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `tag` | `'p'`\|`'span'`\|`'div'`\|`'label'`\|`'figcaption'`\|`'li'`\|`'dt'`\|`'dd'`\|`'caption'` | `'p'` | HTML element |
-| `variant` | `'tiny'`\|`'small'`\|`'regular'`\|`'large'`\|`'xlarge'`\|`'h1'`–`'h6'`\|`'eyebrow'`\|`'display-xl'`\|`'display-lg'`\|`'display-md'`\|`'display-sm'` | — | Typography tier — text sizes, heading sizes, or display sizes |
-| `weight` | `'regular'`\|`'medium'`\|`'bold'` | — | Font weight |
-| `align` | `'left'`\|`'center'`\|`'right'`\|`'inherit'` | — | Text alignment |
-| `muted` | `boolean` | `false` | ~75% opacity |
-| `balance` | `boolean` | `false` | `text-wrap: balance` |
-| `nowrap` | `boolean` | `false` | `white-space: nowrap` |
-| `clamp` | `1`–`6` | — | Line clamp (truncate with ellipsis) |
-| `marginTop` | `0`\|`'auto'` | — | `marginTop={0}` forces zero; `marginTop="auto"` pushes down in flex (align bottom edges) |
-| `marginBottom` | `0`–`8` | — | Override bottom margin. **Usually redundant for `{0}`** — the last child of a trimmed wrapper (Section container, Layout column, ContentWrapper, Col, `u-rich-text`, `u-margin-trim`) is auto-zeroed. Only set `marginBottom={0}` as the last child of a *custom* `<div>` that isn't trimmed. See the **Text spacing** note above. |
-| `maxWidth` | `string` | — | Max-width of text content, with units (e.g. `'48ch'`, `'40rem'`). **Don't set this by default — see note below.** |
-| `class` | `string` | — | Extra utility classes |
+| Prop           | Type                                                                                                                                                | Default | Description                                                                                                                                                                                                                                                                                                   |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tag`          | `'p'`\|`'span'`\|`'div'`\|`'label'`\|`'figcaption'`\|`'li'`\|`'dt'`\|`'dd'`\|`'caption'`                                                            | `'p'`   | HTML element                                                                                                                                                                                                                                                                                                  |
+| `variant`      | `'tiny'`\|`'small'`\|`'regular'`\|`'large'`\|`'xlarge'`\|`'h1'`–`'h6'`\|`'eyebrow'`\|`'display-xl'`\|`'display-lg'`\|`'display-md'`\|`'display-sm'` | —       | Typography tier — text sizes, heading sizes, or display sizes                                                                                                                                                                                                                                                 |
+| `weight`       | `'regular'`\|`'medium'`\|`'bold'`                                                                                                                   | —       | Font weight                                                                                                                                                                                                                                                                                                   |
+| `align`        | `'left'`\|`'center'`\|`'right'`\|`'inherit'`                                                                                                        | —       | Text alignment                                                                                                                                                                                                                                                                                                |
+| `muted`        | `boolean`                                                                                                                                           | `false` | ~75% opacity                                                                                                                                                                                                                                                                                                  |
+| `balance`      | `boolean`                                                                                                                                           | `false` | `text-wrap: balance`                                                                                                                                                                                                                                                                                          |
+| `nowrap`       | `boolean`                                                                                                                                           | `false` | `white-space: nowrap`                                                                                                                                                                                                                                                                                         |
+| `clamp`        | `1`–`6`                                                                                                                                             | —       | Line clamp (truncate with ellipsis)                                                                                                                                                                                                                                                                           |
+| `marginTop`    | `0`\|`'auto'`                                                                                                                                       | —       | `marginTop={0}` forces zero; `marginTop="auto"` pushes down in flex (align bottom edges)                                                                                                                                                                                                                      |
+| `marginBottom` | `0`–`8`                                                                                                                                             | —       | Override bottom margin. **Usually redundant for `{0}`** — the last child of a trimmed wrapper (Section container, Layout column, `u-rich-text`, `u-margin-trim`) is auto-zeroed. Only set `marginBottom={0}` as the last child of a _custom_ `<div>` that isn't trimmed. See the **Text spacing** note above. |
+| `maxWidth`     | `string`                                                                                                                                            | —       | Max-width of text content, with units (e.g. `'48ch'`, `'40rem'`). **Don't set this by default — see note below.**                                                                                                                                                                                             |
+| `class`        | `string`                                                                                                                                            | —       | Extra utility classes                                                                                                                                                                                                                                                                                         |
 
 > **Don't add `maxWidth` by default.** `<Text>` already applies a built-in default (`60ch`). Only pass `maxWidth` when the design genuinely needs a different constraint — never re-state the default, and don't add it reflexively when building from a design. Work with the defaults unless explicitly told otherwise.
 
-**Structure:** Renders a `.u-text` wrapper div around the text tag. The wrapper stays full-width (`min-width: 100%`), while the child element inherits the `max-width` constraint. `clamp` is applied on the child element (not wrapper) due to display conflict with `-webkit-box`.
+**Structure:** Renders **one bare tag** carrying `.u-text`, the type class, and any inline `max-width`. There is no wrapper div. `clamp` adds `u-line-clamp-*` on the same element.
 
 ```astro
 <Text variant="large" weight="medium">Lead paragraph</Text>
 <Text variant="small" muted>Fine print</Text>
 <Text clamp={3}>Long text truncated at three lines…</Text>
 <Text tag="figcaption" size="tiny" align="center">Caption</Text>
-<Text variant="large" align="center" maxWidth="32rem">Constrained centered text</Text>
+<Text variant="large" align="center" maxWidth="32rem"
+  >Constrained centered text</Text
+>
 
 <!-- Zero margins — use {0} for the number value -->
 <Text tag="span" weight="bold" size="small" marginBottom={0}>Author Name</Text>
 <Text tag="span" size="small" muted marginBottom={0}>CEO, Company</Text>
 
 <!-- Auto top margin — use "" for the string value, pushes down in flex -->
-<Text variant="small" marginTop="auto">Bottom-aligned text in a flex column</Text>
+<Text variant="small" marginTop="auto"
+  >Bottom-aligned text in a flex column</Text
+>
 ```
 
 ---
 
-### `<ContentWrapper>`
+### `<Layout variant="stack">`
 
-Block-level alignment wrapper for content. Controls `text-align`, `align-items`, and `justify-content` which cascade down to child flex/grid containers (e.g. `.u-text` uses `align-items: inherit`). This is **not** a flex or grid container — it's a plain block wrapper. Margin-trim is applied automatically on first/last children.
+Block-level alignment wrapper for content. Controls `text-align`, `align-items`, and `justify-content`, which cascade to child flex/grid containers, **plus `--_text-inline-margin`**, which is how a block-level `.u-text` centres itself (`align-items` cannot reach it — this is **not** a flex or grid container, it's a plain block wrapper). Margin-trim is applied automatically on first/last children.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
+| Prop    | Type                                                            | Default     | Description                   |
+| ------- | --------------------------------------------------------------- | ----------- | ----------------------------- |
 | `align` | `'inherit'`\|`'center'`\|`'left'`\|`'right'`\|`'center-mobile'` | `'inherit'` | Alignment variant (see below) |
-| `class` | `string` | — | Extra utility classes |
+| `class` | `string`                                                        | —           | Extra utility classes         |
 
 **Variants:**
+
 - `inherit` — inherits alignment from parent (default, no combo class)
 - `center` → `.is-center-align` — center-align everything
 - `left` → `.is-left-align` — left/start-align everything
@@ -738,31 +1288,31 @@ Block-level alignment wrapper for content. Controls `text-align`, `align-items`,
 
 ```astro
 <!-- Inherit alignment from parent (default) -->
-<ContentWrapper>
+<Layout variant="stack">
   <Heading tag="h2" variant="h2">Title</Heading>
   <Text variant="large">Body text.</Text>
-</ContentWrapper>
+</Layout>
 
 <!-- Center-aligned content -->
-<ContentWrapper align="center">
+<Layout variant="stack-centered">
   <Heading tag="h2" variant="h2">Centered Title</Heading>
   <Text variant="large">Centered body text.</Text>
-  <div class="u-button-wrapper">
+  <ButtonWrapper>
     <Button href="/cta" ariaLabel="CTA">Get Started</Button>
-  </div>
-</ContentWrapper>
+  </ButtonWrapper>
+</Layout>
 
 <!-- Right-aligned content -->
-<ContentWrapper align="right">
+<Layout variant="stack" align="right">
   <Heading variant="eyebrow">Stats</Heading>
   <Heading tag="h3" variant="display-lg">42%</Heading>
-</ContentWrapper>
+</Layout>
 
 <!-- Center on mobile, inherit (left) on desktop -->
-<ContentWrapper align="center-mobile">
+<Layout variant="stack" align="center-mobile">
   <Heading tag="h2" variant="h2">Responsive Title</Heading>
   <Text>Left on desktop, centered on mobile.</Text>
-</ContentWrapper>
+</Layout>
 ```
 
 ---
@@ -771,42 +1321,54 @@ Block-level alignment wrapper for content. Controls `text-align`, `align-items`,
 
 Full-width page section with theming, fluid vertical padding, optional background slot, and a constrained container.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `theme` | `'light'`\|`'dark'`\|`'brand'` | — | Sets `data-theme`; cascades CSS variables to all children |
-| `padding` | `'none'`\|`'xsmall'`\|`'small'`\|`'main'`\|`'large'`\|`'page-top'` | `'main'` | Equal top + bottom padding. **Leave it off — `'main'` is the default and the right choice for almost every section.** Don't reach for `'large'` by default (see note below). |
-| `paddingTop` | same as `padding` | — | Override top only. **Do NOT use `'page-top'` here by default** — it's only for a *fixed* nav, and this project's nav is sticky (see note below). |
-| `paddingBottom` | same as `padding` | — | Override bottom only |
-| `minHeight` | `boolean` | `false` | `min-height: 100svh` — hero sections |
-| `container` | `'default'`\|`'narrow'`\|`'wide'`\|`'full'` | `'default'` | Container max-width |
-| `gap` | `0`–`8` | `8` (`--space-8`) | Flex `gap` between the container's direct children. Retune the built-in spacing here instead of adding per-child margins (see note below). |
-| `id` | `string` | — | `id` for same-page anchor links |
-| `class` | `string` | — | Extra classes on `<section>` |
+| Prop            | Type                                                               | Default           | Description                                                                                                                                                                  |
+| --------------- | ------------------------------------------------------------------ | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `theme`         | `'light'`\|`'dark'`\|`'brand'`                                     | —                 | Sets `data-theme`; cascades CSS variables to all children                                                                                                                    |
+| `padding`       | `'none'`\|`'xsmall'`\|`'small'`\|`'main'`\|`'large'`\|`'page-top'` | `'main'`          | Equal top + bottom padding. **Leave it off — `'main'` is the default and the right choice for almost every section.** Don't reach for `'large'` by default (see note below). |
+| `paddingTop`    | same as `padding`                                                  | —                 | Override top only. **Do NOT use `'page-top'` here by default** — it's only for a _fixed_ nav, and this project's nav is sticky (see note below).                             |
+| `paddingBottom` | same as `padding`                                                  | —                 | Override bottom only                                                                                                                                                         |
+| `minHeight`     | `boolean`                                                          | `false`           | `min-height: 100svh` — hero sections                                                                                                                                         |
+| `container`     | `'default'`\|`'narrow'`\|`'wide'`\|`'full'`                        | `'default'`       | Container max-width                                                                                                                                                          |
+| `gap`           | `0`–`8`                                                            | `8` (`--space-8`) | Flex `gap` between the container's direct children. Retune the built-in spacing here instead of adding per-child margins (see note below).                                   |
+| `id`            | `string`                                                           | —                 | `id` for same-page anchor links                                                                                                                                              |
+| `class`         | `string`                                                           | —                 | Extra classes on `<section>`                                                                                                                                                 |
 
 **Slots:**
+
 - `background` — renders in `.u-background-slot` (absolute overlay, z-index 0). For background images, videos, or gradient divs.
 - default — content inside `.u-container`
 
-> **The container spaces its children for you.** `.u-container` is a **flex column with `gap: var(--space-8)`**, so a Section's direct children (Heading, Layout, Grid, ContentWrapper, Text…) are already spaced apart — **don't add `marginBottom` / `u-margin-*` between them.** To make that spacing tighter or looser, set the `gap` prop (`<Section gap={4}>`), don't sprinkle margins. See **Layout containers space their own children** under Astro-Specific Notes.
+> **The container spaces its children for you.** `.u-container` is a **flex column with `gap: var(--space-8)`**, so a Section's direct children (Heading, Layout, Grid, Layout, Text…) are already spaced apart — **don't add `marginBottom` / `u-margin-*` between them.** To make that spacing tighter or looser, set the `gap` prop (`<Section gap={4}>`), don't sprinkle margins. See **Layout containers space their own children** under Astro-Specific Notes.
 
 **Padding values:**
+
 - `none` → 0
 - `xsmall` → ~1.25–2rem fluid
 - `small` → ~3–5rem fluid
-- `main` → ~4–7rem fluid *(default — use this for virtually every section)*
+- `main` → ~4–7rem fluid _(default — use this for virtually every section)_
 - `large` → ~5.5–10rem fluid
-- `page-top` → ~10–14rem fluid *(only for a **fixed** nav — see note below; not for this project by default)*
+- `page-top` → ~10–14rem fluid _(only for a **fixed** nav — see note below; not for this project by default)_
 
-> **Default padding: leave it on `main`.** Every `<Section>` already defaults to `padding="main"`, so you don't need to write `padding="main"` at all — just omit the prop. **Do not add `padding="large"` (or any other override) by default.** `main` is the correct rhythm for the overwhelming majority of sections, including content sections, card grids, and listing pages. Only use `large` (or another value) when a specific section genuinely needs more room *and* you've been asked for it (or it's clearly required by a design) — not as a habit. If a section needs more breathing room later, that's a deliberate, manual change.
+> **Default padding: leave it on `main`, and don't write it.** Every `<Section>` defaults to `main`. When a section wants the default, **write no padding prop at all** — not `padding="main"`. Never emit the default just to be explicit. **Equally: do not add `padding="large"` (or any other override) by default.** `main` is the correct rhythm for the overwhelming majority of sections, including content sections, card grids, and listing pages. Only use `large` (or another value) when a specific section genuinely needs more room _and_ you've been asked for it (or it's clearly required by a design) — not as a habit.
+>
+> `padding="main"` is deliberately **legal**, not an error: a person returning a section to the default should be able to edit the value, not delete the prop (and a visual builder's dropdown lists every size). It is redundant, not wrong. The rendered HTML is the same either way — Section drops `main` before emitting `data-padding-*`, so `data-padding-top="main"` never appears in output regardless of how the call was authored. That is what makes the build deterministic; the "don't write the default" rule above is about keeping source clean.
+>
+> The padding union lives in one place — `Section.astro`'s frontmatter — and every section-wrapper component (TestimonialsSlider, BlogPostGrid, CaseStudyGrid, …) imports it from there; don't re-declare padding value unions in components.
 
-> **`page-top` is for a FIXED nav only — don't use it on this project by default.** `page-top` exists to push a page's first section down so it clears a navbar that's pinned as a fixed overlay. **This project's navbar is `sticky` by default**, so it sits in normal document flow and the first section does *not* need extra top padding to clear it. Build the first section (hero included) with the normal default padding — omit `paddingTop` entirely. `page-top` stays in the project only for the specific case where someone switches the nav to `fixed`; reach for it then, not before.
+> **`page-top` is for a FIXED nav only — don't use it on this project by default.** `page-top` exists to push a page's first section down so it clears a navbar that's pinned as a fixed overlay. **This project's navbar is `sticky` by default**, so it sits in normal document flow and the first section does _not_ need extra top padding to clear it. Build the first section (hero included) with the normal default padding — omit `paddingTop` entirely. `page-top` stays in the project only for the specific case where someone switches the nav to `fixed`; reach for it then, not before.
 
-**How padding is applied (overriding it):** padding lives **directly on the `<section>`** — the chosen sizes are emitted as `data-padding-top` / `data-padding-bottom` attributes and mapped to `padding-top` / `padding-bottom` in [section.css](src/styles/components/section.css). There are **no spacer divs** — padding is a property of the section itself. The mapping rules are wrapped in `:where()` so they carry **zero specificity** — which means any single component/page class can override section padding without an `!important` or attribute-level selector. This is the supported pattern for sections that need responsive or asymmetric padding the props can't express: pass `padding="none"` and drive it from a class, e.g.
+**How padding is applied (overriding it):** padding lives **directly on the `<section>`** — the chosen sizes are emitted as `data-padding-top` / `data-padding-bottom` attributes and mapped to `padding-top` / `padding-bottom` in [Section.astro's style block](src/components/ui/Section.astro). There are **no spacer divs** — padding is a property of the section itself. The mapping rules are wrapped in `:where()` so they carry **zero specificity** — which means any single component/page class can override section padding without an `!important` or attribute-level selector. This is the supported pattern for sections that need responsive or asymmetric padding the props can't express: pass `padding="none"` and drive it from a class, e.g.
 
 ```css
 /* a section that wants its own responsive vertical rhythm */
-.split_section { padding-block: var(--section-space-xsmall); }
-@media (width < 55em) { .split_section { padding-block: var(--section-space-small); } }
+.split_section {
+  padding-block: var(--section-space-xsmall);
+}
+@media (width < 55em) {
+  .split_section {
+    padding-block: var(--section-space-small);
+  }
+}
 ```
 
 ```astro
@@ -820,7 +1382,7 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
   <Heading tag="h1" variant="display-xl">Page Title</Heading>
 </Section>
 
-<!-- Prose section — padding="main" is the default, shown here only for clarity -->
+<!-- Prose section — no padding prop: 'main' is the default, so don't write it -->
 <Section container="narrow">
   <Text variant="large">Article body…</Text>
 </Section>
@@ -832,117 +1394,119 @@ Full-width page section with theming, fluid vertical padding, optional backgroun
 
 Two-column CSS Grid with 13 named variants. Uses `display: var(--layout-collapse, grid)` — the `--layout-collapse` variable references the responsive flag for the chosen breakpoint (`--flex-medium` or `--flex-small`). All two-column variants collapse to a single stacked column via container query, not a media query. Grid columns use `minmax(0, 1fr)` to prevent content blowout.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | See table below | `'columns'` | Column proportion and behavior |
-| `verticalAlign` | `'start'`\|`'center'`\|`'end'`\|`'stretch'` | `'start'` | Vertical alignment of columns |
-| `collapseAt` | `'medium'`\|`'small'` | `'medium'` | Container-width breakpoint at which two-column layouts collapse to a single stacked column. `'medium'` = ~928px (58em), `'small'` = ~560px (35em). No effect on stack variants. |
-| `contentSpan` | `1`–`11` | breakout: `7`, full: `6` | Content-side column span for breakout/full variants. Must pair with `bleedSpan` to total 13. |
-| `bleedSpan` | `1`–`11` | breakout: `6`, full: `7` | Bleed-side column span for breakout/full variants. Must pair with `contentSpan` to total 13. |
-| `ratio` | `string` | — | Custom column ratio for two-column variants. Format: `"N-M"` (e.g. `"60-40"`, `"5-7"`). Numbers become `fr` units. Works with `columns`, `columns-reversed`, `sticky-left`, `contain`, `contain-reversed`. |
-| `cardPadding` | `string` | — | Vertical padding for `card` variant content column. Defaults to `--section-space-main` (fluid 4rem–7rem). Accepts any CSS length value. |
-| `class` | `string` | — | Extra classes on wrapper |
+| Prop            | Type                                        | Default                  | Description                                                                                                                                                                                                |
+| --------------- | ------------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `variant`       | See table below                             | `'columns'`              | Column proportion and behavior                                                                                                                                                                             |
+| `verticalAlign` | `'start'`\|`'center'`\|`'end'`\|`'stretch'` | `'start'`                | Vertical alignment of columns                                                                                                                                                                              |
+| `collapseAt`    | `'medium'`\|`'small'`                       | `'medium'`               | Container-width breakpoint at which two-column layouts collapse to a single stacked column. `'medium'` = ~928px (58em), `'small'` = ~560px (35em). No effect on stack variants.                            |
+| `contentSpan`   | `1`–`11`                                    | breakout: `7`, full: `6` | Content-side column span for breakout/full variants. Must pair with `bleedSpan` to total 13.                                                                                                               |
+| `bleedSpan`     | `1`–`11`                                    | breakout: `6`, full: `7` | Bleed-side column span for breakout/full variants. Must pair with `contentSpan` to total 13.                                                                                                               |
+| `ratio`         | `string`                                    | —                        | Custom column ratio for two-column variants. Format: `"N-M"` (e.g. `"60-40"`, `"5-7"`). Numbers become `fr` units. Works with `columns`, `columns-reversed`, `sticky-left`, `contain`, `contain-reversed`. |
+| `cardPadding`   | `string`                                    | —                        | Vertical padding for `card` variant content column. Defaults to `--section-space-main` (fluid 4rem–7rem). Accepts any CSS length value.                                                                    |
+| `class`         | `string`                                    | —                        | Extra classes on wrapper                                                                                                                                                                                   |
 
 **Variants:**
-| Value | Grid columns | Notes |
-|-------|-------------|-------|
-| `columns` | 1fr 1fr | Equal 50/50 |
-| `columns-reversed` | 1fr 1fr | col2 appears left on desktop |
-| `stack` | 1fr | Single column, left-aligned — use `slot="col1"` |
-| `stack-centered` | 1fr | Single column, centered — use `slot="col1"` |
-| `sticky-left` | 1fr 1fr | Left column sticky while right scrolls |
-| `contain` | 1fr 1fr | Card layout: content left (padded), image right (clipped). Background, radius, overflow clip, zero gap. |
-| `contain-reversed` | 1fr 1fr | Card layout: image left (clipped), content right (padded). Background, radius, overflow clip, zero gap. |
-| `breakout` | 7/12 + 5/12+gutter | ~60/40 — content left, image right bleeds to viewport edge (named-line grid) |
-| `breakout-reversed` | gutter+5/12 + 7/12 | ~40/60 — image left bleeds to viewport edge, content right (named-line grid) |
-| `full` | 6/12 + 6/12+gutter | 50/50 — content left, image right bleeds to viewport edge (named-line grid) |
-| `full-reversed` | gutter+6/12 + 6/12 | 50/50 — image left bleeds to viewport edge, content right (named-line grid) |
-| `card` | 1fr | Centered card: col1 content centered with padding, col2 positioned absolutely as background (rounded, clipped). Use with Visual + Overlay in col2 for CTA sections. |
-| `auto-width` | auto auto | Both columns size to content |
 
-**Slots:** `col1` (left) and `col2` (right). **All variants use `slot="col1"`** — including `stack` and `stack-centered`. When placing multiple loose elements (Heading, Text, Button) into a column, wrap them in the **`<Col>` component** (`<Col slot="col1">…</Col>`) — see [`<Col>`](#col) below. `<Col>` renders `<div class="u-display-contents">` so its children behave as direct grid children, with the load-bearing `u-display-contents` class baked in (never hand-write that div). Single components that already have their own wrapper (Visual, Grid, Card) can take `slot` directly — no `<Col>` needed. **Exception:** a column that holds a `<Visual>` *together with other content* must use `<ContentWrapper>`, not `<Col>` — `<Col>`'s `display: contents` lets the image's `height: 100%` override its `ratio` aspect-ratio and balloon (see the ⚠️ note in the [`<Col>`](#col) section).
+| Value               | Grid columns       | Notes                                                                                                                                                                   |
+| ------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `columns`           | 1fr 1fr            | Equal 50/50                                                                                                                                                             |
+| `columns-reversed`  | 1fr 1fr            | column 2 appears left on desktop                                                                                                                                        |
+| `stack`             | 1fr                | Single column, left-aligned                                                                                                                                             |
+| `stack-centered`    | 1fr                | Single column, centered                                                                                                                                                 |
+| `sticky-left`       | 1fr 1fr            | Left column sticky while right scrolls                                                                                                                                  |
+| `contain`           | 1fr 1fr            | Card layout: content left (padded), image right (clipped). Background, radius, overflow clip, zero gap.                                                                 |
+| `contain-reversed`  | 1fr 1fr            | Card layout: image left (clipped), content right (padded). Background, radius, overflow clip, zero gap.                                                                 |
+| `breakout`          | 7/12 + 5/12+gutter | ~60/40 — content left, image right bleeds to viewport edge (named-line grid)                                                                                            |
+| `breakout-reversed` | gutter+5/12 + 7/12 | ~40/60 — image left bleeds to viewport edge, content right (named-line grid)                                                                                            |
+| `full`              | 6/12 + 6/12+gutter | 50/50 — content left, image right bleeds to viewport edge (named-line grid)                                                                                             |
+| `full-reversed`     | gutter+6/12 + 6/12 | 50/50 — image left bleeds to viewport edge, content right (named-line grid)                                                                                             |
+| `card`              | 1fr                | Centered card: column 1 content centered with padding, col2 positioned absolutely as background (rounded, clipped). Use with Visual + Overlay in col2 for CTA sections. |
+| `auto-width`        | auto auto          | Both columns size to content                                                                                                                                            |
 
-**Stack variants:** Do NOT wrap children in ContentWrapper for alignment — `stack-centered` already handles centering via `text-align: center` and `align-items: center`. ContentWrapper is only needed inside two-column layouts when you need to control alignment within a column.
+**Filling the two columns.** Layout generates both column boxes itself, so there is no wrapper component to choose and no `col1`/`col2` slot to remember:
+
+| What you are placing                                      | How to write it                                                         |
+| --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Anything in column 1                                      | Put it straight inside `<Layout>` — the **default slot IS column 1**    |
+| One component in column 2 (Visual, Grid, Card, Slider)    | `slot="column2"` on the component itself                                |
+| Several loose elements in column 2                        | `<Fragment slot="column2">…</Fragment>` — groups without emitting a box |
+| A ratio'd `<Visual>` **plus** other content in one column | `<Layout variant="stack">` around them (see below)                      |
+
+A generated column is a real box, so a ratio'd `<Visual>` is safe in one. One failure mode survives — when a two-column variant collapses, the column can hand the image a definite height and a ratio'd `<Visual>` stretches (measured: a `16/9` visual sharing a column with a caption held 1.78 at desktop but rendered 1.66 collapsed). If a column holds a `<Visual>` alongside other content, wrap them in `<Layout variant="stack">`, which is a real `height: auto` block. A `<Visual variant="background">` is exempt — it is absolute-fill with its ratio unset.
+
+**Stack variants:** Do NOT wrap children in Layout for alignment — `stack-centered` already handles centering via `text-align: center` and `align-items: center`. Layout is only needed inside two-column layouts when you need to control alignment within a column.
 
 ```astro
-<!-- Centered single column — use slot="col1" with <Col> -->
+<!-- Centered single column — use with  -->
 <Layout variant="stack-centered">
-  <Col slot="col1">
-    <Heading tag="h1" variant="display-sm">Page Title</Heading>
-    <Text variant="large" align="center">Supporting text.</Text>
-    <div class="u-button-wrapper">
-      <Button href="/cta" ariaLabel="CTA">Get Started</Button>
-    </div>
-  </Col>
+  <Heading tag="h1" variant="display-sm">Page Title</Heading>
+  <Text variant="large" align="center">Supporting text.</Text>
+  <ButtonWrapper>
+    <Button href="/cta" ariaLabel="CTA">Get Started</Button>
+  </ButtonWrapper>
 </Layout>
 
-<!-- 50/50 — wrap loose elements in <Col slot="col1"> -->
+<!-- 50/50 — wrap loose elements in  -->
 <Layout variant="columns" verticalAlign="center">
-  <Col slot="col1">
-    <Heading variant="eyebrow">Label</Heading>
-    <Heading tag="h3" variant="h2">Title</Heading>
-    <Text>Description text.</Text>
-    <div class="u-button-wrapper">
-      <Button href="#" ariaLabel="CTA">Get started</Button>
-    </div>
-  </Col>
-  <Visual slot="col2" src={img} alt="Description" ratio="landscape" />
+  <Heading variant="eyebrow">Label</Heading>
+  <Heading tag="h3" variant="h2">Title</Heading>
+  <Text>Description text.</Text>
+  <ButtonWrapper>
+    <Button href="#" ariaLabel="CTA">Get started</Button>
+  </ButtonWrapper>
 </Layout>
+<Visual slot="column2" src={img} alt="Description" ratio="landscape" />
 
 <!-- Card layout (content + image in a rounded card) -->
 <Layout variant="contain">
-  <Col slot="col1">
-    <Heading>Feature</Heading>
-    <Text>Description</Text>
-  </Col>
-  <Visual slot="col2" src={img} alt="" />
+  <Heading>Feature</Heading>
+  <Text>Description</Text>
 </Layout>
+<Visual slot="column2" src={img} alt="" />
 
 <!-- Custom column ratio (works on columns, sticky-left, contain) -->
 <Layout variant="columns" ratio="5-7" verticalAlign="start">
-  <Heading slot="col1" variant="eyebrow">Label</Heading>
-  <Text slot="col2">Body</Text>
+  <Heading variant="eyebrow">Label</Heading>
+  <Text slot="column2">Body</Text>
 </Layout>
 
 <!-- Breakout with custom column spans (image takes 8 cols, content takes 5) -->
 <Layout variant="breakout" contentSpan={5} bleedSpan={8}>
-  <Heading slot="col1">Narrow content</Heading>
-  <Image slot="col2" src={img} alt="" />
+  <Heading>Narrow content</Heading>
+  <Image slot="column2" src={img} alt="" />
 </Layout>
 
 <!-- Full with wider content side -->
 <Layout variant="full" contentSpan={8} bleedSpan={5}>
-  <Text slot="col1">Wide content area</Text>
-  <Image slot="col2" src={img} alt="" />
+  <Text>Wide content area</Text>
+  <Image slot="column2" src={img} alt="" />
 </Layout>
 
 <!-- Keep columns until small (~560px) instead of default medium (~928px) -->
 <Layout variant="columns" collapseAt="small" verticalAlign="center">
-  <Heading slot="col1" variant="h3">Stays side-by-side on tablets</Heading>
-  <Text slot="col2">Only stacks on phones.</Text>
+  <Heading variant="h3">Stays side-by-side on tablets</Heading>
+  <Text slot="column2">Only stacks on phones.</Text>
 </Layout>
 
 <!-- Card with background image (CTA pattern) -->
 <Layout variant="card">
-  <Col slot="col1">
-    <Heading tag="h2" variant="display-sm" accent>Ready to <strong>start</strong>?</Heading>
-    <Text variant="large" align="center">Book a free strategy call.</Text>
-    <div class="u-button-wrapper">
-      <Button href="/contact" ariaLabel="Book call">Book a Call</Button>
-    </div>
-  </Col>
-  <Col slot="col2">
-    <Visual src={bgImage} alt="" variant="background" />
-    <Overlay strength={75} />
-  </Col>
+  <Heading tag="h2" variant="display-sm" accent
+    >Ready to <strong>start</strong>?</Heading
+  >
+  <Text variant="large" align="center">Book a free strategy call.</Text>
+  <ButtonWrapper>
+    <Button href="/contact" ariaLabel="Book call">Book a Call</Button>
+  </ButtonWrapper>
 </Layout>
+<Fragment slot="column2">
+  <Visual src={bgImage} alt="" variant="background" />
+  <Overlay strength={75} />
+</Fragment>
 
 <!-- Card with custom vertical padding -->
 <Layout variant="card" cardPadding="var(--section-space-large)">
-  <Col slot="col1">
-    <Heading tag="h2" variant="h2">Taller card</Heading>
-    <Text>More vertical breathing room.</Text>
-  </Col>
+  <Heading tag="h2" variant="h2">Taller card</Heading>
+  <Text>More vertical breathing room.</Text>
 </Layout>
 ```
 
@@ -950,44 +1514,27 @@ Two-column CSS Grid with 13 named variants. Uses `display: var(--layout-collapse
 
 ---
 
-### `<Col>`
+### Multiple elements in one Layout column — no wrapper
 
-The standard wrapper for putting **multiple loose elements** into a single `<Layout>` column slot. Renders `<div class="u-display-contents">` — `display: contents` removes the wrapper from the box tree, so its children become **direct children of the Layout column** (correct `verticalAlign`, `rowGap`, and margin flow). Use it instead of hand-writing `<div slot="col1" class="u-display-contents">`; the load-bearing class is baked in so it can never be forgotten.
+**Put loose elements straight into the slot.** A `<Layout>` column accepts as many children as you like; each one becomes a grid child of the column and picks up its `verticalAlign`, `rowGap`, and margin trim. There is nothing to wrap them in.
 
-**When to use it:** a Layout slot positions exactly one element. Whenever a column holds two or more loose elements (Heading + Text + Button, or Visual + Overlay), wrap them in `<Col>`. A *single* self-contained component (Visual, Grid, Card) is already one element — give it `slot="col1"`/`slot="col2"` directly; do **not** wrap it in `<Col>`.
-
-**Why not a plain `<div>`:** a normal `<div>` would itself become the grid/flex child, collapsing all your elements into one box and breaking column alignment and gap. `<Col>` (via `display: contents`) wraps for slotting without becoming a layout box.
-
-> ⚠️ **A column that holds a `<Visual>` together with other content must use `<ContentWrapper>`, not `<Col>`.** Because `display: contents` removes the `<Col>` box, `.u-image-wrapper` becomes a **direct child of the Layout column** — a grid/flex item with a *definite* height. The wrapper's `height: 100%` ([visual-utilities.css](src/styles/base/visual-utilities.css)) then **overrides the inline `aspect-ratio`** that `<Visual ratio="…">` sets, so the image balloons to a huge near-portrait size and crowds out the text below (worst on mobile, where the column collapses to `display: flex`). `<ContentWrapper>` inserts a real `height: auto` block between the column and the image, so `height: 100%` has nothing definite to resolve against → it falls back to `auto` → the aspect-ratio governs and the image sizes correctly. Rule: `<Col>` is only for self-sizing loose elements (Heading / Text / Button); reach for `<ContentWrapper>` the moment a `<Visual>` shares the column with other content.
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `class` | `string` | — | Extra custom/utility classes, merged **on top of** `u-display-contents` |
-| `[key: string]` | `any` | — | Any HTML attribute (`slot`, `style`, `data-*`, `aria-*`, etc.) — forwarded to the root element |
-
-**Slot:** default — the loose elements to place into the Layout column.
+If you ever find a `<div class="u-display-contents">` around loose Layout children, delete it — it does nothing for layout. Check first whether any CSS hangs off its class: a `display: contents` div is invisible in the box tree but still a perfectly good selector hook, so removing one can silently take a style or an animation with it.
 
 ```astro
-<!-- Multiple loose elements in one column -->
 <Layout variant="columns" verticalAlign="center">
-  <Col slot="col1">
-    <Heading variant="eyebrow">Label</Heading>
-    <Heading tag="h3" variant="h2">Title</Heading>
-    <Text>Description text.</Text>
-    <div class="u-button-wrapper">
-      <Button href="#" ariaLabel="CTA">Get started</Button>
-    </div>
-  </Col>
-  <!-- Single component → slot directly, no <Col> -->
-  <Visual slot="col2" src={img} alt="Description" ratio="landscape" />
+  <Heading variant="eyebrow">Label</Heading>
+  <Heading tag="h3" variant="h2">Title</Heading>
+  <Text>Description text.</Text>
+  <ButtonWrapper>
+    <Button href="#" ariaLabel="CTA">Get started</Button>
+  </ButtonWrapper>
+  <Visual slot="column2" src={img} alt="Description" ratio="landscape" />
 </Layout>
-
-<!-- Extra class is merged on top of u-display-contents; attributes pass through -->
-<Col slot="col1" class="home-hero_text" data-animate-in>
-  <Heading tag="h1" variant="h1">Hero</Heading>
-  <Text variant="large">Subhead.</Text>
-</Col>
 ```
+
+**Never wrap them in a plain `<div>`.** A normal `<div>` becomes the grid child itself, collapsing every element into one box and killing the column's alignment and gap. If you genuinely need a wrapper — to carry a theme class whose variables must reach the children, as `<CTASection>` does with `u-theme-dark` — give it `u-display-contents` so it stays out of the box tree.
+
+> ⚠️ **A column holding a `<Visual>` alongside other content needs `<Layout variant="stack">`.** As a direct child of the Layout column, `.u-image-wrapper` is a grid/flex item with a _definite_ height, and its `height: 100%` ([visual-utilities.css](src/styles/utilities/visual-utilities.css)) **overrides the inline `aspect-ratio`** that `<Visual ratio="…">` sets — the image balloons to a huge near-portrait size and crowds out the text below (worst on mobile, where the column collapses to `display: flex`). `<Layout variant="stack">` inserts a real `height: auto` block between the column and the image, so `height: 100%` has nothing definite to resolve against → it falls back to `auto` → the aspect-ratio governs. A `<Visual>` that is the _only_ thing in its column is fine as-is.
 
 ---
 
@@ -995,16 +1542,16 @@ The standard wrapper for putting **multiple loose elements** into a single `<Lay
 
 Responsive CSS grid using container-query-based column counts (`@container` on `.u-container`).
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `largeColumns` | `1`–`6` | `3` | Columns at default size |
-| `mediumColumns` | `0`–`4` | `2` | Columns at container ≤ 928px. `0` = inherit |
-| `smallColumns` | `0`–`2` | `1` | Columns at container ≤ 560px. `0` = inherit |
-| `xsmallColumns` | `0`–`1` | `0` | Columns at container ≤ 320px. `0` = inherit |
-| `rowGap` | `0`–`8` | `6` | Row gap (`--space-N` scale) |
-| `variant` | `'default'`\|`'autofit'` | `'default'` | Grid mode |
-| `minColWidth` | `string` | — | Min column width for `autofit` (e.g. `'16rem'`) |
-| `class` | `string` | — | Extra classes on wrapper |
+| Prop            | Type                     | Default     | Description                                     |
+| --------------- | ------------------------ | ----------- | ----------------------------------------------- |
+| `largeColumns`  | `1`–`6`                  | `3`         | Columns at default size                         |
+| `mediumColumns` | `0`–`4`                  | `2`         | Columns at container ≤ 928px. `0` = inherit     |
+| `smallColumns`  | `0`–`2`                  | `1`         | Columns at container ≤ 560px. `0` = inherit     |
+| `xsmallColumns` | `0`–`1`                  | `0`         | Columns at container ≤ 320px. `0` = inherit     |
+| `rowGap`        | `0`–`8`                  | `6`         | Row gap (`--space-N` scale)                     |
+| `variant`       | `'default'`\|`'autofit'` | `'default'` | Grid mode                                       |
+| `minColWidth`   | `string`                 | —           | Min column width for `autofit` (e.g. `'16rem'`) |
+| `class`         | `string`                 | —           | Extra classes on wrapper                        |
 
 ```astro
 <!-- 3 → 2 → 1 responsive grid -->
@@ -1025,21 +1572,31 @@ Responsive CSS grid using container-query-based column counts (`@container` on `
 
 ### `<Card>`
 
-Content card with optional image, title, body, footer, and full-surface clickable overlay.
+Content card with optional image, title, body, and footer. Passing `href` makes the whole card surface a link — via a stretched pseudo-element on the title's anchor, not an overlay element.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | `'default'`\|`'stacked'`\|`'cover'` | `'default'` | Card layout |
-| `href` | `string` | — | Makes card fully clickable (renders `<a>` overlay) |
-| `newTab` | `boolean` | `false` | Open link in new tab |
-| `ariaLabel` | `string` | — | Accessible label for the clickable overlay |
-| `title` | `string` | — | Convenience title prop (renders as h4) |
-| `rowSpan` | `1`–`4` | — | `grid-row: span N` |
-| `colSpan` | `1`–`4` | — | `grid-column: span N` |
-| `radius` | `string` | — | Border-radius utility class override |
-| `class` | `string` | — | Extra classes on outer wrapper |
+**Interaction model (automatic).** The card counts the actions (`<a href>` / `<button>`) in its **footer** slot and picks:
+
+| Actions in footer | Result                                                                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 or 1            | Whole card is the link. The lone button is a visual affordance, and the footer is `inert` — **one** tab stop, not two to the same place. |
+| 2 or more         | The card surface is **not** a link (two destinations can't share one surface); the buttons stay real. A dev warning explains it.         |
+
+Override with `actionsOverride="single" \| "multiple"` when that read is wrong. Actions must be in the `footer` slot to be counted.
+
+| Prop        | Type                                | Default     | Description                                                            |
+| ----------- | ----------------------------------- | ----------- | ---------------------------------------------------------------------- |
+| `variant`   | `'default'`\|`'stacked'`\|`'cover'` | `'default'` | Card layout                                                            |
+| `href`      | `string`                            | —           | Makes card fully clickable (renders `<a>` overlay)                     |
+| `newTab`    | `boolean`                           | `false`     | Open link in new tab                                                   |
+| `ariaLabel` | `string`                            | —           | Accessible label for the card link (the title text is the anchor text) |
+| `title`     | `string`                            | —           | Convenience title prop (renders as h4)                                 |
+| `rowSpan`   | `1`–`4`                             | —           | `grid-row: span N`                                                     |
+| `colSpan`   | `1`–`4`                             | —           | `grid-column: span N`                                                  |
+| `radius`    | `string`                            | —           | Border-radius utility class override                                   |
+| `class`     | `string`                            | —           | Extra classes on outer wrapper                                         |
 
 **Variants:**
+
 - `default` — visual on top (16/9 aspect ratio), content below
 - `stacked` — content only, visual slot hidden
 - `cover` — visual fills card (2/3 aspect ratio), content overlays at bottom
@@ -1073,18 +1630,18 @@ Content card with optional image, title, body, footer, and full-surface clickabl
 
 Blog post card built on top of the Card component. Image-top layout with title (clamped at 2 lines), description (clamped at 2 lines), category label, and hidden author/date metadata for CMS sorting. The entire card surface is clickable.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `title` | `string` | **required** | Post title (clamped at 2 lines) |
-| `description` | `string` | **required** | Post excerpt (clamped at 2 lines) |
-| `category` | `string` | **required** | Category label at bottom |
-| `href` | `string` | **required** | Link to the full blog post |
-| `image` | `ImageMetadata \| string` | **required** | Featured image source |
-| `imageAlt` | `string` | **required** | Alt text for the featured image |
-| `author` | `string` | — | Author name (data attribute for sorting) |
-| `authorAvatar` | `ImageMetadata \| string` | — | Author avatar (used in featured post layout) |
-| `date` | `string` | — | Publish date ISO string (data attribute for sorting) |
-| `class` | `string` | — | Extra classes on outer wrapper |
+| Prop           | Type                      | Default      | Description                                          |
+| -------------- | ------------------------- | ------------ | ---------------------------------------------------- |
+| `title`        | `string`                  | **required** | Post title (clamped at 2 lines)                      |
+| `description`  | `string`                  | **required** | Post excerpt (clamped at 2 lines)                    |
+| `category`     | `string`                  | **required** | Category label at bottom                             |
+| `href`         | `string`                  | **required** | Link to the full blog post                           |
+| `image`        | `ImageMetadata \| string` | **required** | Featured image source                                |
+| `imageAlt`     | `string`                  | **required** | Alt text for the featured image                      |
+| `author`       | `string`                  | —            | Author name (data attribute for sorting)             |
+| `authorAvatar` | `ImageMetadata \| string` | —            | Author avatar (used in featured post layout)         |
+| `date`         | `string`                  | —            | Publish date ISO string (data attribute for sorting) |
+| `class`        | `string`                  | —            | Extra classes on outer wrapper                       |
 
 ```astro
 <!-- Basic blog card -->
@@ -1110,21 +1667,21 @@ Animated expand/collapse FAQ list. Uses GSAP for smooth height transitions (fall
 
 #### `<Accordion>` props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `closePrevious` | `boolean` | `true` | Close open item when another opens |
-| `closeOnSecondClick` | `boolean` | `true` | Click open item to close it |
-| `openOnHover` | `boolean` | `false` | Open on hover (avoid for accessibility) |
-| `openByDefault` | `number` | `0` | 1-based index to open on load. `0` = all closed |
-| `class` | `string` | — | Extra classes |
+| Prop                 | Type      | Default | Description                                     |
+| -------------------- | --------- | ------- | ----------------------------------------------- |
+| `closePrevious`      | `boolean` | `true`  | Close open item when another opens              |
+| `closeOnSecondClick` | `boolean` | `true`  | Click open item to close it                     |
+| `openOnHover`        | `boolean` | `false` | Open on hover (avoid for accessibility)         |
+| `openByDefault`      | `number`  | `0`     | 1-based index to open on load. `0` = all closed |
+| `class`              | `string`  | —       | Extra classes                                   |
 
 #### `<AccordionItem>` props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `question` | `string` | — | Toggle button text |
-| `open` | `boolean` | `false` | Start expanded |
-| `class` | `string` | — | Extra classes |
+| Prop       | Type      | Default | Description        |
+| ---------- | --------- | ------- | ------------------ |
+| `question` | `string`  | —       | Toggle button text |
+| `open`     | `boolean` | `false` | Start expanded     |
+| `class`    | `string`  | —       | Extra classes      |
 
 **Slots on AccordionItem:** `question` (rich text toggle), default (expanded body)
 
@@ -1145,14 +1702,14 @@ Animated expand/collapse FAQ list. Uses GSAP for smooth height transitions (fall
 
 Absolute-fill scrim that sits on top of media or background content. Must be placed inside a `position: relative` (or `absolute`) parent — typically a Section `background` slot, a Layout `card` variant's col2, or a Card's `visual` slot.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | `'solid'`\|`'gradient'` | `'solid'` | Even scrim vs top-to-bottom vertical gradient |
-| `strength` | `0`–`100` | `70` | Darkness for solid variant |
-| `strengthTop` | `0`–`100` | `0` | Darkness at top edge (gradient variant only) |
-| `strengthMiddle` | `0`–`100` | — | Optional midpoint darkness (gradient variant only). Omit for a straight two-stop fade; set to add a 50% color stop. |
-| `strengthBottom` | `0`–`100` | `70` | Darkness at bottom edge (gradient variant only) |
-| `class` | `string` | — | Extra classes on the overlay div |
+| Prop             | Type                    | Default   | Description                                                                                                         |
+| ---------------- | ----------------------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
+| `variant`        | `'solid'`\|`'gradient'` | `'solid'` | Even scrim vs top-to-bottom vertical gradient                                                                       |
+| `strength`       | `0`–`100`               | `70`      | Darkness for solid variant                                                                                          |
+| `strengthTop`    | `0`–`100`               | `0`       | Darkness at top edge (gradient variant only)                                                                        |
+| `strengthMiddle` | `0`–`100`               | —         | Optional midpoint darkness (gradient variant only). Omit for a straight two-stop fade; set to add a 50% color stop. |
+| `strengthBottom` | `0`–`100`               | `70`      | Darkness at bottom edge (gradient variant only)                                                                     |
+| `class`          | `string`                | —         | Extra classes on the overlay div                                                                                    |
 
 Accepts any HTML attribute (`style`, `data-*`, `aria-*`). User-provided `style` is merged with computed styles.
 
@@ -1173,7 +1730,12 @@ Accepts any HTML attribute (`style`, `data-*`, `aria-*`). User-provided `style` 
 <Overlay variant="gradient" strengthTop={40} strengthBottom={60} />
 
 <!-- Three-stop gradient: dark top, very light middle, dark bottom -->
-<Overlay variant="gradient" strengthTop={70} strengthMiddle={10} strengthBottom={70} />
+<Overlay
+  variant="gradient"
+  strengthTop={70}
+  strengthMiddle={10}
+  strengthBottom={70}
+/>
 
 <!-- Inside a Section background slot -->
 <Section theme="dark">
@@ -1187,31 +1749,92 @@ Accepts any HTML attribute (`style`, `data-*`, `aria-*`). User-provided `style` 
 
 ---
 
+### `<ButtonWrapper>`
+
+The row that buttons sit in. Flex, wraps onto multiple lines, spaces the buttons, and carries the standard `margin-top` that separates a button row from the text above it. Replaces hand-written `<div class="u-button-wrapper">`.
+
+| Prop        | Type                               | Default     | Description                                              |
+| ----------- | ---------------------------------- | ----------- | -------------------------------------------------------- |
+| `marginTop` | `'default'` \| `0`–`8` \| `'auto'` | `'default'` | Space above the row. `'auto'` pins it to a card's floor. |
+| `render`    | `boolean`                          | `true`      | `false` skips the row and its buttons                    |
+| `class`     | `string`                           | —           | Extra classes on the row                                 |
+
+**Slot:** default — the buttons.
+
+**Alignment is inherited, never configured.** The row follows the surrounding layout, so `<Layout variant="stack-centered">` centres its buttons with no prop — the same way it centres its text. There is deliberately no `align` prop; if the buttons are not aligned as expected, change the layout, don't override the row.
+
+That works through `--_buttons-justify`, an inheriting custom property set wherever a layout declares centring (the `.u-content-wrapper.is-*-align` classes and the `stack-centered` / `card` Layout variants) — the button-side twin of `--_text-inline-margin`. It replaced a bare `justify-content: inherit`, which only worked when the row was a **direct** child of the aligned element: `justify-content` is not an inherited property, so `inherit` merely copies the parent's computed value and a single wrapping `<div>` broke it. Measured — nested two deep, before: `justify-content: normal`, button hard left; after: `center`. **If you add a new centred layout context, set `--_buttons-justify` there too.**
+
+```astro
+<Layout variant="stack-centered">
+  <Heading tag="h2">Ready to talk?</Heading>
+  <ButtonWrapper>
+    <Button href="/contact" ariaLabel="Book a call">Book a Call</Button>
+  </ButtonWrapper>
+</Layout>
+```
+
+### `<FormattedDate>`
+
+Renders a publish date as a `<time>` element. **Never format a date by hand** — a `new Date(x).toLocaleDateString()` call in a template gets both of these wrong.
+
+| Prop       | Type                         | Default                 | Description                                      |
+| ---------- | ---------------------------- | ----------------------- | ------------------------------------------------ |
+| `date`     | `Date \| string`             | —                       | Renders nothing if missing or unparseable        |
+| `format`   | `Intl.DateTimeFormatOptions` | `{ dateStyle: 'long' }` | `'medium'` gives the compact `Mar 14, 2026` form |
+| `timeZone` | `string`                     | `'UTC'`                 | IANA zone the date is _displayed_ in             |
+| `locale`   | `string`                     | `SITE.locale`           | BCP 47 tag                                       |
+| `render`   | `boolean`                    | `true`                  | `false` skips the element                        |
+| `class`    | `string`                     | —                       | Extra classes on the `<time>`                    |
+
+`datetime` is derived from `date` and is not a prop.
+
+**The time zone has to be pinned.** Sanity `date` fields are date-only strings (`"2026-03-14"`), and `new Date()` parses those as **UTC midnight**. Formatting that in the build machine's local zone renders `Mar 13` anywhere west of Greenwich — so the visible date changes depending on who ran the build, or on whether it ran locally or in CI. Formatting happens in UTC unless you pass `timeZone`. (`toIsoDateTime()` in `src/lib/jsonld.ts` already pins the same values for `datePublished`; this is the visible half of that fix.)
+
+**A date-only value keeps its exact string** in the `datetime` attribute rather than being inflated to a midnight timestamp it never carried.
+
+```astro
+<Text variant="small" muted>
+  <FormattedDate date={post.date} />
+</Text>
+
+<FormattedDate
+  date={post.date}
+  format={{ dateStyle: "medium" }}
+  class="blog_featured_card_date"
+/>
+```
+
 ### `<Modal>`
 
-Native `<dialog>`-based modal with CSS enter/exit transitions. No extra JS imports required.
+Native `<dialog>`-based modal with CSS enter/exit transitions — **no animation library**. The motion is driven by the `[open]` attribute plus `@starting-style`, with `transition-behavior: allow-discrete` holding `display`/`overlay` so the exit finishes before the dialog is hidden. The scrim is the native `::backdrop`. JS only calls `showModal()`/`close()`, so `Escape` closes natively and nothing about the animation can prevent it.
 
 **Trigger pattern:** Add `data-modal-trigger="modal-id"` to any button or link to open the modal.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `id` | `string` | **required** | Must match `data-modal-trigger` value |
-| `variant` | `'small'`\|`'side-panel'`\|`'full-screen'` | `'small'` | Layout style |
-| `ariaLabel` | `string` | — | Accessible label when no visible heading is present |
-| `class` | `string` | — | Extra classes on `<dialog>` |
+| Prop        | Type                                       | Default      | Description                                         |
+| ----------- | ------------------------------------------ | ------------ | --------------------------------------------------- |
+| `id`        | `string`                                   | **required** | Must match `data-modal-trigger` value               |
+| `variant`   | `'small'`\|`'side-panel'`\|`'full-screen'` | `'small'`    | Layout style                                        |
+| `ariaLabel` | `string`                                   | —            | Accessible label when no visible heading is present |
+| `class`     | `string`                                   | —            | Extra classes on `<dialog>`                         |
 
 **Variants:**
+
 - `small` — centered panel, max ~800px wide
 - `side-panel` — slides in from right edge (filters, settings)
 - `full-screen` — full viewport (image viewers, immersive content)
 
 **Slots:** default (scrollable content), `close` (override the default close × button)
 
-**Close methods:** close button click, backdrop click, `Escape` key (native `<dialog>`)
+**Close methods:** close button click, click beside the panel, `Escape` key (native `<dialog>`)
+
+Under `prefers-reduced-motion` the modal opens and closes instantly (durations drop to 1ms rather than 0, so `display`/`overlay` still complete and the dialog reliably finishes closing).
 
 ```astro
 <!-- Trigger (anywhere on page) -->
-<Button data-modal-trigger="contact-modal" ariaLabel="Open contact form">Contact Us</Button>
+<Button data-modal-trigger="contact-modal" ariaLabel="Open contact form"
+  >Contact Us</Button
+>
 
 <!-- Modal (near bottom of page, inside BaseLayout slot) -->
 <Modal id="contact-modal" variant="small" ariaLabel="Contact form">
@@ -1224,15 +1847,15 @@ Native `<dialog>`-based modal with CSS enter/exit transitions. No extra JS impor
 
 ### `<Marquee>`
 
-Infinite horizontal scrolling ticker powered by GSAP (loaded globally via CDN). Accepts any content — text, logos, cards, CMS items. Each child should have the `marquee_item` class. Automatically clones content to fill the viewport for seamless looping.
+Infinite horizontal scrolling ticker — **pure CSS, no JavaScript**. Accepts any content — text, logos, cards, CMS items. Each child should have the `marquee_item` class. The component renders the slot twice (the second copy `aria-hidden` + `inert`) and animates the track by -50%, so copy 2 lands exactly where copy 1 started. Content narrower than the container is stretched and spread rather than leaving a blank tail. Under `prefers-reduced-motion` the animation is dropped and the strip becomes horizontally scrollable, so all content stays reachable.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `speed` | `number` | `20` | Duration in seconds — higher = slower |
-| `direction` | `'left'`\|`'right'` | `'left'` | Scroll direction |
-| `pauseOnHover` | `boolean` | `true` | Pause animation on mouse hover |
-| `gap` | `0`–`8` | `6` | Gap between items (`--space-N` scale) |
-| `class` | `string` | — | Extra classes on `.marquee_wrap` |
+| Prop           | Type                | Default  | Description                           |
+| -------------- | ------------------- | -------- | ------------------------------------- |
+| `speed`        | `number`            | `20`     | Duration in seconds — higher = slower |
+| `direction`    | `'left'`\|`'right'` | `'left'` | Scroll direction                      |
+| `pauseOnHover` | `boolean`           | `true`   | Pause animation on mouse hover        |
+| `gap`          | `0`–`8`             | `6`      | Gap between items (`--space-N` scale) |
+| `class`        | `string`            | —        | Extra classes on `.marquee_wrap`      |
 
 **Slot:** default — marquee items (use `.marquee_item` class on each child)
 
@@ -1259,11 +1882,13 @@ Infinite horizontal scrolling ticker powered by GSAP (loaded globally via CDN). 
 
 <!-- CMS-driven -->
 <Marquee speed={25}>
-  {clients.map(c => (
-    <div class="marquee_item">
-      <Image src={c.logo} alt={c.name} />
-    </div>
-  ))}
+  {
+    clients.map((c) => (
+      <div class="marquee_item">
+        <Image src={c.logo} alt={c.name} />
+      </div>
+    ))
+  }
 </Marquee>
 
 <!-- Reversed direction, no hover pause -->
@@ -1284,26 +1909,26 @@ Scroll-linked reveal component: text blocks on the left fade in/out as the user 
 
 **Important:** Uses `@media` queries (not `@container`) to stay in sync with `ScrollTrigger.matchMedia('(min-width: 768px)')` in the JS. Both fire at exactly 768px viewport width.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `items` | `ScrollRevealItem[]` | **required** | Array of content blocks (min 2 recommended) |
-| `imageRatio` | `'wide'`\|`'widescreen'`\|`'landscape'`\|`'square'`\|`'portrait'`\|`'tall'`\|`string` | `'landscape'` | Aspect ratio for all images (forwarded to Visual) |
-| `imageRadius` | `'none'`\|`'xsmall'`\|`'small'`\|`'medium'`\|`'large'`\|`'xlarge'`\|`'main'`\|`'full'`\|`'section'` | `'main'` | Border radius for all images (forwarded to Visual) |
-| `ratio` | `string` | `'5-7'` | Column ratio as `"N-M"` — numbers become `fr` units |
-| `class` | `string` | — | Extra classes on `.scroll_reveal_wrap` |
+| Prop          | Type                                                                                                | Default       | Description                                         |
+| ------------- | --------------------------------------------------------------------------------------------------- | ------------- | --------------------------------------------------- |
+| `items`       | `ScrollRevealItem[]`                                                                                | **required**  | Array of content blocks (min 2 recommended)         |
+| `imageRatio`  | `'wide'`\|`'widescreen'`\|`'landscape'`\|`'square'`\|`'portrait'`\|`'tall'`\|`string`               | `'landscape'` | Aspect ratio for all images (forwarded to Visual)   |
+| `imageRadius` | `'none'`\|`'xsmall'`\|`'small'`\|`'medium'`\|`'large'`\|`'xlarge'`\|`'main'`\|`'full'`\|`'section'` | `'main'`      | Border radius for all images (forwarded to Visual)  |
+| `ratio`       | `string`                                                                                            | `'5-7'`       | Column ratio as `"N-M"` — numbers become `fr` units |
+| `class`       | `string`                                                                                            | —             | Extra classes on `.scroll_reveal_wrap`              |
 
 **ScrollRevealItem fields:**
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `image` | `ImageMetadata \| string` | yes | Image source (imported or URL — URL requires width/height on Visual) |
-| `imageAlt` | `string` | yes | Alt text for the image |
-| `eyebrow` | `string` | — | Small label above heading (renders as `Heading variant="eyebrow"`) |
-| `heading` | `string` | yes | Block heading (renders as `Heading tag="h3" variant="h3"`) |
-| `text` | `string` | yes | Body text (renders as `Text variant="regular"`) |
-| `buttonHref` | `string` | — | CTA link (omit to hide button) |
-| `buttonText` | `string` | — | Button label (default: `'Learn more'`) |
-| `buttonAriaLabel` | `string` | — | Button aria-label (falls back to `"Learn more about {heading}"`) |
+| Field             | Type                      | Required | Description                                                          |
+| ----------------- | ------------------------- | -------- | -------------------------------------------------------------------- |
+| `image`           | `ImageMetadata \| string` | yes      | Image source (imported or URL — URL requires width/height on Visual) |
+| `imageAlt`        | `string`                  | yes      | Alt text for the image                                               |
+| `eyebrow`         | `string`                  | —        | Small label above heading (renders as `Heading variant="eyebrow"`)   |
+| `heading`         | `string`                  | yes      | Block heading (renders as `Heading tag="h3" variant="h3"`)           |
+| `text`            | `string`                  | yes      | Body text (renders as `Text variant="regular"`)                      |
+| `buttonHref`      | `string`                  | —        | CTA link (omit to hide button)                                       |
+| `buttonText`      | `string`                  | —        | Button label (default: `'Learn more'`)                               |
+| `buttonAriaLabel` | `string`                  | —        | Button aria-label (falls back to `"Learn more about {heading}"`)     |
 
 **Slot:** none — content is driven entirely by the `items` array.
 
@@ -1311,29 +1936,31 @@ Scroll-linked reveal component: text blocks on the left fade in/out as the user 
 
 ```astro
 <!-- Standard scroll reveal with 4 items -->
-<ScrollReveal items={[
-  {
-    eyebrow: "Platform",
-    heading: "Powerful analytics dashboard",
-    text: "Track every metric that matters to your business.",
-    image: analyticsImg,
-    imageAlt: "Analytics dashboard screenshot",
-  },
-  {
-    heading: "Automated workflows",
-    text: "Set it and forget it. Our automation handles the rest.",
-    image: workflowImg,
-    imageAlt: "Workflow builder interface",
-    buttonHref: "/workflows",
-    buttonText: "Learn more",
-  },
-  {
-    heading: "Real-time collaboration",
-    text: "Work together seamlessly, no matter where your team is.",
-    image: collabImg,
-    imageAlt: "Team collaboration view",
-  },
-]} />
+<ScrollReveal
+  items={[
+    {
+      eyebrow: "Platform",
+      heading: "Powerful analytics dashboard",
+      text: "Track every metric that matters to your business.",
+      image: analyticsImg,
+      imageAlt: "Analytics dashboard screenshot",
+    },
+    {
+      heading: "Automated workflows",
+      text: "Set it and forget it. Our automation handles the rest.",
+      image: workflowImg,
+      imageAlt: "Workflow builder interface",
+      buttonHref: "/workflows",
+      buttonText: "Learn more",
+    },
+    {
+      heading: "Real-time collaboration",
+      text: "Work together seamlessly, no matter where your team is.",
+      image: collabImg,
+      imageAlt: "Team collaboration view",
+    },
+  ]}
+/>
 
 <!-- Custom column ratio (wider image) and square images -->
 <ScrollReveal
@@ -1345,6 +1972,7 @@ Scroll-linked reveal component: text blocks on the left fade in/out as the user 
 ```
 
 **How it works:**
+
 - Desktop: each text block gets a `ScrollTrigger` with `scrub: 0.3` that controls its opacity. First block starts visible, last block never fades out. At ~50% progress, the paired image panel gets `.is-active` (cross-fade via CSS `transition: opacity 0.5s ease`).
 - Mobile: no animations — all blocks visible at full opacity, images shown inline above each text block, sticky track hidden.
 - Uses `ScrollTrigger.matchMedia` — animations are auto-killed on resize below 768px and re-created above.
@@ -1353,25 +1981,26 @@ Scroll-linked reveal component: text blocks on the left fade in/out as the user 
 
 ### `<Slider>`
 
-Touch/swipe carousel powered by **Swiper v12** (npm-bundled via `src/scripts/swiper-init.js`). Each slide must be a `.swiper-slide` div.
+Touch/swipe carousel powered by **Swiper v12** (imported directly in the component's script — core + only the modules the config uses). Each slide must be a `.swiper-slide` div.
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | `'crop-left'`\|`'overflow-visible'` | `'crop-left'` | Overflow clipping |
-| `slidesLg` | `number` | `3` | Slides at ≥ 1024px |
-| `slidesMd` | `number` | `2` | Slides at ≥ 800px |
-| `slidesSm` | `number` | `1.2` | Slides at ≥ 560px (fractional = peek next slide) |
-| `slidesXs` | `number` | `1.1` | Slides at ≥ 320px |
-| `speed` | `number` | `600` | Transition duration (ms) |
-| `freeMode` | `boolean` | `false` | Free drag — no snap to position |
-| `mousewheel` | `boolean` | `true` | Horizontal mouse-wheel scrolls slider |
-| `slideToClicked` | `boolean` | `false` | Click a slide to navigate to it |
-| `showBullets` | `boolean` | `true` | Pagination bullet dots |
-| `showArrows` | `boolean` | `false` | Prev / next arrow buttons |
-| `showControls` | `boolean` | `true` | Show controls row at all |
-| `class` | `string` | — | Extra classes on `.slider_wrap` |
+| Prop             | Type                                | Default       | Description                                      |
+| ---------------- | ----------------------------------- | ------------- | ------------------------------------------------ |
+| `variant`        | `'crop-left'`\|`'overflow-visible'` | `'crop-left'` | Overflow clipping                                |
+| `slidesLg`       | `number`                            | `3`           | Slides at ≥ 1024px                               |
+| `slidesMd`       | `number`                            | `2`           | Slides at ≥ 800px                                |
+| `slidesSm`       | `number`                            | `1.2`         | Slides at ≥ 560px (fractional = peek next slide) |
+| `slidesXs`       | `number`                            | `1.1`         | Slides at ≥ 320px                                |
+| `speed`          | `number`                            | `600`         | Transition duration (ms)                         |
+| `freeMode`       | `boolean`                           | `false`       | Free drag — no snap to position                  |
+| `mousewheel`     | `boolean`                           | `true`        | Horizontal mouse-wheel scrolls slider            |
+| `slideToClicked` | `boolean`                           | `false`       | Click a slide to navigate to it                  |
+| `showBullets`    | `boolean`                           | `true`        | Pagination bullet dots                           |
+| `showArrows`     | `boolean`                           | `false`       | Prev / next arrow buttons                        |
+| `showControls`   | `boolean`                           | `true`        | Show controls row at all                         |
+| `class`          | `string`                            | —             | Extra classes on `.slider_wrap`                  |
 
 **Variants:**
+
 - `crop-left` — left edge clips to container; slides peek in from the right
 - `overflow-visible` — all overflow visible; use inside an already-clipped parent
 
@@ -1395,39 +2024,40 @@ Touch/swipe carousel powered by **Swiper v12** (npm-bundled via `src/scripts/swi
 
 ### `<PricingCard>` + `<PricingItem>`
 
-Pricing tier card with name, price, description, feature items, and CTA button. No box-shadow baked in — add `u-box-shadow-*` utilities yourself. Composes ContentWrapper, Heading, Text, and Button internally.
+Pricing tier card with name, price, description, feature items, and CTA button. No box-shadow baked in — add `u-box-shadow-*` utilities yourself. Composes Layout, Heading, Text, and Button internally.
 
 **Import:**
+
 ```astro
-import PricingCard from '@/components/ui/PricingCard.astro';
-import PricingItem from '@/components/ui/PricingItem.astro';
+import PricingCard from '@/components/ui/PricingCard.astro'; import PricingItem
+from '@/components/ui/PricingItem.astro';
 ```
 
 #### `<PricingCard>` props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `name` | `string` | **required** | Package name (rendered as heading) |
-| `price` | `string` | **required** | Price number (e.g. `"$5,000"`, `"$3,500"`) |
-| `priceSuffix` | `string` | — | Smaller text after price (e.g. `"/month"`, `"/link"`) |
-| `priceLabel` | `string` | — | Small text above price (e.g. `"Starting at"`) |
-| `description` | `string` | — | Tagline below price |
-| `href` | `string` | — | CTA button link (omit to hide button) |
-| `buttonText` | `string` | `'Get started'` | Button label |
-| `ariaLabel` | `string` | — | Button aria-label (falls back to `"Learn more about {name}"`) |
-| `buttonVariant` | `'primary'`\|`'secondary'` | `'primary'` | Button style |
-| `variant` | `'default'`\|`'compact'` | `'default'` | Card layout — compact has tighter spacing |
-| `featured` | `boolean` | `false` | Accent-colored border highlight |
-| `align` | `'inherit'`\|`'center'`\|`'left'` | `'inherit'` | Content alignment |
-| `class` | `string` | — | Extra classes on root |
+| Prop            | Type                              | Default         | Description                                                   |
+| --------------- | --------------------------------- | --------------- | ------------------------------------------------------------- |
+| `name`          | `string`                          | **required**    | Package name (rendered as heading)                            |
+| `price`         | `string`                          | **required**    | Price number (e.g. `"$5,000"`, `"$3,500"`)                    |
+| `priceSuffix`   | `string`                          | —               | Smaller text after price (e.g. `"/month"`, `"/link"`)         |
+| `priceLabel`    | `string`                          | —               | Small text above price (e.g. `"Starting at"`)                 |
+| `description`   | `string`                          | —               | Tagline below price                                           |
+| `href`          | `string`                          | —               | CTA button link (omit to hide button)                         |
+| `buttonText`    | `string`                          | `'Get started'` | Button label                                                  |
+| `ariaLabel`     | `string`                          | —               | Button aria-label (falls back to `"Learn more about {name}"`) |
+| `buttonVariant` | `'primary'`\|`'secondary'`        | `'primary'`     | Button style                                                  |
+| `variant`       | `'default'`\|`'compact'`          | `'default'`     | Card layout — compact has tighter spacing                     |
+| `featured`      | `boolean`                         | `false`         | Accent-colored border highlight                               |
+| `align`         | `'inherit'`\|`'center'`\|`'left'` | `'inherit'`     | Content alignment                                             |
+| `class`         | `string`                          | —               | Extra classes on root                                         |
 
 **Slots:** `label` (tag badge inline with name, right-aligned), `default` (PricingItems), `footer` (below button)
 
 #### `<PricingItem>` props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `class` | `string` | — | Extra classes |
+| Prop    | Type     | Default | Description   |
+| ------- | -------- | ------- | ------------- |
+| `class` | `string` | —       | Extra classes |
 
 **Slots:** `icon` (defaults to checkmark SVG), `default` (text content)
 
@@ -1443,7 +2073,9 @@ import PricingItem from '@/components/ui/PricingItem.astro';
   class="u-box-shadow-medium"
 >
   <Fragment slot="label">
-    <Text tag="span" variant="tiny" weight="bold" marginBottom={0}>Most Popular</Text>
+    <Text tag="span" variant="tiny" weight="bold" marginBottom={0}
+      >Most Popular</Text
+    >
   </Fragment>
   <PricingItem>3 blog posts per month</PricingItem>
   <PricingItem>Monthly technical SEO audit</PricingItem>
@@ -1474,38 +2106,40 @@ import PricingItem from '@/components/ui/PricingItem.astro';
 
 ---
 
-## Bundled Animation/Slider Dependencies
+## Animation/Slider Dependencies — per-component imports, no window globals
 
-GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/` import them and expose them on `window`, both imported from `BaseLayout.astro`'s `<script>` block (gsap-init must come first):
+GSAP and Swiper are npm dependencies imported **directly by the script of every component that uses them** (`import { gsap } from "gsap"`, `import Swiper from "swiper"` + explicit modules). There are no init scripts, no `window.gsap`/`window.Swiper`, and no poll-for-global retry loops — an import is a hard, ordered dependency. Vite dedupes the modules across components on a page and only emits the chunk on pages that render such a component, so pages without animations or sliders ship none of this JS.
 
-| Library | Source | Init script | Provides |
-|---------|--------|-------------|---------|
-| GSAP + ScrollTrigger + SplitText | `gsap` (npm) | `src/scripts/gsap-init.js` | `window.gsap`, `window.ScrollTrigger`, `window.SplitText` |
-| Swiper 12 | `swiper` (npm, `swiper/bundle` entry — all modules pre-installed) | `src/scripts/swiper-init.js` | `window.Swiper` — Slider component |
+The one site-wide script is `src/scripts/animation.js` (imported in `BaseLayout.astro`): it is tiny, checks the page for `data-fade-*`/`data-splittext`/`data-prevent-flicker` attributes, and only then **dynamically imports** GSAP (SplitText only when the page splits text). Reduced-motion users get a plain-DOM reveal with no GSAP download at all.
 
-**Note:** Component scripts may still run before the bundles attach to `window`. `Accordion.astro` falls back gracefully if GSAP is absent; `Slider.astro` polls for `window.Swiper` with up to 10 retries at 100ms intervals.
+Two supporting contracts:
+
+- **`src/scripts/scroll-refresh.js`** — components that change layout without owning any ScrollTriggers (Accordion, Tab, the blog/case-study filters) dispatch `document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"))` instead of importing GSAP; every ScrollTrigger owner calls `wireScrollRefresh(ScrollTrigger)`, which dedupes to one listener per page. On pages with no GSAP the event has no listener and costs nothing.
+- **Swiper's CSS stays in `src/styles/vendor.css`** (the `vendor` layer). Never `import "swiper/css"` from a script — CSS imported from JS lands unlayered and outranks the whole design system.
+
+**Rule: do not add site-wide libraries to BaseLayout's `<script>` block.** Import them in the component or page that uses them.
 
 ---
 
 ## Common Page Patterns
 
 ### Standard content section
+
 ```astro
-<!-- No padding prop — defaults to padding="main", the standard rhythm -->
+<!-- No padding prop — 'main' default, the standard rhythm -->
 <Section theme="light">
   <Layout variant="columns" ratio="5-7" verticalAlign="center">
-    <Col slot="col1">
-      <Heading variant="eyebrow">Section Label</Heading>
-      <Heading tag="h2" variant="display-sm">
-        Section <strong>heading</strong>
-      </Heading>
-    </Col>
-    <Text slot="col2" size="large">Body text for this section.</Text>
+    <Heading variant="eyebrow">Section Label</Heading>
+    <Heading tag="h2" variant="display-sm">
+      Section <strong>heading</strong>
+    </Heading>
   </Layout>
+  <Text slot="column2" size="large">Body text for this section.</Text>
 </Section>
 ```
 
 ### Card grid section
+
 ```astro
 <Section>
   <Heading tag="h2" variant="h2">Our Work</Heading>
@@ -1519,26 +2153,28 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
 ```
 
 ### Hero section (first section on page)
+
 ```astro
-<!-- Sticky nav → no page-top; default padding="main". minHeight drives the hero height. -->
+<!-- Sticky nav → no page-top; no padding prop (the 'main' default). minHeight drives the hero height. -->
 <Section theme="dark" minHeight id="hero">
   <Image slot="background" src={heroBg} alt="" class="u-image" />
   <Layout variant="stack-centered">
-    <Col slot="col1">
-      <Heading tag="h1" variant="display-xl">
-        Page <strong>Headline</strong>
-      </Heading>
-      <Text variant="large" align="center">Supporting text.</Text>
-      <div class="u-button-wrapper">
-        <Button href="/contact" ariaLabel="Get started">Get Started</Button>
-        <Button variant="secondary" href="/case-studies" ariaLabel="Learn more">Learn More</Button>
-      </div>
-    </Col>
+    <Heading tag="h1" variant="display-xl">
+      Page <strong>Headline</strong>
+    </Heading>
+    <Text variant="large" align="center">Supporting text.</Text>
+    <ButtonWrapper>
+      <Button href="/contact" ariaLabel="Get started">Get Started</Button>
+      <Button variant="secondary" href="/case-studies" ariaLabel="Learn more"
+        >Learn More</Button
+      >
+    </ButtonWrapper>
   </Layout>
 </Section>
 ```
 
 ### Blog listing page
+
 ```astro
 <!-- src/pages/blog/index.astro — structure overview -->
 <Section theme="dark">
@@ -1548,44 +2184,42 @@ GSAP and Swiper are **npm-bundled** (no CDN). Two init scripts in `src/scripts/`
     <Overlay strength={75} />
   </Fragment>
   <Layout variant="stack-centered">
-    <Col slot="col1">
-      <Heading tag="h1" variant="display-sm">Blog</Heading>
-      <Text variant="large" align="center">Blog description.</Text>
-    </Col>
+    <Heading tag="h1" variant="display-sm">Blog</Heading>
+    <Text variant="large" align="center">Blog description.</Text>
   </Layout>
 </Section>
 
 <!-- Featured post — 2-column reversed (image left, content right) -->
 <Section>
   <Layout variant="columns-reversed" verticalAlign="center">
-    <Col slot="col1">
-      <ContentWrapper>
-        <Heading tag="h2" variant="h2">{featured.title}</Heading>
-        <Text variant="regular">{featured.description}</Text>
-        <!-- Author meta, CTA button -->
-      </ContentWrapper>
-    </Col>
-    <Visual slot="col2" src={featured.image} alt="" ratio="landscape" />
+    <Layout variant="stack">
+      <Heading tag="h2" variant="h2">{featured.title}</Heading>
+      <Text variant="regular">{featured.description}</Text>
+      <!-- Author meta, CTA button -->
+    </Layout>
   </Layout>
+  <Visual slot="column2" src={featured.image} alt="" ratio="landscape" />
 </Section>
 
 <!-- Blog grid — 3 → 2 → 1 responsive -->
 <Section>
   <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
-    {posts.map(post => <BlogCard {...post} />)}
+    {posts.map((post) => <BlogCard {...post} />)}
   </Grid>
 </Section>
 ```
 
 ### Adding a new page
+
 ```astro
 ---
 // src/pages/new-page.astro
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Section    from '../components/ui/Section.astro';
-import Heading    from '../components/ui/Heading.astro';
-import Text       from '../components/ui/Text.astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/ui/Section.astro";
+import Heading from "../components/ui/Heading.astro";
+import Text from "../components/ui/Text.astro";
 ---
+
 <!-- Default theme is light (omit theme prop to use site default) -->
 <BaseLayout title="New Page | Site Name" description="SEO description.">
   <!-- First section: no padding prop (defaults to "main"); no page-top — nav is sticky -->
@@ -1605,6 +2239,52 @@ import Text       from '../components/ui/Text.astro';
 ```
 
 ---
+
+## Sanity types — generated, never hand-written
+
+Sanity data is typed from the schema and the queries, by TypeGen. There are no
+hand-written interfaces mirroring a document shape.
+
+**After editing any GROQ query or Sanity schema, run `npm run typegen`.** It
+extracts the schema to `src/sanity/schema.json` (gitignored) and regenerates
+`src/sanity/sanity.types.ts` (committed, so a fresh clone type-checks without
+running anything).
+
+**Every query lives in `src/sanity/lib/queries.ts`, wrapped in `defineQuery()`.**
+TypeGen only finds queries through that call — a bare template literal is
+invisible to it, and a query defined in an `.astro` file is not scanned at all.
+
+`defineQuery()` preserves the query's literal string type, and TypeGen maps
+those literals onto result types, so `loadQuery` infers with no generic:
+
+```ts
+const { data } = await loadQuery({ query: BLOG_POST_QUERY });
+// data: BLOG_POST_QUERY_RESULT | null — a query cannot be paired
+// with the wrong shape, because you never name the shape.
+```
+
+**Templates take their prop types from the loader that feeds them**, so the two
+cannot drift:
+
+```ts
+type PageData = NonNullable<Awaited<ReturnType<typeof loadBlogPostPage>>>;
+interface Props {
+  post: PageData["post"];
+  relatedPosts: PageData["relatedPosts"];
+}
+```
+
+**Sanity fields are nullable.** A document exists the moment an editor creates
+it, before any field is filled in, so the generated types say `string | null`
+almost everywhere. Component prop types must allow that — a contract claiming
+`title: string` is asserting something the CMS does not guarantee. Where a
+component boundary wants `undefined` instead (Astro props, `BaseLayout`), coalesce
+at the call site with `?? undefined` rather than widening the component.
+
+**A field the query does not project does not exist**, however plausibly it reads.
+Two live bugs came from exactly this — a `comingSoon` guard that never fired and a
+`maxWidth` control in the Studio that did nothing — both invisible while the data
+was typed `any`. If a field is missing, add it to the projection and re-run typegen.
 
 ## Site Configuration — `src/config/site.ts`
 
@@ -1657,7 +2337,7 @@ Rules that keep this model healthy:
 
 - **Keep slug queries thin.** `getStaticPaths` fetches the whole collection at build time — enumerate `slug.current` only.
 - **Exclude "not published yet" flags from the slug query** (e.g. `comingSoon != true` on case studies), or you'll build pages that immediately redirect to /404. Those documents remain previewable under `/preview`.
-- **`getStaticPaths` is extracted into its own module at build time.** Only *imports* are in scope inside it — sibling consts in the same frontmatter are **not**. Keep its helpers in an imported module (`page-data.ts`). Symptom of getting this wrong: `<helper> is not defined` at build, pointing into an Astro-generated chunk.
+- **`getStaticPaths` is extracted into its own module at build time.** Only _imports_ are in scope inside it — sibling consts in the same frontmatter are **not**. Keep its helpers in an imported module (`page-data.ts`). Symptom of getting this wrong: `<helper> is not defined` at build, pointing into an Astro-generated chunk.
 - **Fresh forks build green:** the `page-data.ts` static-path helpers return `[]` (with a warning) when the Sanity project id is still the template placeholder. For a **real** project id they rethrow — a Sanity outage mid-build must fail the build loudly, not silently ship a site with every content page missing.
 
 ### Trailing slash config
@@ -1681,22 +2361,22 @@ If only one side is set, you get edge redirects or 404s that don't show up in lo
 
 Every public route is prerendered, so `@astrojs/sitemap` enumerates the whole site — **including the CMS content routes** — automatically from the route table. There is **no** `customPages` option and **no** `getSanityUrls()`-style helper — a `customPages` list is only ever needed for SSR routes (which are invisible to the sitemap), and no content route here is SSR. A new content type only needs a prerendered route with `getStaticPaths` and it appears in the sitemap on the next build.
 
-**Exclusions** live in [astro.config.mjs](astro.config.mjs) as **two lists with two different matching modes** (a single loose `page.includes(path)` gets it wrong in both directions — it can silently drop a real post like `/blog/components-in-…` via a `/components` exclusion, while exact-only matching pushes `/thank-you-call` variants *into* the sitemap against robots.txt):
+**Exclusions** live in [astro.config.mjs](astro.config.mjs) as **two lists with two different matching modes** (a single loose `page.includes(path)` gets it wrong in both directions — it can silently drop a real post like `/blog/components-in-…` via a `/components` exclusion, while exact-only matching pushes `/thank-you-call` variants _into_ the sitemap against robots.txt):
 
-- `SITEMAP_EXCLUDE_PATHS` — whole path segments (`/x` and `/x/…`, never `/blog/x-…`): the dev-only pages and `/preview`.
-- `SITEMAP_EXCLUDE_PREFIXES` — literal prefixes mirroring robots.txt `Disallow` semantics: one `/thank-you` entry covers every `/thank-you*` variant.
+- `NOINDEX_PATHS` (src/config/seo.shared.mjs) — whole path segments (`/x` and `/x/…`, never `/blog/x-…`): the dev-only pages and `/preview`.
+- `NOINDEX_PREFIXES` — literal prefixes mirroring robots.txt `Disallow` semantics: one `/thank-you` entry covers every `/thank-you*` variant. `isNoindexRoute()` combines both and feeds the sitemap filter, the generated `robots.txt`, the `noindex` meta tag, the SSR `X-Robots-Tag`, and the llms.txt index — one fact, five surfaces.
 
 Keep both lists in sync with [public/robots.txt](public/robots.txt). To verify after a change: run a build and inspect `dist/sitemap-0.xml` — count entries, confirm no robots-disallowed URL appears, confirm no real content page is missing.
 
 ### Studio
 
-Sanity Studio is **hosted by Sanity** at `your-studio.sanity.studio` — it is *not* embedded in the app. The `@sanity/astro` integration in [astro.config.mjs](astro.config.mjs) intentionally omits `studioBasePath` (so no `/studio` route is injected) but is still present because it provides the `sanity:client` virtual module used by [src/sanity/lib/load-query.ts](src/sanity/lib/load-query.ts). Studio config lives in [sanity.config.ts](sanity.config.ts) and is shared by the hosted Studio, `npx sanity deploy`, and `npx sanity dev`. `stega.studioUrl` is set to the absolute hosted URL (`https://your-studio.sanity.studio`) so overlay clicks deep-link into the hosted Studio.
+Sanity Studio is **hosted by Sanity** at `your-studio.sanity.studio` — it is _not_ embedded in the app. The `@sanity/astro` integration in [astro.config.mjs](astro.config.mjs) intentionally omits `studioBasePath` (so no `/studio` route is injected) but is still present because it provides the `sanity:client` virtual module used by [src/sanity/lib/load-query.ts](src/sanity/lib/load-query.ts). Studio config lives in [sanity.config.ts](sanity.config.ts) and is shared by the hosted Studio, `npx sanity deploy`, and `npx sanity dev`. `stega.studioUrl` is set to the absolute hosted URL (`https://your-studio.sanity.studio`) so overlay clicks deep-link into the hosted Studio.
 
 **Deploying the Studio:** `npx sanity schema deploy` then `npx sanity deploy` (publishes to `your-studio.sanity.studio` using the `studioHost`/`deployment.appId` already set in [sanity.cli.ts](sanity.cli.ts)). Studio updates ship independently of the site build.
 
 **Local workflow:** run `npm run studio:local` (Studio at `localhost:3333`, iframing the local site) and `npm run dev` (site at `localhost:4321`) in separate terminals — there is no `/studio` on the dev site. `studio:local` sets `SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` inline; a plain `npm run studio` / `sanity dev` falls back to `SITE_URL`, which iframes **production** — local route changes appear to do nothing, and if the route doesn't exist in production yet Presentation shows **"Unable to connect"** (that means "wrong origin", not broken code). The env var lives in `package.json` on purpose — do **not** put `SANITY_STUDIO_PREVIEW_URL` in `.env`, where it leaks into `sanity deploy` and ships a Studio pointing at localhost. `frame-ancestors` already allows `localhost:3333`.
 
-**Staging-first deploy (ship before the real domain exists).** A fork can run on the Worker's free `https://<worker>.<account>.workers.dev` URL — including Sanity Presentation — before any custom domain is attached, with **no per-fork code edits**. The mechanism: `SITE_URL` in [src/config/site.shared.mjs](src/config/site.shared.mjs) is **env-overridable** (`process.env.SITE_URL || "<literal>"`), so the Cloudflare *build* env supplies the staging origin; [sanity.config.ts](sanity.config.ts) drives `presentationTool`'s `previewUrl.initial` and `allowOrigins` from `SITE_URL` plus a `https://*.workers.dev` wildcard, so any staging Worker is trusted automatically. Deploy the Studio with `SANITY_STUDIO_PREVIEW_URL=https://<worker>.<account>.workers.dev npx sanity deploy` (env var on the same line — a plain `npx sanity deploy` bakes in the `SITE_URL` fallback). At launch, change the Cloudflare `SITE_URL` build var to the real origin and redeploy — no code commit. Full per-client runbook: **§4a "Staging-first deploy"** in [docs/new-project-checklist.md](docs/new-project-checklist.md).
+**Staging-first deploy (ship before the real domain exists).** A fork can run on the Worker's free `https://<worker>.<account>.workers.dev` URL — including Sanity Presentation — before any custom domain is attached, with **no per-fork code edits**. The mechanism: `SITE_URL` in [src/config/site.shared.mjs](src/config/site.shared.mjs) is **env-overridable** (`process.env.SITE_URL || "<literal>"`), so the Cloudflare _build_ env supplies the staging origin; [sanity.config.ts](sanity.config.ts) drives `presentationTool`'s `previewUrl.initial` and `allowOrigins` from `SITE_URL` plus a `https://*.workers.dev` wildcard, so any staging Worker is trusted automatically. Deploy the Studio with `SANITY_STUDIO_PREVIEW_URL=https://<worker>.<account>.workers.dev npx sanity deploy` (env var on the same line — a plain `npx sanity deploy` bakes in the `SITE_URL` fallback). At launch, change the Cloudflare `SITE_URL` build var to the real origin and redeploy — no code commit. Full per-client runbook: **§4a "Staging-first deploy"** in [docs/new-project-checklist.md](docs/new-project-checklist.md).
 
 ### Studio editing experience (desk, groups, icons, Vision)
 
@@ -1756,10 +2436,10 @@ Per-document iframe URLs are mapped in [src/sanity/lib/resolve.ts](src/sanity/li
 
 ⚠️ **Two URL maps exist and are easy to conflate — they live in separate modules on purpose:**
 
-| Module | Used by | Returns |
-|---|---|---|
-| [resolve.ts](src/sanity/lib/resolve.ts) | the Studio only (imports `sanity/presentation`) | `/preview/<type>/<slug>` — the draft-preview iframe targets |
-| [internal-links.ts](src/sanity/lib/internal-links.ts) | site code only (zero Studio imports) | `/blog/…`, `/case-studies/…`, `/glossary/…` — real links inside published content |
+| Module                                                | Used by                                         | Returns                                                                           |
+| ----------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------- |
+| [resolve.ts](src/sanity/lib/resolve.ts)               | the Studio only (imports `sanity/presentation`) | `/preview/<type>/<slug>` — the draft-preview iframe targets                       |
+| [internal-links.ts](src/sanity/lib/internal-links.ts) | site code only (zero Studio imports)            | `/blog/…`, `/case-studies/…`, `/glossary/…` — real links inside published content |
 
 Never import `resolve.ts` from site code: it drags the Studio dependency tree (including CSS-importing packages) into the site build and breaks the prerender step.
 
@@ -1767,17 +2447,17 @@ Never import `resolve.ts` from site code: it drags the Studio dependency tree (i
 
 ### Required env vars
 
-| Name | Where | Purpose |
-|---|---|---|
-| `PUBLIC_SANITY_PROJECT_ID` | [wrangler.jsonc](wrangler.jsonc) `vars` + local `.env` | Sanity project |
-| `PUBLIC_SANITY_DATASET` | [wrangler.jsonc](wrangler.jsonc) `vars` + local `.env` | Dataset name |
-| `SANITY_API_READ_TOKEN` | Cloudflare **encrypted secret** + local `.env` | Viewer token — validates preview secrets and authenticates draft fetches. Never a plain wrangler var. |
+| Name                       | Where                                                  | Purpose                                                                                               |
+| -------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `PUBLIC_SANITY_PROJECT_ID` | [wrangler.jsonc](wrangler.jsonc) `vars` + local `.env` | Sanity project                                                                                        |
+| `PUBLIC_SANITY_DATASET`    | [wrangler.jsonc](wrangler.jsonc) `vars` + local `.env` | Dataset name                                                                                          |
+| `SANITY_API_READ_TOKEN`    | Cloudflare **encrypted secret** + local `.env`         | Viewer token — validates preview secrets and authenticates draft fetches. Never a plain wrangler var. |
 
 The Sanity project must have `https://www.example.com` (and `http://localhost:4321` for dev) added as a CORS origin with **Allow credentials** checked.
 
 ### Data fetching pattern
 
-Every page and Sanity-fetching component goes through `loadQuery` and forwards the perspective via `getDraftModeProps(Astro)` — pass the **whole `Astro` global**, not `Astro.cookies`. The helper checks `isPrerendered` and short-circuits, so the *same call* is safe on prerendered public routes (build time → `published`) and SSR preview routes (request time → cookie perspective). That's what lets one loader serve both trees.
+Every page and Sanity-fetching component goes through `loadQuery` and forwards the perspective via `getDraftModeProps(Astro)` — pass the **whole `Astro` global**, not `Astro.cookies`. The helper checks `isPrerendered` and short-circuits, so the _same call_ is safe on prerendered public routes (build time → `published`) and SSR preview routes (request time → cookie perspective). That's what lets one loader serve both trees.
 
 ```astro
 ---
@@ -1844,8 +2524,8 @@ optionally an **FAQ**) to search engines, e.g. a marketing/service/landing page.
        { type: "City", name: "Your City" },
        { type: "AdministrativeArea", name: "Your County" },
      ],
-     audience: { audienceType: "..." },   // type defaults to "BusinessAudience"
-     faqs: generalFaqs,                    // omit to skip the FAQPage node
+     audience: { audienceType: "..." }, // type defaults to "BusinessAudience"
+     faqs: generalFaqs, // omit to skip the FAQPage node
    });
    ```
 
@@ -1854,8 +2534,9 @@ optionally an **FAQ**) to search engines, e.g. a marketing/service/landing page.
    area this page targets) — the full list belongs on the sitewide node only.
 
 2. **Pass it to BaseLayout** via the `schema` prop — BaseLayout renders it through `JsonLd.astro` (which escapes `<`) alongside the automatic baseline (LocalBusiness + WebPage + BreadcrumbList). No manual `<script type="application/ld+json">` tag:
+
    ```astro
-   <BaseLayout title="..." canonical={pageUrl} schema={schemaGraph}>
+   <BaseLayout title="..." canonical={pageUrl} schema={schemaGraph} />
    ```
 
 3. **Register the page** in the `PAGES` array in [src/data/site-structure.ts](src/data/site-structure.ts) with the matching `group` (the single registry that feeds `/llms.txt`, `/llms-full.txt`, the nav, and the footer), then reference its `path` in `NAV_MENU`/`FOOTER_GROUPS` if it should appear there. See **LLM Discoverability** below.
@@ -1907,13 +2588,13 @@ The built files land in `dist/client/` alongside `sitemap-index.xml` and are ser
 
 Dynamic content is automatic; **static (non-Sanity) marketing pages are hand-curated** in the `PAGES` registry in [src/data/site-structure.ts](src/data/site-structure.ts) — the single source of truth that also drives the nav and footer. **Whenever you add a new static page** (a marketing page, a service under `src/pages/services/`, a location page, etc.), add one `PAGES` entry with the matching `group` so it appears in both llms files:
 
-| New page type | `group` value on the `PAGES` entry |
-|---|---|
-| Top-level marketing page | `"main"` |
-| Service (`/services/*`) | `"service"` |
-| Location (`/web-design-*`) | `"location"` |
-| Collection index / landing | `"index"` |
-| Legal / policy page | `"optional"` |
+| New page type              | `group` value on the `PAGES` entry |
+| -------------------------- | ---------------------------------- |
+| Top-level marketing page   | `"main"`                           |
+| Service (`/services/*`)    | `"service"`                        |
+| Location (`/web-design-*`) | `"location"`                       |
+| Collection index / landing | `"index"`                          |
+| Legal / policy page        | `"optional"`                       |
 
 Each entry is `{ path, title, desc, group }` (plus optional `navLabel` / `footerLabel` overrides) — `path` is the site-relative URL with no trailing slash, `title` is the page title with the ` | Your Company` suffix stripped, and `desc` is the page's meta description. The llms endpoints render each group via `pagesInGroup(group)`. Because nav and footer reference pages by path from this same registry, adding the page here once + referencing its path in `NAV_MENU`/`FOOTER_GROUPS` is all that's needed — one registry, never three separate lists. New **CMS** content needs nothing here.
 
@@ -1941,15 +2622,15 @@ Avoid these when writing CSS and HTML in this project:
 - Icons/logos without `flex-shrink: 0` next to text
 - `width` + `height` for square icons — use `width` + `aspect-ratio: 1/1`
 - `display: flex` on direct parents of text elements with margins — prevents margin collapsing
-- `marginBottom={0}` on a `<Text>`/`<Heading>` that is the last child of a trimmed wrapper (Section container, Layout column, ContentWrapper, Col, `u-rich-text`, `u-margin-trim`) — margin-trim already zeroes it; the prop does nothing. Only use it (or add `u-margin-trim` to the wrapper) inside a custom `<div>` that isn't auto-trimmed
-- Adding a positive `marginBottom` (or `u-margin-*`) to separate a direct child of a `<Section>`/`<Layout>`/`<Col>` from the next sibling — those containers have a built-in `gap`/`rowGap` that already spaces them (Section's `.u-container` defaults to `--space-8`). Change the container's `gap`/`rowGap` instead. (`<ContentWrapper>` is the exception — a plain block that uses the text elements' own margins.)
-- Adding `maxWidth` to `<Heading>` or `<Text>` by default — both already have built-in defaults (Heading `30ch`, Text `60ch`; `eyebrow` headings have none). Don't add the prop reflexively when building from a design, and never re-state the default value. Only set `maxWidth` when the design needs a *different* constraint and you've been told (or it's clearly required) to change it
-- Hard-coding per-theme card colors (a `[data-theme="dark"] .card …` branch, or force-applying `.u-theme-light`) for a contrasting card — use the `--surface-*` tier instead (see **Surface tier** under Variables). Define the look once per theme in `themes.css`; the card adapts automatically
-- Putting a contrasting card's `color`/`--text` only on a child layer (or relying solely on the `.u-surface` utility) while the card's own wrapping class sets just `background` — the inner `.u-text` layers then inherit `color` from `.u-section[data-theme]` (white on a dark section) and the text goes invisible on a light card. Set `color: var(--surface-text)` on the card's own wrapping class (the layer that contains all the text)
-- `paddingTop="page-top"` on any section (heroes included) — `page-top` is **only** for a *fixed* navbar, and this project's nav is **sticky** by default, so the first section doesn't need it. Build heroes/first sections with the normal default padding; only use `page-top` if the nav has been switched to `fixed`
-- Adding `padding="large"` (or any padding override) to a section by default — `<Section>` already defaults to `padding="main"`, which is correct for almost every section. Omit the prop entirely (don't even write `padding="main"`). Only override to `large`/another value when a specific section genuinely needs it *and* it's been asked for or is clearly required by a design — never as a habit
-- Wrapping a `<Visual>` together with other content in a `<Col>` — `<Col>`'s `display: contents` makes `.u-image-wrapper` a direct grid/flex child with a definite height, so its `height: 100%` overrides the `ratio` aspect-ratio and the image balloons (worst on mobile when the column collapses to `display: flex`). Use `<ContentWrapper>` (a real `height: auto` block) for any column that holds a `<Visual>` alongside other content; keep `<Col>` for self-sizing loose elements (Heading / Text / Button) only
-- An `<a>` whose only accessible name is `aria-label` — a stretched clickable overlay, a logo link wrapping an SVG, or an icon-only link (social/share). Crawlers see zero anchor text. Put the label in a visually-hidden child instead: `<span class="u-sr-only">{label}</span>` (SVG siblings get `aria-hidden="true"` so the name isn't announced twice). `<button>` elements are exempt — `aria-label` is correct there
+- `marginBottom={0}` on a `<Text>`/`<Heading>` that is the last child of a trimmed wrapper (Section container, Layout column, `u-rich-text`, `u-margin-trim`) — margin-trim already zeroes it; the prop does nothing. Only use it (or add `u-margin-trim` to the wrapper) inside a custom `<div>` that isn't auto-trimmed
+- Adding a positive `marginBottom` (or `u-margin-*`) to separate a direct child of a `<Section>` or a `<Layout>` column from the next sibling — those containers have a built-in `gap`/`rowGap` that already spaces them (Section's `.u-container` defaults to `--space-8`). Change the container's `gap`/`rowGap` instead. (`<Layout variant="stack">` is the exception — a plain block that uses the text elements' own margins.)
+- Adding `maxWidth` to `<Heading>` or `<Text>` by default — both already have built-in defaults (Heading `30ch`, Text `60ch`; `eyebrow` headings have none). Don't add the prop reflexively when building from a design, and never re-state the default value. Only set `maxWidth` when the design needs a _different_ constraint and you've been told (or it's clearly required) to change it
+- Hard-coding per-theme card colors (a `[data-theme="dark"] .card …` branch, or force-applying `.u-theme-light`) for a contrasting card — use `theme="invert"` (or the `data-theme-invert` attribute on your own wrapper) instead, see **Theme invert** under Variables. Define the look once per theme in `themes.css`; the island resolves against whatever ground it lands on
+- Putting a contrasting card's `color` only on a child layer while the card's own wrapping class sets just `background` — the inner `.u-text` layers then inherit `color` from `.u-section[data-theme]` (white on a dark section) and the text goes invisible on a light card. Put the invert marker and `color: var(--text)` on the card's own wrapping class (the layer that contains all the text)
+- `paddingTop="page-top"` on any section (heroes included) — `page-top` is **only** for a _fixed_ navbar, and this project's nav is **sticky** by default, so the first section doesn't need it. Build heroes/first sections with the normal default padding; only use `page-top` if the nav has been switched to `fixed`
+- Adding `padding="large"` (or any padding override) to a section by default — `<Section>` defaults to `main`, which is correct for almost every section. Omit the prop entirely. Writing `padding="main"` is legal but redundant: it renders identically to omitting it, so don't add it either. Only override to `large`/another value when a specific section genuinely needs it _and_ it's been asked for or is clearly required by a design — never as a habit
+- Putting a ratio'd `<Visual>` in a column **alongside other content** without `<Layout variant="stack">` — when the two-column variant collapses, the column can give the image wrapper a definite height, which beats its `ratio` and stretches it (measured 1.66 against a declared 1.78). Wrap the visual and its companions in `<Layout variant="stack">`, a real `height: auto` block. Background visuals (`variant="background"`) are exempt — absolute-fill, ratio unset
+- An `<a>` whose only accessible name is `aria-label` — a logo link wrapping an SVG, or an icon-only link (social/share). Crawlers see zero anchor text. Put the label in a visually-hidden child instead: `<span class="u-sr-only">{label}</span>` (SVG siblings get `aria-hidden="true"` so the name isn't announced twice). `<button>` elements are exempt — `aria-label` is correct there
 - Making CMS content routes SSR (`prerender = false`) "so draft preview works" — draft preview lives on the `/preview/*` SSR twins; public content routes are prerendered with `getStaticPaths`. Serving content via SSR burns Worker CPU per request and caused real production `exceededCpu` 503s
 - Fetching a whole collection in a detail route to render a few related cards, or stacking sequential `await`s on independent queries — filter related content in GROQ (`[0...N]` with a small buffer) and `Promise.all` independent fetches; see the shared loaders in `src/sanity/lib/page-data.ts`
 - A `sitemap({ customPages })` list / `getSanityUrls()`-style helper — prerendered routes are enumerated automatically; customPages is only ever needed for SSR routes, and no content route here is SSR

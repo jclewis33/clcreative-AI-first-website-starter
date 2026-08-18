@@ -8,9 +8,9 @@
  * Keep this file in sync with src/pages/glossary/[slug].astro.
  */
 export const prerender = false;
-import GlossaryTermTemplate from "../../../components/templates/GlossaryTermTemplate.astro";
-import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
-import { loadGlossaryTermPage } from "../../../sanity/lib/page-data";
+import GlossaryTermTemplate from "@/components/templates/GlossaryTermTemplate.astro";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import { loadGlossaryTermPage } from "@/sanity/lib/page-data";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");

@@ -1,6 +1,8 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
- * Card — content card with optional image, clickable overlay, and 3 variants.
+ * Card — content card with optional image and 3 variants; `href` makes the
+ * whole surface a link via the title's stretched anchor.
  *
  * Slots:
  *   - `visual`  — image / media (hidden in `stacked` variant)
@@ -39,6 +41,21 @@
  * ```
  */
 
+/* ── Props contract ──────────────────────────────────────────────────────────
+   Keep the JSDoc below free of STRAY angle brackets. Write comparisons in
+   words ("posts.length is greater than 0"), never with the literal character.
+   A stray less-than or greater-than in a frontmatter comment silently detaches
+   this file's Props type AT THE CALL SITE: every prop loses its hover tooltip
+   and invalid props stop erroring, with no diagnostic anywhere. Balanced
+   tag-like pairs inside @example blocks are safe — it is the odd one out that
+   breaks it, and the exact trigger interacts with the rest of the file, so do
+   not reason about it — measure it.
+   scripts/hover-probe.mjs drives the real language server and fails if any
+   component's `docs` tooltip goes missing; run `npm run check:hover`.
+   Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
+   pins the type rules: it imports the types from this file and a regression
+   fails `astro check` outright.
+   ─────────────────────────────────────────────────────────────────────────── */
 type CardVariant =
   /** Standard card — visual on top, content below */
   | "default"
@@ -51,13 +68,14 @@ type GridRowSpan = 1 | 2 | 3 | 4;
 type GridColumnSpan = 1 | 2 | 3 | 4;
 
 /**
- * Card — content card with optional image, clickable overlay, and 3 layout variants.
+ * Card — content card with optional image and 3 layout variants; `href` makes
+ * the whole surface a link via the title's stretched anchor.
  *
  * **Props:**
  * - `variant` — card layout: default (image top), stacked (text only), cover (image fills, content overlays) (default: `'default'`)
  * - `href` — makes the entire card a clickable link
  * - `newTab` — open link in new tab (default: `false`)
- * - `ariaLabel` — accessible label for clickable overlay (required when `href` is set)
+ * - `ariaLabel` — accessible label for the card link (the visible title is the anchor text)
  * - `title` — convenience title rendered as h4 (or use `title` slot for custom heading)
  * - `rowSpan` — span multiple grid rows, 1–4
  * - `colSpan` — span multiple grid columns, 1–4
@@ -66,13 +84,14 @@ type GridColumnSpan = 1 | 2 | 3 | 4;
  *
  * **Slots:** `visual` (image/media), `title` (custom heading), default (body), `footer`.
  */
-interface Props {
+
+interface BaseProps {
   /**
    * **Card props:**
    * - `variant` — default (image top), stacked (text only), cover (image fills)
    * - `href` — makes entire card clickable
    * - `newTab` — open link in new tab
-   * - `ariaLabel` — accessible label for clickable overlay
+   * - `ariaLabel` — accessible label for the card link
    * - `title` — convenience h4 title (uses `u-text-style-h5` by default)
    * - To override the title style, use the `title` slot with a custom Heading instead of the `title` prop
    * - `rowSpan` — 1-4 grid row span
@@ -86,6 +105,19 @@ interface Props {
   docs?: string;
 
   /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — e.g. `render` set to whether the list has any items — instead of
+   * wrapping the element in a conditional block. Nothing is emitted when
+   * false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
    * Card layout variant.
    * - `default`  — image on top (16/9), content below
    * - `stacked`  — text only, visual slot hidden
@@ -97,24 +129,24 @@ interface Props {
   variant?: CardVariant;
 
   /**
-   * Makes the entire card surface a clickable link.
-   * @example href="/work/project"
+   * The colors this card carries, whatever section it sits in.
+   *
+   * Left unset the card inherits its section's theme and surfaces with
+   * `--background-2` — an elevated panel in the ambient palette.
+   *
+   * - `"invert"` — flip to the OPPOSITE of the ground the card sits on (dark
+   *   or brand section → light card; light section or unthemed page → dark
+   *   card). Relative, so one value works everywhere. See THEME INVERT in
+   *   `themes.css`.
+   * - `"light" | "dark" | "brand"` — pin the card to one theme absolutely,
+   *   regardless of its section.
+   *
+   * Either way it is a WHOLE token set, so the card's text, borders, buttons
+   * and links all follow it.
+   *
+   * @example theme="invert"
    */
-  href?: string;
-
-  /**
-   * Open link in a new tab (adds `rel="noopener noreferrer"`).
-   * @default false
-   * @example newTab
-   */
-  newTab?: boolean;
-
-  /**
-   * Accessible label for the clickable overlay.
-   * Falls back to `title` prop if omitted. Required when `href` is set.
-   * @example ariaLabel="View project details"
-   */
-  ariaLabel?: string;
+  theme?: "light" | "dark" | "brand" | "invert";
 
   /**
    * Convenience title — renders as plain text styled with `u-text-style-h5`.
@@ -150,22 +182,83 @@ interface Props {
    * @example radius="u-radius-xlarge"
    */
   radius?: string;
-
-  /**
-   * Extra classes on the outer `.card_primary_wrap` element.
-   * @example class="u-box-shadow-medium"
-   */
-  class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.card_primary_wrap` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
+/* Props are a DISCRIMINATED UNION on `href`: link-only
+   props (`newTab`, `ariaLabel`, `actions`) are typed `never` on a card with
+   no href, so passing them without a destination is an editor error instead
+   of silently dead markup. There is deliberately NO index signature — the old
+   `[key: string]: any` made every typo type-check. Standard `<div>`
+   attributes (`style`, `aria-*`, `data-*`, `id`, `class`) are inherited from
+   HTMLAttributes and checked. */
+export type Props = BaseProps &
+  (
+    | ({
+        /**
+         * Makes the entire card surface a clickable link.
+         * @example href="/work/project"
+         */
+        href: string;
+        /**
+         * Open link in a new tab (adds `rel="noopener noreferrer"`).
+         * @default false
+         * @example newTab
+         */
+        newTab?: boolean;
+        /**
+         * Accessible label for the card link (the title carries the anchor).
+         * Falls back to `title` prop if omitted. Required when `href` is set.
+         * @example ariaLabel="View project details"
+         */
+        ariaLabel?: string;
+        /**
+         * Whether this card holds ONE action or SEVERAL — it decides whether the
+         * card surface is itself a link.
+         *
+         * | Value                | Behavior                                          |
+         * |----------------------|---------------------------------------------------|
+         * | `'single'` (default) | Whole card is the link. A lone footer button is a |
+         * |                      | visual affordance and the footer is `inert`, so   |
+         * |                      | the card is ONE tab stop, not two to the same     |
+         * |                      | place.                                            |
+         * | `'multiple'`         | Card surface is NOT a link — two destinations     |
+         * |                      | cannot share one surface. Buttons stay clickable. |
+         *
+         * Pass `'multiple'` whenever the card holds more than one action. A CSS
+         * safety net also drops the whole-card link if the footer turns out to hold
+         * two or more controls, so a card left on the default can never cover its
+         * own buttons — but set the prop so the footer is not needlessly `inert`.
+         *
+         * @example actions="multiple"
+         */
+        actions?: "single" | "multiple";
+      } & HTMLAttributes<"div">)
+    | ({
+        /** No href — the card surface is not a link. */
+        href?: never;
+        /** Link-only prop — needs an `href` to open in a tab. */
+        newTab?: never;
+        /** Link-only prop — names the card link, which this card doesn't have. */
+        ariaLabel?: never;
+        /** Link-only prop — decides how the card link and the footer's buttons
+            share the surface; without an `href` there is nothing to share. */
+        actions?: never;
+      } & HTMLAttributes<"div">)
+  );
+
+/* Flat shape for the implementation — inside the component TypeScript cannot
+   know which union branch applies, so props are read through this instead. */
+type AllProps = BaseProps & {
+  href?: string;
+  newTab?: boolean;
+  ariaLabel?: string;
+  actions?: "single" | "multiple";
+  id?: string;
+  class?: string;
+};
+
 const {
+  render = true,
   docs,
   variant = "default",
   href,
@@ -175,9 +268,11 @@ const {
   rowSpan,
   colSpan,
   radius,
+  actions = "single",
+  theme,
   class: className,
   ...rest
-} = Astro.props;
+} = Astro.props as AllProps;
 
 /* Span utility classes for grid placement */
 const spanClasses = [
@@ -192,75 +287,479 @@ const linkTarget = newTab ? "_blank" : undefined;
 const linkLabel = ariaLabel ?? title ?? undefined;
 
 /* Check which slots are used */
-const hasVisual = Astro.slots.has("visual");
-const hasTitle = Astro.slots.has("title");
-const hasFooter = Astro.slots.has("footer");
+/* Does each slot RENDER anything, not merely "was it passed"? A footer holding
+   a Button rendered only when there are posts is "passed" even when it emits
+   gating the wrapper on Astro.slots.has() then leaves an empty <div> on exactly
+
+   Resolved here in the template's scope but AWAITED BELOW, inside the markup —
+   awaiting a slot render in frontmatter forces children to render before Astro
+   has set up the render context, and an <Image> inside then crashes the image
+   service. Astro caches the render, so the later <slot /> costs nothing. */
+/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
+   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
+   swallows the hoisted `<script>` of every component inside it — page-wide,
+   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
+   left BOTH sliders on the page uninitialized, the unrelated one included.
+   `.has()` only reports whether a slot was passed, which is weaker (a slot
+   holding an empty `{items.map(…)}` still counts as present), and that is the
+   trade we want: a rare empty wrapper beats silently dead client JS. */
+const hasVisualSlot = Astro.slots.has("visual");
+const hasTitleSlot = Astro.slots.has("title");
+const hasFooterSlot = Astro.slots.has("footer");
 const showVisual = variant !== "stacked";
+
+/* ── Interaction model ────────────────────────────────────────────────────
+   `actions` says whether this card holds ONE action or SEVERAL, which decides
+   whether the card surface is itself a link:
+
+     "single" (default) → the whole card is the link. A lone button in the
+                          footer is a visual affordance, so the footer is
+                          `inert`: ONE tab stop, not two to the same place.
+     "multiple"         → the card surface is NOT a link. Two destinations
+                          cannot share one surface, so the buttons stay real.
+
+   The count is a prop rather than something this component works out for
+   itself, because working it out would mean rendering the footer slot in
+   frontmatter. Never call Astro.slots.render() in frontmatter: it forces the
+   slot's children to render before Astro has set up the render context, and
+   an <Image> anywhere inside then hits an uninitialized image service —
+   "Cannot read properties of undefined (reading 'validateOptions')". It
+   surfaces only on the FIRST page rendered after a server start, so it looks
+   intermittent.
+
+   A CSS safety net in this file also drops the stretch whenever the footer
+   actually holds two or more controls, so a card left on the default still
+   cannot cover its own buttons. */
+const isSurfaceLink = isClickable && actions !== "multiple";
+/* Its lone action is decorative, so take it out of the tab order. */
+const footerIsAffordance = isSurfaceLink && Astro.slots.has("footer");
+
+if (
+  import.meta.env.DEV &&
+  isSurfaceLink &&
+  !(Astro.slots.has("title") || title)
+) {
+  console.warn(
+    "\n[Card] A clickable card needs a `title` (or a title slot) — the title " +
+      "carries the link, so without one the card has no anchor text to " +
+      "announce.\n",
+  );
+}
 ---
 
-<div
-  class:list={["card_primary_wrap", ...spanClasses, radius, className]}
-  data-card-variant={variant}
-  {...rest}
->
-  <div
-    class="card_primary_group"
-    data-trigger={isClickable ? "hover-if-clickable focus" : undefined}
-  >
-    <div class="card_primary_element">
-      {/* Visual / image slot */}
-      {
-        showVisual && (hasVisual || variant === "default") && (
-          <div class="card_primary_visual">
-            <slot name="visual" />
+{
+  render && (
+    <div
+      class:list={["card_primary_wrap", ...spanClasses, radius, className]}
+      data-card-variant={variant}
+      {...rest}
+    >
+      <div
+        class="card_primary_group"
+        data-trigger={isClickable ? "hover-if-clickable focus" : undefined}
+      >
+        <div
+          class="card_primary_element"
+          data-theme={theme === "invert" ? undefined : theme}
+          data-theme-invert={theme === "invert" ? "" : undefined}
+        >
+          {/* Visual / image slot */}
+          {showVisual && (hasVisualSlot || variant === "default") && (
+            <div class="card_primary_visual">
+              <slot name="visual" />
+            </div>
+          )}
+
+          {/* Content */}
+          <div class="card_primary_content u-margin-trim">
+            {/* Title */}
+            {(hasTitleSlot || title) && (
+              <div
+                class:list={[
+                  "card_primary_title",
+                  !hasTitleSlot && "u-text-style-h5",
+                ]}
+              >
+                {isSurfaceLink ? (
+                  <a
+                    href={href}
+                    class="card_primary_link"
+                    target={linkTarget}
+                    rel={linkRel}
+                    aria-label={hasTitleSlot ? linkLabel : undefined}
+                  >
+                    {hasTitleSlot ? <slot name="title" /> : title}
+                  </a>
+                ) : hasTitleSlot ? (
+                  <slot name="title" />
+                ) : (
+                  title
+                )}
+              </div>
+            )}
+
+            {/* Body */}
+            {/* u-margin-trim: the slot's last <Text>/<p> carries its own margin-bottom;
+                trimmed here so the block ends clean and the footer's padding-top is
+                the single source of text-to-action space. */}
+            <div class="card_primary_text u-margin-trim">
+              <slot />
+            </div>
+
+            {/* Footer */}
+            {hasFooterSlot && (
+              <div class="card_primary_footer" inert={footerIsAffordance}>
+                {/* inert when the card itself is the link: the button is there to
+                      say "this goes somewhere", so it must not be a second tab stop
+                      to the same place. Removes it from tab order, the a11y tree,
+                      and hit-testing in one attribute. */}
+                <slot name="footer" />
+              </div>
+            )}
           </div>
-        )
-      }
-
-      {/* Content */}
-      <div class="card_primary_content u-margin-trim">
-        {/* Title */}
-        {
-          (hasTitle || title) && (
-            <div class:list={["card_primary_title", !hasTitle && "u-text-style-h5"]}>
-              {hasTitle ? <slot name="title" /> : title}
-            </div>
-          )
-        }
-
-        {/* Body */}
-        <div class="card_primary_text">
-          <slot />
         </div>
-
-        {/* Footer */}
-        {
-          hasFooter && (
-            <div class="card_primary_footer">
-              <slot name="footer" />
-            </div>
-          )
-        }
       </div>
     </div>
+  )
+}
 
-    {/* Full-surface clickable overlay */}
-    {
-      isClickable && (
-        <div class="clickable_wrap u-cover-absolute">
-          <a
-            href={href}
-            class="clickable_link"
-            aria-label={linkLabel}
-            target={linkTarget}
-            rel={linkRel}
-          >
-            {/* Real anchor text for crawlers — an aria-label alone leaves
-                the stretched overlay link textless for SEO. */}
-            <span class="u-sr-only">{linkLabel}</span>
-          </a>
-        </div>
-      )
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/cards.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   CARD COMPONENT STYLES
+   ==========================================================================
+   Usage:
+     <div class="card_primary_wrap" data-card-variant="default">
+       <div class="card_primary_group" data-trigger="hover-if-clickable focus">
+         <div
+      class="card_primary_element"
+      data-theme={theme === "invert" ? undefined : theme}
+      data-theme-invert={theme === "invert" ? "" : undefined}
+    >
+           <div class="card_primary_visual">…image…</div>
+           <div class="card_primary_content u-margin-trim">
+             <h3 class="card_primary_title u-text-style-h4">
+               <a class="card_primary_link" href="/page">Title</a>
+             </h3>
+             <div class="card_primary_text u-margin-trim">Body text</div>
+           </div>
+         </div>
+       </div>
+     </div>
+
+   A clickable card has NO overlay element. The title carries a real <a>, and
+   `.card_primary_link::after` stretches that anchor over the whole card — so
+   the card is one link with real anchor text, instead of an invisible
+   duplicate link stacked on top of the content.
+
+   Variants: default | stacked | cover
+   Grid spans: u-row-span-2, u-column-span-2
+   ========================================================================== */
+
+    /* ---- Outer wrapper ---- */
+
+    .card_primary_wrap {
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-main);
+      display: flex;
     }
-  </div>
-</div>
+
+    /* ---- Group — the full clickable surface ---- */
+
+    .card_primary_group {
+      position: relative;
+      border-radius: inherit;
+      width: 100%;
+      display: flex;
+    }
+
+    /* ---- Stretched card link ----
+       The title holds a real <a>; this pseudo-element stretches its hit area
+       over the whole card. Do not reach for an absolutely-positioned overlay
+       <a> instead: that needs the label duplicated in a .u-sr-only span (which
+       drifts from the visible text), makes the card two stacked links, and
+       covers the card so its text stops being selectable.
+
+       Only rendered when the card holds 0-1 actions — see the action count
+       in the frontmatter. */
+    .card_primary_link {
+      color: inherit;
+      text-decoration: none;
+      /* The title slot can hold a block (a Heading, or a wrapper around one).
+         Left inline, this anchor forms no block box, so a heading's
+         margin-bottom inside it contributed nothing and the title sat flush
+         against the body copy — visible on BlogCard and CaseStudyCard, whose
+         titles are wrapped for line-clamping. `display: block` lets the card's
+         text rhythm work the same whether the title is wrapped or bare. The
+         stretched-link ::after is absolutely positioned, so it is unaffected. */
+      display: block;
+    }
+
+    .card_primary_link::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      border-radius: inherit;
+    }
+
+    /* `inset: 0` resolves against the nearest POSITIONED ancestor. Left alone
+       that is .card_primary_content (position: relative, below), so the hit
+       area would stop at the text and never cover the image. Dropping the
+       positioning on a surface-link card hands the job to
+       .card_primary_group, which is the card itself.
+
+       The cover variant keeps its positioning — there the visual is
+       absolutely positioned behind the text, and content needs the stacking
+       context to stay on top. Its content already spans the whole card, so
+       the stretch still covers the surface. */
+    .card_primary_content:has(.card_primary_link) {
+      position: static;
+      z-index: auto;
+    }
+
+    /* A cover card's content is `position: absolute; bottom: 0` by design (see
+       the cover variant below) — it must keep that, so the rule above must not
+       apply here. It is already positioned, which means `inset: 0` on the
+       stretch would only cover the bottom text strip. Extend the hit area
+       upward instead; `.card_primary_element` has `overflow: hidden` on this
+       variant, so it is clipped back to exactly the card. */
+    [data-card-variant="cover"] .card_primary_content:has(.card_primary_link) {
+      position: absolute;
+    }
+
+    [data-card-variant="cover"] .card_primary_link::after {
+      inset: -100vh 0 0 0;
+    }
+
+    /* Safety net for a card left on actions="single" that actually holds two
+       or more controls: drop the stretch so the card cannot cover its own
+       buttons. The prop is still what to set — it also governs `inert`, which
+       CSS cannot reach — but a wrong prop degrades to "buttons work" instead
+       of "buttons unreachable". */
+    .card_primary_footer:has(:is(a[href], button) ~ :is(a[href], button))
+      ~ *
+      .card_primary_link::after,
+    .card_primary_group:has(
+        .card_primary_footer :is(a[href], button) ~ :is(a[href], button)
+      )
+      .card_primary_link::after {
+      content: none;
+    }
+
+    /* Anything genuinely interactive inside a clickable card has to sit above
+       the stretch, or the card would swallow it. The footer of an
+       affordance-only card is `inert`, so this never fights that case. */
+    .card_primary_group :is(a, button):not(.card_primary_link) {
+      position: relative;
+      z-index: 4;
+    }
+
+    /* ---- Element — inner card surface with border ---- */
+
+    /* card_primary_element
+   Inner card surface — trigger-driven border. No padding here so the
+   visual (image) can go edge-to-edge; overflow: clip lets the card's
+   border-radius shape the image corners.
+
+   Colors come from the ambient theme by default (surface = --background-2).
+   `theme="invert"` flips the card to the opposite of its ground and
+   `theme="dark|light|brand"` pins it absolutely; either way it is a WHOLE
+   theme, so the card's background, text, borders AND any buttons or links
+   inside resolve against the card rather than the section behind it. See
+   THEME INVERT in themes.css. The cover variant is an image overlay and keeps
+   its own white-on-scrim text regardless. */
+    .card_primary_element {
+      border: var(--border-width-main) solid var(--border);
+      border-radius: inherit;
+      overflow: clip;
+      background-color: var(--background-2);
+      color: var(--text);
+      flex-flow: column;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      position: relative;
+    }
+
+    /* ---- Visual — image/media container ---- */
+
+    .card_primary_visual {
+      border-radius: 0;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* The VISUAL BOX owns the shape here — 16/9 on the default variant,
+       absolute-fill on cover — so the image inside fills it rather than
+       holding its own `ratio`. Explicit because `.u-image-wrapper` defaults to
+       `height: auto` (see utilities/visual-utilities.css); without this the card
+       image reverts to Visual's own ratio and stops matching the card. */
+    .card_primary_visual .u-image-wrapper {
+      aspect-ratio: unset;
+      height: 100%;
+    }
+
+    .card_primary_visual img,
+    .card_primary_visual .u-image {
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* ---- Hover: image scale + text opacity ---- */
+
+    .card_primary_group[data-trigger]:hover .card_primary_visual img,
+    .card_primary_group[data-trigger]:hover .card_primary_visual .u-image {
+      transform: scale(1.05);
+    }
+
+    .card_primary_group[data-trigger]:hover .card_primary_content {
+      opacity: 0.55;
+    }
+
+    .card_primary_content {
+      transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* ---- Content — padded text area ---- */
+
+    .card_primary_content {
+      z-index: 1;
+      position: relative;
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      /* NO gap here — text rhythm belongs to the text elements' own
+         margin-bottom — one spacing mechanism per box, never two. This box used
+         to add gap: var(--space-2) ON TOP of those margins, so a title with
+         its 24px margin sat 36px above the body. u-margin-trim on the content
+         and text wrappers strips the leading/trailing margins at the edges. */
+
+      /* Absorb the card's spare height so the footer sits on the floor. In a
+         row of cards with different amounts of copy, this is what lines their
+         buttons up instead of leaving each one hanging under its own text. */
+      flex-grow: 1;
+    }
+
+    /* margin-top: auto floors the footer once the content above has taken its
+       natural height. padding-top is the DELIBERATE minimum between the last
+       line of text and the action — in the tallest card of a row auto
+       collapses to zero, and without this the button would touch the copy.
+       (The text block's own trailing margin is trimmed away — see the
+       u-margin-trim on .card_primary_text in the markup.) */
+    /* A footer slot that was passed but rendered nothing would still charge
+   its padding-top and margin-top:auto. Same `:empty` trick as Section — costs
+   no slot render, so it cannot break client scripts inside the slot. */
+    .card_primary_footer:empty {
+      display: none;
+    }
+
+    .card_primary_footer {
+      margin-top: auto;
+      padding-top: var(--space-4);
+    }
+
+    .card_primary_title {
+      font-weight: inherit;
+    }
+
+    /* ==========================================================================
+   VARIANT: default — visual on top, content below
+   ========================================================================== */
+
+    [data-card-variant="default"] .card_primary_element {
+      gap: 0;
+    }
+
+    [data-card-variant="default"] .card_primary_visual {
+      aspect-ratio: 16 / 9;
+    }
+
+    /* ==========================================================================
+   VARIANT: stacked — content only, no visual (text card)
+   ========================================================================== */
+
+    [data-card-variant="stacked"] .card_primary_element {
+      gap: 0;
+    }
+
+    [data-card-variant="stacked"] .card_primary_visual {
+      display: none;
+    }
+
+    /* ==========================================================================
+   VARIANT: cover — visual fills the card, content overlays at bottom
+   ========================================================================== */
+
+    [data-card-variant="cover"] {
+      aspect-ratio: 2 / 3;
+      height: auto;
+    }
+
+    [data-card-variant="cover"] .card_primary_element {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    [data-card-variant="cover"] .card_primary_visual {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      aspect-ratio: unset;
+    }
+
+    /* The tint a cover card's text sits on. It belongs on the VISUAL, not on
+       the text box: the text box only covers the bottom of the card, and its
+       gradient reached full transparency right where the title sits — so on a
+       bright photo the title was white-on-white. Covering the visual lets the
+       scrim stay solid behind the text and fade out well above it. Not
+       optional: text over an arbitrary photo needs it to stay readable. */
+    [data-card-variant="cover"] .card_primary_visual::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      /* The text block sits between roughly 5% and 25% up from the floor, so
+         the scrim stays solid past it (35%) before fading out. Stop the solid
+         run at the text and the title lands exactly on the fade — which is how
+         a white title ended up unreadable over a bright photo. */
+      background: linear-gradient(
+        to top,
+        var(--overlay-scrim) 0%,
+        var(--overlay-scrim) 35%,
+        transparent 75%
+      );
+    }
+
+    [data-card-variant="cover"] .card_primary_content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: var(--space-4);
+      border-radius: 0 0 inherit inherit;
+      color: var(--color-light-100);
+    }
+
+    /* ==========================================================================
+   GRID SPAN UTILITIES (for use inside Grid component)
+   ========================================================================== */
+
+    .u-column-span-2 {
+      grid-column: span 2;
+    }
+    .u-column-span-3 {
+      grid-column: span 3;
+    }
+    .u-row-span-2 {
+      grid-row: span 2;
+    }
+    .u-row-span-3 {
+      grid-row: span 3;
+    }
+  }
+</style>

@@ -11,29 +11,28 @@
  * Content is fetched from Sanity CMS, filtered by category.
  */
 
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import SanityCtaSection from "../../../components/sections/SanityCtaSection.astro";
-import Section from "../../../components/ui/Section.astro";
-import Layout from "../../../components/ui/Layout.astro";
-import Grid from "../../../components/ui/Grid.astro";
-import Heading from "../../../components/ui/Heading.astro";
-import Text from "../../../components/ui/Text.astro";
-import ContentWrapper from "../../../components/ui/ContentWrapper.astro";
-import BlogCard from "../../../components/ui/BlogCard.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import BlogCard from "@/components/ui/BlogCard.astro";
 
 // Sanity
-import { loadPageQuery } from "../../../sanity/lib/page-data";
-import { getDraftModeProps } from "../../../sanity/lib/draft-mode";
+import { loadPageQuery } from "@/sanity/lib/page-data";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import {
   BLOG_POSTS_QUERY,
   BLOG_POSTS_BY_CATEGORY_QUERY,
   SITE_SETTINGS_QUERY,
-} from "../../../sanity/lib/queries";
-import { getBlogCategoryStaticPaths } from "../../../sanity/lib/page-data";
-import { urlFor } from "../../../sanity/lib/image";
+} from "@/sanity/lib/queries";
+import { getBlogCategoryStaticPaths } from "@/sanity/lib/page-data";
+import { urlFor } from "@/sanity/lib/image";
 
 // Styles
-import "../../../styles/pages/blog.css";
+import "@/styles/pages/blog.css";
 
 // Must be an imported helper: Astro extracts getStaticPaths into its own
 // module at build time, so frontmatter siblings are not in scope here.
@@ -46,22 +45,22 @@ if (!categorySlug) return Astro.redirect("/404");
 
 const draftProps = getDraftModeProps(Astro);
 
-const category: string = (Astro.props as { categoryName?: string })
-  .categoryName ?? "All";
+const category: string =
+  (Astro.props as { categoryName?: string }).categoryName ?? "All";
 
 const categoryLabel = category === "All" ? "All" : category;
 
 /* ── Fetch posts — all posts for "All", filtered for specific category ── */
 
 const [posts, settings] = await Promise.all([
-  loadPageQuery<any[]>({
+  loadPageQuery({
     query: category === "All" ? BLOG_POSTS_QUERY : BLOG_POSTS_BY_CATEGORY_QUERY,
     params: category === "All" ? undefined : { category },
     draftProps,
     fallback: [],
     label: `blog category "${categorySlug}"`,
   }),
-  loadPageQuery<any>({
+  loadPageQuery({
     query: SITE_SETTINGS_QUERY,
     draftProps,
     fallback: null,
@@ -72,7 +71,6 @@ const defaultCtaSection = settings?.defaultCtaSection ?? null;
 ---
 
 <BaseLayout
-  docs=""
   theme="light"
   title={`${categoryLabel} | Blog | Astro Starter`}
   description={`Browse all ${categoryLabel} blog posts.`}
@@ -84,7 +82,6 @@ const defaultCtaSection = settings?.defaultCtaSection ?? null;
   }
   <Section
     gap={1}
-    docs=""
     paddingTop="small"
     paddingBottom="small"
     theme="brand"
@@ -108,7 +105,7 @@ const defaultCtaSection = settings?.defaultCtaSection ?? null;
       Main Blog
     </a>
 
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading tag="h1" variant="h1"
         >{category === "All" ? "All Posts" : categoryLabel}</Heading
       >
@@ -119,7 +116,7 @@ const defaultCtaSection = settings?.defaultCtaSection ?? null;
             : `Browse all ${categoryLabel} blog posts.`
         }
       </Text>
-    </ContentWrapper>
+    </Layout>
   </Section>
 
   {
@@ -193,14 +190,14 @@ const defaultCtaSection = settings?.defaultCtaSection ?? null;
     ) : (
       <Section padding="large">
         <Layout variant="stack-centered">
-          <ContentWrapper slot="col1" align="center">
+          <Layout variant="stack-centered">
             <Heading tag="h2" variant="h3">
               No posts yet
             </Heading>
-            <Text variant="regular" align="center">
+            <Text variant="regular">
               Check back soon for {categoryLabel} content.
             </Text>
-          </ContentWrapper>
+          </Layout>
         </Layout>
       </Section>
     )
@@ -233,7 +230,9 @@ const defaultCtaSection = settings?.defaultCtaSection ?? null;
       noResults.style.display = visibleCount === 0 ? "" : "none";
     }
 
-    (window as any).ScrollTrigger?.refresh();
+    // Filter changed the page height — nudge any scroll-linked animations
+    // without importing GSAP here (see src/scripts/scroll-refresh.js).
+    document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"));
   }
 
   searchInput?.addEventListener("input", filterPosts);

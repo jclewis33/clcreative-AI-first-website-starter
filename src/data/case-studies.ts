@@ -10,15 +10,15 @@
  */
 
 import type { ImageMetadata } from "astro";
-import type { ContentBlock } from "../components/case-study/types";
+import type { ContentBlock } from "@/components/case-study/types";
 
 // Images — replace with CMS image fields when connecting a headless CMS
-import projectImage1 from "../assets/placeholder-images/placeholder-1.webp";
-import projectImage2 from "../assets/placeholder-images/placeholder-3.webp";
-import projectImage3 from "../assets/placeholder-images/placeholder-4.webp";
-import projectImage4 from "../assets/placeholder-images/placeholder-5.webp";
-import projectImage5 from "../assets/placeholder-images/placeholder-2.webp";
-import heroImage from "../assets/placeholder-images/placeholder-6.webp";
+import projectImage1 from "@/assets/placeholder-images-2/ai-first-starter-1.webp";
+import projectImage2 from "@/assets/placeholder-images-2/ai-first-starter-3.webp";
+import projectImage3 from "@/assets/placeholder-images-2/ai-first-starter-4.webp";
+import projectImage4 from "@/assets/placeholder-images-2/ai-first-starter-5.webp";
+import projectImage5 from "@/assets/placeholder-images-2/ai-first-starter-2.webp";
+import heroImage from "@/assets/placeholder-images-2/ai-first-starter-6.webp";
 
 /* ── Data types ─────────────────────────────────────────────────────────── */
 

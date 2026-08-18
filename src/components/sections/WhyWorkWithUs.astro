@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * WhyWorkWithUs — breakout-reversed section with numbered value props.
  *
@@ -16,19 +17,21 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
 
-import whyImage from "../../assets/placeholder-images/placeholder-11.webp";
+import whyImage from "@/assets/placeholder-images-2/ai-first-starter-11.webp";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **WhyWorkWithUs props:**
    * - `theme` — 'light' | 'dark' | 'brand'
@@ -41,15 +44,13 @@ interface Props {
   /** Color theme for the section. */
   theme?: "light" | "dark" | "brand";
 
-  /** Section vertical padding. @default 'main' */
+  /** Section vertical padding. @default 'none' (this component is flush by design) */
   padding?: PaddingValue;
   paddingTop?: PaddingValue;
   paddingBottom?: PaddingValue;
 
   /** Extra classes on the section. */
   class?: string;
-
-  [key: string]: any;
 }
 
 const {
@@ -90,52 +91,120 @@ const items = [
   {...rest}
 >
   <Layout
-    docs=""
     columnGap="var(--gap-8)"
     variant="full-reversed"
     verticalAlign="center"
   >
-    <Col slot="col1">
-      <div class="why-work_content">
-        <Heading data-fade-in variant="eyebrow"> Why Work With Us </Heading>
-        <Heading data-split-text variant="h3">
-          Lorem ipsum dolor sit amet consectetur adipiscing elit
-        </Heading>
+    <div class="why-work_content">
+      <Heading data-fade-in variant="eyebrow"> Why Work With Us </Heading>
+      <Heading data-split-text variant="h3">
+        Lorem ipsum dolor sit amet consectetur adipiscing elit
+      </Heading>
 
-        <div class="why-work_list">
-          {
-            items.map((item) => (
-              <div class="why-work_row" data-fade-in>
-                <p class="why-work_number">{item.number}</p>
-                <div class="why-work_item_content">
-                  <Heading
-                    maxWidth="none"
-                    tag="h3"
-                    variant="h5"
-                    marginBottom={0}
-                  >
-                    {item.title}
-                  </Heading>
-                  <Text marginBottom={0} set:html={item.text} />
-                </div>
+      <div class="why-work_list">
+        {
+          items.map((item) => (
+            <div class="why-work_row" data-fade-in>
+              <p class="why-work_number">{item.number}</p>
+              <div class="why-work_item_content">
+                <Heading maxWidth="none" tag="h3" variant="h5" marginBottom={0}>
+                  {item.title}
+                </Heading>
+                <Text marginBottom={0} set:html={item.text} />
               </div>
-            ))
-          }
-        </div>
-
-        <div class="u-button-wrapper">
-          <Button href="/contact" ariaLabel="Get started">
-            Get Started
-          </Button>
-        </div>
+            </div>
+          ))
+        }
       </div>
-    </Col>
+
+      <ButtonWrapper>
+        <Button href="/contact" ariaLabel="Get started"> Get Started </Button>
+      </ButtonWrapper>
+    </div>
+
     <Visual
       radius="none"
-      slot="col2"
+      slot="column2"
       src={whyImage}
       alt="Why work with us"
       ratio="portrait"
     />
   </Layout>
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/why-work-with-us.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   WHY WORK WITH US
+   Breakout-reversed section with numbered value props list.
+   ========================================================================== */
+
+    /* ── Eyebrow — mono font, accent color ──────────────────────────────────── */
+
+    /* ── Content column — vertical padding when section padding is none ───── */
+
+    .why-work_content {
+      padding-block: var(--section-space-xsmall);
+    }
+
+    @media (width < 50em) {
+      .why-work_content {
+        padding-block: 0;
+      }
+
+      .why-work_section {
+        padding-block: var(--section-space-small);
+      }
+    }
+
+    /* ── List ────────────────────────────────────────────────────────────────── */
+
+    .why-work_list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      border-top: var(--border-width-main) solid var(--border);
+      padding-top: var(--space-4);
+    }
+
+    .why-work_row {
+      display: flex;
+      gap: var(--space-5);
+      align-items: flex-start;
+    }
+
+    /* ── Number — tagline style (mono, small, uppercase) ────────────────────── */
+
+    .why-work_number {
+      font-family: var(--font-tertiary);
+      font-size: 1rem;
+      line-height: var(--line-height-normal);
+      letter-spacing: var(--letter-spacing-tight);
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin: 0;
+    }
+
+    /* ── Item content ───────────────────────────────────────────────────────── */
+
+    .why-work_item_content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      min-width: 0;
+    }
+
+    /* ── Responsive — collapse list rows on small ───────────────────────────── */
+
+    @container (width < 35em) {
+      .why-work_row {
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+    }
+  }
+</style>

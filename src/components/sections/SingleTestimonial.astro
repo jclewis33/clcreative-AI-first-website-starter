@@ -16,13 +16,13 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import { urlFor } from "../../sanity/lib/image";
-import ContentWrapper from "../ui/ContentWrapper.astro";
-import { getTestimonialByName } from "../../sanity/lib/testimonials";
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import { urlFor } from "@/sanity/lib/image";
+import { getTestimonialByName } from "@/sanity/lib/testimonials";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 
 interface TestimonialData {
   name: string;
@@ -32,7 +32,9 @@ interface TestimonialData {
   avatar?: any;
 }
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
 interface Props {
   /**
@@ -57,7 +59,7 @@ interface Props {
   /** Section color theme @default 'brand' */
   theme?: "light" | "dark" | "brand";
 
-  /** Sets both paddingTop and paddingBottom @default 'main' */
+  /** Sets both paddingTop and paddingBottom. Default 'main' — omit the prop for it ("main" is not writable). */
   padding?: PaddingValue;
 
   /** Override top padding only */
@@ -78,7 +80,7 @@ const {
   name: fetchName,
   testimonial: rawTestimonial,
   theme = "brand",
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   id,
@@ -88,10 +90,9 @@ const {
 const testimonial =
   rawTestimonial ??
   (fetchName
-    ? await getTestimonialByName(
-        fetchName,
-        getDraftModeProps(Astro),
-      ).catch(() => undefined)
+    ? await getTestimonialByName(fetchName, getDraftModeProps(Astro)).catch(
+        () => undefined,
+      )
     : undefined);
 if (!testimonial) return;
 
@@ -113,7 +114,7 @@ const subtitle = [role, company].filter(Boolean).join(", ");
   id={id}
   class:list={["single_testimonial_section", className]}
 >
-  <ContentWrapper align="center" maxWidth="48rem">
+  <Layout variant="stack-centered" maxWidth="48rem">
     {/* Avatar + name block */}
     <div class="single_testimonial_author">
       {
@@ -129,18 +130,12 @@ const subtitle = [role, company].filter(Boolean).join(", ");
         )
       }
       <div class="single_testimonial_author_info">
-        <Text
-          align="center"
-          tag="span"
-          weight="bold"
-          variant="regular"
-          marginBottom={1}
-        >
+        <Text tag="span" weight="bold" variant="regular" marginBottom={1}>
           {name}
         </Text>
         {
           subtitle && (
-            <Text align="center" tag="span" variant="regular" marginBottom={0}>
+            <Text tag="span" variant="regular" marginBottom={0}>
               {subtitle}
             </Text>
           )
@@ -149,11 +144,35 @@ const subtitle = [role, company].filter(Boolean).join(", ");
     </div>
 
     {/* Quote */}
-    <Text
-      data-split-text
-      align="center"
-      variant="h3"
-      weight="regular">{quote}</Text
-    >
-  </ContentWrapper>
+    <Text data-split-text variant="h3" weight="regular">{quote}</Text>
+  </Layout>
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/single-testimonial.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   SINGLE TESTIMONIAL
+   — Centered brand section: avatar, name/role, large quote
+   ========================================================================== */
+
+    /* Author block — avatar + name stacked centered */
+    .single_testimonial_author {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+
+    .single_testimonial_avatar {
+      width: 8rem;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-full);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+  }
+</style>

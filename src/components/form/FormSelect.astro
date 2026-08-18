@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * FormSelect — label + styled `<select>` with a custom dropdown arrow.
  *
@@ -44,7 +45,7 @@ interface SelectOption {
   disabled?: boolean;
 }
 
-interface Props {
+interface Props extends HTMLAttributes<"select"> {
   /** Label text. */
   label: string;
 
@@ -83,7 +84,7 @@ interface Props {
    *   up above the border when the field is focused or has a selected value
    * @default 'default'
    */
-  labelVariant?: 'default' | 'hidden' | 'floating';
+  labelVariant?: "default" | "hidden" | "floating";
 
   /** Helper text displayed below the select. */
   helperText?: string;
@@ -96,9 +97,6 @@ interface Props {
 
   /** Extra classes on the outer `.form_label_wrap` element. */
   class?: string;
-
-  /** Catch-all for extra attributes spread onto the `<select>`. */
-  [key: string]: any;
 }
 
 const {
@@ -109,7 +107,7 @@ const {
   required = false,
   disabled = false,
   value,
-  labelVariant = 'default',
+  labelVariant = "default",
   helperText,
   errorText,
   id,
@@ -118,19 +116,23 @@ const {
 } = Astro.props;
 
 const fieldId = id || `field-${name}`;
-const describedById = (helperText || errorText) ? `${fieldId}-hint` : undefined;
-const isFloating = labelVariant === 'floating';
+const describedById = helperText || errorText ? `${fieldId}-hint` : undefined;
+const isFloating = labelVariant === "floating";
 ---
 
-<div
-  class:list={['form_label_wrap', isFloating && 'is-floating', className]}
->
+<div class:list={["form_label_wrap", isFloating && "is-floating", className]}>
   <label
-    class:list={['form_label_text', labelVariant === 'hidden' && 'u-sr-only']}
+    class:list={["form_label_text", labelVariant === "hidden" && "u-sr-only"]}
     for={fieldId}
   >
     {label}
-    {required && <span class="form_required" aria-hidden="true">*</span>}
+    {
+      required && (
+        <span class="form_required" aria-hidden="true">
+          *
+        </span>
+      )
+    }
   </label>
 
   <div class="form_select_wrap">
@@ -141,28 +143,32 @@ const isFloating = labelVariant === 'floating';
       required={required}
       disabled={disabled}
       aria-describedby={describedById}
-      aria-invalid={errorText ? 'true' : undefined}
+      aria-invalid={errorText ? "true" : undefined}
       {...rest}
     >
-      {placeholderOption && (
-        <option value="" disabled selected={!value}>
-          {isFloating ? '' : placeholderOption}
-        </option>
-      )}
-
-      {options ? (
-        options.map((opt) => (
-          <option
-            value={opt.value}
-            disabled={opt.disabled}
-            selected={opt.value === value}
-          >
-            {opt.label}
+      {
+        placeholderOption && (
+          <option value="" disabled selected={!value}>
+            {isFloating ? "" : placeholderOption}
           </option>
-        ))
-      ) : (
-        <slot />
-      )}
+        )
+      }
+
+      {
+        options ? (
+          options.map((opt) => (
+            <option
+              value={opt.value}
+              disabled={opt.disabled}
+              selected={opt.value === value}
+            >
+              {opt.label}
+            </option>
+          ))
+        ) : (
+          <slot />
+        )
+      }
     </select>
 
     <svg
@@ -175,45 +181,50 @@ const isFloating = labelVariant === 'floating';
         d="M0.5 1L3 3.5L5.5 1"
         stroke="currentColor"
         stroke-width="0.125rem"
-        vector-effect="non-scaling-stroke"
-      />
+        vector-effect="non-scaling-stroke"></path>
     </svg>
   </div>
 
-  {(helperText || errorText) && (
-    <p
-      class:list={['form_helper_text', errorText && 'is-error']}
-      id={describedById}
-    >
-      {errorText || helperText}
-    </p>
-  )}
+  {
+    (helperText || errorText) && (
+      <p
+        class:list={["form_helper_text", errorText && "is-error"]}
+        id={describedById}
+      >
+        {errorText || helperText}
+      </p>
+    )
+  }
 </div>
 
 <script>
   function initFloatingSelects() {
-    document.querySelectorAll<HTMLSelectElement>('.form_label_wrap.is-floating select.form_field').forEach((select) => {
-      if ((select as any).__floatingInit) return;
-      (select as any).__floatingInit = true;
+    document
+      .querySelectorAll<HTMLSelectElement>(
+        ".form_label_wrap.is-floating select.form_field",
+      )
+      .forEach((select) => {
+        if ((select as any).__floatingInit) return;
+        (select as any).__floatingInit = true;
 
-      const wrap = select.closest('.form_label_wrap');
-      if (!wrap) return;
+        const wrap = select.closest(".form_label_wrap");
+        if (!wrap) return;
 
-      function update() {
-        if (select.value) {
-          wrap!.setAttribute('data-has-value', '');
-        } else {
-          wrap!.removeAttribute('data-has-value');
+        function update() {
+          if (select.value) {
+            wrap!.setAttribute("data-has-value", "");
+          } else {
+            wrap!.removeAttribute("data-has-value");
+          }
         }
-      }
 
-      select.addEventListener('change', update);
-      update();
-    });
+        select.addEventListener("change", update);
+        update();
+      });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initFloatingSelects);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initFloatingSelects);
   } else {
     initFloatingSelects();
   }

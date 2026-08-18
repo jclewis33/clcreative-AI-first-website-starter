@@ -36,16 +36,18 @@
  * ```
  */
 
-import { Image } from "astro:assets";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Section from "../ui/Section.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Section from "@/components/ui/Section.astro";
 
-import imgCenter from "../../assets/placeholder-images/placeholder-18.webp";
-import imgLeft from "../../assets/placeholder-images/placeholder-19.webp";
-import imgRight from "../../assets/placeholder-images/placeholder-20.webp";
+import imgCenter from "@/assets/placeholder-images-2/ai-first-starter-18.webp";
+import imgLeft from "@/assets/placeholder-images-2/ai-first-starter-19.webp";
+import imgRight from "@/assets/placeholder-images-2/ai-first-starter-20.webp";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
 interface Props {
   /**
@@ -57,7 +59,7 @@ interface Props {
    */
   docs?: string;
 
-  /** Sets both paddingTop and paddingBottom @default 'main' */
+  /** Sets both paddingTop and paddingBottom. Default 'main' — omit the prop for it ("main" is not writable). */
   padding?: PaddingValue;
   /** Override top padding only */
   paddingTop?: PaddingValue;
@@ -69,7 +71,7 @@ interface Props {
 
 const {
   docs,
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   class: className,
@@ -85,26 +87,29 @@ const {
   {/* ── Image cluster ── */}
   <div class="how_it_works_images">
     <div class="how_it_works_img_center">
-      <Image
+      <Visual
         src={imgCenter}
         alt="Placeholder project work imagery"
-        class="how_it_works_img"
+        variant="background"
+        loading="lazy"
         data-fade-in
       />
     </div>
     <div class="how_it_works_img_right">
-      <Image
+      <Visual
         src={imgRight}
         alt="One CMS architecture powering case study, blog, and service page layouts"
-        class="how_it_works_img"
+        variant="background"
+        loading="lazy"
         data-fade-in
       />
     </div>
     <div class="how_it_works_img_left">
-      <Image
+      <Visual
         src={imgLeft}
         alt="A single ideal customer highlighted within a crowd, connected by a network"
-        class="how_it_works_img"
+        variant="background"
+        loading="lazy"
         data-fade-in
       />
     </div>
@@ -218,13 +223,13 @@ const {
    * the JS re-measures positions on resize via ResizeObserver.
    */
 
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { wireScrollRefresh } from "@/scripts/scroll-refresh.js";
+
   function initHowItWorks() {
-    const gsap = (window as any).gsap;
-    const ScrollTrigger = (window as any).ScrollTrigger;
-
-    if (!gsap || !ScrollTrigger) return;
-
     gsap.registerPlugin(ScrollTrigger);
+    wireScrollRefresh(ScrollTrigger);
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -254,8 +259,7 @@ const {
     // (how-it-works.css, inherited onto the dots). Literals are last-resort
     // fallbacks only.
     const cs = getComputedStyle(dots[0]);
-    const BRAND =
-      cs.getPropertyValue("--color-brand-500").trim() || "#f35423";
+    const BRAND = cs.getPropertyValue("--color-brand-500").trim() || "#f35423";
     const INACTIVE =
       cs.getPropertyValue("--how-it-works-dot-inactive").trim() || "#172138";
 
@@ -397,19 +401,259 @@ const {
     ro.observe(sec);
   }
 
-  // Poll for GSAP (CDN loaded with defer)
-  function waitForGsap(retries = 15) {
-    if ((window as any).gsap && (window as any).ScrollTrigger) {
-      // Delay slightly so images have rendered and layout is stable
-      requestAnimationFrame(() => initHowItWorks());
-    } else if (retries > 0) {
-      setTimeout(() => waitForGsap(retries - 1), 100);
-    }
-  }
-
+  // rAF delay so images have rendered and layout is stable before measuring
+  const start = () => requestAnimationFrame(() => initHowItWorks());
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => waitForGsap());
+    document.addEventListener("DOMContentLoaded", start);
   } else {
-    waitForGsap();
+    start();
   }
 </script>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/how-it-works.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   HOW IT WORKS SECTION
+   — Image cluster + alternating timeline with GSAP scrub progress line
+   ========================================================================== */
+
+    /* ==========================================================================
+   IMAGE CLUSTER
+   Three overlapping images: large center + top-right square + bottom-left portrait.
+   Container uses aspect-ratio so all percentage positions scale correctly.
+   ========================================================================== */
+
+    .how_it_works_images {
+      position: relative;
+      width: 100%;
+      /* Preserves the Figma container proportions (1280 × 855) */
+      aspect-ratio: 1280 / 855;
+    }
+
+    /* Large background image — ~82.5% wide, anchored top, slight inset on sides */
+    .how_it_works_img_center {
+      position: absolute;
+      inset: 0 8.75% 14.97% 8.75%; /* bottom ≈ (855−727)/855 */
+      border-radius: var(--radius-main);
+      overflow: clip;
+    }
+
+    /* Top-right square overlay */
+    .how_it_works_img_right {
+      position: absolute;
+      top: 9.36%; /* ~80px / 855px */
+      right: 0;
+      width: 30%;
+      aspect-ratio: 1 / 1;
+      overflow: clip;
+      border-radius: var(--radius-main);
+      z-index: 1;
+    }
+
+    /* Bottom-left portrait overlay */
+    .how_it_works_img_left {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 30%;
+      aspect-ratio: 2 / 3;
+      border-radius: var(--radius-main);
+      overflow: clip;
+      z-index: 2;
+    }
+
+    /* Images fill their wrapper — equivalent to u-image.
+       object-fit must be declared explicitly: Astro's injected
+       `:where([data-astro-image])` styles are switched off in astro.config.mjs
+       (see the responsiveStyles comment there), and without it these images
+       fall back to `fill` and stretch.
+
+       These render through <Visual variant="background">, whose wrapper is
+       already absolute-fill and whose .u-image handles object-fit. Going
+       through Visual also gets them sizes="auto", so the browser stops
+       fetching a 1254px source for a 403px box. */
+
+    /* ==========================================================================
+   SECTION HEADER
+   ========================================================================== */
+
+    .how_it_works_header {
+      margin-top: var(--space-8);
+    }
+
+    /* ==========================================================================
+   TIMELINE WRAPPER
+   ========================================================================== */
+
+    .how_it_works_timeline {
+      position: relative;
+      margin-top: var(--space-8);
+      /* Inactive dot / line color. Single source for both the CSS rules below and
+     the GSAP script (HowItWorks.astro reads it via getComputedStyle). */
+      --how-it-works-dot-inactive: #172138;
+    }
+
+    /* ==========================================================================
+   VERTICAL LINE TRACK
+   Absolutely positioned behind all steps.
+   Top / height / left are set by JavaScript after measuring dot positions.
+   ========================================================================== */
+
+    .how_it_works_line_track {
+      position: absolute;
+      width: 3px;
+      /* JS sets: top, height, left */
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .how_it_works_line_bg {
+      position: absolute;
+      inset: 0;
+      background-color: var(--how-it-works-dot-inactive);
+    }
+
+    /* Orange fill — GSAP scrubs scaleY from 0 → 1 */
+    .how_it_works_line_fill {
+      position: absolute;
+      inset: 0;
+      background-color: var(--color-brand-500);
+      transform: scaleY(0);
+      transform-origin: top center;
+    }
+
+    /* ==========================================================================
+   STEP ROWS
+   Three-column grid: [content/space] [dot column] [content/space]
+   Odd steps: space | dot | content
+   Even step: content (right-aligned) | dot | space
+   ========================================================================== */
+
+    .how_it_works_step {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 2rem minmax(0, 1fr);
+      column-gap: var(--space-8);
+      min-height: 14rem;
+    }
+
+    /* Space placeholder — fills the empty side of each step */
+    .how_it_works_step_space {
+      min-height: 1px;
+    }
+
+    /* Content column — flex column, padded from top to align with dot */
+    .how_it_works_step_content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding-top: var(--space-5);
+    }
+
+    /* Step 2: content is right-aligned (left column, text aligned right) */
+    .how_it_works_step_content.is-reversed {
+      text-align: right;
+    }
+
+    /* ==========================================================================
+   DOT + DOT WRAP
+   ========================================================================== */
+
+    /* Centers the dot in its 2rem column and aligns it to the content top */
+    .how_it_works_dot_wrap {
+      display: flex;
+      justify-content: center;
+      padding-top: var(--space-5); /* matches content padding-top */
+      position: relative;
+      z-index: 1;
+    }
+
+    /* The dot circle */
+    .how_it_works_dot {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background-color: var(--how-it-works-dot-inactive);
+      outline: 2px solid var(--how-it-works-dot-inactive);
+      outline-offset: 0;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 2; /* sits above the line track */
+      /* Smooth color transition for GSAP (used as CSS fallback, GSAP overrides) */
+      transition:
+        background-color 0.15s ease,
+        outline-color 0.15s ease;
+    }
+
+    /* First dot starts orange — already active on load */
+    .how_it_works_dot[data-dot="1"] {
+      background-color: var(--color-brand-500);
+      outline-color: var(--color-brand-500);
+    }
+
+    /* ==========================================================================
+   STEP TITLE
+   Number in mono font, title text in primary font — mixed within one <h3>
+   ========================================================================== */
+
+    .how_it_works_step_title {
+      font-size: var(--h3-size);
+      font-family: var(--font-primary);
+      font-weight: var(--font-weight-medium);
+      line-height: var(--line-height-large);
+      color: var(--text);
+      margin: 0;
+      text-transform: none;
+    }
+
+    /* Number portion uses the mono typeface */
+    .how_it_works_step_num {
+      font-family: var(--font-tertiary);
+      color: var(--text);
+    }
+
+    /* ==========================================================================
+   SMALL BREAKPOINT — line moves to left, all content moves to right
+   Triggers at container width < 35em (~560px)
+   ========================================================================== */
+
+    @container (width < 35em) {
+      /* Collapse to 2-column: dot col (left) | content col (right) */
+      .how_it_works_step {
+        grid-template-columns: 2rem minmax(0, 1fr);
+        min-height: auto;
+        row-gap: 0;
+      }
+
+      /* Hide spacers — not needed at this breakpoint */
+      .how_it_works_step_space {
+        display: none;
+      }
+
+      /* Force dot wrap always to column 1 */
+      .how_it_works_dot_wrap {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      /* Force all content always to column 2 */
+      .how_it_works_step_content {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      /* Reset reversed alignment */
+      .how_it_works_step_content.is-reversed {
+        text-align: left;
+      }
+
+      /* Tighten step spacing on mobile */
+      .how_it_works_step {
+        margin-bottom: var(--space-7);
+      }
+    }
+  }
+</style>

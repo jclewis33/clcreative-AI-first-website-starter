@@ -1,4 +1,6 @@
 ---
+import type { HTMLAttributes } from "astro/types";
+import Layout from "@/components/ui/Layout.astro";
 /**
  * Heading — separates semantic tag (`h1`–`h6`, `p`) from visual style.
  *
@@ -7,8 +9,10 @@
  * the semantic tag's default styles. Use `tag="p"` when you need
  * heading typography on non-heading content (e.g. prices, stats).
  *
- * Renders a `.u-text` wrapper div around the heading tag. The wrapper
- * stays full-width while the child heading inherits `max-width`.
+ * Renders ONE bare heading tag carrying `.u-text`, the type class, and any
+ * `max-width` — there is no wrapper div, and nothing should add one.
+ * Alignment of the constrained box comes from `--_text-inline-margin`
+ * (see utilities/layout.css).
  *
  * @example Display heading with balance
  * ```astro
@@ -74,7 +78,7 @@ type HeadingVariant =
  *
  * **Slot:** default — heading text content (supports `<strong>` for accent).
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Heading props:**
    * - `tag` — h1-h6 or p (default 'h2') semantic level
@@ -90,6 +94,19 @@ interface Props {
    * **Slot:** default — heading text (supports `<strong>`)
    */
   docs?: string;
+
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — e.g. `render` set to whether the list has any items — instead of
+   * wrapping the element in a conditional block. Nothing is emitted when
+   * false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
   /**
    * HTML tag — sets the semantic level for the document outline.
    * Use `p` when you want heading styles on non-heading content (e.g. prices).
@@ -128,7 +145,7 @@ interface Props {
   accent?: boolean;
 
   /**
-   * Override margin-top on the `.u-text` wrapper.
+   * Override margin-top on the heading itself.
    * - `0`–`8` — maps to `u-margin-top-N` (space scale: 6px–64px fluid)
    * - `'auto'` — push element down in flex containers (align bottom edges across columns)
    * @example marginTop={0}
@@ -138,7 +155,7 @@ interface Props {
   marginTop?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "auto";
 
   /**
-   * Override margin-bottom on the `.u-text` wrapper.
+   * Override margin-bottom on the heading itself.
    * Maps to `u-margin-bottom-N` (space scale: 6px–64px fluid).
    * Use `0` for tight layouts, higher values for extra breathing room.
    *
@@ -156,7 +173,7 @@ interface Props {
    *
    * NOTE: `marginBottom={0}` is **usually redundant**. Margin-trim already
    * zeroes the bottom margin of the LAST child of a trimmed wrapper — a
-   * `<Section>` container, a `<Layout>` column, `<ContentWrapper>`, `<Col>`,
+   * `<Section>` container, a `<Layout>` column, `<Layout variant="stack">`, ``,
    * `u-rich-text`, or any `u-margin-trim`/`u-container*` element. Only set it
    * when this is the last child of a *custom* `<div>` that isn't auto-trimmed
    * (e.g. a card body); even then, prefer `u-margin-trim` on that wrapper.
@@ -179,17 +196,10 @@ interface Props {
    * @example class="u-margin-bottom-4"
    */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.u-text` wrapper element.
-   * User-provided `style` is merged with computed max-width styles.
-   * @example data-animate="fade" style="--custom: value"
-   */
-  [key: string]: any;
 }
 
 const {
+  render = true,
   docs,
   tag: Tag = "h2",
   variant = "h2",
@@ -222,7 +232,7 @@ const variantClassMap: Record<NonNullable<HeadingVariant>, string> = {
 };
 
 /* Wrapper classes — typography, balance, accent, margin overrides, and user extras */
-const wrapperClasses = [
+const elementClasses = [
   "u-text",
   variant ? variantClassMap[variant] : null,
   balance && "u-text-wrap-balance",
@@ -232,9 +242,7 @@ const wrapperClasses = [
     : marginTop !== undefined && `u-margin-top-${marginTop}`,
   marginBottom !== undefined && `u-margin-bottom-${marginBottom}`,
   className,
-]
-  .filter(Boolean)
-  .join(" ");
+];
 
 /* Merge user-provided style with computed max-width */
 const { style: userStyle, ...attrs } = rest;
@@ -246,8 +254,10 @@ const mergedStyle = [
   .join("; ");
 ---
 
-<div class={wrapperClasses} style={mergedStyle} {...attrs}>
-  <Tag>
-    <slot />
-  </Tag>
-</div>
+{
+  render && (
+    <Tag class:list={elementClasses} style={mergedStyle} {...attrs}>
+      <slot />
+    </Tag>
+  )
+}

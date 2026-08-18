@@ -19,14 +19,18 @@
  *   heading — override the heading area with custom markup
  */
 
-import Section from "../ui/Section.astro";
-import Heading from "../ui/Heading.astro";
-import Grid from "../ui/Grid.astro";
-import ContentWrapper from "../ui/ContentWrapper.astro";
-import TestimonialCard, { type Testimonial } from "../ui/TestimonialCard.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Grid from "@/components/ui/Grid.astro";
+import TestimonialCard, {
+  type Testimonial,
+} from "@/components/ui/TestimonialCard.astro";
 
 type SectionTheme = "light" | "dark" | "brand";
-type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
 interface Props {
   /**
@@ -36,7 +40,7 @@ interface Props {
    * - `heading` — simple heading text (or use `heading` slot for custom markup)
    * - `eyebrow` — small label above heading (e.g. "Testimonials")
    * - `theme` — 'light' | 'dark' | 'brand'
-   * - `padding` — 'none' | 'small' | 'main' | 'large' | 'page-top' (default 'large')
+   * - `padding` — 'none' | 'xsmall' | 'small' | 'large' | 'page-top' (default: omitted → 'main')
    * - `paddingTop` / `paddingBottom` — override top/bottom padding independently
    * - `id` — section id for anchor links
    * - `columns` — grid columns at desktop: 1–4 (default 3)
@@ -117,7 +121,7 @@ const {
   heading,
   eyebrow,
   theme,
-  padding = "large",
+  padding,
   paddingTop,
   paddingBottom,
   id,
@@ -127,12 +131,25 @@ const {
   class: className,
 } = Astro.props;
 
-const testimonials = limit
-  ? rawTestimonials.slice(0, limit)
-  : rawTestimonials;
+/* Cards read against the section, not with it: on a dark or brand ground they
+   flip to light paper. `invert` is relative, so this is the only decision —
+   the card resolves the actual colors itself (see THEME INVERT in themes.css).
+   On light grounds the cards stay in the ambient theme. */
+const invertCards =
+  theme === "dark" || theme === "brand" ? ("invert" as const) : undefined;
 
+const testimonials = limit ? rawTestimonials.slice(0, limit) : rawTestimonials;
+
+/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
+   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
+   swallows the hoisted `<script>` of every component inside it — page-wide,
+   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
+   left BOTH sliders on the page uninitialized, the unrelated one included.
+   `.has()` only reports whether a slot was passed, which is weaker (a slot
+   holding an empty `{items.map(…)}` still counts as present), and that is the
+   trade we want: a rare empty wrapper beats silently dead client JS. */
 const hasHeadingSlot = Astro.slots.has("heading");
-const showHeading = hasHeadingSlot || heading;
+const showHeading = Astro.slots.has("heading") || heading;
 ---
 
 <Section
@@ -146,7 +163,7 @@ const showHeading = hasHeadingSlot || heading;
   {/* Heading area */}
   {
     showHeading && (
-      <ContentWrapper class="testimonials_header">
+      <Layout variant="stack" class="testimonials_header">
         {hasHeadingSlot ? (
           <slot name="heading" />
         ) : (
@@ -157,7 +174,7 @@ const showHeading = hasHeadingSlot || heading;
             </Heading>
           </>
         )}
-      </ContentWrapper>
+      </Layout>
     )
   }
 
@@ -170,7 +187,7 @@ const showHeading = hasHeadingSlot || heading;
   >
     {
       testimonials.map((testimonial) => (
-        <TestimonialCard {...testimonial} />
+        <TestimonialCard {...testimonial} theme={invertCards} />
       ))
     }
   </Grid>

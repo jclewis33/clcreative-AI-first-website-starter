@@ -106,10 +106,7 @@ for (const path of PAGES) {
     html = await res.text();
   } catch (err) {
     console.log(
-      c(
-        "red",
-        `  ✗ fetch failed: ${err.message} — is the dev server running?`
-      )
+      c("red", `  ✗ fetch failed: ${err.message} — is the dev server running?`),
     );
     pageFailures++;
     continue;
@@ -149,7 +146,7 @@ for (const path of PAGES) {
 
       if (!node["@context"] && !parsed["@context"]) {
         issues.push(
-          `script #${scriptIdx + 1} → ${node["@type"] ?? "(no type)"}: missing @context`
+          `script #${scriptIdx + 1} → ${node["@type"] ?? "(no type)"}: missing @context`,
         );
       }
       if (!node["@type"]) {
@@ -164,7 +161,7 @@ for (const path of PAGES) {
         definedIds.add(node["@id"]);
         if (!/^https?:\/\//.test(node["@id"])) {
           issues.push(
-            `${node["@type"]} @id is not an absolute URL: ${node["@id"]}`
+            `${node["@type"]} @id is not an absolute URL: ${node["@id"]}`,
           );
         }
       }
@@ -173,13 +170,12 @@ for (const path of PAGES) {
       const type = node["@type"];
       if (type === "Service") {
         if (!node.name) issues.push(`Service missing name`);
-        if (!node.provider) issues.push(`Service "${node.name}" missing provider`);
+        if (!node.provider)
+          issues.push(`Service "${node.name}" missing provider`);
         // Location pages scope a Service geographically (areaServed); industry
         // pages scope it by audience (BusinessAudience) instead. Either is valid.
         if (!node.areaServed && !node.audience)
-          issues.push(
-            `Service "${node.name}" missing areaServed or audience`
-          );
+          issues.push(`Service "${node.name}" missing areaServed or audience`);
         if (node.provider?.["@id"]) referencedIds.add(node.provider["@id"]);
       }
       if (type === "FAQPage") {
@@ -187,22 +183,22 @@ for (const path of PAGES) {
         if (entries.length === 0)
           issues.push(`FAQPage has no mainEntity questions`);
         entries.forEach((q, i) => {
-          if (!q.name)
-            issues.push(`FAQPage question #${i + 1} missing name`);
+          if (!q.name) issues.push(`FAQPage question #${i + 1} missing name`);
           if (!q.acceptedAnswer?.text)
             issues.push(
-              `FAQPage question #${i + 1} ("${q.name ?? "?"}") missing acceptedAnswer.text`
+              `FAQPage question #${i + 1} ("${q.name ?? "?"}") missing acceptedAnswer.text`,
             );
         });
       }
       if (type === "LocalBusiness" || type === "ProfessionalService") {
         if (!node.name) issues.push(`${type} missing name`);
-        if (!node.address) issues.push(`${type} "${node.name}" missing address`);
+        if (!node.address)
+          issues.push(`${type} "${node.name}" missing address`);
         if (!node.areaServed)
           issues.push(`${type} "${node.name}" missing areaServed`);
         if (!node["@id"])
           issues.push(
-            `${type} "${node.name}" has no @id — Service.provider refs will dangle`
+            `${type} "${node.name}" has no @id — Service.provider refs will dangle`,
           );
       }
     }
@@ -212,18 +208,14 @@ for (const path of PAGES) {
   for (const ref of referencedIds) {
     if (!definedIds.has(ref)) {
       issues.push(
-        `dangling provider reference: "${ref}" — no node on this page defines that @id`
+        `dangling provider reference: "${ref}" — no node on this page defines that @id`,
       );
     }
   }
 
   // Report
-  const typesFound = allNodes
-    .map(({ node }) => node["@type"])
-    .filter(Boolean);
-  console.log(
-    c("dim", `  types: ${typesFound.join(", ") || "(none)"}`)
-  );
+  const typesFound = allNodes.map(({ node }) => node["@type"]).filter(Boolean);
+  console.log(c("dim", `  types: ${typesFound.join(", ") || "(none)"}`));
 
   if (issues.length === 0) {
     console.log(c("green", "  ✓ all checks passed"));
@@ -236,16 +228,14 @@ for (const path of PAGES) {
 
 console.log("");
 if (pageFailures > 0) {
-  console.log(
-    c("red", c("bold", `✗ ${pageFailures} page(s) had issues`))
-  );
+  console.log(c("red", c("bold", `✗ ${pageFailures} page(s) had issues`)));
   process.exit(1);
 } else {
   console.log(c("green", c("bold", "✓ all pages passed schema checks")));
   console.log(
     c(
       "dim",
-      "  Note: this catches structural issues, not every Google rich-result rule.\n  For Google-specific validation, paste each script into:\n    https://search.google.com/test/rich-results (Test code tab)\n  Or after deploy, point Rich Results Test at the live URL."
-    )
+      "  Note: this catches structural issues, not every Google rich-result rule.\n  For Google-specific validation, paste each script into:\n    https://search.google.com/test/rich-results (Test code tab)\n  Or after deploy, point Rich Results Test at the live URL.",
+    ),
   );
 }

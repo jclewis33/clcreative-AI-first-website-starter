@@ -13,39 +13,40 @@
  * own archive page at /blog/category/<slug>, just no section on this index.
  */
 
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import SanityCtaSection from "../../components/sections/SanityCtaSection.astro";
-import Section from "../../components/ui/Section.astro";
-import Grid from "../../components/ui/Grid.astro";
-import Heading from "../../components/ui/Heading.astro";
-import Text from "../../components/ui/Text.astro";
-import Button from "../../components/ui/Button.astro";
-import BlogCard from "../../components/ui/BlogCard.astro";
-import Slider from "../../components/ui/Slider.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Layout from "@/components/ui/Layout.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Button from "@/components/ui/Button.astro";
+import BlogCard from "@/components/ui/BlogCard.astro";
+import FormattedDate from "@/components/ui/FormattedDate.astro";
+import Slider from "@/components/ui/Slider.astro";
 
 // Sanity
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
-import { loadPageQuery } from "../../sanity/lib/page-data";
-import { BLOG_POSTS_QUERY, SITE_SETTINGS_QUERY } from "../../sanity/lib/queries";
-import { urlFor } from "../../sanity/lib/image";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import { loadPageQuery } from "@/sanity/lib/page-data";
+import { BLOG_POSTS_QUERY, SITE_SETTINGS_QUERY } from "@/sanity/lib/queries";
+import { urlFor } from "@/sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
-import { SITE } from "../../config/site";
+import { SITE } from "@/config/site";
 
 // Styles
-import "../../styles/pages/blog.css";
-import ContentWrapper from "../../components/ui/ContentWrapper.astro";
+import "@/styles/pages/blog.css";
 
 /* ── Fetch all posts from Sanity ── */
 
 const draftProps = getDraftModeProps(Astro);
 const [allPosts, settings] = await Promise.all([
-  loadPageQuery<any[]>({
+  loadPageQuery({
     query: BLOG_POSTS_QUERY,
     draftProps,
     fallback: [],
     label: "blog index posts",
   }),
-  loadPageQuery<any>({
+  loadPageQuery({
     query: SITE_SETTINGS_QUERY,
     draftProps,
     fallback: null,
@@ -78,22 +79,19 @@ const categoryConfig: {
   {
     name: "News",
     slug: "news",
-    description:
-      "Announcements, updates, and the latest from our team.",
+    description: "Announcements, updates, and the latest from our team.",
     theme: "brand",
   },
   {
     name: "Guides",
     slug: "guides",
-    description:
-      "In-depth guides and how-tos to help you get more done.",
+    description: "In-depth guides and how-tos to help you get more done.",
     theme: "dark",
   },
   {
     name: "Insights",
     slug: "insights",
-    description:
-      "Perspectives, trends, and ideas worth sharing.",
+    description: "Perspectives, trends, and ideas worth sharing.",
     theme: "brand",
   },
   {
@@ -123,19 +121,9 @@ const categorySections = categoryConfig
     posts: getPostsForCategory(cat.name),
   }))
   .filter((cat) => cat.posts.length > 0);
-
-/* ── Helper: format date ── */
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 ---
 
 <BaseLayout
-  docs=""
   theme="light"
   title="Blog | Astro Starter"
   description={SITE.defaultDescription}
@@ -145,7 +133,7 @@ function formatDate(dateStr: string) {
       HERO — dark theme, left-aligned, category nav + featured slider
       ================================================================ */
   }
-  <Section gap={4} docs="" theme="dark" class="blog_hero_wrap">
+  <Section gap={4} theme="dark" class="blog_hero_wrap">
     {/* Category nav tabs + search */}
     <div class="blog_top_bar">
       <nav class="blog_category_nav" aria-label="Blog categories">
@@ -172,8 +160,8 @@ function formatDate(dateStr: string) {
           stroke-linejoin="round"
           aria-hidden="true"
         >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
         <input
           type="search"
@@ -186,7 +174,7 @@ function formatDate(dateStr: string) {
         />
       </div>
     </div>
-    <ContentWrapper>
+    <Layout variant="stack">
       <Heading
         data-prevent-flicker="true"
         data-split-text
@@ -198,7 +186,7 @@ function formatDate(dateStr: string) {
         Articles, guides, and insights from our team — practical writing to help
         you get more out of what we do.
       </Text>
-    </ContentWrapper>
+    </Layout>
     {/* Featured slider */}
     {
       sliderPosts.length > 1 && (
@@ -265,8 +253,6 @@ function formatDate(dateStr: string) {
 
       return (
         <Section
-          docs=""
-          padding="main"
           gap={6}
           theme={cat.theme}
           id={cat.slug}
@@ -312,9 +298,11 @@ function formatDate(dateStr: string) {
                   </div>
                   <h3 class="blog_featured_card_title">{post.title}</h3>
                   <div class="blog_featured_card_meta">
-                    <span class="blog_featured_card_date">
-                      {formatDate(post.date)}
-                    </span>
+                    <FormattedDate
+                      date={post.date}
+                      format={{ dateStyle: "medium" }}
+                      class="blog_featured_card_date"
+                    />
                   </div>
                 </a>
               ))}
@@ -331,6 +319,11 @@ function formatDate(dateStr: string) {
             >
               {smallPosts.map((post: any) => (
                 <BlogCard
+                  theme={
+                    cat.theme === "dark" || cat.theme === "brand"
+                      ? "invert"
+                      : undefined
+                  }
                   data-fade-in
                   data-search-card
                   data-title={stegaClean(post.title)}
@@ -390,13 +383,7 @@ function formatDate(dateStr: string) {
   }
   {
     latestPosts.length > 0 && (
-      <Section
-        docs=""
-        padding="main"
-        gap={6}
-        id="latest"
-        class="blog_category_section"
-      >
+      <Section gap={6} id="latest" class="blog_category_section">
         <div class="blog_section_header">
           <Heading data-prevent-flicker="true" data-split-text marginBottom={0}>
             Latest
@@ -497,11 +484,7 @@ function formatDate(dateStr: string) {
     )
   }
 
-  <div
-    id="blog-index-no-results"
-    class="blog_no_results"
-    style="display:none;"
-  >
+  <div id="blog-index-no-results" class="blog_no_results" style="display:none;">
     <Text muted align="center">
       No posts on this page match your search. Try the <a
         href="/blog/category/all"
@@ -541,9 +524,8 @@ function formatDate(dateStr: string) {
     });
 
     sections.forEach((section) => {
-      const sectionCards = section.querySelectorAll<HTMLElement>(
-        "[data-search-card]",
-      );
+      const sectionCards =
+        section.querySelectorAll<HTMLElement>("[data-search-card]");
       const hasVisible = Array.from(sectionCards).some(
         (c) => c.style.display !== "none",
       );
@@ -569,7 +551,9 @@ function formatDate(dateStr: string) {
       noResults.style.display = query && totalVisible === 0 ? "" : "none";
     }
 
-    (window as any).ScrollTrigger?.refresh();
+    // Filter changed the page height — nudge any scroll-linked animations
+    // without importing GSAP here (see src/scripts/scroll-refresh.js).
+    document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"));
   }
 
   searchInput?.addEventListener("input", filterPosts);

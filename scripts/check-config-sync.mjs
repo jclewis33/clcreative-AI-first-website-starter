@@ -20,7 +20,9 @@ import {
   SANITY_DATASET,
 } from "../src/config/site.shared.mjs";
 
-const wranglerPath = fileURLToPath(new URL("../wrangler.jsonc", import.meta.url));
+const wranglerPath = fileURLToPath(
+  new URL("../wrangler.jsonc", import.meta.url),
+);
 const raw = readFileSync(wranglerPath, "utf8");
 
 // Strip // line comments and /* */ block comments so JSON.parse accepts JSONC.
@@ -34,7 +36,9 @@ let wrangler;
 try {
   wrangler = JSON.parse(stripped);
 } catch (err) {
-  console.error(`✗ check-config-sync: could not parse wrangler.jsonc — ${err.message}`);
+  console.error(
+    `✗ check-config-sync: could not parse wrangler.jsonc — ${err.message}`,
+  );
   process.exit(1);
 }
 
@@ -54,7 +58,9 @@ if (mismatches.length) {
     "✗ check-config-sync: wrangler.jsonc `vars` are out of sync with src/config/site.shared.mjs:",
   );
   for (const [key, want] of mismatches) {
-    console.error(`    ${key}: wrangler="${vars[key] ?? "(unset)"}" expected="${want}"`);
+    console.error(
+      `    ${key}: wrangler="${vars[key] ?? "(unset)"}" expected="${want}"`,
+    );
   }
   console.error(
     "  Fix: update the `vars` block in wrangler.jsonc to match site.shared.mjs (the canonical source).",

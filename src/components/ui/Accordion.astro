@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Accordion — animated expand/collapse list.
  *
@@ -41,7 +42,7 @@
  *
  * **Slot:** default — `<AccordionItem>` children.
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Accordion props:**
    * - `closePrevious` — close open item when another opens (default true)
@@ -86,28 +87,21 @@ interface Props {
 
   /** Extra utility classes to add to the `.accordion_wrap` element. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.accordion_wrap` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {
   docs,
-  closePrevious     = true,
+  closePrevious = true,
   closeOnSecondClick = true,
-  openOnHover        = false,
-  openByDefault      = 0,
+  openOnHover = false,
+  openByDefault = 0,
   class: className,
   ...rest
 } = Astro.props;
 ---
 
 <div
-  class:list={['accordion_wrap', className]}
+  class:list={["accordion_wrap", className]}
   data-close-previous={String(closePrevious)}
   data-close-on-second-click={String(closeOnSecondClick)}
   data-open-on-hover={String(openOnHover)}
@@ -142,106 +136,265 @@ const {
    */
 
   function initAccordions() {
-    const ScrollTrigger = (window as any).ScrollTrigger;
+    document
+      .querySelectorAll<HTMLElement>(".accordion_wrap")
+      .forEach((wrap) => {
+        const closePrevious = wrap.dataset.closePrevious !== "false";
+        const closeOnSecondClick = wrap.dataset.closeOnSecondClick !== "false";
+        const openOnHover = wrap.dataset.openOnHover === "true";
+        const openByDefault = parseInt(wrap.dataset.openByDefault ?? "0", 10);
 
-    document.querySelectorAll<HTMLElement>('.accordion_wrap').forEach((wrap) => {
-      const closePrevious      = wrap.dataset.closePrevious      !== 'false';
-      const closeOnSecondClick = wrap.dataset.closeOnSecondClick !== 'false';
-      const openOnHover        = wrap.dataset.openOnHover        === 'true';
-      const openByDefault      = parseInt(wrap.dataset.openByDefault ?? '0', 10);
+        const items = wrap.querySelectorAll<HTMLElement>(".accordion_item");
 
-      const items = wrap.querySelectorAll<HTMLElement>('.accordion_item');
-
-      function getButton(item: HTMLElement) {
-        return item.querySelector<HTMLButtonElement>('.accordion_toggle_button');
-      }
-
-      function getContent(item: HTMLElement) {
-        return item.querySelector<HTMLElement>('.accordion_content_wrap');
-      }
-
-      function isOpen(item: HTMLElement) {
-        return getButton(item)?.getAttribute('aria-expanded') === 'true';
-      }
-
-      function openItem(item: HTMLElement) {
-        const button = getButton(item);
-        if (!button) return;
-        button.setAttribute('aria-expanded', 'true');
-        item.classList.add('is-active');
-      }
-
-      function closeItem(item: HTMLElement) {
-        const button = getButton(item);
-        if (!button) return;
-        button.setAttribute('aria-expanded', 'false');
-        item.classList.remove('is-active');
-      }
-
-      function toggle(item: HTMLElement) {
-        if (isOpen(item)) {
-          if (closeOnSecondClick) closeItem(item);
-        } else {
-          if (closePrevious) {
-            items.forEach((other) => {
-              if (other !== item && isOpen(other)) closeItem(other);
-            });
-          }
-          openItem(item);
-        }
-      }
-
-      items.forEach((item) => {
-        const button = getButton(item);
-        if (!button) return;
-
-        button.addEventListener('click', () => toggle(item));
-
-        if (openOnHover) {
-          item.addEventListener('mouseenter', () => {
-            if (!isOpen(item)) toggle(item);
-          });
-        }
-
-        // Refresh ScrollTrigger after each open/close animation so it can
-        // recompute positions for any scroll-linked effects below.
-        const content = getContent(item);
-        if (content) {
-          content.addEventListener(
-            'transitionend',
-            (e) => {
-              if (
-                e.target === content &&
-                (e as TransitionEvent).propertyName === 'grid-template-rows' &&
-                ScrollTrigger
-              ) {
-                ScrollTrigger.refresh();
-              }
-            },
-            { passive: true },
+        function getButton(item: HTMLElement) {
+          return item.querySelector<HTMLButtonElement>(
+            ".accordion_toggle_button",
           );
         }
-      });
 
-      // Apply openByDefault state BEFORE the .is-ready class enables
-      // transitions — so the default item renders open without animating in.
-      if (openByDefault > 0 && items[openByDefault - 1]) {
-        openItem(items[openByDefault - 1]);
-      }
+        function getContent(item: HTMLElement) {
+          return item.querySelector<HTMLElement>(".accordion_content_wrap");
+        }
 
-      // Double rAF guarantees the initial state is painted before we
-      // enable CSS transitions on grid-template-rows.
-      requestAnimationFrame(() => {
+        function isOpen(item: HTMLElement) {
+          return getButton(item)?.getAttribute("aria-expanded") === "true";
+        }
+
+        function openItem(item: HTMLElement) {
+          const button = getButton(item);
+          if (!button) return;
+          button.setAttribute("aria-expanded", "true");
+          item.classList.add("is-active");
+        }
+
+        function closeItem(item: HTMLElement) {
+          const button = getButton(item);
+          if (!button) return;
+          button.setAttribute("aria-expanded", "false");
+          item.classList.remove("is-active");
+        }
+
+        function toggle(item: HTMLElement) {
+          if (isOpen(item)) {
+            if (closeOnSecondClick) closeItem(item);
+          } else {
+            if (closePrevious) {
+              items.forEach((other) => {
+                if (other !== item && isOpen(other)) closeItem(other);
+              });
+            }
+            openItem(item);
+          }
+        }
+
+        items.forEach((item) => {
+          const button = getButton(item);
+          if (!button) return;
+
+          button.addEventListener("click", () => toggle(item));
+
+          if (openOnHover) {
+            item.addEventListener("mouseenter", () => {
+              if (!isOpen(item)) toggle(item);
+            });
+          }
+
+          // Refresh ScrollTrigger after each open/close animation so it can
+          // recompute positions for any scroll-linked effects below.
+          const content = getContent(item);
+          if (content) {
+            content.addEventListener(
+              "transitionend",
+              (e) => {
+                if (
+                  e.target === content &&
+                  (e as TransitionEvent).propertyName === "grid-template-rows"
+                ) {
+                  // Nudge any scroll-linked animations without importing GSAP
+                  // here — see src/scripts/scroll-refresh.js. No-op on pages
+                  // that have none.
+                  document.dispatchEvent(
+                    new CustomEvent("scrolltrigger:refresh"),
+                  );
+                }
+              },
+              { passive: true },
+            );
+          }
+        });
+
+        // Apply openByDefault state BEFORE the .is-ready class enables
+        // transitions — so the default item renders open without animating in.
+        if (openByDefault > 0 && items[openByDefault - 1]) {
+          openItem(items[openByDefault - 1]);
+        }
+
+        // Double rAF guarantees the initial state is painted before we
+        // enable CSS transitions on grid-template-rows.
         requestAnimationFrame(() => {
-          wrap.classList.add('is-ready');
+          requestAnimationFrame(() => {
+            wrap.classList.add("is-ready");
+          });
         });
       });
-    });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAccordions);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAccordions);
   } else {
     initAccordions();
   }
 </script>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/accordion.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   ACCORDION COMPONENT STYLES
+   ==========================================================================
+   Animated expand/collapse list, driven entirely by the `aria-expanded`
+   attribute that JS toggles on the toggle button — plain CSS, no variables.
+
+   How it works:
+     `:has(.accordion_toggle_button[aria-expanded="true"])` toggles
+     grid-template-rows from 0fr to 1fr on .accordion_content_wrap, which
+     animates the expand/collapse natively in CSS — no JS measurement or
+     GSAP timeline required. The chevron icon rotates off the same
+     attribute (see .accordion_toggle_icon below).
+
+   Example markup:
+     <div class="accordion_wrap">
+       <div class="accordion_list" role="list">
+         <div class="accordion_item" role="listitem">
+           <div class="accordion_component">
+             <h3 class="accordion_toggle_heading">
+               <button class="accordion_toggle_button" aria-expanded="false">
+                 <span class="accordion_toggle_text">Question?</span>
+                 <span class="accordion_toggle_icon">▼</span>
+               </button>
+             </h3>
+             <div class="accordion_content_wrap">
+               <div class="accordion_content_padding">Answer.</div>
+             </div>
+           </div>
+         </div>
+       </div>
+     </div>
+   ========================================================================== */
+
+    .accordion_wrap {
+      padding-top: 1px;
+      flex-flow: column;
+      width: 100%;
+      display: flex;
+    }
+
+    .accordion_list {
+      flex-flow: column;
+      list-style: none;
+      width: 100%;
+      margin-top: calc(var(--space-4) * -1);
+      margin-bottom: 0;
+      margin-left: 0;
+      margin-right: 0;
+      padding: 0;
+      display: flex;
+    }
+
+    .accordion_item {
+      border-bottom: var(--border-width-main) solid var(--border);
+    }
+
+    .accordion_item:first-child {
+      border-top: none;
+    }
+
+    .accordion_component {
+      position: relative;
+    }
+
+    .accordion_toggle_button {
+      padding-top: var(--space-4);
+      padding-bottom: var(--space-4);
+      gap: var(--space-3);
+      color: inherit;
+      cursor: pointer;
+      outline-offset: var(--focus-offset-inner);
+      justify-content: space-between;
+      align-items: start;
+      width: 100%;
+      list-style: none;
+      display: flex;
+      /* Reset browser default button styles */
+      background: none;
+      border: none;
+      text-align: left;
+    }
+
+    .accordion_toggle_heading {
+      margin-top: 0;
+      margin-bottom: 0;
+      font-weight: inherit;
+    }
+
+    .accordion_toggle_icon {
+      aspect-ratio: 1;
+      flex: none;
+      width: 1.4rem;
+      transform: rotate(0deg);
+      transition: transform 0.3s ease;
+      display: flex;
+      align-content: flex-start;
+      overflow: visible !important;
+    }
+
+    /* Flip the chevron when its toggle is expanded — keyed off the same
+   aria-expanded attribute that opens the panel below. */
+    .accordion_toggle_button[aria-expanded="true"] .accordion_toggle_icon {
+      transform: rotate(-180deg);
+    }
+
+    .accordion_toggle_icon > svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Content panel — collapses/expands via grid-template-rows: 0fr ↔ 1fr.
+   `minmax(0, ...)` forces the track minimum to 0 (bare 0fr defaults to
+   min-content, which lets the top of the content peek through when
+   collapsed). overflow: hidden on the wrap is a belt-and-suspenders
+   clip for any bleed during the transition. The inner padding element
+   also gets overflow: hidden so it can shrink to 0 along with the row. */
+    .accordion_content_wrap {
+      width: 100%;
+      display: grid;
+      grid-template-rows: minmax(0, 0fr);
+      overflow: hidden;
+    }
+
+    /* JS adds .is-ready to .accordion_wrap after the initial state is painted
+   so the openByDefault item doesn't animate in on page load. */
+    .accordion_wrap.is-ready .accordion_content_wrap {
+      transition: grid-template-rows 0.3s ease;
+    }
+
+    .accordion_item:has(.accordion_toggle_button[aria-expanded="true"])
+      .accordion_content_wrap {
+      grid-template-rows: minmax(0, 1fr);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .accordion_wrap.is-ready .accordion_content_wrap {
+        transition: none;
+      }
+    }
+
+    .accordion_content_padding {
+      min-height: 0;
+      overflow: hidden;
+    }
+  }
+</style>

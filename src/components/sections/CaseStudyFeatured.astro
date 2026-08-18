@@ -30,18 +30,22 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
 
-import { loadQuery } from "../../sanity/lib/load-query";
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
-import { urlFor } from "../../sanity/lib/image";
+import { loadQuery } from "@/sanity/lib/load-query";
+import { FEATURED_CASE_STUDIES_QUERY } from "@/sanity/lib/queries";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import { urlFor } from "@/sanity/lib/image";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
 type SectionTheme = "light" | "dark" | "brand";
-type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
 /**
  * CaseStudyFeatured — interactive 3-card showcase with hover expand animation.
@@ -137,7 +141,7 @@ interface Props {
 
   /**
    * Section vertical padding.
-   * @default 'main'
+   * @default omitted → 'main'
    */
   padding?: PaddingSize;
 
@@ -162,14 +166,6 @@ export const FEATURED_CASE_STUDIES_SLUGS: [string, string, string] = [
   "case-study-three",
 ];
 
-export const FEATURED_CASE_STUDIES_QUERY = `*[_type == "caseStudy" && slug.current in $slugs] {
-  "slug": slug.current,
-  client,
-  description,
-  image,
-  "imageAlt": coalesce(imageAlt, image.asset->altText, "")
-}`;
-
 const {
   docs,
   slugs = FEATURED_CASE_STUDIES_SLUGS,
@@ -177,7 +173,7 @@ const {
   eyebrow = "Proven Results",
   headingVariant = "h6",
   theme,
-  padding = "main",
+  padding,
   paddingTop,
   paddingBottom,
   id,
@@ -194,7 +190,7 @@ if (studies && studies.length >= 3) {
 } else {
   // Fetch from Sanity (standalone usage). Tolerate an empty/unreachable
   // dataset — the section simply doesn't render when fewer than 3 resolve.
-  const results = await loadQuery<any[]>({
+  const results = await loadQuery({
     query: FEATURED_CASE_STUDIES_QUERY,
     params: { slugs },
     ...getDraftModeProps(Astro),
@@ -208,6 +204,14 @@ if (studies && studies.length >= 3) {
 
 /* ── Heading slot ─────────────────────────────────────────────────────── */
 
+/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
+   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
+   swallows the hoisted `<script>` of every component inside it — page-wide,
+   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
+   left BOTH sliders on the page uninitialized, the unrelated one included.
+   `.has()` only reports whether a slot was passed, which is weaker (a slot
+   holding an empty `{items.map(…)}` still counts as present), and that is the
+   trade we want: a rare empty wrapper beats silently dead client JS. */
 const hasHeadingSlot = Astro.slots.has("heading");
 ---
 
@@ -221,7 +225,7 @@ const hasHeadingSlot = Astro.slots.has("heading");
       id={id}
       class:list={["case-study-featured_wrap", className]}
     >
-      <div class="case-study-featured_inner u-container">
+      <div class="case-study-featured_inner">
         {/* Heading area */}
         <div
           data-prevent-flicker="true"
@@ -289,13 +293,157 @@ const hasHeadingSlot = Astro.slots.has("heading");
             </a>
           ))}
         </div>
-        <div class="u-button-wrapper">
+        <ButtonWrapper>
           {" "}
           <Button href="/case-studies" ariaLabel="View All Case Studies">
             View All Case Studies
           </Button>{" "}
-        </div>
+        </ButtonWrapper>
       </div>
     </Section>
   )
 }
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/case-study-featured.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   CASE STUDY FEATURED — interactive 3-card showcase
+   ==========================================================================
+   First card starts wider; on hover any card expands while siblings
+   narrow. Below the collapse point all cards stack at equal width.
+   ========================================================================== */
+
+    /* ── Inner container ──────────────────────────────────────────────────── */
+
+    .case-study-featured_inner {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-7);
+    }
+
+    /* ── Heading area ─────────────────────────────────────────────────────── */
+
+    .case-study-featured_heading {
+      display: block;
+    }
+
+    /* Orange eyebrow color */
+    .case-study-featured_heading .u-text-style-eyebrow {
+      color: var(--color-brand-500);
+    }
+
+    /* On brand-themed sections the orange eyebrow disappears into the orange
+   background — fall back to the theme's text color (white). */
+    [data-theme="brand"] .case-study-featured_heading .u-text-style-eyebrow {
+      color: var(--text);
+    }
+
+    /* ── Card row ─────────────────────────────────────────────────────────── */
+
+    .case-study-featured_cards {
+      display: flex;
+      gap: var(--space-3);
+      flex-direction: column;
+    }
+
+    /* ── Individual card ──────────────────────────────────────────────────── */
+
+    .case-study-featured_card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      text-decoration: none;
+      color: inherit;
+      flex: 1 1 0%;
+      min-width: 0;
+      transition: flex 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Card image ───────────────────────────────────────────────────────── */
+
+    .case-study-featured_card_visual {
+      overflow: hidden;
+      border-radius: var(--radius-main);
+    }
+
+    /* Fixed image height — text flows below without pushing image up */
+    .case-study-featured_card_visual .u-image-wrapper {
+      aspect-ratio: unset;
+      height: 25rem;
+    }
+
+    .case-study-featured_card_visual img {
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .case-study-featured_card:hover .case-study-featured_card_visual img {
+      transform: scale(1.03);
+    }
+
+    /* ── Card content ─────────────────────────────────────────────────────── */
+
+    .case-study-featured_card_content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    /* ── Desktop: flex row with hover expand ──────────────────────────────── */
+
+    @container (width >= 50em) {
+      .case-study-featured_cards {
+        flex-direction: row;
+      }
+
+      /* Default state: first card is wider */
+      .case-study-featured_card {
+        flex: 1 1 0%;
+      }
+
+      .case-study-featured_card.is-expanded {
+        flex: 1.66 1 0%;
+      }
+
+      /* When the card row is hovered, reset all to equal first */
+      .case-study-featured_cards:hover .case-study-featured_card {
+        flex: 1 1 0%;
+      }
+
+      /* Then the hovered card expands */
+      .case-study-featured_cards:hover .case-study-featured_card:hover {
+        flex: 1.66 1 0%;
+      }
+    }
+
+    /* ── Small: collapsed to single column — switch to landscape ratio ────── */
+
+    @container (width < 35em) {
+      .case-study-featured_card_visual .u-image-wrapper {
+        height: auto;
+        aspect-ratio: 16 / 9;
+      }
+    }
+
+    /* ── Medium: keep row but all same size ───────────────────────────────── */
+
+    @container (width >= 35em) and (width < 50em) {
+      .case-study-featured_cards {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      /* First card takes full width */
+      .case-study-featured_card.is-expanded {
+        flex: 1 1 100%;
+      }
+
+      /* Other two share the row */
+      .case-study-featured_card:not(.is-expanded) {
+        flex: 1 1 0%;
+      }
+    }
+  }
+</style>

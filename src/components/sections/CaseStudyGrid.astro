@@ -58,28 +58,29 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Grid from "../ui/Grid.astro";
-import Heading from "../ui/Heading.astro";
-import CaseStudyCard from "../ui/CaseStudyCard.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
 
 // Data fallback — same source used by the listing and detail pages
-import { caseStudies as allCaseStudiesData } from "../../data/case-studies";
+import { caseStudies as allCaseStudiesData } from "@/data/case-studies";
 
 /* ── Re-export the shared type ───────────────────────────────────────────
    Single source of truth in case-studies.ts. Other pages can import
    from here or from the data file directly.
    ────────────────────────────────────────────────────────────────────── */
 
-export type { CaseStudy } from "../../data/case-studies";
-import type { CaseStudy } from "../../data/case-studies";
+export type { CaseStudy } from "@/data/case-studies";
+import type { CaseStudy } from "@/data/case-studies";
 
 /* ── Shared types ── */
 
 type SectionTheme = "light" | "dark" | "brand";
-type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 /** Spacing-scale step (`--space-N`) for the gap props. `0` = no gap. */
 type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -120,7 +121,7 @@ interface Props {
    * - `heading` — section heading (default "Case Studies")
    * - `eyebrow` — eyebrow text above heading
    * - `theme` — light, dark, brand
-   * - `padding` — none, small, main, large, page-top (default 'main')
+   * - `padding` — none, xsmall, small, large, page-top (default: omitted → 'main')
    * - `paddingTop` / `paddingBottom` — override individual padding
    * - `cardHeadingVariant` — visual style for card title headings (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
    * - `cardTextVariant` — visual style for card description text (default `'small'`). Accepts: tiny, small, regular, large, xlarge, h1–h6, display-xl/lg/md/sm, eyebrow
@@ -213,7 +214,18 @@ interface Props {
    * @example cardHeadingVariant="h4"
    * @example cardHeadingVariant="h6"
    */
-  cardHeadingVariant?: "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+  cardHeadingVariant?:
+    | "display-xl"
+    | "display-lg"
+    | "display-md"
+    | "display-sm"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "eyebrow";
 
   /**
    * Visual style for each card's description text. Controls the font size
@@ -229,7 +241,23 @@ interface Props {
    * @example cardTextVariant="regular"
    * @example cardTextVariant="tiny"
    */
-  cardTextVariant?: "tiny" | "small" | "regular" | "large" | "xlarge" | "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+  cardTextVariant?:
+    | "tiny"
+    | "small"
+    | "regular"
+    | "large"
+    | "xlarge"
+    | "display-xl"
+    | "display-lg"
+    | "display-md"
+    | "display-sm"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "eyebrow";
 
   /**
    * Section heading text. Renders as `<h2>` with `variant="h2"`.
@@ -273,7 +301,7 @@ interface Props {
    * | `'large'`    | ~5.5–10rem fluid  |
    * | `'page-top'` | ~10–14rem fluid   |
    *
-   * @default 'main'
+   * @default omitted → 'main'
    * @example padding="large"
    */
   padding?: PaddingSize;
@@ -344,7 +372,7 @@ const {
   heading,
   eyebrow,
   theme,
-  padding = "main",
+  padding,
   paddingTop,
   paddingBottom,
   columnGap,
@@ -352,6 +380,13 @@ const {
   id,
   class: className,
 } = Astro.props;
+
+/* Cards read against the section, not with it: on a dark or brand ground they
+   flip to light paper. `invert` is relative, so this is the only decision —
+   the card resolves the actual colors itself (see THEME INVERT in themes.css).
+   On light grounds the cards stay in the ambient theme. */
+const invertCards =
+  theme === "dark" || theme === "brand" ? ("invert" as const) : undefined;
 
 /* ═══════════════════════════════════════════════════
    Filter & sort case studies
@@ -392,9 +427,17 @@ filtered = filtered.slice(0, limit);
    Resolve heading text
    ═══════════════════════════════════════════════════ */
 
+/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
+   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
+   swallows the hoisted `<script>` of every component inside it — page-wide,
+   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
+   left BOTH sliders on the page uninitialized, the unrelated one included.
+   `.has()` only reports whether a slot was passed, which is weaker (a slot
+   holding an empty `{items.map(…)}` still counts as present), and that is the
+   trade we want: a rare empty wrapper beats silently dead client JS. */
 const hasHeadingSlot = Astro.slots.has("heading");
 const resolvedHeading = heading ?? "Case Studies";
-const showHeading = hasHeadingSlot || resolvedHeading;
+const showHeading = Astro.slots.has("heading") || resolvedHeading;
 
 /* ═══════════════════════════════════════════════════
    Grid column mapping
@@ -424,26 +467,25 @@ const gridProps =
       id={id}
       class:list={["case-study-grid_wrap", className]}
     >
-      <Layout docs="" variant="stack" columnGap={columnGap} rowGap={rowGapProp}>
-        <Col slot="col1">
-          {/* Heading area */}
-          {showHeading &&
-            (hasHeadingSlot ? (
-              <slot name="heading" />
-            ) : (
-              <>
-                {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
-                <Heading tag="h2" variant="h2">
-                  {resolvedHeading}
-                </Heading>
-              </>
-            ))}
-        </Col>
+      <Layout variant="stack" columnGap={columnGap} rowGap={rowGapProp}>
+        {/* Heading area */}
+        {showHeading &&
+          (hasHeadingSlot ? (
+            <slot name="heading" />
+          ) : (
+            <>
+              {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+              <Heading tag="h2" variant="h2">
+                {resolvedHeading}
+              </Heading>
+            </>
+          ))}
 
         {/* Case study card grid */}
-        <Grid slot="col2" {...gridProps} rowGap={6}>
+        <Grid slot="column2" {...gridProps} rowGap={6}>
           {filtered.map((study) => (
             <CaseStudyCard
+              theme={invertCards}
               title={study.title}
               description={study.description}
               categories={study.categories}

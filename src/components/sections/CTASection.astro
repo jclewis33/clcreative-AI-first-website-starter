@@ -1,18 +1,21 @@
 ---
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Visual from "../ui/Visual.astro";
-import Overlay from "../ui/Overlay.astro";
-import Button from "../ui/Button.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
+import type { HTMLAttributes } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
+import Button from "@/components/ui/Button.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
 
-import defaultCtaImage from "../../assets/placeholder-images/placeholder-6.webp";
+import defaultCtaImage from "@/assets/placeholder-images-2/ai-first-starter-6.webp";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **CTASection props:**
    * - `heading` — Main heading text
@@ -53,8 +56,6 @@ interface Props {
   padding?: PaddingValue;
   paddingTop?: PaddingValue;
   paddingBottom?: PaddingValue;
-
-  [key: string]: any;
 }
 
 const {
@@ -81,10 +82,10 @@ const {
   {...rest}
 >
   <Layout variant="card">
-    <Col slot="col1" class="u-theme-dark">
+    <div class="u-display-contents u-theme-dark">
       <Heading data-split-text maxWidth="30ch">{heading}</Heading>
       <Text variant="large" data-fade-in data-delay="0.2">{text}</Text>
-      <div data-fade-in data-delay="0.3" class="u-button-wrapper">
+      <ButtonWrapper data-fade-in data-delay="0.3">
         <Button href={buttonHref} ariaLabel={buttonText}>{buttonText}</Button>
         {
           secondaryButtonText && (
@@ -97,11 +98,15 @@ const {
             </Button>
           )
         }
-      </div>
-    </Col>
-    <Col slot="col2">
-      <Visual src={image} alt="Call to action background" variant="background" />
+      </ButtonWrapper>
+    </div>
+    <Fragment slot="column2">
+      <Visual
+        src={image}
+        alt="Call to action background"
+        variant="background"
+      />
       <Overlay strength={overlayStrength} />
-    </Col>
+    </Fragment>
   </Layout>
 </Section>

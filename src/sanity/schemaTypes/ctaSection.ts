@@ -39,8 +39,7 @@ export const ctaSection = defineType({
     defineField({
       name: "primaryButtonHref",
       title: "Primary Button Link",
-      description:
-        "Can be a relative path (e.g. /book-a-call) or a full URL.",
+      description: "Can be a relative path (e.g. /book-a-call) or a full URL.",
       type: "url",
       validation: (rule) =>
         rule

@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * SanityCtaSection — Sanity-driven version of the bottom-of-page CTA, used only
  * on SSR pages (blog posts, case studies, glossary terms).
@@ -24,38 +25,35 @@
  */
 
 import { stegaClean } from "@sanity/client/stega";
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Visual from "../ui/Visual.astro";
-import Overlay from "../ui/Overlay.astro";
-import Button from "../ui/Button.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import { urlFor, hotspotPosition } from "../../sanity/lib/image";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
+import Button from "@/components/ui/Button.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import { urlFor, hotspotPosition } from "@/sanity/lib/image";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
+import type { SITE_SETTINGS_QUERY_RESULT } from "@/sanity/sanity.types";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
-interface Cta {
-  heading: string;
-  text: string;
-  primaryButtonLabel: string;
-  primaryButtonHref: string;
-  secondaryButtonLabel?: string;
-  secondaryButtonHref?: string;
-  backgroundImage: any;
-  imageAlt?: string;
-  overlayStrength?: number;
-}
+/* The resolved `ctaSection` document, taken from the query that fetches it
+   rather than restated here — the fields are nullable until an editor fills
+   them in, which a hand-written copy of this shape kept claiming otherwise. */
+type Cta = NonNullable<
+  NonNullable<SITE_SETTINGS_QUERY_RESULT>["defaultCtaSection"]
+>;
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /** Resolved Sanity `ctaSection` document (override ?? site default). */
   cta: Cta;
   /** Section vertical padding. @default 'small' */
   padding?: PaddingValue;
   paddingTop?: PaddingValue;
   paddingBottom?: PaddingValue;
-  [key: string]: any;
 }
 
 const {
@@ -81,10 +79,12 @@ const overlayStrength = stegaClean(cta.overlayStrength) ?? 80;
 
 const heading = stegaClean(cta.heading);
 const text = stegaClean(cta.text);
-const primaryLabel = stegaClean(cta.primaryButtonLabel);
-const primaryHref = stegaClean(cta.primaryButtonHref);
-const secondaryLabel = stegaClean(cta.secondaryButtonLabel);
-const secondaryHref = stegaClean(cta.secondaryButtonHref);
+/* `?? undefined` because these are nullable in Sanity until an editor fills
+   them in, and Button's href/ariaLabel take undefined rather than null. */
+const primaryLabel = stegaClean(cta.primaryButtonLabel) ?? undefined;
+const primaryHref = stegaClean(cta.primaryButtonHref) ?? undefined;
+const secondaryLabel = stegaClean(cta.secondaryButtonLabel) ?? undefined;
+const secondaryHref = stegaClean(cta.secondaryButtonHref) ?? undefined;
 const hasSecondary = Boolean(secondaryLabel && secondaryHref);
 ---
 
@@ -95,10 +95,10 @@ const hasSecondary = Boolean(secondaryLabel && secondaryHref);
   {...rest}
 >
   <Layout variant="card">
-    <Col slot="col1" class="u-theme-dark">
+    <div class="u-display-contents u-theme-dark">
       <Heading data-split-text maxWidth="30ch">{heading}</Heading>
       <Text variant="large" data-fade-in data-delay="0.2">{text}</Text>
-      <div data-fade-in data-delay="0.3" class="u-button-wrapper">
+      <ButtonWrapper data-fade-in data-delay="0.3">
         <Button href={primaryHref} ariaLabel={primaryLabel}>
           {primaryLabel}
         </Button>
@@ -113,9 +113,9 @@ const hasSecondary = Boolean(secondaryLabel && secondaryHref);
             </Button>
           )
         }
-      </div>
-    </Col>
-    <Col slot="col2">
+      </ButtonWrapper>
+    </div>
+    <Fragment slot="column2">
       <Visual
         src={imageUrl}
         alt={imageAlt}
@@ -123,6 +123,6 @@ const hasSecondary = Boolean(secondaryLabel && secondaryHref);
         position={imagePosition}
       />
       <Overlay strength={overlayStrength} />
-    </Col>
+    </Fragment>
   </Layout>
 </Section>

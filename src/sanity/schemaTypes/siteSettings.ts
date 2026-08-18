@@ -10,7 +10,8 @@ export const siteSettings = defineType({
     defineField({
       name: "defaultBlogCta",
       title: "Default Blog CTA",
-      description: "Used on every blog post unless the post has its own CTA Override set.",
+      description:
+        "Used on every blog post unless the post has its own CTA Override set.",
       type: "reference",
       to: [{ type: "blogCta" }],
     }),

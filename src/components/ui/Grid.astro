@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Grid — responsive CSS Grid using container-query column counts.
  *
@@ -38,15 +39,15 @@
  */
 
 type Columns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-type GapSize  = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+type GapSize = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 type GridVariant =
   /** Standard grid — uses the data-attribute column system */
-  | 'default'
+  | "default"
   /** Auto-fit — columns fill available space at a minimum width, empty tracks collapse */
-  | 'autofit'
+  | "autofit"
   /** Auto-fill — columns fill available space at a minimum width, empty tracks preserved */
-  | 'autofill';
+  | "autofill";
 
 /**
  * Grid — responsive CSS Grid using container-query column counts.
@@ -66,7 +67,7 @@ type GridVariant =
  *
  * **Slot:** default — grid children (Cards, etc.)
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Grid props:**
    * - `largeColumns` — 1-12 at default size (default 3)
@@ -83,6 +84,19 @@ interface Props {
    * **Slot:** default — grid children (Cards, etc.)
    */
   docs?: string;
+
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — e.g. `render` set to whether the list has any items — instead of
+   * wrapping the element in a conditional block. Nothing is emitted when
+   * false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
 
   /**
    * Columns at the large breakpoint (default screen size). 1–12.
@@ -151,56 +165,70 @@ interface Props {
    * @example class="u-margin-top-8"
    */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.u-grid-wrapper` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {
+  render = true,
   docs,
-  largeColumns   = 3,
-  mediumColumns  = 2,
-  smallColumns   = 1,
-  xsmallColumns  = 0,
+  largeColumns = 3,
+  mediumColumns = 2,
+  smallColumns = 1,
+  xsmallColumns = 0,
   rowGap,
   columnGap,
-  variant        = 'default',
+  variant = "default",
   minColWidth,
   class: className,
   ...rest
 } = Astro.props;
 
-const rowGapClass = rowGap != null ? (rowGap > 0 ? `u-gap-row-${rowGap}` : 'u-gap-row-0') : undefined;
-const colGapClass = columnGap != null ? (columnGap > 0 ? `u-gap-column-${columnGap}` : 'u-gap-column-0') : undefined;
+const rowGapClass =
+  rowGap != null
+    ? rowGap > 0
+      ? `u-gap-row-${rowGap}`
+      : "u-gap-row-0"
+    : undefined;
+const colGapClass =
+  columnGap != null
+    ? columnGap > 0
+      ? `u-gap-column-${columnGap}`
+      : "u-gap-column-0"
+    : undefined;
 
-const isAuto = variant === 'autofit' || variant === 'autofill';
-const autoGridClass = variant === 'autofill' ? 'u-grid-autofill' : 'u-grid-autofit';
-const autoStyle = (isAuto && minColWidth)
-  ? `--col-min: ${minColWidth};`
-  : undefined;
+const isAuto = variant === "autofit" || variant === "autofill";
+const autoGridClass =
+  variant === "autofill" ? "u-grid-autofill" : "u-grid-autofit";
+const autoStyle =
+  isAuto && minColWidth ? `--col-min: ${minColWidth};` : undefined;
 ---
 
-<div class:list={['u-grid-wrapper', className]} {...rest}>
-  {variant === 'default' ? (
-    <div
-      class:list={[rowGapClass, colGapClass]}
-      data-large-columns={String(largeColumns)}
-      data-medium-columns={mediumColumns > 0 ? String(mediumColumns) : undefined}
-      data-small-columns={smallColumns > 0  ? String(smallColumns)  : undefined}
-      data-xsmall-columns={xsmallColumns > 0 ? String(xsmallColumns) : undefined}
-    >
-      <slot />
+{
+  render && (
+    <div class:list={["u-grid-wrapper", className]} {...rest}>
+      {variant === "default" ? (
+        <div
+          class:list={[rowGapClass, colGapClass]}
+          data-large-columns={String(largeColumns)}
+          data-medium-columns={
+            mediumColumns > 0 ? String(mediumColumns) : undefined
+          }
+          data-small-columns={
+            smallColumns > 0 ? String(smallColumns) : undefined
+          }
+          data-xsmall-columns={
+            xsmallColumns > 0 ? String(xsmallColumns) : undefined
+          }
+        >
+          <slot />
+        </div>
+      ) : (
+        <div
+          class:list={[autoGridClass, rowGapClass, colGapClass]}
+          style={autoStyle}
+        >
+          <slot />
+        </div>
+      )}
     </div>
-  ) : (
-    <div
-      class:list={[autoGridClass, rowGapClass, colGapClass]}
-      style={autoStyle}
-    >
-      <slot />
-    </div>
-  )}
-</div>
+  )
+}

@@ -6,7 +6,7 @@
  *
  * Usage:
  * ```astro
- * import { getTestimonials } from "../sanity/lib/testimonials";
+ * import { getTestimonials } from"@/sanity/sanity/lib/testimonials";
  *
  * // All testimonials (sorted by sortOrder)
  * const all = await getTestimonials();
@@ -23,23 +23,15 @@
  */
 
 import { loadQuery } from "./load-query";
-import {
-  TESTIMONIALS_QUERY,
-  FEATURED_TESTIMONIALS_QUERY,
-} from "./queries";
+import type { TESTIMONIALS_QUERY_RESULT } from "@/sanity/sanity.types";
+import { TESTIMONIALS_QUERY, FEATURED_TESTIMONIALS_QUERY } from "./queries";
 
-export interface TestimonialData {
-  _id: string;
-  name: string;
-  role?: string;
-  company?: string;
-  quote: string;
-  avatar?: any;
-  website?: string;
-  stars?: number;
-  featured?: boolean;
-  sortOrder?: number;
-}
+/**
+ * A testimonial in the shape the queries project it. Derived from the
+ * generated types rather than restated, so editing TESTIMONIALS_QUERY and
+ * re-running `npm run typegen` updates every consumer.
+ */
+export type TestimonialData = TESTIMONIALS_QUERY_RESULT[number];
 
 interface GetTestimonialsOptions {
   /** Only return testimonials marked as featured in Sanity. */
@@ -68,7 +60,7 @@ export async function getTestimonials(
   const { featured = false, limit, perspectiveCookie } = options;
 
   const query = featured ? FEATURED_TESTIMONIALS_QUERY : TESTIMONIALS_QUERY;
-  const { data } = await loadQuery<TestimonialData[]>({
+  const { data } = await loadQuery({
     query,
     perspectiveCookie,
   });
@@ -93,7 +85,5 @@ export async function getTestimonialByName(
   const all = await getTestimonials({
     perspectiveCookie: options.perspectiveCookie,
   });
-  return all.find(
-    (t) => t.name.toLowerCase() === name.toLowerCase(),
-  );
+  return all.find((t) => t.name?.toLowerCase() === name.toLowerCase());
 }

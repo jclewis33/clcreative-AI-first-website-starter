@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * BlogCard — blog post card built on top of the Card component.
  *
@@ -63,7 +64,7 @@ import Text from "./Text.astro";
  *
  * Uses Card component internally with `default` variant (image top, content below).
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **BlogCard props:**
    * - `title` — post title, clamped at 2 lines (required)
@@ -81,45 +82,46 @@ interface Props {
   docs?: string;
 
   /** Post title — clamped at 2 lines. */
-  title: string;
+  title: string | null;
 
   /** Post excerpt or description — clamped at 2 lines. */
-  description: string;
+  description: string | null;
 
   /** Category labels displayed at the bottom of the card. */
-  categories: string[];
+  categories: string[] | null;
 
   /** Link to the full blog post. */
   href: string;
 
   /** Featured image — imported ImageMetadata or URL string. */
-  image: ImageMetadata | string;
+  image: ImageMetadata | string | null;
 
   /** Alt text for the featured image. */
-  imageAlt: string;
+  imageAlt: string | null;
 
   /** Author name — stored as data attribute for CMS sorting. */
-  author?: string;
+  author?: string | null;
 
   /** Author avatar image — used in featured post layout. */
-  authorAvatar?: ImageMetadata | string;
+  authorAvatar?: ImageMetadata | string | null;
 
   /** Publish date — stored as data attribute for CMS sorting. */
-  date?: string;
+  date?: string | null;
 
   /** Extra classes on the outer wrapper. */
   class?: string;
 
   /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the underlying `Card` component.
-   * @example style="--custom: value" data-animate="fade"
+   * Forwarded to the underlying `<Card>`. `"invert"` flips the card to the
+   * opposite of the ground it sits on; the grid wrappers pass it for you on
+   * dark and brand sections. See THEME INVERT in `themes.css`.
    */
-  [key: string]: any;
+  theme?: "light" | "dark" | "brand" | "invert";
 }
 
 const {
   docs,
+  theme,
   title,
   description,
   categories,
@@ -132,19 +134,10 @@ const {
   class: className,
   ...rest
 } = Astro.props;
-
-/* Format date for display (if needed later) */
-const formattedDate = date
-  ? new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
-  : undefined;
 ---
 
 <Card
-  docs=""
+  theme={theme}
   href={href}
   ariaLabel={`Read ${title}`}
   class:list={["blog_card_wrap", className]}
@@ -152,27 +145,46 @@ const formattedDate = date
   data-date={date}
   {...rest}
 >
-  <Visual slot="visual" src={image} alt={imageAlt} ratio="wide" radius="none" />
+  {
+    image && (
+      <Visual
+        slot="visual"
+        src={image}
+        alt={imageAlt ?? ""}
+        ratio="wide"
+        radius="none"
+      />
+    )
+  }
 
   <div slot="title" class="blog_card_title_wrap">
-    <Heading tag="h3" variant="h5" marginBottom={0} maxWidth="100%">
+    <Heading tag="h3" variant="h5" maxWidth="100%">
       <span class="blog_card_title_clamp u-line-clamp-2">{title}</span>
     </Heading>
   </div>
 
   <Text variant="small" muted clamp={2}>{description}</Text>
 
-  <div slot="footer" class="blog_card_footer">
-    {categories?.map((cat: string) => (
-      <Text
-        tag="span"
-        variant="tiny"
-        weight="medium"
-        marginBottom={0}
-        class="blog_card_category"
-      >
-        {cat}
-      </Text>
-    ))}
-  </div>
+  {
+    /* Decide from DATA, not from the slot: a post with no categories would
+      otherwise pass an empty footer, and .card_primary_footer charges
+      margin-top:auto + padding-top whether or not anything is in it. */
+  }
+  {
+    categories && categories.length > 0 && (
+      <div slot="footer" class="blog_card_footer">
+        {categories.map((cat: string) => (
+          <Text
+            tag="span"
+            variant="tiny"
+            weight="medium"
+            marginBottom={0}
+            class="blog_card_category"
+          >
+            {cat}
+          </Text>
+        ))}
+      </div>
+    )
+  }
 </Card>

@@ -48,23 +48,26 @@ const PROJECT_ID = readEnv("PUBLIC_SANITY_PROJECT_ID");
 const DATASET = readEnv("PUBLIC_SANITY_DATASET") || SANITY_DATASET;
 const API_VERSION = "2024-01-01";
 
-const DRY_RUN = process.env.DRY_RUN === "1" || process.argv.includes("--dry-run");
+const DRY_RUN =
+  process.env.DRY_RUN === "1" || process.argv.includes("--dry-run");
 
-const CSV_PATH = process.argv.slice(2).find((a) => a.toLowerCase().endsWith(".csv"));
+const CSV_PATH = process.argv
+  .slice(2)
+  .find((a) => a.toLowerCase().endsWith(".csv"));
 
 const TOKEN = process.env.SANITY_TOKEN;
 
 if (!PROJECT_ID) {
   console.error(
     "Missing PUBLIC_SANITY_PROJECT_ID.\n" +
-      "Set it in the project's .env (PUBLIC_SANITY_PROJECT_ID=...) or export it before running."
+      "Set it in the project's .env (PUBLIC_SANITY_PROJECT_ID=...) or export it before running.",
   );
   process.exit(1);
 }
 if (!CSV_PATH) {
   console.error(
     "Missing CSV path.\n" +
-      "Usage: SANITY_TOKEN=<token> node scripts/migrate-webflow-glossary.mjs <path-to.csv> [--dry-run]"
+      "Usage: SANITY_TOKEN=<token> node scripts/migrate-webflow-glossary.mjs <path-to.csv> [--dry-run]",
   );
   process.exit(1);
 }
@@ -73,7 +76,7 @@ if (!TOKEN && !DRY_RUN) {
     "Missing SANITY_TOKEN env var.\n" +
       "Create a token at https://www.sanity.io/manage → Project → API → Tokens (Editor or above).\n" +
       "Then run: SANITY_TOKEN=<token> node scripts/migrate-webflow-glossary.mjs <path-to.csv>\n" +
-      "(or run with --dry-run / DRY_RUN=1 to preview without writing)"
+      "(or run with --dry-run / DRY_RUN=1 to preview without writing)",
   );
   process.exit(1);
 }
@@ -97,53 +100,148 @@ const CATEGORY_RULES = [
   {
     category: "CSS",
     patterns: [
-      /\bflex\b/i, /\bgrid\b/i, /\baxis\b/i, /\bcss\b/i, /\bem\b/i, /\brem\b/i,
-      /\bvw\b/i, /\bvh\b/i, /\bvmin\b/i, /\bvmax\b/i, /\bch\b/i, /\blh\b/i,
-      /\bpx\b/i, /\bfr\b/i, /minmax/i, /opacity/i, /z-index/i, /aspect ratio/i,
-      /align /i, /justify /i, /place /i, /column reverse/i, /row reverse/i,
-      /baseline/i, /center/i, /stretch/i, /space (around|between|evenly)/i,
-      /subgrid/i, /repeat\(/i, /auto placement/i, /percentage/i, /pixel/i,
-      /hex code/i, /\bgap\b/i, /\bcolumn\b/i, /\brow\b/i,
+      /\bflex\b/i,
+      /\bgrid\b/i,
+      /\baxis\b/i,
+      /\bcss\b/i,
+      /\bem\b/i,
+      /\brem\b/i,
+      /\bvw\b/i,
+      /\bvh\b/i,
+      /\bvmin\b/i,
+      /\bvmax\b/i,
+      /\bch\b/i,
+      /\blh\b/i,
+      /\bpx\b/i,
+      /\bfr\b/i,
+      /minmax/i,
+      /opacity/i,
+      /z-index/i,
+      /aspect ratio/i,
+      /align /i,
+      /justify /i,
+      /place /i,
+      /column reverse/i,
+      /row reverse/i,
+      /baseline/i,
+      /center/i,
+      /stretch/i,
+      /space (around|between|evenly)/i,
+      /subgrid/i,
+      /repeat\(/i,
+      /auto placement/i,
+      /percentage/i,
+      /pixel/i,
+      /hex code/i,
+      /\bgap\b/i,
+      /\bcolumn\b/i,
+      /\brow\b/i,
     ],
   },
   {
     category: "SEO",
     patterns: [
-      /\bseo\b/i, /backlink/i, /anchor (text|link)/i, /alt text/i, /canonical/i,
-      /meta tag/i, /metadata/i, /sitemap/i, /\bdomain authority\b/i,
-      /microdata/i, /open graph/i, /404 error/i, /breadcrumb/i,
+      /\bseo\b/i,
+      /backlink/i,
+      /anchor (text|link)/i,
+      /alt text/i,
+      /canonical/i,
+      /meta tag/i,
+      /metadata/i,
+      /sitemap/i,
+      /\bdomain authority\b/i,
+      /microdata/i,
+      /open graph/i,
+      /404 error/i,
+      /breadcrumb/i,
     ],
   },
   {
     category: "Performance",
     patterns: [
-      /cache/i, /cdn/i, /content delivery/i, /lazy load/i, /load time/i,
-      /page speed/i, /minif/i, /\bssl\b/i, /\bdns\b/i, /web hosting/i,
-      /resolution/i, /pixel density/i, /retina/i,
+      /cache/i,
+      /cdn/i,
+      /content delivery/i,
+      /lazy load/i,
+      /load time/i,
+      /page speed/i,
+      /minif/i,
+      /\bssl\b/i,
+      /\bdns\b/i,
+      /web hosting/i,
+      /resolution/i,
+      /pixel density/i,
+      /retina/i,
     ],
   },
   {
     category: "Business",
     patterns: [
-      /\bcta\b/i, /call to action/i, /conversion/i, /a\/b test/i, /analytics/i,
-      /clickthrough/i, /bounce rate/i, /content (strategy|curation|management)/i,
-      /\bcms\b/i, /e-commerce/i, /\bkpi\b/i, /\bmvp\b/i, /\bsaas\b/i,
-      /key performance/i, /journey mapping/i, /usability test/i,
+      /\bcta\b/i,
+      /call to action/i,
+      /conversion/i,
+      /a\/b test/i,
+      /analytics/i,
+      /clickthrough/i,
+      /bounce rate/i,
+      /content (strategy|curation|management)/i,
+      /\bcms\b/i,
+      /e-commerce/i,
+      /\bkpi\b/i,
+      /\bmvp\b/i,
+      /\bsaas\b/i,
+      /key performance/i,
+      /journey mapping/i,
+      /usability test/i,
     ],
   },
   {
     category: "Design",
     patterns: [
-      /design/i, /color theory/i, /color/i, /typography/i, /kerning/i,
-      /\bui\b/i, /\bux\b/i, /user (interface|experience|flow)/i, /wireframe/i,
-      /mockup/i, /prototype/i, /gestalt/i, /hero/i, /banner/i, /carousel/i,
-      /modal/i, /tooltip/i, /lightbox/i, /callout/i, /placeholder/i,
-      /micro-?interaction/i, /microcopy/i, /flat design/i, /dark mode/i,
-      /information architecture/i, /interaction design/i, /favicon/i,
-      /white space/i, /\bfold\b/i, /aspect/i, /sprite/i, /raster/i, /\bgif\b/i,
-      /\bpng\b/i, /\bsvg\b/i, /vector/i, /image/i, /multimedia/i,
-      /web safe/i, /typography hierarchy/i, /screen reader/i, /accessibility/i,
-      /adaptive/i, /responsive/i,
+      /design/i,
+      /color theory/i,
+      /color/i,
+      /typography/i,
+      /kerning/i,
+      /\bui\b/i,
+      /\bux\b/i,
+      /user (interface|experience|flow)/i,
+      /wireframe/i,
+      /mockup/i,
+      /prototype/i,
+      /gestalt/i,
+      /hero/i,
+      /banner/i,
+      /carousel/i,
+      /modal/i,
+      /tooltip/i,
+      /lightbox/i,
+      /callout/i,
+      /placeholder/i,
+      /micro-?interaction/i,
+      /microcopy/i,
+      /flat design/i,
+      /dark mode/i,
+      /information architecture/i,
+      /interaction design/i,
+      /favicon/i,
+      /white space/i,
+      /\bfold\b/i,
+      /aspect/i,
+      /sprite/i,
+      /raster/i,
+      /\bgif\b/i,
+      /\bpng\b/i,
+      /\bsvg\b/i,
+      /vector/i,
+      /image/i,
+      /multimedia/i,
+      /web safe/i,
+      /typography hierarchy/i,
+      /screen reader/i,
+      /accessibility/i,
+      /adaptive/i,
+      /responsive/i,
     ],
   },
 ];
@@ -314,7 +412,7 @@ async function main() {
 
   // Filter: skip drafts and archived
   const eligible = rows.filter(
-    (r) => !isTrue(r.Draft) && !isTrue(r.Archived) && r.Term && r.Slug
+    (r) => !isTrue(r.Draft) && !isTrue(r.Archived) && r.Term && r.Slug,
   );
   console.log(`${eligible.length} rows eligible for import (drafts skipped)`);
 
@@ -375,7 +473,7 @@ async function main() {
   for (const row of eligible) {
     const c = categorizeFor(
       (row.Term || "").trim(),
-      (row["Short Definition"] || "").trim()
+      (row["Short Definition"] || "").trim(),
     );
     byCategory[c] = (byCategory[c] || 0) + 1;
   }
@@ -385,7 +483,9 @@ async function main() {
   }
 
   const verb = DRY_RUN ? "Would create" : "Created";
-  console.log(`\nDone. ${verb}: ${created}, Skipped: ${skipped}, Failed: ${failed}`);
+  console.log(
+    `\nDone. ${verb}: ${created}, Skipped: ${skipped}, Failed: ${failed}`,
+  );
 }
 
 main().catch((err) => {

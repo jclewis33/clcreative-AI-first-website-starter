@@ -1,5 +1,5 @@
 ---
-import type { TocItem } from "../../lib/toc";
+import type { TocItem } from "@/lib/toc";
 
 interface Props {
   items: TocItem[];
@@ -7,8 +7,11 @@ interface Props {
   class?: string;
 }
 
-const { items, title = "Table of contents", class: className = "" } =
-  Astro.props;
+const {
+  items,
+  title = "Table of contents",
+  class: className = "",
+} = Astro.props;
 ---
 
 {
@@ -42,9 +45,7 @@ const { items, title = "Table of contents", class: className = "" } =
     );
     if (!links.length) return;
 
-    const linkBySlug = new Map(
-      links.map((l) => [l.dataset.scrollTarget!, l]),
-    );
+    const linkBySlug = new Map(links.map((l) => [l.dataset.scrollTarget!, l]));
 
     const headings = links
       .map((l) => document.getElementById(l.dataset.scrollTarget!))

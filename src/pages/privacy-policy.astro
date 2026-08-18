@@ -1,11 +1,14 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Section from "../components/ui/Section.astro";
-import Heading from "../components/ui/Heading.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
 ---
 
-<BaseLayout title="Privacy Policy | Astro Starter" description="Privacy policy.">
-  <Section paddingTop="page-top" container="narrow">
+<BaseLayout
+  title="Privacy Policy | Astro Starter"
+  description="Privacy policy."
+>
+  <Section container="narrow">
     <div class="u-rich-text">
       <Heading tag="h1" variant="h1">Privacy Policy</Heading>
       <p><em>Replace this placeholder with your own privacy policy.</em></p>

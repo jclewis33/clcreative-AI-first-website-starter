@@ -1,4 +1,6 @@
 ---
+import type { HTMLAttributes } from "astro/types";
+import Layout from "@/components/ui/Layout.astro";
 /**
  * SignUpForm — centered card with heading, subtext, and a simple contact form.
  *
@@ -16,18 +18,19 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import ContentWrapper from "../ui/ContentWrapper.astro";
-import Button from "../ui/Button.astro";
-import Form from "../form/Form.astro";
-import FormField from "../form/FormField.astro";
-import FormTextarea from "../form/FormTextarea.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Button from "@/components/ui/Button.astro";
+import Form from "@/components/form/Form.astro";
+import FormField from "@/components/form/FormField.astro";
+import FormTextarea from "@/components/form/FormTextarea.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **SignUpForm props:**
    * - `theme` — 'light' | 'dark' | 'brand' (default 'light')
@@ -43,13 +46,12 @@ interface Props {
   paddingBottom?: PaddingValue;
   id?: string;
   class?: string;
-  [key: string]: any;
 }
 
 const {
   docs,
   theme = "light",
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   id,
@@ -68,13 +70,13 @@ const {
   {...rest}
 >
   <div data-fade-in class="signup_card" data-theme="dark">
-    <ContentWrapper align="center">
+    <Layout variant="stack-centered">
       <Heading variant="h3">Lorem ipsum dolor sit amet consectetur?</Heading>
-      <Text align="center"
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-        eiusmod tempor incididunt ut labore et dolore magna aliqua.</Text
+      <Text
+        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua.</Text
       >
-    </ContentWrapper>
+    </Layout>
 
     <Form name="signup" class="signup_form">
       <FormField label="Name" name="name" required />
@@ -84,3 +86,40 @@ const {
     </Form>
   </div>
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/signup-form.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   SIGN UP FORM
+   Dark card with centered content and a form.
+   ========================================================================== */
+
+    .signup_card {
+      background-color: var(--background);
+      color: var(--text);
+      border-radius: var(--radius-medium);
+      padding: var(--space-8) var(--space-4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-8);
+    }
+
+    .signup_form {
+      width: 100%;
+      max-width: 35rem;
+      background-color: white;
+      border-radius: var(--radius-main);
+      padding: var(--space-3);
+    }
+
+    @container (max-width: 39em) {
+      .signup_form {
+        padding: var(--space-1);
+      }
+    }
+  }
+</style>

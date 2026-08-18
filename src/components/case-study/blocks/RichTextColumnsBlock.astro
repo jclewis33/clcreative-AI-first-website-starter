@@ -14,4 +14,9 @@ interface Props {
 const { html } = Astro.props;
 ---
 
-<div class="u-rich-text u-text-columns-2" data-fade-in data-prevent-flicker="true" set:html={html} />
+<div
+  class="u-rich-text u-text-columns-2"
+  data-fade-in
+  data-prevent-flicker="true"
+  set:html={html}
+/>

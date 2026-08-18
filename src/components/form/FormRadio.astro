@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * FormRadio — custom radio button (native input + plain CSS).
  *
@@ -17,7 +18,7 @@
  * ```
  */
 
-interface Props {
+interface Props extends HTMLAttributes<"input"> {
   /** Label text displayed next to the radio button. */
   label: string;
 
@@ -50,9 +51,6 @@ interface Props {
 
   /** Extra classes on the outer `.form_ui_item` wrapper. */
   class?: string;
-
-  /** Catch-all for extra attributes spread onto the `<input>`. */
-  [key: string]: any;
 }
 
 const {
@@ -70,9 +68,7 @@ const {
 const fieldId = id || `field-${name}-${value}`;
 ---
 
-<div
-  class:list={['form_ui_item', className]}
->
+<div class:list={["form_ui_item", className]}>
   <label class="form_ui_label" for={fieldId}>
     <input
       class="form_ui_input u-sr-only"

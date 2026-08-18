@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Overlay — dark scrim that sits over media or background content.
  *
@@ -25,7 +26,7 @@
  * </Fragment>
  */
 
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Overlay props:**
    * - `variant` — `'solid'` (default) or `'gradient'` (top-to-bottom)
@@ -38,8 +39,21 @@ interface Props {
    */
   docs?: string;
 
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — e.g. `render` set to whether the list has any items — instead of
+   * wrapping the element in a conditional block. Nothing is emitted when
+   * false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
+
   /** Overlay style. `'solid'` = even scrim; `'gradient'` = vertical top-to-bottom fade. Default: `'solid'`. */
-  variant?: 'solid' | 'gradient';
+  variant?: "solid" | "gradient";
   /** Solid-variant darkness from 0–100. Default: 70. */
   strength?: number;
   /** Gradient top-edge darkness from 0–100. Default: 0 (transparent at top). */
@@ -50,19 +64,12 @@ interface Props {
   strengthBottom?: number;
   /** Extra classes on the overlay div. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
-   * are forwarded to the overlay `div` element.
-   * User-provided `style` is merged with computed overlay styles.
-   * @example data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {
+  render = true,
   docs,
-  variant = 'solid',
+  variant = "solid",
   strength = 70,
   strengthTop = 0,
   strengthMiddle,
@@ -71,27 +78,39 @@ const {
   ...rest
 } = Astro.props;
 
-const isGradient = variant === 'gradient';
-const hasMiddle = isGradient && typeof strengthMiddle === 'number';
+const isGradient = variant === "gradient";
+const hasMiddle = isGradient && typeof strengthMiddle === "number";
 
 const styleParts = isGradient
   ? [
       strengthTop !== 0 ? `--overlay-strength-top: ${strengthTop}` : null,
       hasMiddle ? `--overlay-strength-middle: ${strengthMiddle}` : null,
-      strengthBottom !== 70 ? `--overlay-strength-bottom: ${strengthBottom}` : null,
+      strengthBottom !== 70
+        ? `--overlay-strength-bottom: ${strengthBottom}`
+        : null,
     ]
   : [strength !== 70 ? `--overlay-strength: ${strength}` : null];
 
-const computedStyle = styleParts.filter(Boolean).join('; ') || undefined;
+const computedStyle = styleParts.filter(Boolean).join("; ") || undefined;
 
 /* Merge user-provided style with computed overlay styles */
 const { style: userStyle, ...attrs } = rest;
-const mergedStyle = [computedStyle, userStyle].filter(Boolean).join('; ') || undefined;
+const mergedStyle =
+  [computedStyle, userStyle].filter(Boolean).join("; ") || undefined;
 ---
 
-<div
-  class:list={['u-overlay', isGradient && 'is-gradient', hasMiddle && 'has-middle', className]}
-  style={mergedStyle}
-  aria-hidden="true"
-  {...attrs}
-/>
+{
+  render && (
+    <div
+      class:list={[
+        "u-overlay",
+        isGradient && "is-gradient",
+        hasMiddle && "has-middle",
+        className,
+      ]}
+      style={mergedStyle}
+      aria-hidden="true"
+      {...attrs}
+    />
+  )
+}

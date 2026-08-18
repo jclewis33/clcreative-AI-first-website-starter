@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * ImagePromo — brand-themed promo card pairing copy with an image.
  *
@@ -12,19 +13,21 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
 
-import promoImg from "../../assets/placeholder-images/placeholder-3.webp";
+import promoImg from "@/assets/placeholder-images-2/ai-first-starter-3.webp";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **ImagePromo props:**
    * - `padding` / `paddingTop` / `paddingBottom` — section padding
@@ -53,7 +56,6 @@ interface Props {
   imageRatio?: string;
   /** Extra classes on the outer Section */
   class?: string;
-  [key: string]: any;
 }
 
 const {
@@ -69,26 +71,25 @@ const {
 
 <Section theme="brand" class={className} {...rest}>
   <Layout variant={imageRatio ? "columns" : "contain"} verticalAlign="center">
-    <Col slot="col1">
-      <Heading data-fade-in variant="eyebrow">Lorem ipsum</Heading>
-      <Heading data-split-text tag="h2" variant="h3">
-        {heading}
-      </Heading>
-      <Text data-fade-in variant="large">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation.
-      </Text>
-      <Text data-fade-in>
-        Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut
-        enim ad minim veniam.
-      </Text>
-      <div data-fade-in class="u-button-wrapper">
-        <Button variant="secondary" href="/contact" ariaLabel="Learn more">
-          Learn More
-        </Button>
-      </div>
-    </Col>
-    <Visual slot="col2" src={image} alt={imageAlt} ratio={imageRatio} />
+    <Heading data-fade-in variant="eyebrow">Lorem ipsum</Heading>
+    <Heading data-split-text tag="h2" variant="h3">
+      {heading}
+    </Heading>
+    <Text data-fade-in variant="large">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+      tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
+      veniam, quis nostrud exercitation.
+    </Text>
+    <Text data-fade-in>
+      Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim
+      ad minim veniam.
+    </Text>
+    <ButtonWrapper data-fade-in>
+      <Button variant="secondary" href="/contact" ariaLabel="Learn more">
+        Learn More
+      </Button>
+    </ButtonWrapper>
+
+    <Visual slot="column2" src={image} alt={imageAlt} ratio={imageRatio} />
   </Layout>
 </Section>

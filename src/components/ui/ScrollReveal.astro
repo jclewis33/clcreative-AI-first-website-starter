@@ -1,12 +1,14 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * ScrollReveal — scroll-linked reveal with sticky image cross-fade.
  *
  * Two-column layout: text blocks on the left fade in/out as the user scrolls,
  * while a sticky image on the right cross-fades to match the active text block.
- * On mobile (< 768px), collapses to a single column with images inline.
+ * On mobile (below 768px), collapses to a single column with images inline.
  *
- * Uses GSAP + ScrollTrigger (loaded globally via CDN in Head.astro).
+ * Uses GSAP + ScrollTrigger, imported directly by this component's script —
+ * they load only on pages that render a ScrollReveal.
  *
  * @example
  * ```astro
@@ -30,11 +32,12 @@
  * ```
  */
 
-import type { ImageMetadata } from 'astro';
-import Visual from './Visual.astro';
-import Heading from './Heading.astro';
-import Text from './Text.astro';
-import Button from './Button.astro';
+import type { ImageMetadata } from "astro";
+import Visual from "./Visual.astro";
+import Heading from "./Heading.astro";
+import Text from "./Text.astro";
+import Button from "./Button.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
 /** A single scroll-reveal content block. */
 interface ScrollRevealItem {
@@ -68,7 +71,7 @@ interface ScrollRevealItem {
  *
  * **Slot:** none — content is driven by the `items` array
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **ScrollReveal props:**
    * - `items` — array of { image, imageAlt, heading, text, eyebrow?, buttonHref?, buttonText? }
@@ -87,13 +90,29 @@ interface Props {
    * Aspect ratio for the sticky images (forwarded to Visual).
    * @default 'landscape'
    */
-  imageRatio?: 'wide' | 'widescreen' | 'landscape' | 'square' | 'portrait' | 'tall' | string;
+  imageRatio?:
+    | "wide"
+    | "widescreen"
+    | "landscape"
+    | "square"
+    | "portrait"
+    | "tall"
+    | string;
 
   /**
    * Border radius for the sticky images (forwarded to Visual).
    * @default 'main'
    */
-  imageRadius?: 'none' | 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'main' | 'full' | 'section';
+  imageRadius?:
+    | "none"
+    | "xsmall"
+    | "small"
+    | "medium"
+    | "large"
+    | "xlarge"
+    | "main"
+    | "full"
+    | "section";
 
   /**
    * Column ratio as `"N-M"`. Left = content column, right = image column.
@@ -105,44 +124,89 @@ interface Props {
 
   /** Extra utility classes on the `.scroll_reveal_wrap` element. */
   class?: string;
-
-  /** Any additional HTML attributes forwarded to root element. */
-  [key: string]: any;
 }
 
 const {
   docs,
   items,
-  imageRatio  = 'landscape',
-  imageRadius = 'main',
-  ratio       = '5-7',
+  imageRatio = "landscape",
+  imageRadius = "main",
+  ratio = "5-7",
   class: className,
   ...rest
 } = Astro.props as Props;
 
 // Parse ratio into CSS custom properties
-const [left, right] = ratio.split('-').map(Number);
-const ratioStyle = (left > 0 && right > 0)
-  ? `--sr-col-1: ${left}fr; --sr-col-2: ${right}fr`
-  : undefined;
+const [left, right] = ratio.split("-").map(Number);
+const ratioStyle =
+  left > 0 && right > 0
+    ? `--sr-col-1: ${left}fr; --sr-col-2: ${right}fr`
+    : undefined;
 ---
 
 <div
-  class:list={['scroll_reveal_wrap', className]}
+  class:list={["scroll_reveal_wrap", className]}
   data-scroll-reveal="component"
   style={ratioStyle}
   {...rest}
 >
   {/* ── Content column (left) ── */}
   <div class="scroll_reveal_content">
-    {items.map((item, index) => (
-      <div
-        class:list={['scroll_reveal_block', index === 0 && 'is-first']}
-        data-scroll-reveal="block"
-        data-scroll-reveal-index={String(index)}
-      >
-        {/* Mobile-only image (hidden on desktop via media query) */}
-        <div class="scroll_reveal_mobile_visual">
+    {
+      items.map((item, index) => (
+        <div
+          class:list={["scroll_reveal_block", index === 0 && "is-first"]}
+          data-scroll-reveal="block"
+          data-scroll-reveal-index={String(index)}
+        >
+          {/* Mobile-only image (hidden on desktop via media query) */}
+          <div class="scroll_reveal_mobile_visual">
+            <Visual
+              src={item.image}
+              alt={item.imageAlt}
+              ratio={imageRatio}
+              radius={imageRadius}
+            />
+          </div>
+
+          {/* Text content */}
+          <div class="scroll_reveal_block_content">
+            {item.eyebrow && (
+              <Heading variant="eyebrow">{item.eyebrow}</Heading>
+            )}
+            <Heading tag="h3" variant="h3">
+              {item.heading}
+            </Heading>
+            <Text variant="regular">{item.text}</Text>
+            {item.buttonHref && (
+              <ButtonWrapper>
+                <Button
+                  href={item.buttonHref}
+                  ariaLabel={
+                    /* starts with the visible text -> passes WCAG 2.5.3 */
+                    item.buttonAriaLabel ??
+                    `${item.buttonText ?? "Learn more"} — ${item.heading}`
+                  }
+                >
+                  {item.buttonText ?? "Learn more"}
+                </Button>
+              </ButtonWrapper>
+            )}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  {/* ── Sticky image track (right, desktop only) ── */}
+  <div class="scroll_reveal_track">
+    {
+      items.map((item, index) => (
+        <div
+          class:list={["scroll_reveal_panel", index === 0 && "is-active"]}
+          data-scroll-reveal="panel"
+          data-scroll-reveal-index={String(index)}
+        >
           <Visual
             src={item.image}
             alt={item.imageAlt}
@@ -150,45 +214,8 @@ const ratioStyle = (left > 0 && right > 0)
             radius={imageRadius}
           />
         </div>
-
-        {/* Text content */}
-        <div class="scroll_reveal_block_content">
-          {item.eyebrow && (
-            <Heading variant="eyebrow">{item.eyebrow}</Heading>
-          )}
-          <Heading tag="h3" variant="h3">{item.heading}</Heading>
-          <Text variant="regular">{item.text}</Text>
-          {item.buttonHref && (
-            <div class="u-button-wrapper">
-              <Button
-                href={item.buttonHref}
-                ariaLabel={item.buttonAriaLabel ?? `Learn more about ${item.heading}`}
-              >
-                {item.buttonText ?? 'Learn more'}
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-    ))}
-  </div>
-
-  {/* ── Sticky image track (right, desktop only) ── */}
-  <div class="scroll_reveal_track">
-    {items.map((item, index) => (
-      <div
-        class:list={['scroll_reveal_panel', index === 0 && 'is-active']}
-        data-scroll-reveal="panel"
-        data-scroll-reveal-index={String(index)}
-      >
-        <Visual
-          src={item.image}
-          alt={item.imageAlt}
-          ratio={imageRatio}
-          radius={imageRadius}
-        />
-      </div>
-    ))}
+      ))
+    }
   </div>
 </div>
 
@@ -214,67 +241,75 @@ const ratioStyle = (left > 0 && right > 0)
    *   data-scroll-reveal-index       — pairs blocks with panels (0-based)
    */
 
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { wireScrollRefresh } from "@/scripts/scroll-refresh.js";
+
   function initScrollReveal() {
-    const gsap = (window as any).gsap;
-    const ScrollTrigger = (window as any).ScrollTrigger;
-
-    if (!gsap || !ScrollTrigger) {
-      console.warn('ScrollReveal: GSAP + ScrollTrigger required.');
-      return;
-    }
-
     gsap.registerPlugin(ScrollTrigger);
+    // This module owns ScrollTriggers on the page — answer layout-changers'
+    // "scrolltrigger:refresh" events (deduped across owners; see the module).
+    wireScrollRefresh(ScrollTrigger);
 
     // Respect reduced motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    document.querySelectorAll<HTMLElement>('[data-scroll-reveal="component"]').forEach((wrap) => {
-      // Guard against double-init
-      if (wrap.dataset.scrollRevealInit) return;
-      wrap.dataset.scrollRevealInit = 'true';
+    document
+      .querySelectorAll<HTMLElement>('[data-scroll-reveal="component"]')
+      .forEach((wrap) => {
+        // Guard against double-init
+        if (wrap.dataset.scrollRevealInit) return;
+        wrap.dataset.scrollRevealInit = "true";
 
-      const blocks = wrap.querySelectorAll<HTMLElement>('[data-scroll-reveal="block"]');
-      const panels = wrap.querySelectorAll<HTMLElement>('[data-scroll-reveal="panel"]');
+        const blocks = wrap.querySelectorAll<HTMLElement>(
+          '[data-scroll-reveal="block"]',
+        );
+        const panels = wrap.querySelectorAll<HTMLElement>(
+          '[data-scroll-reveal="panel"]',
+        );
 
-      if (blocks.length === 0 || panels.length === 0) return;
+        if (blocks.length === 0 || panels.length === 0) return;
 
-      // Build index map: index → panel element
-      const panelMap = new Map<number, HTMLElement>();
-      panels.forEach((panel) => {
-        const idx = parseInt(panel.dataset.scrollRevealIndex ?? '0', 10);
-        panelMap.set(idx, panel);
-      });
+        // Build index map: index → panel element
+        const panelMap = new Map<number, HTMLElement>();
+        panels.forEach((panel) => {
+          const idx = parseInt(panel.dataset.scrollRevealIndex ?? "0", 10);
+          panelMap.set(idx, panel);
+        });
 
-      let activeIndex = 0;
+        let activeIndex = 0;
 
-      function setActivePanel(index: number) {
-        if (index === activeIndex) return;
-        const current = panelMap.get(activeIndex);
-        if (current) current.classList.remove('is-active');
-        const next = panelMap.get(index);
-        if (next) next.classList.add('is-active');
-        activeIndex = index;
-      }
+        function setActivePanel(index: number) {
+          if (index === activeIndex) return;
+          const current = panelMap.get(activeIndex);
+          if (current) current.classList.remove("is-active");
+          const next = panelMap.get(index);
+          if (next) next.classList.add("is-active");
+          activeIndex = index;
+        }
 
-      // gsap.matchMedia (gsap-core; replaces the deprecated ScrollTrigger.matchMedia)
-      // — synced with CSS @media (max-width: 767px). Auto-reverts the ScrollTriggers
-      // created inside when the query stops matching, then re-runs the cleanup below.
-      const mm = gsap.matchMedia();
-      mm.add('(min-width: 768px)', function () {
+        // gsap.matchMedia (gsap-core; replaces the deprecated ScrollTrigger.matchMedia)
+        // — synced with CSS @media (max-width: 767px). Auto-reverts the ScrollTriggers
+        // created inside when the query stops matching, then re-runs the cleanup below.
+        const mm = gsap.matchMedia();
+        mm.add("(min-width: 768px)", function () {
           // Set initial state
           blocks.forEach((block, i) => {
             gsap.set(block, { opacity: i === 0 ? 1 : 0.15 });
           });
 
           blocks.forEach((block, i) => {
-            const index = parseInt(block.dataset.scrollRevealIndex ?? String(i), 10);
+            const index = parseInt(
+              block.dataset.scrollRevealIndex ?? String(i),
+              10,
+            );
             const isFirst = i === 0;
             const isLast = i === blocks.length - 1;
 
             ScrollTrigger.create({
               trigger: block,
-              start: 'top 80%',
-              end: 'bottom 20%',
+              start: "top 80%",
+              end: "bottom 20%",
               scrub: 0.3,
               onUpdate: (self: any) => {
                 const progress = self.progress;
@@ -282,17 +317,23 @@ const ratioStyle = (left > 0 && right > 0)
 
                 if (isFirst) {
                   // First block: starts visible, fades out in second half
-                  opacity = progress <= 0.5
-                    ? 1
-                    : gsap.utils.mapRange(0.5, 1, 1, 0.15, progress);
+                  opacity =
+                    progress <= 0.5
+                      ? 1
+                      : gsap.utils.mapRange(0.5, 1, 1, 0.15, progress);
                 } else if (isLast) {
                   // Last block: fades in, never fades out
-                  opacity = gsap.utils.clamp(0.15, 1, gsap.utils.mapRange(0, 0.5, 0.15, 1, progress));
+                  opacity = gsap.utils.clamp(
+                    0.15,
+                    1,
+                    gsap.utils.mapRange(0, 0.5, 0.15, 1, progress),
+                  );
                 } else {
                   // Middle blocks: fade in first half, fade out second half
-                  opacity = progress <= 0.5
-                    ? gsap.utils.mapRange(0, 0.5, 0.15, 1, progress)
-                    : gsap.utils.mapRange(0.5, 1, 1, 0.15, progress);
+                  opacity =
+                    progress <= 0.5
+                      ? gsap.utils.mapRange(0, 0.5, 0.15, 1, progress)
+                      : gsap.utils.mapRange(0.5, 1, 1, 0.15, progress);
                 }
 
                 gsap.set(block, { opacity });
@@ -309,29 +350,161 @@ const ratioStyle = (left > 0 && right > 0)
           return function () {
             blocks.forEach((block) => gsap.set(block, { opacity: 1 }));
             panels.forEach((panel, i) => {
-              panel.classList.toggle('is-active', i === 0);
+              panel.classList.toggle("is-active", i === 0);
             });
             activeIndex = 0;
           };
-        }
-      );
+        });
 
-      ScrollTrigger.refresh();
-    });
+        ScrollTrigger.refresh();
+      });
   }
 
-  // Poll for GSAP + ScrollTrigger (CDN may load after DOMContentLoaded)
-  function waitForGsap(retries = 15) {
-    if ((window as any).gsap && (window as any).ScrollTrigger) {
-      initScrollReveal();
-    } else if (retries > 0) {
-      setTimeout(() => waitForGsap(retries - 1), 100);
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => waitForGsap());
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initScrollReveal);
   } else {
-    waitForGsap();
+    initScrollReveal();
   }
 </script>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/scroll-reveal.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   SCROLL REVEAL
+   Two-column scroll-linked reveal: text blocks fade in/out on the left,
+   sticky image cross-fades on the right. Collapses to inline images on
+   mobile (< 768px).
+
+   Animation powered by GSAP + ScrollTrigger (see ScrollReveal.astro script).
+   Uses @media (not @container) to stay in sync with gsap.matchMedia.
+   ========================================================================== */
+
+    /* ── Base wrapper — two-column grid ── */
+
+    .scroll_reveal_wrap {
+      display: grid;
+      grid-template-columns: minmax(0, var(--sr-col-1, 5fr)) minmax(
+          0,
+          var(--sr-col-2, 7fr)
+        );
+      gap: var(--site-gutter);
+      width: 100%;
+      position: relative;
+    }
+
+    /* ── Content column (left) ── */
+
+    .scroll_reveal_content {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* ── Text block ── */
+
+    .scroll_reveal_block {
+      min-height: 75vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-block: var(--space-6);
+    }
+
+    /* First block starts vertically centered */
+    .scroll_reveal_block.is-first {
+      justify-content: center;
+    }
+
+    /* Last block aligns with section bottom */
+    .scroll_reveal_block:last-child {
+      padding-bottom: 0;
+    }
+
+    .scroll_reveal_block_content {
+      max-width: 40ch;
+    }
+
+    /* ── Mobile image (inside each block, hidden on desktop) ── */
+
+    .scroll_reveal_mobile_visual {
+      display: none;
+      margin-bottom: var(--space-5);
+    }
+
+    /* ── Sticky image track (right column, hidden on mobile) ── */
+
+    .scroll_reveal_track {
+      position: sticky;
+      top: calc(var(--nav-height-total) + var(--space-3));
+      align-self: start;
+      height: calc(100vh - var(--nav-height-total) - var(--space-3) * 2);
+      display: flex;
+      align-items: center;
+    }
+
+    /* ── Panels — stacked, cross-fade via opacity ── */
+
+    .scroll_reveal_panel {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .scroll_reveal_panel.is-active {
+      opacity: 1;
+    }
+
+    /* Images fill the whole sticky panel — the panel's height is what the
+       cross-fade animates against, so the image must match it rather than keep
+       its own ratio. Height is explicit because `.u-image-wrapper` defaults to
+       `height: auto` (see utilities/visual-utilities.css). */
+    .scroll_reveal_panel .u-image-wrapper {
+      width: 100%;
+      aspect-ratio: unset;
+      height: 100%;
+    }
+
+    /* ==========================================================================
+   RESPONSIVE — @media at 768px
+   Synced with gsap.matchMedia('(min-width: 768px)') in JS.
+   ========================================================================== */
+
+    @media (max-width: 767px) {
+      .scroll_reveal_wrap {
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Hide the desktop sticky track */
+      .scroll_reveal_track {
+        display: none;
+      }
+
+      /* Show mobile images inline */
+      .scroll_reveal_mobile_visual {
+        display: block;
+      }
+
+      /* Remove scroll-zone sizing, ensure visible */
+      .scroll_reveal_block {
+        min-height: unset;
+        padding-block: var(--space-5);
+        opacity: 1 !important;
+      }
+
+      .scroll_reveal_block.is-first {
+        padding-top: 0;
+      }
+
+      .scroll_reveal_block_content {
+        max-width: none;
+      }
+    }
+  }
+</style>

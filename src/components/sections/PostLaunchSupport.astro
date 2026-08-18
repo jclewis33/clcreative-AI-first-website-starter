@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * PostLaunchSupport — dark section with two-column intro, checklist, and full-width image.
  *
@@ -11,19 +12,21 @@
  * ```
  */
 
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
 
-import postLaunchImg from "../../assets/placeholder-images/placeholder-4.webp";
+import postLaunchImg from "@/assets/placeholder-images-2/ai-first-starter-4.webp";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **PostLaunchSupport props:**
    * - `theme` — 'light' | 'dark' | 'brand'
@@ -37,13 +40,12 @@ interface Props {
   paddingTop?: PaddingValue;
   paddingBottom?: PaddingValue;
   class?: string;
-  [key: string]: any;
 }
 
 const {
   docs,
   theme = "dark",
-  padding = "main",
+  padding,
   paddingTop = padding,
   paddingBottom = padding,
   class: className,
@@ -66,22 +68,19 @@ const items = [
   {...rest}
 >
   <Layout variant="columns" verticalAlign="start">
-    <Col slot="col1">
-      <Heading data-fade-in maxWidth="40ch" variant="eyebrow"
-        >Lorem ipsum eyebrow</Heading
-      >
-      <Heading data-split-text
-        >Lorem ipsum dolor sit amet consectetur</Heading
-      >
-    </Col>
-    <Col slot="col2">
+    <Heading data-fade-in maxWidth="40ch" variant="eyebrow"
+      >Lorem ipsum eyebrow</Heading
+    >
+    <Heading data-split-text>Lorem ipsum dolor sit amet consectetur</Heading>
+
+    <Fragment slot="column2">
       <Text data-fade-in variant="large"
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-        eiusmod tempor incididunt ut labore et dolore magna aliqua.</Text
+        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua.</Text
       >
       <Text data-fade-in variant="large"
-        >Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-        nisi ut aliquip ex ea commodo consequat.</Text
+        >Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+        ut aliquip ex ea commodo consequat.</Text
       >
 
       <ul data-fade-list class="post-launch_list">
@@ -118,12 +117,8 @@ const items = [
         }
       </ul>
 
-      <div class="u-button-wrapper">
-        <Button
-          variant="text"
-          href="/contact"
-          ariaLabel="Learn more"
-        >
+      <ButtonWrapper>
+        <Button variant="text" href="/contact" ariaLabel="Learn more">
           Learn More
           <svg
             slot="icon"
@@ -137,8 +132,8 @@ const items = [
             <polyline points="5,2 8,5 5,8"></polyline>
           </svg>
         </Button>
-      </div>
-    </Col>
+      </ButtonWrapper>
+    </Fragment>
   </Layout>
 
   <Visual
@@ -149,3 +144,38 @@ const items = [
     data-fade-in
   />
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/post-launch-support.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   POST-LAUNCH SUPPORT
+   Two-column intro with checklist and full-width image below.
+   ========================================================================== */
+
+    .post-launch_list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .post-launch_item {
+      display: flex;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+
+    .post-launch_icon {
+      width: 1.25rem;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      color: var(--heading-accent);
+      margin-top: 0.2em;
+    }
+  }
+</style>

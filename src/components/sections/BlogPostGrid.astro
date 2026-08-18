@@ -57,20 +57,19 @@
  */
 
 import type { ImageMetadata } from "astro";
-import Section from "../ui/Section.astro";
-import Grid from "../ui/Grid.astro";
-import Heading from "../ui/Heading.astro";
-import BlogCard from "../ui/BlogCard.astro";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import BlogCard from "@/components/ui/BlogCard.astro";
 
 // Images — replace with CMS image fields when connecting a headless CMS
-import heroImage from "../../assets/placeholder-images/placeholder-7.webp";
-import featuredImage from "../../assets/placeholder-images/placeholder-8.webp";
-import avatarPlaceholder from "../../assets/placeholder-images/placeholder-14.webp";
-import blogImage1 from "../../assets/placeholder-images/placeholder-9.webp";
-import blogImage2 from "../../assets/placeholder-images/placeholder-10.webp";
-import blogImage3 from "../../assets/placeholder-images/placeholder-1.webp";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
+import heroImage from "@/assets/placeholder-images-2/ai-first-starter-7.webp";
+import featuredImage from "@/assets/placeholder-images-2/ai-first-starter-8.webp";
+import avatarPlaceholder from "@/assets/placeholder-images-2/ai-first-starter-14.webp";
+import blogImage1 from "@/assets/placeholder-images-2/ai-first-starter-9.webp";
+import blogImage2 from "@/assets/placeholder-images-2/ai-first-starter-10.webp";
+import blogImage3 from "@/assets/placeholder-images-2/ai-first-starter-1.webp";
+import Layout from "@/components/ui/Layout.astro";
 
 /* ── Exported post type ────────────────────────────────────────────────────
    Reusable across the project. When connecting a CMS, import this type
@@ -79,33 +78,37 @@ import Col from "../ui/Col.astro";
 
 /** Shape of a single blog post — CMS-ready with ImageMetadata | string. */
 export interface BlogPost {
+  /* Nullable throughout: these usually arrive from Sanity, where a document
+     is incomplete until an editor fills it in. */
   /** Post title */
-  title: string;
+  title: string | null;
   /** URL slug — used for href and exclusion filtering */
-  slug: string;
+  slug: string | null;
   /** Post excerpt / description */
-  description: string;
+  description: string | null;
   /** Category labels (e.g. ["Guides", "News"]) */
-  categories: string[];
+  categories: string[] | null;
   /** Featured image — imported ImageMetadata or URL string */
-  image: ImageMetadata | string;
+  image: ImageMetadata | string | null;
   /** Alt text for the featured image */
-  imageAlt: string;
+  imageAlt: string | null;
   /** Author name (optional — used for CMS sorting) */
-  author?: string;
+  author?: string | null;
   /** Author avatar image (optional) */
-  authorAvatar?: ImageMetadata | string;
+  authorAvatar?: ImageMetadata | string | null;
   /** Publish date as ISO string for sorting (e.g. "2026-03-01") */
-  date?: string;
+  date?: string | null;
   /** Whether this post is featured (optional) */
-  featured?: boolean;
+  featured?: boolean | null;
 }
 
 /* ── Variant & shared types ── */
 
 type GridVariant = "related" | "recent" | "category" | "manual";
 type SectionTheme = "light" | "dark" | "brand";
-type PaddingSize = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 /** Spacing-scale step (`--space-N`) for the gap props. `0` = no gap. */
 type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
@@ -145,7 +148,7 @@ interface Props {
    * - `heading` — section heading text (auto-generates if omitted)
    * - `eyebrow` — eyebrow text above heading
    * - `theme` — light, dark, brand
-   * - `padding` — none, small, main, large, page-top (default 'large')
+   * - `padding` — none, xsmall, small, large, page-top (default: omitted → 'main')
    * - `paddingTop` / `paddingBottom` — override individual padding
    * - `columnGap` — horizontal gap in inner Layout. Number = `--space-N` scale (0–8), or any CSS length string (default: `--site-gutter`)
    * - `rowGap` — vertical gap between heading and grid. Number = `--space-N` scale (0–8), or any CSS length string (default: `--space-8`)
@@ -273,8 +276,8 @@ interface Props {
    * | `'large'`    | ~5.5–10rem fluid  |
    * | `'page-top'` | ~10–14rem fluid   |
    *
-   * @default 'large'
-   * @example padding="main"
+   * @default omitted → 'main'
+   * @example padding="large"
    */
   padding?: PaddingSize;
 
@@ -366,7 +369,7 @@ const {
   heading,
   eyebrow,
   theme,
-  padding = "large",
+  padding,
   paddingTop,
   paddingBottom,
   columnGap,
@@ -374,6 +377,13 @@ const {
   id,
   class: className,
 } = Astro.props;
+
+/* Cards read against the section, not with it: on a dark or brand ground they
+   flip to light paper. `invert` is relative, so this is the only decision —
+   the card resolves the actual colors itself (see THEME INVERT in themes.css).
+   On light grounds the cards stay in the ambient theme. */
+const invertCards =
+  theme === "dark" || theme === "brand" ? ("invert" as const) : undefined;
 
 /* ═══════════════════════════════════════════════════
    Sample data — used for previewing when no `posts` prop is passed.
@@ -479,13 +489,22 @@ const samplePosts: BlogPost[] = [
    ═══════════════════════════════════════════════════ */
 
 const allPosts = posts ?? samplePosts;
-const excludeSet = new Set(excludeSlugs ?? []);
+const excludeSet = new Set<string | null>(excludeSlugs ?? []);
 let filtered: BlogPost[] = [];
 
 switch (variant) {
   case "related":
     filtered = allPosts
-      .filter((p) => p.categories?.some((c: string) => currentCategories?.map((cc: string) => cc.toLowerCase()).includes(c.toLowerCase())) && p.slug !== currentSlug && !excludeSet.has(p.slug))
+      .filter(
+        (p) =>
+          p.categories?.some((c: string) =>
+            currentCategories
+              ?.map((cc: string) => cc.toLowerCase())
+              .includes(c.toLowerCase()),
+          ) &&
+          p.slug !== currentSlug &&
+          !excludeSet.has(p.slug),
+      )
       .sort(
         (a, b) =>
           new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
@@ -495,7 +514,11 @@ switch (variant) {
 
   case "recent":
     filtered = allPosts
-      .filter((p) => (currentSlug ? p.slug !== currentSlug : true) && !excludeSet.has(p.slug))
+      .filter(
+        (p) =>
+          (currentSlug ? p.slug !== currentSlug : true) &&
+          !excludeSet.has(p.slug),
+      )
       .sort(
         (a, b) =>
           new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
@@ -507,7 +530,9 @@ switch (variant) {
     filtered = allPosts
       .filter(
         (p) =>
-          p.categories?.some((c: string) => c.toLowerCase() === category?.toLowerCase()) &&
+          p.categories?.some(
+            (c: string) => c.toLowerCase() === category?.toLowerCase(),
+          ) &&
           (currentSlug ? p.slug !== currentSlug : true) &&
           !excludeSet.has(p.slug),
       )
@@ -529,17 +554,25 @@ switch (variant) {
    Resolve heading text
    ═══════════════════════════════════════════════════ */
 
+/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
+   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
+   swallows the hoisted `<script>` of every component inside it — page-wide,
+   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
+   left BOTH sliders on the page uninitialized, the unrelated one included.
+   `.has()` only reports whether a slot was passed, which is weaker (a slot
+   holding an empty `{items.map(…)}` still counts as present), and that is the
+   trade we want: a rare empty wrapper beats silently dead client JS. */
 const hasHeadingSlot = Astro.slots.has("heading");
 
 const defaultHeadings: Record<GridVariant, string> = {
   related: "Related Posts",
   recent: "Recent Posts",
-  category: `More in ${(category ?? "")}`,
+  category: `More in ${category ?? ""}`,
   manual: "Related Posts",
 };
 
 const resolvedHeading = heading ?? defaultHeadings[variant];
-const showHeading = hasHeadingSlot || resolvedHeading;
+const showHeading = Astro.slots.has("heading") || resolvedHeading;
 ---
 
 {
@@ -552,25 +585,23 @@ const showHeading = hasHeadingSlot || resolvedHeading;
       id={id}
       class:list={["blog-post-grid_wrap", className]}
     >
-      <Layout docs="" variant="stack" columnGap={columnGap} rowGap={rowGapProp}>
-        <Col slot="col1">
-          {/* Heading area */}
-          {showHeading &&
-            (hasHeadingSlot ? (
-              <slot name="heading" />
-            ) : (
-              <>
-                {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
-                <Heading tag="h2" variant="h2">
-                  {resolvedHeading}
-                </Heading>
-              </>
-            ))}
-        </Col>
+      <Layout variant="stack" columnGap={columnGap} rowGap={rowGapProp}>
+        {/* Heading area */}
+        {showHeading &&
+          (hasHeadingSlot ? (
+            <slot name="heading" />
+          ) : (
+            <>
+              {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+              <Heading tag="h2" variant="h2">
+                {resolvedHeading}
+              </Heading>
+            </>
+          ))}
 
         {/* Blog card grid — 3 → 2 → 1 responsive */}
         <Grid
-          slot="col2"
+          slot="column2"
           largeColumns={3}
           mediumColumns={2}
           smallColumns={1}
@@ -578,6 +609,7 @@ const showHeading = hasHeadingSlot || resolvedHeading;
         >
           {filtered.map((post) => (
             <BlogCard
+              theme={invertCards}
               title={post.title}
               description={post.description}
               categories={post.categories}
@@ -594,3 +626,22 @@ const showHeading = hasHeadingSlot || resolvedHeading;
     </Section>
   )
 }
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/blog-post-grid.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   BLOG POST GRID — section component styles
+   Component: src/components/sections/BlogPostGrid.astro
+   ========================================================================== */
+
+    /* Override the u-container default gap (--space-8) so the heading
+   and card grid sit closer together 
+.blog-post-grid_wrap > .u-container {
+  gap: var(--space-6);
+}
+*/
+  }
+</style>

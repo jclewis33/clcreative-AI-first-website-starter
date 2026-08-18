@@ -1,0 +1,1341 @@
+{
+  "version": 1.1,
+  "properties": [
+    {
+      "name": "--background",
+      "description": "#fdfdfd  \n`var(--color-light-200)`  \n— themes.css"
+    },
+    {
+      "name": "--background-2",
+      "description": "white  \n`var(--color-light-100)`  \n— themes.css"
+    },
+    {
+      "name": "--background-skeleton",
+      "description": "`color-mix(in lab, currentcolor 10%, transparent)`  \n— themes.css"
+    },
+    {
+      "name": "--border",
+      "description": "`var(--color-dark-900-o20)`  \n— themes.css"
+    },
+    {
+      "name": "--border-color-brand",
+      "description": "emphasis  \n`var(--color-brand-text-o20)`  \n— base.css"
+    },
+    {
+      "name": "--border-color-dark",
+      "description": "stronger definition  \n`var(--color-dark-900-o50)`  \n— base.css"
+    },
+    {
+      "name": "--border-color-light",
+      "description": "subtle separation  \n`var(--color-light-100-o20)`  \n— base.css"
+    },
+    {
+      "name": "--border-width-main",
+      "description": "≈ 1.5px  \n`0.094rem`  \n— base.css"
+    },
+    {
+      "name": "--box-shadow-large",
+      "description": "`0 20px 24px -4px #00000014, 0 8px 8px -4px #00000008`  \n— base.css"
+    },
+    {
+      "name": "--box-shadow-medium",
+      "description": "`0 12px 16px -4px #00000014, 0 4px 6px -2px #00000008`  \n— base.css"
+    },
+    {
+      "name": "--box-shadow-small",
+      "description": "`0 4px 8px -2px #0000001a, 0 2px 4px -2px #0000000f`  \n— base.css"
+    },
+    {
+      "name": "--box-shadow-xlarge",
+      "description": "`0 24px 48px -12px #0000002e`  \n— base.css"
+    },
+    {
+      "name": "--box-shadow-xsmall",
+      "description": "`0 1px 3px #0000001a, 0 1px 2px #0000000f`  \n— base.css"
+    },
+    {
+      "name": "--box-shadow-xxlarge",
+      "description": "`0 32px 64px -12px #00000024`  \n— base.css"
+    },
+    {
+      "name": "--box-shadow-xxsmall",
+      "description": "`0 1px 2px #0000000d`  \n— base.css"
+    },
+    {
+      "name": "--button-primary-background",
+      "description": "`var(--color-brand-500)`  \n— themes.css"
+    },
+    {
+      "name": "--button-primary-background-hover",
+      "description": "`var(--color-dark-900)`  \n— themes.css"
+    },
+    {
+      "name": "--button-primary-border",
+      "description": "`var(--color-brand-500)`  \n— themes.css"
+    },
+    {
+      "name": "--button-primary-border-hover",
+      "description": "`var(--color-dark-900)`  \n— themes.css"
+    },
+    {
+      "name": "--button-primary-text",
+      "description": "dark-900  \n`var(--color-brand-text)`  \n— themes.css"
+    },
+    {
+      "name": "--button-primary-text-hover",
+      "description": "bg value  \n`var(--color-light-200)`  \n— themes.css"
+    },
+    {
+      "name": "--button-secondary-background",
+      "description": "`transparent`  \n— themes.css"
+    },
+    {
+      "name": "--button-secondary-background-hover",
+      "description": "`var(--color-dark-900)`  \n— themes.css"
+    },
+    {
+      "name": "--button-secondary-border",
+      "description": "= --border  \n`var(--color-dark-900-o20)`  \n— themes.css"
+    },
+    {
+      "name": "--button-secondary-border-hover",
+      "description": "`var(--color-dark-900)`  \n— themes.css"
+    },
+    {
+      "name": "--button-secondary-text",
+      "description": "`var(--color-dark-900)`  \n— themes.css"
+    },
+    {
+      "name": "--button-secondary-text-hover",
+      "description": "bg value  \n`var(--color-light-200)`  \n— themes.css"
+    },
+    {
+      "name": "--button-size-large",
+      "description": "48px — prominent CTA  \n`3rem`  \n— base.css"
+    },
+    {
+      "name": "--button-size-medium",
+      "description": "40px — default toggle/icon  \n`2.5rem`  \n— base.css"
+    },
+    {
+      "name": "--button-size-small",
+      "description": "32px — compact / icon-only  \n`2rem`  \n— base.css"
+    },
+    {
+      "name": "--color-brand-100",
+      "description": "`color-mix(in srgb, var(--color-brand-500), white 80%)`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-200",
+      "description": "`color-mix(in srgb, var(--color-brand-500), white 60%)`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-300",
+      "description": "`color-mix(in srgb, var(--color-brand-500), white 40%)`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-400",
+      "description": "`color-mix(in srgb, var(--color-brand-500), white 20%)`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-500",
+      "description": "`#f35423`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-600",
+      "description": "`color-mix(in srgb, var(--color-brand-500), black 20%)`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-700",
+      "description": "`color-mix(in srgb, var(--color-brand-500), black 40%)`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-800",
+      "description": "`color-mix(in srgb, var(--color-brand-500), black 60%)`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-900",
+      "description": "`color-mix(in srgb, var(--color-brand-500), black 80%)`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-text",
+      "description": "`var(--color-light-100)`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-text-o20",
+      "description": "`color-mix(in srgb, var(--color-brand-text) 20%, transparent)`  \n— colors.css"
+    },
+    {
+      "name": "--color-brand-text-o75",
+      "description": "`color-mix(in srgb, var(--color-brand-text) 75%, transparent)`  \n— colors.css"
+    },
+    {
+      "name": "--color-dark-800",
+      "description": "`#2f2b2d`  \n— colors.css"
+    },
+    {
+      "name": "--color-dark-900",
+      "description": "`#0c111d`  \n— colors.css"
+    },
+    {
+      "name": "--color-dark-900-o20",
+      "description": "`color-mix(in srgb, var(--color-dark-900) 20%, transparent)`  \n— colors.css"
+    },
+    {
+      "name": "--color-dark-900-o50",
+      "description": "`color-mix(in srgb, var(--color-dark-900) 50%, transparent)`  \n— colors.css"
+    },
+    {
+      "name": "--color-dark-900-o75",
+      "description": "`color-mix(in srgb, var(--color-dark-900) 75%, transparent)`  \n— colors.css"
+    },
+    {
+      "name": "--color-error-red",
+      "description": "`#fffbfa`  \n— colors.css"
+    },
+    {
+      "name": "--color-error-red-dark",
+      "description": "`#3b0b0b`  \n— colors.css"
+    },
+    {
+      "name": "--color-focus-state",
+      "description": "`var(--color-brand-500)`  \n— colors.css"
+    },
+    {
+      "name": "--color-info-grey",
+      "description": "`#f9f9f9`  \n— colors.css"
+    },
+    {
+      "name": "--color-light-100",
+      "description": "`white`  \n— colors.css"
+    },
+    {
+      "name": "--color-light-100-o20",
+      "description": "`color-mix(in srgb, var(--color-light-100) 20%, transparent)`  \n— colors.css"
+    },
+    {
+      "name": "--color-light-100-o50",
+      "description": "`color-mix(in srgb, var(--color-light-100) 50%, transparent)`  \n— colors.css"
+    },
+    {
+      "name": "--color-light-100-o75",
+      "description": "`color-mix(in srgb, var(--color-light-100) 75%, transparent)`  \n— colors.css"
+    },
+    {
+      "name": "--color-light-200",
+      "description": "`#f4f4f4`  \n— colors.css"
+    },
+    {
+      "name": "--color-success-green",
+      "description": "`#e1f5e886`  \n— colors.css"
+    },
+    {
+      "name": "--color-success-green-dark",
+      "description": "`#114e0b`  \n— colors.css"
+    },
+    {
+      "name": "--color-warning-yellow",
+      "description": "`#fffcf5b9`  \n— colors.css"
+    },
+    {
+      "name": "--color-warning-yellow-dark",
+      "description": "`#5e5515`  \n— colors.css"
+    },
+    {
+      "name": "--column-width",
+      "description": "`calc((min(var(--max-width-main), 100% - var(--site-margin) * 2) - (var(--site-gutter) * (var(--site-column-count) - 1))) / var(--site-column-count))`  \n— base.css"
+    },
+    {
+      "name": "--display-lg-font-family",
+      "description": "`var(--font-primary)`  \n— typography.css"
+    },
+    {
+      "name": "--display-lg-line-height",
+      "description": "`var(--line-height-tight)`  \n— typography.css"
+    },
+    {
+      "name": "--display-lg-margin-bottom",
+      "description": "`var(--space-6)`  \n— typography.css"
+    },
+    {
+      "name": "--display-lg-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--display-lg-max",
+      "description": "`5`  \n— typography.css"
+    },
+    {
+      "name": "--display-lg-min",
+      "description": "`3`  \n— typography.css"
+    },
+    {
+      "name": "--display-lg-size",
+      "description": "`clamp(var(--display-lg-min) * 1rem, ((var(--display-lg-min) - ((var(--display-lg-max) - var(--display-lg-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--display-lg-max) - var(--display-lg-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--display-lg-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--display-lg-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--display-lg-weight",
+      "description": "`800`  \n— typography.css"
+    },
+    {
+      "name": "--display-md-font-family",
+      "description": "`var(--font-primary)`  \n— typography.css"
+    },
+    {
+      "name": "--display-md-line-height",
+      "description": "`var(--line-height-tight)`  \n— typography.css"
+    },
+    {
+      "name": "--display-md-margin-bottom",
+      "description": "`var(--space-6)`  \n— typography.css"
+    },
+    {
+      "name": "--display-md-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--display-md-max",
+      "description": "`4.5`  \n— typography.css"
+    },
+    {
+      "name": "--display-md-min",
+      "description": "`3`  \n— typography.css"
+    },
+    {
+      "name": "--display-md-size",
+      "description": "`clamp(var(--display-md-min) * 1rem, ((var(--display-md-min) - ((var(--display-md-max) - var(--display-md-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--display-md-max) - var(--display-md-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--display-md-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--display-md-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--display-md-weight",
+      "description": "`800`  \n— typography.css"
+    },
+    {
+      "name": "--display-sm-font-family",
+      "description": "`var(--font-primary)`  \n— typography.css"
+    },
+    {
+      "name": "--display-sm-line-height",
+      "description": "`var(--line-height-tight)`  \n— typography.css"
+    },
+    {
+      "name": "--display-sm-margin-bottom",
+      "description": "`var(--space-6)`  \n— typography.css"
+    },
+    {
+      "name": "--display-sm-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--display-sm-max",
+      "description": "`4`  \n— typography.css"
+    },
+    {
+      "name": "--display-sm-min",
+      "description": "`2.75`  \n— typography.css"
+    },
+    {
+      "name": "--display-sm-size",
+      "description": "`clamp(var(--display-sm-min) * 1rem, ((var(--display-sm-min) - ((var(--display-sm-max) - var(--display-sm-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--display-sm-max) - var(--display-sm-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--display-sm-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--display-sm-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--display-sm-weight",
+      "description": "`800`  \n— typography.css"
+    },
+    {
+      "name": "--display-xl-font-family",
+      "description": "`var(--font-primary)`  \n— typography.css"
+    },
+    {
+      "name": "--display-xl-line-height",
+      "description": "`var(--line-height-tight)`  \n— typography.css"
+    },
+    {
+      "name": "--display-xl-margin-bottom",
+      "description": "`var(--space-6)`  \n— typography.css"
+    },
+    {
+      "name": "--display-xl-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--display-xl-max",
+      "description": "`6`  \n— typography.css"
+    },
+    {
+      "name": "--display-xl-min",
+      "description": "`3`  \n— typography.css"
+    },
+    {
+      "name": "--display-xl-size",
+      "description": "`clamp(var(--display-xl-min) * 1rem, ((var(--display-xl-min) - ((var(--display-xl-max) - var(--display-xl-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--display-xl-max) - var(--display-xl-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--display-xl-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--display-xl-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--display-xl-weight",
+      "description": "`800`  \n— typography.css"
+    },
+    {
+      "name": "--eyebrow-font-family",
+      "description": "`var(--font-tertiary)`  \n— typography.css"
+    },
+    {
+      "name": "--eyebrow-letter-spacing",
+      "description": "`var(--letter-spacing-tight)`  \n— typography.css"
+    },
+    {
+      "name": "--eyebrow-line-height",
+      "description": "`var(--line-height-medium)`  \n— typography.css"
+    },
+    {
+      "name": "--eyebrow-margin-bottom",
+      "description": "`var(--space-3)`  \n— typography.css"
+    },
+    {
+      "name": "--eyebrow-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--eyebrow-size",
+      "description": "`1rem`  \n— typography.css"
+    },
+    {
+      "name": "--eyebrow-text-transform",
+      "description": "`var(--text-transform-uppercase)`  \n— typography.css"
+    },
+    {
+      "name": "--eyebrow-weight",
+      "description": "`400`  \n— typography.css"
+    },
+    {
+      "name": "--focus-offset-inner",
+      "description": "`calc(var(--focus-width) * -1)`  \n— base.css"
+    },
+    {
+      "name": "--focus-offset-outer",
+      "description": "`0.1875rem`  \n— base.css"
+    },
+    {
+      "name": "--focus-width",
+      "description": "`0.125rem`  \n— base.css"
+    },
+    {
+      "name": "--font-primary",
+      "description": "`var(--font-bdo-grotesk), \"Helvetica Neue\", Helvetica, sans-serif`  \n— typography.css"
+    },
+    {
+      "name": "--font-secondary",
+      "description": "`var(--font-inter), \"Helvetica Neue\", Helvetica, sans-serif`  \n— typography.css"
+    },
+    {
+      "name": "--font-tertiary",
+      "description": "`var(--font-ibm-plex-mono), \"Courier New\", Courier, monospace`  \n— typography.css"
+    },
+    {
+      "name": "--font-weight-bold",
+      "description": "`700`  \n— typography.css"
+    },
+    {
+      "name": "--font-weight-medium",
+      "description": "`500`  \n— typography.css"
+    },
+    {
+      "name": "--font-weight-normal",
+      "description": "`400`  \n— typography.css"
+    },
+    {
+      "name": "--footer-background",
+      "description": "`var(--color-dark-900)`  \n— themes.css"
+    },
+    {
+      "name": "--footer-border",
+      "description": "`var(--color-light-100-o20)`  \n— themes.css"
+    },
+    {
+      "name": "--footer-text",
+      "description": "`var(--color-light-100)`  \n— themes.css"
+    },
+    {
+      "name": "--gap-1",
+      "description": "6–8px  \n`var(--space-1)`  \n— layout.css"
+    },
+    {
+      "name": "--gap-2",
+      "description": "10–12px  \n`var(--space-2)`  \n— layout.css"
+    },
+    {
+      "name": "--gap-3",
+      "description": "14–16px  \n`var(--space-3)`  \n— layout.css"
+    },
+    {
+      "name": "--gap-4",
+      "description": "20–24px  \n`var(--space-4)`  \n— layout.css"
+    },
+    {
+      "name": "--gap-5",
+      "description": "28–32px  \n`var(--space-5)`  \n— layout.css"
+    },
+    {
+      "name": "--gap-6",
+      "description": "32–40px  \n`var(--space-6)`  \n— layout.css"
+    },
+    {
+      "name": "--gap-7",
+      "description": "36–48px  \n`var(--space-7)`  \n— layout.css"
+    },
+    {
+      "name": "--gap-8",
+      "description": "40–64px  \n`var(--space-8)`  \n— layout.css"
+    },
+    {
+      "name": "--gradient-primary",
+      "description": "`linear-gradient(94deg, var(--color-brand-400) -0.01%, var(--color-brand-500) 51.63%, var(--color-brand-600) 103.27%)`  \n— themes.css"
+    },
+    {
+      "name": "--grid-1",
+      "description": "`repeat(1, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-10",
+      "description": "`repeat(10, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-11",
+      "description": "`repeat(11, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-12",
+      "description": "`repeat(12, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-2",
+      "description": "`repeat(2, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-3",
+      "description": "`repeat(3, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-4",
+      "description": "`repeat(4, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-5",
+      "description": "`repeat(5, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-6",
+      "description": "`repeat(6, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-7",
+      "description": "`repeat(7, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-8",
+      "description": "`repeat(8, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-9",
+      "description": "`repeat(9, minmax(0, 1fr))`  \n— layout.css"
+    },
+    {
+      "name": "--grid-breakout",
+      "description": "`[full-start] minmax(0, 1fr) [content-start] repeat(var(--site-column-count), minmax(0, var(--column-width))) [content-end] minmax(0, 1fr) [full-end]`  \n— layout.css"
+    },
+    {
+      "name": "--grid-breakout-single",
+      "description": "`[full-start] minmax(var(--site-margin), 1fr) [content-start] minmax(0, var(--max-width-main)) [content-end] minmax(var(--site-margin), 1fr) [full-end]`  \n— layout.css"
+    },
+    {
+      "name": "--h1-font-family",
+      "description": "`var(--font-primary)`  \n— typography.css"
+    },
+    {
+      "name": "--h1-line-height",
+      "description": "`var(--line-height-medium)`  \n— typography.css"
+    },
+    {
+      "name": "--h1-margin-bottom",
+      "description": "`var(--space-5)`  \n— typography.css"
+    },
+    {
+      "name": "--h1-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--h1-max",
+      "description": "`3.5`  \n— typography.css"
+    },
+    {
+      "name": "--h1-min",
+      "description": "`2.25`  \n— typography.css"
+    },
+    {
+      "name": "--h1-size",
+      "description": "`clamp(var(--h1-min) * 1rem, ((var(--h1-min) - ((var(--h1-max) - var(--h1-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--h1-max) - var(--h1-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h1-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h1-size-secondary",
+      "description": "`clamp(2.75rem, 2.5vw + 2.25rem, 4.5rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h1-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--h1-weight",
+      "description": "`500`  \n— typography.css"
+    },
+    {
+      "name": "--h2-font-family",
+      "description": "`var(--font-primary)`  \n— typography.css"
+    },
+    {
+      "name": "--h2-line-height",
+      "description": "`var(--line-height-medium)`  \n— typography.css"
+    },
+    {
+      "name": "--h2-margin-bottom",
+      "description": "`var(--space-5)`  \n— typography.css"
+    },
+    {
+      "name": "--h2-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--h2-max",
+      "description": "`3`  \n— typography.css"
+    },
+    {
+      "name": "--h2-min",
+      "description": "`2`  \n— typography.css"
+    },
+    {
+      "name": "--h2-size",
+      "description": "`clamp(var(--h2-min) * 1rem, ((var(--h2-min) - ((var(--h2-max) - var(--h2-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--h2-max) - var(--h2-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h2-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h2-size-secondary",
+      "description": "`clamp(2.5rem, 2.143vw + 2.071rem, 4rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h2-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--h2-weight",
+      "description": "`500`  \n— typography.css"
+    },
+    {
+      "name": "--h3-font-family",
+      "description": "`var(--font-primary)`  \n— typography.css"
+    },
+    {
+      "name": "--h3-line-height",
+      "description": "`var(--line-height-large)`  \n— typography.css"
+    },
+    {
+      "name": "--h3-margin-bottom",
+      "description": "`var(--space-5)`  \n— typography.css"
+    },
+    {
+      "name": "--h3-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--h3-max",
+      "description": "`2.5`  \n— typography.css"
+    },
+    {
+      "name": "--h3-min",
+      "description": "`1.75`  \n— typography.css"
+    },
+    {
+      "name": "--h3-size",
+      "description": "`clamp(var(--h3-min) * 1rem, ((var(--h3-min) - ((var(--h3-max) - var(--h3-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--h3-max) - var(--h3-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h3-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h3-size-secondary",
+      "description": "`clamp(2.25rem, 1.071vw + 2.036rem, 3rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h3-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--h3-weight",
+      "description": "`500`  \n— typography.css"
+    },
+    {
+      "name": "--h4-font-family",
+      "description": "`var(--font-primary)`  \n— typography.css"
+    },
+    {
+      "name": "--h4-line-height",
+      "description": "`var(--line-height-large)`  \n— typography.css"
+    },
+    {
+      "name": "--h4-margin-bottom",
+      "description": "`var(--space-4)`  \n— typography.css"
+    },
+    {
+      "name": "--h4-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--h4-max",
+      "description": "`2`  \n— typography.css"
+    },
+    {
+      "name": "--h4-min",
+      "description": "`1.5`  \n— typography.css"
+    },
+    {
+      "name": "--h4-size",
+      "description": "`clamp(var(--h4-min) * 1rem, ((var(--h4-min) - ((var(--h4-max) - var(--h4-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--h4-max) - var(--h4-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h4-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h4-size-secondary",
+      "description": "`clamp(2rem, 0.714vw + 1.857rem, 2.5rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h4-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--h4-weight",
+      "description": "`500`  \n— typography.css"
+    },
+    {
+      "name": "--h5-font-family",
+      "description": "`var(--font-primary)`  \n— typography.css"
+    },
+    {
+      "name": "--h5-line-height",
+      "description": "`var(--line-height-large)`  \n— typography.css"
+    },
+    {
+      "name": "--h5-margin-bottom",
+      "description": "`var(--space-4)`  \n— typography.css"
+    },
+    {
+      "name": "--h5-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--h5-max",
+      "description": "`1.5`  \n— typography.css"
+    },
+    {
+      "name": "--h5-min",
+      "description": "`1.25`  \n— typography.css"
+    },
+    {
+      "name": "--h5-size",
+      "description": "`clamp(var(--h5-min) * 1rem, ((var(--h5-min) - ((var(--h5-max) - var(--h5-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--h5-max) - var(--h5-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h5-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h5-size-secondary",
+      "description": "`clamp(1.5rem, 0.714vw + 1.357rem, 2rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h5-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--h5-weight",
+      "description": "`500`  \n— typography.css"
+    },
+    {
+      "name": "--h6-font-family",
+      "description": "`var(--font-primary)`  \n— typography.css"
+    },
+    {
+      "name": "--h6-line-height",
+      "description": "`var(--line-height-large)`  \n— typography.css"
+    },
+    {
+      "name": "--h6-margin-bottom",
+      "description": "`var(--space-4)`  \n— typography.css"
+    },
+    {
+      "name": "--h6-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--h6-max",
+      "description": "`1.25`  \n— typography.css"
+    },
+    {
+      "name": "--h6-min",
+      "description": "`1.125`  \n— typography.css"
+    },
+    {
+      "name": "--h6-size",
+      "description": "`clamp(var(--h6-min) * 1rem, ((var(--h6-min) - ((var(--h6-max) - var(--h6-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--h6-max) - var(--h6-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--h6-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h6-size-secondary",
+      "description": "`clamp(1.25rem, 0.357vw + 1.179rem, 1.5rem)`  \n— typography.css"
+    },
+    {
+      "name": "--h6-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--h6-weight",
+      "description": "`500`  \n— typography.css"
+    },
+    {
+      "name": "--heading-accent",
+      "description": "dark orange  \n`var(--color-brand-500)`  \n— themes.css"
+    },
+    {
+      "name": "--letter-spacing-normal",
+      "description": "`0em`  \n— typography.css"
+    },
+    {
+      "name": "--letter-spacing-tight",
+      "description": "`-0.03em`  \n— typography.css"
+    },
+    {
+      "name": "--letter-spacing-wide",
+      "description": "eyebrow / allcaps labels  \n`0.05em`  \n— typography.css"
+    },
+    {
+      "name": "--line-height-large",
+      "description": "mid-size headings  \n`1.3`  \n— typography.css"
+    },
+    {
+      "name": "--line-height-medium",
+      "description": "large headings  \n`1.1`  \n— typography.css"
+    },
+    {
+      "name": "--line-height-normal",
+      "description": "body text  \n`1.5`  \n— typography.css"
+    },
+    {
+      "name": "--line-height-tight",
+      "description": "display / very large headings  \n`1`  \n— typography.css"
+    },
+    {
+      "name": "--link-border",
+      "description": "= --border  \n`var(--color-dark-900-o20)`  \n— themes.css"
+    },
+    {
+      "name": "--link-border-hover",
+      "description": "`var(--color-dark-900)`  \n— themes.css"
+    },
+    {
+      "name": "--link-text",
+      "description": "muted for group-hover dim  \n`var(--color-dark-900-o75)`  \n— themes.css"
+    },
+    {
+      "name": "--link-text-hover",
+      "description": "`var(--color-dark-900)`  \n— themes.css"
+    },
+    {
+      "name": "--margin-large",
+      "description": "`var(--space-8)`  \n— spacing.css"
+    },
+    {
+      "name": "--margin-medium",
+      "description": "`var(--space-6)`  \n— spacing.css"
+    },
+    {
+      "name": "--margin-small",
+      "description": "`var(--space-3)`  \n— spacing.css"
+    },
+    {
+      "name": "--margin-xlarge",
+      "description": "`var(--section-space-small)`  \n— spacing.css"
+    },
+    {
+      "name": "--margin-xsmall",
+      "description": "`var(--space-1)`  \n— spacing.css"
+    },
+    {
+      "name": "--margin-xxlarge",
+      "description": "`var(--section-space-main)`  \n— spacing.css"
+    },
+    {
+      "name": "--margin-xxsmall",
+      "description": "below scale minimum, kept as fixed value  \n`0.25rem`  \n— spacing.css"
+    },
+    {
+      "name": "--max-width-full",
+      "description": "edge-to-edge  \n`100%`  \n— base.css"
+    },
+    {
+      "name": "--max-width-main",
+      "description": "1440px — standard container  \n`90rem`  \n— base.css"
+    },
+    {
+      "name": "--max-width-narrow",
+      "description": "768px — prose / narrow text  \n`48rem`  \n— base.css"
+    },
+    {
+      "name": "--max-width-small",
+      "description": "800px — cards / modals  \n`50rem`  \n— base.css"
+    },
+    {
+      "name": "--max-width-wide",
+      "description": "1920px — full-bleed sections  \n`120rem`  \n— base.css"
+    },
+    {
+      "name": "--nav-background",
+      "description": "= bg-2 white  \n`var(--color-light-100)`  \n— themes.css"
+    },
+    {
+      "name": "--nav-banner-background",
+      "description": "white  \n`var(--color-light-100)`  \n— themes.css"
+    },
+    {
+      "name": "--nav-banner-color",
+      "description": "dark text  \n`var(--color-dark-900)`  \n— themes.css"
+    },
+    {
+      "name": "--nav-banner-height",
+      "description": "overridden by html.is-has-banner below  \n`0rem`  \n— nav.css"
+    },
+    {
+      "name": "--nav-dropdown-background",
+      "description": "`var(--nav-background)`  \n— nav.css"
+    },
+    {
+      "name": "--nav-dropdown-gap",
+      "description": "`var(--space-1)`  \n— nav.css"
+    },
+    {
+      "name": "--nav-dropdown-min-width",
+      "description": "`12rem`  \n— nav.css"
+    },
+    {
+      "name": "--nav-dropdown-offset",
+      "description": "`var(--space-3)`  \n— nav.css"
+    },
+    {
+      "name": "--nav-dropdown-padding",
+      "description": "`var(--space-3)`  \n— nav.css"
+    },
+    {
+      "name": "--nav-dropdown-radius",
+      "description": "`var(--radius-main)`  \n— nav.css"
+    },
+    {
+      "name": "--nav-hamburger-gap",
+      "description": "6px  \n`0.375rem`  \n— nav.css"
+    },
+    {
+      "name": "--nav-hamburger-thickness",
+      "description": "2px  \n`0.125rem`  \n— nav.css"
+    },
+    {
+      "name": "--nav-height",
+      "description": "56px — inner bar height  \n`3.5rem`  \n— nav.css"
+    },
+    {
+      "name": "--nav-height-total",
+      "description": "`calc(var(--nav-height) + var(--nav-spacing-outer-vertical) * 2 + var(--nav-banner-height))`  \n— nav.css"
+    },
+    {
+      "name": "--nav-max-width-inner",
+      "description": "`var(--max-width-main)`  \n— nav.css"
+    },
+    {
+      "name": "--nav-max-width-outer",
+      "description": "`100%`  \n— nav.css"
+    },
+    {
+      "name": "--nav-radius",
+      "description": "`var(--radius-none)`  \n— nav.css"
+    },
+    {
+      "name": "--nav-spacing-inner-horizontal",
+      "description": "`var(--site-margin)`  \n— nav.css"
+    },
+    {
+      "name": "--nav-spacing-outer-horizontal",
+      "description": "`0px`  \n— nav.css"
+    },
+    {
+      "name": "--nav-spacing-outer-vertical",
+      "description": "`0px`  \n— nav.css"
+    },
+    {
+      "name": "--overlay-scrim",
+      "description": "`color-mix(in srgb, var(--color-dark-900) 60%, transparent)`  \n— themes.css"
+    },
+    {
+      "name": "--radius-full",
+      "description": "`100vw`  \n— base.css"
+    },
+    {
+      "name": "--radius-large",
+      "description": "`10px`  \n— base.css"
+    },
+    {
+      "name": "--radius-main",
+      "description": "`1rem`  \n— base.css"
+    },
+    {
+      "name": "--radius-medium",
+      "description": "`8px`  \n— base.css"
+    },
+    {
+      "name": "--radius-none",
+      "description": "`0px`  \n— base.css"
+    },
+    {
+      "name": "--radius-section",
+      "description": "`clamp(2rem, 2.857vw + 1.429rem, 4rem)`  \n— base.css"
+    },
+    {
+      "name": "--radius-small",
+      "description": "`6px`  \n— base.css"
+    },
+    {
+      "name": "--radius-xlarge",
+      "description": "`12px`  \n— base.css"
+    },
+    {
+      "name": "--radius-xsmall",
+      "description": "`4px`  \n— base.css"
+    },
+    {
+      "name": "--rich-text-link",
+      "description": "`var(--color-brand-500)`  \n— themes.css"
+    },
+    {
+      "name": "--section-space-large",
+      "description": "`clamp(5.5rem, 6.429vw + 4.214rem, 10rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--section-space-main",
+      "description": "`clamp(4rem, 4.286vw + 3.143rem, 7rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--section-space-none",
+      "description": "`0px`  \n— spacing.css"
+    },
+    {
+      "name": "--section-space-page-top",
+      "description": "`clamp(10rem, 5.714vw + 8.857rem, 14rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--section-space-small",
+      "description": "`clamp(3rem, 2.857vw + 2.429rem, 5rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--section-space-xsmall",
+      "description": "`clamp(1.25rem, 1.071vw + 1.036rem, 2rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--selection-background",
+      "description": "`var(--color-brand-300)`  \n— themes.css"
+    },
+    {
+      "name": "--selection-text",
+      "description": "dark-900  \n`var(--color-brand-text)`  \n— themes.css"
+    },
+    {
+      "name": "--site-column-count",
+      "description": "`12`  \n— base.css"
+    },
+    {
+      "name": "--site-gutter",
+      "description": "`clamp(var(--site-gutter-min) * 1rem, ((var(--site-gutter-min) - ((var(--site-gutter-max) - var(--site-gutter-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--site-gutter-max) - var(--site-gutter-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--site-gutter-max) * 1rem)`  \n— base.css"
+    },
+    {
+      "name": "--site-gutter-max",
+      "description": "`2`  \n— base.css"
+    },
+    {
+      "name": "--site-gutter-min",
+      "description": "`1`  \n— base.css"
+    },
+    {
+      "name": "--site-margin",
+      "description": "`clamp(var(--site-margin-min) * 1rem, ((var(--site-margin-min) - ((var(--site-margin-max) - var(--site-margin-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--site-margin-max) - var(--site-margin-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--site-margin-max) * 1rem)`  \n— base.css"
+    },
+    {
+      "name": "--site-margin-max",
+      "description": "`3`  \n— base.css"
+    },
+    {
+      "name": "--site-margin-min",
+      "description": "`1`  \n— base.css"
+    },
+    {
+      "name": "--space-1",
+      "description": "`clamp(0.375rem, 0.179vw + 0.339rem, 0.5rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--space-2",
+      "description": "`clamp(0.625rem, 0.179vw + 0.589rem, 0.75rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--space-3",
+      "description": "`clamp(0.875rem, 0.179vw + 0.839rem, 1rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--space-4",
+      "description": "`clamp(1.25rem, 0.357vw + 1.179rem, 1.5rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--space-5",
+      "description": "`clamp(1.75rem, 0.357vw + 1.679rem, 2rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--space-6",
+      "description": "`clamp(2rem, 0.714vw + 1.857rem, 2.5rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--space-7",
+      "description": "`clamp(2.25rem, 1.071vw + 2.036rem, 3rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--space-8",
+      "description": "`clamp(2.5rem, 2.143vw + 2.071rem, 4rem)`  \n— spacing.css"
+    },
+    {
+      "name": "--text",
+      "description": "#0c111d  \n`var(--color-dark-900)`  \n— themes.css"
+    },
+    {
+      "name": "--text-large-font-family",
+      "description": "`var(--font-secondary)`  \n— typography.css"
+    },
+    {
+      "name": "--text-large-line-height",
+      "description": "`var(--line-height-normal)`  \n— typography.css"
+    },
+    {
+      "name": "--text-large-margin-bottom",
+      "description": "`var(--space-4)`  \n— typography.css"
+    },
+    {
+      "name": "--text-large-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--text-large-max",
+      "description": "`1.25`  \n— typography.css"
+    },
+    {
+      "name": "--text-large-min",
+      "description": "`1.125`  \n— typography.css"
+    },
+    {
+      "name": "--text-large-size",
+      "description": "`clamp(var(--text-large-min) * 1rem, ((var(--text-large-min) - ((var(--text-large-max) - var(--text-large-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--text-large-max) - var(--text-large-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--text-large-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--text-large-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--text-large-weight",
+      "description": "`var(--font-weight-normal)`  \n— typography.css"
+    },
+    {
+      "name": "--text-max-width",
+      "description": "48rem / 768px  \n`var(--max-width-narrow)`  \n— typography.css"
+    },
+    {
+      "name": "--text-regular-font-family",
+      "description": "`var(--font-secondary)`  \n— typography.css"
+    },
+    {
+      "name": "--text-regular-line-height",
+      "description": "`var(--line-height-normal)`  \n— typography.css"
+    },
+    {
+      "name": "--text-regular-margin-bottom",
+      "description": "`var(--space-4)`  \n— typography.css"
+    },
+    {
+      "name": "--text-regular-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--text-regular-max",
+      "description": "`1.125`  \n— typography.css"
+    },
+    {
+      "name": "--text-regular-min",
+      "description": "`1`  \n— typography.css"
+    },
+    {
+      "name": "--text-regular-size",
+      "description": "`clamp(var(--text-regular-min) * 1rem, ((var(--text-regular-min) - ((var(--text-regular-max) - var(--text-regular-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--text-regular-max) - var(--text-regular-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--text-regular-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--text-regular-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--text-regular-weight",
+      "description": "`var(--font-weight-normal)`  \n— typography.css"
+    },
+    {
+      "name": "--text-small-font-family",
+      "description": "`var(--font-secondary)`  \n— typography.css"
+    },
+    {
+      "name": "--text-small-line-height",
+      "description": "`var(--line-height-normal)`  \n— typography.css"
+    },
+    {
+      "name": "--text-small-margin-bottom",
+      "description": "`var(--space-4)`  \n— typography.css"
+    },
+    {
+      "name": "--text-small-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--text-small-max",
+      "description": "`0.875`  \n— typography.css"
+    },
+    {
+      "name": "--text-small-min",
+      "description": "`0.875`  \n— typography.css"
+    },
+    {
+      "name": "--text-small-size",
+      "description": "`clamp(var(--text-small-min) * 1rem, ((var(--text-small-min) - ((var(--text-small-max) - var(--text-small-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--text-small-max) - var(--text-small-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--text-small-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--text-small-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--text-small-weight",
+      "description": "`var(--font-weight-normal)`  \n— typography.css"
+    },
+    {
+      "name": "--text-tiny-font-family",
+      "description": "`var(--font-secondary)`  \n— typography.css"
+    },
+    {
+      "name": "--text-tiny-line-height",
+      "description": "`var(--line-height-normal)`  \n— typography.css"
+    },
+    {
+      "name": "--text-tiny-margin-bottom",
+      "description": "`var(--space-4)`  \n— typography.css"
+    },
+    {
+      "name": "--text-tiny-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--text-tiny-max",
+      "description": "`0.75`  \n— typography.css"
+    },
+    {
+      "name": "--text-tiny-min",
+      "description": "`0.75`  \n— typography.css"
+    },
+    {
+      "name": "--text-tiny-size",
+      "description": "`clamp(var(--text-tiny-min) * 1rem, ((var(--text-tiny-min) - ((var(--text-tiny-max) - var(--text-tiny-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--text-tiny-max) - var(--text-tiny-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--text-tiny-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--text-tiny-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--text-tiny-weight",
+      "description": "`var(--font-weight-normal)`  \n— typography.css"
+    },
+    {
+      "name": "--text-transform-capitalize",
+      "description": "`capitalize`  \n— typography.css"
+    },
+    {
+      "name": "--text-transform-inherit",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--text-transform-lowercase",
+      "description": "`lowercase`  \n— typography.css"
+    },
+    {
+      "name": "--text-transform-none",
+      "description": "`none`  \n— typography.css"
+    },
+    {
+      "name": "--text-transform-uppercase",
+      "description": "`uppercase`  \n— typography.css"
+    },
+    {
+      "name": "--text-wrap-balance",
+      "description": "headings — even line breaks  \n`balance`  \n— typography.css"
+    },
+    {
+      "name": "--text-wrap-pretty",
+      "description": "body text — avoids orphans  \n`pretty`  \n— typography.css"
+    },
+    {
+      "name": "--text-xlarge-font-family",
+      "description": "`var(--font-secondary)`  \n— typography.css"
+    },
+    {
+      "name": "--text-xlarge-line-height",
+      "description": "`var(--line-height-normal)`  \n— typography.css"
+    },
+    {
+      "name": "--text-xlarge-margin-bottom",
+      "description": "`var(--space-4)`  \n— typography.css"
+    },
+    {
+      "name": "--text-xlarge-margin-top",
+      "description": "`0`  \n— typography.css"
+    },
+    {
+      "name": "--text-xlarge-max",
+      "description": "`1.5`  \n— typography.css"
+    },
+    {
+      "name": "--text-xlarge-min",
+      "description": "`1.25`  \n— typography.css"
+    },
+    {
+      "name": "--text-xlarge-size",
+      "description": "`clamp(var(--text-xlarge-min) * 1rem, ((var(--text-xlarge-min) - ((var(--text-xlarge-max) - var(--text-xlarge-min)) / (var(--viewport-max) - var(--viewport-min)) * var(--viewport-min))) * 1rem + ((var(--text-xlarge-max) - var(--text-xlarge-min)) / (var(--viewport-max) - var(--viewport-min))) * 100vw), var(--text-xlarge-max) * 1rem)`  \n— typography.css"
+    },
+    {
+      "name": "--text-xlarge-text-transform",
+      "description": "`inherit`  \n— typography.css"
+    },
+    {
+      "name": "--text-xlarge-weight",
+      "description": "`var(--font-weight-normal)`  \n— typography.css"
+    },
+    {
+      "name": "--viewport-max",
+      "description": "1440px  \n`90`  \n— base.css"
+    },
+    {
+      "name": "--viewport-min",
+      "description": "320px  \n`20`  \n— base.css"
+    }
+  ]
+}

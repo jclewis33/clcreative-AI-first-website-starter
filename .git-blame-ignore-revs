@@ -1,0 +1,11 @@
+# Revisions listed here are skipped by git blame.
+# Only bulk mechanical reformats belong in this file - never a commit that
+# changes behavior.
+#
+# Enable locally (one time):
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# GitHub applies it automatically.
+
+# Format the repository with Prettier
+961bd1d1e4cf757a28c2a2902f1559c62b9e7572

@@ -11,49 +11,49 @@ import {
   type InternalLinkTarget,
 } from "./internal-links";
 import { urlFor } from "./image";
-import { SITE_URL } from "../../config/site";
+import { SITE_URL } from "@/config/site";
 
+/* These describe what this serializer READS, so every field a Sanity query can
+   return as null is nullable here — the walker already guards each access. */
 interface PortableTextSpan {
   _type: "span";
-  text: string;
-  marks?: string[];
+  text?: string | null;
+  marks?: string[] | null;
 }
 
 interface MarkDef {
   _key: string;
   _type: string;
-  href?: string;
-  newTab?: boolean;
-  target?: InternalLinkTarget;
+  href?: string | null;
+  newTab?: boolean | null;
+  target?: InternalLinkTarget | null;
 }
 
 interface PortableTextBlock {
   _type: "block";
   _key?: string;
-  style?: string;
-  children?: PortableTextSpan[];
-  listItem?: "bullet" | "number";
-  level?: number;
-  markDefs?: MarkDef[];
+  style?: string | null;
+  children?: PortableTextSpan[] | null;
+  listItem?: "bullet" | "number" | null;
+  level?: number | null;
+  markDefs?: MarkDef[] | null;
 }
 
 interface PortableTextImage {
   _type: "image";
-  asset: { _ref: string };
-  alt?: string;
-  caption?: string;
+  asset?: { _ref?: string } | null;
+  alt?: string | null;
+  caption?: string | null;
 }
 
 interface PortableTextVideoEmbed {
   _type: "videoEmbed";
-  url: string;
-  caption?: string;
+  url?: string | null;
+  caption?: string | null;
 }
 
 type PortableTextNode =
-  | PortableTextBlock
-  | PortableTextImage
-  | PortableTextVideoEmbed;
+  PortableTextBlock | PortableTextImage | PortableTextVideoEmbed;
 
 function resolveVideoEmbedUrl(url: string): string | null {
   try {
@@ -90,7 +90,7 @@ function renderInternalLinkWithPreview(
   innerHtml: string,
   href: string,
   anchorAttrs: string,
-  target: InternalLinkTarget
+  target: InternalLinkTarget,
 ): string {
   const title = target?.title;
   const description = target?.description;
@@ -107,15 +107,19 @@ function renderInternalLinkWithPreview(
   parts.push(`<span class="internal-link_preview" aria-hidden="true">`);
   if (imageUrl) {
     parts.push(
-      `<span class="internal-link_preview_media"><img src="${escapeAttr(imageUrl)}" alt="" loading="lazy"></span>`
+      `<span class="internal-link_preview_media"><img src="${escapeAttr(imageUrl)}" alt="" loading="lazy"></span>`,
     );
   }
   parts.push(`<span class="internal-link_preview_content">`);
   if (title) {
-    parts.push(`<span class="internal-link_preview_title">${escapeHtml(title)}</span>`);
+    parts.push(
+      `<span class="internal-link_preview_title">${escapeHtml(title)}</span>`,
+    );
   }
   if (description) {
-    parts.push(`<span class="internal-link_preview_text">${escapeHtml(description)}</span>`);
+    parts.push(
+      `<span class="internal-link_preview_text">${escapeHtml(description)}</span>`,
+    );
   }
   parts.push(`</span></span></span>`);
 
@@ -125,8 +129,11 @@ function renderInternalLinkWithPreview(
 /**
  * Convert a Portable Text span's marks to HTML.
  */
-function renderSpan(span: PortableTextSpan, markDefs: PortableTextBlock["markDefs"]): string {
-  let html = escapeHtml(span.text);
+function renderSpan(
+  span: PortableTextSpan,
+  markDefs: PortableTextBlock["markDefs"],
+): string {
+  let html = escapeHtml(span.text ?? "");
 
   if (!span.marks?.length) return html;
 
@@ -193,7 +200,7 @@ function escapeAttr(str: string): string {
  */
 export function portableTextToHtml(
   blocks: PortableTextNode[] | null | undefined,
-  imageUrlFn?: (ref: string) => string
+  imageUrlFn?: (ref: string) => string,
 ): string {
   if (!blocks?.length) return "";
 
@@ -211,13 +218,13 @@ export function portableTextToHtml(
       }
 
       const video = node as PortableTextVideoEmbed;
-      const embedUrl = resolveVideoEmbedUrl(video.url);
+      const embedUrl = video.url ? resolveVideoEmbedUrl(video.url) : null;
       if (embedUrl) {
         const title = video.caption ? escapeAttr(video.caption) : "Video";
         parts.push(`<figure class="video-embed_wrap">`);
         parts.push(`<div class="video-embed_frame">`);
         parts.push(
-          `<iframe src="${escapeAttr(embedUrl)}" title="${title}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
+          `<iframe src="${escapeAttr(embedUrl)}" title="${title}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`,
         );
         parts.push(`</div>`);
         if (video.caption) {
@@ -312,7 +319,7 @@ export function portableTextToHtml(
 /** Convert a span's marks to inline markdown. */
 function renderSpanMarkdown(
   span: PortableTextSpan,
-  markDefs: PortableTextBlock["markDefs"]
+  markDefs: PortableTextBlock["markDefs"],
 ): string {
   let text = span.text;
   if (!text) return "";
@@ -363,7 +370,7 @@ function renderSpanMarkdown(
  * stays readable rather than pixel-perfect.
  */
 export function portableTextToMarkdown(
-  blocks: PortableTextNode[] | null | undefined
+  blocks: PortableTextNode[] | null | undefined,
 ): string {
   if (!blocks?.length) return "";
 

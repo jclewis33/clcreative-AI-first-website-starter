@@ -38,13 +38,21 @@ import {
   GLOSSARY_SLUGS_QUERY,
   SITE_SETTINGS_QUERY,
 } from "./queries";
-import { SANITY_PROJECT_ID } from "../../config/site.shared.mjs";
+import { SANITY_PROJECT_ID } from "@/config/site.shared.mjs";
+import type { RELATED_BLOG_POSTS_QUERY_RESULT } from "@/sanity/sanity.types";
 
 /** Perspective forwarding — the return shape of `getDraftModeProps(Astro)`. */
 export type DraftProps = { perspectiveCookie?: string | undefined };
 
+/**
+ * A post in card shape, as the related-posts query projects it. The manual
+ * `relatedPosts` inside BLOG_POST_QUERY projects the same fields, so both
+ * lists flow through `mapPostCard`.
+ */
+type PostCard = RELATED_BLOG_POSTS_QUERY_RESULT[number];
+
 /** Card-shape a post for BlogCard/BlogPostGrid (image URLs pre-built). */
-function mapPostCard(p: any) {
+function mapPostCard(p: PostCard) {
   return {
     ...p,
     image: p.image ? urlFor(p.image).width(600).url() : p.image,
@@ -56,8 +64,11 @@ function mapPostCard(p: any) {
 
 /* ── Blog post ─────────────────────────────────────────────────────────────── */
 
-export async function loadBlogPostPage(slug: string, draftProps: DraftProps = {}) {
-  const { data: post } = await loadQuery<any>({
+export async function loadBlogPostPage(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
+  const { data: post } = await loadQuery({
     query: BLOG_POST_QUERY,
     params: { slug },
     ...draftProps,
@@ -75,12 +86,12 @@ export async function loadBlogPostPage(slug: string, draftProps: DraftProps = {}
   const excludeSlugs = manualRelatedPosts.map((p) => p.slug);
 
   const [{ data: related }, { data: settings }] = await Promise.all([
-    loadQuery<any[]>({
+    loadQuery({
       query: RELATED_BLOG_POSTS_QUERY,
       params: { slug, categories, excludeSlugs },
       ...draftProps,
     }),
-    loadQuery<any>({ query: SITE_SETTINGS_QUERY, ...draftProps }),
+    loadQuery({ query: SITE_SETTINGS_QUERY, ...draftProps }),
   ]);
 
   return {
@@ -94,8 +105,11 @@ export async function loadBlogPostPage(slug: string, draftProps: DraftProps = {}
 
 /* ── Case study ────────────────────────────────────────────────────────────── */
 
-export async function loadCaseStudyPage(slug: string, draftProps: DraftProps = {}) {
-  const { data: study } = await loadQuery<any>({
+export async function loadCaseStudyPage(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
+  const { data: study } = await loadQuery({
     query: CASE_STUDY_QUERY,
     params: { slug },
     ...draftProps,
@@ -103,12 +117,12 @@ export async function loadCaseStudyPage(slug: string, draftProps: DraftProps = {
   if (!study) return null;
 
   const [{ data: siblings }, { data: settings }] = await Promise.all([
-    loadQuery<any[]>({
+    loadQuery({
       query: RELATED_CASE_STUDIES_QUERY,
       params: { slug },
       ...draftProps,
     }),
-    loadQuery<any>({ query: SITE_SETTINGS_QUERY, ...draftProps }),
+    loadQuery({ query: SITE_SETTINGS_QUERY, ...draftProps }),
   ]);
 
   return {
@@ -124,7 +138,7 @@ export async function loadGlossaryTermPage(
   slug: string,
   draftProps: DraftProps = {},
 ) {
-  const { data: term } = await loadQuery<any>({
+  const { data: term } = await loadQuery({
     query: GLOSSARY_TERM_QUERY,
     params: { slug },
     ...draftProps,
@@ -135,8 +149,8 @@ export async function loadGlossaryTermPage(
   // the template builds alphabetical prev/next navigation across the whole
   // glossary. This is the one intentional whole-collection fetch.
   const [{ data: allTerms }, { data: settings }] = await Promise.all([
-    loadQuery<any[]>({ query: GLOSSARY_TERMS_QUERY, ...draftProps }),
-    loadQuery<any>({ query: SITE_SETTINGS_QUERY, ...draftProps }),
+    loadQuery({ query: GLOSSARY_TERMS_QUERY, ...draftProps }),
+    loadQuery({ query: SITE_SETTINGS_QUERY, ...draftProps }),
   ]);
 
   return {
@@ -174,13 +188,16 @@ function isPlaceholderSanityProject(): boolean {
  * a deploy with every blog/case-study/glossary page missing — previously
  * live URLs would 404. A loud build failure is the correct outcome.
  */
-async function fetchStaticPathList<T>(
-  query: string,
+async function fetchStaticPathList<const Q extends string>(
+  query: Q,
   label: string,
-): Promise<T[] | null> {
+): Promise<string[] | null> {
   try {
-    const { data } = await loadQuery<T[]>({ query });
-    return (data ?? []).filter(Boolean);
+    const { data } = await loadQuery({ query });
+    // Every caller passes a `.slug.current` projection, typed Array<string | null>.
+    return ((data ?? []) as Array<string | null>).filter(
+      (s): s is string => !!s,
+    );
   } catch (err) {
     if (isPlaceholderSanityProject()) {
       console.warn(
@@ -199,22 +216,22 @@ async function fetchStaticPathList<T>(
  * renders its empty state and the build stays green; on a real project a
  * failed fetch rethrows and fails the build loudly.
  */
-export async function loadPageQuery<T>({
+export async function loadPageQuery<const Q extends string, F>({
   query,
   params,
   draftProps = {},
   fallback,
   label,
 }: {
-  query: string;
+  query: Q;
   params?: Record<string, unknown>;
   draftProps?: DraftProps;
-  fallback: T;
+  fallback: F;
   label: string;
-}): Promise<T> {
+}) {
   try {
-    const { data } = await loadQuery<T>({ query, params, ...draftProps });
-    return data ?? fallback;
+    const { data } = await loadQuery({ query, params, ...draftProps });
+    return (data ?? fallback) as NonNullable<typeof data> | F;
   } catch (err) {
     if (isPlaceholderSanityProject()) {
       console.warn(
@@ -227,7 +244,10 @@ export async function loadPageQuery<T>({
 }
 
 export async function getBlogPostStaticPaths() {
-  const slugs = await fetchStaticPathList<string>(BLOG_SLUGS_QUERY, "blog post");
+  const slugs = await fetchStaticPathList<string>(
+    BLOG_SLUGS_QUERY,
+    "blog post",
+  );
   return (slugs ?? []).map((slug) => ({ params: { slug } }));
 }
 
@@ -260,7 +280,9 @@ export async function getBlogCategoryStaticPaths() {
   );
   if (categories === null) return [];
   const seen = new Set<string>();
-  const paths = [{ params: { category: "all" }, props: { categoryName: "All" } }];
+  const paths = [
+    { params: { category: "all" }, props: { categoryName: "All" } },
+  ];
   for (const name of categories) {
     const slug = categoryToSlug(name);
     if (slug === "all" || seen.has(slug)) continue;

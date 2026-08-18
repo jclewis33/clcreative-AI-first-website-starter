@@ -84,14 +84,16 @@ const sectionSpacingFields = [
   defineField({
     name: "sectionSpacingTop",
     title: "Section Spacing — Top Override",
-    description: "Override the top padding only. Leave empty to use Section Spacing.",
+    description:
+      "Override the top padding only. Leave empty to use Section Spacing.",
     type: "string",
     options: { list: spacingOptions },
   }),
   defineField({
     name: "sectionSpacingBottom",
     title: "Section Spacing — Bottom Override",
-    description: "Override the bottom padding only. Leave empty to use Section Spacing.",
+    description:
+      "Override the bottom padding only. Leave empty to use Section Spacing.",
     type: "string",
     options: { list: spacingOptions },
   }),
@@ -168,7 +170,7 @@ export const caseStudy = defineType({
       group: "content",
       validation: (rule) => rule.required(),
     }),
-     defineField({
+    defineField({
       name: "image",
       title: "Featured Image",
       description:
@@ -244,7 +246,10 @@ export const caseStudy = defineType({
           { title: "Financial Services", value: "Financial Services" },
           { title: "Food & Beverage", value: "Food & Beverage" },
           { title: "Home Services", value: "Home Services" },
-          { title: "Manufacturing / Industrial", value: "Manufacturing / Industrial" },
+          {
+            title: "Manufacturing / Industrial",
+            value: "Manufacturing / Industrial",
+          },
           { title: "Non-Profits", value: "Non-Profits" },
           { title: "Real Estate", value: "Real Estate" },
           { title: "Recruiting", value: "Recruiting" },
@@ -431,7 +436,8 @@ export const caseStudy = defineType({
           preview: {
             select: { body: "body" },
             prepare({ body }) {
-              const text = body?.[0]?.children?.[0]?.text || "Rich Text Columns Block";
+              const text =
+                body?.[0]?.children?.[0]?.text || "Rich Text Columns Block";
               return { title: "Rich Text (Columns)", subtitle: text };
             },
           },
@@ -569,7 +575,8 @@ export const caseStudy = defineType({
                       name: "alt",
                       type: "string",
                       title: "Alt Text (Override)",
-                      description: "Leave blank to use the default alt text above.",
+                      description:
+                        "Leave blank to use the default alt text above.",
                     },
                     {
                       name: "transparent",

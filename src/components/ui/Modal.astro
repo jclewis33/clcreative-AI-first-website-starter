@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Modal — native `<dialog>`-based modal with CSS enter/exit transitions.
  *
@@ -46,11 +47,11 @@
 
 type ModalVariant =
   /** Centered panel — max 800px wide (default) */
-  | 'small'
+  | "small"
   /** Slides in from the right edge — good for filter/settings panels */
-  | 'side-panel'
+  | "side-panel"
   /** Full viewport — use for image viewers or immersive content */
-  | 'full-screen';
+  | "full-screen";
 
 /**
  * Modal — native `<dialog>`-based modal with CSS enter/exit transitions.
@@ -66,7 +67,7 @@ type ModalVariant =
  *
  * **Slots:** default (scrollable content), `close` (override the default close button).
  */
-interface Props {
+interface Props extends HTMLAttributes<"dialog"> {
   /**
    * **Modal props:**
    * - `id` — must match `data-modal-trigger` value (required)
@@ -105,76 +106,71 @@ interface Props {
 
   /** Extra utility classes to add to the `<dialog>` element. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `<dialog>` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
 const {
   docs,
   id,
-  variant   = 'small',
+  variant = "small",
   ariaLabel,
   class: className,
   ...rest
 } = Astro.props;
 
-const hasClose = Astro.slots.has('close');
+const hasClose = Astro.slots.has("close");
 ---
 
 <dialog
-  class:list={['modal_dialog', className]}
+  class:list={["modal_dialog", className]}
   data-modal-variant={variant}
   aria-label={ariaLabel}
   id={id}
   {...rest}
 >
-  <div class="modal_inner">
-
-    <!-- Backdrop — clicking closes the modal -->
-    <div class="modal_backdrop" data-modal-close aria-hidden="true"></div>
-
+  {
+    /* The scrim is the native ::backdrop now, so this box exists only to
+      centre the panel and to catch clicks beside it. `data-modal-dismiss`
+      is matched on the EXACT click target (not `closest`), so clicks that
+      bubble up out of the panel do not count as clicks beside it. */
+  }
+  <div class="modal_inner" data-modal-dismiss>
     <!-- Content panel -->
     <div class="modal_content">
       <div class="modal_scroll">
-
         <!-- Close button -->
         <div class="modal_close_wrap">
-          {hasClose ? (
-            <slot name="close" />
-          ) : (
-            <button
-              class="u-button-reset"
-              data-modal-close
-              aria-label="Close modal"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
+          {
+            hasClose ? (
+              <slot name="close" />
+            ) : (
+              <button
+                class="u-button-reset"
+                data-modal-close
+                aria-label="Close modal"
               >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          )}
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )
+          }
         </div>
 
         <!-- Main content slot -->
         <div class="modal_slot">
           <slot />
         </div>
-
       </div>
     </div>
   </div>
@@ -182,182 +178,451 @@ const hasClose = Astro.slots.has('close');
 
 <script>
   /**
-   * Modal JavaScript — GSAP-powered open/close animations
+   * Modal JavaScript — open/close plumbing only. All motion is CSS.
    *
    * Trigger:  data-modal-trigger="modal-id"  — on any element to open
-   * Close:    data-modal-close                — on any element inside the modal
-   * Dialog:   uses native showModal() / close() API
+   * Close:    data-modal-close                — a button inside the modal
+   * Dismiss:  data-modal-dismiss              — the area beside the panel
+   * Dialog:   native showModal() / close()
    *
-   * Each modal gets a paused GSAP timeline built for its variant.
-   * Open  → dialog.showModal() + tl.play()
-   * Close → tl.reverse() → onReverseComplete calls dialog.close()
-   *
-   * If GSAP is not available, falls back to instant open/close.
+   * The enter/exit transitions live in the style block below, driven by the
+   * [open] attribute plus @starting-style. That means `close()` is all this
+   * has to do — the browser runs the exit transition and hides the dialog
+   * afterwards (`transition-behavior: allow-discrete` holds `display` and
+   * `overlay` open until it finishes). Escape therefore needs no handling at
+   * all: the native cancel closes the dialog and the same transition runs.
+   * The old GSAP version had to preventDefault() the cancel event and drive
+   * close through a reversed timeline, which meant a failure to load the
+   * animation library left the modal impossible to close with the keyboard.
    */
 
-  // Store timelines per modal element (gsap type not available — CDN loaded)
-  const modalTimelines = new WeakMap<HTMLDialogElement, any>();
+  /* Was this modal opened from the keyboard?
+     A native <dialog> returns focus to the trigger on close(), and Chrome
+     always flags that restored focus as :focus-visible — so a user who opened
+     the modal with the MOUSE got a keyboard focus ring around the trigger
+     afterwards. Record the modality at open time and, when it was a pointer,
+     mark the trigger so the ring stays hidden for exactly that restore. */
+  const openedByKeyboard = new WeakMap<HTMLDialogElement, boolean>();
+  const modalTriggers = new WeakMap<HTMLDialogElement, HTMLElement>();
 
-  function buildTimeline(modal: HTMLDialogElement): any | null {
-    const g = (window as any).gsap;
-    if (!g) return null;
+  function rememberOpener(
+    modal: HTMLDialogElement,
+    trigger: HTMLElement,
+    e: MouseEvent,
+  ) {
+    modalTriggers.set(modal, trigger);
+    /* `detail` is the click count: a real pointer click reports 1+, while a
+       click synthesized by Enter/Space on a button reports 0. That is the
+       reliable read of activation modality — checking :focus-visible here is
+       not, because anything that focused the trigger programmatically before
+       the click would report true. */
+    openedByKeyboard.set(modal, e.detail === 0);
+  }
 
-    const variant = modal.dataset.modalVariant || 'small';
-    const backdrop = modal.querySelector('.modal_backdrop');
-    const content = modal.querySelector('.modal_content');
-
-    const tl = g.timeline({
-      paused: true,
-      onReverseComplete: () => {
-        modal.close();
-        restoreScroll();
-        // Clear GSAP inline styles for a clean next open
-        g.set(backdrop, { clearProps: 'all' });
-        g.set(content, { clearProps: 'all' });
-      },
-    });
-
-    if (variant === 'side-panel') {
-      tl.fromTo(backdrop,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.35, ease: 'power1.out', immediateRender: false }
-      );
-      tl.fromTo(content,
-        { xPercent: 100 },
-        { xPercent: 0, duration: 0.45, ease: 'power2.out', force3D: true, immediateRender: false },
-        '<'
-      );
-    } else if (variant === 'full-screen') {
-      tl.fromTo(backdrop,
-        { opacity: 0 },
-        { opacity: 0, duration: 0.01, immediateRender: false }
-      );
-      tl.fromTo(content,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.25, ease: 'power1.out', immediateRender: false }
-      );
-    } else {
-      // small (default)
-      tl.fromTo(backdrop,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.3, ease: 'power1.out', immediateRender: false }
-      );
-      tl.fromTo(content,
-        { opacity: 0, y: '6rem' },
-        { opacity: 1, y: '0rem', duration: 0.3, ease: 'power1.out', immediateRender: false },
-        '<'
-      );
-    }
-
-    return tl;
+  function restoreTriggerFocus(modal: HTMLDialogElement) {
+    const trigger = modalTriggers.get(modal);
+    if (!trigger || openedByKeyboard.get(modal)) return;
+    trigger.setAttribute("data-focus-silent", "");
+    const clear = () => trigger.removeAttribute("data-focus-silent");
+    // Any later Tab or blur re-arms the real focus ring.
+    trigger.addEventListener("blur", clear, { once: true });
+    trigger.addEventListener("keydown", clear, { once: true });
   }
 
   function openModal(modal: HTMLDialogElement) {
-    const g = (window as any).gsap;
-
-    // Show the dialog first so GSAP can measure and apply styles
-    // (display:none elements can't receive transforms reliably)
+    // Scroll lock is CSS, keyed off dialog[open] — see reset.css. Do not set
+    // document.body.style.overflow here: that makes the page-level lock a
+    // single flag shared with every other overlay.
     modal.showModal();
-    document.body.style.overflow = 'hidden';
-
-    if (g) {
-      const variant = modal.dataset.modalVariant || 'small';
-      const backdrop = modal.querySelector('.modal_backdrop');
-      const content = modal.querySelector('.modal_content');
-
-      // Immediately set hidden state — runs in the same JS task as
-      // showModal() so the browser never paints the visible state
-      g.set(backdrop, { opacity: 0 });
-      if (variant === 'side-panel') {
-        g.set(content, { xPercent: 100 });
-      } else if (variant === 'full-screen') {
-        g.set(content, { opacity: 0 });
-      } else {
-        g.set(content, { opacity: 0, y: '6rem' });
-      }
-
-      // Kill any previous timeline to avoid stale tween state
-      const oldTl = modalTimelines.get(modal);
-      if (oldTl) oldTl.kill();
-
-      // Build a fresh timeline every open for clean from/to values
-      const tl = buildTimeline(modal);
-      if (tl) {
-        modalTimelines.set(modal, tl);
-        tl.play();
-      }
-    }
   }
 
   function closeModal(modal: HTMLDialogElement) {
-    const tl = modalTimelines.get(modal);
-    if (tl) {
-      // Reverse the timeline — onReverseComplete calls dialog.close()
-      tl.reverse();
-    } else {
-      // No GSAP — close instantly
-      modal.close();
-      restoreScroll();
-    }
-  }
-
-  function restoreScroll() {
-    const openModals = document.querySelectorAll('dialog[open]');
-    if (openModals.length === 0) {
-      document.body.style.overflow = '';
-    }
+    // Mark the trigger before close(), because close() is what moves focus back.
+    restoreTriggerFocus(modal);
+    modal.close();
   }
 
   function initModals() {
     // ---- Trigger: open modal ----
-    document.addEventListener('click', (e) => {
-      const trigger = (e.target as HTMLElement).closest<HTMLElement>('[data-modal-trigger]');
+    document.addEventListener("click", (e) => {
+      const trigger = (e.target as HTMLElement).closest<HTMLElement>(
+        "[data-modal-trigger]",
+      );
       if (!trigger) return;
 
       const targetId = trigger.dataset.modalTrigger;
       if (!targetId) return;
 
-      const dialog = document.getElementById(targetId) as HTMLDialogElement | null;
+      const dialog = document.getElementById(
+        targetId,
+      ) as HTMLDialogElement | null;
       if (!dialog || !(dialog instanceof HTMLDialogElement)) return;
 
+      // Capture the modality BEFORE showModal() moves focus into the dialog.
+      rememberOpener(dialog, trigger, e as MouseEvent);
       openModal(dialog);
     });
 
-    // ---- Close button / backdrop click ----
-    document.addEventListener('click', (e) => {
-      const closeBtn = (e.target as HTMLElement).closest<HTMLElement>('[data-modal-close]');
-      if (!closeBtn) return;
+    // ---- Close button, and click beside the panel ----
+    document.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
 
-      const dialog = closeBtn.closest<HTMLDialogElement>('dialog');
-      if (!dialog) return;
+      // A close button anywhere inside the modal.
+      const closeBtn = target.closest<HTMLElement>("[data-modal-close]");
+      if (closeBtn) {
+        const dialog = closeBtn.closest<HTMLDialogElement>("dialog");
+        if (dialog) closeModal(dialog);
+        return;
+      }
 
-      closeModal(dialog);
+      // Light dismiss. Matched on the exact target: `closest` would also
+      // match for every click INSIDE the panel, since the dismiss surface is
+      // the panel's parent.
+      if (target.matches("[data-modal-dismiss]")) {
+        const dialog = target.closest<HTMLDialogElement>("dialog");
+        if (dialog) closeModal(dialog);
+      }
     });
 
-    // ---- ESC key — intercept native cancel to animate close ----
-    document.addEventListener('cancel', (e) => {
-      if (e.target instanceof HTMLDialogElement) {
-        e.preventDefault();
-        closeModal(e.target);
-      }
-    }, true);
+    // ---- Escape stays native; this only keeps the focus ring right ----
+    document.addEventListener(
+      "cancel",
+      (e) => {
+        // No preventDefault — the browser closes the dialog and the CSS exit
+        // transition runs. This just marks the trigger first, exactly as
+        // closeModal() does, so the focus ring behaves the same either way.
+        if (e.target instanceof HTMLDialogElement)
+          restoreTriggerFocus(e.target);
+      },
+      true,
+    );
   }
 
-  // GSAP loads from CDN (deferred), so poll briefly before falling back
-  function waitForGsapAndInit(retries = 15) {
-    if ((window as any).gsap) {
-      initModals();
-    } else if (retries > 0) {
-      setTimeout(() => waitForGsapAndInit(retries - 1), 100);
-    } else {
-      // GSAP not available — modals still work, just without animation
-      initModals();
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => waitForGsapAndInit());
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initModals);
   } else {
-    waitForGsapAndInit();
+    initModals();
   }
 </script>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/modal.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   MODAL COMPONENT STYLES
+   ==========================================================================
+   Uses the native <dialog> element for built-in accessibility:
+   focus trapping, ESC key handling, and ::backdrop.
+
+   Structure:
+     <dialog class="modal_dialog" data-modal-variant="small" id="modal-id">
+       <div class="modal_inner" data-modal-dismiss>
+         <div class="modal_content">
+           <div class="modal_scroll">
+             <div class="modal_close_wrap">…close button…</div>
+             <div class="modal_slot">…content…</div>
+           </div>
+         </div>
+       </div>
+     </dialog>
+
+   Variants: small (default) | side-panel | full-screen
+   Trigger:  data-modal-trigger="modal-id" on any element
+   ========================================================================== */
+
+    /* ---- Base dialog reset ---- */
+
+    .modal_dialog {
+      border: none;
+      padding: 0;
+      background: transparent;
+      max-width: 100vw;
+      max-height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      /* `clip`, NOT `hidden`, and the side panel's whole animation depends on
+         it. `overflow: hidden` makes this element a scroll CONTAINER. When
+         showModal() moves focus to the close button inside a panel that is
+         still translated off-screen, the browser scrolls this container to
+         bring the focused element into view — and then keeps following it in,
+         so scrollLeft cancels the translation pixel for pixel. Measured: the
+         transform interpolated 474 → 298 → 179 → 95 → 44 while scrollLeft
+         read 474 → 298 → 179 → 95 → 44, and the panel never visibly moved.
+         `overflow: clip` clips identically but creates no scroll container,
+         so there is nothing to scroll and the slide renders. The vertical
+         variants were never affected because a 100vh panel produces no
+         vertical overflow to scroll toward. */
+      overflow: clip;
+      position: fixed;
+      inset: 0;
+    }
+
+    /* The scrim is the native ::backdrop — see the ANIMATION section for the
+       colour and its transition. It needs no element of its own; CSS can
+       transition a pseudo-element. */
+
+    /* ---- Inner layout — centers the content panel ---- */
+
+    .modal_inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* This whole box is the click-to-dismiss surface. */
+      cursor: pointer;
+    }
+
+    /* ---- Content panel ---- */
+
+    .modal_content {
+      position: relative;
+      z-index: 1;
+      cursor: auto;
+      background-color: var(--background-2);
+      color: var(--text);
+      border-radius: var(--radius-main);
+      width: calc(100% - var(--site-margin) * 2);
+      max-height: calc(100vh - var(--site-margin) * 2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Scrollable inner area ---- */
+
+    .modal_scroll {
+      overflow-y: auto;
+      width: 100%;
+      height: 100%;
+      padding: var(--space-7);
+      position: relative;
+    }
+
+    /* ---- Close button position ---- */
+
+    .modal_close_wrap {
+      position: absolute;
+      top: var(--space-4);
+      right: var(--space-4);
+      z-index: 2;
+    }
+
+    /* ---- Content slot ---- */
+
+    .modal_slot {
+      width: 100%;
+    }
+
+    /* ==========================================================================
+   VARIANT: small (default) — centered panel
+   ========================================================================== */
+
+    .modal_dialog[data-modal-variant="small"] .modal_content {
+      max-width: var(--max-width-small); /* 800px */
+    }
+
+    /* ==========================================================================
+   VARIANT: side-panel — slides in from the right
+   ========================================================================== */
+
+    .modal_dialog[data-modal-variant="side-panel"] .modal_inner {
+      justify-content: flex-end;
+    }
+
+    .modal_dialog[data-modal-variant="side-panel"] .modal_content {
+      max-width: 31rem;
+      width: 100%;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0;
+    }
+
+    /* ==========================================================================
+   VARIANT: full-screen — content fills the viewport
+   ========================================================================== */
+
+    .modal_dialog[data-modal-variant="full-screen"] .modal_content {
+      max-width: 100%;
+      width: 100%;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0;
+    }
+
+    .modal_dialog[data-modal-variant="full-screen"] .modal_scroll {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal_dialog[data-modal-variant="full-screen"] .modal_slot {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    /* ==========================================================================
+   ANIMATION
+   ==========================================================================
+   Every variant keeps the motion the GSAP timelines had, expressed as
+   transitions on the [open] attribute.
+
+     small        scrim fades in over 300ms while the panel rises 6rem and
+                  fades in over 300ms
+     side-panel   scrim fades in over 350ms while the panel slides in from
+                  the right edge over 450ms
+     full-screen  no scrim (the panel covers everything); panel fades in
+                  over 250ms
+
+   Closing runs the same transitions backwards. GSAP's power1 is a quadratic
+   curve and power2 a cubic one, so
+   `power1.out` is the quad ease-out bezier and its reverse is the quad
+   ease-in; the eases below are those exact curves, not approximations.
+
+   WHY THIS WORKS FROM display:none
+   A closed <dialog> is display:none, and transitions do not run from a
+   display:none starting point. Two modern features fix that:
+
+     @starting-style          supplies the "before" values the browser should
+                              animate FROM at the moment the dialog is shown
+     transition-behavior:     lets `display` and `overlay` participate in a
+     allow-discrete           transition, so the dialog stays painted (and on
+                              the top layer) until the exit finishes instead
+                              of vanishing the instant [open] is removed
+
+   The dialog's own display/overlay transition must therefore last at least
+   as long as the slowest child transition in that variant, or the panel gets
+   cut off mid-exit — hence --_content-exit driving all three.
+   ========================================================================== */
+
+    .modal_dialog {
+      /* Per-variant knobs; overridden in the variant blocks below. */
+      --_content-enter: 300ms;
+      --_content-exit: 300ms;
+      --_scrim-enter: 300ms;
+      --_scrim-exit: 300ms;
+      /* power1.out (quad) and its reverse, power1.in */
+      --_ease-content-enter: cubic-bezier(0.5, 1, 0.89, 1);
+      --_ease-content-exit: cubic-bezier(0.11, 0, 0.5, 0);
+      --_ease-scrim-enter: cubic-bezier(0.5, 1, 0.89, 1);
+      --_ease-scrim-exit: cubic-bezier(0.11, 0, 0.5, 0);
+      /* Where the panel starts from, and returns to on close. */
+      --_from-x: 0;
+      --_from-y: 6rem;
+      /* Opacity the panel starts from. 0 fades it in; 1 means "do not fade
+         at all", which is what a pure slide needs — see side-panel below. */
+      --_from-opacity: 0;
+      /* Fallback matters: ::backdrop only inherits custom properties from its
+         originating element in newer engines, so an older one must still get
+         a scrim rather than a fully transparent overlay. */
+      --_scrim: var(--overlay-scrim, rgb(0 0 0 / 0.6));
+
+      transition:
+        display var(--_content-exit) allow-discrete,
+        overlay var(--_content-exit) allow-discrete;
+    }
+
+    .modal_dialog[open] {
+      transition:
+        display var(--_content-enter) allow-discrete,
+        overlay var(--_content-enter) allow-discrete;
+    }
+
+    /* ---- Scrim ---- */
+
+    .modal_dialog::backdrop {
+      background-color: transparent;
+      transition: background-color var(--_scrim-exit) var(--_ease-scrim-exit);
+    }
+
+    .modal_dialog[open]::backdrop {
+      background-color: var(--_scrim);
+      transition: background-color var(--_scrim-enter) var(--_ease-scrim-enter);
+    }
+
+    @starting-style {
+      .modal_dialog[open]::backdrop {
+        background-color: transparent;
+      }
+    }
+
+    /* ---- Panel ---- */
+
+    .modal_content {
+      opacity: var(--_from-opacity);
+      transform: translate(var(--_from-x), var(--_from-y));
+      transition:
+        opacity var(--_content-exit) var(--_ease-content-exit),
+        transform var(--_content-exit) var(--_ease-content-exit);
+    }
+
+    .modal_dialog[open] .modal_content {
+      opacity: 1;
+      transform: translate(0, 0);
+      transition:
+        opacity var(--_content-enter) var(--_ease-content-enter),
+        transform var(--_content-enter) var(--_ease-content-enter);
+    }
+
+    @starting-style {
+      .modal_dialog[open] .modal_content {
+        opacity: var(--_from-opacity);
+        transform: translate(var(--_from-x), var(--_from-y));
+      }
+    }
+
+    /* ---- Per-variant motion ---- */
+
+    .modal_dialog[data-modal-variant="side-panel"] {
+      --_content-enter: 450ms;
+      --_content-exit: 450ms;
+      --_scrim-enter: 350ms;
+      --_scrim-exit: 350ms;
+      /* power2.out (cubic) and its reverse — a longer, softer settle than the
+         centred panel, which is what made the slide feel weighted. */
+      --_ease-content-enter: cubic-bezier(0.33, 1, 0.68, 1);
+      --_ease-content-exit: cubic-bezier(0.32, 0, 0.67, 0);
+      --_from-x: 100%;
+      --_from-y: 0;
+      /* No fade. The panel stays fully opaque and simply travels in from
+         beyond the right edge, where the dialog's `overflow: clip` hides
+         it until it arrives. Fading it in as well makes it appear to
+         materialise about a third of the way across and then finish the
+         journey, instead of emerging from the edge — the GSAP timeline this
+         replaced tweened xPercent only, and never touched opacity here. */
+      --_from-opacity: 1;
+    }
+
+    .modal_dialog[data-modal-variant="full-screen"] {
+      --_content-enter: 250ms;
+      --_content-exit: 250ms;
+      /* The panel covers the viewport, so a scrim behind it would never be
+         seen. The GSAP timeline tweened it from 0 to 0 for the same reason. */
+      --_scrim: transparent;
+      --_from-x: 0;
+      --_from-y: 0;
+    }
+
+    /* Reduced motion: open and close instantly. Durations go to 1ms rather
+       than 0 so `display`/`overlay` still have a transition to complete and
+       the dialog reliably finishes closing. The GSAP version had no
+       reduced-motion path at all. */
+    @media (prefers-reduced-motion: reduce) {
+      .modal_dialog {
+        --_content-enter: 1ms;
+        --_content-exit: 1ms;
+        --_scrim-enter: 1ms;
+        --_scrim-exit: 1ms;
+        --_from-x: 0;
+        --_from-y: 0;
+      }
+    }
+  }
+</style>

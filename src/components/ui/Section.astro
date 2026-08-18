@@ -1,77 +1,59 @@
 ---
-/**
- * Section — full-width page section with theming, fluid padding,
- * optional background slot, and a constrained container.
- *
- * Slots:
- *   - `background` — absolute overlay (z-index 0) for background images,
- *     videos, or gradient divs. Use `<Visual variant="background">`.
- *   - `default` — main content, rendered inside a `.u-container`.
- *
- * Padding defaults to `'main'` — just omit the prop for almost every section
- * (including heroes and the first section). Don't add `'large'` by default.
- * `'page-top'` is ONLY for a *fixed* navbar; this project's nav is sticky, so
- * the first section does not need extra top padding to clear it.
- *
- * The container (`.u-container`) is a flex column with a built-in `gap`
- * (default `--space-8`). Direct children are spaced apart automatically —
- * don't add `marginBottom` between them; retune the `gap` prop instead.
- *
- * @example Dark hero with background image (default padding — sticky nav)
- * ```astro
- * <Section theme="dark" minHeight id="hero">
- *   <Visual slot="background" src={bg} alt="" variant="background" priority />
- *   <Heading tag="h1" variant="display-xl">Page Title</Heading>
- *   <Text variant="large">Supporting text.</Text>
- * </Section>
- * ```
- *
- * @example Standard content section (padding="main" is the default)
- * ```astro
- * <Section theme="light">
- *   <Heading tag="h2" variant="h2">Section Title</Heading>
- *   <Text variant="regular">Body copy.</Text>
- * </Section>
- * ```
- *
- * @example Narrow prose section
- * ```astro
- * <Section container="narrow">
- *   <Text variant="large">Long-form article text…</Text>
- * </Section>
- * ```
- */
-
+import type { HTMLAttributes } from "astro/types";
+/* ── Props contract ──────────────────────────────────────────────────────────
+   Keep the JSDoc below free of STRAY angle brackets. Write comparisons in
+   words ("posts.length is greater than 0"), never with the literal character.
+   A stray less-than or greater-than in a frontmatter comment silently detaches
+   this file's Props type AT THE CALL SITE: every prop loses its hover tooltip
+   and invalid props stop erroring, with no diagnostic anywhere. Balanced
+   tag-like pairs inside @example blocks are safe — it is the odd one out that
+   breaks it, and the exact trigger interacts with the rest of the file, so do
+   not reason about it — measure it.
+   scripts/hover-probe.mjs drives the real language server and fails if any
+   component's `docs` tooltip goes missing; run `npm run check:hover`.
+   Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
+   pins the type rules: it imports the types from this file and a regression
+   fails `astro check` outright.
+   ─────────────────────────────────────────────────────────────────────────── */
 type SectionTheme =
   /** Inherit the current page / parent theme — no data-theme rendered, section stays transparent */
-  | 'inherit'
-  | 'light'
-  | 'dark'
-  | 'brand';
+  "inherit" | "light" | "dark" | "brand";
 
-type PaddingSize =
-  /** No vertical padding */
-  | 'none'
-  /** Extra small — 1.25–2rem fluid */
-  | 'xsmall'
-  /** Small — 3–5rem fluid */
-  | 'small'
-  /** Main — 4–7rem fluid (default) */
-  | 'main'
-  /** Large — 5.5–10rem fluid */
-  | 'large'
-  /** Page top — 10–14rem fluid; fixed-navbar layouts only (rare). Not needed for this project's sticky nav. */
-  | 'page-top';
+/**
+ * Every padding size the CSS understands (`--section-space-*` in
+ * variables/spacing.css). This is the single source for the padding union —
+ * section-wrapper components import it instead of re-declaring their own.
+ */
+export type PaddingSize =
+  "none" | "xsmall" | "small" | "main" | "large" | "page-top";
+
+/**
+ * `'main'` is the default AND a legal value, deliberately.
+ *
+ * Excluding it from the type was tried and reverted: it made *returning* to
+ * the default a type error, so switching a section back from `large` meant
+ * deleting the prop rather than editing its value — bad in an editor, worse
+ * in a visual builder whose dropdown offers every size. Authoring must never
+ * have a one-way door.
+ *
+ * Determinism comes from the render instead: Section drops `'main'` when it
+ * emits `data-padding-*`, so the HTML is identical whether a caller wrote
+ * `padding="main"` or nothing at all. Writing it is redundant, never wrong.
+ *
+ * The house rule — "don't add the default, let it default" — therefore lives
+ * in CLAUDE.md and in these docs, not in the type. Types can tell a typo from
+ * a value; they cannot tell a deliberate `main` from a reflexive one.
+ */
 
 type ContainerSize =
   /** Standard container — max 90rem / 1440px */
-  | 'default'
+  | "default"
   /** Narrow container — max 48rem / 768px (good for prose) */
-  | 'narrow'
+  | "narrow"
   /** Wide container — max 120rem / 1920px */
-  | 'wide'
+  | "wide"
   /** Full-width — no max-width constraint */
-  | 'full';
+  | "full";
 
 /**
  * Section — full-width page section with theming, fluid padding,
@@ -79,7 +61,8 @@ type ContainerSize =
  *
  * **Props:**
  * - `theme` — color theme: inherit, light, dark, brand
- * - `padding` — vertical padding: none, small, main, large, page-top (default: `'main'` — just omit it)
+ * - `padding` — vertical padding: none, xsmall, small, main, large, page-top.
+ *   Defaults to `'main'` — omit the prop rather than writing the default.
  * - `paddingTop` — override top padding only (`'page-top'` is fixed-navbar only — not this project)
  * - `paddingBottom` — override bottom padding only
  * - `minHeight` — full viewport height `min-height: 100svh` (default: `false`)
@@ -89,12 +72,16 @@ type ContainerSize =
  * - `class` — extra classes on `<section>`
  *
  * **Slots:** `background` (absolute overlay for images/videos), default (content inside container).
+ * A section whose content renders nothing collapses to nothing (CSS `:empty` —
+ * the markup ships but the box, padding and flow position do not).
  */
-interface Props {
+export interface Props extends HTMLAttributes<"section"> {
   /**
    * **Section props:**
    * - `theme` — inherit, light, dark, brand (cascades to children)
-   * - `padding` — sets both top + bottom (default 'main' — just omit it). Override per-side with paddingTop / paddingBottom.
+   * - `padding` — sets both top + bottom. Defaults to `'main'`; omit the prop
+   *   rather than writing the default. Override per-side with
+   *   paddingTop / paddingBottom.
    * - `paddingTop` — override top only ('page-top' is fixed-navbar only — not needed for this project's sticky nav)
    * - `paddingBottom` — override bottom only
    * - `minHeight` — 100svh for hero sections
@@ -107,16 +94,32 @@ interface Props {
    * **Padding options (fluid values scale with viewport):**
    * | Value        | Height                    | Use case                           |
    * |--------------|---------------------------|------------------------------------|
+   * | *(omitted)*  | 4rem → 7rem (64–112px)    | `'main'` — the default; don't write it |
    * | `'none'`     | 0px                       | No spacing (flush sections)        |
    * | `'xsmall'`   | 1.25rem → 2rem (20–32px)  | Tight sub-sections (case studies)  |
    * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
-   * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
    * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
-   * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)    |
+   * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)   |
    *
    * **Slots:** `background` (absolute overlay for images/videos), default (container content)
    */
   docs?: string;
+
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — e.g. `render` set to whether the list has any items — instead of
+   * wrapping the element in a conditional block. Nothing is emitted when
+   * false, so no empty wrapper is left behind.
+   *
+   * This is the only way to remove the markup itself. A section whose content
+   * merely renders empty still emits its tags — it just collapses to zero
+   * size via CSS `:empty`. Use `render` when you know the count up front.
+   *
+   * @default true
+   */
+  render?: boolean;
 
   /**
    * Color theme — cascades CSS variables to all children.
@@ -130,47 +133,38 @@ interface Props {
   theme?: SectionTheme;
 
   /**
-   * Vertical padding (top + bottom). Override per-side with
-   * `paddingTop` / `paddingBottom`.
+   * Vertical padding (top + bottom). Override per-side with `paddingTop` /
+   * `paddingBottom`.
+   *
+   * Defaults to `'main'` (4–7rem fluid) — **omit the prop** rather than
+   * writing `padding="main"`. Writing it is accepted and produces identical
+   * HTML (Section drops the default before emitting `data-padding-*`), it is
+   * simply noise.
    *
    * | Value        | Height                    | Use case                           |
    * |--------------|---------------------------|------------------------------------|
    * | `'none'`     | 0px                       | No spacing (flush sections)        |
+   * | `'xsmall'`   | 1.25rem → 2rem (20–32px)  | Tight sub-sections                 |
    * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
-   * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
+   * | `'main'`     | 4rem → 7rem (64–112px)    | The default — omit instead         |
    * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
-   * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)    |
+   * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)   |
    *
-   * @default 'main'
    * @example padding="small"
    */
   padding?: PaddingSize;
 
   /**
-   * Override top padding only.
-   *
-   * | Value        | Height                    | Use case                           |
-   * |--------------|---------------------------|------------------------------------|
-   * | `'none'`     | 0px                       | No spacing (flush sections)        |
-   * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
-   * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
-   * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
-   * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)    |
+   * Override top padding only. Same values as `padding`; the other side keeps
+   * the `'main'` default.
    *
    * @example paddingTop="none"
    */
   paddingTop?: PaddingSize;
 
   /**
-   * Override bottom padding only.
-   *
-   * | Value        | Height                    | Use case                           |
-   * |--------------|---------------------------|------------------------------------|
-   * | `'none'`     | 0px                       | No spacing (flush sections)        |
-   * | `'small'`    | 3rem → 5rem (48–80px)     | Tight sections, sub-sections       |
-   * | `'main'`     | 4rem → 7rem (64–112px)    | Standard section spacing (default) |
-   * | `'large'`    | 5.5rem → 10rem (88–160px) | Generous breathing room            |
-   * | `'page-top'` | 10rem → 14rem (160–224px) | Fixed-navbar layouts only (rare)    |
+   * Override bottom padding only. Same values as `padding`; the other side
+   * keeps the `'main'` default.
    *
    * @example paddingBottom="none"
    */
@@ -214,79 +208,315 @@ interface Props {
    * @example gap={4}
    */
   gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-
-  /**
-   * HTML `id` for same-page anchor links.
-   * @example id="about"
-   */
-  id?: string;
-
-  /**
-   * Extra classes on the `<section>` element.
-   * @example class="u-background-1"
-   */
-  class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `<section>` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
+/**
+ * Section — full-width page section with theming, fluid padding,
+ * optional background slot, and a constrained container.
+ *
+ * Slots:
+ *   - `background` — absolute overlay (z-index 0) for background images,
+ *     videos, or gradient divs. Use `<Visual variant="background">`.
+ *   - `default` — main content, rendered inside a `.u-container`.
+ *
+ * Padding defaults to `'main'`. Write nothing to get it — but writing
+ * `padding="main"` is legal and renders identically, because the default is
+ * dropped before `data-padding-*` is emitted (so the HTML is deterministic
+ * regardless of authoring habit). Omit the padding props for almost every
+ * section (including heroes and the first section); don't add `'large'` by
+ * default.
+ * `'page-top'` is ONLY for a *fixed* navbar; this project's nav is sticky, so
+ * the first section does not need extra top padding to clear it.
+ *
+ * A section whose content renders nothing collapses to nothing — handled in
+ * CSS via `:empty` (see SELF-ERASURE in the style block), so it costs no slot
+ * render and cannot break client scripts. To drop the markup entirely rather
+ * than just collapse it, decide from data: `render={posts.length > 0}`.
+ *
+ * The container (`.u-container`) is a flex column with a built-in `gap`
+ * (default `--space-8`). Direct children are spaced apart automatically —
+ * don't add `marginBottom` between them; retune the `gap` prop instead.
+ *
+ * @example Dark hero with background image (default padding — sticky nav)
+ * ```astro
+ * <Section theme="dark" minHeight id="hero">
+ *   <Visual slot="background" src={bg} alt="" variant="background" priority />
+ *   <Heading tag="h1" variant="display-xl">Page Title</Heading>
+ *   <Text variant="large">Supporting text.</Text>
+ * </Section>
+ * ```
+ *
+ * @example Standard content section (default padding — no padding prop written)
+ * ```astro
+ * <Section theme="light">
+ *   <Heading tag="h2" variant="h2">Section Title</Heading>
+ *   <Text variant="regular">Body copy.</Text>
+ * </Section>
+ * ```
+ *
+ * @example Narrow prose section
+ * ```astro
+ * <Section container="narrow">
+ *   <Text variant="large">Long-form article text…</Text>
+ * </Section>
+ * ```
+ */
+
 const {
+  render = true,
   docs,
   theme,
-  padding     = 'main',
+  padding,
   paddingTop,
   paddingBottom,
-  minHeight   = false,
-  container   = 'default',
+  minHeight = false,
+  container = "default",
   gap,
   id,
   class: className,
   ...rest
 } = Astro.props;
 
-/* Resolve per-side padding, falling back to the shared `padding` prop */
-const topPadding    = paddingTop    ?? padding;
-const bottomPadding = paddingBottom ?? padding;
+/* Resolve per-side padding, falling back to the shared `padding` prop, then
+   drop the default before it reaches the DOM.
+
+   'main' is a legal prop value (a caller returning a section to the default
+   should edit the value, not delete the prop), but it is never emitted: an
+   omitted attribute already means 'main' via the CSS base rule below. So
+   `padding="main"` and no padding prop at all produce identical HTML, and
+   `data-padding-top="main"` cannot appear no matter who authored the call. */
+const normalizePadding = (value?: PaddingSize) =>
+  value === "main" ? undefined : value;
+const topPadding = normalizePadding(paddingTop ?? padding);
+const bottomPadding = normalizePadding(paddingBottom ?? padding);
 
 /* Container modifier class */
 const containerClass = {
-  'u-container-narrow': container === 'narrow',
-  'u-container-wide':   container === 'wide',
-  'u-container-full':   container === 'full',
+  "u-container-narrow": container === "narrow",
+  "u-container-wide": container === "wide",
+  "u-container-full": container === "full",
 };
-
-/* Check if background slot is used — only renders the slot div when needed */
-const hasBackground = Astro.slots.has('background');
 
 /* 'inherit' means "no data-theme" — section stays transparent and picks up
    the parent context. Map it (and undefined) to undefined so Astro omits
    the attribute entirely. */
-const resolvedTheme = theme === 'inherit' ? undefined : theme;
+const resolvedTheme = theme === "inherit" ? undefined : theme;
 ---
 
-<section
-  class:list={['u-section', { 'u-min-height-screen': minHeight }, className]}
-  data-theme={resolvedTheme}
-  data-padding-top={topPadding}
-  data-padding-bottom={bottomPadding}
-  id={id}
-  {...rest}
->
-  {hasBackground && (
-    <div class="u-background-slot">
-      <slot name="background" />
-    </div>
-  )}
+{
+  /* Gated on the `render` prop only. NEVER gate this on rendered slot content
+     (`Astro.slots.render()` / a slotContent helper): doing so silently drops
+     the hoisted <script> of every component inside the slot, page-wide, and a
+     Section's default slot holds the whole page — it took out every slider,
+     tab, accordion and modal on the site, with nothing in the console.
+     Reproduced in a separate Astro 7 project too, so it is not version-
+     specific. The empty case is handled in CSS instead — see SELF-ERASURE in
+     the style block. */
+  render && (
+    <section
+      class:list={[
+        "u-section",
+        { "u-min-height-screen": minHeight },
+        className,
+      ]}
+      data-theme={resolvedTheme}
+      data-padding-top={topPadding}
+      data-padding-bottom={bottomPadding}
+      id={id}
+      {...rest}
+    >
+      {Astro.slots.has("background") && (
+        <div class="u-background-slot">
+          <slot name="background" />
+        </div>
+      )}
 
-  <div
-    class:list={['u-container', containerClass]}
-    style={gap !== undefined ? `gap: ${gap === 0 ? '0px' : `var(--space-${gap})`}` : undefined}
-  >
-    <slot />
-  </div>
-</section>
+      <div
+        class:list={["u-container", containerClass]}
+        style={
+          gap !== undefined
+            ? `gap: ${gap === 0 ? "0px" : `var(--space-${gap})`}`
+            : undefined
+        }
+      >
+        <slot />
+      </div>
+    </section>
+  )
+}
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/section.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   SECTION COMPONENT
+   ==========================================================================
+   Page section. Structure:
+
+     <section class="u-section" data-theme="dark"
+              data-padding-top="large" data-padding-bottom="none">
+       <div class="u-background-slot">...</div>
+       <div class="u-container">...</div>
+     </section>
+
+   - .u-background-slot  → absolutely positioned, sits behind the container
+   - data-padding-top /
+     data-padding-bottom → override the section's top/bottom padding.
+     Absent at the default ('main') — the base rule below supplies it, and
+     the component strips 'main' before emitting (Section.astro).
+   - .u-container        → constrains content width (defined in utilities/layout.css)
+   ========================================================================== */
+
+    /* Section — position: relative already set on all <section> elements in utilities.css */
+    .u-section {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+      width: 100%;
+      overflow: clip;
+    }
+
+    /* Paint the section background when an explicit theme is applied.
+   Without this, data-theme only reassigns CSS variables but leaves
+   the section transparent — it would inherit the page background instead
+   of showing its own theme colour. */
+    .u-section[data-theme] {
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    /* Background slot — absolutely fills the section, sits behind all content */
+    .u-background-slot {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Force all direct children of the background slot to fill it.
+   This ensures Visual components (and any other element) placed in
+   the slot stretch to cover the section without needing a variant. */
+    .u-background-slot > * {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: unset !important;
+    }
+
+    /* Vertical padding — the base rule supplies the `main` default; the
+   data-padding-top / data-padding-bottom attributes only exist as
+   OVERRIDES. There is deliberately no [data-padding-*="main"] rule: the
+   component strips 'main' before emitting the attribute, so such a rule
+   would be dead code.
+
+   Wrapped in :where() so these rules carry ZERO specificity (the selector
+   collapses to 0,0,0). That lets any single page/component class — e.g.
+   `.split_section { padding-block: … }` — override section padding with a
+   plain (0,1,0) selector. The data-padding rules still win as
+   the default because they follow the base rule in source order. */
+    :where(.u-section) {
+      padding-top: var(--section-space-main);
+      padding-bottom: var(--section-space-main);
+    }
+
+    :where(.u-section[data-padding-top="none"]) {
+      padding-top: 0;
+    }
+    :where(.u-section[data-padding-top="xsmall"]) {
+      padding-top: var(--section-space-xsmall);
+    }
+    :where(.u-section[data-padding-top="small"]) {
+      padding-top: var(--section-space-small);
+    }
+    :where(.u-section[data-padding-top="large"]) {
+      padding-top: var(--section-space-large);
+    }
+    :where(.u-section[data-padding-top="page-top"]) {
+      padding-top: var(--section-space-page-top);
+    }
+
+    :where(.u-section[data-padding-bottom="none"]) {
+      padding-bottom: 0;
+    }
+    :where(.u-section[data-padding-bottom="xsmall"]) {
+      padding-bottom: var(--section-space-xsmall);
+    }
+    :where(.u-section[data-padding-bottom="small"]) {
+      padding-bottom: var(--section-space-small);
+    }
+    :where(.u-section[data-padding-bottom="large"]) {
+      padding-bottom: var(--section-space-large);
+    }
+    :where(.u-section[data-padding-bottom="page-top"]) {
+      padding-bottom: var(--section-space-page-top);
+    }
+
+    /* ==========================================================================
+   SELF-ERASURE — a section that renders nothing takes up nothing
+   ==========================================================================
+   The empty case is detected in CSS, not by rendering the slot in JS.
+
+   The obvious approach — render the slot, check whether the string is blank,
+   and skip the <section> — is a trap: `Astro.slots.render()` makes Astro drop
+   the hoisted <script> of every component inside that slot, page-wide and
+   with no error. Verified on Astro 7 in a separate project as well as here
+   on Astro 6, so it is not a version bug and not something to wait out.
+
+   `:empty` gets the same result for free. When a slot renders nothing Astro
+   emits `<div class="u-container"></div>` with NO whitespace between the
+   tags, so `:empty` matches exactly the empty case — and a section holding a
+   bare text node keeps its text node, so it is correctly left alone. The
+   markup still ships (a couple of dozen bytes); what disappears is the box,
+   its padding, and its slot in the flow, which is the thing that actually
+   shows up on the page.
+
+   To drop a section from the HTML entirely, decide from DATA at the call
+   site: `<Section render={posts.length > 0}>`. That needs no slot render, so
+   it is always safe. */
+    .u-section:has(> .u-container:empty):not(:has(> .u-background-slot > *)) {
+      display: none;
+    }
+
+    /* Container — ensure content sits above the background slot */
+    .u-section > .u-container,
+    .u-section > .u-container-narrow,
+    .u-section > .u-container-wide,
+    .u-section > .u-container-full {
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+   MARGIN TRIM
+   ==========================================================================
+   Removes the first/last child's block margins to prevent double-spacing
+   at the edges of containers and layout columns. Applied automatically
+   to all content containers so text style margins don't create unwanted
+   space at the top/bottom of sections.
+   ========================================================================== */
+
+    /* Native margin-trim (progressive enhancement — Safari 16.4+) */
+    .u-container,
+    .u-container-narrow,
+    .u-container-wide,
+    .u-container-full,
+    .u-layout-column-1,
+    .u-layout-column-2,
+    .u-margin-trim {
+      margin-trim: block-end;
+    }
+
+    /* The cross-browser fallback for this (zeroing the last child's
+   margin-bottom) lives in overrides.css — it has to beat page-layer
+   margins, which nothing in the components layer can. */
+  }
+</style>

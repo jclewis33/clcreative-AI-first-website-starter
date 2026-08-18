@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * StackingPanels — scroll-stacking card section (any number of panels).
  *
@@ -27,13 +28,14 @@
  *   </StackingPanel>
  * </StackingPanels>
  */
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
 
-type PaddingValue = "none" | "small" | "main" | "large" | "page-top";
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **StackingPanels** — scroll-stacking card section.
    *
@@ -61,8 +63,6 @@ interface Props {
   paddingBottom?: PaddingValue;
   /** Extra classes on the Section. */
   class?: string;
-
-  [key: string]: any;
 }
 
 const {
@@ -85,9 +85,7 @@ const {
   {...rest}
 >
   <Layout variant="stack-centered">
-    <Col slot="col1">
-      <slot name="heading" />
-    </Col>
+    <slot name="heading" />
   </Layout>
   <div class="stacking-panels_wrap">
     <div class="stacking-panels_list">
@@ -100,13 +98,17 @@ const {
   // Scroll-stacking effect (desktop only). Each panel but the last in a list
   // scales down as the next panel scrolls up. Scoped per `.stacking-panels_list`
   // so multiple sections on one page don't chain into each other. Count-agnostic.
-  function initStackingPanels() {
-    const gsap = (window as any).gsap;
-    const ScrollTrigger = (window as any).ScrollTrigger;
-    if (!gsap || !ScrollTrigger) return;
-    gsap.registerPlugin(ScrollTrigger);
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { wireScrollRefresh } from "@/scripts/scroll-refresh.js";
 
-    const lists = document.querySelectorAll<HTMLElement>(".stacking-panels_list");
+  function initStackingPanels() {
+    gsap.registerPlugin(ScrollTrigger);
+    wireScrollRefresh(ScrollTrigger);
+
+    const lists = document.querySelectorAll<HTMLElement>(
+      ".stacking-panels_list",
+    );
     if (!lists.length) return;
 
     // Animate only on desktop (≥ 50em / 800px) AND only when the user hasn't
@@ -119,9 +121,13 @@ const {
       "(min-width: 800px) and (prefers-reduced-motion: no-preference)",
       () => {
         lists.forEach((list) => {
-          const items = list.querySelectorAll<HTMLElement>(".stacking-panels_item");
+          const items = list.querySelectorAll<HTMLElement>(
+            ".stacking-panels_item",
+          );
           items.forEach((item, i) => {
-            const card = item.querySelector<HTMLElement>(".stacking-panels_card");
+            const card = item.querySelector<HTMLElement>(
+              ".stacking-panels_card",
+            );
             if (!card || i === items.length - 1) return;
 
             gsap.to(card, {
@@ -147,3 +153,83 @@ const {
     setTimeout(initStackingPanels, 100);
   }
 </script>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/stacking-panels.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* StackingPanels — scroll-stacking card section.
+ * Shared styles for the scroll-stacking pattern. The stack effect
+ * (sticky + GSAP scale)
+ * is desktop-only; below 50em panels flow single-column with the image on top.
+ * Requires a `container-type: inline-size` ancestor (the Section's u-container)
+ * for the @container query. */
+
+    .stacking-panels_wrap {
+      margin-top: var(--space-7);
+    }
+
+    .stacking-panels_list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+
+    .stacking-panels_item {
+      position: sticky;
+      top: calc(var(--nav-height-total) + var(--space-4));
+    }
+
+    .stacking-panels_card {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      flex-direction: column;
+      background: var(--background);
+      border-radius: var(--radius-large);
+      overflow: hidden;
+      box-shadow: var(--box-shadow-medium);
+      border: var(--border-width-main) solid rgba(255, 255, 255, 0.5);
+      transform-origin: center top;
+      will-change: transform, filter;
+    }
+
+    .stacking-panels_card.is-reversed .stacking-panels_visual {
+      order: -1;
+    }
+
+    .stacking-panels_content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--space-7);
+    }
+
+    .stacking-panels_visual {
+      min-height: 400px;
+    }
+
+    /* Medium and below: single-column cards, no sticky — stack in normal flow */
+    @container (width < 50em) {
+      .stacking-panels_item {
+        position: relative;
+        top: 0;
+      }
+
+      .stacking-panels_card {
+        grid-template-columns: minmax(0, 1fr);
+        transform: none !important;
+      }
+
+      .stacking-panels_card .stacking-panels_visual {
+        order: -1;
+        min-height: 280px;
+      }
+
+      .stacking-panels_content {
+        padding-block: var(--space-5);
+        padding-inline: var(--space-4);
+      }
+    }
+  }
+</style>

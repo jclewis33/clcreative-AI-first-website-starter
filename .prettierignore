@@ -1,0 +1,23 @@
+# Build output and caches
+dist/
+.astro/
+node_modules/
+.vercel/
+.netlify/
+.wrangler/
+
+# Lockfiles — owned by the package manager
+package-lock.json
+
+# Static assets served as-is
+public/
+
+# Generated / vendored
+.agents/
+
+# prettier-plugin-astro (0.14.1, latest as of writing) throws a SyntaxError
+# parsing the `is:inline` scripts in these two files - the GTM snippet and the
+# pre-paint banner check. Prettier fails the whole run on them, so they are
+# excluded until the plugin can handle inline scripts. Format them by hand.
+src/components/global/Head.astro
+src/layouts/BaseLayout.astro

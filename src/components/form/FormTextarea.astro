@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * FormTextarea — label + textarea for multiline text input.
  *
@@ -17,7 +18,7 @@
  * ```
  */
 
-interface Props {
+interface Props extends HTMLAttributes<"textarea"> {
   /** Label text for the textarea. */
   label: string;
 
@@ -47,7 +48,7 @@ interface Props {
    *   up above the border when the field is focused or contains a value
    * @default 'default'
    */
-  labelVariant?: 'default' | 'hidden' | 'floating';
+  labelVariant?: "default" | "hidden" | "floating";
 
   /** Default value. */
   value?: string;
@@ -69,9 +70,6 @@ interface Props {
 
   /** Extra classes on the outer `.form_label_wrap` element. */
   class?: string;
-
-  /** Catch-all for extra attributes spread onto the `<textarea>`. */
-  [key: string]: any;
 }
 
 const {
@@ -80,7 +78,7 @@ const {
   placeholder,
   required = false,
   disabled = false,
-  labelVariant = 'default',
+  labelVariant = "default",
   value,
   rows = 5,
   helperText,
@@ -91,20 +89,24 @@ const {
 } = Astro.props;
 
 const fieldId = id || `field-${name}`;
-const describedById = (helperText || errorText) ? `${fieldId}-hint` : undefined;
-const isFloating = labelVariant === 'floating';
-const resolvedPlaceholder = isFloating ? (placeholder || ' ') : placeholder;
+const describedById = helperText || errorText ? `${fieldId}-hint` : undefined;
+const isFloating = labelVariant === "floating";
+const resolvedPlaceholder = isFloating ? placeholder || " " : placeholder;
 ---
 
-<div
-  class:list={['form_label_wrap', isFloating && 'is-floating', className]}
->
+<div class:list={["form_label_wrap", isFloating && "is-floating", className]}>
   <label
-    class:list={['form_label_text', labelVariant === 'hidden' && 'u-sr-only']}
+    class:list={["form_label_text", labelVariant === "hidden" && "u-sr-only"]}
     for={fieldId}
   >
     {label}
-    {required && <span class="form_required" aria-hidden="true">*</span>}
+    {
+      required && (
+        <span class="form_required" aria-hidden="true">
+          *
+        </span>
+      )
+    }
   </label>
 
   <textarea
@@ -116,16 +118,18 @@ const resolvedPlaceholder = isFloating ? (placeholder || ' ') : placeholder;
     disabled={disabled}
     rows={rows}
     aria-describedby={describedById}
-    aria-invalid={errorText ? 'true' : undefined}
-    {...rest}
-  >{value}</textarea>
+    aria-invalid={errorText ? "true" : undefined}
+    {...rest}>{value}</textarea
+  >
 
-  {(helperText || errorText) && (
-    <p
-      class:list={['form_helper_text', errorText && 'is-error']}
-      id={describedById}
-    >
-      {errorText || helperText}
-    </p>
-  )}
+  {
+    (helperText || errorText) && (
+      <p
+        class:list={["form_helper_text", errorText && "is-error"]}
+        id={describedById}
+      >
+        {errorText || helperText}
+      </p>
+    )
+  }
 </div>

@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Button — a theme-aware button component.
  *
@@ -17,7 +18,7 @@
  * - `large`   — prominent CTA
  *
  * Colour transitions are plain CSS — `.button_main_wrap:hover` /
- * `:has(:focus-visible)` swap the theme tokens, no JavaScript required.
+ * `:focus-visible` swap the theme tokens, no JavaScript required.
  * Buttons automatically adapt to `data-theme="light|dark|brand"` on any ancestor.
  *
  * @example Primary link button (most common)
@@ -35,7 +36,7 @@
  * @example Text-link button
  * ```astro
  * <Button variant="text" href="/blog" ariaLabel="Read more articles">
- *   Read more →
+ *   Read more
  * </Button>
  * ```
  *
@@ -75,6 +76,22 @@
  * - `'secondary'` — outlined / ghost button
  * - `'text'`      — text-link style, no background or side borders
  */
+
+/* ── Props contract ──────────────────────────────────────────────────────────
+   Keep the JSDoc below free of STRAY angle brackets. Write comparisons in
+   words ("posts.length is greater than 0"), never with the literal character.
+   A stray less-than or greater-than in a frontmatter comment silently detaches
+   this file's Props type AT THE CALL SITE: every prop loses its hover tooltip
+   and invalid props stop erroring, with no diagnostic anywhere. Balanced
+   tag-like pairs inside @example blocks are safe — it is the odd one out that
+   breaks it, and the exact trigger interacts with the rest of the file, so do
+   not reason about it — measure it.
+   scripts/hover-probe.mjs drives the real language server and fails if any
+   component's `docs` tooltip goes missing; run `npm run check:hover`.
+   Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
+   pins the type rules: it imports the types from this file and a regression
+   fails `astro check` outright.
+   ─────────────────────────────────────────────────────────────────────────── */
 type ButtonVariant = "primary" | "secondary" | "text";
 
 /**
@@ -104,12 +121,12 @@ type ButtonHoverTheme = "light" | "dark" | "brand";
  * - `href` — turns into a link (`<a>` tag)
  * - `newTab` — open link in new tab (default: `false`)
  * - `disabled` — disable the button, not links (default: `false`)
- * - `ariaLabel` — accessible label on the clickable overlay (**required**)
+ * - `ariaLabel` — accessible name for ICON-ONLY buttons (visible text is the name otherwise)
  * - `type` — native button type: button, submit, reset (default: `'button'`)
  * - `square` — remove pill radius (default: `false`)
  * - `id` — HTML id on wrapper
  * - `class` — extra classes on wrapper
- * - `[key: string]` — extra attributes spread onto clickable overlay (e.g. `data-modal-trigger`)
+ * - standard DOM attributes of the rendered element — spread onto the root `<a>`/`<button>` (e.g. `data-modal-trigger`)
  *
  * **Slots:** default (label text), `icon` (rendered after label).
  *
@@ -120,22 +137,35 @@ type ButtonHoverTheme = "light" | "dark" | "brand";
  * </Button>
  * ```
  */
-interface Props {
+/* Props are a DISCRIMINATED UNION on `href`: the presence of href picks the <a> branch, its absence picks the <button>
+   branch, and each branch pulls in the real DOM attributes for that element
+   via HTMLAttributes. Props that only make sense on the other branch are
+   typed `never`, so misuse is an editor error at the call site:
+
+     <Button type="submit" href="/x">   ❌ type is a button-only prop
+     <Button newTab>                    ❌ newTab needs an href
+     <Button disabled href="/x">        ❌ links cannot be disabled
+
+   There is deliberately NO index signature: a `[key: string]: any` would
+   make every typo type-check. Arbitrary `data-*` attributes still pass
+   (HTMLAttributes carries a `data-\${string}` index), and standard DOM
+   attributes (`style`, `aria-*`, `id`, `class`) are inherited and CHECKED. */
+interface BaseProps {
   /**
    * **Button props:**
    * - `variant` — `'primary'` | `'secondary'` | `'text'` (default `'primary'`)
    * - `size` — `'default'` | `'small'` | `'large'` (default `'default'`)
-   * - `href` — link URL (renders `<a>`)
-   * - `newTab` — open in new tab
-   * - `disabled` — disable button
-   * - `ariaLabel` — accessible label (required)
-   * - `type` — `'button'` | `'submit'` | `'reset'` (default `'button'`)
+   * - `href` — link URL (renders `<a>`; without it renders `<button>`)
+   * - `newTab` — open in new tab (link buttons only)
+   * - `disabled` / `type` — native button behavior (non-link buttons only)
+   * - `ariaLabel` — accessible name for ICON-ONLY buttons (ignored when the
+   *   button has visible text — the text is the accessible name)
    * - `square` — removes pill radius
-   * - `fullWidth` — stretches button to 100% width (block display) (default `false`)
-   * - `hoverTheme` — `'light'` | `'dark'` | `'brand'` — override hover colours with a different theme's tokens. Useful when a button sits on a differently-themed container (e.g. brand button on dark card → pass `hoverTheme="brand"` to avoid dark hover).
-   * - `id` — wrapper id
-   * - `class` — extra classes
-   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to clickable overlay (`<a>` or `<button>`)
+   * - `fullWidth` — stretches button to 100% width (default `false`)
+   * - `hoverTheme` — `'light'` | `'dark'` | `'brand'` — hover tokens override
+   * - `supportText` — small muted line under the button
+   * - Also accepts the standard attributes of the element it renders
+   *   (`style`, `data-*`, `aria-*`, …) — spread onto the root `<a>`/`<button>`
    *
    * **Slots:** default (label text), `icon` (after label)
    */
@@ -146,9 +176,9 @@ interface Props {
    *
    * | Value | Description |
    * |-------|-------------|
-   * | `'primary'` | Filled button — uses `--button-primary-*` theme tokens. Lime on light, lime on dark, inverted on brand. |
-   * | `'secondary'` | Outlined / ghost — uses `--button-secondary-*` theme tokens. Transparent bg with border. |
-   * | `'text'` | Text-link style — no background, no side borders, bottom border only. Uses `--link-*` theme tokens. |
+   * | `'primary'` | Filled button — uses `--button-primary-*` theme tokens. |
+   * | `'secondary'` | Outlined / ghost — uses `--button-secondary-*` theme tokens. |
+   * | `'text'` | Text-link style — no background, bottom border only, draws its own chevron. Uses `--link-*` theme tokens. |
    *
    * @default 'primary'
    */
@@ -168,66 +198,24 @@ interface Props {
   size?: ButtonSize;
 
   /**
-   * Turns the button into a link (`<a>` tag).
-   * When set, the clickable overlay renders as an `<a>` element.
-   * When omitted, it renders as a `<button>` element.
+   * Accessible name override.
    *
-   * @example
-   * ```astro
-   * <Button href="/about" ariaLabel="About us">About</Button>
-   * ```
-   */
-  href?: string;
-
-  /**
-   * Opens the link in a new tab. Only applies when `href` is set.
-   * Automatically adds `rel="noopener noreferrer"` for security.
-   * @default false
-   */
-  newTab?: boolean;
-
-  /**
-   * Disables the button. Only applies to `<button>` elements (not links).
-   * When disabled, the wrapper gets `opacity: 0.4`, `cursor: not-allowed`,
-   * and `pointer-events: none` via the `[data-button]:has(button:disabled)` rule.
-   * @default false
-   */
-  disabled?: boolean;
-
-  /**
-   * Accessible label for the clickable overlay.
-   * This is the text screen readers announce — the visible `.button_main_text`
-   * is set to `aria-hidden="true"`. On link buttons it is ALSO rendered as a
-   * visually-hidden `<span class="u-sr-only">` inside the `<a>`, so crawlers
-   * see real anchor text (an `aria-label` alone leaves the anchor textless
-   * for SEO).
+   * - **Icon-only button** (no visible text): REQUIRED — there is nothing
+   *   else to announce.
+   * - **Button with visible text**: optional. Use it to disambiguate repeated
+   *   labels — six "Learn more" links become "Learn more about Essentials
+   *   Package", etc. WCAG 2.5.3 ("Label in Name") requires the label to
+   *   CONTAIN the visible text: start it with the words on the button. A
+   *   dev-only browser check warns on labels that don't.
    *
-   * **Required** — always pass the readable button text here. If omitted,
-   * the component falls back to the button's slot text so the link is never
-   * nameless.
-   *
-   * @example ariaLabel="Book your free strategy call"
+   * @example ariaLabel="Learn more about Essentials Package"
    */
   ariaLabel?: string;
-
-  /**
-   * Native button type. Only applies when `href` is **not** set.
-   * - `'button'` — generic (default)
-   * - `'submit'` — submits the nearest `<form>`
-   * - `'reset'`  — resets the nearest `<form>`
-   * @default 'button'
-   */
-  type?: "button" | "submit" | "reset";
 
   /**
    * Removes the default pill radius (sets `border-radius: 0`).
    * Applies the `button_main_wrap--no-radius` modifier.
    * @default false
-   *
-   * @example
-   * ```astro
-   * <Button square href="/pricing" ariaLabel="View pricing">Pricing</Button>
-   * ```
    */
   square?: boolean;
 
@@ -235,11 +223,6 @@ interface Props {
    * Stretches the button to 100% width of its parent (block display).
    * By default buttons are `inline-block` and shrink-wrap their content.
    * @default false
-   *
-   * @example
-   * ```astro
-   * <Button fullWidth href="/start" ariaLabel="Get started">Get Started</Button>
-   * ```
    */
   fullWidth?: boolean;
 
@@ -254,28 +237,8 @@ interface Props {
    * | `'light'` | Hover uses the light theme's button tokens (hover to dark) |
    * | `'dark'`  | Hover uses the dark theme's button tokens (hover to white) |
    * | `'brand'` | Hover uses the brand theme's button tokens (subtle darken) |
-   *
-   * @example
-   * ```astro
-   * <Button hoverTheme="brand" href="#" ariaLabel="CTA">Get the guide</Button>
-   * ```
    */
   hoverTheme?: ButtonHoverTheme;
-
-  /**
-   * HTML `id` attribute applied to the wrapper element.
-   *
-   * @example id="hero-cta"
-   */
-  id?: string;
-
-  /**
-   * Extra classes appended to the outer `.button_main_wrap` wrapper.
-   * Use for spacing utilities or layout overrides.
-   *
-   * @example class="u-margin-top-4"
-   */
-  class?: string;
 
   /**
    * Optional supporting copy displayed below the button.
@@ -290,21 +253,55 @@ interface Props {
    * ```
    */
   supportText?: string;
-
-  /**
-   * Catch-all for additional HTML attributes.
-   * Any extra props are spread onto the clickable overlay element (`<a>` or `<button>`).
-   * Useful for `data-modal-trigger`, `data-modal-close`, etc.
-   *
-   * @example
-   * ```astro
-   * <Button data-modal-trigger="contact-modal" ariaLabel="Open contact form">
-   *   Contact Us
-   * </Button>
-   * ```
-   */
-  [key: string]: any;
 }
+
+export type Props = BaseProps &
+  (
+    | ({
+        /** Link URL — this branch renders an `<a>`. */
+        href: string;
+        /**
+         * Opens the link in a new tab; adds `rel="noopener noreferrer"`.
+         * @default false
+         */
+        newTab?: boolean;
+        /** Button-only prop — a link has no form type. */
+        type?: never;
+        /** Button-only prop — a link cannot be disabled; omit the href instead. */
+        disabled?: never;
+      } & HTMLAttributes<"a">)
+    | ({
+        /** No href — this branch renders a `<button>`. */
+        href?: never;
+        /** Link-only prop — a `<button>` has no destination to open in a tab. */
+        newTab?: never;
+        /**
+         * Native button type. `'submit'` submits the nearest form.
+         * @default 'button'
+         */
+        type?: "button" | "submit" | "reset";
+        /**
+         * Disables the button: `opacity: 0.4`, `cursor: not-allowed` via
+         * `.button_main_wrap:disabled`; a native disabled button also stops
+         * receiving pointer and keyboard events on its own.
+         * @default false
+         */
+        disabled?: boolean;
+      } & HTMLAttributes<"button">)
+  );
+
+/* The strict union is for CALLERS. Inside the component TypeScript cannot
+   know which branch it is in, so the implementation reads props through this
+   flat, permissive shape instead — the standard companion to a discriminated
+   union. */
+type AllProps = BaseProps & {
+  href?: string;
+  newTab?: boolean;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  id?: string;
+  class?: string;
+};
 
 const {
   docs,
@@ -322,7 +319,7 @@ const {
   id,
   class: className,
   ...rest
-} = Astro.props;
+} = Astro.props as AllProps;
 
 /* Renders as <a> when an href is provided, otherwise a plain <button> — for
    modal triggers/closes (data-modal-trigger / data-modal-close), form submits,
@@ -330,24 +327,40 @@ const {
    element below; there is no default navigation. */
 const resolvedHref = href;
 
-/* Never render a nameless control: fall back to the slot's text content when
-   no ariaLabel is passed. (Rendering the slot here is fine — Astro slots can
-   be rendered more than once.) */
-const slotText = (await Astro.slots.render("default"))
-  ?.replace(/<[^>]*>/g, " ")
-  .replace(/\s+/g, " ")
-  .trim();
-const resolvedAriaLabel = ariaLabel ?? (slotText || undefined);
+/* Icon-only? Then the button has no visible text and needs an aria-label.
+
+   This asks whether a default slot EXISTS — it never renders one. Rendering a
+   slot from frontmatter forces its children to render before Astro has
+   finished setting up the render context, and if anything in there is an
+   <Image>, the image service is not ready yet and getImage() throws
+   "Cannot read properties of undefined (reading 'validateOptions')". That is a
+   real crash in `astro dev`, and it only shows on the FIRST page rendered
+   after the server starts — which makes it look intermittent. Never call
+   Astro.slots.render() in frontmatter. */
+const isIconOnly = !Astro.slots.has("default");
+
+/* The accessible name. ariaLabel is emitted whenever it is passed:
+   - Icon-only button → it is REQUIRED (there is no visible text to announce).
+   - Button with visible text → it is allowed, and useful for disambiguating
+     repeated labels ("Learn more" × 6 → "Learn more about Essentials
+     Package"). WCAG 2.5.3 ("Label in Name") only demands that the label
+     CONTAIN the visible text; a containing label passes and helps.
+   The failure mode is a label that does NOT contain the visible text — voice
+   control users say what they see and nothing matches. That cannot be checked
+   here (reading the slot means rendering it in frontmatter, which crashes the
+   image service — see the isIconOnly note above), so a dev-only script below
+   checks the RENDERED DOM in the browser instead and flags real mismatches. */
+const resolvedAriaLabel = ariaLabel ?? undefined;
 
 /* Wrapper classes */
+/* Array + class:list (the project's one class-merge idiom — see CLAUDE.md).
+   class:list drops the falsy entries itself. */
 const wrapClasses = [
   "button_main_wrap",
   square && "button_main_wrap--no-radius",
   fullWidth && "button_main_wrap--full-width",
   className,
-]
-  .filter(Boolean)
-  .join(" ");
+];
 
 /* Data attributes for variant/size (CSS selectors in buttons.css) */
 const dataVariant = variant;
@@ -360,45 +373,30 @@ const linkTarget = newTab ? "_blank" : undefined;
 
 /* Check if icon slot is used */
 const hasIcon = Astro.slots.has("icon");
+/* Element + attributes. An href renders an <a>; otherwise a <button> for modal
+   triggers/closes, form submits, or JS actions. */
+const Tag = resolvedHref ? "a" : "button";
+const tagAttrs = resolvedHref
+  ? { href: resolvedHref, target: linkTarget, rel: linkRel }
+  : { type, disabled };
 ---
 
 {
   supportText ? (
     <div class="button_support_wrap">
-      <div
-        class={wrapClasses}
+      <Tag
+        class:list={wrapClasses}
         data-button-variant={dataVariant}
         data-button-size={dataSize}
         data-button-hover={dataHoverTheme}
         data-button
         id={id}
+        aria-label={resolvedAriaLabel}
+        {...tagAttrs}
+        {...rest}
       >
-        <div class="clickable_wrap u-cover-absolute">
-          {resolvedHref ? (
-            <a
-              href={resolvedHref}
-              class="clickable_link"
-              aria-label={resolvedAriaLabel}
-              target={linkTarget}
-              rel={linkRel}
-              {...rest}
-            >
-              {/* Real anchor text for crawlers — the visible label is
-                  aria-hidden, and an aria-label alone is invisible to SEO. */}
-              <span class="u-sr-only">{resolvedAriaLabel}</span>
-            </a>
-          ) : (
-            <button
-              class="clickable_btn"
-              type={type}
-              disabled={disabled}
-              aria-label={resolvedAriaLabel}
-              {...rest}
-            />
-          )}
-        </div>
-        <div class="button_main_element">
-          <span class="button_main_text" aria-hidden="true">
+        <span class="button_main_element">
+          <span class="button_main_text">
             <slot />
           </span>
           {hasIcon && (
@@ -406,47 +404,26 @@ const hasIcon = Astro.slots.has("icon");
               <slot name="icon" />
             </span>
           )}
-        </div>
-      </div>
+        </span>
+      </Tag>
       <p class="button_support_text u-text-style-small u-text-style-muted">
         {supportText}
       </p>
     </div>
   ) : (
-    <div
-      class={wrapClasses}
+    <Tag
+      class:list={wrapClasses}
       data-button-variant={dataVariant}
       data-button-size={dataSize}
       data-button-hover={dataHoverTheme}
       data-button
       id={id}
+      aria-label={resolvedAriaLabel}
+      {...tagAttrs}
+      {...rest}
     >
-      <div class="clickable_wrap u-cover-absolute">
-        {resolvedHref ? (
-          <a
-            href={resolvedHref}
-            class="clickable_link"
-            aria-label={resolvedAriaLabel}
-            target={linkTarget}
-            rel={linkRel}
-            {...rest}
-          >
-            {/* Real anchor text for crawlers — the visible label is
-                aria-hidden, and an aria-label alone is invisible to SEO. */}
-            <span class="u-sr-only">{resolvedAriaLabel}</span>
-          </a>
-        ) : (
-          <button
-            class="clickable_btn"
-            type={type}
-            disabled={disabled}
-            aria-label={resolvedAriaLabel}
-            {...rest}
-          />
-        )}
-      </div>
-      <div class="button_main_element">
-        <span class="button_main_text" aria-hidden="true">
+      <span class="button_main_element">
+        <span class="button_main_text">
           <slot />
         </span>
         {hasIcon && (
@@ -454,7 +431,585 @@ const hasIcon = Astro.slots.has("icon");
             <slot name="icon" />
           </span>
         )}
-      </div>
-    </div>
+      </span>
+    </Tag>
   )
 }
+
+<script>
+  /* Dev-only WCAG 2.5.3 ("Label in Name") check. A button's aria-label must
+     CONTAIN its visible text — voice-control users say what they see, and a
+     label like "View archive" on a button reading "All Posts" leaves them with
+     nothing to match. This cannot be validated in frontmatter (reading the
+     slot there means rendering it, which crashes Astro's image service), so it
+     runs against the rendered DOM in the browser. Vite strips the whole block
+     from production builds — import.meta.env.DEV is a compile-time constant. */
+  if (import.meta.env.DEV) {
+    const norm = (t: string) =>
+      t
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    const check = () => {
+      document
+        .querySelectorAll<HTMLElement>("[data-button][aria-label]")
+        .forEach((el) => {
+          const label = el.getAttribute("aria-label") ?? "";
+          const text = norm(el.textContent ?? "");
+          if (text && !norm(label).includes(text)) {
+            console.warn(
+              `[Button] WCAG 2.5.3: aria-label "${label}" does not contain ` +
+                `the visible text "${(el.textContent ?? "").trim()}". Voice ` +
+                `control users say what they see — start the label with the ` +
+                `visible text, or drop it.`,
+              el,
+            );
+          }
+        });
+    };
+    document.readyState === "loading"
+      ? document.addEventListener("DOMContentLoaded", check)
+      : check();
+  }
+</script>
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/buttons.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   BUTTON COMPONENT STYLES
+   ==========================================================================
+   The Button renders a REAL <a> or <button> as its root — no clickable
+   overlay. The visible label is therefore the accessible name, which is why
+   `aria-label` is emitted only for icon-only buttons.
+
+   STRUCTURE
+     <a class="button_main_wrap" href="…" data-button-variant="primary" data-button>
+       <span class="button_main_element">          ← the painted surface (bg, border, padding)
+         <span class="button_main_text">Label</span>
+         <span class="button_main_icon">…</span>   ← optional icon slot
+       </span>
+     </a>
+     …or <button class="button_main_wrap" type="button"> when there is no href.
+
+     Do not build this as a wrapper → stretched-<a> → aria-hidden-visual
+     structure. That shape needs a duplicate .u-sr-only copy of every label
+     (which drifts from the visible text) and a :has(:focus-visible) hop to
+     move focus styling onto the visual element. Rendering the real control
+     as the root means :focus-visible applies to the element that is actually
+     focused.
+
+   VARIANT SELECTION
+     data-button-variant="primary"     (default — lime filled)
+     data-button-variant="secondary"   (outlined / ghost)
+     data-button-variant="text"        (text-link style, no bg/border)
+
+   SIZE SELECTION
+     data-button-size="small"          (compact)
+     data-button-size="large"          (prominent CTA)
+     (no attribute = default size)
+
+   HOVER / FOCUS
+     Rest colors are declared on the element; hover/focus colors are applied
+     via `[data-button-variant="…"]:hover > .button_main_element` and
+     `…:focus-visible > .button_main_element`. Those descendant selectors
+     (0-2-0+) out-specify the global `a:hover` (0-1-1), so the button colors
+     win even though the root now renders as an <a>.
+     The toggle / arrow / close controls follow the same shape: each is a
+     real <button> carrying the *_wrap class, with the painted *_element and
+     *_icon spans inside.
+   ========================================================================== */
+
+    /* =====================================================
+   BUTTON WRAPPERS
+   Set border-radius (inherited by child elements).
+   All wrappers default to fully-rounded (pill / circle).
+   ===================================================== */
+
+    /* This element IS the <a> or <button> (see the STRUCTURE note above), so it
+       carries the UA resets a bare wrapper div never needed. */
+    .button_main_wrap {
+      border-radius: var(--radius-main);
+      display: inline-block;
+      position: relative;
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      color: inherit;
+      text-align: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .button_main_wrap:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+
+    .button_main_wrap--no-radius {
+      border-radius: 0;
+    }
+
+    .button_main_wrap--full-width {
+      display: block;
+      width: 100%;
+    }
+
+    /* ---- Support text wrapper ---- */
+    .button_support_wrap {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: inherit;
+    }
+
+    .button_support_text {
+      margin-top: var(--space-1);
+      margin-bottom: 0;
+    }
+
+    .button_toggle_wrap {
+      border-radius: var(--radius-full);
+      display: inline-block;
+      position: relative;
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .button_toggle_wrap:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+
+    .button_arrow_wrap {
+      border-radius: var(--radius-full);
+      display: inline-block;
+      position: relative;
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .button_arrow_wrap:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+
+    .button_close_wrap {
+      border-radius: var(--radius-full);
+      display: inline-block;
+      position: relative;
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .button_close_wrap:disabled {
+      cursor: not-allowed;
+      opacity: 0.4;
+    }
+
+    /* =====================================================
+   BUTTON MAIN — PRIMARY (default)
+   ===================================================== */
+
+    .button_main_element {
+      font-family: var(--font-tertiary);
+      font-size: var(--text-small-size);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-tight);
+      gap: 0.5rem;
+      text-align: center;
+      vertical-align: middle;
+      color: var(--button-primary-text);
+      background-color: var(--button-primary-background);
+      border: var(--border-width-main) solid;
+      border-color: var(--button-primary-border);
+      border-radius: inherit;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      padding: 0.9rem 1.5rem;
+      line-height: 1;
+      transition: all 0.2s ease;
+      display: flex;
+      position: relative;
+    }
+
+    /* Scoped to the primary variant so the filled-background hover doesn't bleed
+   onto the secondary (outlined) or text (no-background) variants. */
+    [data-button-variant="primary"]:hover > .button_main_element,
+    [data-button-variant="primary"]:focus-visible > .button_main_element {
+      color: var(--button-primary-text-hover);
+      background-color: var(--button-primary-background-hover);
+      border-color: var(--button-primary-border-hover);
+    }
+
+    /* =====================================================
+   BUTTON MAIN — SECONDARY VARIANT
+   ===================================================== */
+
+    [data-button-variant="secondary"] > .button_main_element {
+      color: var(--button-secondary-text);
+      background-color: var(--button-secondary-background);
+      border-color: var(--button-secondary-border);
+    }
+
+    [data-button-variant="secondary"]:hover > .button_main_element,
+    [data-button-variant="secondary"]:focus-visible > .button_main_element {
+      color: var(--button-secondary-text-hover);
+      background-color: var(--button-secondary-background-hover);
+      border-color: var(--button-secondary-border-hover);
+    }
+
+    /* =====================================================
+   BUTTON MAIN — TEXT VARIANT
+   Text-link style: no background, no side borders,
+   bottom border only, compact padding.
+   ===================================================== */
+
+    [data-button-variant="text"] > .button_main_element {
+      color: var(--link-text);
+      background-color: transparent;
+      border: none;
+      padding: 0.5rem 0;
+      gap: var(--space-1);
+      display: inline-flex;
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    [data-button-variant="text"]:hover > .button_main_element,
+    [data-button-variant="text"]:focus-visible > .button_main_element {
+      color: var(--link-text-hover);
+    }
+
+    /* Text variant wrapper: no pill radius, never full-width */
+    [data-button-variant="text"].button_main_wrap {
+      border-radius: 0;
+      display: inline-block;
+      width: auto;
+    }
+
+    /* Default chevron icon for the text variant. It IS the variant's arrow —
+       do not also type one into the label, or the button reads "Read more → ›".
+       A custom icon slot replaces it (rule below). */
+    [data-button-variant="text"] > .button_main_element::after {
+      content: "\203A"; /* single right-pointing angle quotation mark */
+      font-size: 1.4em;
+      line-height: 0;
+      flex-shrink: 0;
+      margin-top: -0.15em;
+    }
+
+    /* Hide default chevron when a custom icon slot is provided */
+    [data-button-variant="text"]
+      > .button_main_element:has(.button_main_icon)::after {
+      display: none;
+    }
+
+    /* =====================================================
+   BUTTON MAIN — SIZE MODIFIERS
+   ===================================================== */
+
+    [data-button-size="small"] > .button_main_element {
+      padding: 0.55rem 1.25rem;
+    }
+
+    [data-button-size="large"] > .button_main_element {
+      padding: 1rem 2rem;
+    }
+
+    /* Text variant sizes only change vertical padding */
+    [data-button-variant="text"][data-button-size="small"]
+      > .button_main_element {
+      padding: 0.25rem 0;
+    }
+
+    [data-button-variant="text"][data-button-size="large"]
+      > .button_main_element {
+      padding: 0.75rem 0;
+    }
+
+    /* =====================================================
+   BUTTON MAIN — CHILD ELEMENTS
+   ===================================================== */
+
+    .button_main_text {
+      line-height: inherit;
+      position: relative;
+    }
+
+    /* Icon inside button_main_element.
+   Negative vertical margins pull the icon into the button's
+   line-height so it doesn't inflate the overall height. */
+
+    .button_main_icon {
+      aspect-ratio: 1;
+      flex-flow: column;
+      flex: none;
+      justify-content: center;
+      align-items: center;
+      width: 0.8rem;
+      margin-top: -0.5rem;
+      margin-bottom: -0.5rem;
+      display: flex;
+    }
+
+    /* Hide the icon wrapper when the slot is empty */
+    .button_main_icon:empty {
+      display: none;
+    }
+
+    /* =====================================================
+   BUTTON TOGGLE — icon-only button (play/pause, etc.)
+   ===================================================== */
+
+    .button_toggle_element {
+      width: var(--button-size-medium);
+      aspect-ratio: 1;
+      vertical-align: middle;
+      color: var(--button-primary-text);
+      background-color: var(--button-primary-background);
+      border: var(--border-width-main) solid;
+      border-color: var(--button-primary-border);
+      border-radius: inherit;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+      display: flex;
+      position: relative;
+    }
+
+    .button_toggle_wrap:hover .button_toggle_element,
+    .button_toggle_wrap:focus-visible .button_toggle_element {
+      color: var(--button-primary-text-hover);
+      background-color: var(--button-primary-background-hover);
+      border-color: var(--button-primary-border-hover);
+    }
+
+    /* Play/pause icon visibility inside button_toggle_element.
+   Both icons sit absolutely on top of each other; only one shows at a time,
+   based on .is-active on the enclosing .button_toggle_wrap (toggled by JS). */
+
+    .button_toggle_play {
+      opacity: 1;
+      width: 100%;
+      display: block;
+      position: absolute;
+      overflow: visible !important;
+      transition: opacity 0.2s ease;
+    }
+
+    .button_toggle_pause {
+      opacity: 0;
+      width: 100%;
+      display: block;
+      position: absolute;
+      overflow: visible !important;
+      transition: opacity 0.2s ease;
+    }
+
+    .button_toggle_wrap.is-active .button_toggle_play {
+      opacity: 0;
+    }
+
+    .button_toggle_wrap.is-active .button_toggle_pause {
+      opacity: 1;
+    }
+
+    .button_toggle_element--secondary {
+      color: var(--button-secondary-text);
+      background-color: var(--button-secondary-background);
+      border-color: var(--button-secondary-border);
+    }
+
+    .button_toggle_wrap:hover .button_toggle_element--secondary,
+    .button_toggle_wrap:focus-visible .button_toggle_element--secondary {
+      color: var(--button-secondary-text-hover);
+      background-color: var(--button-secondary-background-hover);
+      border-color: var(--button-secondary-border-hover);
+    }
+
+    .button_toggle_icon {
+      aspect-ratio: 1;
+      width: 36%;
+      display: flex;
+      position: relative;
+    }
+
+    /* =====================================================
+   BUTTON ARROW — directional / pagination button
+   ===================================================== */
+
+    .button_arrow_element {
+      width: var(--button-size-medium);
+      aspect-ratio: 1;
+      vertical-align: middle;
+      color: var(--button-primary-text);
+      background-color: var(--button-primary-background);
+      border: var(--border-width-main) solid;
+      border-color: var(--button-primary-border);
+      border-radius: inherit;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+      display: flex;
+      position: relative;
+    }
+
+    .button_arrow_wrap:hover .button_arrow_element,
+    .button_arrow_wrap:focus-visible .button_arrow_element {
+      color: var(--button-primary-text-hover);
+      background-color: var(--button-primary-background-hover);
+      border-color: var(--button-primary-border-hover);
+    }
+
+    .button_arrow_element--secondary {
+      color: var(--button-secondary-text);
+      background-color: var(--button-secondary-background);
+      border-color: var(--button-secondary-border);
+    }
+
+    .button_arrow_wrap:hover .button_arrow_element--secondary,
+    .button_arrow_wrap:focus-visible .button_arrow_element--secondary {
+      color: var(--button-secondary-text-hover);
+      background-color: var(--button-secondary-background-hover);
+      border-color: var(--button-secondary-border-hover);
+    }
+
+    .button_arrow_icon {
+      aspect-ratio: 1;
+      width: 36%;
+      display: flex;
+      position: relative;
+      overflow: visible !important;
+    }
+
+    /* =====================================================
+   BUTTON CLOSE — dismiss / close button
+   Default: primary, medium (width: --button-size-medium).
+   Modifiers:
+     --secondary  → secondary button colors
+     --large      → width: --button-size-large
+   Compose freely: class="button_close_element--secondary button_close_element--large"
+   ===================================================== */
+
+    .button_close_element {
+      width: var(--button-size-medium);
+      aspect-ratio: 1;
+      color: var(--button-primary-text);
+      background-color: var(--button-primary-background);
+      border: var(--border-width-main) solid;
+      border-color: var(--button-primary-border);
+      border-radius: inherit;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+      display: flex;
+      position: relative;
+    }
+
+    .button_close_wrap:hover .button_close_element,
+    .button_close_wrap:focus-visible .button_close_element {
+      color: var(--button-primary-text-hover);
+      background-color: var(--button-primary-background-hover);
+      border-color: var(--button-primary-border-hover);
+    }
+
+    .button_close_element--secondary {
+      color: var(--button-secondary-text);
+      background-color: var(--button-secondary-background);
+      border-color: var(--button-secondary-border);
+    }
+
+    .button_close_wrap:hover .button_close_element--secondary,
+    .button_close_wrap:focus-visible .button_close_element--secondary {
+      color: var(--button-secondary-text-hover);
+      background-color: var(--button-secondary-background-hover);
+      border-color: var(--button-secondary-border-hover);
+    }
+
+    .button_close_element--large {
+      width: var(--button-size-large);
+    }
+
+    .button_close_icon {
+      flex: none;
+      width: 0.8rem;
+      display: block;
+      overflow: visible !important;
+    }
+
+    /* =====================================================
+   HOVER THEME OVERRIDES
+   data-button-hover="light|dark|brand" on the wrapper
+   remaps hover tokens so a button can hover as if it
+   were in a different theme context.
+   ===================================================== */
+
+    /* Light hover — hover to dark */
+    [data-button-hover="light"] {
+      --button-primary-background-hover: var(--color-dark-900);
+      --button-primary-border-hover: var(--color-dark-900);
+      --button-primary-text-hover: var(--color-light-200);
+
+      --button-secondary-background-hover: var(--color-dark-900);
+      --button-secondary-border-hover: var(--color-dark-900);
+      --button-secondary-text-hover: var(--color-light-200);
+    }
+
+    /* Dark hover — hover to white */
+    [data-button-hover="dark"] {
+      --button-primary-background-hover: var(--color-light-100);
+      --button-primary-border-hover: var(--color-light-100);
+      --button-primary-text-hover: var(--color-dark-900);
+
+      --button-secondary-background-hover: var(--color-light-100);
+      --button-secondary-border-hover: var(--color-light-100);
+      --button-secondary-text-hover: var(--color-dark-900);
+    }
+
+    /* Brand hover — subtle darken */
+    [data-button-hover="brand"] {
+      --button-primary-background-hover: color-mix(
+        in srgb,
+        var(--color-brand-text),
+        black 10%
+      );
+      --button-primary-border-hover: color-mix(
+        in srgb,
+        var(--color-brand-text),
+        black 10%
+      );
+      --button-primary-text-hover: var(--color-brand-500);
+
+      --button-secondary-background-hover: var(--color-brand-text);
+      --button-secondary-border-hover: var(--color-brand-text);
+      --button-secondary-text-hover: var(--color-brand-500);
+    }
+  }
+</style>

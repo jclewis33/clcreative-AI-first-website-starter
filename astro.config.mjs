@@ -13,6 +13,7 @@ import {
   SANITY_API_VERSION,
   SITE_URL,
 } from "./src/config/site.shared.mjs";
+import { DEV_ONLY_PATHS, isNoindexRoute } from "./src/config/seo.shared.mjs";
 
 const env = loadEnv(process.env.NODE_ENV ?? "", process.cwd(), "");
 // Fallbacks come from the shared leaf module (src/config/site.shared.mjs) —
@@ -39,28 +40,9 @@ const PUBLIC_SANITY_DATASET = env.PUBLIC_SANITY_DATASET || SANITY_DATASET;
  * appear in the sitemap. The `excludeDevOnlyPages` integration deletes the
  * built directories from `dist/client` after build completes.
  */
-const DEV_ONLY_PATHS = ["/style-guide", "/components"];
 
-/**
- * Sitemap exclusions — TWO lists with TWO different matching modes, both
- * mirrored in public/robots.txt (keep them in sync). A single loose
- * `page.includes(path)` check gets this wrong in both directions: it silently
- * drops real content whose slug contains an excluded word (e.g. a blog post
- * at /blog/components-in-... matching the "/components" exclusion), and
- * naively "fixing" it with exact matching pushes variant pages like
- * /thank-you-call INTO the sitemap while robots.txt still disallows them.
- *
- * SITEMAP_EXCLUDE_PATHS — whole path segments: excludes `/x` and `/x/...`
- * but never `/blog/x-something`. `/preview` is the editor-only SSR draft
- * tree (SSR routes never appear in the sitemap anyway — this is belt and
- * braces should any part of it ever prerender).
- *
- * SITEMAP_EXCLUDE_PREFIXES — literal prefixes, mirroring how robots.txt
- * Disallow works: one `/thank-you` entry covers /thank-you, /thank-you-call,
- * /thank-you-worksheet, etc.
- */
-const SITEMAP_EXCLUDE_PATHS = [...DEV_ONLY_PATHS, "/preview"];
-const SITEMAP_EXCLUDE_PREFIXES = ["/thank-you"];
+/* Sitemap exclusions live in src/config/seo.shared.mjs, alongside the
+   robots.txt route and the noindex meta tag that must agree with them. */
 
 function excludeDevOnlyPages() {
   return {
@@ -123,15 +105,7 @@ export default defineConfig({
   integrations: [
     excludeDevOnlyPages(),
     sitemap({
-      filter: (page) => {
-        const { pathname } = new URL(page);
-        if (SITEMAP_EXCLUDE_PREFIXES.some((p) => pathname.startsWith(p))) {
-          return false;
-        }
-        return !SITEMAP_EXCLUDE_PATHS.some(
-          (p) => pathname === p || pathname.startsWith(`${p}/`),
-        );
-      },
+      filter: (page) => !isNoindexRoute(new URL(page).pathname),
     }),
     // React must be registered BEFORE Sanity — the visual-editing islands
     // (SanityVisualEditing / DisableDraftMode) are React components that need
@@ -161,9 +135,16 @@ export default defineConfig({
   image: {
     /* Valid: "constrained" | "full-width" | "fixed"
 
-    Override on a per image basis.
+    NOTE: this default governs raw <Image /> usage only. The <Visual>
+    component — which renders essentially every image on the site — sets
+    layout="full-width" itself, because it always wraps the image in an
+    aspect-ratio box and lets CSS object-fit do the cropping. So `constrained`
+    below applies to the handful of direct <Image /> calls, not to <Visual>.
 
-    EX: Full width hero set: layout="full-width" to override constrained
+    Layout decides the srcset CANDIDATES. Which candidate the browser picks is
+    decided by `sizes`, and <Visual> emits sizes="auto" on lazy images so the
+    browser measures the real laid-out box. That pairing is what keeps a
+    three-up grid from downloading a 1668px source for a 427px slot.
 
     DEFINITIONS:
     - constrained: responsive, but capped at the image’s max size. Great for images sitting inside text/content columns.
@@ -174,9 +155,24 @@ export default defineConfig({
     */
 
     layout: "constrained",
-    // Adds small global styles so images resize correctly
 
-    responsiveStyles: true,
+    /* Astro's image styles are injected into the page UNLAYERED, as
+       `:where([data-astro-image]) { … }`. The zero-specificity `:where()` is
+       deliberate on Astro's side — it means any author rule outranks them.
+       That holds right up until the author CSS moves into a cascade layer:
+       unlayered declarations beat every layer regardless of selector, so
+       Astro's defaults suddenly win over the entire design system.
+
+       Concretely, with these on, `:where([data-astro-image]) { height: auto }`
+       beat both `img, picture { height: 100% }` in reset.css and `.u-image` in
+       base/visual-utilities.css, and images stopped filling .u-image-wrapper.
+
+       Turning them off is safe here because the design system already provides
+       the equivalent defaults deliberately — see the comment above the
+       `img, picture` rule in reset.css, and the .u-image / .u-image-wrapper
+       rules in base/visual-utilities.css, whose comments state outright that
+       they are written to out-specify these very styles. */
+    responsiveStyles: false,
 
     // Sharp codec-specific encoder defaults (Astro 6.1+). Applied to every
     // locally processed image at build time. Per-image `quality` props on

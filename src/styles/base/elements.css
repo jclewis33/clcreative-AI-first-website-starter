@@ -1,0 +1,155 @@
+/* ==========================================================================
+   ELEMENT DEFAULTS — layer(base)
+   ==========================================================================
+   Owns:      bare element-type selectors — h1-h6, p, a, section, button,
+              label — and nothing else.
+   Does not:  any `u-` class          → utilities/ (a class here would sit
+                                        below components and lose)
+              the normalize/box-sizing pass → ../reset.css
+              attribute defaults      → base/animate.css
+
+   These live in the `base` layer, NOT `utilities`, because a component class
+   must be able to override them. An element selector sitting in the top
+   layer would beat every component class in the codebase — which is exactly
+   the bug this split fixes.
+
+   Rule order here matches the import order the rules were extracted from,
+   so the cascade is unchanged.
+   ========================================================================== */
+
+/* Allow text elements to inherit typography properties from parents */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+label {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-wrap: inherit;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Set all sections to a default of relative */
+section {
+  position: relative;
+}
+
+/* Removes Styles from Button Elements 
+   Important when using the Global Clickable Component for buttons */
+button {
+  background-color: unset;
+  padding: unset;
+  text-align: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+/* ---- from utilities/typography.css: semantic heading + text elements ---- */
+
+/* Apply heading variables to semantic heading tags */
+h1 {
+  font-size: var(--h1-size);
+  font-family: var(--h1-font-family);
+  line-height: var(--h1-line-height);
+  font-weight: var(--h1-weight);
+  text-transform: var(--h1-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+h2 {
+  font-size: var(--h2-size);
+  font-family: var(--h2-font-family);
+  line-height: var(--h2-line-height);
+  font-weight: var(--h2-weight);
+  text-transform: var(--h2-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+h3 {
+  font-size: var(--h3-size);
+  font-family: var(--h3-font-family);
+  line-height: var(--h3-line-height);
+  font-weight: var(--h3-weight);
+  text-transform: var(--h3-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+h4 {
+  font-size: var(--h4-size);
+  font-family: var(--h4-font-family);
+  line-height: var(--h4-line-height);
+  font-weight: var(--h4-weight);
+  text-transform: var(--h4-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+h5 {
+  font-size: var(--h5-size);
+  font-family: var(--h5-font-family);
+  line-height: var(--h5-line-height);
+  font-weight: var(--h5-weight);
+  text-transform: var(--h5-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+h6 {
+  font-size: var(--h6-size);
+  font-family: var(--h6-font-family);
+  line-height: var(--h6-line-height);
+  font-weight: var(--h6-weight);
+  text-transform: var(--h6-text-transform);
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flow-root;
+}
+
+/* ===============================================
+   PARAGRAPH STYLES
+   =============================================== */
+/* Base paragraph — zero margin by default. Margin comes from the
+   u-text-style-* class applied to the child element inside .u-text. */
+
+p {
+  font-family: var(--text-regular-font-family);
+  font-size: var(--text-regular-size);
+  line-height: var(--text-regular-line-height);
+  font-weight: var(--text-regular-weight);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* ===============================================
+   LINK STYLES
+   =============================================== */
+
+/* For links that have classes (most will) */
+a {
+  color: var(--link-text);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--link-text-hover);
+}

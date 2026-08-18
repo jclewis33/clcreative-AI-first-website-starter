@@ -7,36 +7,41 @@
  * (`src/pages/case-studies/[slug].astro`).
  */
 
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import SanityCtaSection from "../sections/SanityCtaSection.astro";
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Grid from "../ui/Grid.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
-import Slider from "../ui/Slider.astro";
-import CaseStudyCard from "../ui/CaseStudyCard.astro";
-import CaseStudyBlockRenderer from "../case-study/CaseStudyBlockRenderer.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
+import Slider from "@/components/ui/Slider.astro";
+import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
+import CaseStudyBlockRenderer from "@/components/case-study/CaseStudyBlockRenderer.astro";
+import type { ContentBlock } from "@/components/case-study/types";
 
-import { urlFor, hotspotPosition } from "../../sanity/lib/image";
+import { urlFor, hotspotPosition } from "@/sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
-import { portableTextToHtml } from "../../sanity/lib/portable-text";
-import { caseStudyJsonLd } from "../../lib/jsonld";
-import JsonLd from "../global/JsonLd.astro";
+import { portableTextToHtml } from "@/sanity/lib/portable-text";
+import { caseStudyJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/global/JsonLd.astro";
 
-import "../../styles/pages/case-study-detail.css";
+import "@/styles/pages/case-study-detail.css";
+import type { loadCaseStudyPage } from "@/sanity/lib/page-data";
+
+/* Slices of what loadCaseStudyPage() returns — see BlogPostTemplate. */
+type PageData = NonNullable<Awaited<ReturnType<typeof loadCaseStudyPage>>>;
 
 interface Props {
-  study: any;
-  allStudies: any[];
-  defaultCtaSection?: any;
+  study: PageData["study"];
+  allStudies: PageData["allStudies"];
+  defaultCtaSection?: PageData["defaultCtaSection"];
 }
 
 const { study, allStudies, defaultCtaSection = null } = Astro.props;
-const resolvedCtaSection = study.ctaSectionOverride ?? defaultCtaSection ?? null;
+const resolvedCtaSection =
+  study.ctaSectionOverride ?? defaultCtaSection ?? null;
 
 const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
 const jsonLd = caseStudyJsonLd(study, siteOrigin);
@@ -58,7 +63,7 @@ const resolveAspectRatio = (block: any, fallback: string) => {
 };
 
 const contentBlocks = (study.content ?? [])
-  .map((block: any) => {
+  .map((block): ContentBlock | null => {
     const spacingProps = {
       sectionSpacing: block.sectionSpacing || undefined,
       sectionSpacingTop: block.sectionSpacingTop || undefined,
@@ -114,8 +119,8 @@ const contentBlocks = (study.content ?? [])
         return {
           type: "imageGrid",
           images: (block.images ?? [])
-            .filter((img: any) => hasImageSource(img))
-            .map((img: any) => ({
+            .filter((img) => hasImageSource(img))
+            .map((img) => ({
               src: urlFor(img).width(1400).url(),
               alt: img.alt || block.defaultAlt || "",
               transparent: img.transparent || false,
@@ -131,13 +136,12 @@ const contentBlocks = (study.content ?? [])
     }
   })
   .filter(
-    (block: any): block is NonNullable<typeof block> =>
-      Boolean(block) &&
-      (block.type !== "imageGrid" || block.images.length > 0),
+    (block): block is ContentBlock =>
+      block !== null && (block.type !== "imageGrid" || block.images.length > 0),
   );
 
 const siblingStudies = (allStudies ?? []).filter(
-  (entry: any) =>
+  (entry) =>
     entry?.slug &&
     entry.slug !== study.slug &&
     entry.title &&
@@ -145,127 +149,128 @@ const siblingStudies = (allStudies ?? []).filter(
 );
 const upNextStudies = siblingStudies.slice(0, 2);
 const categories = Array.isArray(study.categories) ? study.categories : [];
-const galleryImages = (study.galleryImages ?? []).filter((img: any) =>
+const galleryImages = (study.galleryImages ?? []).filter((img) =>
   hasImageSource(img),
 );
 
-const seo = study.seo || {};
-const metaTitle = seo.metaTitle || study.title || "Case Study";
+const seo = study.seo;
+const metaTitle = seo?.metaTitle || study.title || "Case Study";
 const metaDescription =
-  seo.metaDescription || study.description || "Preview this case study draft.";
-const ogTitle = seo.ogTitle || metaTitle;
-const ogDescription = seo.ogDescription || metaDescription;
-const ogImageUrl = seo.ogImage
-  ? urlFor(seo.ogImage).width(1200).height(630).format("jpg").quality(90).url()
+  seo?.metaDescription || study.description || "Preview this case study draft.";
+const ogTitle = seo?.ogTitle || metaTitle;
+const ogDescription = seo?.ogDescription || metaDescription;
+const ogImageUrl = seo?.ogImage
+  ? urlFor(seo?.ogImage).width(1200).height(630).format("jpg").quality(90).url()
   : hasImageSource(study.image)
-    ? urlFor(study.image).width(1200).height(630).format("jpg").quality(90).url()
+    ? urlFor(study.image)
+        .width(1200)
+        .height(630)
+        .format("jpg")
+        .quality(90)
+        .url()
     : undefined;
 ---
 
 <BaseLayout
-  docs=""
   theme="light"
   title={`${metaTitle} | Astro Starter`}
-  description={metaDescription}
-  ogTitle={ogTitle}
-  ogDescription={ogDescription}
-  ogImage={ogImageUrl}
+  description={metaDescription ?? undefined}
+  ogTitle={ogTitle ?? undefined}
+  ogDescription={ogDescription ?? undefined}
+  ogImage={ogImageUrl ?? undefined}
 >
   <JsonLd data={jsonLd} />
-  <Section docs="" theme="dark" class="case-study_detail_hero_wrap">
+  <Section theme="dark" class="case-study_detail_hero_wrap">
     <Layout variant="stack" verticalAlign="center">
-      <Col slot="col1">
-        <a href="/case-studies" class="case-study_detail_back_link">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M15 18L9 12L15 6"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"></path>
-          </svg>
-          All Case Studies
-        </a>
+      <a href="/case-studies" class="case-study_detail_back_link">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M15 18L9 12L15 6"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+        All Case Studies
+      </a>
 
-        <Heading docs="" tag="h1" variant="h6" marginBottom={2} maxWidth="50ch">
-          {study.title || "Untitled Case Study"}
-        </Heading>
+      <Heading tag="h1" variant="h6" marginBottom={2} maxWidth="50ch">
+        {study.title || "Untitled Case Study"}
+      </Heading>
 
-        <Heading tag="h2" variant="h3" maxWidth="40ch">
-          {study.description || "This draft does not have a description yet."}
-        </Heading>
+      <Heading tag="h2" variant="h3" maxWidth="40ch">
+        {study.description || "This draft does not have a description yet."}
+      </Heading>
 
-        <div class="case-study_detail_meta">
-          <div class="case-study_detail_meta_item">
-            <Text tag="span" size="regular" weight="bold" marginBottom={0}>
-              Client:
-            </Text>
-            <Text tag="span" size="regular" weight="medium" marginBottom={0}>
-              {study.client || "Not set"}
-            </Text>
-          </div>
-          {
-            study.timeline && (
-              <div class="case-study_detail_meta_item">
-                <Text tag="span" size="regular" weight="bold" marginBottom={0}>
-                  Time:
-                </Text>
-                <Text
-                  tag="span"
-                  size="regular"
-                  weight="medium"
-                  marginBottom={0}
-                >
-                  {study.timeline}
-                </Text>
-              </div>
-            )
-          }
-          {
-            study.liveUrl && (
-              <div class="case-study_detail_meta_item">
-                <Button
-                  variant="text"
-                  href={study.liveUrl}
-                  newTab
-                  ariaLabel={`Visit ${study.client} website`}
-                >
-                  Visit Website
-                  <svg
-                    slot="icon"
-                    aria-hidden="true"
-                    viewBox="0 0 10 10"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                  >
-                    <line x1="0" y1="5" x2="8" y2="5" />
-                    <polyline points="5,2 8,5 5,8" />
-                  </svg>
-                </Button>
-              </div>
-            )
-          }
+      <div class="case-study_detail_meta">
+        <div class="case-study_detail_meta_item">
+          <Text tag="span" variant="regular" weight="bold" marginBottom={0}>
+            Client:
+          </Text>
+          <Text tag="span" variant="regular" weight="medium" marginBottom={0}>
+            {study.client || "Not set"}
+          </Text>
         </div>
+        {
+          study.timeline && (
+            <div class="case-study_detail_meta_item">
+              <Text tag="span" variant="regular" weight="bold" marginBottom={0}>
+                Time:
+              </Text>
+              <Text
+                tag="span"
+                variant="regular"
+                weight="medium"
+                marginBottom={0}
+              >
+                {study.timeline}
+              </Text>
+            </div>
+          )
+        }
+        {
+          study.liveUrl && (
+            <div class="case-study_detail_meta_item">
+              <Button
+                variant="text"
+                href={study.liveUrl}
+                newTab
+                ariaLabel={`Visit ${study.client} website`}
+              >
+                Visit Website
+                <svg
+                  slot="icon"
+                  aria-hidden="true"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <line x1="0" y1="5" x2="8" y2="5" />
+                  <polyline points="5,2 8,5 5,8" />
+                </svg>
+              </Button>
+            </div>
+          )
+        }
+      </div>
 
-        <div class="case-study_detail_categories">
-          {
-            categories.map((cat: string) => (
-              <span class="case-study_detail_category_tag">{cat}</span>
-            ))
-          }
-        </div>
-      </Col>
+      <div class="case-study_detail_categories">
+        {
+          categories.map((cat: string) => (
+            <span class="case-study_detail_category_tag">{cat}</span>
+          ))
+        }
+      </div>
 
-      <div slot="col2" class="case-study_detail_slider">
+      <div slot="column2" class="case-study_detail_slider">
         <Slider
-          docs=""
           slidesLg={2}
           slidesMd={2}
           slidesSm={1}
@@ -275,10 +280,9 @@ const ogImageUrl = seo.ogImage
           loop
         >
           {
-            galleryImages.map((img: any) => (
+            galleryImages.map((img) => (
               <div class="swiper-slide">
                 <Visual
-                  docs=""
                   src={urlFor(img).width(1400).url()}
                   alt={img.alt || study.galleryImagesAlt || ""}
                   position={hotspotPosition(img)}
@@ -291,14 +295,16 @@ const ogImageUrl = seo.ogImage
     </Layout>
   </Section>
 
-  {contentBlocks.map((block: any) => <CaseStudyBlockRenderer block={block} />)}
+  {contentBlocks.map((block) => <CaseStudyBlockRenderer block={block} />)}
 
   {resolvedCtaSection && <SanityCtaSection cta={resolvedCtaSection} />}
 
   {
     upNextStudies.length > 0 && (
-      <Section docs="" padding="large" class="case-study_detail_up_next_wrap">
-        <Heading tag="h2" variant="h3" marginBottom={0}>Up Next</Heading>
+      <Section padding="large" class="case-study_detail_up_next_wrap">
+        <Heading tag="h2" variant="h3" marginBottom={0}>
+          Up Next
+        </Heading>
         <Grid largeColumns={2} mediumColumns={2} smallColumns={1}>
           {upNextStudies.map((entry: any) => (
             <CaseStudyCard

@@ -4,9 +4,9 @@
  * Renders images in a responsive grid. Column count adapts to the number
  * of images (up to 3). Collapses to 1 column at the small container breakpoint.
  */
-import type { ImageEntry } from "../types";
-import Grid from "../../ui/Grid.astro";
-import Visual from "../../ui/Visual.astro";
+import type { ImageEntry } from "@/components/case-study/types";
+import Grid from "@/components/ui/Grid.astro";
+import Visual from "@/components/ui/Visual.astro";
 
 interface Props {
   images: ImageEntry[];
@@ -14,9 +14,26 @@ interface Props {
 }
 
 const { images, aspectRatio = "landscape" } = Astro.props;
-const columnCount = (images.length === 3 ? 3 : Math.min(images.length, 2)) as 1 | 2 | 3;
+const columnCount = (images.length === 3 ? 3 : Math.min(images.length, 2)) as
+  1 | 2 | 3;
 ---
 
-<Grid largeColumns={columnCount} mediumColumns={1} smallColumns={1} data-fade-list data-prevent-flicker="true">
-  {images.map((img) => <Visual docs="" src={img.src} alt={img.alt} ratio={aspectRatio} transparent={img.transparent} position={img.position} />)}
+<Grid
+  largeColumns={columnCount}
+  mediumColumns={1}
+  smallColumns={1}
+  data-fade-list
+  data-prevent-flicker="true"
+>
+  {
+    images.map((img) => (
+      <Visual
+        src={img.src}
+        alt={img.alt}
+        ratio={aspectRatio}
+        transparent={img.transparent}
+        position={img.position}
+      />
+    ))
+  }
 </Grid>

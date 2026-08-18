@@ -14,8 +14,13 @@ export interface ImageEntry {
   position?: { x: number; y: number } | "center";
 }
 
-/** Section spacing values matching the Section component's PaddingSize type. */
-export type SectionSpacing = "none" | "xsmall" | "small" | "main" | "large";
+/** Section spacing for content blocks — derived from the Section padding
+ * contract (single source) minus 'page-top', which is nav plumbing, not
+ * block spacing. */
+export type SectionSpacing = Exclude<
+  import("@/components/ui/Section.astro").PaddingSize,
+  "page-top"
+>;
 
 /** Shared spacing props present on every content block. */
 interface BlockSpacing {
@@ -25,8 +30,19 @@ interface BlockSpacing {
 }
 
 export type ContentBlock =
-  | ({ type: "fullWidthImage"; image: ImageMetadata | string; imageAlt: string; aspectRatio?: string; transparent?: boolean; position?: { x: number; y: number } | "center" } & BlockSpacing)
-  | ({ type: "imageGrid"; images: ImageEntry[]; aspectRatio?: string } & BlockSpacing)
+  | ({
+      type: "fullWidthImage";
+      image: ImageMetadata | string;
+      imageAlt: string;
+      aspectRatio?: string;
+      transparent?: boolean;
+      position?: { x: number; y: number } | "center";
+    } & BlockSpacing)
+  | ({
+      type: "imageGrid";
+      images: ImageEntry[];
+      aspectRatio?: string;
+    } & BlockSpacing)
   | ({ type: "richText"; html: string; maxWidth?: string } & BlockSpacing)
   | ({ type: "richTextLeft"; html: string; maxWidth?: string } & BlockSpacing)
   | ({ type: "richTextColumns"; html: string } & BlockSpacing)
@@ -40,4 +56,9 @@ export type ContentBlock =
       objectFit?: "cover" | "contain";
       position?: { x: number; y: number } | "center";
     } & BlockSpacing)
-  | ({ type: "stats"; items: { value: string; label: string }[] } & BlockSpacing);
+  | ({
+      type: "stats";
+      /* Nullable: a stat row exists in Sanity as soon as an editor adds it,
+         before either field is filled in. */
+      items: { value: string | null; label: string | null }[];
+    } & BlockSpacing);

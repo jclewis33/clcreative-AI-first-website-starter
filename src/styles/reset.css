@@ -33,9 +33,44 @@ html {
   scroll-padding-top: var(--nav-height-total, 0px);
 }
 
-/* Set core body defaults */
+/* Scroll lock for anything that covers the page.
+
+   Derived from what is actually open rather than set imperatively. A
+   selector cannot get out of sync with the state it reads, and it expresses
+   "two things want this locked" for free — a JS flag cannot, so whichever
+   overlay closed first would unlock the page for both.
+
+   Add any future blocking overlay to this list rather than writing a JS lock.
+   The modal side matches `[open]`, so the lock releases the moment the dialog
+   starts its close transition. */
+html:has(dialog.modal_dialog[open]),
+html:has(.nav_hamburger_wrap[aria-expanded="true"]) {
+  overflow: hidden;
+}
+
+/* Set core body defaults.
+
+   The body IS the page shell. It is a flex column at least as tall as the
+   viewport, so `main` can grow and push the footer to the bottom.
+
+   Do not add a page-wrapper div for this. The layout is the reusable unit;
+   a container around every page buys nothing here. */
 body {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  /* Clips horizontal overflow (decorative art, marquees) WITHOUT creating a
+     scroll container — `clip` does not scroll, `hidden` would, which is why
+     the wrapper used `clip` too.
+
+     Set on body, not html, and x-axis only, both deliberately. With html's
+     overflow left `visible`, the browser propagates body's overflow to the
+     viewport; leaving `overflow-y` alone means only sideways scrolling is
+     stopped. Writing the `overflow: clip` shorthand here would propagate to
+     both axes and freeze the page — no vertical scrolling at all. The modal /
+     mobile-nav scroll lock above belongs on html, where the shorthand is
+     correct and its `:has()` specificity beats this rule. */
+  overflow-x: clip;
   line-height: 1.5;
   font-family: var(--font-primary);
   color: var(--text);
@@ -49,6 +84,15 @@ body {
      that flashes on any tappable element (buttons, links, accordions).
      Focus rings and :active states still provide interaction feedback. */
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Main content area — `flex: 1` is what pushes the footer to the bottom of
+   short pages. Targets the <main> BaseLayout renders as a direct child of
+   <body>; nothing else needs a class. */
+body > main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 /* Make images easier to work with.
@@ -81,11 +125,6 @@ select {
   font: inherit;
 }
 
-/* Style placeholder option (empty value selected) in selects */
-select:has(option[value=""]:checked) {
-  color: color-mix(in srgb, var(--text) 40%, transparent);
-}
-
 /* Remove all animations, transitions and smooth scroll for people that prefer not to see them */
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
@@ -116,23 +155,48 @@ a:not([class]) {
   color: var(--link-text);
 }
 
-/* Focus State — outline only appears during keyboard navigation.
-   A tiny inline script in BaseLayout toggles .using-keyboard on <html>
-   (added on Tab keydown, removed on mousedown). */
-a, button, :where([tabindex]), input, textarea, select {
+/* Focus State — `:focus-visible` is the whole mechanism.
+
+   The browser already decides when a focus indicator is warranted: keyboard
+   navigation yes, a mouse click on a button no, and — importantly —
+   programmatic focus yes, which is how a closed modal returns focus to the
+   control that opened it.
+
+   Do not gate this behind a Tab-keydown class. Such a gate cannot see focus
+   moved by script, so the rule never applies there and — with nothing
+   suppressing the default — the browser paints its own thin ring instead,
+   leaving a stray outline on a modal's trigger after it closes. Styling
+   `:focus-visible` directly, and explicitly clearing the ring when it does
+   NOT match, means the only ring that can ever appear is this one. */
+a,
+button,
+:where([tabindex]),
+input,
+textarea,
+select {
   outline-offset: var(--focus-offset-outer);
 }
 
-html.using-keyboard a:focus-visible,
-html.using-keyboard button:focus-visible,
-html.using-keyboard [role="button"]:focus-visible,
-html.using-keyboard [tabindex]:focus-visible,
-html.using-keyboard input:focus-visible,
-html.using-keyboard textarea:focus-visible,
-html.using-keyboard select:focus-visible {
+:is(a, button, [role="button"], [tabindex], input, textarea, select):focus-visible {
   outline-color: var(--text);
   outline-width: var(--focus-width);
   outline-style: solid;
+}
+
+/* A native <dialog> hands focus back to its trigger on close(), and Chrome
+   flags that restored focus as :focus-visible even when the modal was opened
+   with the mouse — leaving a keyboard ring on a control the user only clicked.
+   Modal.astro marks the trigger `data-focus-silent` for exactly that restore
+   (and clears it on the next Tab or blur), so the ring stays hidden only for
+   the pointer case. */
+[data-focus-silent]:focus-visible {
+  outline: none;
+}
+
+/* Focused, but the browser judged no indicator is warranted (mouse click on a
+   button). Clear the UA default so no ring shows. */
+:is(a, button, [role="button"], [tabindex], input, textarea, select):focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* Text selection colors — theme-aware */

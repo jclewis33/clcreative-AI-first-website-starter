@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * Visual — image component wrapping Astro `<Image />` with aspect ratio,
  * focal-point positioning, border-radius, and variant support.
@@ -6,7 +7,7 @@
  * Uses `layout="full-width"` so the browser downloads the right srcset
  * size, while CSS controls `object-fit` / `object-position`.
  *
- * Focal-point positioning uses `--x` / `--y` CSS custom properties
+ * Focal-point positioning uses `--_x` / `--_y` CSS custom properties
  * (0–100). Pass a named preset or `{ x, y }` for precise control.
  *
  * Variants:
@@ -39,65 +40,94 @@
  * ```
  */
 
-import { Image } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 
 /* ── Position types ── */
 
-type PositionPreset =
-  /** 50 / 50 — centered (default) */
-  | 'center'
-  /** 50 / 0 — top edge */
-  | 'top'
-  /** 0 / 0 — top-left corner */
-  | 'top-left'
-  /** 100 / 0 — top-right corner */
-  | 'top-right'
-  /** 50 / 100 — bottom edge */
-  | 'bottom'
-  /** 0 / 100 — bottom-left corner */
-  | 'bottom-left'
-  /** 100 / 100 — bottom-right corner */
-  | 'bottom-right'
-  /** 0 / 50 — left edge */
-  | 'left'
-  /** 100 / 50 — right edge */
-  | 'right';
-
 /** Percentage-based focal point — `x` and `y` are 0–100. */
-type FocalPoint = { x: number; y: number };
 
 /* ── Ratio presets ── */
 
+/* ── Props contract ──────────────────────────────────────────────────────────
+   Keep the JSDoc below free of STRAY angle brackets. Write comparisons in
+   words ("posts.length is greater than 0"), never with the literal character.
+   A stray less-than or greater-than in a frontmatter comment silently detaches
+   this file's Props type AT THE CALL SITE: every prop loses its hover tooltip
+   and invalid props stop erroring, with no diagnostic anywhere. Balanced
+   tag-like pairs inside @example blocks are safe — it is the odd one out that
+   breaks it, and the exact trigger interacts with the rest of the file, so do
+   not reason about it — measure it.
+   scripts/hover-probe.mjs drives the real language server and fails if any
+   component's `docs` tooltip goes missing; run `npm run check:hover`.
+   Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
+   pins the type rules: it imports the types from this file and a regression
+   fails `astro check` outright.
+   ─────────────────────────────────────────────────────────────────────────── */
+type PositionPreset =
+  /** 50 / 50 — centered (default) */
+  | "center"
+  /** 50 / 0 — top edge */
+  | "top"
+  /** 0 / 0 — top-left corner */
+  | "top-left"
+  /** 100 / 0 — top-right corner */
+  | "top-right"
+  /** 50 / 100 — bottom edge */
+  | "bottom"
+  /** 0 / 100 — bottom-left corner */
+  | "bottom-left"
+  /** 100 / 100 — bottom-right corner */
+  | "bottom-right"
+  /** 0 / 50 — left edge */
+  | "left"
+  /** 100 / 50 — right edge */
+  | "right";
+
+type FocalPoint = { x: number; y: number };
+
 type RatioPreset =
-  | 'wide'        // 16 / 9
-  | 'widescreen'  // 21 / 9
-  | 'landscape'   // 3 / 2
-  | 'square'      // 1 / 1
-  | 'portrait'    // 3 / 4
-  | 'tall';       // 2 / 3
+  | "wide" // 16 / 9
+  | "widescreen" // 21 / 9
+  | "landscape" // 3 / 2
+  | "square" // 1 / 1
+  | "portrait" // 3 / 4
+  | "tall"; // 2 / 3
 
 /* ── Radius type ── */
 
 type RadiusSize =
   /** 0 — no rounding */
-  | 'none'
+  | "none"
   /** Subtle rounding */
-  | 'xsmall'
+  | "xsmall"
   /** Slightly rounded */
-  | 'small'
+  | "small"
   /** Moderate rounding */
-  | 'medium'
+  | "medium"
   /** Noticeable rounding */
-  | 'large'
+  | "large"
   /** Very rounded */
-  | 'xlarge'
+  | "xlarge"
   /** Site default radius (--radius-main) */
-  | 'main'
+  | "main"
   /** Fully rounded / pill */
-  | 'full'
+  | "full"
   /** Large section-level rounding */
-  | 'section';
+  | "section";
+
+/* Prop types are given NAMES on purpose. In a component whose props are
+   `BaseProps extends HTMLAttributes` intersected with a union, a prop written
+   as an inline union or as `Alias | string` loses its editor tooltip, while
+   the identical type behind a named alias keeps it. Guarded by
+   scripts/check-hover.mjs. */
+type ImageSource = ImageMetadata | string;
+type Ratio = RatioPreset | string;
+type VisualVariant = "default" | "background";
+type Position = PositionPreset | FocalPoint;
+type ObjectFit = "cover" | "contain" | "fill" | "none" | "scale-down";
+type LoadingMode = "lazy" | "eager";
+type Quality = "low" | "mid" | "high" | "max" | number;
 
 /* ── Component props ── */
 
@@ -120,7 +150,7 @@ type RadiusSize =
  * - `height` — image height in px (required for remote URLs)
  * - `class` — extra classes on the wrapper
  */
-interface Props {
+interface BaseProps extends HTMLAttributes<"div"> {
   /**
    * **Visual props:**
    * - `src` — ImageMetadata or URL string (required)
@@ -140,11 +170,24 @@ interface Props {
   docs?: string;
 
   /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — e.g. `render` set to whether the list has any items — instead of
+   * wrapping the element in a conditional block. Nothing is emitted when
+   * false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
    * Image source — an imported image (`ImageMetadata`) or a URL string.
    * @example src={myImage}
    * @example src="https://example.com/photo.jpg"
    */
-  src: ImageMetadata | string;
+  src: ImageSource;
 
   /**
    * Alt text — required for accessibility.
@@ -164,7 +207,7 @@ interface Props {
    * @example ratio="wide"
    * @example ratio="4/3"
    */
-  ratio?: RatioPreset | string;
+  ratio?: Ratio;
 
   /**
    * Border-radius applied to the image wrapper.
@@ -186,7 +229,7 @@ interface Props {
    * @default 'default'
    * @example variant="background"
    */
-  variant?: 'default' | 'background';
+  variant?: VisualVariant;
 
   /**
    * Focal point / object-position.
@@ -199,7 +242,7 @@ interface Props {
    * (`position={x: 30, y: 20}`) are parsed as a code expression and fail the
    * build with `Unexpected ":"`.
    *
-   * The focal point drives `--x`/`--y` on the `<img>`, consumed by
+   * The focal point drives `--_x`/`--_y` on the `<img>`, consumed by
    * `.u-image-wrapper .u-image { object-position: … }`. That rule is scoped to
    * the wrapper (specificity 0,2,0) on purpose — Astro's `layout="full-width"`
    * stamps `data-astro-image-pos="center"` (0,1,0) on every local image, and a
@@ -208,7 +251,7 @@ interface Props {
    * @example position="top"
    * @example position={{ x: 30, y: 20 }}
    */
-  position?: PositionPreset | FocalPoint;
+  position?: Position;
 
   /**
    * Object-fit behavior. Overrides the default `cover`.
@@ -216,7 +259,7 @@ interface Props {
    * @default 'cover'
    * @example fit="contain"
    */
-  fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+  fit?: ObjectFit;
 
   /**
    * Loading behavior.
@@ -226,7 +269,7 @@ interface Props {
    * where the image sits inside a chain of absolute-positioned containers.
    * @default 'lazy' (or 'eager' when variant="background")
    */
-  loading?: 'lazy' | 'eager';
+  loading?: LoadingMode;
 
   /**
    * Priority image — sets `loading="eager"` and `fetchpriority="high"`.
@@ -256,37 +299,93 @@ interface Props {
    * @default false
    * @example <Visual src={logo} alt="Logo" transparent />
    */
+  /**
+   * Compression quality passed to Astro's image service — a preset
+   * (`'low' | 'mid' | 'high' | 'max'`) or a number 0–100.
+   *
+   * Left unset, Astro's default applies. Worth lowering on large decorative
+   * photos, and raising on screenshots or anything with fine text.
+   *
+   * Ignored on remote URLs, which are not processed.
+   *
+   * @example quality="high"
+   */
+  quality?: Quality;
+
   transparent?: boolean;
 
   /** Extra classes on the outer `.u-image-wrapper` div. */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.u-image-wrapper` element.
-   * User-provided `style` is merged with computed aspect-ratio styles.
-   * @example data-animate="fade" aria-label="Hero image"
-   */
-  [key: string]: any;
 }
 
+/* `sizes` and `densities` are mutually exclusive BY THE HTML SPEC — a density
+   srcset has no width descriptors for `sizes` to choose between. Encoded as
+   a union so it is an editor error at the call site, not a runtime warning. */
+export type Props = BaseProps &
+  (
+    | ({ densities?: never } & {
+        /**
+         * Override the `sizes` attribute.
+         *
+         * Normally unnecessary. A lazy image (the default) already gets
+         * `sizes="auto"`, which makes the browser choose the srcset candidate from
+         * the element's real laid-out width — the right size for whatever box it
+         * lands in, with no per-instance configuration.
+         *
+         * Worth setting on an EAGER or `priority` image, where `auto` does not
+         * apply: the browser has no layout to measure yet, so it falls back to
+         * `100vw`. If such an image is not full-bleed, describe it here — e.g.
+         * `sizes="(min-width: 60rem) 33vw, 100vw"`.
+         *
+         * Ignored on remote URLs, which have no srcset.
+         *
+         * @example sizes="(min-width: 60rem) 33vw, 100vw"
+         */
+        sizes?: string;
+      })
+    | ({ sizes?: never } & {
+        /**
+         * Pixel densities to generate instead of width-based srcset entries, e.g.
+         * `[1, 2]`. Use for fixed-size images (logos, avatars, icons) where the
+         * rendered size never changes — a density srcset is smaller than a width
+         * one there.
+         *
+         * Mutually exclusive with Astro's width-based srcset, so it is only applied
+         * when `sizes` is not set. Ignored on remote URLs.
+         *
+         * @example densities={[1, 2]}
+         */
+        densities?: (number | `${number}x`)[];
+      })
+  );
+
+/* Flat shape for the implementation. */
+type AllProps = BaseProps & {
+  sizes?: string;
+  densities?: (number | `${number}x`)[];
+};
+
 const {
+  render = true,
   docs,
   src,
   alt,
-  ratio     = 'landscape',
-  radius    = 'main',
-  variant   = 'default',
-  position  = 'center',
-  fit       = 'cover',
+  ratio = "landscape",
+  radius = "main",
+  variant = "default",
+  position = "center",
+  fit = "cover",
   loading: loadingProp,
-  priority  = false,
+  priority = false,
+  quality,
+  sizes,
+  densities,
   transparent = false,
   width,
   height,
   class: className,
   ...rest
-} = Astro.props;
+} = Astro.props as AllProps;
 
 /* ═══════════════════════════════════════════════════
    Resolve radius utility class
@@ -299,39 +398,39 @@ const radiusClass = `u-radius-${radius}`;
    ═══════════════════════════════════════════════════ */
 
 const ratioPresets: Record<string, string> = {
-  'wide':       '16 / 9',
-  'widescreen': '21 / 9',
-  'landscape':  '3 / 2',
-  'square':     '1 / 1',
-  'portrait':   '3 / 4',
-  'tall':       '2 / 3',
+  wide: "16 / 9",
+  widescreen: "21 / 9",
+  landscape: "3 / 2",
+  square: "1 / 1",
+  portrait: "3 / 4",
+  tall: "2 / 3",
 };
 
 const resolvedRatio =
-  variant === 'background'
-    ? undefined                                     // backgrounds fill parent, no ratio
+  variant === "background"
+    ? undefined // backgrounds fill parent, no ratio
     : ratio
-      ? (ratioPresets[ratio] ?? ratio)              // preset or raw string
-      : undefined;                                  // no ratio set
+      ? (ratioPresets[ratio] ?? ratio) // preset or raw string
+      : undefined; // no ratio set
 
 /* ═══════════════════════════════════════════════════
    Resolve focal point
    ═══════════════════════════════════════════════════ */
 
 const positionPresets: Record<string, FocalPoint> = {
-  'center':       { x: 50,  y: 50 },
-  'top':          { x: 50,  y: 0 },
-  'top-left':     { x: 0,   y: 0 },
-  'top-right':    { x: 100, y: 0 },
-  'bottom':       { x: 50,  y: 100 },
-  'bottom-left':  { x: 0,   y: 100 },
-  'bottom-right': { x: 100, y: 100 },
-  'left':         { x: 0,   y: 50 },
-  'right':        { x: 100, y: 50 },
+  center: { x: 50, y: 50 },
+  top: { x: 50, y: 0 },
+  "top-left": { x: 0, y: 0 },
+  "top-right": { x: 100, y: 0 },
+  bottom: { x: 50, y: 100 },
+  "bottom-left": { x: 0, y: 100 },
+  "bottom-right": { x: 100, y: 100 },
+  left: { x: 0, y: 50 },
+  right: { x: 100, y: 50 },
 };
 
 const focal: FocalPoint =
-  typeof position === 'string'
+  typeof position === "string"
     ? (positionPresets[position] ?? { x: 50, y: 50 })
     : position;
 
@@ -339,34 +438,36 @@ const focal: FocalPoint =
    Loading & priority
    ═══════════════════════════════════════════════════ */
 
-const defaultLoading = variant === 'background' ? 'eager' as const : 'lazy' as const;
-const loading = priority ? 'eager' as const : (loadingProp ?? defaultLoading);
-const fetchpriority = priority ? 'high' : 'auto';
+const defaultLoading =
+  variant === "background" ? ("eager" as const) : ("lazy" as const);
+const loading = priority ? ("eager" as const) : (loadingProp ?? defaultLoading);
+const fetchpriority = priority ? "high" : "auto";
 
 /* ═══════════════════════════════════════════════════
    Build inline styles
    ═══════════════════════════════════════════════════ */
 
-const isBackground = variant === 'background';
+const isBackground = variant === "background";
 
 // Wrapper: aspect-ratio + optional object-fit override
 const wrapperParts: string[] = [];
-if (resolvedRatio)   wrapperParts.push(`aspect-ratio: ${resolvedRatio}`);
-if (fit !== 'cover') wrapperParts.push(`object-fit: ${fit}`);
-if (transparent)     wrapperParts.push('background-color: transparent');
+if (resolvedRatio) wrapperParts.push(`aspect-ratio: ${resolvedRatio}`);
+if (fit !== "cover") wrapperParts.push(`object-fit: ${fit}`);
+if (transparent) wrapperParts.push("background-color: transparent");
 
 /* Merge user-provided style with computed wrapper styles */
 const { style: userStyle, ...attrs } = rest;
-const wrapperStyle = [...wrapperParts, userStyle].filter(Boolean).join('; ') || undefined;
+const wrapperStyle =
+  [...wrapperParts, userStyle].filter(Boolean).join("; ") || undefined;
 
 // Image: focal-point custom properties
-const imageStyle = `--x: ${focal.x}; --y: ${focal.y}`;
+const imageStyle = `--_x: ${focal.x}; --_y: ${focal.y}`;
 
 /* ═══════════════════════════════════════════════════
    Detect remote URL vs imported image
    ═══════════════════════════════════════════════════ */
 
-const isRemote = typeof src === 'string' && src.startsWith('http');
+const isRemote = typeof src === "string" && src.startsWith("http");
 
 /* ═══════════════════════════════════════════════════
    Image props — conditionally include width/height
@@ -375,7 +476,7 @@ const isRemote = typeof src === 'string' && src.startsWith('http');
 const imageProps: Record<string, any> = {
   src,
   alt,
-  class: 'u-image',
+  class: "u-image",
   loading,
   fetchpriority,
   style: imageStyle,
@@ -383,26 +484,159 @@ const imageProps: Record<string, any> = {
 
 if (!isRemote) {
   // Local images use Astro's <Image> with layout
-  imageProps.layout = 'full-width' as const;
+  imageProps.layout = "full-width" as const;
+
+  /* Optimisation opt-ins. These only mean anything for processed images, so
+     they are set inside this branch — a remote URL renders a bare <img> with
+     no srcset for `sizes`/`densities` to describe and no pipeline to apply
+     `quality`. */
+  if (quality !== undefined) imageProps.quality = quality;
+
+  if (sizes !== undefined) {
+    // Overrides the value `layout` would otherwise generate.
+    imageProps.sizes = sizes;
+  } else if (densities === undefined && loading === "lazy") {
+    /* `sizes="auto"` tells the browser to pick the srcset candidate from the
+       element's ACTUAL laid-out width, which is the only thing that knows how
+       big the box really is.
+
+       Without it, `layout` generates sizes="100vw" and a three-up grid
+       downloads a 1668px source for a 427px box — measured, ~4x too wide.
+       With it, the same image resolves to the 640px candidate.
+
+       Only valid on lazy images: the browser needs layout to have happened
+       before it can measure, so an eager image ignores `auto` and falls back
+       to 100vw (also measured). Eager and `priority` images are therefore the
+       case where an explicit `sizes` is worth passing — a genuine full-bleed
+       hero already wants 100vw, so the default is usually right there anyway.
+
+       Browsers without `sizes="auto"` support ignore it and get today's
+       behaviour, so this only ever improves things. */
+    imageProps.sizes = "auto";
+  } else if (densities !== undefined) {
+    /* Astro rejects densities alongside the width-based srcset that `layout`
+       produces, so a densities image opts out of layout entirely.
+       `layout: "none"` — NOT `delete` — because astro.config.mjs sets a global
+       `image.layout: "constrained"` that a deleted prop simply falls back to,
+       leaving the width srcset in place and the densities silently ignored. */
+    imageProps.layout = "none" as const;
+    imageProps.densities = densities;
+  }
 }
 
-if (width  != null) imageProps.width  = width;
+if (import.meta.env.DEV) {
+  if (typeof src === "string" && !isRemote) {
+    console.warn(
+      `\n[Visual] src="${src}" is a string path, so this image is NOT ` +
+        `processed — no srcset, no format conversion, no dimensions to ` +
+        `prevent layout shift.\n  Import the file instead so Astro can ` +
+        `optimise it:\n    import photo from "@/assets/…";  <Visual ` +
+        `src={photo} … />\n  Files in public/ cannot be optimised at all; ` +
+        `move them into src/assets/.\n`,
+    );
+  }
+  if (isRemote) {
+    console.warn(
+      `\n[Visual] src="${src}" is a remote URL and renders as a plain <img>: ` +
+        `no srcset, no format conversion, and quality/sizes/densities are ` +
+        `ignored.\n  For a remote image Astro should optimise, add its ` +
+        `domain to \`image.domains\` (or \`image.remotePatterns\`) in ` +
+        `astro.config.mjs.\n`,
+    );
+  }
+  // Unreachable from type-checked call sites (the Props union forbids the
+  // combination) — kept for spread/untyped callers.
+  if (sizes !== undefined && densities !== undefined) {
+    console.warn(
+      "\n[Visual] `sizes` and `densities` cannot both apply — a density " +
+        "srcset has no width descriptors for `sizes` to select from. `sizes` " +
+        "wins; drop one.\n",
+    );
+  }
+}
+
+if (width != null) imageProps.width = width;
 if (height != null) imageProps.height = height;
 ---
 
-<div
-  class:list={[
-    'u-image-wrapper',
-    radiusClass,
-    { 'is-background': isBackground },
-    className,
-  ]}
-  style={wrapperStyle}
-  {...attrs}
->
-  {isRemote ? (
-    <img {...imageProps} />
-  ) : (
-    <Image {...(imageProps as any)} />
-  )}
-</div>
+{
+  render && (
+    <div
+      class:list={[
+        "u-image-wrapper",
+        radiusClass,
+        { "is-background": isBackground },
+        className,
+      ]}
+      style={wrapperStyle}
+      {...attrs}
+    >
+      {isRemote ? <img {...imageProps} /> : <Image {...(imageProps as any)} />}
+    </div>
+  )
+}
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/visual.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   VISUAL / IMAGE COMPONENT — Layout Context Rules
+   ==========================================================================
+   Base .u-image-wrapper and .u-image styles live in utilities/visual-utilities.css.
+   This file contains only layout-context overrides for the Visual component
+   when used inside breakout, full, or contain Layout variants.
+   ========================================================================== */
+
+    /* ── Breakout / full layout context ── */
+    /* When the Visual sits in a bleed column, zero the corners on the
+   viewport-edge side so the image runs flush to the screen edge.
+   breakout / full           → image bleeds RIGHT  → zero right corners
+   breakout-reversed / full-reversed → image bleeds LEFT → zero left corners */
+
+    [data-layout-variant="breakout"] .u-layout-column-2 .u-image-wrapper,
+    [data-layout-variant="full"] .u-layout-column-2 .u-image-wrapper {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    [data-layout-variant="breakout-reversed"]
+      .u-layout-column-2
+      .u-image-wrapper,
+    [data-layout-variant="full-reversed"] .u-layout-column-2 .u-image-wrapper {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    /* ── Full / full-reversed — image fills section height ── */
+    /* Override the default aspect-ratio so the image stretches to match
+   the content column height instead of constraining itself. */
+
+    [data-layout-variant="full"] .u-layout .u-layout-column-2,
+    [data-layout-variant="full-reversed"] .u-layout .u-layout-column-2 {
+      align-self: stretch;
+    }
+
+    [data-layout-variant="full"] .u-layout-column-2 .u-image-wrapper,
+    [data-layout-variant="full-reversed"] .u-layout-column-2 .u-image-wrapper {
+      aspect-ratio: unset;
+      height: 100%;
+    }
+
+    /* ── Contain layout context ── */
+    /* The contain card wrapper already has border-radius and overflow: clip,
+   so the image wrapper inside needs zero radius to fill the card shape. */
+
+    [data-layout-variant="contain"] .u-image-wrapper,
+    [data-layout-variant="contain-reversed"] .u-image-wrapper {
+      border-radius: 0;
+      /* The contain column is `align-self: stretch; height: 100%`, and the
+         image is meant to fill it rather than hold its own ratio. Explicit
+         because the wrapper's default is `height: auto` — see the note in
+         utilities/visual-utilities.css. */
+      aspect-ratio: unset;
+      height: 100%;
+    }
+  }
+</style>

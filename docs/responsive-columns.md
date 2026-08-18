@@ -200,6 +200,6 @@ The shared rule `grid-template-columns: repeat(var(--column-count), minmax(0, 1f
 
 ## Source File
 
-`src/styles/base/responsive-columns.css`
+`src/styles/utilities/responsive-columns.css`
 
 Imported in `src/styles/global.css` after `layout.css`.

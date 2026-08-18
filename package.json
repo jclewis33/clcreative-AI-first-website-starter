@@ -13,8 +13,13 @@
     "astro": "astro",
     "check": "astro check",
     "check:schema": "node scripts/check-schema.mjs",
+    "typegen": "sanity schema extract --path ./src/sanity/schema.json --force && sanity typegen generate",
     "check:config": "node scripts/check-config-sync.mjs",
-    "postinstall": "rm -rf node_modules/.vite"
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "postinstall": "rm -rf node_modules/.vite",
+    "css-data": "node scripts/generate-css-custom-data.mjs",
+    "check:hover": "node scripts/check-hover.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.7.0",
@@ -44,6 +49,8 @@
     "@astrojs/check": "^0.9.9",
     "csv-parse": "^6.2.1",
     "node-html-parser": "^7.1.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.3"
   },
   "overrides": {

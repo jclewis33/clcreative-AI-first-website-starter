@@ -1,35 +1,52 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
- * Layout — two-column CSS Grid with 13 named variants.
+ * Layout — the one component that arranges a section's content.
  *
- * All two-column variants collapse to a single stacked column when the
- * nearest `.u-container` is narrower than 58em (928px) by default.
- * Use `collapseAt="small"` to keep columns until 560px instead.
+ * A section's arrangement is ONE decision: pick a variant, put the content in
+ * the default slot. Text alignment and measure are props here, not a second
+ * component, and the columns are generated — there is no column wrapper to
+ * remember.
  *
- * Slots (two-column variants):
- *   - `col1` — left column content
- *   - `col2` — right column content
- *   A single component (Visual, Grid, Card) takes `slot="col1"`/`slot="col2"`
- *   directly. To put MULTIPLE loose elements in one column, wrap them in the
- *   `<Col>` component (`src/components/ui/Col.astro`) — the standard wrapper.
- *   Do NOT use a bare `<div slot="col1">` (it becomes the grid child and breaks
- *   alignment/gap); `<Col>` bakes in the required `u-display-contents`.
- *   EXCEPTION: a column holding a `<Visual>` *together with other content* must
- *   use `<ContentWrapper>`, NOT `<Col>` — `<Col>`'s `display: contents` lets the
- *   image's `height: 100%` override its `ratio` aspect-ratio and balloon (see
- *   the `<Col>` note in `Col.astro` / CLAUDE.md).
+ * SLOTS
+ *   default    — column 1. Anything placed inside <Layout> lands here; there
+ *                is no slot attribute or wrapper component to remember.
+ *   `column2`  — the second column, on the two-column variants.
  *
- * Slots (stack / stack-centered):
- *   - default — all content goes into a single column
+ * A single component takes `slot="column2"` directly. For several elements,
+ * you can either repeat `slot="column2"` on each one — Astro collects them
+ * into that slot in source order — or group them in a single
+ * `<Fragment slot="column2">`. Both produce the SAME children inside the
+ * column (measured; Fragment emits no element of its own). Repeating the
+ * attribute is fine and often reads better; Fragment's only edge is that
+ * repeating leaves an inert `slot` attribute on each rendered element.
  *
- * @example 50/50 two-column layout (multiple elements → wrap in <Col>)
+ * The column wrappers are generated here, so there is nothing to get wrong.
+ * (The old  used `display: contents`, which erased the column box and let
+ * a ratio'd <Visual> balloon — a hazard that needed a dev-time guardrail.
+ * A generated column is a real flex box, so that failure cannot occur.)
+ *
+ * All two-column variants collapse to a single stacked column when the nearest
+ * `.u-container` is narrower than 58em (928px). Use `collapseAt="small"` to
+ * keep columns until 560px instead.
+ *
+ * @example Two columns — content and an image
  * ```astro
  * <Layout variant="columns" verticalAlign="center">
- *   <Col slot="col1">
- *     <Heading tag="h2" variant="h2">Title</Heading>
- *     <Text>Description</Text>
- *   </Col>
- *   <Visual slot="col2" src={img} alt="Photo" ratio="landscape" />
+ *   <Heading tag="h2" variant="h2">Title</Heading>
+ *   <Text>Description</Text>
+ *   <Visual slot="column2" src={img} alt="Photo" ratio="landscape" />
+ * </Layout>
+ * ```
+ *
+ * @example Several elements in column 2
+ * ```astro
+ * <Layout variant="columns">
+ *   <Heading tag="h2">Title</Heading>
+ *   <Fragment slot="column2">
+ *     <Visual src={img} alt="" ratio="landscape" />
+ *     <Text variant="small">Caption</Text>
+ *   </Fragment>
  * </Layout>
  * ```
  *
@@ -41,54 +58,60 @@
  * </Layout>
  * ```
  *
- * @example Card layout (contain)
+ * @example Single column with a readable measure
  * ```astro
- * <Layout variant="contain">
- *   <Col slot="col1">
- *     <Heading>Feature</Heading>
- *     <Text>Description</Text>
- *   </Col>
- *   <Visual slot="col2" src={img} alt="" />
+ * <Layout variant="stack" maxWidth="48rem">
+ *   <Text>Long-form copy constrained to a comfortable line length.</Text>
  * </Layout>
  * ```
  *
  * @example Breakout — image bleeds to viewport edge
  * ```astro
  * <Layout variant="breakout" contentSpan={7} bleedSpan={6}>
- *   <Col slot="col1">
  *     <Heading tag="h2">Content side</Heading>
  *     <Text>Stays in the container.</Text>
- *   </Col>
- *   <Visual slot="col2" src={img} alt="" />
+ *   <Visual slot="column2" src={img} alt="" />
  * </Layout>
  * ```
  *
  * @example Centered card with background image (CTA pattern)
  * ```astro
  * <Layout variant="card">
- *   <Col slot="col1">
  *     <Heading tag="h2" variant="display-sm" accent>Ready to <strong>start</strong>?</Heading>
- *     <Text size="large" align="center">Book a free strategy call.</Text>
- *     <div class="u-button-wrapper">
+ *     <Text size="large">Book a free strategy call.</Text>
+ *     <ButtonWrapper>
  *       <Button href="/book-a-call" ariaLabel="Book call">Book a Call</Button>
- *     </div>
- *   </Col>
- *   <Col slot="col2">
+ *     </ButtonWrapper>
+ *   <Fragment slot="column2">
  *     <Visual src={bgImage} alt="" variant="background" />
  *     <Overlay strength={75} />
- *   </Col>
  * </Layout>
  * ```
  *
  * @example Custom column ratio
  * ```astro
  * <Layout variant="columns" ratio="5-7" verticalAlign="start">
- *   <Heading slot="col1" variant="eyebrow">Label</Heading>
- *   <Text slot="col2" variant="large">Body text.</Text>
+ *   <Heading variant="eyebrow">Label</Heading>
+ *   <Text slot="column2" variant="large">Body text.</Text>
  * </Layout>
  * ```
  */
 
+/* ── Props contract ──────────────────────────────────────────────────────────
+   Keep the JSDoc below free of STRAY angle brackets. Write comparisons in
+   words ("posts.length is greater than 0"), never with the literal character.
+   A stray less-than or greater-than in a frontmatter comment silently detaches
+   this file's Props type AT THE CALL SITE: every prop loses its hover tooltip
+   and invalid props stop erroring, with no diagnostic anywhere. Balanced
+   tag-like pairs inside @example blocks are safe — it is the odd one out that
+   breaks it, and the exact trigger interacts with the rest of the file, so do
+   not reason about it — measure it.
+   scripts/hover-probe.mjs drives the real language server and fails if any
+   component's `docs` tooltip goes missing; run `npm run check:hover`.
+   Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
+   pins the type rules: it imports the types from this file and a regression
+   fails `astro check` outright.
+   ─────────────────────────────────────────────────────────────────────────── */
 type LayoutVariant =
   /** Equal 50/50 columns */
   | "columns"
@@ -130,6 +153,12 @@ type VerticalAlign =
 /** Spacing-scale step (`--space-N`) for the gap props. `0` = no gap. */
 type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
+/* Named on purpose — an inline union or `Alias | string` on a prop of this
+   component loses its editor tooltip; the same type behind a named alias keeps
+   it. Guarded by scripts/check-hover.mjs. */
+type GapValue = GapScale | string;
+type LayoutAlign = "inherit" | "center" | "left" | "right" | "center-mobile";
+
 type CollapseBreakpoint =
   /** Collapse to single column at 928px / 58em container width (default) */
   | "medium"
@@ -156,9 +185,9 @@ type BreakoutColumns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
  * - `cardPadding` — vertical padding for `card` variant (default: `--section-space-main`, fluid 4-7rem)
  * - `class` — extra utility classes on the wrapper
  *
- * **Slots:** `col1` (left), `col2` (right) for two-column variants; default slot for stack variants.
+ * **Slots:** default slot IS column 1 — put content straight inside `<Layout>`, no slot attribute. The second column is `slot="column2"`.
  */
-interface Props {
+interface BaseProps extends HTMLAttributes<"div"> {
   /**
    * **Layout props:**
    * - `variant` — columns, columns-reversed, stack, stack-centered, sticky-left, contain, contain-reversed, breakout, breakout-reversed, full, full-reversed, card, auto-width
@@ -174,9 +203,24 @@ interface Props {
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
    *
-   * **Slots:** `col1` (left), `col2` (right). A single component (Visual, Grid, Card) takes `slot` directly; wrap MULTIPLE loose elements in the `<Col>` component (`<Col slot="col1">…</Col>`) — the standard wrapper that bakes in `u-display-contents`. EXCEPTION: a column holding a `<Visual>` alongside other content must use `<ContentWrapper>`, not `<Col>` (`<Col>`'s `display: contents` lets the image's `height: 100%` override its `ratio` aspect-ratio and balloon).
+   * **Slots:** the default slot IS column 1 — content goes straight inside `<Layout>` with no slot attribute. The second column is `slot="column2"`; a single component (Visual, Grid, Card) takes it directly, and for several elements you may either repeat `slot="column2"` on each or group them in one `<Fragment slot="column2">` — both put the same children in the column.
+   *
+   * A `<Visual>` may share a column with other content freely — it holds its `ratio` at every width, because `.u-image-wrapper` defaults to `height: auto` and filling a box is opt-in. See utilities/visual-utilities.css.
    */
   docs?: string;
+
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — e.g. `render` set to whether the list has any items — instead of
+   * wrapping the element in a conditional block. Nothing is emitted when
+   * false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
 
   /**
    * Column layout style.
@@ -195,12 +239,25 @@ interface Props {
    * | `full`               | 50 / 50        | Right col bleeds to viewport edge               |
    * | `full-reversed`      | 50 / 50        | Left col bleeds to viewport edge                |
    * | `card`               | 1fr            | Centered card; col2 is absolute background      |
-   * | `auto-width`         | auto / auto    | Both columns size to content                    |
+   * | `auto-width`         | auto / auto    | Columns size to content, row fills the section  |
    *
    * @default 'columns'
    * @example variant="contain"
    */
   variant?: LayoutVariant;
+
+  /**
+   * Text alignment for column 1.
+   * `stack-centered` already centers, so this is for the other variants.
+   * @default 'inherit'
+   */
+  align?: LayoutAlign;
+
+  /**
+   * Optional measure on column 1 — a max-width for readable line length.
+   * @example maxWidth="48rem"
+   */
+  maxWidth?: string;
 
   /**
    * Vertical alignment of columns relative to each other.
@@ -230,30 +287,6 @@ interface Props {
    * @example collapseAt="small"
    */
   collapseAt?: CollapseBreakpoint;
-
-  /**
-   * Content-side column span (1–11) for breakout/full variants.
-   * Stays within the container. Must pair with `bleedSpan` to total 13.
-   *
-   * - breakout default: `7` (~58 %)
-   * - full default: `6` (50 %)
-   *
-   * @default breakout: 7, full: 6
-   * @example contentSpan={5} bleedSpan={8}
-   */
-  contentSpan?: BreakoutColumns;
-
-  /**
-   * Bleed-side column span (1–11) for breakout/full variants.
-   * Extends to the viewport edge. Must pair with `contentSpan` to total 13.
-   *
-   * - breakout default: `6`
-   * - full default: `7`
-   *
-   * @default breakout: 6, full: 7
-   * @example contentSpan={5} bleedSpan={8}
-   */
-  bleedSpan?: BreakoutColumns;
 
   /**
    * Custom column ratio for two-column variants.
@@ -301,7 +334,7 @@ interface Props {
    * @example columnGap="0px"
    * @example columnGap="3rem"
    */
-  columnGap?: GapScale | string;
+  columnGap?: GapValue;
 
   /**
    * Vertical gap between rows when the layout stacks (collapsed) or
@@ -332,66 +365,141 @@ interface Props {
    * @example rowGap="0px"
    * @example rowGap="2rem"
    */
-  rowGap?: GapScale | string;
-
-  /**
-   * Gap between the bottom of the fixed nav and the sticky column.
-   * Only applies to `variant="sticky-left"`.
-   *
-   * The sticky column automatically clears the fixed navbar (including
-   * banner if present) using `--nav-height-total`. This prop controls
-   * the extra breathing room below the nav.
-   *
-   * Accepts any CSS length value, gap variables (`--gap-1` to `--gap-8`),
-   * or spacing variables (`--space-1` to `--space-8`).
-   *
-   * @default 'var(--space-3)' (approx 16px)
-   * @example stickyOffset="var(--gap-4)"
-   * @example stickyOffset="var(--space-6)"
-   * @example stickyOffset="2rem"
-   * @example stickyOffset="0px"
-   */
-  stickyOffset?: string;
-
-  /**
-   * Vertical padding for the `card` variant's content column.
-   * Only applies to `variant="card"`.
-   *
-   * Defaults to `--section-space-main` (fluid 4rem → 7rem).
-   * Override to adjust the card's inner height.
-   *
-   * Use section-space variables for consistent spacing:
-   *
-   * | Variable                  | Size           |
-   * |---------------------------|----------------|
-   * | `--section-space-small`   | 3rem → 5rem    |
-   * | `--section-space-main`    | 4rem → 7rem    |
-   * | `--section-space-large`   | 5.5rem → 10rem |
-   *
-   * @default 'var(--section-space-main)' (fluid 4-7rem)
-   * @example cardPadding="var(--section-space-large)"
-   * @example cardPadding="var(--section-space-small)"
-   * @example cardPadding="6rem"
-   */
-  cardPadding?: string;
+  rowGap?: GapValue;
 
   /**
    * Extra utility classes on the outer `.u-layout-wrapper` element.
    * @example class="u-margin-top-8"
    */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.u-layout-wrapper` element.
-   * @example style="--custom: value" data-animate="fade"
-   */
-  [key: string]: any;
 }
 
+/* Props are a DISCRIMINATED UNION on `variant`. The JSDoc above always SAID
+   "only applies to sticky-left" / "for breakout/full variants" — now the types
+   enforce it, so passing a prop to a variant that ignores it is an editor
+   error instead of silently dead markup:
+
+     <Layout variant="columns" stickyOffset="2rem">   ❌
+     <Layout cardPadding="4rem">                      ❌ (default is columns)
+     <Layout variant="card" cardPadding="4rem">       ✅
+
+   This is the same pattern as Button (href branches) and Card (link-only
+   props) — design rules encoded where the editor shows them. */
+export type Props = BaseProps &
+  (
+    | {
+        variant?:
+          | "columns"
+          | "columns-reversed"
+          | "stack"
+          | "stack-centered"
+          | "contain"
+          | "contain-reversed"
+          | "auto-width";
+        contentSpan?: never;
+        bleedSpan?: never;
+        stickyOffset?: never;
+        cardPadding?: never;
+      }
+    | ({
+        variant: "breakout" | "breakout-reversed" | "full" | "full-reversed";
+        stickyOffset?: never;
+        cardPadding?: never;
+      } & {
+        /**
+         * Content-side column span (1–11) for breakout/full variants.
+         * Stays within the container. Must pair with `bleedSpan` to total 13.
+         *
+         * - breakout default: `7` (~58 %)
+         * - full default: `6` (50 %)
+         *
+         * @default breakout: 7, full: 6
+         * @example contentSpan={5} bleedSpan={8}
+         */
+        contentSpan?: BreakoutColumns;
+        /**
+         * Bleed-side column span (1–11) for breakout/full variants.
+         * Extends to the viewport edge. Must pair with `contentSpan` to total 13.
+         *
+         * - breakout default: `6`
+         * - full default: `7`
+         *
+         * @default breakout: 6, full: 7
+         * @example contentSpan={5} bleedSpan={8}
+         */
+        bleedSpan?: BreakoutColumns;
+      })
+    | ({
+        variant: "sticky-left";
+        contentSpan?: never;
+        bleedSpan?: never;
+        cardPadding?: never;
+      } & {
+        /**
+         * Gap between the bottom of the fixed nav and the sticky column.
+         * Only applies to `variant="sticky-left"`.
+         *
+         * The sticky column automatically clears the fixed navbar (including
+         * banner if present) using `--nav-height-total`. This prop controls
+         * the extra breathing room below the nav.
+         *
+         * Accepts any CSS length value, gap variables (`--gap-1` to `--gap-8`),
+         * or spacing variables (`--space-1` to `--space-8`).
+         *
+         * @default 'var(--space-3)' (approx 16px)
+         * @example stickyOffset="var(--gap-4)"
+         * @example stickyOffset="var(--space-6)"
+         * @example stickyOffset="2rem"
+         * @example stickyOffset="0px"
+         */
+        stickyOffset?: string;
+      })
+    | ({
+        variant: "card";
+        contentSpan?: never;
+        bleedSpan?: never;
+        stickyOffset?: never;
+      } & {
+        /**
+         * Vertical padding for the `card` variant's content column.
+         * Only applies to `variant="card"`.
+         *
+         * Defaults to `--section-space-main` (fluid 4rem → 7rem).
+         * Override to adjust the card's inner height.
+         *
+         * Use section-space variables for consistent spacing:
+         *
+         * | Variable                  | Size           |
+         * |---------------------------|----------------|
+         * | `--section-space-small`   | 3rem → 5rem    |
+         * | `--section-space-main`    | 4rem → 7rem    |
+         * | `--section-space-large`   | 5.5rem → 10rem |
+         *
+         * @default 'var(--section-space-main)' (fluid 4-7rem)
+         * @example cardPadding="var(--section-space-large)"
+         * @example cardPadding="var(--section-space-small)"
+         * @example cardPadding="6rem"
+         */
+        cardPadding?: string;
+      })
+  );
+
+/* Flat shape for the implementation — inside the component TypeScript cannot
+   know which union branch applies. */
+type AllProps = BaseProps & {
+  variant?: LayoutVariant;
+  contentSpan?: BreakoutColumns;
+  bleedSpan?: BreakoutColumns;
+  stickyOffset?: string;
+  cardPadding?: string;
+};
+
 const {
+  render = true,
   docs,
   variant = "columns",
+  align = "inherit",
+  maxWidth,
   verticalAlign,
   collapseAt = "medium",
   contentSpan,
@@ -403,9 +511,44 @@ const {
   cardPadding,
   class: className,
   ...rest
-} = Astro.props;
+} = Astro.props as AllProps;
 
 /* Breakout/full variants use the u-grid-breakout utility for their named-line grid */
+/* Text alignment and an optional measure. Props rather than a second
+   component, so a section is one decision — see CLAUDE.md. */
+const textAlignClassMap: Record<string, string | undefined> = {
+  inherit: undefined,
+  center: "is-center-align",
+  left: "is-left-align",
+  right: "is-right-align",
+  "center-mobile": "is-center-align-mobile",
+};
+
+/* `stack-centered` centers by name, so it implies align="center" — otherwise
+   a centered stack with a `maxWidth` measure would constrain the box but
+   leave it (and its text) hugging the left edge. An explicit `align` still
+   wins, so a caller can override the variant's implication. */
+const effectiveAlign =
+  align !== "inherit"
+    ? align
+    : variant === "stack-centered"
+      ? "center"
+      : "inherit";
+
+/* The alignment classes need a host whenever there is something to align OR a
+   measure to centre. */
+const needsContentWrapper = effectiveAlign !== "inherit" || Boolean(maxWidth);
+
+/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
+   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
+   swallows the hoisted `<script>` of every component inside it — page-wide,
+   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
+   left BOTH sliders on the page uninitialized, the unrelated one included.
+   `.has()` only reports whether a slot was passed, which is weaker (a slot
+   holding an empty `{items.map(…)}` still counts as present), and that is the
+   trade we want: a rare empty wrapper beats silently dead client JS. */
+const hasColumn2Slot = Astro.slots.has("column2");
+
 const isBreakout = [
   "breakout",
   "breakout-reversed",
@@ -440,7 +583,9 @@ const rowGapValue = resolveGap(rowGap);
 
 /* Build inline style for custom properties */
 const styleParts: string[] = [];
-styleParts.push(`--layout-collapse: var(--flex-${collapseAt})`);
+/* --_ prefix = internal to this component (see CLAUDE.md: Variables).
+   Set inline here, consumed only by this file's CSS below. */
+styleParts.push(`--_collapse: var(--flex-${collapseAt})`);
 if (contentSpan) styleParts.push(`--content-span: ${contentSpan}`);
 if (bleedSpan) styleParts.push(`--bleed-span: ${bleedSpan}`);
 
@@ -452,29 +597,521 @@ if (ratio) {
   }
 }
 
-if (columnGapValue) styleParts.push(`--layout-gap: ${columnGapValue}`);
-if (rowGapValue) styleParts.push(`--layout-row-gap: ${rowGapValue}`);
+if (columnGapValue) styleParts.push(`--_gap: ${columnGapValue}`);
+if (rowGapValue) styleParts.push(`--_row-gap: ${rowGapValue}`);
 if (stickyOffset) styleParts.push(`--sticky-offset: ${stickyOffset}`);
 if (cardPadding) styleParts.push(`--card-padding: ${cardPadding}`);
 
 const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
 ---
 
-<div class:list={["u-layout-wrapper", className]} data-layout-variant={variant} data-collapse={collapseAt} {...rest}>
-  <div
-    class:list={["u-layout", alignClass, { "u-grid-breakout": isBreakout }]}
-    style={inlineStyle}
-  >
-    <div class="u-layout-column-1">
-      <slot name="col1" />
-    </div>
-
-    {
-      Astro.slots.has('col2') && (
-        <div class="u-layout-column-2">
-          <slot name="col2" />
+{
+  render && (
+    <div
+      class:list={["u-layout-wrapper", className]}
+      data-layout-variant={variant}
+      data-collapse={collapseAt}
+      {...rest}
+    >
+      <div
+        class:list={["u-layout", alignClass, { "u-grid-breakout": isBreakout }]}
+        style={inlineStyle}
+      >
+        {/* Column 1 is the DEFAULT slot — anything placed inside <Layout> lands
+            here with no wrapper component and no slot attribute to remember.
+            The `u-content-wrapper` classes carry alignment and measure, and are
+            emitted only when `align` or `maxWidth` asks for them. */}
+        <div
+          class:list={[
+            "u-layout-column-1",
+            needsContentWrapper && "u-content-wrapper",
+            textAlignClassMap[effectiveAlign],
+          ]}
+        >
+          {maxWidth ? (
+            <div
+              class="u-content-wrapper_inner"
+              style={`max-width: ${maxWidth};`}
+            >
+              <slot />
+            </div>
+          ) : (
+            <slot />
+          )}
         </div>
-      )
+
+        {/* Only emitted when it renders something — a column2 holding an empty
+            expression would otherwise leave a stray grid cell. */}
+        {hasColumn2Slot && (
+          <div class="u-layout-column-2">
+            <slot name="column2" />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/layout.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   LAYOUT COMPONENT — Two-column layout variants
+   ==========================================================================
+   All variants use CSS Grid at large container widths and collapse to a
+   single flex column when the container narrows past a configurable
+   breakpoint. The Layout component sets --_collapse on .u-layout
+   to either var(--flex-medium) (collapse at ~928px, default) or
+   var(--flex-small) (collapse at ~560px) via the collapseAt prop.
+   The data-collapse attribute on .u-layout-wrapper scopes the
+   responsive reset rules to the correct container-query tier.
+
+   Usage:
+     <div class="u-layout-wrapper" data-layout-variant="columns">
+       <div class="u-layout">
+         <div class="u-layout-column-1">…</div>
+         <div class="u-layout-column-2">…</div>
+       </div>
+     </div>
+
+   Variants:
+     columns           — 50 / 50 (equal halves, or custom ratio)
+     columns-reversed  — 50 / 50, column order reversed (or custom ratio)
+     stack             — single column, left-aligned
+     stack-centered    — single column, centered
+     sticky-left       — 50 / 50, left column sticky (or custom ratio)
+     contain           — card layout: content left, image right (rounded, padded)
+     contain-reversed  — card layout: image left, content right (rounded, padded)
+     breakout          — 60 / 40, right column (image) bleeds to edge
+     breakout-reversed — 40 / 60, left column (image) bleeds to edge
+     full              — 50 / 50, right column bleeds to edge
+     full-reversed     — 50 / 50, left column bleeds to edge
+     card              — centered content card, col2 as absolute background
+     auto-width        — columns size to their content; the row still fills
+
+   Column ratio:
+     Two-column variants (columns, columns-reversed, sticky-left, contain,
+     contain-reversed) accept --col-1 / --col-2 custom properties to override
+     the default 50/50 split. Set via the `ratio` prop on the Layout component.
+   ========================================================================== */
+
+    /* ---- Base layout shell ---- */
+
+    .u-layout-wrapper {
+      grid-column-gap: var(--_gap, var(--site-gutter));
+      grid-row-gap: var(--_row-gap, var(--space-8));
+      justify-content: center;
+      align-items: stretch;
+      width: 100%;
+      display: flex;
     }
-  </div>
-</div>
+
+    .u-layout {
+      grid-column-gap: var(--_gap, var(--site-gutter));
+      grid-row-gap: var(--_row-gap, var(--space-8));
+      flex-flow: column;
+      grid-template-rows: auto;
+      grid-auto-columns: 1fr;
+      width: 100%;
+      display: flex;
+    }
+
+    .u-layout-column-1,
+    .u-layout-column-2 {
+      align-self: center;
+      width: 100%;
+      position: relative;
+      min-width: 0;
+    }
+
+    /* ---- columns — 50/50 equal (or custom ratio via --col-1/--col-2) ---- */
+
+    [data-layout-variant="columns"] .u-layout,
+    [data-layout-variant="columns-reversed"] .u-layout {
+      display: var(--_collapse, grid);
+      flex-flow: column;
+      grid-template-columns: minmax(0, var(--col-1, 1fr)) minmax(
+          0,
+          var(--col-2, 1fr)
+        );
+    }
+
+    [data-layout-variant="columns-reversed"] .u-layout-column-1 {
+      order: 2;
+    }
+    [data-layout-variant="columns-reversed"] .u-layout-column-2 {
+      order: 1;
+    }
+
+    /* ---- stack — single column ---- */
+
+    [data-layout-variant="stack"] .u-layout,
+    [data-layout-variant="stack-centered"] .u-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    [data-layout-variant="stack-centered"] .u-layout {
+      text-align: center;
+      justify-items: center;
+    }
+
+    /* Column stays block-level so sibling margins collapse (e.g. text
+   margin-bottom + button-wrapper margin-top → max wins).  The alignment
+   properties are set for INHERITANCE only — .u-button-wrapper inherits
+   justify-content: center, and text-align: center handles inline content.
+
+   --_text-inline-margin is the same signal for .u-text. align-items cannot
+   serve it: .u-text is the text element itself, a block box, and a block box
+   ignores its parent's align-items. Without this, a max-width-constrained
+   heading keeps its text centred INSIDE a box that stays hard left. */
+    [data-layout-variant="stack-centered"] .u-layout-column-1 {
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      --_text-inline-margin: auto;
+      --_buttons-justify: center;
+    }
+
+    /* ---- sticky-left — 50/50, left column sticks on scroll (or custom ratio) ---- */
+
+    [data-layout-variant="sticky-left"] .u-layout {
+      display: var(--_collapse, grid);
+      flex-flow: column;
+      grid-template-columns: minmax(0, var(--col-1, 1fr)) minmax(
+          0,
+          var(--col-2, 1fr)
+        );
+    }
+
+    [data-layout-variant="sticky-left"] .u-layout-column-1 {
+      position: sticky;
+      /* Auto-clear the fixed nav (bar + outer spacing + banner) plus a small
+     breathing offset. Override --sticky-offset via the `stickyOffset` prop
+     on <Layout> for a custom gap below the nav. */
+      top: calc(var(--nav-height-total) + var(--sticky-offset, var(--space-3)));
+    }
+
+    /* ---- contain — card layout (content + image in a rounded card) ---- */
+    /* Both variants share: background, radius, overflow, zero gap.
+   Content column is padded; image column clips to the card shape.
+   Default 50/50 split — override with the `ratio` prop. */
+
+    [data-layout-variant="contain"] .u-layout,
+    [data-layout-variant="contain-reversed"] .u-layout {
+      display: var(--_collapse, grid);
+      flex-flow: column;
+      grid-template-columns: minmax(0, var(--col-1, 1fr)) minmax(
+          0,
+          var(--col-2, 1fr)
+        );
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+      overflow: clip;
+      gap: 0;
+    }
+
+    /* contain: col1 = content (padded + centered), col2 = visual (stretched + clipped) */
+    [data-layout-variant="contain"] .u-layout-column-1 {
+      padding: var(--space-6);
+      align-self: center;
+    }
+
+    [data-layout-variant="contain"] .u-layout-column-2 {
+      align-self: stretch;
+      border-radius: 0;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: clip;
+    }
+
+    /* contain-reversed: col1 = visual (stretched + clipped), col2 = content (padded + centered) */
+    [data-layout-variant="contain-reversed"] .u-layout-column-1 {
+      align-self: stretch;
+      border-radius: 0;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: clip;
+    }
+
+    [data-layout-variant="contain-reversed"] .u-layout-column-2 {
+      padding: var(--space-6);
+      align-self: center;
+    }
+
+    /* ---- breakout & full — viewport-edge bleed via u-grid-breakout ---- */
+    /* The .u-layout gets the u-grid-breakout utility class (added by Layout.astro)
+   which sets grid-template-columns: var(--grid-breakout) and gaps.
+   This rule only adds the viewport expansion and responsive override.
+*/
+
+    [data-layout-variant="breakout"] > .u-layout,
+    [data-layout-variant="breakout-reversed"] > .u-layout,
+    [data-layout-variant="full"] > .u-layout,
+    [data-layout-variant="full-reversed"] > .u-layout {
+      --breakout-on: var(--responsive-large, 1);
+      display: var(--_collapse, grid);
+      flex-flow: column;
+      width: calc(100vw * var(--breakout-on) + 100% * (1 - var(--breakout-on)));
+      margin-inline: calc((50% - 50vw) * var(--breakout-on));
+    }
+
+    /* Column spans are controlled by --content-span and --bleed-span CSS vars.
+   Set via the contentSpan/bleedSpan props on the Layout component.
+   Defaults: breakout = 7/6, full = 6/7. Must total 13 (12 content cols + 1 gutter). */
+
+    /* breakout: content left, image right bleeds to right edge */
+    [data-layout-variant="breakout"] .u-layout-column-1 {
+      grid-column: content-start / span var(--content-span, 7);
+    }
+
+    [data-layout-variant="breakout"] .u-layout-column-2 {
+      grid-column: span var(--bleed-span, 6) / full-end;
+      overflow: hidden;
+    }
+
+    /* breakout-reversed: col2 bleeds to left edge, col1 content right */
+    [data-layout-variant="breakout-reversed"] .u-layout-column-1 {
+      grid-column: span var(--content-span, 7) / content-end;
+      grid-row: 1;
+    }
+
+    [data-layout-variant="breakout-reversed"] .u-layout-column-2 {
+      grid-column: full-start / span var(--bleed-span, 6);
+      grid-row: 1;
+      overflow: hidden;
+    }
+
+    /* full: content left, image right bleeds to right edge */
+    [data-layout-variant="full"] .u-layout-column-1 {
+      grid-column: content-start / span var(--content-span, 6);
+    }
+
+    [data-layout-variant="full"] .u-layout-column-2 {
+      grid-column: span var(--bleed-span, 7) / full-end;
+      overflow: hidden;
+    }
+
+    /* full-reversed: col2 bleeds to left edge, col1 content right */
+    [data-layout-variant="full-reversed"] .u-layout-column-1 {
+      grid-column: span var(--content-span, 6) / content-end;
+      grid-row: 1;
+    }
+
+    [data-layout-variant="full-reversed"] .u-layout-column-2 {
+      grid-column: full-start / span var(--bleed-span, 7);
+      grid-row: 1;
+      overflow: hidden;
+    }
+
+    /* ---- card — centered content card, col2 acts as background ---- */
+
+    [data-layout-variant="card"] .u-layout {
+      position: relative;
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+      overflow: clip;
+    }
+
+    [data-layout-variant="card"] .u-layout-column-1 {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      /* see the stack-centered note above */
+      --_text-inline-margin: auto;
+      --_buttons-justify: center;
+      padding: var(--card-padding, var(--section-space-main)) var(--space-7);
+    }
+
+    [data-layout-variant="card"] .u-layout-column-2 {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      overflow: clip;
+    }
+
+    /* ---- auto-width — both columns size to content ---- */
+
+    [data-layout-variant="auto-width"] .u-layout {
+      display: var(--_collapse, grid);
+      flex-flow: column;
+      /* `auto` tracks take their size from their own content — that is the
+         point of this variant. Grid then hands the leftover space to those
+         same auto tracks, so the row still spans the section instead of
+         clumping at the left edge.
+         Do NOT add `justify-content: start` here: it opts the tracks out of
+         that free-space distribution, which packed both columns against the
+         left and left the right half of the section empty. */
+      grid-template-columns: auto auto;
+    }
+
+    /* ---- Vertical alignment — override column base align-self ---- */
+    /* The verticalAlign prop on <Layout> adds u-align-* to .u-layout.
+   Since columns default to align-self: center, these rules
+   target columns directly with higher specificity to override. */
+
+    .u-layout.u-align-start .u-layout-column-1,
+    .u-layout.u-align-start .u-layout-column-2 {
+      align-self: start;
+    }
+
+    .u-layout.u-align-center .u-layout-column-1,
+    .u-layout.u-align-center .u-layout-column-2 {
+      align-self: center;
+    }
+
+    .u-layout.u-align-end .u-layout-column-1,
+    .u-layout.u-align-end .u-layout-column-2 {
+      align-self: end;
+    }
+
+    .u-layout.u-align-stretch .u-layout-column-1,
+    .u-layout.u-align-stretch .u-layout-column-2 {
+      align-self: stretch;
+    }
+
+    /* ==========================================================================
+   RESPONSIVE — collapse resets
+   ==========================================================================
+   The display switch (grid → flex) is handled by --_collapse, which
+   resolves automatically via the responsive flag system. These rules handle
+   the ADDITIONAL resets that each variant needs when it collapses:
+   reversed column order, sticky positioning, breakout viewport expansion,
+   contain padding, and named-line column placement.
+
+   Rules are scoped by data-collapse so they fire at the correct tier:
+     data-collapse="medium"  →  @container (width < 58em)  ~928px
+     data-collapse="small"   →  @container (width < 35em)  ~560px
+   ========================================================================== */
+
+    /* ---- Collapse at medium (default) ---- */
+
+    @container (width < 58em) {
+      /* Reset reversed column order */
+      [data-collapse="medium"][data-layout-variant="columns-reversed"]
+        .u-layout-column-1,
+      [data-collapse="medium"][data-layout-variant="columns-reversed"]
+        .u-layout-column-2 {
+        order: unset;
+      }
+
+      /* Unstick the sticky column */
+      [data-collapse="medium"][data-layout-variant="sticky-left"]
+        .u-layout-column-1 {
+        position: static;
+      }
+
+      /* Reset breakout/full viewport expansion */
+      [data-collapse="medium"][data-layout-variant="breakout"] > .u-layout,
+      [data-collapse="medium"][data-layout-variant="breakout-reversed"]
+        > .u-layout,
+      [data-collapse="medium"][data-layout-variant="full"] > .u-layout,
+      [data-collapse="medium"][data-layout-variant="full-reversed"]
+        > .u-layout {
+        width: 100%;
+        margin-inline: 0;
+      }
+
+      /* Contain card: adjust padding for stacked layout */
+      [data-collapse="medium"][data-layout-variant="contain"]
+        .u-layout-column-1,
+      [data-collapse="medium"][data-layout-variant="contain-reversed"]
+        .u-layout-column-2 {
+        padding: var(--space-5);
+      }
+
+      [data-collapse="medium"][data-layout-variant="contain"]
+        .u-layout-column-2,
+      [data-collapse="medium"][data-layout-variant="contain-reversed"]
+        .u-layout-column-1 {
+        padding: 0;
+      }
+
+      /* Reset named-line column placement */
+      [data-collapse="medium"][data-layout-variant="breakout"]
+        .u-layout-column-1,
+      [data-collapse="medium"][data-layout-variant="breakout"]
+        .u-layout-column-2,
+      [data-collapse="medium"][data-layout-variant="breakout-reversed"]
+        .u-layout-column-1,
+      [data-collapse="medium"][data-layout-variant="breakout-reversed"]
+        .u-layout-column-2,
+      [data-collapse="medium"][data-layout-variant="full"] .u-layout-column-1,
+      [data-collapse="medium"][data-layout-variant="full"] .u-layout-column-2,
+      [data-collapse="medium"][data-layout-variant="full-reversed"]
+        .u-layout-column-1,
+      [data-collapse="medium"][data-layout-variant="full-reversed"]
+        .u-layout-column-2 {
+        grid-column: auto;
+        overflow: visible;
+      }
+    }
+
+    /* ---- Collapse at small ---- */
+
+    @container (width < 35em) {
+      /* Reset reversed column order */
+      [data-collapse="small"][data-layout-variant="columns-reversed"]
+        .u-layout-column-1,
+      [data-collapse="small"][data-layout-variant="columns-reversed"]
+        .u-layout-column-2 {
+        order: unset;
+      }
+
+      /* Unstick the sticky column */
+      [data-collapse="small"][data-layout-variant="sticky-left"]
+        .u-layout-column-1 {
+        position: static;
+      }
+
+      /* Reset breakout/full viewport expansion */
+      [data-collapse="small"][data-layout-variant="breakout"] > .u-layout,
+      [data-collapse="small"][data-layout-variant="breakout-reversed"]
+        > .u-layout,
+      [data-collapse="small"][data-layout-variant="full"] > .u-layout,
+      [data-collapse="small"][data-layout-variant="full-reversed"] > .u-layout {
+        width: 100%;
+        margin-inline: 0;
+      }
+
+      /* Contain card: adjust padding for stacked layout */
+      [data-collapse="small"][data-layout-variant="contain"] .u-layout-column-1,
+      [data-collapse="small"][data-layout-variant="contain-reversed"]
+        .u-layout-column-2 {
+        padding: var(--space-5);
+      }
+
+      [data-collapse="small"][data-layout-variant="contain"] .u-layout-column-2,
+      [data-collapse="small"][data-layout-variant="contain-reversed"]
+        .u-layout-column-1 {
+        padding: 0;
+      }
+
+      /* Reset named-line column placement */
+      [data-collapse="small"][data-layout-variant="breakout"]
+        .u-layout-column-1,
+      [data-collapse="small"][data-layout-variant="breakout"]
+        .u-layout-column-2,
+      [data-collapse="small"][data-layout-variant="breakout-reversed"]
+        .u-layout-column-1,
+      [data-collapse="small"][data-layout-variant="breakout-reversed"]
+        .u-layout-column-2,
+      [data-collapse="small"][data-layout-variant="full"] .u-layout-column-1,
+      [data-collapse="small"][data-layout-variant="full"] .u-layout-column-2,
+      [data-collapse="small"][data-layout-variant="full-reversed"]
+        .u-layout-column-1,
+      [data-collapse="small"][data-layout-variant="full-reversed"]
+        .u-layout-column-2 {
+        grid-column: auto;
+        overflow: visible;
+      }
+    }
+  }
+</style>

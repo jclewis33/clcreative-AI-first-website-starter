@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * SplitSection — full-reversed content + image section.
  *
@@ -25,16 +26,16 @@
  *   </div>
  * </SplitSection>
  */
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Visual from "../ui/Visual.astro";
-import Button from "../ui/Button.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
 /** Spacing-scale step (`--space-N`) for the column gap. `0` = no gap. */
 type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **SplitSection** — full-reversed content + image section.
    *
@@ -93,8 +94,6 @@ interface Props {
   buttonAriaLabel?: string;
   /** Extra classes on the Section. */
   class?: string;
-
-  [key: string]: any;
 }
 
 const {
@@ -120,22 +119,21 @@ const {
   {...rest}
 >
   <Layout variant="full-reversed" verticalAlign="center" columnGap={gap}>
-    <Col slot="col1">
-      <div class="split_content">
-        <slot />
-        {
-          buttonText && (
-            <div class="u-button-wrapper">
-              <Button href={buttonHref} ariaLabel={buttonAriaLabel ?? buttonText}>
-                {buttonText}
-              </Button>
-            </div>
-          )
-        }
-      </div>
-    </Col>
+    <div class="split_content">
+      <slot />
+      {
+        buttonText && (
+          <ButtonWrapper>
+            <Button href={buttonHref} ariaLabel={buttonAriaLabel ?? buttonText}>
+              {buttonText}
+            </Button>
+          </ButtonWrapper>
+        )
+      }
+    </div>
+
     <Visual
-      slot="col2"
+      slot="column2"
       src={image}
       alt={imageAlt}
       ratio={imageRatio}
@@ -144,3 +142,32 @@ const {
     />
   </Layout>
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/split-section.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* SplitSection — full-reversed content + image section.
+ * Shared styles for the recurring "experience" / "agitate" pattern. */
+
+    .split_content {
+      padding-block: var(--section-space-xsmall);
+    }
+
+    .split_body {
+      border-top: var(--border-width-main) solid var(--border);
+      padding-top: var(--space-4);
+    }
+
+    @media (width < 62.5em) {
+      .split_content {
+        padding-block: 0;
+      }
+
+      .split_section {
+        padding-block: var(--section-space-small);
+      }
+    }
+  }
+</style>

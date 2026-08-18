@@ -10,7 +10,8 @@ export const blogCta = defineType({
     defineField({
       name: "title",
       title: "Internal Title",
-      description: "Editor-only label. Not shown to readers — used for picking this CTA from a list.",
+      description:
+        "Editor-only label. Not shown to readers — used for picking this CTA from a list.",
       type: "string",
       validation: (rule) => rule.required(),
     }),
@@ -61,7 +62,8 @@ export const blogCta = defineType({
     defineField({
       name: "linkUrl",
       title: "Link URL",
-      description: "Where the entire CTA block links to. Can be a relative path (e.g. /contact) or a full URL.",
+      description:
+        "Where the entire CTA block links to. Can be a relative path (e.g. /contact) or a full URL.",
       type: "url",
       validation: (rule) =>
         rule
@@ -71,7 +73,8 @@ export const blogCta = defineType({
     defineField({
       name: "linkLabel",
       title: "Link Label",
-      description: "Visible text on the CTA's link button. Also used as the block's accessible label.",
+      description:
+        "Visible text on the CTA's link button. Also used as the block's accessible label.",
       type: "string",
       initialValue: "Learn more",
       validation: (rule) => rule.required(),

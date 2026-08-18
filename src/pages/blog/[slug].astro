@@ -9,12 +9,12 @@
  * the two files in sync (they should differ only in prerender mode and the
  * getStaticPaths export).
  */
-import BlogPostTemplate from "../../components/templates/BlogPostTemplate.astro";
-import { getDraftModeProps } from "../../sanity/lib/draft-mode";
+import BlogPostTemplate from "@/components/templates/BlogPostTemplate.astro";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import {
   loadBlogPostPage,
   getBlogPostStaticPaths,
-} from "../../sanity/lib/page-data";
+} from "@/sanity/lib/page-data";
 
 // Must be an imported helper: Astro extracts getStaticPaths into its own
 // module at build time, so frontmatter siblings are not in scope here.

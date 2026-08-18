@@ -1,7 +1,8 @@
 ---
 // src/components/Head.astro
 import { Font } from "astro:assets";
-import { SITE } from "../../config/site";
+import { isNoindexRoute } from "@/config/seo.shared.mjs";
+import { SITE } from"@/config/site";
 
 // Destructure props with default values.
 // These can be overridden on a per-page basis.
@@ -20,6 +21,8 @@ const {
 const resolvedCanonical =
   canonical || new URL(Astro.url.pathname, Astro.site).toString();
 
+const noindex = isNoindexRoute(Astro.url.pathname);
+
 // OG/Twitter fallback chain: explicit OG → meta title/description
 const resolvedOgTitle = ogTitle || title;
 const resolvedOgDescription = ogDescription || description;
@@ -36,6 +39,19 @@ const resolvedTwitterImage = resolvedOgImage;
 
 <!-- Character Encoding -->
 <meta charset="UTF-8" />
+
+<!-- Cascade layer order — MUST stay identical to the @layer statement in
+     src/styles/global.css. In CSS, whichever declaration of a layer is
+     parsed FIRST fixes its position, and later statements cannot reorder
+     it. Component styles are co-located in <style is:global> blocks and
+     bundled per page, so a component chunk could be parsed before
+     global.css; this inline copy is guaranteed to come first in the
+     document and pins the order no matter how the bundler arranges the
+     stylesheets. is:inline stops Vite from extracting it into one of
+     those very bundles. -->
+<style is:inline>
+  @layer reset, vendor, variables, base, utilities, components, pages, overrides;
+</style>
 
 <!-- Ensure proper scaling on mobile devices -->
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -57,6 +73,12 @@ const resolvedTwitterImage = resolvedOgImage;
 <link rel="sitemap" href="/sitemap-index.xml" />
 
 <!-- Canonical URL: auto-derived from Astro.url + Astro.site, overridable via prop -->
+{/* Kept out of search results — same predicate the sitemap filter and
+    robots.txt read (src/config/seo.shared.mjs). A robots.txt Disallow stops
+    crawling but NOT indexing of a URL discovered elsewhere; this closes that
+    gap. */}
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
 <link rel="canonical" href={resolvedCanonical} />
 
 <!-- Page Title and Meta Description for SEO -->
@@ -193,13 +215,6 @@ const resolvedTwitterImage = resolvedOgImage;
   </style>
 </noscript>
 
-<!-- Form Redirect -->
-
-<script is:inline>
-  if (!location.pathname.startsWith("/thank-you")) {
-    localStorage.setItem("locat", location.href);
-  }
-</script>
-
-<!-- GSAP and Swiper are bundled via npm — see src/scripts/gsap-init.js and
-     src/scripts/swiper-init.js, both imported in BaseLayout. -->
+<!-- GSAP and Swiper are npm dependencies imported directly by the components
+     that use them; the site-wide animation.js loads GSAP dynamically only on
+     pages with animation attributes. No window globals. -->

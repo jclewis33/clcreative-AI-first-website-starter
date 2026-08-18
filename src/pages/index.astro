@@ -1,39 +1,38 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Section from "../components/ui/Section.astro";
-import Heading from "../components/ui/Heading.astro";
-import Text from "../components/ui/Text.astro";
-import Layout from "../components/ui/Layout.astro";
-import Col from "../components/ui/Col.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Layout from "@/components/ui/Layout.astro";
 
-import "../styles/pages/home.css";
-import HowItWorks from "../components/sections/HowItWorks.astro";
-import FrameworkSection from "../components/sections/FrameworkSection.astro";
-import TestimonialShowcase from "../components/sections/TestimonialShowcase.astro";
-import SingleTestimonial from "../components/sections/SingleTestimonial.astro";
-import ProjectImages from "../components/sections/ProjectImages.astro";
-import WhyWorkWithUs from "../components/sections/WhyWorkWithUs.astro";
-import Services from "../components/sections/Services.astro";
-import CTASection from "../components/sections/CTASection.astro";
+import "@/styles/pages/home.css";
+import HowItWorks from "@/components/sections/HowItWorks.astro";
+import FrameworkSection from "@/components/sections/FrameworkSection.astro";
+import TestimonialShowcase from "@/components/sections/TestimonialShowcase.astro";
+import SingleTestimonial from "@/components/sections/SingleTestimonial.astro";
+import ProjectImages from "@/components/sections/ProjectImages.astro";
+import WhyWorkWithUs from "@/components/sections/WhyWorkWithUs.astro";
+import Services from "@/components/sections/Services.astro";
+import CTASection from "@/components/sections/CTASection.astro";
 
-import CaseStudyFeatured from "../components/sections/CaseStudyFeatured.astro";
-import Visual from "../components/ui/Visual.astro";
-import ContentWrapper from "../components/ui/ContentWrapper.astro";
-import Grid from "../components/ui/Grid.astro";
-import Button from "../components/ui/Button.astro";
-import ImagePromo from "../components/sections/ImagePromo.astro";
+import CaseStudyFeatured from "@/components/sections/CaseStudyFeatured.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Button from "@/components/ui/Button.astro";
+import ImagePromo from "@/components/sections/ImagePromo.astro";
 
 //images
-import problemImage from "../assets/placeholder-images/placeholder-1.webp";
-import theFixImage from "../assets/placeholder-images/placeholder-2.webp";
-import stakes1 from "../assets/placeholder-images/placeholder-3.webp";
-import stakes2 from "../assets/placeholder-images/placeholder-4.webp";
-import future1 from "../assets/placeholder-images/placeholder-11.webp";
-import future2 from "../assets/placeholder-images/placeholder-12.webp";
-import future3 from "../assets/placeholder-images/placeholder-13.webp";
-import future4 from "../assets/placeholder-images/placeholder-14.webp";
-import future5 from "../assets/placeholder-images/placeholder-15.webp";
-import future6 from "../assets/placeholder-images/placeholder-16.webp";
+import problemImage from "@/assets/placeholder-images-2/ai-first-starter-1.webp";
+import theFixImage from "@/assets/placeholder-images-2/ai-first-starter-2.webp";
+import stakes1 from "@/assets/placeholder-images-2/ai-first-starter-3.webp";
+import stakes2 from "@/assets/placeholder-images-2/ai-first-starter-4.webp";
+import future1 from "@/assets/placeholder-images-2/ai-first-starter-11.webp";
+import future2 from "@/assets/placeholder-images-2/ai-first-starter-12.webp";
+import future3 from "@/assets/placeholder-images-2/ai-first-starter-13.webp";
+import future4 from "@/assets/placeholder-images-2/ai-first-starter-14.webp";
+import future5 from "@/assets/placeholder-images-2/ai-first-starter-15.webp";
+import future6 from "@/assets/placeholder-images-2/ai-first-starter-16.webp";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 ---
 
 <BaseLayout
@@ -42,41 +41,32 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
   theme="light"
 >
   <!-- Hero Section -->
-  <Section padding="main">
-    <Layout
-      docs=""
-      class="home-hero_layout home-hero_content"
-      variant="columns"
-    >
-      <Col docs="" slot="col1" class="home-hero_text">
-        <Heading tag="h1" maxWidth="none" variant="eyebrow"
-          >Lorem ipsum dolor sit amet</Heading
-        >
-        <Heading variant="h2" maxWidth="40ch"
-          >Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do
-          eiusmod tempor incididunt.</Heading
-        >
-        <Text variant="xlarge">
-          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-          nisi ut aliquip ex ea commodo consequat.
-        </Text>
+  <Section>
+    <Layout class="home-hero_layout home-hero_content" variant="columns">
+      <Heading tag="h1" maxWidth="none" variant="eyebrow"
+        >Lorem ipsum dolor sit amet</Heading
+      >
+      <Heading variant="h2" maxWidth="40ch"
+        >Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod
+        tempor incididunt.</Heading
+      >
+      <Text variant="xlarge">
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+        ut aliquip ex ea commodo consequat.
+      </Text>
 
-        <div class="u-button-wrapper">
-          <Button
-            id="main-cta-home-hero"
-            href="/contact"
-            ariaLabel="Get started">Get Started</Button
-          >
-          <Button
-            variant="secondary"
-            href="/marketing-scorecard"
-            ariaLabel="Take the scorecard"
-            >Take the Scorecard</Button
-          >
-        </div>
-      </Col>
+      <ButtonWrapper>
+        <Button id="main-cta-home-hero" href="/contact" ariaLabel="Get started"
+          >Get Started</Button
+        >
+        <Button
+          variant="secondary"
+          href="/marketing-scorecard"
+          ariaLabel="Take the scorecard">Take the Scorecard</Button
+        >
+      </ButtonWrapper>
       <Visual
-        slot="col2"
+        slot="column2"
         src={theFixImage}
         alt="Placeholder hero image"
         ratio="landscape"
@@ -85,24 +75,18 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
   </Section>
 
   <!-- Problem / Two-Column Statement Section -->
-  <Section
-    theme="dark"
-    paddingTop="main"
-    paddingBottom="none"
-    class="problem_section"
-  >
+  <Section theme="dark" paddingBottom="none" class="problem_section">
     <Layout variant="columns" verticalAlign="start">
       <Heading
         data-prevent-flicker="true"
         data-split-text
-        slot="col1"
         tag="h2"
         variant="h2"
         maxWidth="16ch"
       >
         Lorem ipsum dolor sit amet consectetur.
       </Heading>
-      <Col slot="col2">
+      <Fragment slot="column2">
         <Heading
           data-fade-in
           data-prevent-flicker="true"
@@ -112,11 +96,11 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
         >
           Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
         </Heading>
-        <Text data-fade-in data-prevent-flicker="true" size="regular">
+        <Text data-fade-in data-prevent-flicker="true" variant="regular">
           Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
           nisi ut aliquip ex ea commodo consequat.
         </Text>
-      </Col>
+      </Fragment>
     </Layout>
     <Visual
       src={problemImage}
@@ -130,7 +114,8 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
 
   <!-- Agitation Section -->
   <Section padding="small" theme="brand">
-    <ContentWrapper
+    <Layout
+      variant="stack"
       data-prevent-flicker="true"
       data-fade-list
       align="left"
@@ -143,17 +128,17 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
         >Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
         ut aliquip ex ea commodo consequat duis aute irure dolor.
       </Text>
-    </ContentWrapper>
+    </Layout>
   </Section>
 
   <!-- The Fix Section -->
   <Section gap={8}>
     <Layout variant="columns" ratio="6.5-5.5" rowGap="var(--space-4)">
-      <Heading maxWidth="none" slot="col1" data-fade-in tag="h2" variant="h3">
+      <Heading maxWidth="none" data-fade-in tag="h2" variant="h3">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod.
       </Heading>
 
-      <ContentWrapper slot="col2">
+      <Layout variant="stack" slot="column2">
         <Text data-fade-in>
           Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
           nisi ut aliquip ex ea commodo consequat.
@@ -162,7 +147,7 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
           Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
           dolore eu fugiat nulla pariatur.
         </Text>
-      </ContentWrapper>
+      </Layout>
     </Layout>
     <Visual
       src={theFixImage}
@@ -170,11 +155,11 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
       data-fade-in
       ratio="landscape"
     />
-    <ContentWrapper align="center">
-      <div class="u-button-wrapper">
+    <Layout variant="stack-centered">
+      <ButtonWrapper>
         <Button href="/contact" ariaLabel="Get started">Get Started</Button>
-      </div>
-    </ContentWrapper>
+      </ButtonWrapper>
+    </Layout>
   </Section>
 
   <!-- Framework Section -->
@@ -182,20 +167,15 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
 
   <!--Stakes Section -->
   <Section>
-    <ContentWrapper align="center">
+    <Layout variant="stack-centered">
       <Heading tag="h2" variant="h2" maxWidth="25ch">
         Lorem ipsum dolor sit amet consectetur adipiscing elit.
       </Heading>
-    </ContentWrapper>
+    </Layout>
 
     <Layout variant="columns" verticalAlign="center">
-      <Visual
-        slot="col1"
-        src={stakes1}
-        alt="Placeholder image"
-        ratio="landscape"
-      />
-      <Col slot="col2">
+      <Visual src={stakes1} alt="Placeholder image" ratio="landscape" />
+      <Fragment slot="column2">
         <Heading tag="h3" variant="h3">
           Lorem ipsum dolor sit amet consectetur adipiscing.
         </Heading>
@@ -206,17 +186,12 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
           Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
           nisi ut aliquip ex ea commodo consequat.
         </Text>
-      </Col>
+      </Fragment>
     </Layout>
 
     <Layout variant="columns-reversed" verticalAlign="center">
-      <Visual
-        slot="col1"
-        src={stakes2}
-        alt="Placeholder image"
-        ratio="landscape"
-      />
-      <Col slot="col2">
+      <Visual src={stakes2} alt="Placeholder image" ratio="landscape" />
+      <Fragment slot="column2">
         <Heading maxWidth="30ch" tag="h3" variant="h3">
           Duis aute irure dolor in reprehenderit in voluptate velit esse.
         </Heading>
@@ -227,14 +202,14 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
           Sed ut perspiciatis unde omnis iste natus error sit voluptatem
           accusantium doloremque laudantium totam rem aperiam.
         </Text>
-      </Col>
+      </Fragment>
     </Layout>
 
-    <ContentWrapper align="center">
-      <div class="u-button-wrapper">
+    <Layout variant="stack-centered">
+      <ButtonWrapper>
         <Button href="/contact" ariaLabel="Get started">Get Started</Button>
-      </div>
-    </ContentWrapper>
+      </ButtonWrapper>
+    </Layout>
   </Section>
 
   <!-- Case Study Featured Section -->
@@ -265,37 +240,64 @@ import future6 from "../assets/placeholder-images/placeholder-16.webp";
   <Section>
     <div class="future_card u-theme-brand">
       <Layout ratio="35-65" variant="columns" verticalAlign="center">
-        <Col slot="col1">
-          <Heading tag="h2" variant="h3">
-            Lorem ipsum dolor sit amet consectetur adipiscing elit.
-          </Heading>
-          <Text variant="large">
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-            nisi ut aliquip ex ea commodo consequat duis aute irure dolor in
-            reprehenderit.
-          </Text>
+        <Heading tag="h2" variant="h3">
+          Lorem ipsum dolor sit amet consectetur adipiscing elit.
+        </Heading>
+        <Text variant="large">
+          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+          nisi ut aliquip ex ea commodo consequat duis aute irure dolor in
+          reprehenderit.
+        </Text>
 
-          <div class="u-button-wrapper">
-            <Button
-              variant="primary"
-              href="/contact"
-              ariaLabel="Get started">Get Started</Button
-            >
-          </div>
-        </Col>
+        <ButtonWrapper>
+          <Button variant="primary" href="/contact" ariaLabel="Get started"
+            >Get Started</Button
+          >
+        </ButtonWrapper>
+
         <Grid
-          slot="col2"
+          slot="column2"
           largeColumns={3}
           mediumColumns={3}
           smallColumns={2}
           rowGap={4}
         >
-          <Visual src={future1} alt="Placeholder image" ratio="square" radius="small" />
-          <Visual src={future2} alt="Placeholder image" ratio="square" radius="small" />
-          <Visual src={future3} alt="Placeholder image" ratio="square" radius="small" />
-          <Visual src={future4} alt="Placeholder image" ratio="square" radius="small" />
-          <Visual src={future5} alt="Placeholder image" ratio="square" radius="small" />
-          <Visual src={future6} alt="Placeholder image" ratio="square" radius="small" />
+          <Visual
+            src={future1}
+            alt="Placeholder image"
+            ratio="square"
+            radius="small"
+          />
+          <Visual
+            src={future2}
+            alt="Placeholder image"
+            ratio="square"
+            radius="small"
+          />
+          <Visual
+            src={future3}
+            alt="Placeholder image"
+            ratio="square"
+            radius="small"
+          />
+          <Visual
+            src={future4}
+            alt="Placeholder image"
+            ratio="square"
+            radius="small"
+          />
+          <Visual
+            src={future5}
+            alt="Placeholder image"
+            ratio="square"
+            radius="small"
+          />
+          <Visual
+            src={future6}
+            alt="Placeholder image"
+            ratio="square"
+            radius="small"
+          />
         </Grid>
       </Layout>
     </div>

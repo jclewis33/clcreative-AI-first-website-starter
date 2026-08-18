@@ -7,27 +7,30 @@
  * (`src/pages/glossary/[slug].astro`).
  */
 
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import SanityCtaSection from "../sections/SanityCtaSection.astro";
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Grid from "../ui/Grid.astro";
-import Heading from "../ui/Heading.astro";
-import Text from "../ui/Text.astro";
-import Card from "../ui/Card.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Card from "@/components/ui/Card.astro";
 
-import { urlFor } from "../../sanity/lib/image";
-import { portableTextToHtml } from "../../sanity/lib/portable-text";
-import { glossaryTermJsonLd } from "../../lib/jsonld";
-import JsonLd from "../global/JsonLd.astro";
+import { urlFor } from "@/sanity/lib/image";
+import { portableTextToHtml } from "@/sanity/lib/portable-text";
+import { glossaryTermJsonLd } from "@/lib/jsonld";
+import JsonLd from "@/components/global/JsonLd.astro";
 
-import "../../styles/pages/glossary.css";
+import "@/styles/pages/glossary.css";
+import type { loadGlossaryTermPage } from "@/sanity/lib/page-data";
+
+/* Slices of what loadGlossaryTermPage() returns — see BlogPostTemplate. */
+type PageData = NonNullable<Awaited<ReturnType<typeof loadGlossaryTermPage>>>;
 
 interface Props {
-  term: any;
-  allTerms: any[];
-  defaultCtaSection?: any;
+  term: PageData["term"];
+  allTerms: PageData["allTerms"];
+  defaultCtaSection?: PageData["defaultCtaSection"];
 }
 
 const { term, allTerms, defaultCtaSection = null } = Astro.props;
@@ -47,7 +50,7 @@ const nextTerm = sortedTerms[(currentIndex + 1) % sortedTerms.length];
 
 const relatedTerms = (term.relatedTerms ?? []).slice(0, 4);
 
-const contentHtml = portableTextToHtml(term.body, (ref) =>
+const contentHtml = portableTextToHtml(term.body ?? [], (ref) =>
   urlFor({ _ref: ref }).width(960).url(),
 );
 
@@ -82,27 +85,25 @@ tocEntries.forEach(({ text, id }) => {
 
 <BaseLayout
   title={`${term.term} | Glossary | Astro Starter`}
-  description={term.shortDefinition}
+  description={term.shortDefinition ?? undefined}
   theme="light"
 >
   <JsonLd data={jsonLd} />
   <Section paddingTop="small" theme="dark" class="glossary_term_hero_wrap">
     <Layout variant="stack">
-      <Col slot="col1">
-        <nav class="glossary_term_breadcrumbs" aria-label="Breadcrumb">
-          <a href="/glossary" class="glossary_term_breadcrumb_link">Glossary</a>
-          <span class="glossary_term_breadcrumb_sep" aria-hidden="true">/</span>
-          <span class="glossary_term_breadcrumb_current" aria-current="page">
-            {term.term}
-          </span>
-        </nav>
+      <nav class="glossary_term_breadcrumbs" aria-label="Breadcrumb">
+        <a href="/glossary" class="glossary_term_breadcrumb_link">Glossary</a>
+        <span class="glossary_term_breadcrumb_sep" aria-hidden="true">/</span>
+        <span class="glossary_term_breadcrumb_current" aria-current="page">
+          {term.term}
+        </span>
+      </nav>
 
-        <span class="glossary_term_category_tag">{term.category}</span>
+      <span class="glossary_term_category_tag">{term.category}</span>
 
-        <Heading tag="h1" variant="h1" balance>{term.term}</Heading>
+      <Heading tag="h1" variant="h1" balance>{term.term}</Heading>
 
-        <Text variant="large">{term.shortDefinition}</Text>
-      </Col>
+      <Text variant="large">{term.shortDefinition}</Text>
     </Layout>
   </Section>
 
@@ -116,11 +117,7 @@ tocEntries.forEach(({ text, id }) => {
     >
       {
         tocEntries.length > 0 && (
-          <nav
-            slot="col1"
-            class="glossary_term_toc"
-            aria-label="Table of contents"
-          >
+          <nav class="glossary_term_toc" aria-label="Table of contents">
             <Heading tag="h2" variant="h6" marginBottom={0}>
               On this page
             </Heading>
@@ -138,7 +135,7 @@ tocEntries.forEach(({ text, id }) => {
       }
 
       <div
-        slot="col2"
+        slot="column2"
         class="glossary_term_prose u-rich-text"
         set:html={processedContent}
       />
@@ -172,17 +169,19 @@ tocEntries.forEach(({ text, id }) => {
               <Text variant="small" muted clamp={2}>
                 {related.shortDefinition}
               </Text>
-              <div slot="footer" class="glossary_card_footer">
-                <Text
-                  tag="span"
-                  variant="tiny"
-                  weight="medium"
-                  marginBottom={0}
-                  class="glossary_card_category"
-                >
-                  {related.category}
-                </Text>
-              </div>
+              {related.category && (
+                <div slot="footer" class="glossary_card_footer">
+                  <Text
+                    tag="span"
+                    variant="tiny"
+                    weight="medium"
+                    marginBottom={0}
+                    class="glossary_card_category"
+                  >
+                    {related.category}
+                  </Text>
+                </div>
+              )}
             </Card>
           ))}
         </Grid>

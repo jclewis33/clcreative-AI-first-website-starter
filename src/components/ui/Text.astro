@@ -1,10 +1,12 @@
 ---
+import type { HTMLAttributes } from "astro/types";
+import Layout from "@/components/ui/Layout.astro";
 /**
  * Text — body copy with design-system size, weight, and alignment tokens.
  *
- * Renders a `.u-text` wrapper around the tag element. The wrapper stays
- * full-width while the child inherits `max-width`. Omit `variant` to inherit
- * from the parent's font size.
+ * Renders ONE bare tag carrying `.u-text`, the type class, and any
+ * `max-width` — there is no wrapper div (see `<Heading>` for why it went).
+ * Omit `variant` to inherit from the parent's font size.
  *
  * @example Lead paragraph
  * ```astro
@@ -100,7 +102,7 @@ type TextAlign =
  *
  * **Slot:** default — text content.
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Text props:**
    * - `tag` — p, span, div, label, figcaption, li, dt, dd, caption (default 'p')
@@ -120,6 +122,19 @@ interface Props {
    * **Slot:** default — text content
    */
   docs?: string;
+
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * Lets a caller express "only if there is something to show" as data rather
+   * than markup — e.g. `render` set to whether the list has any items — instead of
+   * wrapping the element in a conditional block. Nothing is emitted when
+   * false, so no
+   * empty wrapper is left behind.
+   *
+   * @default true
+   */
+  render?: boolean;
 
   /**
    * HTML element to render.
@@ -192,6 +207,16 @@ interface Props {
    * | `'right'`   | Right-aligned                         |
    * | `'inherit'` | Inherit alignment from parent layout  |
    *
+   * **Do not set `align="center"` inside a centred layout.** `text-align`
+   * inherits, so `<Layout variant="stack-centered">` (and `card`, and any
+   * `.u-content-wrapper.is-center-align`) already centres the text. Setting
+   * it again is not just redundant — it HARD-CODES the alignment, so
+   * changing the Layout variant later silently leaves this element centred.
+   * Measured across 594 text elements: removing 14 such attributes changed
+   * neither computed `text-align` nor geometry anywhere. It is only needed
+   * where the surrounding context is NOT centred — e.g. an empty-state
+   * message inside a left-aligned results grid.
+   *
    * @example align="center"
    * @example align="inherit"
    */
@@ -246,7 +271,7 @@ interface Props {
   clamp?: 1 | 2 | 3 | 4 | 5 | 6;
 
   /**
-   * Override margin-top on the `.u-text` wrapper.
+   * Override margin-top on the element itself.
    * - `0`–`8` — maps to `u-margin-top-N` (space scale: 6px–64px fluid)
    * - `'auto'` — push element down in flex containers (align bottom edges across columns)
    * @example marginTop={0}
@@ -256,7 +281,7 @@ interface Props {
   marginTop?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | "auto";
 
   /**
-   * Override margin-bottom on the `.u-text` wrapper.
+   * Override margin-bottom on the element itself.
    * Maps to `u-margin-bottom-N` (space scale: 6px–64px fluid).
    * Use `0` for tight layouts, higher values for extra breathing room.
    *
@@ -274,7 +299,7 @@ interface Props {
    *
    * NOTE: `marginBottom={0}` is **usually redundant**. Margin-trim already
    * zeroes the bottom margin of the LAST child of a trimmed wrapper — a
-   * `<Section>` container, a `<Layout>` column, `<ContentWrapper>`, `<Col>`,
+   * `<Section>` container, a `<Layout>` column, `<Layout variant="stack">`, ``,
    * `u-rich-text`, or any `u-margin-trim`/`u-container*` element. Only set it
    * when this is the last child of a *custom* `<div>` that isn't auto-trimmed
    * (e.g. a card body); even then, prefer `u-margin-trim` on that wrapper.
@@ -286,7 +311,7 @@ interface Props {
 
   /**
    * Max-width of the text content, with units.
-   * Applied on the `.u-text` wrapper; the child element inherits
+   * Applied on the element itself; descendants inherit
    * this constraint via `max-width: inherit`.
    *
    * Common values:
@@ -303,23 +328,16 @@ interface Props {
   maxWidth?: string;
 
   /**
-   * Extra utility classes to append to the `.u-text` wrapper.
+   * Extra utility classes to append to the rendered element.
    *
    * @example class="u-margin-bottom-4"
    * @example class="u-background-1"
    */
   class?: string;
-
-  /**
-   * Any additional HTML attributes (`data-*`, `aria-*`, etc.)
-   * are forwarded to the root `.u-text` wrapper element.
-   * User-provided `style` is merged with computed max-width styles.
-   * @example data-animate="fade" style="--custom: value"
-   */
-  [key: string]: any;
 }
 
 const {
+  render = true,
   docs,
   tag: Tag = "p",
   variant = "regular",
@@ -343,7 +361,7 @@ const variantClass = variant?.startsWith("display-")
   : `u-text-style-${variant}`; // → u-text-style-regular, u-text-style-h3, etc.
 
 /* Wrapper classes — typography, alignment, style modifiers, margin overrides, and user extras */
-const wrapperClasses = [
+const elementClasses = [
   "u-text",
   variant && variantClass,
   weight && `u-weight-${weight}`,
@@ -356,29 +374,30 @@ const wrapperClasses = [
     : marginTop !== undefined && `u-margin-top-${marginTop}`,
   marginBottom !== undefined && `u-margin-bottom-${marginBottom}`,
   className,
-]
-  .filter(Boolean)
-  .join(" ");
+];
 
-/* Child classes — only clamp (display: -webkit-box conflicts with wrapper flex) */
-const childClasses =
-  [clamp && `u-line-clamp-${clamp}`].filter(Boolean).join(" ") || undefined;
+/* clamp uses display: -webkit-box, so it is kept as a separate class that
+   lands on the same element alongside the type classes. */
+const childClasses = [clamp && `u-line-clamp-${clamp}`];
 
 /* Merge user-provided style with computed max-width.
    Wrap in var(--unset-medium, …) so the max-width only applies above the
    medium breakpoint (~58em). Below that, --unset-medium = `unset`, which
    removes the constraint and lets the text fill the available width. */
 const { style: userStyle, ...attrs } = rest;
-const mergedStyle = [
-  `max-width: var(--unset-medium, ${maxWidth})`,
-  userStyle,
-]
+const mergedStyle = [`max-width: var(--unset-medium, ${maxWidth})`, userStyle]
   .filter(Boolean)
   .join("; ");
 ---
 
-<div class={wrapperClasses} style={mergedStyle} {...attrs}>
-  <Tag class={childClasses}>
-    <slot />
-  </Tag>
-</div>
+{
+  render && (
+    <Tag
+      class:list={[elementClasses, childClasses]}
+      style={mergedStyle}
+      {...attrs}
+    >
+      <slot />
+    </Tag>
+  )
+}

@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * TestimonialCard — a single testimonial "card" (stars, quote, author).
  *
@@ -6,14 +7,13 @@
  * `<TestimonialsGrid>`. Keeping the markup here (instead of duplicating it in
  * each section) means the card design only ever has to change in one place.
  *
- * **Theme-aware readability.** `.testimonial_card` (in
- * `src/styles/components/testimonials.css`) applies the surface treatment
- * itself — it remaps the semantic vars to the `--surface-*` tier and sets its
- * own `color`, so it renders as the correct contrasting surface for whatever
- * section `data-theme` it inherits (light/dark → light "paper" + dark text;
- * brand → tonal orange card). No `theme` prop needed — the card reacts
- * automatically. To change how cards look per theme, edit the `--surface-*`
- * values in `src/styles/variables/themes.css`.
+ * **Theming.** Unset, the card inherits its section's theme and surfaces with
+ * `--background-2`. Pass `theme="invert"` to flip it to the opposite of its
+ * ground (light "paper" on a dark or brand section; dark card on a light
+ * one) — the slider and grid wrappers do this for you on their dark/brand
+ * sections. It is a whole theme, so the quote, author, stars, borders and any
+ * link inside all follow. To change how cards look per theme, edit the theme
+ * blocks in `src/styles/variables/themes.css`.
  *
  * Usage:
  * ```astro
@@ -28,25 +28,34 @@
  */
 
 import Text from "./Text.astro";
-import { urlFor } from "../../sanity/lib/image";
+import { urlFor } from "@/sanity/lib/image";
 
-/** Shape of a single testimonial */
+/**
+ * Shape of a single testimonial. THE definition — TestimonialsSlider,
+ * TestimonialsGrid and TestimonialShowcase all import it from here.
+ *
+ * Every field is nullable: these usually arrive from Sanity, where a document
+ * is incomplete until an editor fills it in, and the query types say so.
+ */
 export interface Testimonial {
   /** The quote / testimonial text */
-  quote: string;
+  quote?: string | null;
   /** Author name */
-  name: string;
+  name?: string | null;
   /** Author role / title (optional) */
-  role?: string;
+  role?: string | null;
   /** Company or organization (optional — appended to role) */
-  company?: string;
+  company?: string | null;
   /** Author avatar — URL string or Sanity image object (optional) */
   avatar?: any;
   /** Number of stars to display — 0–5 (optional, omit to hide stars) */
-  stars?: number;
+  stars?: number | null;
 }
 
-interface Props extends Testimonial {
+/* `Testimonial` carries a `role` field — the PERSON's job title — which
+   collides with the DOM `role` attribute, so the ARIA one is omitted from the
+   inherited attributes. The card is a plain <div>; it doesn't need one. */
+interface Props extends Testimonial, Omit<HTMLAttributes<"div">, "role"> {
   /** Optional extra class(es) on the card root (escape hatch). */
   class?: string;
   /**
@@ -57,12 +66,27 @@ interface Props extends Testimonial {
   avatarSize?: number;
   /** JSDoc holder — destructured but unused (keeps it out of `...rest`). */
   docs?: string;
-  /** Any other HTML attribute — spread onto the card root. */
-  [key: string]: any;
+
+  /**
+   * The colors this card carries, whatever section it sits in. Unset, it
+   * inherits the section theme and surfaces with `--background-2`.
+   *
+   * - `"invert"` — flip to the opposite of the ground (dark/brand section →
+   *   light card; light or unthemed → dark card). See THEME INVERT in
+   *   `themes.css`.
+   * - `"light" | "dark" | "brand"` — pin absolutely.
+   *
+   * `<TestimonialsSlider>` and `<TestimonialsGrid>` pass `"invert"` for you on
+   * their dark and brand sections.
+   *
+   * @example theme="invert"
+   */
+  theme?: "light" | "dark" | "brand" | "invert";
 }
 
 const {
   docs,
+  theme,
   quote,
   name,
   role,
@@ -82,7 +106,12 @@ const avatarUrl = avatar
 const subtitle = [role, company].filter(Boolean).join(", ");
 ---
 
-<div class:list={["testimonial_card", className]} {...rest}>
+<div
+  class:list={["testimonial_card", className]}
+  data-theme={theme === "invert" ? undefined : theme}
+  data-theme-invert={theme === "invert" ? "" : undefined}
+  {...rest}
+>
   {/* Stars */}
   {
     stars != null && stars > 0 && (
@@ -102,7 +131,7 @@ const subtitle = [role, company].filter(Boolean).join(", ");
   }
 
   {/* Quote */}
-  <Text class="testimonial_quote" size="regular">
+  <Text class="testimonial_quote" variant="regular">
     {quote}
   </Text>
 
@@ -121,12 +150,12 @@ const subtitle = [role, company].filter(Boolean).join(", ");
       )
     }
     <div class="testimonial_author_info">
-      <Text tag="span" weight="bold" size="small" marginBottom={0}>
+      <Text tag="span" weight="bold" variant="small" marginBottom={0}>
         {name}
       </Text>
       {
         subtitle && (
-          <Text tag="span" size="small" muted marginBottom={0}>
+          <Text tag="span" variant="small" muted marginBottom={0}>
             {subtitle}
           </Text>
         )
@@ -134,3 +163,97 @@ const subtitle = [role, company].filter(Boolean).join(", ");
     </div>
   </div>
 </div>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/testimonials.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   TESTIMONIALS SECTION COMPONENT
+   ==========================================================================
+   A testimonial card carousel built on the Slider component.
+   Uses the Section component for theming and the Card component pattern
+   for individual testimonial cards.
+
+   Structure:
+     <Section>
+       <Heading />           (optional)
+       <Slider>
+         .swiper-slide
+           .testimonial_card
+             .testimonial_stars
+             .testimonial_quote
+             .testimonial_author
+               .testimonial_author_name
+               .testimonial_author_role
+       </Slider>
+     </Section>
+   ========================================================================== */
+
+    /* Card — surfaces with --background-2 in whatever theme it resolves to.
+   With theme="invert" that theme is the flip of its ground (see THEME INVERT
+   in themes.css), so the quote, author, stars, borders and any link inside
+   all resolve against the card instead of the section behind it. */
+    /* The gap owns the rhythm here, so the children must not also carry their
+       own margins — the quote is a <Text>, whose 24px margin-bottom stacked on
+       the 24px gap and set every row 48px apart. Same rule as the containers
+       in utilities.css: one spacing mechanism per box, never two. */
+    .testimonial_card > * {
+      margin-block: 0;
+    }
+
+    .testimonial_card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-5);
+
+      background: var(--background-2);
+      color: var(--text);
+      border-radius: var(--radius-main);
+      height: 100%;
+    }
+
+    /* Stars row */
+    .testimonial_stars {
+      display: flex;
+      gap: 0.25rem;
+      color: var(--heading-accent);
+    }
+
+    .testimonial_star {
+      width: 1.125rem;
+      height: 1.125rem;
+      flex-shrink: 0;
+    }
+
+    /* Quote text */
+    .testimonial_quote {
+      flex: 1;
+    }
+
+    /* Author block */
+    .testimonial_author {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .testimonial_author_avatar {
+      width: 4rem;
+      height: 4rem;
+      border-radius: var(--radius-full, 100vmax);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    /* Author metadata — tight stack.
+   Margin zeroing is handled by marginBottom={0} props on <Text> components. */
+    .testimonial_author_info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+  }
+</style>

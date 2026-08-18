@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * FeatureCards — heading + a two-column intro (prose + image) + a two-column
  * media block + a 3-card icon grid.
@@ -10,15 +11,14 @@
  * - `intro` — the intro paragraphs (Text components) shown beside the image
  * - `media` — rich-text content (rendered inside `.u-rich-text`)
  */
-import Section from "../ui/Section.astro";
-import Layout from "../ui/Layout.astro";
-import Col from "../ui/Col.astro";
-import Heading from "../ui/Heading.astro";
-import Visual from "../ui/Visual.astro";
-import Grid from "../ui/Grid.astro";
-import Text from "../ui/Text.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Text from "@/components/ui/Text.astro";
 
-interface Props {
+interface Props extends HTMLAttributes<"section"> {
   /**
    * **FeatureCards props:**
    * - `heading` — main section heading
@@ -38,8 +38,6 @@ interface Props {
   mediaImage: ImageMetadata | string;
   /** Secondary block image alt text. */
   mediaAlt: string;
-
-  [key: string]: any;
 }
 
 const {
@@ -55,29 +53,26 @@ const {
 
 <Section theme="dark" {...rest}>
   <Layout variant="stack">
-    <Col slot="col1">
-      <Heading
-        data-split-text
-        data-prevent-flicker="true"
-        tag="h2"
-        variant="h2"
-        maxWidth="40ch"
-      >
-        {heading}
-      </Heading>
-    </Col>
+    <Heading
+      data-split-text
+      data-prevent-flicker="true"
+      tag="h2"
+      variant="h2"
+      maxWidth="40ch"
+    >
+      {heading}
+    </Heading>
   </Layout>
 
   <Layout data-fade-list variant="columns" ratio="4-8" verticalAlign="start">
-    <Col slot="col1">
-      <slot name="intro" />
-    </Col>
-    <Visual slot="col2" src={portraitImage} alt={portraitAlt} ratio="3/2" />
+    <slot name="intro" />
+
+    <Visual slot="column2" src={portraitImage} alt={portraitAlt} ratio="3/2" />
   </Layout>
 
   <Layout data-fade-list variant="columns" ratio="5-7" verticalAlign="center">
-    <Visual slot="col1" src={mediaImage} alt={mediaAlt} />
-    <div slot="col2" class="u-rich-text">
+    <Visual src={mediaImage} alt={mediaAlt} />
+    <div slot="column2" class="u-rich-text">
       <slot name="media" />
     </div>
   </Layout>
@@ -158,3 +153,29 @@ const {
     </div>
   </Grid>
 </Section>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/feature-cards.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   FEATURE CARDS — 3-col icon + heading + text card grid
+   ========================================================================== */
+
+    .feature-cards_card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding-top: var(--space-5);
+      border-top: 1px solid currentColor;
+    }
+
+    .feature-cards_card_icon {
+      width: 2rem;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      stroke-width: var(--border-width-main);
+    }
+  }
+</style>

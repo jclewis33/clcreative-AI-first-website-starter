@@ -1,4 +1,5 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 /**
  * CaseStudyCard — portfolio/case study card built on top of the Card component.
  *
@@ -46,7 +47,7 @@ import { stegaClean } from "@sanity/client/stega";
  *
  * Uses Card component internally with `default` variant (image top, content below).
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **CaseStudyCard props:**
    * - `title` — project title, clamped at 2 lines (required)
@@ -120,7 +121,18 @@ interface Props {
    * @example headingVariant="h4"
    * @example headingVariant="h6"
    */
-  headingVariant?: "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+  headingVariant?:
+    | "display-xl"
+    | "display-lg"
+    | "display-md"
+    | "display-sm"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "eyebrow";
 
   /**
    * Visual style for the card's description text. Controls the font size
@@ -136,7 +148,23 @@ interface Props {
    * @example textVariant="regular"
    * @example textVariant="tiny"
    */
-  textVariant?: "tiny" | "small" | "regular" | "large" | "xlarge" | "display-xl" | "display-lg" | "display-md" | "display-sm" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "eyebrow";
+  textVariant?:
+    | "tiny"
+    | "small"
+    | "regular"
+    | "large"
+    | "xlarge"
+    | "display-xl"
+    | "display-lg"
+    | "display-md"
+    | "display-sm"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "eyebrow";
 
   /** Image width in pixels — required for remote URL sources. */
   imageWidth?: number;
@@ -155,14 +183,16 @@ interface Props {
   class?: string;
 
   /**
-   * Any additional HTML attributes (`style`, `data-*`, `aria-*`, etc.)
-   * are forwarded to the underlying `Card` component.
+   * Forwarded to the underlying `<Card>`. `"invert"` flips the card to the
+   * opposite of the ground it sits on; the grid wrappers pass it for you on
+   * dark and brand sections. See THEME INVERT in `themes.css`.
    */
-  [key: string]: any;
+  theme?: "light" | "dark" | "brand" | "invert";
 }
 
 const {
   docs,
+  theme,
   title,
   description,
   categories,
@@ -192,7 +222,7 @@ const resolvedAriaLabel = isComingSoon
 ---
 
 <Card
-  docs=""
+  theme={theme}
   href={resolvedHref}
   newTab={isComingSoon}
   ariaLabel={resolvedAriaLabel}
@@ -218,7 +248,7 @@ const resolvedAriaLabel = isComingSoon
   />
 
   <div slot="title" class="case-study_card_title_row">
-    <Heading tag="h3" variant={headingVariant} marginBottom={0} maxWidth="100%">
+    <Heading tag="h3" variant={headingVariant} maxWidth="100%">
       <span class="case-study_card_title_clamp u-line-clamp-2">{title}</span>
     </Heading>
     <span class="case-study_card_arrow" aria-hidden="true">
@@ -239,9 +269,118 @@ const resolvedAriaLabel = isComingSoon
     </span>
   </div>
 
-  {isComingSoon ? (
-    <Text variant={textVariant} muted>Case Study Coming Soon — Visit Website ↗</Text>
-  ) : (
-    <Text variant={textVariant} muted clamp={3}>{description}</Text>
-  )}
+  {
+    isComingSoon ? (
+      <Text variant={textVariant} muted>
+        Case Study Coming Soon — Visit Website ↗
+      </Text>
+    ) : (
+      <Text variant={textVariant} muted clamp={3}>
+        {description}
+      </Text>
+    )
+  }
 </Card>
+
+<style is:global>
+  /* Global styles (is:global — classes here are used across the site and by
+     child slots), moved from src/styles/components/case-study-card.css. The layer
+     wrapper slots them into the cascade defined in styles/global.css. */
+  @layer components {
+    /* ==========================================================================
+   CASE STUDY CARD COMPONENT
+   ==========================================================================
+   Custom classes for the CaseStudyCard component (case-study_card_*).
+   Imported globally so the card renders consistently on any page
+   (listing grid, detail page "Up Next", etc.).
+   ========================================================================== */
+
+    /* Remove card background and border for clean portfolio look */
+    .case-study_card_wrap .card_primary_element {
+      border: none;
+      background: transparent;
+      /* This card has no surface of its own, so the base element's
+         `border-radius: inherit` shapes nothing — but the `overflow: clip` it
+         pairs with was still cropping content at the rounded corners, and this
+         variant removes the content's horizontal padding so the copy sits flush
+         to the edge. The result was a visible bite out of the lower-left of the
+         description. The visual keeps its own radius. */
+      border-radius: 0;
+      overflow: visible;
+    }
+
+    /* Remove default content padding — image stands alone, text sits below */
+    .case-study_card_wrap .card_primary_content {
+      padding: var(--space-3) 0 0;
+    }
+
+    /* Title + arrow row */
+    .case-study_card_title_row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      width: 100%;
+    }
+
+    /* Override .u-text min-width so heading shares row with arrow */
+    .case-study_card_title_row > .u-text {
+      min-width: 0;
+      flex: 1 1 0%;
+    }
+
+    /* Title 2-line clamp */
+    .case-study_card_title_clamp {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+
+    /* Arrow icon */
+    .case-study_card_arrow {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      transition: transform 0.3s ease;
+    }
+
+    /* Arrow rotates 45deg when a clickable card is hovered / focused.
+   [data-trigger] marks the card as clickable (set by Card.astro). */
+    .case-study_card_wrap [data-trigger]:hover .case-study_card_arrow,
+    .case-study_card_wrap
+      [data-trigger]:has(:focus-visible)
+      .case-study_card_arrow {
+      transform: rotate(45deg);
+    }
+
+    /* Image zooms in slightly on hover — scale from 1 → 1.04 */
+    .case-study_card_wrap .card_primary_visual {
+      overflow: hidden;
+    }
+
+    .case-study_card_wrap [data-trigger] .card_primary_visual img {
+      transition: transform 0.4s ease;
+    }
+
+    .case-study_card_wrap [data-trigger]:hover .card_primary_visual img,
+    .case-study_card_wrap
+      [data-trigger]:has(:focus-visible)
+      .card_primary_visual
+      img {
+      transform: scale(1.04);
+    }
+
+    /* Text fades slightly on hover — opacity from 1 → 0.8 */
+    .case-study_card_wrap [data-trigger] .card_primary_content {
+      transition: opacity 0.3s ease;
+    }
+
+    .case-study_card_wrap [data-trigger]:hover .card_primary_content,
+    .case-study_card_wrap
+      [data-trigger]:has(:focus-visible)
+      .card_primary_content {
+      opacity: 0.8;
+    }
+  }
+</style>

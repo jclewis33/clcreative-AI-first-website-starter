@@ -1,6 +1,17 @@
 /* ==========================================================================
-   THEME VARIABLES
+   THEMES — layer(variables)
    ==========================================================================
+   Owns:      every semantic color alias — --background, --background-2,
+              --text, --heading-accent, --border, button and link colors —
+              defined once per theme, plus the [data-theme-invert] flip.
+   Does not:  the raw swatches these point at → variables/colors.css
+              nav-specific sizing              → variables/nav.css
+
+   THIS is the file a component reads. Adding a new themed value means
+   adding it to EVERY theme block below, not just the one you are looking
+   at — a token defined in one theme and missing from another inherits the
+   wrong value silently, which is how white-on-white ships.
+
    Mode-switching semantic aliases. Apply data-theme="dark" or
    data-theme="brand" to any section, layout, or component to swap all
    theme values for that subtree. No attribute needed for the base (light)
@@ -27,12 +38,7 @@
    ========================================================================== */
 
 :root {
-  --gradient-primary: linear-gradient(
-    94deg,
-    var(--color-brand-400) -0.01%,
-    var(--color-brand-500) 51.63%,
-    var(--color-brand-600) 103.27%
-  );
+  --gradient-primary: linear-gradient(94deg, var(--color-brand-400) -0.01%, var(--color-brand-500) 51.63%, var(--color-brand-600) 103.27%);
 }
 
 /* ==========================================================================
@@ -42,7 +48,17 @@
 :root,
 [data-theme="base"],
 [data-theme="light"],
-.u-theme-light {
+.u-theme-light,
+/* THEME INVERT, dark/brand -> light half (see the full note at the bottom).
+   An invert island inside a DARK or BRAND ground takes the LIGHT theme
+   wholesale — white paper, dark text, and the matching button/link tokens.
+   Two-descendant specificity (0,2,0) deliberately beats the bare
+   [data-theme-invert] rule in the dark block, which is what makes the flip
+   *relative* rather than absolute. */
+[data-theme="dark"] [data-theme-invert],
+.u-theme-dark [data-theme-invert],
+[data-theme="brand"] [data-theme-invert],
+.u-theme-brand [data-theme-invert] {
   /* Background */
   --background: var(--color-light-200); /* #fdfdfd       */
   --background-2: var(--color-light-100); /* white         */
@@ -54,13 +70,6 @@
 
   /* Border */
   --border: var(--color-dark-900-o20);
-
-  /* Surface — how a CONTRASTING card should look on a LIGHT section.
-     White paper, dark text, brand-accent stars. Consumed via .u-surface. */
-  --surface-background: var(--color-light-100); /* white card    */
-  --surface-text: var(--color-dark-900); /* dark text     */
-  --surface-heading-accent: var(--color-brand-500); /* brand stars   */
-  --surface-border: var(--color-dark-900-o20);
 
   /* Selection */
   --selection-background: var(--color-brand-300);
@@ -110,10 +119,20 @@
    ========================================================================== */
 
 [data-theme="dark"],
-.u-theme-dark {
+.u-theme-dark,
+/* THEME INVERT, light -> dark half. Bare (0,1,0) on purpose: it catches an
+   invert island on a LIGHT ground *and* on the page default, which renders no
+   data-theme at all. The dark/brand rules above are (0,2,0), so they win where
+   they apply and the flip resolves relative to whatever ground it sits on. */
+[data-theme-invert] {
   /* Background */
   --background: var(--color-dark-900); /* #0c111d        */
-  --background-2: var(--color-light-200); /* #2f2b2d        */
+  /* The elevated surface for this theme. This read --color-light-200
+     (#fdfdfd) while the comment said #2f2b2d — a near-white panel paired with
+     this theme's white --text, i.e. invisible content on any elevated surface
+     inside a dark section. --color-dark-800 IS #2f2b2d, which is what the
+     comment always intended. */
+  --background-2: var(--color-dark-800); /* #2f2b2d        */
   --background-skeleton: color-mix(in lab, currentcolor 10%, transparent);
 
   /* Text */
@@ -123,14 +142,6 @@
   /* Border */
   --border: var(--color-light-100-o20);
 
-  /* Surface — how a CONTRASTING card should look on a DARK section.
-     Light "paper" so the card pops off the dark bg; dark text + brand stars.
-     (Reproduces the old `theme==="dark" && u-theme-light` behaviour.) */
-  --surface-background: var(--color-light-100); /* white paper   */
-  --surface-text: var(--color-dark-900); /* dark text     */
-  --surface-heading-accent: var(--color-brand-500); /* brand stars   */
-  --surface-border: var(--color-dark-900-o20);
-
   /* Selection */
   --selection-background: var(--color-brand-300);
   --selection-text: var(--color-brand-text); /* dark-900       */
@@ -139,9 +150,7 @@
   --button-primary-background: var(--color-brand-500);
   --button-primary-border: var(--color-brand-500);
   --button-primary-text: var(--color-brand-text); /* dark-900       */
-  --button-primary-background-hover: var(
-    --color-light-100
-  ); /* = text: white  */
+  --button-primary-background-hover: var(--color-light-100); /* = text: white  */
   --button-primary-border-hover: var(--color-light-100);
   --button-primary-text-hover: var(--color-dark-900); /* = bg           */
 
@@ -149,9 +158,7 @@
   --button-secondary-background: transparent;
   --button-secondary-border: var(--color-light-100-o20); /* = --border     */
   --button-secondary-text: var(--color-light-100);
-  --button-secondary-background-hover: var(
-    --color-light-100
-  ); /* = text         */
+  --button-secondary-background-hover: var(--color-light-100); /* = text         */
   --button-secondary-border-hover: var(--color-light-100);
   --button-secondary-text-hover: var(--color-dark-900); /* = bg           */
 
@@ -196,14 +203,6 @@
   /* Border */
   --border: var(--color-brand-text-o20);
 
-  /* Surface — how a CONTRASTING card should look on a BRAND (orange) section.
-     Slightly-lighter orange card with white text, matching today's look
-     (--background-2 = brand-400; text/accent = brand-text = white). */
-  --surface-background: var(--color-brand-400); /* lighter orange */
-  --surface-text: var(--color-brand-text); /* white          */
-  --surface-heading-accent: var(--color-brand-text); /* white stars    */
-  --surface-border: var(--color-brand-text-o20);
-
   /* Selection */
   --selection-background: var(--color-brand-300);
   --selection-text: var(--color-brand-text); /* dark-900       */
@@ -212,25 +211,15 @@
   --button-primary-background: var(--color-brand-text); /* white           */
   --button-primary-border: var(--color-brand-text); /* white           */
   --button-primary-text: var(--color-brand-500); /* brand orange    */
-  --button-primary-background-hover: color-mix(
-    in srgb,
-    var(--color-brand-text),
-    black 10%
-  );
-  --button-primary-border-hover: color-mix(
-    in srgb,
-    var(--color-brand-text),
-    black 10%
-  );
+  --button-primary-background-hover: color-mix(in srgb, var(--color-brand-text), black 10%);
+  --button-primary-border-hover: color-mix(in srgb, var(--color-brand-text), black 10%);
   --button-primary-text-hover: var(--color-brand-500); /* brand stays     */
 
   /* Button — Secondary */
   --button-secondary-background: transparent;
   --button-secondary-border: var(--color-brand-text-o20); /* = --border     */
   --button-secondary-text: var(--color-brand-text); /* dark-900       */
-  --button-secondary-background-hover: var(
-    --color-brand-text
-  ); /* dark-900       */
+  --button-secondary-background-hover: var(--color-brand-text); /* dark-900       */
   --button-secondary-border-hover: var(--color-brand-text);
   --button-secondary-text-hover: var(--color-brand-500); /* = bg brand      */
 
@@ -273,25 +262,32 @@
 }
 
 /* ==========================================================================
-   SURFACE ISLAND
-   Apply .u-surface to a card that should render as the correct CONTRASTING
-   surface for whatever section theme it sits in. It reads the --surface-*
-   tier from the inherited data-theme and re-maps the standard semantic vars
-   so all descendants (text, stars via --heading-accent, borders) follow the
-   surface automatically — zero per-instance logic. Re-skin a fork by editing
-   the --surface-* values in the theme blocks above.
-   (Buttons/links inside a card are out of scope — current cards contain none;
-   extend this with button and link var remaps here if that ever changes.)
+   THEME INVERT
+   `data-theme-invert` flips an element to the opposite of the ground it sits
+   on, and every descendant follows, because a theme here is nothing but a set
+   of inherited custom properties:
+
+     dark ground   -> light island
+     brand ground  -> light island
+     light ground  -> dark island
+     no ground set -> dark island (the page default is light)
+
+   Put it on ANY wrapper — a card, a panel, a bare <div> around several components
+   — and the whole subtree inverts. There is nothing card-specific about it.
+
+   It is a WHOLE theme, never a partial copy. It replaced a `--surface-*` tier
+   that duplicated only background/text/heading-accent/border, which left
+   buttons and links inside a card resolving against the SECTION instead — a
+   mismatch that shipped (the card title is a link). Every token agrees here by
+   construction.
+
+   How the relative flip works, mechanically: the light block lists invert
+   under dark/brand grounds at (0,2,0); the dark block lists it bare at
+   (0,1,0). Specificity, not source order, picks the winner — so adding a
+   fourth ground later means adding one selector to the block holding the
+   theme it should flip TO.
+
+   Cards do NOT carry this automatically. `<Card theme="invert">` opts in;
+   the Card theme union is inherit | light | dark | brand | invert. Left
+   alone, a card surfaces with --background-2 within the ambient theme.
    ========================================================================== */
-
-.u-surface {
-  --background: var(--surface-background);
-  --background-2: var(--surface-background);
-  --text: var(--surface-text);
-  --heading-accent: var(--surface-heading-accent);
-  --border: var(--surface-border);
-
-  background-color: var(--surface-background);
-  color: var(--surface-text);
-  border-color: var(--surface-border);
-}

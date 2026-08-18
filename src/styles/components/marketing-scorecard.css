@@ -105,8 +105,7 @@
 
 /* Hide the section background image once the quiz starts so the question
    card and rating list sit on the page background instead of the hero photo. */
-#scorecard-section:has(.scorecard_phase_stack[data-phase="quiz"])
-  .u-background-slot {
+#scorecard-section:has(.scorecard_phase_stack[data-phase="quiz"]) .u-background-slot {
   opacity: 0;
   transition: opacity 0.4s ease;
 }
@@ -514,11 +513,7 @@
 
 .scorecard_rating_btn.is-selected {
   border-color: var(--color-brand-500);
-  background-color: color-mix(
-    in srgb,
-    var(--color-brand-500) 8%,
-    var(--background-2)
-  );
+  background-color: color-mix(in srgb, var(--color-brand-500) 8%, var(--background-2));
   font-weight: var(--font-weight-medium);
 }
 
@@ -526,8 +521,7 @@
   width: 1.75rem;
   aspect-ratio: 1 / 1;
   border-radius: var(--radius-full);
-  border: var(--border-width-main) solid
-    color-mix(in srgb, var(--text) 25%, transparent);
+  border: var(--border-width-main) solid color-mix(in srgb, var(--text) 25%, transparent);
   color: color-mix(in srgb, var(--text) 60%, transparent);
   display: inline-flex;
   align-items: center;
@@ -609,8 +603,7 @@
   width: 100%;
   padding: var(--space-3) var(--space-4);
   background-color: var(--background-2);
-  border: var(--border-width-main) solid
-    color-mix(in hsl, var(--color-brand-500) 80%, transparent);
+  border: var(--border-width-main) solid color-mix(in hsl, var(--color-brand-500) 80%, transparent);
   border-radius: var(--radius-medium);
   font-family: inherit;
   font-size: 1rem; /* ≥ 1rem prevents iOS auto-zoom */
@@ -665,11 +658,7 @@
   flex-direction: column;
   gap: var(--space-6);
   --scorecard-tier-color: var(--color-brand-500);
-  --scorecard-tier-bg: color-mix(
-    in srgb,
-    var(--color-brand-500) 12%,
-    var(--background)
-  );
+  --scorecard-tier-bg: color-mix(in srgb, var(--color-brand-500) 12%, var(--background));
 }
 
 .scorecard_results_wrap.is-tier-solid {
@@ -684,20 +673,12 @@
 
 .scorecard_results_wrap.is-tier-disconnected {
   --scorecard-tier-color: var(--color-brand-500);
-  --scorecard-tier-bg: color-mix(
-    in srgb,
-    var(--color-brand-500) 15%,
-    var(--background)
-  );
+  --scorecard-tier-bg: color-mix(in srgb, var(--color-brand-500) 15%, var(--background));
 }
 
 .scorecard_results_wrap.is-tier-none {
   --scorecard-tier-color: var(--color-error-red-dark);
-  --scorecard-tier-bg: color-mix(
-    in srgb,
-    var(--color-error-red-dark) 12%,
-    var(--background)
-  );
+  --scorecard-tier-bg: color-mix(in srgb, var(--color-error-red-dark) 12%, var(--background));
 }
 
 .scorecard_score_header {
@@ -860,11 +841,7 @@
 }
 
 .scorecard_breakdown_item.is-low .scorecard_breakdown_score {
-  background-color: color-mix(
-    in srgb,
-    var(--color-error-red-dark) 10%,
-    var(--background)
-  );
+  background-color: color-mix(in srgb, var(--color-error-red-dark) 10%, var(--background));
   color: var(--color-error-red-dark);
 }
 
