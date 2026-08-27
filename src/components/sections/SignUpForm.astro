@@ -78,12 +78,19 @@ const {
       >
     </Layout>
 
-    <Form name="signup" class="signup_form">
-      <FormField label="Name" name="name" required />
-      <FormField label="Email" name="email" type="email" required />
-      <FormTextarea label="Message" name="message" rows={4} />
-      <Button type="submit" ariaLabel="Submit">Submit</Button>
-    </Form>
+    {
+      /* The panel is an invert island: the marker and the background sit on the
+        SAME element, so its text, field borders and button all resolve
+        against the panel instead of inheriting the dark card's white. */
+    }
+    <div class="signup_form_panel" data-theme-invert>
+      <Form name="signup" class="signup_form">
+        <FormField label="Name" name="name" required />
+        <FormField label="Email" name="email" variant="email" required />
+        <FormTextarea label="Message" name="message" minLines={4} />
+        <Button type="submit" ariaLabel="Submit">Submit</Button>
+      </Form>
+    </div>
   </div>
 </Section>
 
@@ -108,16 +115,27 @@ const {
       gap: var(--space-8);
     }
 
-    .signup_form {
+    /* The light panel the fields sit on. It carries data-theme-invert in the
+       markup, so `--background` and `--text` here ARE the flipped theme — a
+       whole token set, which is why the inputs, their borders and the submit
+       button all stay legible. A bare `background-color: white` with no
+       matching `color` is what this replaced: the labels kept inheriting the
+       dark card's white text and the panel rendered blank. */
+    .signup_form_panel {
       width: 100%;
       max-width: 35rem;
-      background-color: white;
+      background-color: var(--background);
+      color: var(--text);
       border-radius: var(--radius-main);
       padding: var(--space-3);
     }
 
+    .signup_form {
+      width: 100%;
+    }
+
     @container (max-width: 39em) {
-      .signup_form {
+      .signup_form_panel {
         padding: var(--space-1);
       }
     }
