@@ -54,6 +54,12 @@
  *   Add the page to `PAGES` (group: "location") with a short `footerLabel`
  *   (e.g. "Austin"), then add its path to `FOOTER_LOCATIONS`.
  *
+ *  ── Link a DEV-ONLY page (component gallery, style guide) ───────────────
+ *   Those paths are stripped from the production build, so they must NOT go
+ *   in `PAGES` or in the plain nav/footer arrays. Add them to `DEV_NAV_LINKS`
+ *   / `DEV_FOOTER_LINKS` instead — both are spread in only under
+ *   `import.meta.env.DEV`, so the links exist locally and never ship.
+ *
  *  ── Change the announcement banner ──────────────────────────────────────
  *   Edit `BANNER` at the bottom of this file: `default` is sitewide; add a path
  *   to `overrides` to change or hide it on one page (`null` = hide there).
@@ -192,6 +198,9 @@ export const OPTIONAL_PAGES = pagesInGroup("optional");
 /** A simple top-level link (label resolved from the page's navLabel). */
 export interface NavMenuLink {
   path: string;
+  /** Label override for a path with no `PAGES` entry (dev-only links). Normal
+   *  pages leave this off so the label stays in the registry. */
+  label?: string;
 }
 /** A dropdown — `children` are page paths, in display order. */
 export interface NavMenuDropdown {
@@ -199,6 +208,21 @@ export interface NavMenuDropdown {
   children: string[];
 }
 export type NavMenuItem = NavMenuLink | NavMenuDropdown;
+
+/* ── Dev-only links ─────────────────────────────────────────────────────────
+   The component gallery and style guide are local-development pages:
+   `DEV_ONLY_PATHS` (src/config/seo.shared.mjs) strips them from `dist` after
+   every build, so a link to them would 404 on the deployed site. These
+   entries are therefore spread into the nav and footer ONLY while
+   `astro dev` is running.
+
+   They carry their own `label` instead of a `PAGES` entry on purpose: PAGES
+   feeds the llms endpoints, and llms-full.txt does not filter noindex paths,
+   so registering them there would publish a dev gallery to a production
+   artifact. Add `/style-guide` here the same way if you want it linked too. */
+const DEV_NAV_LINKS: NavMenuItem[] = import.meta.env.DEV
+  ? [{ path: "/components", label: "Components" }]
+  : [];
 
 /**
  * NAVBAR — order and grouping of the navbar (desktop + mobile share this).
@@ -211,6 +235,7 @@ export const NAV_MENU: NavMenuItem[] = [
   { path: "/case-studies" },
   { path: "/glossary" },
   { path: "/marketing-scorecard" },
+  ...DEV_NAV_LINKS,
 ];
 
 // ── Footer link groups ──────────────────────────────────────────────────────
@@ -231,6 +256,11 @@ export interface FooterGroup {
 /** Footer "Locations Served" dropdown — page paths in display order. */
 export const FOOTER_LOCATIONS: string[] = [];
 
+/** Dev-only footer links — see the DEV_NAV_LINKS note above. */
+const DEV_FOOTER_LINKS: FooterLink[] = import.meta.env.DEV
+  ? [{ path: "/components", label: "Components" }]
+  : [];
+
 /**
  * FOOTER — the footer link columns (one `{ title, links }` per column).
  * `links` are page paths (or `{ path, label?, href? }` for a custom label/anchor).
@@ -240,7 +270,13 @@ export const FOOTER_LOCATIONS: string[] = [];
 export const FOOTER_GROUPS: FooterGroup[] = [
   {
     title: "Resources",
-    links: ["/blog", "/case-studies", "/glossary", "/marketing-scorecard"],
+    links: [
+      "/blog",
+      "/case-studies",
+      "/glossary",
+      "/marketing-scorecard",
+      ...DEV_FOOTER_LINKS,
+    ],
   },
   {
     title: "Company",

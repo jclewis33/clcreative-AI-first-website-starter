@@ -2741,9 +2741,10 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   <AccordionItem question="Can multiple items be open?">
                     Yes — set <code>closePrevious={false}</code> on the parent Accordion.
                   </AccordionItem>
-                  <AccordionItem question="Can I open an item on hover?">
-                    Pass <code>openOnHover={true}</code> — not recommended for keyboard
-                    users.
+                  <AccordionItem question="What powers the open and close?">
+                    A native <code>details</code> element — items in a group share
+                    a <code>name</code>, so the browser closes the previous one
+                    itself.
                   </AccordionItem>
                 </Accordion>
               </div>
@@ -2811,7 +2812,8 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
           <div id="comp-slider">
             <h3 class="styleguide_subsection_title">Slider Component</h3>
             <p class="u-text-style-small u-text-style-muted u-margin-bottom-4">
-              Powered by Swiper v8. Responsive slide counts, optional bullets
+              Powered by Swiper v12 — slides are auto-wrapped, so children go
+              straight into the slot. Responsive slide counts, optional bullets
               and arrows.
             </p>
 
@@ -2841,40 +2843,30 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   showBullets={true}
                   showArrows={true}
                 >
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 1
-                    </div>
+                  <div
+                    style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 1
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 2
-                    </div>
+                  <div
+                    style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 2
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 3
-                    </div>
+                  <div
+                    style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 3
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 4
-                    </div>
+                  <div
+                    style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 4
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 5
-                    </div>
+                  <div
+                    style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 5
                   </div>
                 </Slider>
               </div>
@@ -2894,40 +2886,30 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   showBullets={true}
                   showArrows={true}
                 >
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 1
-                    </div>
+                  <div
+                    style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 1
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 2
-                    </div>
+                  <div
+                    style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 2
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 3
-                    </div>
+                  <div
+                    style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 3
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 4
-                    </div>
+                  <div
+                    style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 4
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 5
-                    </div>
+                  <div
+                    style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 5
                   </div>
                 </Slider>
               </div>
@@ -2947,40 +2929,30 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   showBullets={true}
                   showArrows={true}
                 >
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 1
-                    </div>
+                  <div
+                    style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 1
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 2
-                    </div>
+                  <div
+                    style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 2
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 3
-                    </div>
+                  <div
+                    style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 3
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 4
-                    </div>
+                  <div
+                    style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 4
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 5
-                    </div>
+                  <div
+                    style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 5
                   </div>
                 </Slider>
               </div>
@@ -3000,40 +2972,30 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   showBullets={true}
                   showArrows={true}
                 >
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 1
-                    </div>
+                  <div
+                    style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 1
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 2
-                    </div>
+                  <div
+                    style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 2
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 3
-                    </div>
+                  <div
+                    style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 3
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 4
-                    </div>
+                  <div
+                    style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 4
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 5
-                    </div>
+                  <div
+                    style="background:var(--color-brand-600); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 5
                   </div>
                 </Slider>
               </div>
@@ -3061,33 +3023,25 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   showBullets={false}
                   showArrows={false}
                 >
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 1
-                    </div>
+                  <div
+                    style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 1
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 2
-                    </div>
+                  <div
+                    style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 2
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 3
-                    </div>
+                  <div
+                    style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 3
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 4
-                    </div>
+                  <div
+                    style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 4
                   </div>
                 </Slider>
               </div>
@@ -3105,33 +3059,25 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   showBullets={false}
                   showArrows={true}
                 >
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 1
-                    </div>
+                  <div
+                    style="background:var(--color-brand-500); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 1
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 2
-                    </div>
+                  <div
+                    style="background:var(--color-dark-900); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 2
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
-                    >
-                      Slide 3
-                    </div>
+                  <div
+                    style="background:var(--color-dark-800); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-light-100); font-size:var(--h4-size);"
+                  >
+                    Slide 3
                   </div>
-                  <div class="swiper-slide">
-                    <div
-                      style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
-                    >
-                      Slide 4
-                    </div>
+                  <div
+                    style="background:var(--color-light-200); aspect-ratio:16/9; border-radius:var(--radius-main); display:flex; align-items:center; justify-content:center; color:var(--color-dark-900); font-size:var(--h4-size);"
+                  >
+                    Slide 4
                   </div>
                 </Slider>
               </div>
