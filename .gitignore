@@ -45,6 +45,10 @@ preview/.env
 .claude/skills/*
 !.claude/skills/gsap-*
 !.claude/skills/setup
+!.claude/skills/component-api
+!.claude/skills/styling-reference
+!.claude/skills/sanity-and-preview
+!.claude/skills/seo-discoverability
 
 # transient plan-mode artifact (personal, machine-generated)
 .claude/plan.md
