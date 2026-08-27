@@ -45,6 +45,18 @@ interface SelectOption {
   disabled?: boolean;
 }
 
+type SelectVariant =
+  /** Options you supply via `options` or the slot (default) */
+  | "list"
+  /** Built-in 01–12 */
+  | "month"
+  /** Built-in 01–31 */
+  | "day"
+  /** Built-in year range — set with `from` and `to` */
+  | "year"
+  /** Built-in US states (this starter's client base is US) */
+  | "state";
+
 interface Props extends HTMLAttributes<"select"> {
   /** Label text. */
   label: string;
@@ -53,8 +65,34 @@ interface Props extends HTMLAttributes<"select"> {
   name: string;
 
   /**
+   * What the field offers.
+   * - `list` — options you supply (default)
+   * - `month`, `day`, `state` — a built-in list (states are US-specific)
+   * - `year` — a range, set with `from` and `to`
+   *
+   * @default 'list'
+   * @example variant="state"
+   */
+  variant?: SelectVariant;
+
+  /**
+   * The earliest year offered (`variant="year"` only). Defaults to a hundred
+   * before `to`.
+   * @example from={1950}
+   */
+  from?: number;
+
+  /**
+   * The latest year offered (`variant="year"` only). Defaults to the year
+   * the site was built.
+   * @example to={2030}
+   */
+  to?: number;
+
+  /**
    * Select options — array of `{ label, value, disabled? }`.
    * Alternatively, use the default slot for `<option>` / `<optgroup>`.
+   * Ignored when a built-in `variant` supplies the list.
    */
   options?: SelectOption[];
 
@@ -102,6 +140,9 @@ interface Props extends HTMLAttributes<"select"> {
 const {
   label,
   name,
+  variant = "list",
+  from,
+  to,
   options,
   placeholderOption,
   required = false,
@@ -114,6 +155,98 @@ const {
   class: className,
   ...rest
 } = Astro.props;
+
+/* Built-in option sets. `new Date()` runs at build time for prerendered
+   pages, so the year default refreshes on every rebuild. */
+const STATES: SelectOption[] = [
+  { value: "AL", label: "Alabama" },
+  { value: "AK", label: "Alaska" },
+  { value: "AZ", label: "Arizona" },
+  { value: "AR", label: "Arkansas" },
+  { value: "CA", label: "California" },
+  { value: "CO", label: "Colorado" },
+  { value: "CT", label: "Connecticut" },
+  { value: "DE", label: "Delaware" },
+  { value: "FL", label: "Florida" },
+  { value: "GA", label: "Georgia" },
+  { value: "HI", label: "Hawaii" },
+  { value: "ID", label: "Idaho" },
+  { value: "IL", label: "Illinois" },
+  { value: "IN", label: "Indiana" },
+  { value: "IA", label: "Iowa" },
+  { value: "KS", label: "Kansas" },
+  { value: "KY", label: "Kentucky" },
+  { value: "LA", label: "Louisiana" },
+  { value: "ME", label: "Maine" },
+  { value: "MD", label: "Maryland" },
+  { value: "MA", label: "Massachusetts" },
+  { value: "MI", label: "Michigan" },
+  { value: "MN", label: "Minnesota" },
+  { value: "MS", label: "Mississippi" },
+  { value: "MO", label: "Missouri" },
+  { value: "MT", label: "Montana" },
+  { value: "NE", label: "Nebraska" },
+  { value: "NV", label: "Nevada" },
+  { value: "NH", label: "New Hampshire" },
+  { value: "NJ", label: "New Jersey" },
+  { value: "NM", label: "New Mexico" },
+  { value: "NY", label: "New York" },
+  { value: "NC", label: "North Carolina" },
+  { value: "ND", label: "North Dakota" },
+  { value: "OH", label: "Ohio" },
+  { value: "OK", label: "Oklahoma" },
+  { value: "OR", label: "Oregon" },
+  { value: "PA", label: "Pennsylvania" },
+  { value: "RI", label: "Rhode Island" },
+  { value: "SC", label: "South Carolina" },
+  { value: "SD", label: "South Dakota" },
+  { value: "TN", label: "Tennessee" },
+  { value: "TX", label: "Texas" },
+  { value: "UT", label: "Utah" },
+  { value: "VT", label: "Vermont" },
+  { value: "VA", label: "Virginia" },
+  { value: "WA", label: "Washington" },
+  { value: "WV", label: "West Virginia" },
+  { value: "WI", label: "Wisconsin" },
+  { value: "WY", label: "Wyoming" },
+];
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const span = (start: number, end: number) =>
+  Array.from({ length: end - start + 1 }, (_, i) => start + i);
+
+const latest = to ?? new Date().getFullYear();
+const earliest = from ?? latest - 100;
+
+const builtIn: SelectOption[] | undefined =
+  variant === "state"
+    ? STATES
+    : variant === "month"
+      ? span(1, 12).map((n) => ({ value: pad(n), label: pad(n) }))
+      : variant === "day"
+        ? span(1, 31).map((n) => ({ value: pad(n), label: pad(n) }))
+        : variant === "year"
+          ? span(earliest, latest)
+              .reverse()
+              .map((n) => ({ value: String(n), label: String(n) }))
+          : undefined;
+
+const resolvedOptions = builtIn ?? options;
+
+if (import.meta.env.DEV) {
+  if ((from !== undefined || to !== undefined) && variant !== "year") {
+    console.warn(
+      '\n[FormSelect] `from` / `to` only apply to variant="year" — they ' +
+        "were ignored.\n",
+    );
+  }
+  if (builtIn && options) {
+    console.warn(
+      `\n[FormSelect] variant="${variant}" supplies its own options — the ` +
+        "`options` prop was ignored.\n",
+    );
+  }
+}
 
 const fieldId = id || `field-${name}`;
 const describedById = helperText || errorText ? `${fieldId}-hint` : undefined;
@@ -155,8 +288,8 @@ const isFloating = labelVariant === "floating";
       }
 
       {
-        options ? (
-          options.map((opt) => (
+        resolvedOptions ? (
+          resolvedOptions.map((opt) => (
             <option
               value={opt.value}
               disabled={opt.disabled}

@@ -1,0 +1,231 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+/* ── Props contract ──────────────────────────────────────────────────────────
+   Keep the JSDoc below free of STRAY angle brackets — a stray one silently
+   detaches this file's Props type at the call site. `npm run check:hover`
+   guards the tooltips.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+type VideoRatio =
+  /** 2:1 — panoramic widescreen */
+  | "2-1"
+  /** 16:9 — standard widescreen (default) */
+  | "16-9"
+  /** 3:2 — classic photo frame */
+  | "3-2"
+  /** 5:4 — nearly square */
+  | "5-4"
+  /** 1:1 — square */
+  | "1-1"
+  /** 4:5 — upright */
+  | "4-5"
+  /** 2:3 — upright, phone-shaped */
+  | "2-3";
+
+type Head = Omit<
+  HTMLAttributes<"video">,
+  "src" | "poster" | "loop" | "autoplay" | "muted"
+> & {
+  /**
+   * **Video props:**
+   * - `src` — video file URL (nothing renders without it)
+   * - `poster` — still frame shown before playback
+   * - `variant` — aspect ratio preset (default `'16-9'`), or `'custom'` with
+   *   `ratio`, or `'auto'` to match the file
+   * - `loop` / `autoplay` / `muted` — playback behavior (all default `true`)
+   * - `transparent` — fit whole frame in, drop the skeleton tint (cutouts)
+   * - `render` — false skips the component entirely
+   * - `class` — extra classes on the `video` element
+   * - Also accepts any HTML `video` attribute (`controls`, `preload`, …)
+   */
+  docs?: string;
+
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /** Video file URL. Nothing is output if it is missing. */
+  src?: string;
+
+  /** Still frame shown before playback starts. */
+  poster?: string;
+};
+
+type Tail = {
+  /**
+   * Restart from the beginning on reaching the end.
+   * @default true
+   */
+  loop?: boolean;
+
+  /**
+   * Begin playing without interaction. Browsers only permit this while
+   * `muted` is also set.
+   * @default true
+   */
+  autoplay?: boolean;
+
+  /**
+   * Play without sound. Required for autoplay to be allowed.
+   * @default true
+   */
+  muted?: boolean;
+
+  /**
+   * For cutouts: fit the whole frame in rather than cropping, and drop the
+   * skeleton tint. Pass as a bare keyword.
+   * @default false
+   */
+  transparent?: boolean;
+};
+
+export type Props = Head &
+  (
+    | {
+        /**
+         * Aspect ratio, applied on the element.
+         *
+         * - `2-1`, `16-9` — widescreen (`16-9` is the default)
+         * - `3-2`, `5-4`, `1-1` — squarer
+         * - `4-5`, `2-3` — upright, for a phone
+         *
+         * `custom` takes a `ratio` of your own. `auto` matches the file, but
+         * its height is unknown until the metadata arrives, so the page
+         * shifts once it loads.
+         *
+         * @default '16-9'
+         */
+        variant?: VideoRatio;
+        ratio?: never;
+      }
+    | {
+        variant: "custom";
+        /** Any CSS `aspect-ratio` value, such as `21 / 9` or `1.85`. */
+        ratio?: string;
+      }
+    | {
+        variant: "auto";
+        ratio?: never;
+      }
+  ) &
+  Tail;
+
+/* Flat shape for the implementation — inside the component TypeScript cannot
+   know which union branch applies, so props are read through this instead. */
+type AllProps = Head &
+  Tail & {
+    variant?: VideoRatio | "custom" | "auto";
+    ratio?: string;
+  };
+
+const {
+  docs,
+  render = true,
+  src,
+  poster,
+  variant = "16-9",
+  ratio,
+  loop = true,
+  autoplay = true,
+  muted = true,
+  transparent = false,
+  class: className,
+  style: userStyle,
+  ...rest
+} = Astro.props as AllProps;
+
+if (import.meta.env.DEV && render) {
+  if (!src) {
+    console.warn("\n[Video] Rendered without a `src`; nothing was output.\n");
+  }
+  if (autoplay && !muted) {
+    console.warn(
+      "\n[Video] `autoplay` without `muted` is blocked by every major " +
+        "browser. Set muted, or drop autoplay and let the viewer start it.\n",
+    );
+  }
+  if (variant === "custom" && !ratio) {
+    console.warn(
+      '\n[Video] variant="custom" has no `ratio`, so no aspect ratio is ' +
+        "applied. Set one, or pick a preset variant.\n",
+    );
+  }
+}
+
+const isCustom = variant === "custom";
+const isAuto = variant === "auto";
+const computedStyle = isCustom && ratio ? `aspect-ratio: ${ratio};` : undefined;
+const mergedStyle =
+  [computedStyle, typeof userStyle === "string" ? userStyle : undefined]
+    .filter(Boolean)
+    .join(" ") || undefined;
+---
+
+{
+  render && src && (
+    <video
+      src={src}
+      poster={poster}
+      class:list={["video_wrap", transparent && "is-transparent", className]}
+      data-ratio={!isCustom && !isAuto ? variant : undefined}
+      style={mergedStyle}
+      loop={loop}
+      autoplay={autoplay}
+      muted={muted}
+      playsinline
+      {...rest}
+    />
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* ==========================================================================
+   VIDEO COMPONENT
+   ==========================================================================
+   One bare <video> element. Ratio presets map from data-ratio (wrapped in
+   :where() so any component/page class can override without a fight); the
+   custom variant carries an inline aspect-ratio instead, and auto has none.
+   ========================================================================== */
+
+    .video_wrap {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      background-color: var(--background-skeleton);
+    }
+
+    /* Cutouts: whole frame visible, no tint behind transparency. */
+    .video_wrap.is-transparent {
+      object-fit: contain;
+      background-color: transparent;
+    }
+
+    :where(.video_wrap[data-ratio="2-1"]) {
+      aspect-ratio: 2 / 1;
+    }
+    :where(.video_wrap[data-ratio="16-9"]) {
+      aspect-ratio: 16 / 9;
+    }
+    :where(.video_wrap[data-ratio="3-2"]) {
+      aspect-ratio: 3 / 2;
+    }
+    :where(.video_wrap[data-ratio="5-4"]) {
+      aspect-ratio: 5 / 4;
+    }
+    :where(.video_wrap[data-ratio="1-1"]) {
+      aspect-ratio: 1 / 1;
+    }
+    :where(.video_wrap[data-ratio="4-5"]) {
+      aspect-ratio: 4 / 5;
+    }
+    :where(.video_wrap[data-ratio="2-3"]) {
+      aspect-ratio: 2 / 3;
+    }
+  }
+</style>

@@ -1,0 +1,114 @@
+---
+import type { HTMLAttributes, SvgComponent } from "astro/types";
+
+type IconVariant =
+  /** 1em — matches the line of text beside it */
+  | "small"
+  /** 1.5em (default) */
+  | "medium"
+  /** 2em */
+  | "large"
+  /** Fills its container; height follows the artwork */
+  | "full-width";
+
+export interface Props extends HTMLAttributes<"svg"> {
+  /**
+   * **Icon props:**
+   * - `src` — an SVG imported from `src/assets`, rendered inline
+   * - `variant` — size in `em`: small (1em), medium (1.5em, default),
+   *   large (2em), full-width
+   * - `render` — false skips the component entirely
+   * - `class` — extra classes on the `svg`
+   * - Also accepts any `svg` attribute (`aria-label`, `data-*`, …)
+   *
+   * Decorative by default: `aria-hidden` is applied automatically unless an
+   * `aria-label` or `aria-labelledby` is passed.
+   *
+   * @example
+   * ```astro
+   * import arrow from "@/assets/icons/arrow.svg";
+   * <Icon src={arrow} variant="small" />
+   * ```
+   */
+  docs?: string;
+
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
+   * An SVG imported from `src/assets`, rendered inline. Nothing is output if
+   * it is missing.
+   */
+  src?: SvgComponent;
+
+  /**
+   * Size, in `em`, so the icon scales with the text beside it.
+   *
+   * @default 'medium'
+   * @example variant="small"
+   */
+  variant?: IconVariant;
+}
+
+const {
+  docs,
+  render = true,
+  src: Svg,
+  variant = "medium",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const labelled = Boolean(rest["aria-label"] ?? rest["aria-labelledby"]);
+
+if (import.meta.env.DEV && render && !Svg) {
+  console.warn("\n[Icon] Rendered without a `src`; nothing was output.\n");
+}
+---
+
+{
+  render && Svg && (
+    <Svg
+      class:list={[
+        "icon_wrap",
+        variant !== "medium" && `is-${variant}`,
+        className,
+      ]}
+      aria-hidden={labelled ? undefined : "true"}
+      {...rest}
+    />
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* Sized in em so the icon tracks the text beside it. flex: none keeps it
+       from being crushed in a flex row (the icons-need-flex-shrink-0 rule). */
+    .icon_wrap {
+      --_size: 1.5em;
+      flex: none;
+      display: block;
+      width: var(--_size);
+      height: auto;
+      aspect-ratio: 1 / 1;
+      max-width: 100%;
+    }
+
+    .icon_wrap.is-small {
+      --_size: 1em;
+    }
+
+    .icon_wrap.is-large {
+      --_size: 2em;
+    }
+
+    .icon_wrap.is-full-width {
+      width: 100%;
+      aspect-ratio: unset;
+    }
+  }
+</style>

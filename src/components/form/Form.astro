@@ -1,18 +1,26 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 /**
- * Form — wrapper component for the `<form>` element.
+ * Form — wrapper component for the `<form>` element, with async submit.
  *
- * Renders `.form_wrap` > `<form class="form_element">` with an open slot
- * for field components. Optionally renders success and error feedback
- * messages (hidden by default — surface them via client-side JS).
+ * Renders `.form_wrap` > `<form class="form_element">` with an open slot for
+ * field components. Submission is handled by a small script driving a
+ * `data-state` machine on the wrapper — `idle → sending → sent | failed`:
+ * the fields are validated (`checkValidity`), posted with `fetch` to
+ * `action`, the submit button is disabled while sending, and the success /
+ * error notes (`role="status"` / `role="alert"`) show from the state alone.
+ * Without JS the form still posts natively to `action`.
+ *
+ * With no `action`, the form sends nothing and reports success — placeholder
+ * behavior for a starter; wire `action` to a real endpoint per project.
  *
  * @example
  * ```astro
- * <Form name="contact" successMessage="Thanks!" errorMessage="Something went wrong.">
+ * <Form name="contact" action="/api/contact"
+ *   successMessage="Thanks!" errorMessage="Something went wrong.">
  *   <FormFieldset columns={2}>
- *     <FormField label="First Name" name="first-name" required />
- *     <FormField label="Last Name" name="last-name" required />
+ *     <FormField label="First Name" name="first-name" variant="first-name" required />
+ *     <FormField label="Last Name" name="last-name" variant="last-name" required />
  *   </FormFieldset>
  *   <Button type="submit" ariaLabel="Send">Submit</Button>
  * </Form>
@@ -26,7 +34,9 @@ interface Props extends HTMLAttributes<"form"> {
   name?: string;
 
   /**
-   * Form action URL. Omit for client-side JS handling.
+   * Where the form posts. The submit script fetches this URL with the form
+   * data; without JS the form posts to it natively. Omitted, the form sends
+   * nothing and reports success (placeholder mode).
    */
   action?: string;
 
@@ -37,14 +47,14 @@ interface Props extends HTMLAttributes<"form"> {
   method?: "GET" | "POST";
 
   /**
-   * Success message shown after successful submission.
-   * When provided, the success wrapper renders (hidden by default).
+   * Success message shown in place of the fields once the form has sent
+   * (`data-state="sent"`).
    */
   successMessage?: string;
 
   /**
-   * Error message shown when submission fails.
-   * When provided, the error wrapper renders (hidden by default).
+   * Error message shown beneath the fields when submission fails
+   * (`data-state="failed"`).
    */
   errorMessage?: string;
 
@@ -67,7 +77,12 @@ const {
 } = Astro.props;
 ---
 
-<div class:list={["form_wrap", className]} id={id}>
+<div
+  class:list={["form_wrap", className]}
+  id={id}
+  data-state="idle"
+  data-endpoint={action}
+>
   <form
     class="form_element"
     name={name}
@@ -80,7 +95,7 @@ const {
 
   {
     successMessage && (
-      <div class="form_success_wrap" style="display: none;" role="status">
+      <div class="form_success_wrap" role="status">
         <p class="form_success_text">{successMessage}</p>
       </div>
     )
@@ -88,9 +103,62 @@ const {
 
   {
     errorMessage && (
-      <div class="form_error_wrap" style="display: none;" role="alert">
+      <div class="form_error_wrap" role="alert">
         <p class="form_error_text">{errorMessage}</p>
       </div>
     )
   }
 </div>
+
+<script>
+  /* Async submit: validate → fetch → flip data-state. The notes' visibility
+     is pure CSS keyed off the state (see forms.css). With no data-endpoint
+     the form "sends" nothing and reports success — placeholder mode. */
+  function initForms() {
+    for (const wrap of document.querySelectorAll<HTMLElement>(
+      ".form_wrap[data-state]",
+    )) {
+      if (wrap.dataset.formInit) continue;
+      wrap.dataset.formInit = "true";
+
+      const form = wrap.querySelector<HTMLFormElement>(".form_element");
+      if (!form) continue;
+
+      const submit = form.querySelector<HTMLButtonElement | HTMLInputElement>(
+        'button:not([type]), button[type="submit"], input[type="submit"]',
+      );
+
+      form.addEventListener("submit", async (event) => {
+        /* Invalid → let the browser show its native validation UI. */
+        if (!form.checkValidity()) return;
+
+        event.preventDefault();
+        wrap.dataset.state = "sending";
+        if (submit) submit.disabled = true;
+
+        try {
+          const endpoint = wrap.dataset.endpoint;
+          if (endpoint) {
+            const answer = await fetch(endpoint, {
+              method: form.method || "post",
+              body: new FormData(form),
+              headers: { Accept: "application/json" },
+            });
+            if (!answer.ok) throw new Error(String(answer.status));
+          }
+          wrap.dataset.state = "sent";
+          form.reset();
+        } catch {
+          wrap.dataset.state = "failed";
+          if (submit) submit.disabled = false;
+        }
+      });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initForms);
+  } else {
+    initForms();
+  }
+</script>

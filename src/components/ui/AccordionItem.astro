@@ -1,14 +1,18 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { slotContent } from "@/lib/slots";
 /**
  * AccordionItem — a single expand/collapse row inside `<Accordion>`.
+ *
+ * Built on a native `details`/`summary`, so it opens and closes with no JS.
+ * The parent `<Accordion>` groups items via the `data-accordion-group`
+ * marker attribute this renders — it replaces the marker with a shared
+ * `name` attribute when `closePrevious` is on, which is what makes opening
+ * one item close the others, natively.
  *
  * Slots:
  *   - `question` — rich text toggle label (alternative to the `question` prop)
  *   - `default`  — answer content (revealed on expand)
- *
- * Accessibility: uses `aria-expanded` + `aria-controls` pattern.
- * Animation: parent `<Accordion>` handles height animation via GSAP.
  *
  * @example Simple text question
  * ```astro
@@ -26,38 +30,28 @@ import type { HTMLAttributes } from "astro/types";
  * ```
  */
 
-/**
- * AccordionItem — a single expand/collapse row inside `<Accordion>`.
- *
- * **Props:**
- * - `question` — toggle button text (or use `question` slot for rich text)
- * - `open` — start this item expanded (default: `false`)
- * - `class` — extra classes on the item wrapper
- *
- * **Slots:** `question` (rich text toggle label), default (answer content).
- */
-interface Props extends HTMLAttributes<"div"> {
+interface Props extends HTMLAttributes<"details"> {
   /**
    * **AccordionItem props:**
-   * - `question` — toggle button text (or use `question` slot for rich text)
+   * - `question` — toggle text (or use the `question` slot for rich text)
    * - `open` — start expanded (default false)
    * - `class` — extra classes
-   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to the `details` element
    *
    * **Slots:** `question` (rich text toggle label), default (answer content)
    */
   docs?: string;
 
   /**
-   * The question / label shown in the toggle button.
-   * If you need rich text (links, bold etc.) use `<slot name="question">` instead.
+   * The question / label shown in the toggle.
+   * If you need rich text (links, bold etc.) use the `question` slot instead.
    * @example question="What is this design system?"
    */
   question?: string;
 
   /**
    * Start this item open.
-   * Prefer using `openByDefault` on the parent Accordion for single-item control.
+   * Prefer `openByDefault` on the parent Accordion for single-item control.
    * @default false
    */
   open?: boolean;
@@ -68,46 +62,38 @@ interface Props extends HTMLAttributes<"div"> {
 
 const { docs, question, open = false, class: className, ...rest } = Astro.props;
 
-const hasQuestion = Astro.slots.has("question");
-
-// Unique ID for aria-controls
-const id = `accordion-${Math.random().toString(36).slice(2, 8)}`;
-const contentId = `${id}-content`;
+/* Capture ONCE, emit with set:html — render-once rule, see src/lib/slots.ts. */
+const questionContent = await slotContent(Astro.slots, "question");
+const answerContent = await slotContent(Astro.slots);
 ---
 
-<div class:list={["accordion_item", className]} role="listitem" {...rest}>
-  <div class="accordion_component">
-    <!-- Toggle button -->
+<details
+  class:list={["accordion_item", className]}
+  open={open}
+  data-accordion-group
+  {...rest}
+>
+  <summary class="accordion_toggle">
     <h3 class="accordion_toggle_heading">
-      <button
-        class="accordion_toggle_button"
-        aria-expanded={open ? "true" : "false"}
-        aria-controls={contentId}
-      >
-        <span class="accordion_toggle_text u-text-style-h5 u-margin-bottom-0">
-          {hasQuestion ? <slot name="question" /> : question}
-        </span>
-        <span class="accordion_toggle_icon" aria-hidden="true">
-          <!-- Chevron down SVG -->
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </span>
-      </button>
+      <span class="accordion_toggle_text u-text-style-h5 u-margin-bottom-0">
+        {questionContent ? <Fragment set:html={questionContent} /> : question}
+      </span>
     </h3>
+    <span class="accordion_toggle_icon" aria-hidden="true">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </span>
+  </summary>
 
-    <!-- Content panel — hidden by default, animated by JS -->
-    <div class="accordion_content_wrap" id={contentId} role="region">
-      <div class="accordion_content_padding">
-        <slot />
-      </div>
-    </div>
+  <div class="accordion_body u-margin-trim">
+    <Fragment set:html={answerContent} />
   </div>
-</div>
+</details>

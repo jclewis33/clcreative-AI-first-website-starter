@@ -1,11 +1,21 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { slotContent } from "@/lib/slots";
+import { uid } from "@/lib/uid";
 /**
- * Accordion — animated expand/collapse list.
+ * Accordion — expand/collapse list built on native `details`/`summary`.
  *
- * Children **must** be `<AccordionItem>` components.
- * Animation uses GSAP for smooth height transitions (falls back to
- * instant toggle if GSAP is unavailable).
+ * Children **must** be `<AccordionItem>` components. Single-open behavior is
+ * the platform's own `details name` grouping — no click handlers at all.
+ * Open/close animates with `interpolate-size` + `::details-content`
+ * transitions (Chromium today; other engines open instantly, everything
+ * else identical).
+ *
+ * How grouping works: each `<AccordionItem>` renders a bare
+ * `data-accordion-group` marker attribute; this component captures the
+ * rendered children ONCE and replaces every marker with a shared
+ * `name="accordion-N"` (deterministic counter), which is what makes opening
+ * one item close the rest — server-side, no prop drilling.
  *
  * @example Basic FAQ
  * ```astro
@@ -14,7 +24,7 @@ import type { HTMLAttributes } from "astro/types";
  *     A structured CSS and component system for building consistent UIs.
  *   </AccordionItem>
  *   <AccordionItem question="How does it work?">
- *     It uses CSS variables and a trigger/state system.
+ *     It uses CSS variables and native details grouping.
  *   </AccordionItem>
  * </Accordion>
  * ```
@@ -28,27 +38,12 @@ import type { HTMLAttributes } from "astro/types";
  * ```
  */
 
-/**
- * Accordion — animated expand/collapse list using GSAP height transitions.
- *
- * Children must be `<AccordionItem>` components.
- *
- * **Props:**
- * - `closePrevious` — close the open item when another opens (default: `true`)
- * - `closeOnSecondClick` — clicking an open item closes it (default: `true`)
- * - `openOnHover` — open items on hover instead of click (default: `false`)
- * - `openByDefault` — 1-based index of item to open on load, `0` = all closed (default: `0`)
- * - `class` — extra classes on the wrapper
- *
- * **Slot:** default — `<AccordionItem>` children.
- */
 interface Props extends HTMLAttributes<"div"> {
   /**
    * **Accordion props:**
    * - `closePrevious` — close open item when another opens (default true)
-   * - `closeOnSecondClick` — close on re-click (default true)
-   * - `openOnHover` — open on hover (default false)
    * - `openByDefault` — 1-based index to open on load, 0 = all closed (default 0)
+   * - `closeOnSecondClick` — deprecated no-op: a native details always closes on re-click
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
    *
@@ -57,25 +52,22 @@ interface Props extends HTMLAttributes<"div"> {
   docs?: string;
 
   /**
-   * Close the currently open item when another is opened.
-   * Set to `false` to allow multiple items to be open at once.
+   * Close the currently open item when another is opened — native
+   * `details name` grouping. Set to `false` to allow multiple items open
+   * at once.
    * @default true
    * @example closePrevious={false}
    */
   closePrevious?: boolean;
 
   /**
-   * Clicking an already-open item's toggle button will close it.
+   * Deprecated no-op: a native `details` always closes when its open
+   * summary is clicked, so this behavior is permanent now. The prop is
+   * kept so old call sites keep type-checking; a DEV warning fires when
+   * `false` is passed.
    * @default true
    */
   closeOnSecondClick?: boolean;
-
-  /**
-   * Open items on hover instead of (or in addition to) click.
-   * Not recommended for keyboard accessibility.
-   * @default false
-   */
-  openOnHover?: boolean;
 
   /**
    * 1-based index of the item to open by default on load.
@@ -93,193 +85,105 @@ const {
   docs,
   closePrevious = true,
   closeOnSecondClick = true,
-  openOnHover = false,
   openByDefault = 0,
   class: className,
   ...rest
 } = Astro.props;
+
+if (import.meta.env.DEV && closeOnSecondClick === false) {
+  console.warn(
+    "\n[Accordion] `closeOnSecondClick={false}` no longer does anything — a " +
+      "native details element always closes on re-click. Drop the prop.\n",
+  );
+}
+
+/* Capture the rendered items ONCE (render-once rule, src/lib/slots.ts), then
+   do the group wiring as a string pass: every item's data-accordion-group
+   marker becomes the shared `name` (single-open), and the openByDefault-th
+   marker also gains `open`. Deterministic uid keeps builds reproducible. */
+const group = closePrevious ? `name="${uid("accordion")}"` : "";
+const slot = await slotContent(Astro.slots);
+let markerIndex = 0;
+const items = slot.replace(/data-accordion-group/g, () => {
+  markerIndex += 1;
+  const openAttr = markerIndex === openByDefault ? " open" : "";
+  return `${group}${openAttr}`;
+});
 ---
 
-<div
-  class:list={["accordion_wrap", className]}
-  data-close-previous={String(closePrevious)}
-  data-close-on-second-click={String(closeOnSecondClick)}
-  data-open-on-hover={String(openOnHover)}
-  data-open-by-default={String(openByDefault)}
-  {...rest}
->
-  <div class="accordion_list" role="list">
-    <slot />
+<div class:list={["accordion_wrap", className]} {...rest}>
+  <div class="accordion_list">
+    <Fragment set:html={items} />
   </div>
 </div>
 
 <script>
-  /**
-   * Accordion JavaScript — CSS grid-template-rows approach
-   *
-   * JS only toggles aria-expanded + .is-active. The animation runs on the
-   * browser's native pipeline via `grid-template-rows: 0fr ↔ 1fr` on
-   * .accordion_content_wrap (see accordion.css). No GSAP timeline, no
-   * synchronous height measurement.
-   *
-   * Data attributes on .accordion_wrap:
-   *   data-close-previous        — "true" | "false"
-   *   data-close-on-second-click — "true" | "false"
-   *   data-open-on-hover         — "true" | "false"
-   *   data-open-by-default       — "0" | "1" | "2" … (1-based index)
-   *
-   * Open/close (plain CSS, no variables):
-   *   aria-expanded on .accordion_toggle_button — JS toggles this attribute.
-   *   .accordion_item:has(.accordion_toggle_button[aria-expanded="true"])
-   *   expands the panel (grid-template-rows) and rotates the chevron — see
-   *   accordion.css.
-   */
-
-  function initAccordions() {
+  /* No open/close logic — the platform owns that. This only forwards layout
+     changes to the scroll-refresh bus so scroll-linked animations further
+     down the page recompute their positions. */
+  function wireAccordions() {
     document
       .querySelectorAll<HTMLElement>(".accordion_wrap")
       .forEach((wrap) => {
-        const closePrevious = wrap.dataset.closePrevious !== "false";
-        const closeOnSecondClick = wrap.dataset.closeOnSecondClick !== "false";
-        const openOnHover = wrap.dataset.openOnHover === "true";
-        const openByDefault = parseInt(wrap.dataset.openByDefault ?? "0", 10);
+        if (wrap.dataset.accordionWired) return;
+        wrap.dataset.accordionWired = "true";
 
-        const items = wrap.querySelectorAll<HTMLElement>(".accordion_item");
+        /* `toggle` fires on every open/close (instantly in engines without
+           ::details-content transitions — correct there, since the height
+           changes instantly). Where the transition runs, transitionend for
+           the pseudo-element fires on the details element afterwards, and a
+           second refresh lands on the settled height. */
+        wrap.addEventListener(
+          "toggle",
+          () => {
+            document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"));
+          },
+          { capture: true, passive: true },
+        );
 
-        function getButton(item: HTMLElement) {
-          return item.querySelector<HTMLButtonElement>(
-            ".accordion_toggle_button",
-          );
-        }
-
-        function getContent(item: HTMLElement) {
-          return item.querySelector<HTMLElement>(".accordion_content_wrap");
-        }
-
-        function isOpen(item: HTMLElement) {
-          return getButton(item)?.getAttribute("aria-expanded") === "true";
-        }
-
-        function openItem(item: HTMLElement) {
-          const button = getButton(item);
-          if (!button) return;
-          button.setAttribute("aria-expanded", "true");
-          item.classList.add("is-active");
-        }
-
-        function closeItem(item: HTMLElement) {
-          const button = getButton(item);
-          if (!button) return;
-          button.setAttribute("aria-expanded", "false");
-          item.classList.remove("is-active");
-        }
-
-        function toggle(item: HTMLElement) {
-          if (isOpen(item)) {
-            if (closeOnSecondClick) closeItem(item);
-          } else {
-            if (closePrevious) {
-              items.forEach((other) => {
-                if (other !== item && isOpen(other)) closeItem(other);
-              });
-            }
-            openItem(item);
-          }
-        }
-
-        items.forEach((item) => {
-          const button = getButton(item);
-          if (!button) return;
-
-          button.addEventListener("click", () => toggle(item));
-
-          if (openOnHover) {
-            item.addEventListener("mouseenter", () => {
-              if (!isOpen(item)) toggle(item);
-            });
-          }
-
-          // Refresh ScrollTrigger after each open/close animation so it can
-          // recompute positions for any scroll-linked effects below.
-          const content = getContent(item);
-          if (content) {
-            content.addEventListener(
-              "transitionend",
-              (e) => {
-                if (
-                  e.target === content &&
-                  (e as TransitionEvent).propertyName === "grid-template-rows"
-                ) {
-                  // Nudge any scroll-linked animations without importing GSAP
-                  // here — see src/scripts/scroll-refresh.js. No-op on pages
-                  // that have none.
-                  document.dispatchEvent(
-                    new CustomEvent("scrolltrigger:refresh"),
-                  );
-                }
-              },
-              { passive: true },
-            );
-          }
-        });
-
-        // Apply openByDefault state BEFORE the .is-ready class enables
-        // transitions — so the default item renders open without animating in.
-        if (openByDefault > 0 && items[openByDefault - 1]) {
-          openItem(items[openByDefault - 1]);
-        }
-
-        // Double rAF guarantees the initial state is painted before we
-        // enable CSS transitions on grid-template-rows.
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            wrap.classList.add("is-ready");
-          });
-        });
+        wrap.addEventListener(
+          "transitionend",
+          (e) => {
+            if ((e as TransitionEvent).propertyName !== "block-size") return;
+            document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"));
+          },
+          { passive: true },
+        );
       });
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initAccordions);
+    document.addEventListener("DOMContentLoaded", wireAccordions);
   } else {
-    initAccordions();
+    wireAccordions();
   }
 </script>
 
 <style is:global>
-  /* Global styles (is:global — classes here are used across the site and by
-     child slots), moved from src/styles/components/accordion.css. The layer
-     wrapper slots them into the cascade defined in styles/global.css. */
   @layer components {
     /* ==========================================================================
    ACCORDION COMPONENT STYLES
    ==========================================================================
-   Animated expand/collapse list, driven entirely by the `aria-expanded`
-   attribute that JS toggles on the toggle button — plain CSS, no variables.
+   Native details/summary. Single-open comes from the shared `name`
+   attribute (injected by Accordion.astro), so there is no click JS at all.
 
-   How it works:
-     `:has(.accordion_toggle_button[aria-expanded="true"])` toggles
-     grid-template-rows from 0fr to 1fr on .accordion_content_wrap, which
-     animates the expand/collapse natively in CSS — no JS measurement or
-     GSAP timeline required. The chevron icon rotates off the same
-     attribute (see .accordion_toggle_icon below).
+   Animation: `interpolate-size: allow-keywords` lets block-size transition
+   to `auto`, and `::details-content` carries the transition. Both are
+   Chromium-first — Safari/Firefox get instant open/close with identical
+   behavior (details name itself is Baseline 2024).
 
-   Example markup:
+   Example markup (after the parent's group pass):
      <div class="accordion_wrap">
-       <div class="accordion_list" role="list">
-         <div class="accordion_item" role="listitem">
-           <div class="accordion_component">
+       <div class="accordion_list">
+         <details class="accordion_item" name="accordion-1">
+           <summary class="accordion_toggle">
              <h3 class="accordion_toggle_heading">
-               <button class="accordion_toggle_button" aria-expanded="false">
-                 <span class="accordion_toggle_text">Question?</span>
-                 <span class="accordion_toggle_icon">▼</span>
-               </button>
+               <span class="accordion_toggle_text">Question?</span>
              </h3>
-             <div class="accordion_content_wrap">
-               <div class="accordion_content_padding">Answer.</div>
-             </div>
-           </div>
-         </div>
+             <span class="accordion_toggle_icon">▼</span>
+           </summary>
+           <div class="accordion_body">Answer.</div>
+         </details>
        </div>
      </div>
    ========================================================================== */
@@ -293,49 +197,36 @@ const {
 
     .accordion_list {
       flex-flow: column;
-      list-style: none;
       width: 100%;
-      margin-top: calc(var(--space-4) * -1);
-      margin-bottom: 0;
-      margin-left: 0;
-      margin-right: 0;
+      margin: 0;
       padding: 0;
       display: flex;
     }
 
     .accordion_item {
+      interpolate-size: allow-keywords;
       border-bottom: var(--border-width-main) solid var(--border);
     }
 
-    .accordion_item:first-child {
-      border-top: none;
-    }
-
-    .accordion_component {
-      position: relative;
-    }
-
-    .accordion_toggle_button {
+    .accordion_toggle {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: var(--space-3);
       padding-top: var(--space-4);
       padding-bottom: var(--space-4);
-      gap: var(--space-3);
       color: inherit;
+      list-style: none;
       cursor: pointer;
       outline-offset: var(--focus-offset-inner);
-      justify-content: space-between;
-      align-items: start;
-      width: 100%;
-      list-style: none;
-      display: flex;
-      /* Reset browser default button styles */
-      background: none;
-      border: none;
-      text-align: left;
+    }
+
+    .accordion_toggle::-webkit-details-marker {
+      display: none;
     }
 
     .accordion_toggle_heading {
-      margin-top: 0;
-      margin-bottom: 0;
+      margin: 0;
       font-weight: inherit;
     }
 
@@ -343,17 +234,16 @@ const {
       aspect-ratio: 1;
       flex: none;
       width: 1.4rem;
-      transform: rotate(0deg);
-      transition: transform 0.3s ease;
+      rotate: 0deg;
+      transition: rotate 0.3s ease;
       display: flex;
       align-content: flex-start;
       overflow: visible !important;
     }
 
-    /* Flip the chevron when its toggle is expanded — keyed off the same
-   aria-expanded attribute that opens the panel below. */
-    .accordion_toggle_button[aria-expanded="true"] .accordion_toggle_icon {
-      transform: rotate(-180deg);
+    .accordion_item[open] > .accordion_toggle .accordion_toggle_icon,
+    .accordion_item[open] > summary .accordion_toggle_icon {
+      rotate: -180deg;
     }
 
     .accordion_toggle_icon > svg {
@@ -362,39 +252,33 @@ const {
       display: block;
     }
 
-    /* Content panel — collapses/expands via grid-template-rows: 0fr ↔ 1fr.
-   `minmax(0, ...)` forces the track minimum to 0 (bare 0fr defaults to
-   min-content, which lets the top of the content peek through when
-   collapsed). overflow: hidden on the wrap is a belt-and-suspenders
-   clip for any bleed during the transition. The inner padding element
-   also gets overflow: hidden so it can shrink to 0 along with the row. */
-    .accordion_content_wrap {
-      width: 100%;
-      display: grid;
-      grid-template-rows: minmax(0, 0fr);
+    /* Open/close: block-size 0 ↔ auto on the details content box.
+       allow-discrete on content-visibility keeps the content painted for
+       the whole closing transition. Non-supporting engines ignore all of
+       this and toggle instantly. */
+    .accordion_item::details-content {
+      block-size: 0;
       overflow: hidden;
+      content-visibility: hidden;
+      transition:
+        block-size 0.3s ease,
+        content-visibility 0.3s ease allow-discrete;
     }
 
-    /* JS adds .is-ready to .accordion_wrap after the initial state is painted
-   so the openByDefault item doesn't animate in on page load. */
-    .accordion_wrap.is-ready .accordion_content_wrap {
-      transition: grid-template-rows 0.3s ease;
+    .accordion_item[open]::details-content {
+      block-size: auto;
+      content-visibility: visible;
     }
 
-    .accordion_item:has(.accordion_toggle_button[aria-expanded="true"])
-      .accordion_content_wrap {
-      grid-template-rows: minmax(0, 1fr);
+    .accordion_body {
+      padding-bottom: var(--space-4);
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .accordion_wrap.is-ready .accordion_content_wrap {
-        transition: none;
+      .accordion_item::details-content,
+      .accordion_toggle_icon {
+        transition-duration: 0.01s;
       }
-    }
-
-    .accordion_content_padding {
-      min-height: 0;
-      overflow: hidden;
     }
   }
 </style>

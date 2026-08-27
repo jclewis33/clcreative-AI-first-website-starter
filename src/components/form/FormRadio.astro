@@ -15,12 +15,34 @@ import type { HTMLAttributes } from "astro/types";
  *   <FormRadio label="Phone" name="contact-method" value="phone" />
  *   <FormRadio label="Text" name="contact-method" value="text" />
  * </div>
+ *
+ * <!-- Chips: the whole control fills when chosen -->
+ * <div class="u-flex u-flex-wrap u-gap-3">
+ *   <FormRadio label="Monthly" name="billing" value="monthly" variant="chip" checked />
+ *   <FormRadio label="Yearly" name="billing" value="yearly" variant="chip" />
+ * </div>
  * ```
  */
+
+type RadioVariant =
+  /** A circle beside the text (default) */
+  | "default"
+  /** The whole control reads as one piece and fills when chosen */
+  | "chip";
 
 interface Props extends HTMLAttributes<"input"> {
   /** Label text displayed next to the radio button. */
   label: string;
+
+  /**
+   * How the control is drawn.
+   * - `default` — a circle beside the text
+   * - `chip` — the whole control reads as one piece and fills when chosen
+   *
+   * @default 'default'
+   * @example variant="chip"
+   */
+  variant?: RadioVariant;
 
   /** HTML `name` attribute. All radios in a group share this name. */
   name: string;
@@ -56,6 +78,7 @@ interface Props extends HTMLAttributes<"input"> {
 const {
   label,
   name,
+  variant = "default",
   value,
   checked = false,
   required = false,
@@ -68,7 +91,13 @@ const {
 const fieldId = id || `field-${name}-${value}`;
 ---
 
-<div class:list={["form_ui_item", className]}>
+<div
+  class:list={[
+    "form_ui_item",
+    variant !== "default" && `is-${variant}`,
+    className,
+  ]}
+>
   <label class="form_ui_label" for={fieldId}>
     <input
       class="form_ui_input u-sr-only"

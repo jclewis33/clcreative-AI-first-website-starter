@@ -170,14 +170,11 @@ const invertCards =
 
 const testimonials = limit ? rawTestimonials.slice(0, limit) : rawTestimonials;
 
-/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
-   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
-   swallows the hoisted `<script>` of every component inside it — page-wide,
-   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
-   left BOTH sliders on the page uninitialized, the unrelated one included.
-   `.has()` only reports whether a slot was passed, which is weaker (a slot
-   holding an empty `{items.map(…)}` still counts as present), and that is the
-   trade we want: a rare empty wrapper beats silently dead client JS. */
+/* NOTE: `Astro.slots.has()` is a cheap "was it passed" check, which is all
+   this needs. When emptiness must gate markup, capture the slot ONCE with
+   `slotContent()` (src/lib/slots.ts) and emit the string with set:html —
+   never render `<slot />` after calling `Astro.slots.render()`, which drops
+   the hoisted script of every component inside the slot. */
 const hasHeadingSlot = Astro.slots.has("heading");
 const showHeading = Astro.slots.has("heading") || heading;
 ---
@@ -219,9 +216,7 @@ const showHeading = Astro.slots.has("heading") || heading;
   >
     {
       testimonials.map((testimonial) => (
-        <div class="swiper-slide">
-          <TestimonialCard {...testimonial} theme={invertCards} />
-        </div>
+        <TestimonialCard {...testimonial} theme={invertCards} />
       ))
     }
   </Slider>

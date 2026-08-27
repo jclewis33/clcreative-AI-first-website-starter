@@ -218,62 +218,51 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
                       role="listitem"
                       class="footer_group_item footer_locations_item"
                     >
+                      {/* Self-contained disclosure — its own footer_locations_*
+                          classes and CSS below; deliberately NOT the Accordion
+                          component's class family, so the two can evolve
+                          independently. */}
                       <div class="footer_locations_wrap">
-                        <div class="accordion_list" role="list">
-                          <div
-                            class="accordion_item footer_locations_accordion_item"
-                            role="listitem"
+                        <button
+                          class="footer_locations_button"
+                          aria-expanded="false"
+                          aria-controls="footer-locations-served"
+                        >
+                          <span class="footer_link_text u-text-style-small">
+                            Locations Served
+                          </span>
+                          <span
+                            class="footer_locations_icon"
+                            aria-hidden="true"
                           >
-                            <div class="accordion_component">
-                              <button
-                                class="accordion_toggle_button footer_locations_button"
-                                aria-expanded="false"
-                                aria-controls="footer-locations-served"
-                              >
-                                <span class="footer_link_text u-text-style-small">
-                                  Locations Served
-                                </span>
-                                <span
-                                  class="accordion_toggle_icon footer_locations_icon"
-                                  aria-hidden="true"
-                                >
-                                  <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                  >
-                                    <polyline points="6 9 12 15 18 9" />
-                                  </svg>
-                                </span>
-                              </button>
-                              <div
-                                class="accordion_content_wrap"
-                                id="footer-locations-served"
-                                role="region"
-                              >
-                                <div class="accordion_content_padding footer_locations_panel">
-                                  <div
-                                    role="list"
-                                    class="footer_locations_list"
-                                  >
-                                    {group.locations.map((path) => (
-                                      <div
-                                        role="listitem"
-                                        class="footer_group_item"
-                                      >
-                                        <a href={path} class="footer_link_wrap">
-                                          <div class="footer_link_text u-text-style-small">
-                                            {footerLabel(path)}
-                                          </div>
-                                        </a>
-                                      </div>
-                                    ))}
-                                  </div>
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="1.5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                          </span>
+                        </button>
+                        <div
+                          class="footer_locations_content"
+                          id="footer-locations-served"
+                          role="region"
+                        >
+                          <div class="footer_locations_panel">
+                            <div role="list" class="footer_locations_list">
+                              {group.locations.map((path) => (
+                                <div role="listitem" class="footer_group_item">
+                                  <a href={path} class="footer_link_wrap">
+                                    <div class="footer_link_text u-text-style-small">
+                                      {footerLabel(path)}
+                                    </div>
+                                  </a>
                                 </div>
-                              </div>
+                              ))}
                             </div>
                           </div>
                         </div>
@@ -349,15 +338,14 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
     });
   });
 
-  // Footer "Locations Served" dropdown — drives the same .accordion_wrap
-  // CSS that powers global accordions, but lives inline so it works on
-  // every page (the Accordion.astro script only bundles into pages that
-  // import it).
+  // Footer "Locations Served" dropdown — fully self-contained (its own
+  // footer_locations_* classes + CSS below), so it works on every page
+  // regardless of what the Accordion component does or bundles.
   document
     .querySelectorAll<HTMLElement>(".footer_locations_wrap")
     .forEach((wrap) => {
       const button = wrap.querySelector<HTMLButtonElement>(
-        ".accordion_toggle_button",
+        ".footer_locations_button",
       );
       if (!button) return;
       button.addEventListener("click", () => {
@@ -602,23 +590,14 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
       padding-top: 0;
     }
 
-    .footer_locations_wrap .accordion_list {
-      margin-top: 0;
-    }
-
-    .footer_locations_accordion_item {
-      border-bottom: none;
-    }
-
-    /* Enable the accordion content-wrap transition for the footer dropdown.
-   The .accordion_wrap version of this rule lives in accordion.css but we
-   intentionally don't carry that class on the footer wrap (it would make
-   the global Accordion JS double-bind a click handler on top of ours). */
-    .footer_locations_wrap.is-ready .accordion_content_wrap {
-      transition: grid-template-rows 0.3s ease;
-    }
-
     .footer_locations_button {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
       padding-top: var(--space-1);
       padding-bottom: var(--space-1);
       gap: var(--space-2);
@@ -642,10 +621,52 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
 
     .footer_locations_icon {
       width: 1rem;
+      aspect-ratio: 1;
+      flex-shrink: 0;
+      rotate: 0deg;
+      transition: rotate 0.3s ease;
+    }
+
+    .footer_locations_icon > svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .footer_locations_button[aria-expanded="true"] .footer_locations_icon {
+      rotate: -180deg;
+    }
+
+    /* Collapse/expand: grid-template-rows 0fr ↔ 1fr, keyed off the button's
+       aria-expanded. The transition only turns on after first paint
+       (.is-ready) so a pre-opened panel doesn't animate in on load. */
+    .footer_locations_content {
+      display: grid;
+      grid-template-rows: minmax(0, 0fr);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .footer_locations_wrap.is-ready .footer_locations_content {
+      transition: grid-template-rows 0.3s ease;
+    }
+
+    .footer_locations_wrap:has(.footer_locations_button[aria-expanded="true"])
+      .footer_locations_content {
+      grid-template-rows: minmax(0, 1fr);
     }
 
     .footer_locations_panel {
+      min-height: 0;
+      overflow: hidden;
       padding-left: var(--space-3);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .footer_locations_wrap.is-ready .footer_locations_content,
+      .footer_locations_icon {
+        transition: none;
+      }
     }
 
     .footer_locations_list {

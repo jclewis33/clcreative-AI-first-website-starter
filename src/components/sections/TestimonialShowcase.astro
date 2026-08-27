@@ -219,10 +219,15 @@ const total = testimonials.length;
 </Section>
 
 <script>
-  // Swiper imported directly (core + only the modules this config uses) so
-  // the chunk ships only on pages that render this section; Vite dedupes it
-  // against Slider's copy. A11y is deliberate — it is on by default once
-  // installed. CSS stays layered in styles/vendor.css.
+  // Deliberately NOT built on <Slider>: the counter lives above the swiper
+  // and the arrows below-right, both OUTSIDE the slider box, and the counter
+  // needs loop-mode realIndex — reproducing that through Slider's controls
+  // slot would mean teaching Slider external nav targets and a change event,
+  // more API than this small init costs. Swiper is imported directly (core +
+  // only the modules this config uses) so the chunk ships only on pages that
+  // render this section; Vite dedupes it against Slider's copy. A11y is
+  // deliberate — it is on by default once installed. CSS stays layered in
+  // styles/vendor.css.
   import Swiper from "swiper";
   import { Navigation, A11y } from "swiper/modules";
 
