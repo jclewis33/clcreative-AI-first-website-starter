@@ -75,16 +75,23 @@ import type { HTMLAttributes } from "astro/types";
  * ```
  *
  * @example Centered card with background image (CTA pattern)
+ * The content wrapper is required: the scrim is dark whatever section the
+ * card lands in, so the text needs the ABSOLUTE u-theme-dark rather than a
+ * relative data-theme-invert. u-display-contents keeps that wrapper out of
+ * the box tree, or it becomes the card's single grid child.
  * ```astro
  * <Layout variant="card">
+ *   <div class="u-display-contents u-theme-dark">
  *     <Heading tag="h2" variant="display-sm" accent>Ready to <strong>start</strong>?</Heading>
  *     <Text size="large">Book a free strategy call.</Text>
  *     <ButtonWrapper>
  *       <Button href="/book-a-call" ariaLabel="Book call">Book a Call</Button>
  *     </ButtonWrapper>
+ *   </div>
  *   <Fragment slot="column2">
  *     <Visual src={bgImage} alt="" variant="background" />
  *     <Overlay strength={75} />
+ *   </Fragment>
  * </Layout>
  * ```
  *
@@ -539,14 +546,11 @@ const effectiveAlign =
    measure to centre. */
 const needsContentWrapper = effectiveAlign !== "inherit" || Boolean(maxWidth);
 
-/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
-   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
-   swallows the hoisted `<script>` of every component inside it — page-wide,
-   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
-   left BOTH sliders on the page uninitialized, the unrelated one included.
-   `.has()` only reports whether a slot was passed, which is weaker (a slot
-   holding an empty `{items.map(…)}` still counts as present), and that is the
-   trade we want: a rare empty wrapper beats silently dead client JS. */
+/* NOTE: `Astro.slots.has()` is a cheap "was it passed" check, which is all
+   this needs. When emptiness must gate markup, capture the slot ONCE with
+   `slotContent()` (src/lib/slots.ts) and emit the string with set:html —
+   never render `<slot />` after calling `Astro.slots.render()`, which drops
+   the hoisted script of every component inside the slot. */
 const hasColumn2Slot = Astro.slots.has("column2");
 
 const isBreakout = [

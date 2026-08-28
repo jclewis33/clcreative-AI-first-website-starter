@@ -1,0 +1,595 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { slotContent } from "@/lib/slots";
+
+/* ── Props contract ──────────────────────────────────────────────────────────
+   Keep the JSDoc below free of STRAY angle brackets. Write comparisons in
+   words ("count is greater than 0"), never with the literal character — a
+   stray one silently detaches this file's Props type at the call site.
+   `npm run check:hover` guards the tooltips.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+type CarouselVariant =
+  /** Slides run off both edges of the screen (default) */
+  | "bleed"
+  /** Flush at the start edge, slides run off the end */
+  | "crop-start"
+  /** Slides stay within the container on both sides */
+  | "contained";
+
+export interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **Carousel props:**
+   * - `variant` — bleed (default), crop-start, contained
+   * - `slidesXs` — slides in view below 35rem (default: `1.1`)
+   * - `slidesSm` — slides in view from 35rem (default: `1.2`)
+   * - `slidesMd` — slides in view from 50rem (default: `2`)
+   * - `slidesLg` — slides in view from 64rem (default: `3`)
+   * - `label` — accessible name for the slide group (default: `'Carousel'`)
+   * - `render` — false skips the component entirely
+   * - `class` — extra classes on `.carousel_wrap`
+   * - Also accepts any HTML attribute — forwarded to the wrapper
+   *
+   * **Slots:** default — the slides. Put components straight in; each direct
+   * child becomes one slide (no wrapper divs).
+   *
+   * **Carousel vs Slider:** Carousel is native CSS scroll-snap with a small
+   * script for drag, dots and arrows — zero dependencies, the default for
+   * simple card rows. Reach for `Slider` (Swiper) when you need loop,
+   * autoplay, mousewheel or free mode.
+   */
+  docs?: string;
+
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * A carousel whose slot renders nothing is skipped automatically; use
+   * `render` to express the intent up front (e.g. `render` set to whether
+   * the list has any items).
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
+   * What the slides hold, for anyone who cannot see them — becomes the
+   * `aria-label` of the scrollable slide group.
+   *
+   * @default 'Carousel'
+   * @example label="Client testimonials"
+   */
+  label?: string;
+
+  /**
+   * How far the slides run past the container.
+   * - `bleed` — off both edges of the screen (default)
+   * - `crop-start` — flush at the start, off the end
+   * - `contained` — within the container on both sides
+   *
+   * @default 'bleed'
+   * @example variant="contained"
+   */
+  variant?: CarouselVariant;
+
+  /**
+   * Slides in view below 35rem. Fractional values leave a peek of the next
+   * slide. Must be greater than 0.
+   *
+   * @default 1.1
+   * @example slidesXs={1}
+   */
+  slidesXs?: number;
+
+  /**
+   * Slides in view from 35rem up. Fractional values leave a peek of the next
+   * slide. Must be greater than 0.
+   *
+   * @default 1.2
+   * @example slidesSm={1.5}
+   */
+  slidesSm?: number;
+
+  /**
+   * Slides in view from 50rem up. Must be greater than 0.
+   *
+   * @default 2
+   * @example slidesMd={3}
+   */
+  slidesMd?: number;
+
+  /**
+   * Slides in view from 64rem up. Must be greater than 0.
+   *
+   * @default 3
+   * @example slidesLg={4}
+   */
+  slidesLg?: number;
+}
+
+const {
+  docs,
+  render = true,
+  label = "Carousel",
+  variant = "bleed",
+  slidesXs = 1.1,
+  slidesSm = 1.2,
+  slidesMd = 2,
+  slidesLg = 3,
+  class: className,
+  style: userStyle,
+  ...rest
+} = Astro.props;
+
+const counts = {
+  slidesXs,
+  slidesSm,
+  slidesMd,
+  slidesLg,
+};
+
+const valid = (count: number) => Number.isFinite(count) && count > 0;
+const invalid = Object.entries(counts).filter(([, count]) => !valid(count));
+
+if (import.meta.env.DEV && invalid.length) {
+  console.warn(
+    `\n[Carousel] Ignoring ${invalid.map(([name]) => name).join(", ")}: ` +
+      "slides in view must be a number greater than 0.\n",
+  );
+}
+
+/* Only values that differ from the CSS defaults are emitted, so default
+   markup stays clean. Each tier defaults independently (1.1 / 1.2 / 2 / 3),
+   mirroring Slider's prop semantics. */
+const defaults = { slidesXs: 1.1, slidesSm: 1.2, slidesMd: 2, slidesLg: 3 };
+const tierVar = {
+  slidesXs: "--_visible-xs",
+  slidesSm: "--_visible-sm",
+  slidesMd: "--_visible-md",
+  slidesLg: "--_visible-lg",
+} as const;
+const visible = (Object.keys(counts) as Array<keyof typeof counts>)
+  .filter((key) => valid(counts[key]) && counts[key] !== defaults[key])
+  .map((key) => `${tierVar[key]}: ${counts[key]}`)
+  .join("; ");
+
+const mergedStyle =
+  [visible, typeof userStyle === "string" ? userStyle : undefined]
+    .filter(Boolean)
+    .join("; ") || undefined;
+
+/* Capture the slot ONCE and emit the string with set:html — render-once rule,
+   see src/lib/slots.ts. An empty slot skips the whole component. */
+const slides = await slotContent(Astro.slots);
+---
+
+{
+  render && slides && (
+    <div
+      class:list={[
+        "carousel_wrap",
+        variant !== "bleed" && `is-${variant}`,
+        className,
+      ]}
+      style={mergedStyle}
+      {...rest}
+    >
+      <div class="carousel_list" role="group" aria-label={label} tabindex="0">
+        <Fragment set:html={slides} />
+      </div>
+
+      <div class="carousel_controls">
+        <div class="carousel_markers" />
+        <div class="carousel_steps">
+          <button
+            class="carousel_step u-button-reset"
+            data-step="-1"
+            aria-label="Previous slide"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <button
+            class="carousel_step u-button-reset"
+            data-step="1"
+            aria-label="Next slide"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+<script>
+  /* Native scroll-snap carousel — no library. The list is a real horizontal
+     scroller (touch, trackpad and keyboard all work with zero JS); this
+     script adds mouse drag, dot markers, arrow steps and their state sync. */
+  const THRESHOLD = 4;
+
+  function initCarousels() {
+    for (const carousel of document.querySelectorAll<HTMLElement>(
+      ".carousel_wrap",
+    )) {
+      if (carousel.dataset.carouselInit) continue;
+      carousel.dataset.carouselInit = "true";
+
+      const list = carousel.querySelector<HTMLElement>(".carousel_list");
+      const markers = carousel.querySelector<HTMLElement>(".carousel_markers");
+      const controls =
+        carousel.querySelector<HTMLElement>(".carousel_controls");
+      const steps = [
+        ...carousel.querySelectorAll<HTMLButtonElement>("[data-step]"),
+      ];
+      if (!list) continue;
+
+      const slides = [...list.children] as HTMLElement[];
+      if (slides.length === 0) continue;
+
+      slides.forEach((slide, i) => {
+        slide.setAttribute("role", "group");
+        slide.setAttribute("aria-label", `${i + 1} of ${slides.length}`);
+      });
+
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+      const behavior = () => (reduced.matches ? "auto" : "smooth");
+
+      /* Measure the real distance between slide 1 and slide 2 rather than
+         assuming width + gap. */
+      const stride = () => {
+        const first = slides[0].getBoundingClientRect();
+        if (slides.length < 2) return first.width;
+        return slides[1].getBoundingClientRect().left - first.left;
+      };
+
+      const view = () => {
+        const box = getComputedStyle(list);
+        return (
+          list.clientWidth -
+          parseFloat(box.paddingInlineStart) -
+          parseFloat(box.paddingInlineEnd)
+        );
+      };
+
+      const pages = () => {
+        const step = stride();
+        if (step <= 0) return 1;
+        return Math.max(1, slides.length - Math.round(view() / step) + 1);
+      };
+
+      const current = () => {
+        const step = stride();
+        return step > 0 ? Math.round(list.scrollLeft / step) : 0;
+      };
+
+      let drawn = 0;
+
+      const draw = (total: number) => {
+        if (!markers) return;
+        drawn = total;
+        markers.replaceChildren(
+          ...Array.from({ length: total }, (_, i) => {
+            const marker = document.createElement("button");
+            marker.type = "button";
+            marker.className = "carousel_marker";
+            marker.setAttribute("aria-label", `Go to slide ${i + 1}`);
+            marker.addEventListener("click", () =>
+              list.scrollTo({ left: i * stride(), behavior: behavior() }),
+            );
+            return marker;
+          }),
+        );
+      };
+
+      const sync = () => {
+        const total = pages();
+        if (total !== drawn) draw(total);
+
+        const end = list.scrollWidth - list.clientWidth;
+        const atStart = list.scrollLeft <= 1;
+        const atEnd = list.scrollLeft >= end - 1;
+
+        for (const step of steps) {
+          step.disabled = Number(step.dataset.step) < 0 ? atStart : atEnd;
+        }
+
+        const index = current();
+        markers?.querySelectorAll(".carousel_marker").forEach((marker, i) => {
+          marker.classList.toggle("is-active", i === index);
+          if (i === index) marker.setAttribute("aria-current", "true");
+          else marker.removeAttribute("aria-current");
+        });
+
+        controls?.classList.toggle("is-empty", end <= 1);
+      };
+
+      for (const step of steps) {
+        step.addEventListener("click", () =>
+          list.scrollBy({
+            left: Number(step.dataset.step) * stride(),
+            behavior: behavior(),
+          }),
+        );
+      }
+
+      /* Mouse drag. Touch scrolls natively; this covers desktop pointers.
+         A 4px threshold separates a drag from a click, and a genuine drag
+         suppresses the click so a card link never fires on release. */
+      let origin = 0;
+      let from = 0;
+      let pressed = false;
+      let dragged = false;
+
+      const restore = () => {
+        if (!pressed) list.classList.remove("is-dragging");
+      };
+
+      list.addEventListener("pointerdown", (event) => {
+        if (event.pointerType !== "mouse" || event.button !== 0) return;
+        if (list.scrollWidth <= list.clientWidth) return;
+        pressed = true;
+        dragged = false;
+        origin = event.clientX;
+        from = list.scrollLeft;
+      });
+
+      list.addEventListener("pointermove", (event) => {
+        if (!pressed) return;
+        const shift = event.clientX - origin;
+        if (!dragged) {
+          if (Math.abs(shift) < THRESHOLD) return;
+          dragged = true;
+          list.setPointerCapture(event.pointerId);
+          list.classList.add("is-dragging");
+        }
+        list.scrollLeft = from - shift;
+      });
+
+      const release = () => {
+        if (!pressed) return;
+        pressed = false;
+        const step = stride();
+        if (dragged && step > 0) {
+          list.scrollTo({
+            left: Math.round(list.scrollLeft / step) * step,
+            behavior: behavior(),
+          });
+        }
+        list.addEventListener("scrollend", restore, { once: true });
+        setTimeout(restore, 400);
+      };
+
+      list.addEventListener("pointerup", release);
+      list.addEventListener("pointercancel", release);
+      list.addEventListener("dragstart", (event) => event.preventDefault());
+
+      list.addEventListener(
+        "click",
+        (event) => {
+          if (!dragged) return;
+          event.preventDefault();
+          event.stopPropagation();
+        },
+        true,
+      );
+
+      let frame = 0;
+      list.addEventListener(
+        "scroll",
+        () => {
+          cancelAnimationFrame(frame);
+          frame = requestAnimationFrame(sync);
+        },
+        { passive: true },
+      );
+
+      carousel.classList.add("is-ready");
+
+      const resize = new ResizeObserver(sync);
+      resize.observe(list);
+
+      addEventListener("load", sync);
+      sync();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCarousels);
+  } else {
+    initCarousels();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    /* ==========================================================================
+   CAROUSEL COMPONENT
+   ==========================================================================
+   Native CSS scroll-snap carousel — zero dependencies. Slides are the direct
+   children of .carousel_list; their width comes from --_visible (slides in
+   view per breakpoint tier, matching Slider's 35/50/64rem tiers).
+
+   Full bleed: --_edge measures the distance from the container edge to the
+   viewport edge — the same numbers .u-container is built from (--site-margin
+   and --max-width-main) — so negative margins let slides run under it while
+   scroll-padding keeps snap positions aligned with the container.
+   ========================================================================== */
+
+    .carousel_wrap {
+      --_gap-size: var(--site-gutter);
+      --_edge: max(var(--site-margin), (100vw - var(--max-width-main)) / 2);
+      --_visible: var(--_visible-xs, 1.1);
+      display: grid;
+      gap: var(--space-6);
+      width: 100%;
+    }
+
+    @media (min-width: 35rem) {
+      .carousel_wrap {
+        --_visible: var(--_visible-sm, 1.2);
+      }
+    }
+    @media (min-width: 50rem) {
+      .carousel_wrap {
+        --_visible: var(--_visible-md, 2);
+      }
+    }
+    @media (min-width: 64rem) {
+      .carousel_wrap {
+        --_visible: var(--_visible-lg, 3);
+      }
+    }
+
+    .carousel_list {
+      display: flex;
+      gap: var(--_gap-size);
+      min-width: 0;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      cursor: grab;
+      margin-inline: calc(-1 * var(--_edge));
+      padding-inline: var(--_edge);
+      scroll-padding-inline: var(--_edge);
+    }
+
+    .carousel_list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .carousel_list:active {
+      cursor: grabbing;
+    }
+
+    /* Dragging: snap released so the pointer leads; restored on release. */
+    .carousel_list.is-dragging {
+      scroll-snap-type: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* Before the script runs, or when nothing overflows, the list is not a
+       drag surface. */
+    .carousel_wrap:not(.is-ready) .carousel_list,
+    .carousel_wrap:has(.carousel_controls.is-empty) .carousel_list {
+      cursor: auto;
+    }
+
+    .carousel_list > * {
+      flex: 0 0
+        calc(
+          (100% - (var(--_visible) - 1) * var(--_gap-size)) / var(--_visible)
+        );
+      min-width: 0;
+      scroll-snap-align: start;
+    }
+
+    .carousel_wrap.is-crop-start .carousel_list {
+      margin-inline-start: 0;
+      padding-inline-start: 0;
+      scroll-padding-inline-start: 0;
+    }
+
+    .carousel_wrap.is-contained .carousel_list {
+      margin-inline: 0;
+      padding-inline: 0;
+      scroll-padding-inline: 0;
+    }
+
+    .carousel_controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+    }
+
+    /* Controls appear once the script is ready, and only when there is
+       something to scroll. */
+    .carousel_wrap:not(.is-ready) .carousel_controls,
+    .carousel_controls.is-empty {
+      display: none;
+    }
+
+    .carousel_markers {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .carousel_marker {
+      width: 0.75rem;
+      aspect-ratio: 1 / 1;
+      padding: 0;
+      border: var(--border-width-main) solid var(--text);
+      border-radius: var(--radius-full);
+      background: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .carousel_marker.is-active {
+      background-color: var(--text);
+    }
+
+    @media (hover: hover) {
+      .carousel_marker:hover {
+        background-color: var(--text);
+      }
+    }
+
+    .carousel_steps {
+      display: flex;
+      gap: var(--space-2);
+    }
+
+    .carousel_step {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      border-radius: var(--radius-full);
+      color: var(--text);
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+
+    .carousel_step:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    @media (hover: hover) {
+      .carousel_step:not(:disabled):hover {
+        opacity: 0.6;
+      }
+    }
+
+    .carousel_step svg {
+      flex-shrink: 0;
+      stroke: currentColor;
+      stroke-width: var(--border-width-main);
+    }
+  }
+</style>

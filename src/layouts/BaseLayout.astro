@@ -58,6 +58,7 @@ import"@/styles/global.css";
 import Head from"@/components/global/Head.astro";
 import Navbar from"@/components/global/Navbar.astro";
 import Footer from"@/components/global/Footer.astro";
+import SkipLink from"@/components/ui/SkipLink.astro";
 import SanityVisualEditing from"@/components/SanityVisualEditing";
 import DisableDraftMode from"@/components/DisableDraftMode";
 import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
@@ -179,9 +180,12 @@ const bannerHref = banner?.href;
     {SITE.integrations.gtmId && (
       <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${SITE.integrations.gtmId}`} height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     )}
+    <!--First tab stop on every page: skip link for keyboard users -->
+    <SkipLink />
     <!--Navbar appears at the top of every page -->
     <Navbar theme="dark" bannerText={bannerText} bannerHref={bannerHref} />
-    <main id="main-content">
+    <!--tabindex="-1" lets the skip link move focus here in every browser -->
+    <main id="main-content" tabindex="-1">
       <!--Rest of page content -->
       <slot />
     </main>

@@ -1,20 +1,24 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 /**
- * FormTextarea — label + textarea for multiline text input.
+ * FormTextarea — label + auto-growing textarea for multiline text input.
  *
- * The field border transitions to --text on :focus-within.
- * The existing `.form_field.is-textarea` class handles height and resize.
+ * The field grows with its content between `minLines` and `maxLines`
+ * (CSS `field-sizing: content` where supported; elsewhere it starts at
+ * `minLines` tall and can be resized by hand). The field border transitions
+ * to --text on :focus-within.
  *
  * @example
  * ```astro
  * <!-- Default label above the textarea -->
  * <FormTextarea label="Message" name="message" required
- *   placeholder="Tell us about your project..." rows={6} />
+ *   placeholder="Tell us about your project..." />
+ *
+ * <!-- Taller start, capped growth -->
+ * <FormTextarea label="Brief" name="brief" minLines={5} maxLines={16} />
  *
  * <!-- Floating label (sits inside field, floats up on focus/value) -->
- * <FormTextarea label="Message" name="message"
- *   labelVariant="floating" rows={6} />
+ * <FormTextarea label="Message" name="message" labelVariant="floating" />
  * ```
  */
 
@@ -54,7 +58,21 @@ interface Props extends HTMLAttributes<"textarea"> {
   value?: string;
 
   /**
-   * Number of visible text rows.
+   * How short the field may be, in lines of text. The field starts this
+   * tall and grows with content.
+   * @default 3
+   */
+  minLines?: number;
+
+  /**
+   * How tall the field grows before it scrolls, in lines of text.
+   * @default 12
+   */
+  maxLines?: number;
+
+  /**
+   * Number of visible text rows. Legacy alias for `minLines` — prefer
+   * `minLines`, which also drives the auto-grow floor.
    * @default 5
    */
   rows?: number;
@@ -80,7 +98,9 @@ const {
   disabled = false,
   labelVariant = "default",
   value,
-  rows = 5,
+  minLines,
+  maxLines = 12,
+  rows,
   helperText,
   errorText,
   id,
@@ -92,6 +112,10 @@ const fieldId = id || `field-${name}`;
 const describedById = helperText || errorText ? `${fieldId}-hint` : undefined;
 const isFloating = labelVariant === "floating";
 const resolvedPlaceholder = isFloating ? placeholder || " " : placeholder;
+/* minLines wins; the legacy rows prop feeds it so old call sites keep their
+   height as the growth floor. */
+const resolvedMinLines = minLines ?? rows ?? 3;
+const linesStyle = `--_min-lines: ${resolvedMinLines}; --_max-lines: ${maxLines};`;
 ---
 
 <div class:list={["form_label_wrap", isFloating && "is-floating", className]}>
@@ -116,7 +140,8 @@ const resolvedPlaceholder = isFloating ? placeholder || " " : placeholder;
     placeholder={resolvedPlaceholder}
     required={required}
     disabled={disabled}
-    rows={rows}
+    rows={resolvedMinLines}
+    style={linesStyle}
     aria-describedby={describedById}
     aria-invalid={errorText ? "true" : undefined}
     {...rest}>{value}</textarea

@@ -129,12 +129,34 @@
   display: flex;
 }
 
+/* Success / error notes are hidden until the submit script flips the
+   wrapper's data-state (Form.astro). sent → fields swap out for the success
+   note; failed → error note appears beneath the fields. */
 .form_success_wrap {
   border: var(--border-width-main) solid var(--border);
   border-radius: var(--radius-main);
   background-color: transparent;
   width: 100%;
   padding: 1.2rem;
+  display: none;
+}
+
+.form_wrap[data-state="sent"] .form_element {
+  display: none;
+}
+
+.form_wrap[data-state="sent"] .form_success_wrap {
+  display: block;
+}
+
+.form_wrap[data-state="failed"] .form_error_wrap {
+  display: block;
+}
+
+/* While sending, dim the fields so the disabled submit reads as deliberate. */
+.form_wrap[data-state="sending"] .form_element {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .form_element {
@@ -151,6 +173,7 @@
   width: 100%;
   margin-top: 0;
   padding: 0.8rem 1.4rem;
+  display: none;
 }
 
 .form_field {
@@ -177,13 +200,21 @@
   color: color-mix(in srgb, var(--text) 60%, transparent);
 }
 
+/* Auto-grow: the field tracks its content between --_min-lines and
+   --_max-lines (set inline by FormTextarea). field-sizing is Chromium today;
+   elsewhere the rows attribute sets the start height and the min/max clamps
+   still hold, with manual vertical resize as the fallback. */
 .form_field.is-textarea {
   width: 100%;
   min-width: 100%;
   max-width: 100%;
   height: auto;
-  min-height: 5rem;
+  field-sizing: content;
+  min-height: calc(var(--_min-lines, 3) * 1lh + 1rem);
+  max-height: calc(var(--_max-lines, 12) * 1lh + 1rem);
+  resize: vertical;
   padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
   padding-left: 0.9rem;
   padding-right: 0.9rem;
 }
@@ -539,4 +570,82 @@ select.form_field {
 /* Hide native placeholder when floating label is active */
 .form_label_wrap.is-floating .form_field::placeholder {
   color: transparent;
+}
+
+/* ==========================================================================
+   CHOICE VARIANTS — toggle (checkbox only) and chip (checkbox + radio)
+   Applied as .form_ui_item.is-toggle / .is-chip by FormCheckbox / FormRadio.
+   ========================================================================== */
+
+/* ========= TOGGLE — a switch that slides ========= */
+
+.form_ui_item.is-toggle .form_ui_visual_wrap {
+  width: 2.5rem;
+  aspect-ratio: auto;
+  height: 1.375rem;
+  border-radius: var(--radius-full);
+  justify-content: flex-start;
+  padding: 0.125rem;
+}
+
+.form_ui_item.is-toggle .form_ui_visual_icon {
+  display: none;
+}
+
+/* The knob. Unchecked: outlined track, text-colored knob. Checked: filled
+   track, background-colored knob slid to the end. */
+.form_ui_item.is-toggle .form_ui_visual_wrap::after {
+  content: "";
+  width: 0.875rem;
+  aspect-ratio: 1;
+  border-radius: var(--radius-full);
+  background-color: var(--text);
+  transition:
+    translate 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.form_ui_item.is-toggle:has(:checked) .form_ui_visual_wrap::after {
+  translate: 1.125rem 0;
+  background-color: var(--background);
+}
+
+/* ========= CHIP — the whole control is one piece ========= */
+
+.form_ui_item.is-chip .form_ui_label {
+  padding: 0.625rem 1.25rem;
+  border: var(--border-width-main) solid var(--border);
+  border-radius: var(--radius-full);
+  background-color: transparent;
+}
+
+/* The box/circle disappears — the chip itself is the indicator. */
+.form_ui_item.is-chip .form_ui_visual_wrap {
+  display: none;
+}
+
+.form_ui_item.is-chip:has(:checked) .form_ui_label {
+  border-color: var(--text);
+  background-color: var(--text);
+}
+
+.form_ui_item.is-chip:has(:checked) .form_ui_text {
+  color: var(--background);
+}
+
+@media (hover: hover) {
+  .form_ui_item.is-chip:not(:has(:checked)):hover .form_ui_label {
+    border-color: var(--text);
+  }
+}
+
+/* Focus ring on the chip itself (the input is sr-only). */
+.form_ui_item.is-chip:has(.form_ui_input:focus-visible) .form_ui_label {
+  outline: var(--focus-width) solid var(--text);
+  outline-offset: var(--focus-offset-outer);
+}
+
+.form_ui_item.is-toggle:has(.form_ui_input:focus-visible) .form_ui_visual_wrap {
+  outline: var(--focus-width) solid var(--text);
+  outline-offset: var(--focus-offset-outer);
 }

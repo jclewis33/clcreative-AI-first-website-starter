@@ -328,15 +328,8 @@ const {
 const resolvedHref = href;
 
 /* Icon-only? Then the button has no visible text and needs an aria-label.
-
-   This asks whether a default slot EXISTS — it never renders one. Rendering a
-   slot from frontmatter forces its children to render before Astro has
-   finished setting up the render context, and if anything in there is an
-   <Image>, the image service is not ready yet and getImage() throws
-   "Cannot read properties of undefined (reading 'validateOptions')". That is a
-   real crash in `astro dev`, and it only shows on the FIRST page rendered
-   after the server starts — which makes it look intermittent. Never call
-   Astro.slots.render() in frontmatter. */
+   A presence check is enough here — a passed-but-empty label slot is the
+   caller's bug, not something worth a slot render to detect. */
 const isIconOnly = !Astro.slots.has("default");
 
 /* The accessible name. ariaLabel is emitted whenever it is passed:

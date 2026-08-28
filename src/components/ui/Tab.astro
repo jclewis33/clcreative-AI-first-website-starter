@@ -25,8 +25,9 @@
  *   - `buttons` — TabButton instances
  *   - default   — TabPanel instances
  *
- * Animation uses GSAP for smooth transitions between panels.
- * GSAP is imported directly in the script below.
+ * Panel transitions and the autoplay progress line are pure CSS
+ * (keyframes + animation-play-state) — no animation library. Autoplay
+ * pauses while hovered, focused, offscreen, or under reduced motion.
  */
 
 /**
@@ -45,11 +46,13 @@ type TabVariant = "top" | "side" | "slider" | "fade";
  *
  * **Props:**
  * - `variant` — layout and transition: top (horizontal, fade), side (vertical, fade), slider (horizontal, slide + autoplay), fade (alias for top) (default: `'top'`)
- * - `duration` — GSAP transition duration in seconds (default: `0.6`)
+ * - `duration` — panel transition duration in seconds (default: `0.6`)
  * - `autoplayDuration` — autoplay interval in seconds, slider variant only (default: `6`)
  * - `pauseOnHover` — pause autoplay on hover, slider variant only (default: `true`)
  * - `loopControls` — loop arrow navigation, slider variant only (default: `true`)
  * - `activeTab` — 1-based index of initially active tab (default: `1`)
+ * - `id` — id on the wrapper; also the query-param key for deep links
+ * - `deepLink` — mirror the active tab in the URL query string (default: `false`)
  * - `class` — extra classes on the wrapper
  *
  * **Slots:** `heading` (above button list), `buttons` (`<TabButton>` instances), default (`<TabPanel>` instances).
@@ -63,6 +66,8 @@ interface Props {
    * - `pauseOnHover` — pause autoplay on hover (default true)
    * - `loopControls` — loop arrow navigation (default true)
    * - `activeTab` — 1-based initially active tab (default 1)
+   * - `id` — wrapper id, doubles as the deep-link query key
+   * - `deepLink` — mirror the active tab in the URL (default false)
    * - `class` — extra classes
    *
    * **Slots:** `heading` (above buttons), `buttons` (`<TabButton>`), default (`<TabPanel>`)
@@ -86,7 +91,7 @@ interface Props {
   variant?: TabVariant;
 
   /**
-   * GSAP transition duration in seconds for panel switching.
+   * Panel transition duration in seconds (drives the CSS keyframes).
    * @default 0.6
    */
   duration?: number;
@@ -120,6 +125,25 @@ interface Props {
    */
   activeTab?: number;
 
+  /**
+   * `id` on the wrapper. With `deepLink`, it is also the query-param key —
+   * `?our-services=pricing` — so two tab sets on one page stay independent.
+   * @example id="our-services"
+   */
+  id?: string;
+
+  /**
+   * Mirror the active tab in the URL query string (`history.replaceState`,
+   * no scroll jump, no history entries). On load with a matching param, that
+   * tab activates, scrolls into view, and autoplay stays off — the visitor
+   * asked for that tab. Param key is `id`, falling back to `"tab"`; values
+   * are slugs of the tab labels.
+   *
+   * @default false
+   * @example deepLink
+   */
+  deepLink?: boolean;
+
   /** Extra utility classes on the `.tab_wrap` element. */
   class?: string;
 }
@@ -131,6 +155,8 @@ const {
   pauseOnHover = true,
   loopControls = true,
   activeTab = 1,
+  id,
+  deepLink = false,
   class: className,
 } = Astro.props;
 
@@ -147,13 +173,15 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
 
 <div
   class:list={["tab_wrap", className]}
+  id={id}
+  style={`--_duration: ${duration}s; --_autoplay: ${autoplayDuration}s;`}
   data-tab-variant={variant}
   data-tab-transition={transitionMode}
-  data-duration={String(duration)}
   data-autoplay-duration={isSlider ? String(autoplayDuration) : ""}
   data-pause-on-hover={String(pauseOnHover)}
   data-loop-controls={String(loopControls)}
   data-active-tab={String(activeTab)}
+  data-deep-link={deepLink ? "true" : undefined}
   data-tab-id={tabId}
 >
   <div class="tab_left">
@@ -269,27 +297,47 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
   </div>
 </div>
 
+<noscript>
+  <style>
+    /* Without JS: every panel shows stacked, controls hide. Content stays
+       reachable — tabs degrade to headed sections. */
+    .tab_panel_item[hidden] {
+      display: block !important;
+    }
+    .tab_control_wrap {
+      display: none !important;
+    }
+  </style>
+</noscript>
+
 <script>
   /**
-   * Tab Component JavaScript
+   * Tab Component JavaScript — no animation library.
    *
-   * Initializes all .tab_wrap instances on the page.
-   * Reads configuration from data attributes set by the Astro component.
-   * Uses GSAP for panel transitions (fade or slide).
-   * Handles keyboard navigation, autoplay, prev/next, and play/pause.
+   * Panel transitions are CSS keyframes selected by [data-tab-transition];
+   * the autoplay progress line is a CSS animation whose `animationend`
+   * advances the tab, and whose play-state is paused by "holds": hover,
+   * focus inside the tabs, scrolled offscreen, or prefers-reduced-motion.
+   * Holds pause (resume where it left off); the play/pause button stops.
    *
    * Data attributes on .tab_wrap:
    *   data-tab-variant        — "top" | "side" | "slider" | "fade"
    *   data-tab-transition     — "slide" | "fade"
-   *   data-duration           — transition duration in seconds
    *   data-autoplay-duration  — autoplay interval in seconds ("" = disabled)
    *   data-pause-on-hover     — "true" | "false"
    *   data-loop-controls      — "true" | "false"
    *   data-active-tab         — 1-based index of initially active tab
+   *   data-deep-link          — "true" mirrors the active tab in the URL
    *   data-tab-id             — unique prefix for ARIA id generation
+   * CSS custom properties (inline): --_duration, --_autoplay
    */
 
-  import { gsap } from "gsap";
+  const slugify = (text: string) =>
+    text
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
   function initTabs() {
     document.querySelectorAll<HTMLElement>(".tab_wrap").forEach((wrap) => {
@@ -299,13 +347,16 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
 
       // --- Configuration ---
       const variant = wrap.dataset.tabVariant ?? "top";
-      const transitionMode = wrap.dataset.tabTransition ?? "fade";
-      const duration = parseFloat(wrap.dataset.duration ?? "0.6");
       const autoplayDur = parseFloat(wrap.dataset.autoplayDuration || "0");
       const doPauseOnHover = wrap.dataset.pauseOnHover !== "false";
       const doLoop = wrap.dataset.loopControls !== "false";
       const initialActive = parseInt(wrap.dataset.activeTab ?? "1", 10);
+      const deepLink = wrap.dataset.deepLink === "true";
+      const paramKey = wrap.id || "tab";
       const tabId = wrap.dataset.tabId ?? "";
+      const durationMs =
+        parseFloat(getComputedStyle(wrap).getPropertyValue("--_duration")) *
+          1000 || 600;
 
       // --- Query elements ---
       const buttons = Array.from(
@@ -338,7 +389,7 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
       );
       let isAnimating = false;
       let isPlaying = autoplayDur > 0;
-      let progressTween: any = null;
+      let cleanupTimer = 0;
 
       // --- Wire up ARIA IDs ---
       buttons.forEach((btn, i) => {
@@ -349,6 +400,18 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         panels[i].id = panelId;
         panels[i].setAttribute("aria-labelledby", btnId);
       });
+
+      // --- Deep links: slugs derived from the visible tab labels ---
+      const slugs = buttons.map(
+        (btn, i) => slugify(btn.textContent ?? "") || `tab-${i + 1}`,
+      );
+
+      function writeParam(index: number) {
+        if (!deepLink) return;
+        const url = new URL(window.location.href);
+        url.searchParams.set(paramKey, slugs[index]);
+        history.replaceState(null, "", url);
+      }
 
       // --- Set active state (no animation, used on init) ---
       function setActiveImmediate(index: number) {
@@ -362,27 +425,14 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         panels.forEach((panel, i) => {
           const active = i === index;
           panel.classList.toggle("is-active", active);
+          panel.classList.remove("is-leaving");
           panel.hidden = !active;
-
-          if (gsap) {
-            gsap.set(panel, {
-              display: active ? "block" : "none",
-              opacity: active ? 1 : 0,
-              xPercent: 0,
-              position: active ? "relative" : "absolute",
-              top: active ? "auto" : 0,
-              left: active ? "auto" : 0,
-              width: "100%",
-            });
-          } else {
-            panel.style.display = active ? "block" : "none";
-          }
         });
 
         currentIndex = index;
       }
 
-      // --- Animate to a new tab ---
+      // --- Animate to a new tab (CSS keyframes do the motion) ---
       function goToTab(newIndex: number, focus = false) {
         if (newIndex === currentIndex || isAnimating) return;
         if (newIndex < 0 || newIndex >= buttons.length) return;
@@ -390,6 +440,7 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         isAnimating = true;
         const oldIndex = currentIndex;
         const direction = newIndex > oldIndex ? 1 : -1;
+        wrap.style.setProperty("--_dir", String(direction));
 
         // Update button states
         buttons.forEach((btn, i) => {
@@ -412,143 +463,70 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         const newPanel = panels[newIndex];
 
         currentIndex = newIndex;
+        writeParam(newIndex);
 
         if (focus) buttons[newIndex].focus();
 
-        if (!gsap) {
-          // Fallback: instant switch
-          oldPanel.classList.remove("is-active");
+        /* Old panel exits absolutely-positioned on top of the flow; the new
+           panel enters in flow. Both run their CSS animation; cleanup fires
+           on the old panel's animationend, with a timer as safety net. */
+        oldPanel.classList.remove("is-active");
+        oldPanel.classList.add("is-leaving");
+        newPanel.hidden = false;
+        newPanel.classList.add("is-active");
+
+        const finish = () => {
+          if (!oldPanel.classList.contains("is-leaving")) return;
+          oldPanel.classList.remove("is-leaving");
           oldPanel.hidden = true;
-          oldPanel.style.display = "none";
-          newPanel.classList.add("is-active");
-          newPanel.hidden = false;
-          newPanel.style.display = "block";
           isAnimating = false;
-          return;
-        }
+          // Panel height changed — nudge any scroll-linked animations
+          // without importing ScrollTrigger here (scroll-refresh.js).
+          document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"));
+          if (isPlaying) startProgress();
+        };
 
-        const tl = gsap.timeline({
-          onComplete: () => {
-            isAnimating = false;
-            // Panel height changed — nudge any scroll-linked animations
-            // without importing ScrollTrigger here (scroll-refresh.js).
-            document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"));
-          },
-          defaults: { duration: duration, ease: "power2.inOut" },
-        });
-
-        if (transitionMode === "slide") {
-          // --- Slide transition ---
-          // Show new panel and position it off-screen
-          tl.set(newPanel, {
-            display: "block",
-            position: "relative",
-            opacity: 1,
-            xPercent: 120 * direction,
-          });
-          newPanel.hidden = false;
-          newPanel.classList.add("is-active");
-
-          // Position old panel for exit
-          tl.set(oldPanel, {
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-          });
-
-          // Animate both panels simultaneously
-          tl.fromTo(oldPanel, { xPercent: 0 }, { xPercent: -120 * direction });
-          tl.fromTo(
-            newPanel,
-            { xPercent: 120 * direction },
-            { xPercent: 0 },
-            "<",
-          );
-
-          // Clean up old panel
-          tl.set(oldPanel, { display: "none" });
-          tl.add(() => {
-            oldPanel.classList.remove("is-active");
-            oldPanel.hidden = true;
-          });
-        } else {
-          // --- Fade transition ---
-          // Fade out old panel
-          tl.to(oldPanel, {
-            opacity: 0,
-            duration: duration * 0.5,
-            ease: "power1.inOut",
-          });
-          tl.set(oldPanel, { display: "none" });
-          tl.add(() => {
-            oldPanel.classList.remove("is-active");
-            oldPanel.hidden = true;
-          });
-
-          // Fade in new panel
-          newPanel.hidden = false;
-          newPanel.classList.add("is-active");
-          tl.set(newPanel, {
-            display: "block",
-            opacity: 0,
-            position: "relative",
-          });
-          tl.to(newPanel, {
-            opacity: 1,
-            duration: duration * 0.5,
-            ease: "power1.inOut",
-          });
-        }
+        oldPanel.addEventListener("animationend", finish, { once: true });
+        clearTimeout(cleanupTimer);
+        cleanupTimer = window.setTimeout(finish, durationMs + 100);
       }
 
-      // --- Autoplay progress (slider variant) ---
+      // --- Autoplay progress line (slider variant, pure CSS animation) ---
+      // .is-running starts the keyframe; removing + reflow + re-adding
+      // restarts it from zero. Holds pause it via animation-play-state.
       function startProgress() {
         stopProgress();
-        if (!isPlaying || autoplayDur <= 0 || !gsap) return;
-
-        // Reset all button progress lines to default
-        buttons.forEach((btn) => {
-          const line = btn.querySelector<HTMLElement>(".tab_button_line");
-          if (line) line.style.setProperty("--progress", "1");
-        });
-
-        // Animate active button's progress line from 0→1
-        const activeLine =
+        if (!isPlaying || autoplayDur <= 0) return;
+        const line =
           buttons[currentIndex]?.querySelector<HTMLElement>(".tab_button_line");
-        if (!activeLine) return;
-
-        activeLine.style.setProperty("--progress", "0");
-        progressTween = gsap.to(activeLine, {
-          "--progress": 1,
-          duration: autoplayDur,
-          ease: "none",
-          onComplete: () => {
-            const next = doLoop
-              ? (currentIndex + 1) % buttons.length
-              : Math.min(currentIndex + 1, buttons.length - 1);
-            if (next !== currentIndex) {
-              goToTab(next);
-              // Restart progress after transition completes
-              const checkReady = setInterval(() => {
-                if (!isAnimating) {
-                  clearInterval(checkReady);
-                  if (isPlaying) startProgress();
-                }
-              }, 50);
-            } else {
-              stopAutoplay();
-            }
-          },
-        });
+        if (!line) return;
+        void line.offsetWidth;
+        line.classList.add("is-running");
       }
 
       function stopProgress() {
-        if (progressTween) {
-          progressTween.kill();
-          progressTween = null;
-        }
+        buttons.forEach((btn) => {
+          btn
+            .querySelector<HTMLElement>(".tab_button_line")
+            ?.classList.remove("is-running");
+        });
       }
+
+      // The line's animationend IS the autoplay tick.
+      wrap.addEventListener("animationend", (e) => {
+        const target = e.target as HTMLElement;
+        if (!target.classList.contains("tab_button_line")) return;
+        if (!isPlaying) return;
+        const next = doLoop
+          ? (currentIndex + 1) % buttons.length
+          : Math.min(currentIndex + 1, buttons.length - 1);
+        if (next !== currentIndex) {
+          stopProgress();
+          goToTab(next);
+        } else {
+          stopAutoplay();
+        }
+      });
 
       function startAutoplay() {
         isPlaying = true;
@@ -568,27 +546,29 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
           toggleBtn.setAttribute("aria-label", "Start automatic tab rotation");
           toggleBtn.setAttribute("aria-pressed", "false");
         }
-        // Reset all progress lines to full width
-        buttons.forEach((btn) => {
-          const line = btn.querySelector<HTMLElement>(".tab_button_line");
-          if (line) line.style.setProperty("--progress", "1");
-        });
+      }
+
+      // --- Holds: pause (not stop) the progress line ---
+      // Hover, focus inside the tabs, offscreen, and reduced motion each
+      // hold the line; it resumes where it left off when the hold lifts.
+      const holds = {
+        hover: false,
+        focus: false,
+        offscreen: false,
+        motion: false,
+      };
+
+      function applyHolds() {
+        const held =
+          holds.hover || holds.focus || holds.offscreen || holds.motion;
+        wrap.classList.toggle("is-held", held);
       }
 
       // --- Event: Tab button click ---
       buttons.forEach((btn, i) => {
         btn.addEventListener("click", () => {
-          if (isPlaying) stopProgress();
+          stopProgress();
           goToTab(i);
-          // Restart progress for the new tab after transition
-          if (isPlaying) {
-            const checkReady = setInterval(() => {
-              if (!isAnimating) {
-                clearInterval(checkReady);
-                if (isPlaying) startProgress();
-              }
-            }, 50);
-          }
         });
       });
 
@@ -622,16 +602,8 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         }
 
         if (newIndex !== currentIndex) {
-          if (isPlaying) stopProgress();
+          stopProgress();
           goToTab(newIndex, true);
-          if (isPlaying) {
-            const checkReady = setInterval(() => {
-              if (!isAnimating) {
-                clearInterval(checkReady);
-                if (isPlaying) startProgress();
-              }
-            }, 50);
-          }
         }
       });
 
@@ -640,32 +612,16 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         const prev = doLoop
           ? (currentIndex - 1 + buttons.length) % buttons.length
           : Math.max(currentIndex - 1, 0);
-        if (isPlaying) stopProgress();
+        stopProgress();
         goToTab(prev);
-        if (isPlaying) {
-          const checkReady = setInterval(() => {
-            if (!isAnimating) {
-              clearInterval(checkReady);
-              if (isPlaying) startProgress();
-            }
-          }, 50);
-        }
       });
 
       nextBtn?.addEventListener("click", () => {
         const next = doLoop
           ? (currentIndex + 1) % buttons.length
           : Math.min(currentIndex + 1, buttons.length - 1);
-        if (isPlaying) stopProgress();
+        stopProgress();
         goToTab(next);
-        if (isPlaying) {
-          const checkReady = setInterval(() => {
-            if (!isAnimating) {
-              clearInterval(checkReady);
-              if (isPlaying) startProgress();
-            }
-          }, 50);
-        }
       });
 
       // --- Event: Play/Pause toggle ---
@@ -677,69 +633,73 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         }
       });
 
-      // --- Event: Pause on hover ---
-      // Uses GSAP .pause()/.resume() so the progress bar continues
-      // from where it left off instead of restarting from 0.
-      if (doPauseOnHover && autoplayDur > 0) {
-        let wasPausedByHover = false;
-
-        wrap.addEventListener("mouseenter", () => {
-          if (isPlaying && progressTween) {
-            progressTween.pause();
-            wasPausedByHover = true;
-          }
-        });
-
-        wrap.addEventListener("mouseleave", () => {
-          if (isPlaying && wasPausedByHover && progressTween) {
-            progressTween.resume();
-            wasPausedByHover = false;
-          }
-        });
-      }
-
-      // --- Event: Pause when out of view ---
+      // --- Holds wiring (autoplay only) ---
       if (autoplayDur > 0) {
-        let wasPlayingBeforeHidden = false;
+        if (doPauseOnHover) {
+          wrap.addEventListener("mouseenter", () => {
+            holds.hover = true;
+            applyHolds();
+          });
+          wrap.addEventListener("mouseleave", () => {
+            holds.hover = false;
+            applyHolds();
+          });
+        }
 
+        // Focus inside the tabs holds the rotation — content should not
+        // move under a keyboard user.
+        wrap.addEventListener("focusin", () => {
+          holds.focus = true;
+          applyHolds();
+        });
+        wrap.addEventListener("focusout", (e) => {
+          const to = (e as FocusEvent).relatedTarget as Node | null;
+          if (to && wrap.contains(to)) return;
+          holds.focus = false;
+          applyHolds();
+        });
+
+        // Offscreen holds the rotation.
         const observer = new IntersectionObserver(
           (entries) => {
-            const entry = entries[0];
-            if (!entry.isIntersecting && isPlaying) {
-              stopProgress();
-              wasPlayingBeforeHidden = true;
-            } else if (
-              entry.isIntersecting &&
-              isPlaying &&
-              wasPlayingBeforeHidden
-            ) {
-              startProgress();
-              wasPlayingBeforeHidden = false;
-            }
+            holds.offscreen = !entries[0].isIntersecting;
+            applyHolds();
           },
           { threshold: 0 },
         );
-
         observer.observe(wrap);
-      }
 
-      // --- Event: Respect prefers-reduced-motion ---
-      if (autoplayDur > 0) {
+        // Reduced motion holds it permanently while the preference is on.
         const motionQuery = window.matchMedia(
           "(prefers-reduced-motion: reduce)",
         );
-        function handleMotionPref(e: MediaQueryListEvent | MediaQueryList) {
-          if (e.matches && isPlaying) {
-            stopAutoplay();
-          }
+        const applyMotion = (e: MediaQueryListEvent | MediaQueryList) => {
+          holds.motion = e.matches;
+          applyHolds();
+        };
+        applyMotion(motionQuery);
+        motionQuery.addEventListener("change", applyMotion);
+      }
+
+      // --- Deep link arrival: activate the named tab, keep autoplay off ---
+      let arrivedByLink = false;
+      if (deepLink) {
+        const param = new URLSearchParams(window.location.search).get(paramKey);
+        const linked = param ? slugs.indexOf(param) : -1;
+        if (linked >= 0) {
+          currentIndex = linked;
+          arrivedByLink = true;
         }
-        handleMotionPref(motionQuery);
-        motionQuery.addEventListener("change", handleMotionPref);
       }
 
       // --- Initialize ---
       setActiveImmediate(currentIndex);
-      if (isPlaying && autoplayDur > 0) {
+      if (arrivedByLink) {
+        // The visitor asked for this tab: bring it on screen, don't rotate
+        // away from it.
+        wrap.scrollIntoView({ block: "nearest" });
+        if (autoplayDur > 0) stopAutoplay();
+      } else if (isPlaying && autoplayDur > 0) {
         startAutoplay();
       }
     });
@@ -762,7 +722,8 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
    ==========================================================================
    Tab interface with four variants: top (default), side, slider, fade.
    The active tab/panel is marked with .is-active (toggled by JS); panel
-   transitions use GSAP.
+   transitions are CSS keyframes selected by [data-tab-transition], and the
+   autoplay progress line is a CSS animation paused via .is-held.
 
    STRUCTURE
      .tab_wrap[data-tab-variant]
@@ -872,26 +833,46 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
     /* =====================================================
    TAB BUTTON LINE — underline / progress indicator
    Sits at the bottom of the button, overlapping the
-   border-bottom. Full width when active (no autoplay),
-   or animated 0→1 via --progress when autoplay is on.
+   border-bottom. Full width when active; while autoplay
+   runs, .is-running animates it 0→1 over --_autoplay and
+   its animationend advances the tab. Holds (.is-held on
+   the wrap) pause the animation in place.
    ===================================================== */
 
     .tab_button_line {
       position: absolute;
       bottom: 0;
       left: 0;
-      width: calc(100% * var(--progress, 1));
+      width: 100%;
       height: var(--border-width-main);
       background-color: currentColor;
       opacity: 0;
       padding: 0;
       pointer-events: none;
-      transform: translateY(50%);
+      translate: 0 50%;
+      transform-origin: left center;
     }
 
     /* Active tab shows its progress / underline line */
     .tab_button_item.is-active .tab_button_line {
       opacity: 1;
+    }
+
+    .tab_button_line.is-running {
+      animation: tab-progress var(--_autoplay, 6s) linear forwards;
+    }
+
+    .tab_wrap.is-held .tab_button_line.is-running {
+      animation-play-state: paused;
+    }
+
+    @keyframes tab-progress {
+      from {
+        scale: 0 1;
+      }
+      to {
+        scale: 1 1;
+      }
     }
 
     /* =====================================================
@@ -922,12 +903,83 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
 
     /* =====================================================
    TAB PANEL ITEM
-   Hidden by default; JS manages display/visibility
-   via GSAP or instant toggle.
+   Server-rendered hidden; JS lifts `hidden` on the active
+   panel. Enter/exit are CSS keyframes picked by the wrap's
+   [data-tab-transition]; the leaving panel sits absolutely
+   on top of the flow so the two cross without a height jump.
    ===================================================== */
 
     .tab_panel_item {
       width: 100%;
+    }
+
+    .tab_panel_item.is-leaving {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+    }
+
+    [data-tab-transition="fade"] .tab_panel_item.is-active {
+      animation: tab-fade-in var(--_duration, 0.6s) ease both;
+    }
+
+    [data-tab-transition="fade"] .tab_panel_item.is-leaving {
+      animation: tab-fade-out var(--_duration, 0.6s) ease both;
+    }
+
+    /* --_dir is set by JS: 1 = moving forward, -1 = back. */
+    [data-tab-transition="slide"] .tab_panel_item.is-active {
+      animation: tab-slide-in var(--_duration, 0.6s) ease both;
+    }
+
+    [data-tab-transition="slide"] .tab_panel_item.is-leaving {
+      animation: tab-slide-out var(--_duration, 0.6s) ease both;
+    }
+
+    @keyframes tab-fade-in {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes tab-fade-out {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
+    @keyframes tab-slide-in {
+      from {
+        translate: calc(120% * var(--_dir, 1)) 0;
+      }
+      to {
+        translate: 0 0;
+      }
+    }
+
+    @keyframes tab-slide-out {
+      from {
+        translate: 0 0;
+      }
+      to {
+        translate: calc(-120% * var(--_dir, 1)) 0;
+      }
+    }
+
+    /* Reduced motion: near-instant swaps. Durations stay non-zero so
+       animationend still fires and the JS cleanup runs. */
+    @media (prefers-reduced-motion: reduce) {
+      .tab_panel_item.is-active,
+      .tab_panel_item.is-leaving {
+        animation-duration: 0.01s !important;
+      }
     }
 
     /* =====================================================
@@ -1024,14 +1076,6 @@ const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
         margin-left: calc(var(--site-margin) * -1);
         margin-right: calc(var(--site-margin) * -1);
       }
-    }
-
-    /* =====================================================
-   SLIDER VARIANT — progress line uses GSAP animation
-   ===================================================== */
-
-    [data-tab-variant="slider"] .tab_button_line {
-      transition: none;
     }
   }
 </style>

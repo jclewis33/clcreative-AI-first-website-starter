@@ -10,17 +10,39 @@ import type { HTMLAttributes } from "astro/types";
  * ```astro
  * <FormCheckbox label="I agree to the terms" name="terms" required />
  *
- * <!-- Multiple checkboxes in a flex row -->
+ * <!-- Sliding switch -->
+ * <FormCheckbox label="Email me updates" name="updates" variant="toggle" />
+ *
+ * <!-- Chips in a flex row: the whole control fills when chosen -->
  * <div class="u-flex u-flex-wrap u-gap-4">
- *   <FormCheckbox label="Design" name="interests" value="design" />
- *   <FormCheckbox label="Development" name="interests" value="dev" />
+ *   <FormCheckbox label="Design" name="interests" value="design" variant="chip" />
+ *   <FormCheckbox label="Development" name="interests" value="dev" variant="chip" />
  * </div>
  * ```
  */
 
+type ChoiceVariant =
+  /** A box beside the text (default) */
+  | "default"
+  /** A switch that slides */
+  | "toggle"
+  /** The whole control reads as one piece and fills when chosen */
+  | "chip";
+
 interface Props extends HTMLAttributes<"input"> {
   /** Label text displayed next to the checkbox. */
   label: string;
+
+  /**
+   * How the control is drawn.
+   * - `default` — a box beside the text
+   * - `toggle` — a switch that slides
+   * - `chip` — the whole control reads as one piece and fills when chosen
+   *
+   * @default 'default'
+   * @example variant="chip"
+   */
+  variant?: ChoiceVariant;
 
   /** HTML `name` attribute. */
   name: string;
@@ -59,6 +81,7 @@ interface Props extends HTMLAttributes<"input"> {
 const {
   label,
   name,
+  variant = "default",
   value = "on",
   checked = false,
   required = false,
@@ -71,7 +94,13 @@ const {
 const fieldId = id || `field-${name}-${value}`;
 ---
 
-<div class:list={["form_ui_item", className]}>
+<div
+  class:list={[
+    "form_ui_item",
+    variant !== "default" && `is-${variant}`,
+    className,
+  ]}
+>
   <label class="form_ui_label" for={fieldId}>
     <input
       class="form_ui_input u-sr-only"

@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { slotContent } from "@/lib/slots";
 /**
  * Card — content card with optional image and 3 variants; `href` makes the
  * whole surface a link via the title's stretched anchor.
@@ -212,22 +213,23 @@ export type Props = BaseProps &
          */
         ariaLabel?: string;
         /**
-         * Whether this card holds ONE action or SEVERAL — it decides whether the
-         * card surface is itself a link.
+         * Override for the card's action count — normally COMPUTED from the
+         * footer slot, so leave it off.
          *
-         * | Value                | Behavior                                          |
-         * |----------------------|---------------------------------------------------|
-         * | `'single'` (default) | Whole card is the link. A lone footer button is a |
-         * |                      | visual affordance and the footer is `inert`, so   |
-         * |                      | the card is ONE tab stop, not two to the same     |
-         * |                      | place.                                            |
-         * | `'multiple'`         | Card surface is NOT a link — two destinations     |
-         * |                      | cannot share one surface. Buttons stay clickable. |
+         * | Value        | Behavior                                                |
+         * |--------------|---------------------------------------------------------|
+         * | (omitted)    | Counted from the footer's rendered actions (default).   |
+         * | `'single'`   | Whole card is the link. A lone footer button is a       |
+         * |              | visual affordance and the footer is `inert`, so the     |
+         * |              | card is ONE tab stop, not two to the same place.        |
+         * | `'multiple'` | Card surface is NOT a link — two destinations cannot    |
+         * |              | share one surface. Buttons stay clickable.              |
          *
-         * Pass `'multiple'` whenever the card holds more than one action. A CSS
-         * safety net also drops the whole-card link if the footer turns out to hold
-         * two or more controls, so a card left on the default can never cover its
-         * own buttons — but set the prop so the footer is not needlessly `inert`.
+         * 0–1 footer actions counts as `'single'`, 2+ as `'multiple'`. Pass the
+         * prop only when that read is wrong (e.g. an anchor that is purely
+         * decorative). A CSS safety net also drops the whole-card link whenever
+         * the footer holds two or more controls, so even a forced `'single'`
+         * cannot cover its own buttons.
          *
          * @example actions="multiple"
          */
@@ -268,7 +270,7 @@ const {
   rowSpan,
   colSpan,
   radius,
-  actions = "single",
+  actions,
   theme,
   class: className,
   ...rest
@@ -286,26 +288,19 @@ const linkRel = newTab ? "noopener noreferrer" : undefined;
 const linkTarget = newTab ? "_blank" : undefined;
 const linkLabel = ariaLabel ?? title ?? undefined;
 
-/* Check which slots are used */
-/* Does each slot RENDER anything, not merely "was it passed"? A footer holding
-   a Button rendered only when there are posts is "passed" even when it emits
-   gating the wrapper on Astro.slots.has() then leaves an empty <div> on exactly
-
-   Resolved here in the template's scope but AWAITED BELOW, inside the markup —
-   awaiting a slot render in frontmatter forces children to render before Astro
-   has set up the render context, and an <Image> inside then crashes the image
-   service. Astro caches the render, so the later <slot /> costs nothing. */
-/* NOTE: these are `Astro.slots.has()`, not a rendered-content check.
-   Rendering a slot (`Astro.slots.render()`) to find out whether it is empty
-   swallows the hoisted `<script>` of every component inside it — page-wide,
-   not just for that slot. Measured: one `<Slider>` in a Card `footer` slot
-   left BOTH sliders on the page uninitialized, the unrelated one included.
-   `.has()` only reports whether a slot was passed, which is weaker (a slot
-   holding an empty `{items.map(…)}` still counts as present), and that is the
-   trade we want: a rare empty wrapper beats silently dead client JS. */
-const hasVisualSlot = Astro.slots.has("visual");
-const hasTitleSlot = Astro.slots.has("title");
-const hasFooterSlot = Astro.slots.has("footer");
+/* Capture each slot ONCE and emit the string below with <Fragment set:html>.
+   Render-once is the rule: rendering <slot /> again after Astro.slots.render()
+   drops the hoisted <script> of every component inside the slot. Capturing in
+   frontmatter is safe on the current setup — verified against both historical
+   failure modes (script drop, image-service cold start) on Astro 6.4.6, dev +
+   build + SSR /preview cold starts (slotContent spike, 2026-08-27). */
+const visualContent = await slotContent(Astro.slots, "visual");
+const titleContent = await slotContent(Astro.slots, "title");
+const bodyContent = await slotContent(Astro.slots);
+const footerContent = await slotContent(Astro.slots, "footer");
+const hasVisualSlot = Boolean(visualContent);
+const hasTitleSlot = Boolean(titleContent);
+const hasFooterSlot = Boolean(footerContent);
 const showVisual = variant !== "stacked";
 
 /* ── Interaction model ────────────────────────────────────────────────────
@@ -318,27 +313,36 @@ const showVisual = variant !== "stacked";
      "multiple"         → the card surface is NOT a link. Two destinations
                           cannot share one surface, so the buttons stay real.
 
-   The count is a prop rather than something this component works out for
-   itself, because working it out would mean rendering the footer slot in
-   frontmatter. Never call Astro.slots.render() in frontmatter: it forces the
-   slot's children to render before Astro has set up the render context, and
-   an <Image> anywhere inside then hits an uninitialized image service —
-   "Cannot read properties of undefined (reading 'validateOptions')". It
-   surfaces only on the FIRST page rendered after a server start, so it looks
-   intermittent.
+   The count is read from the captured footer HTML, so the default is always
+   right; the `actions` prop remains as an explicit override for the rare case
+   where the markup reads wrong (an <a> that is really a decoration, say).
 
    A CSS safety net in this file also drops the stretch whenever the footer
-   actually holds two or more controls, so a card left on the default still
+   actually holds two or more controls, so a forced actions="single" still
    cannot cover its own buttons. */
-const isSurfaceLink = isClickable && actions !== "multiple";
+const actionCount = (
+  footerContent.match(/<(?:a\s[^>]*\bhref|button)[\s>]/g) ?? []
+).length;
+const resolvedActions = actions ?? (actionCount >= 2 ? "multiple" : "single");
+const isSurfaceLink = isClickable && resolvedActions !== "multiple";
 /* Its lone action is decorative, so take it out of the tab order. */
-const footerIsAffordance = isSurfaceLink && Astro.slots.has("footer");
+const footerIsAffordance = isSurfaceLink && hasFooterSlot;
 
 if (
   import.meta.env.DEV &&
-  isSurfaceLink &&
-  !(Astro.slots.has("title") || title)
+  isClickable &&
+  actions === undefined &&
+  actionCount >= 2
 ) {
+  console.warn(
+    "\n[Card] This card has an `href` but its footer holds " +
+      `${actionCount} actions, so the card surface is NOT a link (two ` +
+      "destinations cannot share one surface). Pass `actions` explicitly " +
+      "if this read is wrong.\n",
+  );
+}
+
+if (import.meta.env.DEV && isSurfaceLink && !(hasTitleSlot || title)) {
   console.warn(
     "\n[Card] A clickable card needs a `title` (or a title slot) — the title " +
       "carries the link, so without one the card has no anchor text to " +
@@ -366,7 +370,7 @@ if (
           {/* Visual / image slot */}
           {showVisual && (hasVisualSlot || variant === "default") && (
             <div class="card_primary_visual">
-              <slot name="visual" />
+              <Fragment set:html={visualContent} />
             </div>
           )}
 
@@ -388,10 +392,14 @@ if (
                     rel={linkRel}
                     aria-label={hasTitleSlot ? linkLabel : undefined}
                   >
-                    {hasTitleSlot ? <slot name="title" /> : title}
+                    {hasTitleSlot ? (
+                      <Fragment set:html={titleContent} />
+                    ) : (
+                      title
+                    )}
                   </a>
                 ) : hasTitleSlot ? (
-                  <slot name="title" />
+                  <Fragment set:html={titleContent} />
                 ) : (
                   title
                 )}
@@ -402,9 +410,11 @@ if (
             {/* u-margin-trim: the slot's last <Text>/<p> carries its own margin-bottom;
                 trimmed here so the block ends clean and the footer's padding-top is
                 the single source of text-to-action space. */}
-            <div class="card_primary_text u-margin-trim">
-              <slot />
-            </div>
+            {bodyContent && (
+              <div class="card_primary_text u-margin-trim">
+                <Fragment set:html={bodyContent} />
+              </div>
+            )}
 
             {/* Footer */}
             {hasFooterSlot && (
@@ -413,7 +423,7 @@ if (
                       say "this goes somewhere", so it must not be a second tab stop
                       to the same place. Removes it from tab order, the a11y tree,
                       and hit-testing in one attribute. */}
-                <slot name="footer" />
+                <Fragment set:html={footerContent} />
               </div>
             )}
           </div>
@@ -650,13 +660,6 @@ if (
        collapses to zero, and without this the button would touch the copy.
        (The text block's own trailing margin is trimmed away — see the
        u-margin-trim on .card_primary_text in the markup.) */
-    /* A footer slot that was passed but rendered nothing would still charge
-   its padding-top and margin-top:auto. Same `:empty` trick as Section — costs
-   no slot render, so it cannot break client scripts inside the slot. */
-    .card_primary_footer:empty {
-      display: none;
-    }
-
     .card_primary_footer {
       margin-top: auto;
       padding-top: var(--space-4);

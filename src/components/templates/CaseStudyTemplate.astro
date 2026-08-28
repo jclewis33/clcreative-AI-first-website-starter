@@ -281,13 +281,11 @@ const ogImageUrl = seo?.ogImage
         >
           {
             galleryImages.map((img) => (
-              <div class="swiper-slide">
-                <Visual
-                  src={urlFor(img).width(1400).url()}
-                  alt={img.alt || study.galleryImagesAlt || ""}
-                  position={hotspotPosition(img)}
-                />
-              </div>
+              <Visual
+                src={urlFor(img).width(1400).url()}
+                alt={img.alt || study.galleryImagesAlt || ""}
+                position={hotspotPosition(img)}
+              />
             ))
           }
         </Slider>

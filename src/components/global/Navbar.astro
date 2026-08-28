@@ -131,7 +131,7 @@ const navItems: NavItem[] = NAV_MENU.map((item) =>
           href: path,
         })),
       }
-    : { label: navLabel(item.path), href: item.path },
+    : { label: item.label ?? navLabel(item.path), href: item.path },
 );
 
 /** The placeholder "Work" mega menu — its links aren't real pages yet, so it
@@ -197,11 +197,6 @@ const chevronSvg = `<svg class="nav_dropdown_icon" aria-hidden="true" xmlns="htt
 /** Search SVG icon */
 const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none"><circle cx="166.67" cy="166.67" r="133.33" stroke="currentColor" stroke-width="30" vector-effect="non-scaling-stroke"/><line x1="266.67" y1="266.67" x2="366.67" y2="366.67" stroke="currentColor" stroke-width="30" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>`;
 ---
-
-{/* Skip Link — visible only on keyboard focus */}
-<a class="nav_skip_wrap" href="#main-content">
-  <span class="nav_skip_text">Skip to main content</span>
-</a>
 
 <nav
   class:list={["nav_wrap", className]}
@@ -785,7 +780,11 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
     </ul>
 
     <div class="nav_mobile_cta">
-      <Button id="main-cta-navbar" href="/contact" ariaLabel="Contact us">
+      <Button
+        id="main-cta-navbar-mobile"
+        href="/contact"
+        ariaLabel="Contact us"
+      >
         Contact
       </Button>
     </div>
@@ -1062,36 +1061,6 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
      </nav>
      <div class="nav_menu_backdrop" />
    ========================================================================== */
-
-    /* =====================================================
-   SKIP LINK — hidden until keyboard focus
-   ===================================================== */
-
-    .nav_skip_wrap {
-      position: fixed;
-      top: var(--space-2);
-      left: 50%;
-      transform: translateX(-50%) translateY(-200%);
-      z-index: 60;
-      background-color: var(--background);
-      color: var(--text);
-      border: var(--border-width-main) solid var(--border);
-      border-radius: var(--radius-main);
-      padding: var(--space-2) var(--space-4);
-      text-decoration: none;
-      font-weight: 600;
-      opacity: 0;
-      transition:
-        transform 0.2s ease,
-        opacity 0.2s ease;
-    }
-
-    .nav_skip_wrap:focus {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-      outline: var(--focus-width) solid var(--color-focus-state);
-      outline-offset: var(--focus-offset-outer);
-    }
 
     /* =====================================================
    BANNER — full-width announcement bar above the nav

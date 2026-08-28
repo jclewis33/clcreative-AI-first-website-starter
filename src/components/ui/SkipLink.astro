@@ -1,0 +1,76 @@
+---
+interface Props {
+  /**
+   * **SkipLink props:**
+   * - `target` — id of the element it jumps to, without the `#`
+   *   (default `'main-content'`, BaseLayout's `main`)
+   * - `label` — what it says once visible (default `'Skip to main content'`)
+   * - `render` — false skips the component entirely
+   *
+   * The first tab stop on the page: visually hidden above the viewport until
+   * it receives keyboard focus, then slides in fixed at the top-left.
+   * Mounted once in BaseLayout, before the Navbar.
+   */
+  docs?: string;
+
+  /**
+   * Set to `false` to skip rendering this component and its children.
+   *
+   * @default true
+   */
+  render?: boolean;
+
+  /**
+   * Id of the element it jumps to, written without the `#`.
+   *
+   * @default 'main-content'
+   */
+  target?: string;
+
+  /**
+   * What it says once it is on screen.
+   *
+   * @default 'Skip to main content'
+   */
+  label?: string;
+}
+
+const {
+  docs,
+  render = true,
+  target = "main-content",
+  label = "Skip to main content",
+} = Astro.props;
+---
+
+{
+  render && (
+    <a class="skip_link_wrap" href={`#${target}`}>
+      {label}
+    </a>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* Parked above the viewport; :focus-visible brings it in. Fixed so it
+       overlays whatever the page starts with (nav, banner, hero). */
+    .skip_link_wrap {
+      position: fixed;
+      top: var(--space-2);
+      inset-inline-start: var(--space-2);
+      z-index: 100;
+      translate: 0 calc(-100% - var(--space-2) * 2);
+      padding: var(--space-2) var(--space-4);
+      background-color: var(--background-2);
+      color: var(--text);
+      border-radius: var(--radius-main);
+      box-shadow: var(--box-shadow-medium);
+      text-decoration: none;
+    }
+
+    .skip_link_wrap:focus-visible {
+      translate: 0 0;
+    }
+  }
+</style>

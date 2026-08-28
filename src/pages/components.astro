@@ -3,7 +3,32 @@
  * Component Examples — a living showcase of every UI component and variant.
  *
  * Built entirely with system components and utility classes — zero custom CSS.
- * Visit /components to view it.
+ * Visit /components to view it. This page is DEV-ONLY: `DEV_ONLY_PATHS` in
+ * src/config/seo.shared.mjs strips it from the build, and the nav/footer links
+ * to it are gated behind `import.meta.env.DEV` in src/data/site-structure.ts.
+ *
+ * ── HEADING CONVENTION ────────────────────────────────────────────────────
+ * Every section opens with an eyebrow (the component or family name) and an
+ * h2 (a one-line description of what it does):
+ *
+ *   <Heading variant="eyebrow" class="u-margin-bottom-2">Slider</Heading>
+ *   <Heading tag="h2" balance>Touch-friendly card carousel</Heading>
+ *
+ * A section that demos MORE THAN ONE component gives each one its own
+ * H2-STYLED sub-heading, so the sub-sections are told apart at a glance:
+ *
+ *   <Heading tag="h3" variant="h2">Icon</Heading>
+ *
+ * `tag="h3"` keeps the document outline correct underneath the section's h2;
+ * `variant="h2"` is the visual weight. Eyebrows are still the right label for
+ * the VARIANTS of a single component (Layout's "breakout", Tab's "side") —
+ * they mark options, not separate components.
+ *
+ * ── ADDING A COMPONENT ────────────────────────────────────────────────────
+ * 1. Add its demo section with an `id`.
+ * 2. Add that id to COMPONENT_INDEX below so it appears in the page index.
+ * 3. Section components render their OWN <Section>, so they go at the root
+ *    with a slim label section before them — never nested inside a <Section>.
  */
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -17,6 +42,10 @@ import Accordion from "@/components/ui/Accordion.astro";
 import AccordionItem from "@/components/ui/AccordionItem.astro";
 import Modal from "@/components/ui/Modal.astro";
 import Slider from "@/components/ui/Slider.astro";
+import Carousel from "@/components/ui/Carousel.astro";
+import Icon from "@/components/ui/Icon.astro";
+import Dropdown from "@/components/ui/Dropdown.astro";
+import arrowIcon from "@/assets/icons/arrow.svg";
 import Tab from "@/components/ui/Tab.astro";
 import TabButton from "@/components/ui/TabButton.astro";
 import TabPanel from "@/components/ui/TabPanel.astro";
@@ -34,6 +63,7 @@ import FormCheckbox from "@/components/form/FormCheckbox.astro";
 import FormRadio from "@/components/form/FormRadio.astro";
 import FormRange from "@/components/form/FormRange.astro";
 import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
 import BlogPostGrid from "@/components/sections/BlogPostGrid.astro";
 
 import humanTouch from "@/assets/placeholder-images-2/ai-first-starter-15.webp";
@@ -43,6 +73,41 @@ import PricingCard from "@/components/ui/PricingCard.astro";
 import PricingItem from "@/components/ui/PricingItem.astro";
 import Marquee from "@/components/ui/Marquee.astro";
 import ScrollReveal from "@/components/ui/ScrollReveal.astro";
+import TableOfContents from "@/components/ui/TableOfContents.astro";
+import Video from "@/components/ui/Video.astro";
+import FormattedDate from "@/components/ui/FormattedDate.astro";
+import SkipLink from "@/components/ui/SkipLink.astro";
+import BlogCard from "@/components/ui/BlogCard.astro";
+import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
+import TestimonialCard from "@/components/ui/TestimonialCard.astro";
+
+/* ── Section components (each renders its own <Section>) ──
+   Not demoed here on purpose:
+   • SanityCtaSection — needs a real Sanity ctaSection document; urlFor()
+     throws on a hand-written literal. <CTASection /> below is its twin.
+   • HoneyBookEmbed / HoneyBookEmbedBookingWidget — third-party widgets that
+     load an external script and need a real account id. */
+import CTASection from "@/components/sections/CTASection.astro";
+import SecondaryCtaPrompt from "@/components/sections/SecondaryCtaPrompt.astro";
+import SignUpForm from "@/components/sections/SignUpForm.astro";
+import FAQ from "@/components/sections/FAQ.astro";
+import FeatureCards from "@/components/sections/FeatureCards.astro";
+import FrameworkSection from "@/components/sections/FrameworkSection.astro";
+import HowItWorks from "@/components/sections/HowItWorks.astro";
+import Services from "@/components/sections/Services.astro";
+import WhyWorkWithUs from "@/components/sections/WhyWorkWithUs.astro";
+import ComparisonSection from "@/components/sections/ComparisonSection.astro";
+import Pricing from "@/components/sections/Pricing.astro";
+import PostLaunchSupport from "@/components/sections/PostLaunchSupport.astro";
+import SplitSection from "@/components/sections/SplitSection.astro";
+import ImagePromo from "@/components/sections/ImagePromo.astro";
+import VisionPromo from "@/components/sections/VisionPromo.astro";
+import ProjectImages from "@/components/sections/ProjectImages.astro";
+import StackingPanels from "@/components/sections/StackingPanels.astro";
+import StackingPanel from "@/components/sections/StackingPanel.astro";
+import SingleTestimonial from "@/components/sections/SingleTestimonial.astro";
+import TestimonialShowcase from "@/components/sections/TestimonialShowcase.astro";
+import CaseStudyFeatured from "@/components/sections/CaseStudyFeatured.astro";
 
 /* ── Demo image pools (from the shared placeholder library) ── */
 import phL1 from "@/assets/placeholder-images-2/ai-first-starter-1.webp";
@@ -63,6 +128,58 @@ const demoLandscape = [
   phL6.src,
 ];
 const demoSquare = [phS1.src, phS2.src, phS3.src];
+
+/* Images 14 + 17 are not imported by any section component, so they are safe
+   to hand to the ones that take an image as a prop. */
+import ph14 from "@/assets/placeholder-images-2/ai-first-starter-14.webp";
+import ph17 from "@/assets/placeholder-images-2/ai-first-starter-17.webp";
+
+/* ── Page index ──
+   Doubles as the live <TableOfContents> demo: each entry's slug is the id
+   of the section it points at, which is also what the component's scroll-spy
+   observes. Keep in step when adding a section below. */
+const COMPONENT_INDEX = [
+  { slug: "visual-overlay", text: "Visual & Overlay" },
+  { slug: "layout", text: "Layout" },
+  { slug: "cards", text: "Card" },
+  { slug: "card-family", text: "BlogCard, CaseStudyCard & TestimonialCard" },
+  { slug: "case-study-grid", text: "CaseStudyGrid" },
+  { slug: "slider", text: "Slider" },
+  { slug: "carousel", text: "Carousel" },
+  { slug: "icon-dropdown", text: "Icon & Dropdown" },
+  { slug: "marquee", text: "Marquee" },
+  { slug: "scroll-reveal", text: "ScrollReveal" },
+  { slug: "tabs", text: "Tab" },
+  { slug: "testimonials", text: "TestimonialsSlider" },
+  { slug: "testimonials-grid", text: "TestimonialsGrid" },
+  { slug: "accordion", text: "Accordion" },
+  { slug: "forms", text: "Form components" },
+  { slug: "modals", text: "Modal" },
+  { slug: "cta", text: "CTA pattern" },
+  { slug: "blogpostgrid", text: "BlogPostGrid" },
+  { slug: "pricing-cards", text: "PricingCard & PricingItem" },
+  { slug: "utility-components", text: "Video, FormattedDate, TOC & SkipLink" },
+  { slug: "single-testimonial", text: "SingleTestimonial" },
+  { slug: "testimonial-showcase", text: "TestimonialShowcase" },
+  { slug: "case-study-featured", text: "CaseStudyFeatured" },
+  { slug: "cta-section", text: "CTASection" },
+  { slug: "secondary-cta", text: "SecondaryCtaPrompt" },
+  { slug: "sign-up-form", text: "SignUpForm" },
+  { slug: "faq-section", text: "FAQ" },
+  { slug: "feature-cards", text: "FeatureCards" },
+  { slug: "framework-section", text: "FrameworkSection" },
+  { slug: "how-it-works", text: "HowItWorks" },
+  { slug: "services-section", text: "Services" },
+  { slug: "why-work-with-us", text: "WhyWorkWithUs" },
+  { slug: "comparison-section", text: "ComparisonSection" },
+  { slug: "pricing-section", text: "Pricing" },
+  { slug: "post-launch-support", text: "PostLaunchSupport" },
+  { slug: "split-section", text: "SplitSection" },
+  { slug: "image-promo", text: "ImagePromo" },
+  { slug: "vision-promo", text: "VisionPromo" },
+  { slug: "project-images", text: "ProjectImages" },
+  { slug: "stacking-panels", text: "StackingPanels & StackingPanel" },
+];
 
 /* ── Fetch testimonials from Sanity (tolerate an empty/unreachable dataset) ── */
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
@@ -105,23 +222,116 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     </Layout>
   </Section>
 
-  <Section minHeight>
-    <Layout>
-      <Heading variant="h2">Build faster with reusable components</Heading>
-      <Text>
-        Every component in this library is built with Astro and styled with the
-        design system. Composable, accessible, and ready to ship.</Text
-      >
-      <ButtonWrapper>
-        <Button href="#" ariaLabel="Sign up now">Sign Up Now</Button>
-      </ButtonWrapper>
+  <!-- ============================================================
+       INDEX  (also the live TableOfContents demo)
+       ============================================================ -->
+  <Section id="index" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Index</Heading>
+      <Heading tag="h2" balance>Every component on this page</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        This list is a real &lt;TableOfContents&gt; — the same component the
+        glossary and blog templates use. It highlights the section you are
+        looking at as you scroll.
+      </Text>
+      <TableOfContents items={COMPONENT_INDEX} title="Components" />
+    </Layout>
+  </Section>
 
-      <Visual
-        slot="column2"
-        src={manCouch}
-        alt="man on couch looking at computer"
-        ratio="square"
-      />
+  <!-- ============================================================
+       VISUAL + OVERLAY
+       ============================================================ -->
+  <Section id="visual-overlay">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">
+        Visual &amp; Overlay
+      </Heading>
+      <Heading tag="h2" balance
+        >Images with ratios, and scrims over them</Heading
+      >
+      <Text variant="regular" muted maxWidth="48rem">
+        Visual wraps Astro's Image with an aspect ratio, radius, focal point and
+        a skeleton placeholder. Overlay is the scrim that keeps text readable on
+        top of one — it fills the nearest positioned parent, so it belongs in a
+        Section background slot, a Card visual slot, or a Layout card column.
+      </Text>
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">Visual</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The ratio holds at every width. Pass priority for an above-the-fold
+        hero, and transparent for logos so the skeleton tint is dropped.
+      </Text>
+      <Grid largeColumns={4} mediumColumns={2} smallColumns={1} rowGap={6}>
+        <Visual src={phL1} alt="Placeholder — landscape" ratio="landscape" />
+        <Visual src={phL2} alt="Placeholder — square" ratio="square" />
+        <Visual src={manCouch} alt="Placeholder — portrait" ratio="portrait" />
+        <Visual src={phL3} alt="Placeholder — widescreen" ratio="widescreen" />
+      </Grid>
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">Overlay</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Solid keeps one density across the image; gradient fades between a top
+        and bottom strength, which is what you want when text sits at one edge.
+        Text sitting on a scrim needs u-theme-dark, not data-theme-invert —
+        invert flips relative to the section, but a scrim is dark no matter what
+        section it lands in, so the text needs an absolute theme.
+      </Text>
+
+      {
+        /* Text over a scrim takes u-theme-dark, NOT data-theme-invert. Invert
+          is relative to the section, so it would read white here but flip to
+          dark inside a dark section — while the scrim stays dark either way.
+          The scrim is an absolute ground, so it needs an absolute theme.
+          u-display-contents keeps the wrapper out of the box tree, or it
+          would become the card's single grid child. Same pattern as
+          CTASection. */
+      }
+      <Layout variant="card">
+        <div class="u-display-contents u-theme-dark">
+          <Heading tag="h4" variant="h3">Solid scrim</Heading>
+          <Text align="center" marginBottom={0}>
+            variant="solid" at strength={70} — an even wash.
+          </Text>
+        </div>
+        <Fragment slot="column2">
+          <Visual
+            src={phL4}
+            alt="Placeholder background"
+            variant="background"
+          />
+          <Overlay strength={70} />
+        </Fragment>
+      </Layout>
+
+      <Layout variant="card">
+        <div class="u-display-contents u-theme-dark">
+          <Heading tag="h4" variant="h3">Gradient scrim</Heading>
+          <Text align="center" marginBottom={0}>
+            Three stops — strengthTop={20}, strengthMiddle={65}, strengthBottom={
+              90
+            }. A two-stop fade to the bottom is right when text sits at the
+            bottom edge; this card centres its content, so the middle stop is
+            what keeps it readable without burying the image.
+          </Text>
+        </div>
+        <Fragment slot="column2">
+          <Visual
+            src={phL5}
+            alt="Placeholder background"
+            variant="background"
+          />
+          <Overlay
+            variant="gradient"
+            strengthTop={20}
+            strengthMiddle={65}
+            strengthBottom={90}
+          />
+        </Fragment>
+      </Layout>
     </Layout>
   </Section>
 
@@ -222,7 +432,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           for ratio="16/9", so it needs a landscape source. Pairing a square
           source with a forced 4:3 width/height would put three aspect ratios
           in conflict and letterbox the image.
-          `width`/`height` are only for remote URLs; a local import already
+          width/height are only for remote URLs; a local import already
           carries its dimensions. */
       }
       <Visual src={phL3} ratio="16/9" alt="Placeholder image" slot="column2" />
@@ -546,8 +756,132 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     </Grid>
   </Section>
 
-  <!-- cover cards -->
-  <CaseStudyGrid limit={6} />
+  <!-- ============================================================
+       CARD FAMILY — BlogCard / CaseStudyCard / TestimonialCard
+       ============================================================ -->
+  <Section theme="light" id="card-family">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">
+        BlogCard, CaseStudyCard &amp; TestimonialCard
+      </Heading>
+      <Heading tag="h2" balance>The three cards built on Card</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Each wraps &lt;Card&gt; with the fields one content type needs, so a
+        grid of them stays consistent. The listing sections (BlogPostGrid,
+        CaseStudyGrid, TestimonialsGrid) render these for you from Sanity —
+        shown here standalone with literal props.
+      </Text>
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">BlogCard</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Image on top, title and excerpt each clamped to two lines, category
+        label at the bottom. The whole surface is the link.
+      </Text>
+      <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
+        <BlogCard
+          title="How to build a design system that survives handoff"
+          description="A short excerpt standing in for the post's meta description, clamped to two lines when it runs long."
+          categories={["Design"]}
+          href="#card-family"
+          image={ph14}
+          imageAlt="Placeholder — blog post cover"
+        />
+        <BlogCard
+          title="Shipping faster with composable sections"
+          description="Another excerpt, this one deliberately longer so you can see exactly where the two-line clamp truncates the copy."
+          categories={["Engineering"]}
+          href="#card-family"
+          image={ph17}
+          imageAlt="Placeholder — blog post cover"
+        />
+        <BlogCard
+          title="Why your CMS should not decide your markup"
+          description="A third excerpt for the grid."
+          categories={["Strategy"]}
+          href="#card-family"
+          image={humanTouch}
+          imageAlt="Placeholder — blog post cover"
+        />
+      </Grid>
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">CaseStudyCard</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The portfolio equivalent — same shape, tuned for client work.
+      </Text>
+      <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
+        <CaseStudyCard
+          title="Northwind Rebrand"
+          description="A full identity and site rebuild for a logistics company."
+          categories={["Branding"]}
+          href="#card-family"
+          image={ph17}
+          imageAlt="Placeholder — case study cover"
+        />
+        <CaseStudyCard
+          title="Harbor Health Platform"
+          description="A patient portal rebuilt for speed and accessibility."
+          categories={["Web Design"]}
+          href="#card-family"
+          image={ph14}
+          imageAlt="Placeholder — case study cover"
+        />
+        <CaseStudyCard
+          title="Fieldnote Analytics"
+          description="Marketing site and design system for a data startup."
+          categories={["Development"]}
+          href="#card-family"
+          image={manCouch}
+          imageAlt="Placeholder — case study cover"
+        />
+      </Grid>
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">TestimonialCard</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Stars, quote, author. Pass theme="invert" to flip it against whatever
+        ground it sits on — the listing sections do that for you.
+      </Text>
+      <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
+        <TestimonialCard
+          quote="They shipped in half the time we budgeted, and the handoff was genuinely clean."
+          name="Jane Doe"
+          role="CEO"
+          company="Acme"
+          stars={5}
+        />
+        <TestimonialCard
+          quote="The design system paid for itself on the second page we built."
+          name="John Roe"
+          role="CTO"
+          company="Globex"
+          stars={5}
+        />
+        <TestimonialCard
+          quote="Clear communication the whole way through."
+          name="Ada Chen"
+          role="Head of Marketing"
+          company="Initech"
+          stars={4}
+          theme="invert"
+        />
+      </Grid>
+    </Layout>
+  </Section>
+
+  <!-- ============================================================
+       CASE STUDY GRID  (renders its own <Section>)
+       ============================================================ -->
+  <CaseStudyGrid
+    id="case-study-grid"
+    limit={6}
+    eyebrow="CaseStudyGrid"
+    heading="Case studies pulled from Sanity"
+  />
 
   <!-- ============================================================
        4. SLIDER
@@ -557,9 +891,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       <Heading variant="eyebrow" class="u-margin-bottom-2">Slider</Heading>
       <Heading tag="h2" balance>Touch-friendly card carousel</Heading>
       <Text variant="regular" muted maxWidth="48rem">
-        The Slider component wraps Swiper v8. Each slide must be a .swiper-slide
-        div. Control per-breakpoint slide counts with slidesLg, slidesMd, and
-        slidesSm.
+        The Slider component wraps Swiper v12. Put slides straight into the
+        default slot — they are auto-wrapped for Swiper. Control per-breakpoint
+        slide counts with slidesLg, slidesMd, and slidesSm.
       </Text>
     </Layout>
 
@@ -604,24 +938,128 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
               text: "Placeholder copy for the sixth slide.",
             },
           ].map(({ title, text }, i) => (
-            <div class="swiper-slide">
-              <Card variant="default" theme="invert" title={title} href="#">
-                <img
-                  slot="visual"
-                  src={demoLandscape[i % demoLandscape.length]}
-                  alt={title}
-                  loading="lazy"
-                  style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;"
-                />
-                <Text muted clamp={2}>
-                  {text}
-                </Text>
-              </Card>
-            </div>
+            <Card variant="default" theme="invert" title={title} href="#">
+              <img
+                slot="visual"
+                src={demoLandscape[i % demoLandscape.length]}
+                alt={title}
+                loading="lazy"
+                style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;"
+              />
+              <Text muted clamp={2}>
+                {text}
+              </Text>
+            </Card>
           ))
         }
       </Slider>
     </div>
+  </Section>
+
+  <!-- ============================================================
+       CAROUSEL
+       ============================================================ -->
+  <Section id="carousel">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Carousel</Heading>
+      <Heading tag="h2" balance>Zero-dependency scroll-snap carousel</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The Carousel is native CSS scroll-snap with a small script for drag,
+        dots and arrows — no library. Use it for simple card rows; reach for the
+        Slider when you need loop, autoplay, mousewheel or free mode.
+      </Text>
+    </Layout>
+
+    <Carousel label="Carousel demo cards" slidesLg={3} slidesMd={2}>
+      {
+        [
+          {
+            title: "Card One",
+            text: "Slides snap natively — touch and trackpad need no JS at all.",
+          },
+          {
+            title: "Card Two",
+            text: "Mouse users get drag with click suppression on release.",
+          },
+          {
+            title: "Card Three",
+            text: "Dots and arrows sync from scroll position.",
+          },
+          {
+            title: "Card Four",
+            text: "Slides per view are plain CSS custom properties.",
+          },
+          {
+            title: "Card Five",
+            text: "Bleed runs the strip under the container edges.",
+          },
+          {
+            title: "Card Six",
+            text: "Reduced motion swaps smooth scrolling for instant jumps.",
+          },
+        ].map(({ title, text }, i) => (
+          <Card variant="default" theme="invert" title={title} href="#">
+            <img
+              slot="visual"
+              src={demoLandscape[i % demoLandscape.length]}
+              alt={title}
+              loading="lazy"
+              style="width:100%; aspect-ratio:16/9; object-fit:cover; display:block;"
+            />
+            <Text muted clamp={2}>
+              {text}
+            </Text>
+          </Card>
+        ))
+      }
+    </Carousel>
+  </Section>
+
+  <!-- ============================================================
+       ICON + DROPDOWN
+       ============================================================ -->
+  <Section id="icon-dropdown">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">
+        Icon &amp; Dropdown
+      </Heading>
+      <Heading tag="h2" balance>Inline SVG icons and a native menu</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Two independent components. Each gets its own H2-styled heading below —
+        the page convention for a section that demos more than one component.
+      </Text>
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">Icon</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Renders an SVG from src/assets inline, sized in em so it tracks the text
+        beside it. Decorative by default — aria-hidden unless you pass a label.
+      </Text>
+      <div
+        class="components_icon_row u-display-flex u-align-items-center u-gap-4"
+      >
+        <Icon src={arrowIcon} variant="small" />
+        <Icon src={arrowIcon} />
+        <Icon src={arrowIcon} variant="large" />
+        <Text tag="span" marginBottom={0}>sized against this text line</Text>
+      </div>
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">Dropdown</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        A native details menu — Escape to close, arrow keys to move through the
+        items, click outside to dismiss. No library.
+      </Text>
+      <Dropdown label="Resources">
+        <ul class="u-list">
+          <li><a href="#slider">Slider</a></li>
+          <li><a href="#carousel">Carousel</a></li>
+          <li><a href="#marquee">Marquee</a></li>
+        </ul>
+      </Dropdown>
+    </Layout>
   </Section>
 
   <!-- ============================================================
@@ -632,8 +1070,8 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       <Heading variant="eyebrow" class="u-margin-bottom-2">Marquee</Heading>
       <Heading tag="h2" balance>Infinite scrolling ticker</Heading>
       <Text variant="regular" muted maxWidth="48rem">
-        The Marquee component uses GSAP for smooth infinite horizontal
-        scrolling. Drop in text, logos, or any content. Pauses on hover.
+        The Marquee component is pure CSS — an infinite horizontal ticker with
+        no JavaScript. Drop in text, logos, or any content. Pauses on hover.
       </Text>
     </Layout>
 
@@ -741,7 +1179,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
       >top</Heading
     >
-    <Tab variant="top">
+    <Tab variant="top" id="tab-demo" deepLink>
       <TabButton slot="buttons" label="Features" />
       <TabButton slot="buttons" label="Pricing" />
       <TabButton slot="buttons" label="Support" />
@@ -972,7 +1410,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         <Heading tag="h3" variant="h3">Technical specs</Heading>
         <Text muted>
           Zero JS by default, sub-second load times, perfect Lighthouse scores.
-          Built with Astro 5, GSAP 3.12, and the CSS variable system.
+          Built with Astro, GSAP, and the CSS variable system.
         </Text>
       </TabPanel>
     </Tab>
@@ -1015,8 +1453,8 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         Common questions, <strong>answered</strong>
       </Heading>
       <Text variant="regular">
-        The Accordion and AccordionItem components animate with GSAP for smooth
-        height transitions. Set openByDefault to pre-expand an item on load.
+        The Accordion and AccordionItem components animate open and closed with
+        pure CSS. Set openByDefault to pre-expand an item on load.
       </Text>
       <ButtonWrapper>
         <Button href="/style-guide" ariaLabel="View style guide"
@@ -1054,9 +1492,10 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
           question="Is JavaScript required for components to work?"
         >
           <Text>
-            Accordion and Slider require GSAP and Swiper v8 respectively — both
-            are loaded via CDN. The Modal uses a native dialog element with a
-            lightweight controller. All other components are pure HTML and CSS.
+            The Slider bundles Swiper v12 through its own import — no CDN, and
+            the chunk ships only on pages that render a Slider. The Accordion
+            and Modal use native elements with lightweight controllers. All
+            other components are pure HTML and CSS.
           </Text>
         </AccordionItem>
 
@@ -1088,20 +1527,20 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     </Layout>
 
     <!-- Default label variant -->
-    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
-      >Default labels</Heading
-    >
+    <Heading tag="h3" variant="h2" class="u-margin-top-8">
+      Default labels
+    </Heading>
     <Form name="demo-default">
       <FormFieldset columns={2}>
         <FormField
           label="Full Name"
-          name="name"
+          name="demo-name"
           placeholder="John Doe"
           required
         />
         <FormField
           label="Email"
-          name="email"
+          name="demo-email"
           type="email"
           placeholder="john@example.com"
           required
@@ -1128,16 +1567,16 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       </FormFieldset>
       <FormTextarea
         label="Message"
-        name="message"
+        name="demo-message"
         placeholder="Tell us about your project..."
         rows={4}
       />
     </Form>
 
     <!-- Floating label variant -->
-    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
-      >Floating labels</Heading
-    >
+    <Heading tag="h3" variant="h2" class="u-margin-top-8">
+      Floating labels
+    </Heading>
     <Form name="demo-floating">
       <FormFieldset columns={2}>
         <FormField
@@ -1181,9 +1620,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     </Form>
 
     <!-- Checkboxes, Radios, Range -->
-    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
-      >Checkboxes, Radios, and Range</Heading
-    >
+    <Heading tag="h3" variant="h2" class="u-margin-top-8">
+      Checkboxes, Radios, and Range
+    </Heading>
     <Form name="demo-controls">
       <FormFieldset columns={2}>
         <div>
@@ -1213,6 +1652,73 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         showValue
         showMinMax
         prefix="$"
+      />
+    </Form>
+
+    <!-- Semantic variants, built-in selects, toggles and chips -->
+    <Heading tag="h3" variant="h2" class="u-margin-top-8">
+      Semantic variants, toggles, and chips
+    </Heading>
+    <Form name="demo-variants">
+      <FormFieldset columns={2}>
+        <FormField label="First Name" name="v-first" variant="first-name" />
+        <FormField label="Zip Code" name="v-zip" variant="zip-code" />
+      </FormFieldset>
+      <FormFieldset columns={3}>
+        <FormSelect
+          label="Month"
+          name="v-month"
+          variant="month"
+          placeholderOption="MM"
+        />
+        <FormSelect
+          label="Day"
+          name="v-day"
+          variant="day"
+          placeholderOption="DD"
+        />
+        <FormSelect
+          label="Year"
+          name="v-year"
+          variant="year"
+          from={1990}
+          placeholderOption="YYYY"
+        />
+      </FormFieldset>
+      <FormSelect
+        label="State"
+        name="v-state"
+        variant="state"
+        placeholderOption="Select one..."
+      />
+      <FormCheckbox
+        label="Email me updates"
+        name="v-updates"
+        variant="toggle"
+        checked
+      />
+      <div class="u-display-flex u-flex-wrap u-gap-3">
+        <FormRadio
+          label="Monthly"
+          name="v-billing"
+          value="monthly"
+          variant="chip"
+          checked
+        />
+        <FormRadio
+          label="Yearly"
+          name="v-billing"
+          value="yearly"
+          variant="chip"
+        />
+        <FormCheckbox label="Add-on: SEO" name="v-addon-seo" variant="chip" />
+        <FormCheckbox label="Add-on: Blog" name="v-addon-blog" variant="chip" />
+      </div>
+      <FormTextarea
+        label="Notes (auto-grows)"
+        name="v-notes"
+        minLines={2}
+        maxLines={8}
       />
     </Form>
   </Section>
@@ -1401,17 +1907,21 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
        ============================================================ -->
   <Section theme="light" id="pricing-cards">
     <Layout variant="stack">
-      <Layout variant="stack">
-        <Heading variant="eyebrow">Pricing Cards</Heading>
-        <Heading tag="h2" variant="h2" balance>
-          PricingCard + PricingItem
-        </Heading>
-        <Text variant="regular" muted>
-          Three variants: detailed cards with feature items, compact quick-view
-          cards, and a general pricing card with 2-column items.
-        </Text>
-      </Layout>
+      <Heading variant="eyebrow" class="u-margin-bottom-2">
+        PricingCard &amp; PricingItem
+      </Heading>
+      <Heading tag="h2" balance>Pricing tiers with feature lists</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        PricingItem renders one feature line and is only used inside a
+        PricingCard. Three arrangements below: detailed cards with feature
+        items, a general card with two-column items, and compact quick-view
+        cards.
+      </Text>
     </Layout>
+
+    <Heading tag="h3" variant="h2" class="u-margin-top-8">
+      Detailed cards
+    </Heading>
 
     {/* ---- Detailed cards (autofit grid) ---- */}
     <Grid variant="autofit" minColWidth="18rem" rowGap={6}>
@@ -1473,7 +1983,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     {/* ---- General pricing card ---- */}
     <Layout variant="stack" class="u-margin-top-8">
       <Layout variant="stack">
-        <Heading tag="h3" variant="h4">General pricing card</Heading>
+        <Heading tag="h3" variant="h2" class="u-margin-top-8"
+          >General pricing card</Heading
+        >
       </Layout>
     </Layout>
     <PricingCard
@@ -1496,7 +2008,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     {/* ---- Compact quick-view cards ---- */}
     <Layout variant="stack" class="u-margin-top-8">
       <Layout variant="stack">
-        <Heading tag="h3" variant="h4">Compact quick-view cards</Heading>
+        <Heading tag="h3" variant="h2" class="u-margin-top-8"
+          >Compact quick-view cards</Heading
+        >
       </Layout>
     </Layout>
     <Grid variant="autofit" minColWidth="16rem" rowGap={6}>
@@ -1528,6 +2042,480 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       />
     </Grid>
   </Section>
+
+  <!-- ============================================================
+       UTILITY COMPONENTS — Video / FormattedDate / TOC / SkipLink
+       ============================================================ -->
+  <Section id="utility-components">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">
+        Video, FormattedDate, TableOfContents &amp; SkipLink
+      </Heading>
+      <Heading tag="h2" balance>The small single-purpose components</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Four components that do one job each. Every one gets its own H2 below.
+      </Text>
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">Video</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        A bare &lt;video&gt; with an aspect-ratio preset, poster and playback
+        defaults (loop, autoplay, muted all default to true — autoplay without
+        muted is blocked by every browser, and warns in dev). The starter ships
+        no video file, so this points at a public sample with preload="none":
+        nothing downloads until you press play.
+      </Text>
+      <Video
+        src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+        poster={demoLandscape[0]}
+        variant="16-9"
+        autoplay={false}
+        controls
+        preload="none"
+      />
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">FormattedDate</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Renders a &lt;time&gt; with a machine-readable datetime. Always use it
+        instead of formatting by hand — it pins the time zone to UTC, so a
+        date-only value can't render a day early depending on who ran the build.
+      </Text>
+      <ul class="u-list">
+        <li>
+          Default (dateStyle: 'long'): <FormattedDate date="2026-03-14" />
+        </li>
+        <li>
+          Medium: <FormattedDate
+            date="2026-03-14"
+            format={{ dateStyle: "medium" }}
+          />
+        </li>
+        <li>
+          Full: <FormattedDate
+            date="2026-03-14"
+            format={{ dateStyle: "full" }}
+          />
+        </li>
+      </ul>
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">TableOfContents</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Takes items: {"{ slug, text }[]"} and renders anchor links, marking the current
+        one as you scroll. The page index near the top of this page is a live instance
+        — here is a short one with three items.
+      </Text>
+      <TableOfContents
+        title="On this page"
+        items={[
+          { slug: "utility-components", text: "Utility components" },
+          { slug: "cta-section", text: "CTASection" },
+          { slug: "stacking-panels", text: "StackingPanels" },
+        ]}
+      />
+    </Layout>
+
+    <Layout variant="stack">
+      <Heading tag="h3" variant="h2">SkipLink</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The first tab stop on every page — parked off-screen until it takes
+        keyboard focus, then it slides in at the top-left. BaseLayout already
+        mounts one, so press Tab from the very top of this page to see it. The
+        instance below is the same component; focus it with the keyboard.
+      </Text>
+      <SkipLink label="Skip to the page index" target="index" />
+    </Layout>
+  </Section>
+
+  <!-- ============================================================
+       SECTION COMPONENTS
+       Each renders its OWN <Section>, so they sit at the root here.
+       A slim label section introduces each one.
+       ============================================================ -->
+  <Section padding="small">
+    <Layout variant="stack-centered">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Part two</Heading>
+      <Heading tag="h2" balance>Section components</Heading>
+      <Text variant="regular" muted align="center" maxWidth="48rem">
+        Whole page sections, composed from the components above. Each brings its
+        own &lt;Section&gt; wrapper, theme and padding — drop one into a page
+        and it is done. Most render with no props at all.
+      </Text>
+    </Layout>
+  </Section>
+
+  <Section id="single-testimonial" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >SingleTestimonial</Heading
+      >
+      <Heading tag="h2" balance>One quote, centered</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Looks a testimonial up by name from Sanity, or takes one directly as
+        shown here. Renders nothing at all if neither resolves.
+      </Text>
+    </Layout>
+  </Section>
+  <SingleTestimonial
+    testimonial={{
+      quote:
+        "They shipped in half the time we budgeted, and the handoff was genuinely clean.",
+      name: "Jane Doe",
+      role: "CEO",
+      company: "Acme",
+    }}
+  />
+
+  <Section id="testimonial-showcase" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >TestimonialShowcase</Heading
+      >
+      <Heading tag="h2" balance>A single-slide quote carousel</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Heading on the left, one quote at a time on the right with a counter and
+        arrows. Self-fetches featured testimonials; given literal data here so
+        it always has something to show.
+      </Text>
+    </Layout>
+  </Section>
+  <TestimonialShowcase
+    heading="What our clients say about the work"
+    testimonials={[
+      {
+        quote: "They shipped in half the time we budgeted.",
+        name: "Jane Doe",
+        role: "CEO",
+        company: "Acme",
+      },
+      {
+        quote: "The design system paid for itself on the second page.",
+        name: "John Roe",
+        role: "CTO",
+        company: "Globex",
+      },
+      {
+        quote: "Clear communication the whole way through.",
+        name: "Ada Chen",
+        role: "Head of Marketing",
+        company: "Initech",
+      },
+    ]}
+  />
+
+  <Section id="case-study-featured" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >CaseStudyFeatured</Heading
+      >
+      <Heading tag="h2" balance>An interactive featured-work strip</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Needs at least three studies or it renders nothing. Pass image as a
+        string URL — an imported asset would be handed to urlFor() and throw.
+      </Text>
+    </Layout>
+  </Section>
+  <CaseStudyFeatured
+    studies={[
+      {
+        slug: "northwind",
+        client: "Northwind",
+        description: "Identity and site rebuild for a logistics company.",
+        image: "/images/og-image.png",
+        imageAlt: "Placeholder — case study",
+      },
+      {
+        slug: "harbor-health",
+        client: "Harbor Health",
+        description: "A patient portal rebuilt for speed and accessibility.",
+        image: "/images/og-image.png",
+        imageAlt: "Placeholder — case study",
+      },
+      {
+        slug: "fieldnote",
+        client: "Fieldnote",
+        description: "Marketing site and design system for a data startup.",
+        image: "/images/og-image.png",
+        imageAlt: "Placeholder — case study",
+      },
+    ]}
+  />
+
+  <Section id="cta-section" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">CTASection</Heading>
+      <Heading tag="h2" balance>The end-of-page call to action</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Background visual, scrim, heading and buttons — the pattern the Layout
+        card variant exists for. Renders with no props.
+      </Text>
+    </Layout>
+  </Section>
+  <CTASection />
+
+  <Section id="secondary-cta" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >SecondaryCtaPrompt</Heading
+      >
+      <Heading tag="h2" balance>The lower-commitment fallback</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        For readers who are not ready for the main CTA — a lighter brand-themed
+        prompt.
+      </Text>
+    </Layout>
+  </Section>
+  <SecondaryCtaPrompt />
+
+  <Section id="sign-up-form" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">SignUpForm</Heading>
+      <Heading tag="h2" balance>A contact form in a narrow card</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Heading, subtext and the form family in a centered narrow container.
+      </Text>
+    </Layout>
+  </Section>
+  <SignUpForm />
+
+  <Section id="faq-section" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">FAQ</Heading>
+      <Heading tag="h2" balance>Questions beside an accordion</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Heading on the left, an Accordion of questions on the right. Defaults to
+        the shared generalFaqs set in src/data/faqs.ts.
+      </Text>
+    </Layout>
+  </Section>
+  <FAQ />
+
+  <Section id="feature-cards" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">FeatureCards</Heading
+      >
+      <Heading tag="h2" balance>Intro plus a two-card feature grid</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The only section here that requires props: a heading and two images.
+      </Text>
+    </Layout>
+  </Section>
+  <FeatureCards
+    heading="Everything you need to launch, in one system"
+    portraitImage={ph14}
+    portraitAlt="Placeholder — portrait feature image"
+    mediaImage={ph17}
+    mediaAlt="Placeholder — media feature image"
+  />
+
+  <Section id="framework-section" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >FrameworkSection</Heading
+      >
+      <Heading tag="h2" balance>The process, in brand colours</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Note it hardcodes id="framework", so render it only once per page.
+      </Text>
+    </Layout>
+  </Section>
+  <FrameworkSection />
+
+  <Section id="how-it-works" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">HowItWorks</Heading>
+      <Heading tag="h2" balance>A scroll-animated timeline</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Overlapping image cluster with a GSAP ScrollTrigger timeline beside it.
+      </Text>
+    </Layout>
+  </Section>
+  <HowItWorks />
+
+  <Section id="services-section" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Services</Heading>
+      <Heading tag="h2" balance>Service rows with a cursor follower</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Six baked-in services; hover a row on a desktop pointer to see the image
+        follow the cursor.
+      </Text>
+    </Layout>
+  </Section>
+  <Services />
+
+  <Section id="why-work-with-us" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >WhyWorkWithUs</Heading
+      >
+      <Heading tag="h2" balance>Numbered value propositions</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        A breakout-reversed layout. Defaults to padding="none", so give it
+        padding if it needs to breathe against a neighbour.
+      </Text>
+    </Layout>
+  </Section>
+  <WhyWorkWithUs />
+
+  <Section id="comparison-section" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >ComparisonSection</Heading
+      >
+      <Heading tag="h2" balance>This versus that, side by side</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Takes the two images being compared as props.
+      </Text>
+    </Layout>
+  </Section>
+  <ComparisonSection leftImage={ph14} rightImage={ph17} />
+
+  <Section id="pricing-section" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">Pricing</Heading>
+      <Heading tag="h2" balance>A pricing narrative section</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        The prose-and-checklist section — distinct from the PricingCard
+        components further up, which are the cards themselves.
+      </Text>
+    </Layout>
+  </Section>
+  <Pricing />
+
+  <Section id="post-launch-support" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >PostLaunchSupport</Heading
+      >
+      <Heading tag="h2" balance>What happens after launch</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Two-column intro, a checklist, and a full-width image.
+      </Text>
+    </Layout>
+  </Section>
+  <PostLaunchSupport />
+
+  <Section id="split-section" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">SplitSection</Heading
+      >
+      <Heading tag="h2" balance>Content against a bleeding image</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Takes the image as a prop and the copy as its default slot. Also
+        defaults to padding="none".
+      </Text>
+    </Layout>
+  </Section>
+  <SplitSection image={ph17} imageAlt="Placeholder — split section image">
+    <Heading tag="h2" variant="h4">Built to be handed over</Heading>
+    <div class="split_body u-rich-text">
+      <p>
+        Body copy for the split section, passed through the default slot so it
+        can be any markup you like.
+      </p>
+    </div>
+  </SplitSection>
+
+  <Section id="image-promo" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">ImagePromo</Heading>
+      <Heading tag="h2" balance>A brand-themed promo card</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Copy beside an image, on the brand background.
+      </Text>
+    </Layout>
+  </Section>
+  <ImagePromo />
+
+  <Section id="vision-promo" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">VisionPromo</Heading>
+      <Heading tag="h2" balance>A centered statement over a wide image</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Takes the heading and image as props, with prose in the body slot.
+      </Text>
+    </Layout>
+  </Section>
+  <VisionPromo
+    heading="A website should still be working for you in three years"
+    image={ph14}
+    imageAlt="Placeholder — vision promo image"
+  >
+    <Text slot="body">
+      The right column takes prose through the body slot, so it can carry
+      whatever markup the page needs.
+    </Text>
+  </VisionPromo>
+
+  <Section id="project-images" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >ProjectImages</Heading
+      >
+      <Heading tag="h2" balance>A marquee of project screenshots</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        Built on Marquee — pure CSS, pauses on hover, and stops entirely under
+        reduced motion.
+      </Text>
+    </Layout>
+  </Section>
+  <ProjectImages />
+
+  <Section id="stacking-panels" padding="small">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2">
+        StackingPanels &amp; StackingPanel
+      </Heading>
+      <Heading tag="h2" balance>Cards that stack as you scroll</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        StackingPanels is the scroll-driven wrapper; each StackingPanel is one
+        card and is the one section component that must be nested rather than
+        used on its own.
+      </Text>
+    </Layout>
+  </Section>
+  <StackingPanels>
+    <Heading slot="heading" tag="h2" variant="h2">
+      Three panels, stacking on scroll
+    </Heading>
+    <StackingPanel>
+      <Heading tag="h3" variant="h4">Discovery</Heading>
+      <Text>
+        The first card. Scroll slowly to watch the next one settle on top of it.
+      </Text>
+      <Visual
+        slot="visual"
+        src={ph14}
+        alt="Placeholder — stacking panel"
+        ratio="landscape"
+      />
+    </StackingPanel>
+    <StackingPanel reversed>
+      <Heading tag="h3" variant="h4">Design</Heading>
+      <Text>The second card, with its visual on the opposite side.</Text>
+      <Visual
+        slot="visual"
+        src={ph17}
+        alt="Placeholder — stacking panel"
+        ratio="landscape"
+      />
+    </StackingPanel>
+    <StackingPanel>
+      <Heading tag="h3" variant="h4">Build</Heading>
+      <Text>The third and last card in the stack.</Text>
+      <Visual
+        slot="visual"
+        src={humanTouch}
+        alt="Placeholder — stacking panel"
+        ratio="landscape"
+      />
+    </StackingPanel>
+  </StackingPanels>
 </BaseLayout>
 
 <script>

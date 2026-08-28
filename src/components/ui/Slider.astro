@@ -36,7 +36,9 @@ type SliderVariant =
 /**
  * Slider — touch/swipe carousel powered by Swiper v12.
  *
- * Each slide must be wrapped in a `.swiper-slide` div.
+ * Put slides straight into the default slot — each direct child is
+ * auto-wrapped in a `.swiper-slide` div at runtime, so no manual wrapping
+ * is needed (already-wrapped children are left alone).
  *
  * **Props:**
  * - `variant` — overflow clipping: crop-left, crop-right, crop-both, overflow-visible (default: `'crop-left'`)

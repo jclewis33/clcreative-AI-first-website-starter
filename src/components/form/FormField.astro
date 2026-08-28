@@ -8,16 +8,19 @@ import type { HTMLAttributes } from "astro/types";
  *
  * @example
  * ```astro
- * <!-- Default label above the input -->
- * <FormField label="Email" name="email" type="email" required
- *   placeholder="you@company.com" autocomplete="email" />
+ * <!-- Semantic variant settles type + keyboard + autofill together -->
+ * <FormField label="Email" name="email" variant="email" required
+ *   placeholder="you@company.com" />
+ *
+ * <FormField label="First Name" name="first-name" variant="first-name" />
+ * <FormField label="Zip" name="zip" variant="zip-code" />
  *
  * <!-- Hidden label (screen-reader only) -->
- * <FormField label="Phone" name="phone" type="tel"
+ * <FormField label="Phone" name="phone" variant="phone"
  *   labelVariant="hidden" placeholder="000-000-0000" />
  *
  * <!-- Floating label (sits inside field, floats up on focus/value) -->
- * <FormField label="Email Address" name="email" type="email"
+ * <FormField label="Email Address" name="email" variant="email"
  *   labelVariant="floating" />
  * ```
  */
@@ -34,6 +37,30 @@ type InputType =
   | "search"
   | "hidden";
 
+type FieldVariant =
+  /** Anything else, with no assumptions (default) */
+  | "text"
+  /** Autofilled from an address book entry */
+  | "first-name"
+  /** Autofilled from an address book entry */
+  | "last-name"
+  /** Email keyboard, validation, and autofill */
+  | "email"
+  /** Telephone keyboard and autofill */
+  | "phone"
+  /** Native date picker */
+  | "date"
+  /** Numeric keyboard, postal-code autofill */
+  | "zip-code"
+  /** Number input, no autofill */
+  | "number"
+  /** The browser's own search handling */
+  | "search"
+  /** The browser's own password handling */
+  | "password"
+  /** URL keyboard and validation */
+  | "url";
+
 interface Props extends HTMLAttributes<"input"> {
   /** Label text for the field. Always rendered for accessibility. */
   label: string;
@@ -42,7 +69,18 @@ interface Props extends HTMLAttributes<"input"> {
   name: string;
 
   /**
-   * Input type.
+   * What the field is for. Settles the input's `type`, `inputmode` keyboard,
+   * and `autocomplete` autofill together, so a field only has to say which
+   * one it is. Explicit `type` / `autocomplete` / `inputmode` props override
+   * individual pieces.
+   *
+   * @default 'text'
+   * @example variant="email"
+   */
+  variant?: FieldVariant;
+
+  /**
+   * Input type. Overrides the `variant` mapping — prefer `variant` alone.
    * @default 'text'
    */
   type?: InputType;
@@ -105,7 +143,8 @@ interface Props extends HTMLAttributes<"input"> {
 const {
   label,
   name,
-  type = "text",
+  variant = "text",
+  type,
   placeholder,
   required = false,
   disabled = false,
@@ -120,6 +159,47 @@ const {
   ...rest
 } = Astro.props;
 
+/* Each variant settles type + keyboard + autofill together; explicit props
+   override piece by piece. */
+const KINDS: Record<
+  FieldVariant,
+  {
+    type: InputType;
+    mode: NonNullable<Props["inputmode"]>;
+    fill: string;
+  }
+> = {
+  text: { type: "text", mode: "text", fill: "on" },
+  "first-name": { type: "text", mode: "text", fill: "given-name" },
+  "last-name": { type: "text", mode: "text", fill: "family-name" },
+  email: { type: "email", mode: "email", fill: "email" },
+  phone: { type: "tel", mode: "tel", fill: "tel" },
+  date: { type: "date", mode: "text", fill: "bday" },
+  "zip-code": { type: "text", mode: "numeric", fill: "postal-code" },
+  number: { type: "number", mode: "numeric", fill: "off" },
+  search: { type: "search", mode: "search", fill: "off" },
+  password: { type: "password", mode: "text", fill: "current-password" },
+  url: { type: "url", mode: "url", fill: "url" },
+};
+
+const kind = KINDS[variant];
+const resolvedType = type ?? kind.type;
+const resolvedAutocomplete = autocomplete ?? kind.fill;
+const resolvedInputmode = inputmode ?? kind.mode;
+
+if (
+  import.meta.env.DEV &&
+  variant !== "text" &&
+  type !== undefined &&
+  type !== kind.type
+) {
+  console.warn(
+    `\n[FormField] variant="${variant}" implies type="${kind.type}" but ` +
+      `type="${type}" was also passed — the explicit type wins. Drop one ` +
+      "so the field has a single source of truth.\n",
+  );
+}
+
 const fieldId = id || `field-${name}`;
 const describedById = helperText || errorText ? `${fieldId}-hint` : undefined;
 const isFloating = labelVariant === "floating";
@@ -127,7 +207,7 @@ const resolvedPlaceholder = isFloating ? placeholder || " " : placeholder;
 ---
 
 {
-  type === "hidden" ? (
+  resolvedType === "hidden" ? (
     <input type="hidden" name={name} value={value} id={fieldId} />
   ) : (
     <div
@@ -150,15 +230,15 @@ const resolvedPlaceholder = isFloating ? placeholder || " " : placeholder;
 
       <input
         class="form_field"
-        type={type}
+        type={resolvedType}
         name={name}
         id={fieldId}
         placeholder={resolvedPlaceholder}
         required={required}
         disabled={disabled}
         value={value}
-        autocomplete={autocomplete}
-        inputmode={inputmode}
+        autocomplete={resolvedAutocomplete}
+        inputmode={resolvedInputmode}
         aria-describedby={describedById}
         aria-invalid={errorText ? "true" : undefined}
         {...rest}

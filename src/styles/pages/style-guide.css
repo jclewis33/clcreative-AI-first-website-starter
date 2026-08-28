@@ -181,6 +181,11 @@
      would stack on top of it and every sample would read further apart than
      the design system actually spaces it. u-margin-trim clears the first and
      last edges so the card padding stays even. */
+  /* The column card had no gap, so a label pill sat directly on the demo it
+     labels — measured at 0px in most cards. `gap` rather than a margin on the
+     pill: these cards carry u-margin-trim, and gap does not fight it, does not
+     collapse, and leaves the pill's own box alone so it stays centred in the
+     row layouts that also use it. */
   .styleguide_card_wrap {
     background-color: var(--background-2);
     border: 1px solid var(--border);
@@ -189,6 +194,7 @@
     margin-bottom: var(--space-4);
     display: flex;
     flex-direction: column;
+    gap: var(--space-3);
   }
 
   .styleguide_card_wrap.is-row {
@@ -208,18 +214,29 @@
      TAG / LABEL BADGE
      ----------------------------------------------------------------------- */
 
+  /* flex-shrink: 0 is load-bearing, not decoration. The label is nowrap, so a
+     flex parent that squeezes it pushes the text straight out through the
+     pill's border instead of wrapping it. Callers that want a shared label
+     column use `min-width`, never `width`: the font size is a fluid clamp(),
+     so any fixed width fits at one viewport and overflows at another. */
   .tag_wrap {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     background-color: var(--background);
     border: 1px solid var(--border);
     border-radius: var(--radius-small);
-    padding: 0.15rem 0.5rem;
+    padding: 0.35rem 0.7rem;
     font-size: var(--text-regular-size);
     font-family: var(--font-primary);
     color: var(--text);
     opacity: 0.9;
-    white-space: nowrap;
+    /* Wrap between tokens rather than letting text escape the border. A label
+       like ".u-flex .u-justify-center .u-align-center" cannot fit a narrow
+       screen on one line; nowrap made it bleed through the pill instead.
+       break-word only splits INSIDE a token when that token alone overflows,
+       so ordinary class names stay intact. */
+    overflow-wrap: break-word;
   }
 
   /* -----------------------------------------------------------------------
@@ -229,7 +246,7 @@
   .styleguide_swatch_wrap {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: var(--space-2);
     align-items: flex-start;
   }
 
