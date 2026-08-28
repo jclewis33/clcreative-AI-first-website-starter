@@ -402,9 +402,12 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   { cls: "u-text-wrap-pretty", label: "pretty" },
                 ].map(({ cls, label }) => (
                   <div class="styleguide_card_wrap u-margin-trim">
-                    <span class="tag_wrap">
-                      {`.${cls}`} — {label}
-                    </span>
+                    <div class="u-flex u-align-center u-gap-2">
+                      <span class="tag_wrap">{`.${cls}`}</span>
+                      <span class="u-text-style-tiny u-text-style-muted">
+                        {label}
+                      </span>
+                    </div>
                     <p class={`u-text-style-h4 ${cls}`}>
                       A fairly long heading that wraps across multiple lines to
                       show the effect
@@ -1227,7 +1230,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   >
                     <span
                       class="tag_wrap"
-                      style="flex-shrink:0; width:6.5rem"
+                      style="min-width:10ch"
                     >{`--space-${n}`}</span>
                     <div
                       class="styleguide_space_bar"
@@ -1464,7 +1467,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   >
                     <span
                       class="tag_wrap"
-                      style="flex-shrink:0; width:8rem"
+                      style="min-width:15ch"
                     >{`.u-margin-top-${n}`}</span>
                     <div style="flex:1">
                       <div class="styleguide_margin_demo_box" />
@@ -1939,7 +1942,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   >
                     <span
                       class="tag_wrap"
-                      style="flex-shrink:0; width:5rem"
+                      style="min-width:9ch"
                     >{`.u-gap-${n}`}</span>
                     <div class={`u-flex u-gap-${n}`}>
                       <div

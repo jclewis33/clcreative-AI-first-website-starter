@@ -208,18 +208,29 @@
      TAG / LABEL BADGE
      ----------------------------------------------------------------------- */
 
+  /* flex-shrink: 0 is load-bearing, not decoration. The label is nowrap, so a
+     flex parent that squeezes it pushes the text straight out through the
+     pill's border instead of wrapping it. Callers that want a shared label
+     column use `min-width`, never `width`: the font size is a fluid clamp(),
+     so any fixed width fits at one viewport and overflows at another. */
   .tag_wrap {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     background-color: var(--background);
     border: 1px solid var(--border);
     border-radius: var(--radius-small);
-    padding: 0.15rem 0.5rem;
+    padding: 0.35rem 0.7rem;
     font-size: var(--text-regular-size);
     font-family: var(--font-primary);
     color: var(--text);
     opacity: 0.9;
-    white-space: nowrap;
+    /* Wrap between tokens rather than letting text escape the border. A label
+       like ".u-flex .u-justify-center .u-align-center" cannot fit a narrow
+       screen on one line; nowrap made it bleed through the pill instead.
+       break-word only splits INSIDE a token when that token alone overflows,
+       so ordinary class names stay intact. */
+    overflow-wrap: break-word;
   }
 
   /* -----------------------------------------------------------------------
