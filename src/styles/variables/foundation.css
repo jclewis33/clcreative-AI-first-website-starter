@@ -87,7 +87,7 @@
      Static border color tokens. Theme-aware --border is in themes.css.
      ===================================================== */
 
-  --border-color-light: var(--color-light-100-o20); /* subtle separation   */
+  --border-color-light: var(--color-light-100-o10); /* subtle separation   */
   --border-color-dark: var(--color-dark-900-o50); /* stronger definition */
   --border-color-brand: var(--color-brand-text-o20); /* emphasis            */
 
