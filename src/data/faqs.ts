@@ -3,7 +3,7 @@
  *
  * Import named arrays and combine them as needed:
  * ```ts
- * import { generalFaqs } from"@/data/faqs";
+ * import { generalFaqs } from "@/data/faqs";
  * <FAQ items={generalFaqs} />
  * ```
  *

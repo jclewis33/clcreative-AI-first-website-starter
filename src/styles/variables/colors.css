@@ -40,7 +40,7 @@
      ===================================================== */
 
   --color-dark-900: #0c111d;
-  --color-dark-900-010: color-mix(in srgb, var(--color-dark-900) 10%, transparent);
+  --color-dark-900-o10: color-mix(in srgb, var(--color-dark-900) 10%, transparent);
   --color-dark-900-o20: color-mix(in srgb, var(--color-dark-900) 20%, transparent);
   --color-dark-900-o50: color-mix(in srgb, var(--color-dark-900) 50%, transparent);
   --color-dark-900-o75: color-mix(in srgb, var(--color-dark-900) 75%, transparent);

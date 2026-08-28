@@ -3,18 +3,21 @@ import type { HTMLAttributes } from "astro/types";
 /**
  * FAQ — two-column layout with heading left, accordion right.
  *
- * Pass `items` to control which questions appear. Defaults to
- * photography + general FAQs when no items are provided.
+ * Questions come from `src/data/faqs.ts` — a plain TypeScript file, not the
+ * CMS. Add or edit them there; nothing else needs touching.
  *
- * @example Default (photography + general)
+ * Pass `items` to control which questions appear. Defaults to `generalFaqs`.
+ *
+ * @example Default (generalFaqs)
  * ```astro
  * <FAQ />
  * ```
  *
- * @example Web development page
+ * @example A page-specific set
  * ```astro
- * import { webDevFaqs, generalFaqs } from"@/components/data/faqs";
- * <FAQ items={[...webDevFaqs, ...generalFaqs]} />
+ * // add `export const webDesignFaqs: FAQItem[] = [...]` to src/data/faqs.ts
+ * import { webDesignFaqs, generalFaqs } from "@/data/faqs";
+ * <FAQ items={[...webDesignFaqs, ...generalFaqs]} />
  * ```
  */
 
