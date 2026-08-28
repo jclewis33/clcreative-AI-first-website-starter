@@ -75,16 +75,23 @@ import type { HTMLAttributes } from "astro/types";
  * ```
  *
  * @example Centered card with background image (CTA pattern)
+ * The content wrapper is required: the scrim is dark whatever section the
+ * card lands in, so the text needs the ABSOLUTE u-theme-dark rather than a
+ * relative data-theme-invert. u-display-contents keeps that wrapper out of
+ * the box tree, or it becomes the card's single grid child.
  * ```astro
  * <Layout variant="card">
+ *   <div class="u-display-contents u-theme-dark">
  *     <Heading tag="h2" variant="display-sm" accent>Ready to <strong>start</strong>?</Heading>
  *     <Text size="large">Book a free strategy call.</Text>
  *     <ButtonWrapper>
  *       <Button href="/book-a-call" ariaLabel="Book call">Book a Call</Button>
  *     </ButtonWrapper>
+ *   </div>
  *   <Fragment slot="column2">
  *     <Visual src={bgImage} alt="" variant="background" />
  *     <Overlay strength={75} />
+ *   </Fragment>
  * </Layout>
  * ```
  *

@@ -276,13 +276,27 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       <Text variant="regular" muted maxWidth="48rem">
         Solid keeps one density across the image; gradient fades between a top
         and bottom strength, which is what you want when text sits at one edge.
+        Text sitting on a scrim needs u-theme-dark, not data-theme-invert —
+        invert flips relative to the section, but a scrim is dark no matter what
+        section it lands in, so the text needs an absolute theme.
       </Text>
 
+      {
+        /* Text over a scrim takes u-theme-dark, NOT data-theme-invert. Invert
+          is relative to the section, so it would read white here but flip to
+          dark inside a dark section — while the scrim stays dark either way.
+          The scrim is an absolute ground, so it needs an absolute theme.
+          u-display-contents keeps the wrapper out of the box tree, or it
+          would become the card's single grid child. Same pattern as
+          CTASection. */
+      }
       <Layout variant="card">
-        <Heading tag="h4" variant="h3">Solid scrim</Heading>
-        <Text align="center" marginBottom={0}>
-          variant="solid" at strength={70} — an even wash.
-        </Text>
+        <div class="u-display-contents u-theme-dark">
+          <Heading tag="h4" variant="h3">Solid scrim</Heading>
+          <Text align="center" marginBottom={0}>
+            variant="solid" at strength={70} — an even wash.
+          </Text>
+        </div>
         <Fragment slot="column2">
           <Visual
             src={phL4}
@@ -294,17 +308,28 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       </Layout>
 
       <Layout variant="card">
-        <Heading tag="h4" variant="h3">Gradient scrim</Heading>
-        <Text align="center" marginBottom={0}>
-          variant="gradient" from strengthTop={0} to strengthBottom={85}.
-        </Text>
+        <div class="u-display-contents u-theme-dark">
+          <Heading tag="h4" variant="h3">Gradient scrim</Heading>
+          <Text align="center" marginBottom={0}>
+            Three stops — strengthTop={20}, strengthMiddle={65}, strengthBottom={
+              90
+            }. A two-stop fade to the bottom is right when text sits at the
+            bottom edge; this card centres its content, so the middle stop is
+            what keeps it readable without burying the image.
+          </Text>
+        </div>
         <Fragment slot="column2">
           <Visual
             src={phL5}
             alt="Placeholder background"
             variant="background"
           />
-          <Overlay variant="gradient" strengthTop={0} strengthBottom={85} />
+          <Overlay
+            variant="gradient"
+            strengthTop={20}
+            strengthMiddle={65}
+            strengthBottom={90}
+          />
         </Fragment>
       </Layout>
     </Layout>

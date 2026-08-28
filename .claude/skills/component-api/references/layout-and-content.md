@@ -132,16 +132,24 @@ chain. A `<Visual>` alone in its column, or `variant="background"`, is exempt.
   <Visual slot="column2" src={img} alt="Description" ratio="landscape" />
 </Layout>
 
-<!-- Card with background image (CTA pattern) -->
+<!-- Card with background image (CTA pattern).
+     The u-theme-dark wrapper is REQUIRED: a scrim is dark whatever section the
+     card sits in, so the text needs an absolute theme, not a relative
+     data-theme-invert (which would flip to dark text inside a dark section).
+     u-display-contents keeps the wrapper out of the box tree — a plain div
+     would become the card's single grid child. Card variant="cover" does NOT
+     need this; it paints its own white text internally. -->
 <Layout variant="card">
-  <Heading tag="h2" variant="display-sm" accent
-    >Ready to <strong>start</strong>?</Heading
-  >
-  <Text variant="large" align="center">Book a free strategy call.</Text>
-  <ButtonWrapper
-    ><Button href="/contact" ariaLabel="Book call">Book a Call</Button
-    ></ButtonWrapper
-  >
+  <div class="u-display-contents u-theme-dark">
+    <Heading tag="h2" variant="display-sm" accent
+      >Ready to <strong>start</strong>?</Heading
+    >
+    <Text variant="large" align="center">Book a free strategy call.</Text>
+    <ButtonWrapper
+      ><Button href="/contact" ariaLabel="Book call">Book a Call</Button
+      ></ButtonWrapper
+    >
+  </div>
 </Layout>
 <Fragment slot="column2">
   <Visual src={bgImage} alt="" variant="background" />
