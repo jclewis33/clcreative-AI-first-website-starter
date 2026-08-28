@@ -30,6 +30,7 @@
  * 3. Section components render their OWN <Section>, so they go at the root
  *    with a slim label section before them — never nested inside a <Section>.
  */
+
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
@@ -52,6 +53,7 @@ import Button from "@/components/ui/Button.astro";
 import TestimonialsSlider from "@/components/sections/TestimonialsSlider.astro";
 import TestimonialsGrid from "@/components/sections/TestimonialsGrid.astro";
 import { getTestimonials } from "@/sanity/lib/testimonials";
+import type { TestimonialData } from "@/sanity/lib/testimonials";
 import Form from "@/components/form/Form.astro";
 import FormField from "@/components/form/FormField.astro";
 import FormFieldset from "@/components/form/FormFieldset.astro";
@@ -63,6 +65,7 @@ import FormRange from "@/components/form/FormRange.astro";
 import Visual from "@/components/ui/Visual.astro";
 import Overlay from "@/components/ui/Overlay.astro";
 import BlogPostGrid from "@/components/sections/BlogPostGrid.astro";
+
 import humanTouch from "@/assets/placeholder-images-2/ai-first-starter-15.webp";
 import manCouch from "@/assets/placeholder-images-2/ai-first-starter-16.webp";
 import CaseStudyGrid from "@/components/sections/CaseStudyGrid.astro";
@@ -77,6 +80,13 @@ import SkipLink from "@/components/ui/SkipLink.astro";
 import BlogCard from "@/components/ui/BlogCard.astro";
 import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
 import TestimonialCard from "@/components/ui/TestimonialCard.astro";
+
+/* ── Section components (each renders its own <Section>) ──
+   Not demoed here on purpose:
+   • SanityCtaSection — needs a real Sanity ctaSection document; urlFor()
+     throws on a hand-written literal. <CTASection /> below is its twin.
+   • HoneyBookEmbed / HoneyBookEmbedBookingWidget — third-party widgets that
+     load an external script and need a real account id. */
 import CTASection from "@/components/sections/CTASection.astro";
 import SecondaryCtaPrompt from "@/components/sections/SecondaryCtaPrompt.astro";
 import SignUpForm from "@/components/sections/SignUpForm.astro";
@@ -98,6 +108,8 @@ import StackingPanel from "@/components/sections/StackingPanel.astro";
 import SingleTestimonial from "@/components/sections/SingleTestimonial.astro";
 import TestimonialShowcase from "@/components/sections/TestimonialShowcase.astro";
 import CaseStudyFeatured from "@/components/sections/CaseStudyFeatured.astro";
+
+/* ── Demo image pools (from the shared placeholder library) ── */
 import phL1 from "@/assets/placeholder-images-2/ai-first-starter-1.webp";
 import phL2 from "@/assets/placeholder-images-2/ai-first-starter-2.webp";
 import phL3 from "@/assets/placeholder-images-2/ai-first-starter-3.webp";
@@ -107,20 +119,6 @@ import phL6 from "@/assets/placeholder-images-2/ai-first-starter-6.webp";
 import phS1 from "@/assets/placeholder-images-2/ai-first-starter-11.webp";
 import phS2 from "@/assets/placeholder-images-2/ai-first-starter-12.webp";
 import phS3 from "@/assets/placeholder-images-2/ai-first-starter-13.webp";
-import ph14 from "@/assets/placeholder-images-2/ai-first-starter-14.webp";
-import ph17 from "@/assets/placeholder-images-2/ai-first-starter-17.webp";
-import { getDraftModeProps } from "@/sanity/lib/draft-mode";
-import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
-import type { TestimonialData } from "@/sanity/lib/testimonials";
-
-/* ── Section components (each renders its own <Section>) ──
-   Not demoed here on purpose:
-   • SanityCtaSection — needs a real Sanity ctaSection document; urlFor()
-     throws on a hand-written literal. <CTASection /> below is its twin.
-   • HoneyBookEmbed / HoneyBookEmbedBookingWidget — third-party widgets that
-     load an external script and need a real account id. */
-
-/* ── Demo image pools (from the shared placeholder library) ── */
 const demoLandscape = [
   phL1.src,
   phL2.src,
@@ -133,6 +131,8 @@ const demoSquare = [phS1.src, phS2.src, phS3.src];
 
 /* Images 14 + 17 are not imported by any section component, so they are safe
    to hand to the ones that take an image as a prop. */
+import ph14 from "@/assets/placeholder-images-2/ai-first-starter-14.webp";
+import ph17 from "@/assets/placeholder-images-2/ai-first-starter-17.webp";
 
 /* ── Page index ──
    Doubles as the live <TableOfContents> demo: each entry's slug is the id
@@ -182,6 +182,8 @@ const COMPONENT_INDEX = [
 ];
 
 /* ── Fetch testimonials from Sanity (tolerate an empty/unreachable dataset) ── */
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
   (): TestimonialData[] => [],
 );
@@ -499,7 +501,7 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       <Heading variant="eyebrow" class="u-margin-bottom-3"
         >Sticky column</Heading
       >
-      <Heading tag="h3" variant="h2" balance>Left column stays fixed</Heading>
+      <Heading tag="h3" variant="h2" balance> Left column stays fixed </Heading>
       <Text muted>
         Use variant="sticky-left" when the left column should stay visible while
         the right column scrolls. Perfect for table of contents, labels, or
@@ -2083,16 +2085,19 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       </Text>
       <ul class="u-list">
         <li>
-          Default (dateStyle: 'long'):
-          <FormattedDate date="2026-03-14" />
+          Default (dateStyle: 'long'): <FormattedDate date="2026-03-14" />
         </li>
         <li>
-          Medium:
-          <FormattedDate date="2026-03-14" format={{ dateStyle: "medium" }} />
+          Medium: <FormattedDate
+            date="2026-03-14"
+            format={{ dateStyle: "medium" }}
+          />
         </li>
         <li>
-          Full:
-          <FormattedDate date="2026-03-14" format={{ dateStyle: "full" }} />
+          Full: <FormattedDate
+            date="2026-03-14"
+            format={{ dateStyle: "full" }}
+          />
         </li>
       </ul>
     </Layout>
@@ -2100,11 +2105,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
     <Layout variant="stack">
       <Heading tag="h3" variant="h2">TableOfContents</Heading>
       <Text variant="regular" muted maxWidth="48rem">
-        Takes items:
-        {"{ slug, text }[]"}
-        and renders anchor links, marking the current one as you scroll. The page
-        index near the top of this page is a live instance — here is a short one with
-        three items.
+        Takes items: {"{ slug, text }[]"} and renders anchor links, marking the current
+        one as you scroll. The page index near the top of this page is a live instance
+        — here is a short one with three items.
       </Text>
       <TableOfContents
         title="On this page"
