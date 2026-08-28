@@ -181,6 +181,11 @@
      would stack on top of it and every sample would read further apart than
      the design system actually spaces it. u-margin-trim clears the first and
      last edges so the card padding stays even. */
+  /* The column card had no gap, so a label pill sat directly on the demo it
+     labels — measured at 0px in most cards. `gap` rather than a margin on the
+     pill: these cards carry u-margin-trim, and gap does not fight it, does not
+     collapse, and leaves the pill's own box alone so it stays centred in the
+     row layouts that also use it. */
   .styleguide_card_wrap {
     background-color: var(--background-2);
     border: 1px solid var(--border);
@@ -189,6 +194,7 @@
     margin-bottom: var(--space-4);
     display: flex;
     flex-direction: column;
+    gap: var(--space-3);
   }
 
   .styleguide_card_wrap.is-row {
@@ -240,7 +246,7 @@
   .styleguide_swatch_wrap {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: var(--space-2);
     align-items: flex-start;
   }
 

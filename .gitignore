@@ -50,6 +50,10 @@ preview/.env
 !.claude/skills/sanity-and-preview
 !.claude/skills/seo-discoverability
 
+# Playwright MCP scratch dir — screenshots, console logs, and anything the
+# browser downloads while driving the site. Never source.
+.playwright-mcp/
+
 # transient plan-mode artifact (personal, machine-generated)
 .claude/plan.md
 
