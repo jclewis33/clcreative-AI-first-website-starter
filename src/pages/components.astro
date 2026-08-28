@@ -30,89 +30,88 @@
  * 3. Section components render their OWN <Section>, so they go at the root
  *    with a slim label section before them — never nested inside a <Section>.
  */
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import Section from '@/components/ui/Section.astro';
-import Heading from '@/components/ui/Heading.astro';
-import Text from '@/components/ui/Text.astro';
-import Layout from '@/components/ui/Layout.astro';
-import Grid from '@/components/ui/Grid.astro';
-import Card from '@/components/ui/Card.astro';
-import Accordion from '@/components/ui/Accordion.astro';
-import AccordionItem from '@/components/ui/AccordionItem.astro';
-import Modal from '@/components/ui/Modal.astro';
-import Slider from '@/components/ui/Slider.astro';
-import Carousel from '@/components/ui/Carousel.astro';
-import Icon from '@/components/ui/Icon.astro';
-import Dropdown from '@/components/ui/Dropdown.astro';
-import arrowIcon from '@/assets/icons/arrow.svg';
-import Tab from '@/components/ui/Tab.astro';
-import TabButton from '@/components/ui/TabButton.astro';
-import TabPanel from '@/components/ui/TabPanel.astro';
-import Button from '@/components/ui/Button.astro';
-import TestimonialsSlider from '@/components/sections/TestimonialsSlider.astro';
-import TestimonialsGrid from '@/components/sections/TestimonialsGrid.astro';
-import getTestimonials from '@/sanity/lib/testimonials';
-import Form from '@/components/form/Form.astro';
-import FormField from '@/components/form/FormField.astro';
-import FormFieldset from '@/components/form/FormFieldset.astro';
-import FormTextarea from '@/components/form/FormTextarea.astro';
-import FormSelect from '@/components/form/FormSelect.astro';
-import FormCheckbox from '@/components/form/FormCheckbox.astro';
-import FormRadio from '@/components/form/FormRadio.astro';
-import FormRange from '@/components/form/FormRange.astro';
-import Visual from '@/components/ui/Visual.astro';
-import Overlay from '@/components/ui/Overlay.astro';
-import BlogPostGrid from '@/components/sections/BlogPostGrid.astro';
-import humanTouch from '@/assets/placeholder-images-2/ai-first-starter-15.webp';
-import manCouch from '@/assets/placeholder-images-2/ai-first-starter-16.webp';
-import CaseStudyGrid from '@/components/sections/CaseStudyGrid.astro';
-import PricingCard from '@/components/ui/PricingCard.astro';
-import PricingItem from '@/components/ui/PricingItem.astro';
-import Marquee from '@/components/ui/Marquee.astro';
-import ScrollReveal from '@/components/ui/ScrollReveal.astro';
-import TableOfContents from '@/components/ui/TableOfContents.astro';
-import Video from '@/components/ui/Video.astro';
-import FormattedDate from '@/components/ui/FormattedDate.astro';
-import SkipLink from '@/components/ui/SkipLink.astro';
-import BlogCard from '@/components/ui/BlogCard.astro';
-import CaseStudyCard from '@/components/ui/CaseStudyCard.astro';
-import TestimonialCard from '@/components/ui/TestimonialCard.astro';
-import CTASection from '@/components/sections/CTASection.astro';
-import SecondaryCtaPrompt from '@/components/sections/SecondaryCtaPrompt.astro';
-import SignUpForm from '@/components/sections/SignUpForm.astro';
-import FAQ from '@/components/sections/FAQ.astro';
-import FeatureCards from '@/components/sections/FeatureCards.astro';
-import FrameworkSection from '@/components/sections/FrameworkSection.astro';
-import HowItWorks from '@/components/sections/HowItWorks.astro';
-import Services from '@/components/sections/Services.astro';
-import WhyWorkWithUs from '@/components/sections/WhyWorkWithUs.astro';
-import ComparisonSection from '@/components/sections/ComparisonSection.astro';
-import Pricing from '@/components/sections/Pricing.astro';
-import PostLaunchSupport from '@/components/sections/PostLaunchSupport.astro';
-import SplitSection from '@/components/sections/SplitSection.astro';
-import ImagePromo from '@/components/sections/ImagePromo.astro';
-import VisionPromo from '@/components/sections/VisionPromo.astro';
-import ProjectImages from '@/components/sections/ProjectImages.astro';
-import StackingPanels from '@/components/sections/StackingPanels.astro';
-import StackingPanel from '@/components/sections/StackingPanel.astro';
-import SingleTestimonial from '@/components/sections/SingleTestimonial.astro';
-import TestimonialShowcase from '@/components/sections/TestimonialShowcase.astro';
-import CaseStudyFeatured from '@/components/sections/CaseStudyFeatured.astro';
-import phL1 from '@/assets/placeholder-images-2/ai-first-starter-1.webp';
-import phL2 from '@/assets/placeholder-images-2/ai-first-starter-2.webp';
-import phL3 from '@/assets/placeholder-images-2/ai-first-starter-3.webp';
-import phL4 from '@/assets/placeholder-images-2/ai-first-starter-4.webp';
-import phL5 from '@/assets/placeholder-images-2/ai-first-starter-5.webp';
-import phL6 from '@/assets/placeholder-images-2/ai-first-starter-6.webp';
-import phS1 from '@/assets/placeholder-images-2/ai-first-starter-11.webp';
-import phS2 from '@/assets/placeholder-images-2/ai-first-starter-12.webp';
-import phS3 from '@/assets/placeholder-images-2/ai-first-starter-13.webp';
-import ph14 from '@/assets/placeholder-images-2/ai-first-starter-14.webp';
-import ph17 from '@/assets/placeholder-images-2/ai-first-starter-17.webp';
-import getDraftModeProps from '@/sanity/lib/draft-mode';
-import ButtonWrapper from '@/components/ui/ButtonWrapper.astro';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Card from "@/components/ui/Card.astro";
+import Accordion from "@/components/ui/Accordion.astro";
+import AccordionItem from "@/components/ui/AccordionItem.astro";
+import Modal from "@/components/ui/Modal.astro";
+import Slider from "@/components/ui/Slider.astro";
+import Carousel from "@/components/ui/Carousel.astro";
+import Icon from "@/components/ui/Icon.astro";
+import Dropdown from "@/components/ui/Dropdown.astro";
+import arrowIcon from "@/assets/icons/arrow.svg";
+import Tab from "@/components/ui/Tab.astro";
+import TabButton from "@/components/ui/TabButton.astro";
+import TabPanel from "@/components/ui/TabPanel.astro";
+import Button from "@/components/ui/Button.astro";
+import TestimonialsSlider from "@/components/sections/TestimonialsSlider.astro";
+import TestimonialsGrid from "@/components/sections/TestimonialsGrid.astro";
+import { getTestimonials } from "@/sanity/lib/testimonials";
+import Form from "@/components/form/Form.astro";
+import FormField from "@/components/form/FormField.astro";
+import FormFieldset from "@/components/form/FormFieldset.astro";
+import FormTextarea from "@/components/form/FormTextarea.astro";
+import FormSelect from "@/components/form/FormSelect.astro";
+import FormCheckbox from "@/components/form/FormCheckbox.astro";
+import FormRadio from "@/components/form/FormRadio.astro";
+import FormRange from "@/components/form/FormRange.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
+import BlogPostGrid from "@/components/sections/BlogPostGrid.astro";
+import humanTouch from "@/assets/placeholder-images-2/ai-first-starter-15.webp";
+import manCouch from "@/assets/placeholder-images-2/ai-first-starter-16.webp";
+import CaseStudyGrid from "@/components/sections/CaseStudyGrid.astro";
+import PricingCard from "@/components/ui/PricingCard.astro";
+import PricingItem from "@/components/ui/PricingItem.astro";
+import Marquee from "@/components/ui/Marquee.astro";
+import ScrollReveal from "@/components/ui/ScrollReveal.astro";
+import TableOfContents from "@/components/ui/TableOfContents.astro";
+import Video from "@/components/ui/Video.astro";
+import FormattedDate from "@/components/ui/FormattedDate.astro";
+import SkipLink from "@/components/ui/SkipLink.astro";
+import BlogCard from "@/components/ui/BlogCard.astro";
+import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
+import TestimonialCard from "@/components/ui/TestimonialCard.astro";
+import CTASection from "@/components/sections/CTASection.astro";
+import SecondaryCtaPrompt from "@/components/sections/SecondaryCtaPrompt.astro";
+import SignUpForm from "@/components/sections/SignUpForm.astro";
+import FAQ from "@/components/sections/FAQ.astro";
+import FeatureCards from "@/components/sections/FeatureCards.astro";
+import FrameworkSection from "@/components/sections/FrameworkSection.astro";
+import HowItWorks from "@/components/sections/HowItWorks.astro";
+import Services from "@/components/sections/Services.astro";
+import WhyWorkWithUs from "@/components/sections/WhyWorkWithUs.astro";
+import ComparisonSection from "@/components/sections/ComparisonSection.astro";
+import Pricing from "@/components/sections/Pricing.astro";
+import PostLaunchSupport from "@/components/sections/PostLaunchSupport.astro";
+import SplitSection from "@/components/sections/SplitSection.astro";
+import ImagePromo from "@/components/sections/ImagePromo.astro";
+import VisionPromo from "@/components/sections/VisionPromo.astro";
+import ProjectImages from "@/components/sections/ProjectImages.astro";
+import StackingPanels from "@/components/sections/StackingPanels.astro";
+import StackingPanel from "@/components/sections/StackingPanel.astro";
+import SingleTestimonial from "@/components/sections/SingleTestimonial.astro";
+import TestimonialShowcase from "@/components/sections/TestimonialShowcase.astro";
+import CaseStudyFeatured from "@/components/sections/CaseStudyFeatured.astro";
+import phL1 from "@/assets/placeholder-images-2/ai-first-starter-1.webp";
+import phL2 from "@/assets/placeholder-images-2/ai-first-starter-2.webp";
+import phL3 from "@/assets/placeholder-images-2/ai-first-starter-3.webp";
+import phL4 from "@/assets/placeholder-images-2/ai-first-starter-4.webp";
+import phL5 from "@/assets/placeholder-images-2/ai-first-starter-5.webp";
+import phL6 from "@/assets/placeholder-images-2/ai-first-starter-6.webp";
+import phS1 from "@/assets/placeholder-images-2/ai-first-starter-11.webp";
+import phS2 from "@/assets/placeholder-images-2/ai-first-starter-12.webp";
+import phS3 from "@/assets/placeholder-images-2/ai-first-starter-13.webp";
+import ph14 from "@/assets/placeholder-images-2/ai-first-starter-14.webp";
+import ph17 from "@/assets/placeholder-images-2/ai-first-starter-17.webp";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 import type { TestimonialData } from "@/sanity/lib/testimonials";
-
 
 /* ── Section components (each renders its own <Section>) ──
    Not demoed here on purpose:
@@ -280,13 +279,15 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         section it lands in, so the text needs an absolute theme.
       </Text>
 
-      {/* Text over a scrim takes u-theme-dark, NOT data-theme-invert. Invert
+      {
+        /* Text over a scrim takes u-theme-dark, NOT data-theme-invert. Invert
           is relative to the section, so it would read white here but flip to
           dark inside a dark section — while the scrim stays dark either way.
           The scrim is an absolute ground, so it needs an absolute theme.
           u-display-contents keeps the wrapper out of the box tree, or it
           would become the card's single grid child. Same pattern as
-          CTASection. */}
+          CTASection. */
+      }
       <Layout variant="card">
         <div class="u-display-contents u-theme-dark">
           <Heading tag="h4" variant="h3">Solid scrim</Heading>
@@ -424,12 +425,14 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         <Button href="#" ariaLabel="Explore">Explore</Button>
       </ButtonWrapper>
 
-      {/* phL* are 1672x941 (16:9); phS* are 1254x1254 squares. This demo asks
+      {
+        /* phL* are 1672x941 (16:9); phS* are 1254x1254 squares. This demo asks
           for ratio="16/9", so it needs a landscape source. Pairing a square
           source with a forced 4:3 width/height would put three aspect ratios
           in conflict and letterbox the image.
           width/height are only for remote URLs; a local import already
-          carries its dimensions. */}
+          carries its dimensions. */
+      }
       <Visual src={phL3} ratio="16/9" alt="Placeholder image" slot="column2" />
     </Layout>
 
@@ -1816,9 +1819,11 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         are individual sections that can be placed directly on the page.
       </Text>
     </Layout>
-    {/* paddingBottom="none" too: these are sections nested inside a
+    {
+      /* paddingBottom="none" too: these are sections nested inside a
         section, so their own padding stacks on the parent's. The
-        container's gap separates them. */}
+        container's gap separates them. */
+    }
     <BlogPostGrid paddingTop="none" paddingBottom="none" variant="recent" />
 
     <!-- ============================================================
@@ -2083,17 +2088,11 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         </li>
         <li>
           Medium:
-          <FormattedDate
-            date="2026-03-14"
-            format={{ dateStyle: "medium" }}
-          />
+          <FormattedDate date="2026-03-14" format={{ dateStyle: "medium" }} />
         </li>
         <li>
           Full:
-          <FormattedDate
-            date="2026-03-14"
-            format={{ dateStyle: "full" }}
-          />
+          <FormattedDate date="2026-03-14" format={{ dateStyle: "full" }} />
         </li>
       </ul>
     </Layout>
@@ -2103,9 +2102,9 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       <Text variant="regular" muted maxWidth="48rem">
         Takes items:
         {"{ slug, text }[]"}
-        and renders anchor links, marking the current
-        one as you scroll. The page index near the top of this page is a live instance
-        — here is a short one with three items.
+        and renders anchor links, marking the current one as you scroll. The page
+        index near the top of this page is a live instance — here is a short one with
+        three items.
       </Text>
       <TableOfContents
         title="On this page"
