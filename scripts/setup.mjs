@@ -117,7 +117,12 @@ function replaceCssDecl(src, varName, value) {
 
 /** Replace an `export const NAME = "...";` string assignment. */
 function replaceAssignedString(src, name, value) {
-  const re = new RegExp(`(\\b${name}\\s*=\\s*)(["'])(?:\\\\.|(?!\\2).)*\\2`);
+  // Accepts both `NAME = "…"` and the env-overridable form
+  // `NAME = process.env.NAME || "…"` (SITE_URL in site.shared.mjs) — only the
+  // literal fallback is replaced, the env override stays in place.
+  const re = new RegExp(
+    `(\\b${name}\\s*=\\s*(?:process\\.env\\.${name}\\s*\\|\\|\\s*)?)(["'])(?:\\\\.|(?!\\2).)*\\2`,
+  );
   if (!re.test(src)) return { src, changed: false };
   return { src: src.replace(re, `$1${JSON.stringify(value)}`), changed: true };
 }
