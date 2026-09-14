@@ -6,19 +6,22 @@ import type { HTMLAttributes } from "astro/types";
  *
  * It is a deliberate duplicate of CTASection.astro's composition (same Section +
  * Layout card + Heading/Text/Button/Visual/Overlay primitives and the same
- * data-split-text / data-fade-in animation hooks), so it renders identically —
+ * data-fade-in animation hooks), so it renders identically —
  * but it sources its content + background image from a Sanity `ctaSection`
  * document. The background is a `cdn.sanity.io` URL, which renders through
  * Visual's remote `<img>` branch and so bypasses the runtime `/_image` Worker
  * endpoint that fails on first load for locally-imported images on SSR routes.
  *
  * NOTE: every text value is stegaClean'd, including the visible heading + body.
- * The heading runs through GSAP SplitText (data-split-text), which measures and
- * re-wraps the text — and the invisible stega characters Sanity injects in draft
- * mode break that measurement (heading renders full-width/left-aligned instead
- * of wrapping centered at its max-width). Cleaning the text keeps the layout
- * identical to CTASection at the cost of click-to-edit overlays on this section
- * (the document is still editable from the Studio form panel).
+ * This started as a hard requirement: the heading used to run through GSAP
+ * SplitText, which measures and re-wraps the text, and the invisible stega
+ * characters Sanity injects in draft mode broke that measurement (heading
+ * rendered full-width/left-aligned instead of wrapping centered at its
+ * max-width). The heading now uses the plain data-fade-in reveal, which does
+ * not measure text, but the cleaning is kept on purpose so this section keeps
+ * rendering identically to CTASection in draft mode. The cost is click-to-edit
+ * overlays on this section (the document is still editable from the Studio
+ * form panel); re-enabling them is a separate decision, not a cleanup.
  *
  * Keep this separate from CTASection.astro: CTASection stays the local-image
  * component for static (industry/location) pages and can diverge independently.
@@ -65,10 +68,9 @@ const {
 } = Astro.props;
 
 // Everything is stegaClean'd. The image asset must be cleaned (draft-mode stega
-// chars break the URL builder and silently 404 the image inside Presentation),
-// and the visible heading/body must be cleaned too because GSAP SplitText
-// (data-split-text on the heading) mis-measures stega-laden text and breaks the
-// layout — see the file header note.
+// chars break the URL builder and silently 404 the image inside Presentation);
+// the visible heading/body are cleaned to keep draft-mode rendering identical
+// to CTASection — see the file header note for the history.
 const cleanImage = stegaClean(cta.backgroundImage);
 // 1920 matches the project's full-width image convention; urlFor applies dpr(2)
 // for retina, so the served asset is up to 3840px wide.
@@ -96,7 +98,7 @@ const hasSecondary = Boolean(secondaryLabel && secondaryHref);
 >
   <Layout variant="card">
     <div class="u-display-contents u-theme-dark">
-      <Heading data-split-text maxWidth="30ch">{heading}</Heading>
+      <Heading data-fade-in maxWidth="30ch">{heading}</Heading>
       <Text variant="large" data-fade-in data-delay="0.2">{text}</Text>
       <ButtonWrapper data-fade-in data-delay="0.3">
         <Button href={primaryHref} ariaLabel={primaryLabel}>
