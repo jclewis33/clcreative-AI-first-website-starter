@@ -55,8 +55,7 @@ export const ctaSection = defineType({
     defineField({
       name: "secondaryButtonHref",
       title: "Secondary Button Link",
-      description:
-        "Can be a relative path (e.g. /marketing-scorecard) or a full URL.",
+      description: "Can be a relative path (e.g. /contact) or a full URL.",
       type: "url",
       validation: (rule) =>
         rule.uri({ allowRelative: true, scheme: ["http", "https", "mailto"] }),

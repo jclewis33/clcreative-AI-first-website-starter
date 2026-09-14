@@ -26,8 +26,9 @@ import type { HTMLAttributes } from "astro/types";
  * cannot balloon the way it would in a `display: contents` wrapper.
  *
  * All two-column variants collapse to a single stacked column when the nearest
- * `.u-container` is narrower than 58em (928px). Use `collapseAt="small"` to
- * keep columns until 560px instead.
+ * `.u-container` is narrower than 58em (928px of container width — a ~992px
+ * viewport at the default site margin). Use `collapseAt="small"` to keep
+ * columns until 560px instead.
  *
  * @example Two columns — content and an image
  * ```astro

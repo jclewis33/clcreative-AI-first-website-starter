@@ -71,8 +71,8 @@ It must **NOT change how the system works**:
    layer is load-bearing; leave it alone.
 2. **Component CSS is co-located, not in `styles/components/`.** Each component
    carries its styles in a `<style is:global>` block wrapping
-   `@layer components { … }`. Only `forms.css` and `marketing-scorecard.css` remain
-   in `styles/components/`, because they have no single owning component. Don't
+   `@layer components { … }`. Only `forms.css` remains in `styles/components/`,
+   because it has no single owning component. Don't
    create a new file there and don't add an import to global.css.
 
 **Strongly prefer what the starter already provides; adding is rare.** Map the new
@@ -155,8 +155,8 @@ value already in `site.shared.mjs`.
 
 **Required:** site name, site URL, email, founder, brand hex.
 **Optional** (keep current if blank): tagline, descriptions, X handle, phone,
-hours, address (locality/region/country), priceRange, GTM/MailerLite/Usercentrics/
-HoneyBook ids.
+hours, address (locality/region/country), priceRange, GTM/MailerLite/Usercentrics
+ids.
 
 > **⚠️ Four questions are REQUIRED every run — do not skip any.** These are what
 > make a fork look like the user's site instead of the starter, and every one is
@@ -196,11 +196,10 @@ brand is anything more than a single accent color.
 > [site-structure.ts](../../../src/data/site-structure.ts) `PAGES` (the `desc`
 > field, which also feeds llms.txt) — flag that those still hold placeholder text.
 
-> **Integrations:** GTM, MailerLite, Usercentrics, and HoneyBook ids in
-> `SITE.integrations` all ship **blank (`""`) = off**. Fill in the ones the new site
-> uses (Head.astro only injects each script when its id is set). To drop one
-> permanently, delete the field + its use in `Head.astro` / `BaseLayout.astro`; the
-> two `HoneyBookEmbed*` components ship unused — wire one in or delete them.
+> **Integrations:** GTM, MailerLite, and Usercentrics ids in `SITE.integrations`
+> all ship **blank (`""`) = off**. Fill in the ones the new site uses (Head.astro
+> only injects each script when its id is set). To drop one permanently, delete
+> the field + its use in `Head.astro` / `BaseLayout.astro`.
 
 ## Step 3 — Swap the assets
 
@@ -249,7 +248,7 @@ someone else's photography. The CLI does **not** touch `src/assets/`.
 | Home page + hero           | `src/pages/index.astro`                                                                                                                |
 | Section components         | `Services`, `Pricing`, `WhyWorkWithUs`, `HowItWorks`, `CTASection`, `ImagePromo`, `PostLaunchSupport`, `ProjectImages`, `BlogPostGrid` |
 | Case-study + blog fixtures | `src/data/case-studies.ts`, `src/components/templates/BlogPostTemplate.astro`                                                          |
-| Other pages                | `contact.astro`, `marketing-scorecard.astro`, `components.astro`                                                                       |
+| Other pages                | `contact.astro`, `components.astro`                                                                                                    |
 
 **Two ways to do it — offer both:**
 
@@ -286,7 +285,7 @@ Answer keys (all optional — omitted keys keep the current file value):
 `localBusinessDescription, xHandle, phoneDisplay, phoneE164, phoneTel, hours,`
 `addressLocality, addressRegion, addressCountry, priceRange, brandColor,`
 `sanityProjectId, sanityDataset, sanityApiVersion, studioHost, workerName,`
-`gtmId, mailerLiteAccount, usercentricsId, honeybookPlacementId`
+`gtmId, mailerLiteAccount, usercentricsId`
 
 Plus three optional maps:
 
@@ -371,7 +370,7 @@ every item the user deferred in earlier steps** so nothing is silently dropped:
   the live site until that webhook exists.
 - **GitHub** (§5) — Dependabot alerts / security updates / malware alerts / grouped
   updates; account-level push protection.
-- **Email / lead capture** (§6) — Resend + MailerLite keys, or drop the scorecard.
+- **Email / lead capture** (§6) — only if the fork wires a form endpoint.
 - **Content & images still holding placeholders** — any un-swapped photography
   (Step 3.2), plus the scaffolding the CLI leaves alone: `areaServed`, `social` /
   `sameAs`, FAQ copy, and the page `desc` fields in

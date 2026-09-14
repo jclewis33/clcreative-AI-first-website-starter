@@ -290,12 +290,6 @@ const PROMPTS = [
     from: [SITE, "usercentricsId"],
     optional: true,
   },
-  {
-    key: "honeybookPlacementId",
-    q: "HoneyBook placement id (blank = keep)",
-    from: [SITE, "honeybookPlacementId"],
-    optional: true,
-  },
 ];
 
 async function readSrc(rel) {
@@ -470,7 +464,6 @@ async function buildChanges(a) {
       gtmId: a.gtmId,
       mailerLiteAccount: a.mailerLiteAccount,
       usercentricsId: a.usercentricsId,
-      honeybookPlacementId: a.honeybookPlacementId,
     };
     for (const [key, value] of Object.entries(map)) {
       if (value === undefined) continue;

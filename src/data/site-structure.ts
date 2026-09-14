@@ -100,12 +100,6 @@ export const PAGES: SitePage[] = [
     group: "main",
   },
   {
-    path: "/marketing-scorecard",
-    title: "Scorecard",
-    desc: "An example multi-step quiz funnel with email capture and scored results.",
-    group: "main",
-  },
-  {
     path: "/contact",
     title: "Contact",
     desc: "Get in touch.",
@@ -234,7 +228,6 @@ export const NAV_MENU: NavMenuItem[] = [
   { path: "/blog" },
   { path: "/case-studies" },
   { path: "/glossary" },
-  { path: "/marketing-scorecard" },
   ...DEV_NAV_LINKS,
 ];
 
@@ -270,13 +263,7 @@ const DEV_FOOTER_LINKS: FooterLink[] = import.meta.env.DEV
 export const FOOTER_GROUPS: FooterGroup[] = [
   {
     title: "Resources",
-    links: [
-      "/blog",
-      "/case-studies",
-      "/glossary",
-      "/marketing-scorecard",
-      ...DEV_FOOTER_LINKS,
-    ],
+    links: ["/blog", "/case-studies", "/glossary", ...DEV_FOOTER_LINKS],
   },
   {
     title: "Company",

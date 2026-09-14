@@ -45,12 +45,12 @@ Full control. You specify the column count at every breakpoint tier using HTML a
 
 These breakpoints measure the **container's width**, not the viewport. This means grids respond to the space they actually have, not the screen size.
 
-| Tier     | Container query    | ~px        |
-| -------- | ------------------ | ---------- |
-| `large`  | default (no query) | all widths |
-| `medium` | `width < 58em`     | ~928px     |
-| `small`  | `width < 35em`     | ~560px     |
-| `xsmall` | `width < 20em`     | ~320px     |
+| Tier     | Container query    | ~px                               |
+| -------- | ------------------ | --------------------------------- |
+| `large`  | default (no query) | all widths                        |
+| `medium` | `width < 58em`     | ~928px container ≈ 992px viewport |
+| `small`  | `width < 35em`     | ~560px                            |
+| `xsmall` | `width < 20em`     | ~320px                            |
 
 > **Requires a container ancestor.** Any element with `container-type: inline-size` on a parent works. The `.u-container` class already sets this, so grids placed inside `.u-container` work automatically.
 

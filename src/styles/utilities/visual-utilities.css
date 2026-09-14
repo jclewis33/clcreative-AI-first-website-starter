@@ -205,6 +205,18 @@
   display: inline-block; /* reliable clipping */
 }
 
+/* Gradient backgrounds — both read the brand gradient token in themes.css,
+   so they follow the brand color automatically. */
+.u-gradient-primary {
+  background-image: var(--gradient-primary);
+  background-repeat: no-repeat;
+}
+
+.u-gradient-primary-reverse {
+  background-image: var(--gradient-primary-reverse);
+  background-repeat: no-repeat;
+}
+
 /* ======================================================
        DISPLAY UTILITIES
    ====================================================== */

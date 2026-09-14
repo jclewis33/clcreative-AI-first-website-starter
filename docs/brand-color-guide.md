@@ -136,7 +136,7 @@ This is independent of `--color-brand-text` and can be set to whatever shade wor
 
 ## Optional: Update the gradient
 
-The gradient in `themes.css` uses brand-400, brand-500, and brand-600. It updates automatically when you change brand-500, but you can adjust the stops or angle if needed:
+The gradient in `themes.css` uses brand-400, brand-500, and brand-600. It updates automatically when you change brand-500, but you can adjust the stops or angle if needed (`--gradient-primary-reverse`, used by `u-gradient-primary-reverse`, mirrors it — keep the stops in step):
 
 ```css
 --gradient-primary: linear-gradient(

@@ -33,7 +33,7 @@ All commands are run from the root of the project, from a terminal:
 **Every public route prerenders to static HTML at build time — including the CMS content routes.** `/blog/[slug]`, `/case-studies/[slug]`, and `/glossary/[slug]` enumerate their slugs with `getStaticPaths` (slug-only GROQ queries; helpers in `src/sanity/lib/page-data.ts`) and are served by the Cloudflare assets binding at zero Worker CPU. Only two kinds of routes are server-rendered (`export const prerender = false;`):
 
 - `src/pages/preview/**` — the SSR **draft-preview twins** that Sanity's Presentation tool iframes (same templates, same loaders as the public routes; only the perspective differs)
-- `src/pages/api/**` — the scorecard endpoint and the draft-mode cookie set/clear routes
+- `src/pages/api/**` — the draft-mode cookie set/clear routes
 
 `astro.config.mjs` is `output: "static"` with the Cloudflare adapter; new pages default to static automatically.
 
@@ -91,7 +91,7 @@ Editors open the hosted Studio, click **Presentation**, and the iframe loads the
 
 The site identity is centralized so a new site is mostly config, not find-and-replace:
 
-1. **`src/config/site.ts`** — the single source of truth: name, URL, email, phone, founder, address, social links + `xHandle`, `sameAs`, `areaServed`, OG/logo/apple-touch-icon paths, SEO defaults (`tagline`, `defaultDescription`), `brand.color`, and the `integrations` block (Google Tag Manager, MailerLite, Usercentrics account ids). Edit this first. Everything (Head, the GTM `<noscript>` in BaseLayout, footer, JSON-LD, `llms.txt`, scorecard emails, contact pages) reads from it.
+1. **`src/config/site.ts`** — the single source of truth: name, URL, email, phone, founder, address, social links + `xHandle`, `sameAs`, `areaServed`, OG/logo/apple-touch-icon paths, SEO defaults (`tagline`, `defaultDescription`), `brand.color`, and the `integrations` block (Google Tag Manager, MailerLite, Usercentrics account ids). Edit this first. Everything (Head, the GTM `<noscript>` in BaseLayout, footer, JSON-LD, `llms.txt`, contact pages) reads from it.
 2. **`src/config/site.shared.mjs`** — a tiny dependency-free module holding the Sanity `projectId`/`dataset`/`apiVersion` and the site `url`. This is the ONE place those primitives live: `site.ts`, `astro.config.mjs`, `sanity.config.ts`, `sanity.cli.ts`, and the `scripts/*.mjs` all import it (no hand-synced copies). Also set `PUBLIC_SANITY_PROJECT_ID` / `PUBLIC_SANITY_DATASET` in `.env` and in `wrangler.jsonc` `vars` (JSON can't import — `npm run check:config`, also run automatically before every build, fails if `wrangler.jsonc` drifts from the shared module). Add `SANITY_API_READ_TOKEN` as an encrypted Cloudflare secret.
 3. **`src/data/site-structure.ts`** — the page/menu registry: `PAGES` (every internal page, once) plus `NAV_MENU`, `FOOTER_GROUPS`, and `BANNER`. The navbar, footer, `llms.txt`, and the announcement banner all derive from it — edit pages/menus/banner here, in one file.
 4. **Fonts** — swap files in `src/assets/fonts/`, then update the `fonts` block in `astro.config.mjs` and the font variables in `src/styles/variables/typography.css`.

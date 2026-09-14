@@ -128,7 +128,7 @@ here before guessing a Tailwind-style name.
 | Max width           | `u-max-width-xxsmall/xsmall/small/medium/large/xlarge/full/none`                                                                                                                                                           |
 | Overflow            | `u-overflow-hidden/clip/visible/x-auto/y-auto`                                                                                                                                                                             |
 | Aspect ratio & fit  | `u-ratio-1-1/16-9/2-1/2-3/3-2/4-5/5-4`, `u-object-fit-cover/contain`                                                                                                                                                       |
-| Background & color  | `u-background-1`, `u-background-2`, `u-background-skeleton`, `u-color-brand/faded/inherit`, `u-heading-accent`, `u-gradient-text`                                                                                          |
+| Background & color  | `u-background-1`, `u-background-2`, `u-background-skeleton`, `u-color-brand/faded/inherit`, `u-heading-accent`, `u-gradient-text`, `u-gradient-primary`, `u-gradient-primary-reverse`                                      |
 | Shadow              | `u-box-shadow-xxsmall/xsmall/small/medium/large/xlarge/xxlarge`                                                                                                                                                            |
 | Radius              | `u-radius-none/xsmall/small/medium/main/large/xlarge/full/round/section/inherit`                                                                                                                                           |
 | Icon                | `u-icon-16/24/32/48/64`                                                                                                                                                                                                    |
@@ -147,7 +147,7 @@ any component's CSS can reference them without writing container queries.
 
 **Breakpoint tiers** (requires a `container-type: inline-size` ancestor like
 `u-container`): **large** — default (no query) · **medium** —
-`@container (width < 58em)` (~928px) · **small** — `@container (width < 35em)`
+`@container (width < 58em)` (~928px container ≈ 992px viewport) · **small** — `@container (width < 35em)`
 (~560px) · **xsmall** — `@container (width < 20em)` (~320px).
 
 **Flags per tier** (undefined at larger tiers — use the CSS fallback value):
@@ -343,10 +343,9 @@ CSS, not inline — `stroke-width: var(--border-width-main)`,
 
 - **Component CSS with no single owning component** →
   `src/styles/components/` (add to `global.css` with `layer(components)`).
-  Qualifying files today: `forms.css` (one stylesheet for the whole form
-  family, shared by the contact page + SignUpForm — the documented exception
-  to co-location) and `marketing-scorecard.css` (owned by a React `.tsx`,
-  which can't hold an Astro style block).
+  The one qualifying file today is `forms.css` (one stylesheet for the whole
+  form family, shared by the contact page + SignUpForm — the documented
+  exception to co-location).
 - **Page-specific classes** → `src/styles/pages/[page].css`, opening with
   `@layer pages { … }` in-file (ESM imports can't carry `layer()`).
 - **Utilities** (`u-`) → `src/styles/utilities/` (existing files; import

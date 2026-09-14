@@ -94,7 +94,7 @@ src/
     ├── variables/    # foundation, colors, themes, typography, spacing, layout, nav
     ├── base/         # Element/attribute defaults only
     ├── utilities/    # Every u- class (import order is load-bearing)
-    ├── components/   # ONLY component CSS with no single owner (forms.css, marketing-scorecard.css)
+    ├── components/   # ONLY component CSS with no single owner (forms.css)
     └── pages/        # Page CSS; imported by the page, opens with @layer pages { }
 ```
 

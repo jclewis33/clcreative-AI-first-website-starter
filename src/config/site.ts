@@ -2,8 +2,8 @@
  * Single source of truth for site identity.
  *
  * Site name, URL, contact details, social handles and integration ids all live
- * here rather than inline in BaseLayout, Head, Footer, jsonld.ts, the scorecard
- * API, the contact pages or the llms endpoints. When re-skinning this project
+ * here rather than inline in BaseLayout, Head, Footer, jsonld.ts, the contact
+ * pages or the llms endpoints. When re-skinning this project
  * for a new site, edit THIS file first.
  *
  * The Sanity project id/dataset and the site URL live in `site.shared.mjs` (a
@@ -115,12 +115,6 @@ export const SITE = {
     usercentricsId: "",
     /** Usercentrics custom-translations CDN base URL (optional). */
     usercentricsTranslationsUrl: "",
-    /**
-     * HoneyBook placement id — used by the HoneyBookEmbed components (placement
-     * container class, tracking pixel, and loader script `pid`). To remove
-     * HoneyBook when forking, delete this and the two components that read it.
-     */
-    honeybookPlacementId: "",
   },
 
   /**

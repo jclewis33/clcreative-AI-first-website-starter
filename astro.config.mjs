@@ -86,8 +86,7 @@ export default defineConfig({
   //     prerendered public URLs: the Cloudflare adapter returns static
   //     assets before Astro middleware ever runs, so a cookie-keyed rewrite
   //     there is impossible — hence the parallel /preview tree.
-  //   - `src/pages/api/**` — the scorecard endpoint and the draft-mode
-  //     cookie set/clear routes.
+  //   - `src/pages/api/**` — the draft-mode cookie set/clear routes.
   // Publishing content triggers a rebuild via the rebuild-debounce Worker
   // (workers/rebuild-debounce/) — prerendered content ships on the next build.
   output: "static",

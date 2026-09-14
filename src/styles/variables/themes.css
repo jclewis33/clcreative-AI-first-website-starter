@@ -39,6 +39,7 @@
 
 :root {
   --gradient-primary: linear-gradient(94deg, var(--color-brand-400) -0.01%, var(--color-brand-500) 51.63%, var(--color-brand-600) 103.27%);
+  --gradient-primary-reverse: linear-gradient(274deg, var(--color-brand-400) -0.01%, var(--color-brand-500) 51.63%, var(--color-brand-600) 103.27%);
 }
 
 /* ==========================================================================
