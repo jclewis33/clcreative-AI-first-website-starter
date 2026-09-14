@@ -92,7 +92,7 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
 You can stand up a fully working site — including Sanity **Presentation / visual editing** — on the Worker's free `https://<worker>.<account>.workers.dev` URL before any custom domain is attached. The code already supports this with **no per-fork edits**: `SITE_URL` (in `src/config/site.shared.mjs`) is env-overridable, and `sanity.config.ts` drives `previewUrl.initial` + `allowOrigins` from it (plus a `https://*.workers.dev` wildcard). Per-client steps:
 
 1. **Create the Worker** from the client repo (Workers Builds connected, building from the production branch); select your deploy API token. (A missing `ai_search_write` permission warning is irrelevant — ignore it.)
-2. **Create a KV namespace** for sessions and pin its id (Astro 6 SSR sessions require it — deploy fails on the placeholder):
+2. **Create a KV namespace** for sessions and pin its id (Astro SSR sessions require it — deploy fails on the placeholder):
    - `npx wrangler kv namespace create SESSION` (or dashboard → Storage & Databases → KV → Create)
    - Put the returned 32-char id into `wrangler.jsonc` → `kv_namespaces[0].id` (binding stays `SESSION`). Commit + push.
 3. **Add the read token secret:** create a **Viewer** token (manage.sanity.io → project → API → Tokens) and add it to the Worker as an **encrypted secret** named exactly `SANITY_API_READ_TOKEN` (Worker → Settings → Variables and Secrets).

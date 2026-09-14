@@ -2,6 +2,9 @@
   "name": "astro-starter",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "setup": "node scripts/setup.mjs",
@@ -22,10 +25,10 @@
     "check:hover": "node scripts/check-hover.mjs"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.7.0",
-    "@astrojs/react": "^5.0.7",
-    "@astrojs/sitemap": "^3.7.3",
-    "@sanity/astro": "^3.4.1",
+    "@astrojs/cloudflare": "^14.3.1",
+    "@astrojs/react": "^6.0.5",
+    "@astrojs/sitemap": "^3.7.4",
+    "@sanity/astro": "^3.5.1",
     "@sanity/client": "^7.22.1",
     "@sanity/code-input": "^7.1.2",
     "@sanity/icons": "^3.7.4",
@@ -35,7 +38,7 @@
     "@sanity/visual-editing": "^5.4.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "astro": "^6.4.6",
+    "astro": "^7.3.2",
     "astro-portabletext": "^0.13.0",
     "gsap": "^3.15.0",
     "react": "^19.2.7",
@@ -46,7 +49,7 @@
     "swiper": "^12.2.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "^0.9.10",
     "csv-parse": "^6.2.1",
     "node-html-parser": "^7.1.0",
     "prettier": "^3.6.2",
