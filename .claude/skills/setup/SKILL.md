@@ -239,7 +239,7 @@ the Studio deploy.
 ### 3.2 Placeholder photography (REQUIRED ASK)
 
 **Always raise this.** The starter ships **20 stock photos** in
-[src/assets/placeholder-images-2/](../../../src/assets/placeholder-images-2/),
+[src/assets/placeholder-images/](../../../src/assets/placeholder-images/),
 used **55 times across 15 files** — hero, services grid, pricing, case studies,
 blog cards, CTA sections. A fork that skips this ships a branded shell full of
 someone else's photography. The CLI does **not** touch `src/assets/`.
@@ -254,7 +254,7 @@ someone else's photography. The CLI does **not** touch `src/assets/`.
 **Two ways to do it — offer both:**
 
 1. **Keep the filenames (simplest).** Drop their own `.webp` files into
-   `src/assets/placeholder-images-2/` using the same `ai-first-starter-<n>.webp`
+   `src/assets/placeholder-images/` using the same `ai-first-starter-<n>.webp`
    names. **Zero code changes.**
 2. **Rename to something meaningful.** Add images under real names and update the
    matching `import` statements — better long-term, but touches all 15 files. Only

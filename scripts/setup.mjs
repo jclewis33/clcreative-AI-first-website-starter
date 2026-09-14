@@ -722,7 +722,7 @@ Fluid type (--config only) — sets only the min/max rem knobs; the clamp()s fol
 Not handled here (assets + copy — the /setup skill guides these): font files
 (src/assets/fonts/ + astro.config.mjs fonts array), the OG image / favicon /
 webclip (public/images/), the inline SVG logo paths (src/config/logo-paths.ts),
-and the placeholder photography (src/assets/placeholder-images-2/).
+and the placeholder photography (src/assets/placeholder-images/).
 `);
     return;
   }
@@ -768,7 +768,7 @@ and the placeholder photography (src/assets/placeholder-images-2/).
   3. ${c.bold}npm run check${c.reset}          type-check (astro check)
   4. ${c.bold}npm run build${c.reset}          confirm the site still builds
      ${c.dim}Steps 1–4 are what CI gates on — see .github/workflows/ci.yml.${c.reset}
-  5. Swap the ${c.bold}placeholder photography${c.reset} in src/assets/placeholder-images-2/
+  5. Swap the ${c.bold}placeholder photography${c.reset} in src/assets/placeholder-images/
      ${c.dim}(the starter ships stock images on every page — not written by this CLI)${c.reset}
   6. Fill ${c.bold}SANITY_API_READ_TOKEN${c.reset} in .env (Sanity → API → Tokens, Viewer role)
   7. Finish the dashboard steps in ${c.bold}docs/new-project-checklist.md${c.reset}

@@ -205,28 +205,6 @@
   display: inline-block; /* reliable clipping */
 }
 
-/* Color Gradients - Change out the variable and name. Here as an example. */
-.u-gradient-light-blue {
-  background-image: var(--gradient-light-blue);
-  background-repeat: no-repeat;
-}
-
-.u-gradient-light-blue-reverse {
-  background-image: var(--gradient-light-blue-reverse);
-  background-repeat: no-repeat;
-}
-
-/* Based on Gradients Start and End colors in Variables File */
-[gradient="1"],
-.u-gradient-1 {
-  background-image: linear-gradient(135deg, var(--gradient-primary-start) 0%, var(--gradient-primary-end) 100%);
-}
-
-/* Based on Gradients Start and End colors in Variables File */
-[gradient="2"] {
-  background-image: linear-gradient(135deg, var(--gradient-secondary-start) 0%, var(--gradient-secondary-end) 100%);
-}
-
 /* ======================================================
        DISPLAY UTILITIES
    ====================================================== */
@@ -272,14 +250,9 @@
          HIDE UTILITIES
    ======================================================= */
 
-/* Always hidden */
-.u-hide {
-  display: none !important;
-}
-
 /* Hide at container-query breakpoints (must be inside a .u-container ancestor).
    Each class hides at the named size AND below.
-   Breakpoints: xsmall ≤ 20em, small ≤ 35em, medium ≤ 62em, large = always */
+   Breakpoints: xsmall ≤ 20em, small ≤ 35em, medium ≤ 58em, large = always */
 @container (max-width: 20em) {
   .u-hide-on-xsmall {
     display: none !important;
@@ -292,13 +265,13 @@
   }
 }
 
-@container (max-width: 62em) {
+@container (max-width: 58em) {
   .u-hide-on-medium {
     display: none !important;
   }
 }
 
-@container (min-width: 62.0625em) {
+@container (min-width: 58.0625em) {
   .u-hide-on-large {
     display: none !important;
   }
@@ -322,11 +295,6 @@
 }
 .u-overflow-y-auto {
   overflow: clip auto;
-}
-
-/* Clip content that overflows to the right only (left edge stays sharp) */
-.u-overflow-hidden-left {
-  clip-path: polygon(0 0, calc(100% + 100vw) 0, calc(100% + 100vw) 100%, 0% 100%);
 }
 
 /* ======================================================

@@ -20,8 +20,8 @@ Simple, automatic. Apply a class and the grid collapses at the standard breakpoi
 | ---------- | --------------------------------------- |
 | `u-grid-1` | Always 1 column                         |
 | `u-grid-2` | 2 cols → 1 col at 35em                  |
-| `u-grid-3` | 3 cols → 2 cols at 50em → 1 col at 35em |
-| `u-grid-4` | 4 cols → 2 cols at 50em → 1 col at 35em |
+| `u-grid-3` | 3 cols → 2 cols at 58em → 1 col at 35em |
+| `u-grid-4` | 4 cols → 2 cols at 58em → 1 col at 35em |
 
 **Use this when** the default collapse behavior is exactly what you want.
 
@@ -48,7 +48,7 @@ These breakpoints measure the **container's width**, not the viewport. This mean
 | Tier     | Container query    | ~px        |
 | -------- | ------------------ | ---------- |
 | `large`  | default (no query) | all widths |
-| `medium` | `width < 58em`     | ~992px     |
+| `medium` | `width < 58em`     | ~928px     |
 | `small`  | `width < 35em`     | ~560px     |
 | `xsmall` | `width < 20em`     | ~320px     |
 
@@ -192,7 +192,7 @@ The system is powered by three pieces:
 
 2. **`data-large-columns="N"`** on the grid element — sets `--column-count: N` and `display: grid`.
 
-3. **`@container (width < 50em)`** (and 35em, 20em) — at each tier, overrides `--column-count` based on `data-medium-columns` / `data-small-columns` / `data-xsmall-columns`, and sets the utility flags on all `*` descendants.
+3. **`@container (width < 58em)`** (and 35em, 20em) — at each tier, overrides `--column-count` based on `data-medium-columns` / `data-small-columns` / `data-xsmall-columns`, and sets the utility flags on all `*` descendants.
 
 The shared rule `grid-template-columns: repeat(var(--column-count), minmax(0, 1fr))` always picks up whatever `--column-count` is currently set to, so no per-breakpoint `grid-template-columns` rules are needed.
 

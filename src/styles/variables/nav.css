@@ -126,8 +126,6 @@
 
   --nav-dropdown-radius: var(--radius-main);
   --nav-dropdown-padding: var(--space-3);
-  --nav-dropdown-gap: var(--space-1);
-  --nav-dropdown-background: var(--nav-background);
   --nav-dropdown-min-width: 12rem;
   --nav-dropdown-offset: var(--space-3);
 }

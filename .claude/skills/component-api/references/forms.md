@@ -118,8 +118,7 @@ Radios sharing a `name` form the group.
 Auto-growing textarea: tracks its content between `minLines` (default `3`)
 and `maxLines` (default `12`) via CSS `field-sizing: content` (Chromium;
 elsewhere it starts at `minLines` tall with manual vertical resize — the
-`rows` attribute is set from `minLines` as the cross-browser floor). The
-legacy `rows` prop still works as a `minLines` alias. Other props mirror
+`rows` attribute is set from `minLines` as the cross-browser floor). Other props mirror
 FormField (`label`, `name`, `placeholder`, `required`, `disabled`,
 `labelVariant`, `value`, `helperText`, `errorText`).
 

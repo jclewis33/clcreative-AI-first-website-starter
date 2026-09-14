@@ -51,7 +51,7 @@ import { slotContent } from "@/lib/slots";
    tag-like pairs inside @example blocks are safe — it is the odd one out that
    breaks it, and the exact trigger interacts with the rest of the file, so do
    not reason about it — measure it.
-   scripts/hover-probe.mjs drives the real language server and fails if any
+   scripts/check-hover.mjs drives the real language server and fails if any
    component's `docs` tooltip goes missing; run `npm run check:hover`.
    Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
    pins the type rules: it imports the types from this file and a regression
@@ -291,9 +291,7 @@ const linkLabel = ariaLabel ?? title ?? undefined;
 /* Capture each slot ONCE and emit the string below with <Fragment set:html>.
    Render-once is the rule: rendering <slot /> again after Astro.slots.render()
    drops the hoisted <script> of every component inside the slot. Capturing in
-   frontmatter is safe on the current setup — verified against both historical
-   failure modes (script drop, image-service cold start) on Astro 6.4.6, dev +
-   build + SSR /preview cold starts (slotContent spike, 2026-08-27). */
+   frontmatter is verified safe (see the slots section of CLAUDE.md). */
 const visualContent = await slotContent(Astro.slots, "visual");
 const titleContent = await slotContent(Astro.slots, "title");
 const bodyContent = await slotContent(Astro.slots);

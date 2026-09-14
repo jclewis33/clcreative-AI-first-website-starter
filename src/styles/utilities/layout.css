@@ -180,6 +180,10 @@
 .u-flex-nowrap {
   flex-wrap: nowrap;
 }
+/* Icons and logos beside text: never let them shrink */
+.u-flex-none {
+  flex: none;
+}
 
 /* Justify */
 .u-justify-start {
@@ -316,7 +320,7 @@
 }
 
 /* Medium — container ≤ 62em (~992px): 3+ col grids step down to 2 */
-@container (max-width: 62em) {
+@container (max-width: 58em) {
   .u-grid-3,
   .u-grid-4,
   .u-grid-5,
@@ -656,7 +660,7 @@
 }
 
 /* Medium — collapse 3-col to 2-col */
-@container (max-width: 62em) {
+@container (max-width: 58em) {
   .u-text-columns-3 {
     columns: 2;
   }

@@ -63,12 +63,12 @@ import Heading from "@/components/ui/Heading.astro";
 import BlogCard from "@/components/ui/BlogCard.astro";
 
 // Images — replace with CMS image fields when connecting a headless CMS
-import heroImage from "@/assets/placeholder-images-2/ai-first-starter-7.webp";
-import featuredImage from "@/assets/placeholder-images-2/ai-first-starter-8.webp";
-import avatarPlaceholder from "@/assets/placeholder-images-2/ai-first-starter-14.webp";
-import blogImage1 from "@/assets/placeholder-images-2/ai-first-starter-9.webp";
-import blogImage2 from "@/assets/placeholder-images-2/ai-first-starter-10.webp";
-import blogImage3 from "@/assets/placeholder-images-2/ai-first-starter-1.webp";
+import heroImage from "@/assets/placeholder-images/ai-first-starter-7.webp";
+import featuredImage from "@/assets/placeholder-images/ai-first-starter-8.webp";
+import avatarPlaceholder from "@/assets/placeholder-images/ai-first-starter-14.webp";
+import blogImage1 from "@/assets/placeholder-images/ai-first-starter-9.webp";
+import blogImage2 from "@/assets/placeholder-images/ai-first-starter-10.webp";
+import blogImage3 from "@/assets/placeholder-images/ai-first-starter-1.webp";
 import Layout from "@/components/ui/Layout.astro";
 
 /* ── Exported post type ────────────────────────────────────────────────────
@@ -311,18 +311,18 @@ interface Props {
    *
    * | Number | Variable     | Size          |
    * |--------|--------------|---------------|
-   * | `1`    | `--gap-1`    | 6 - 8px       |
-   * | `2`    | `--gap-2`    | 10 - 12px     |
-   * | `3`    | `--gap-3`    | 14 - 16px     |
-   * | `4`    | `--gap-4`    | 20 - 24px     |
-   * | `5`    | `--gap-5`    | 28 - 32px     |
-   * | `6`    | `--gap-6`    | 32 - 40px     |
-   * | `7`    | `--gap-7`    | 36 - 48px     |
-   * | `8`    | `--gap-8`    | 40 - 64px     |
+   * | `1`    | `--space-1`  | 6 - 8px       |
+   * | `2`    | `--space-2`  | 10 - 12px     |
+   * | `3`    | `--space-3`  | 14 - 16px     |
+   * | `4`    | `--space-4`  | 20 - 24px     |
+   * | `5`    | `--space-5`  | 28 - 32px     |
+   * | `6`    | `--space-6`  | 32 - 40px     |
+   * | `7`    | `--space-7`  | 36 - 48px     |
+   * | `8`    | `--space-8`  | 40 - 64px     |
    *
    * @default 'var(--site-gutter)' (fluid 1-2rem)
    * @example columnGap={4}
-   * @example columnGap="var(--gap-4)"
+   * @example columnGap="var(--space-4)"
    * @example columnGap="0px"
    */
   columnGap?: GapScale | string;

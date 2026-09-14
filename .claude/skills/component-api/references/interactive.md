@@ -14,13 +14,10 @@ Chromium today; other engines open instantly with identical behavior
 
 **Accordion props:**
 
-| Prop                 | Type      | Default | Description                                                                                |
-| -------------------- | --------- | ------- | ------------------------------------------------------------------------------------------ |
-| `closePrevious`      | `boolean` | `true`  | Shared `name` — opening one closes the previous, natively                                  |
-| `openByDefault`      | `number`  | `0`     | 1-based index to open on load; `0` = all closed                                            |
-| `closeOnSecondClick` | `boolean` | `true`  | **Deprecated no-op** — native details always closes on re-click (dev warning when `false`) |
-
-`openOnHover` no longer exists (a11y-hostile; had no call sites).
+| Prop            | Type      | Default | Description                                               |
+| --------------- | --------- | ------- | --------------------------------------------------------- |
+| `closePrevious` | `boolean` | `true`  | Shared `name` — opening one closes the previous, natively |
+| `openByDefault` | `number`  | `0`     | 1-based index to open on load; `0` = all closed           |
 
 **AccordionItem props:** `question` (toggle text — or the `question` slot for
 rich text), `open` (start expanded), `class`, plus any `details` attribute

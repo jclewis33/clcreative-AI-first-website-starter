@@ -27,7 +27,7 @@
      Border      — --border
      Selection   — --selection-background, --selection-text
      Buttons     — --button-primary-*, --button-secondary-*
-     Links       — --link-text, --link-border, --link-*-hover
+     Links       — --link-text, --link-text-hover
      Nav         — --nav-background, --nav-banner-background, --nav-banner-color
      Footer      — --footer-background, --footer-text, --footer-border
    ========================================================================== */
@@ -93,9 +93,7 @@
 
   /* Links */
   --link-text: var(--color-dark-900-o75); /* muted for group-hover dim */
-  --link-border: var(--color-dark-900-o20); /* = --border    */
   --link-text-hover: var(--color-dark-900);
-  --link-border-hover: var(--color-dark-900);
 
   /* Rich-text links */
   --rich-text-link: var(--color-brand-500);
@@ -164,9 +162,7 @@
 
   /* Links */
   --link-text: var(--color-light-100-o75); /* muted for group-hover dim */
-  --link-border: var(--color-light-100-o20); /* = --border     */
   --link-text-hover: var(--color-light-100);
-  --link-border-hover: var(--color-brand-500); /* brand on hover  */
 
   /* Rich-text links */
   --rich-text-link: var(--text);
@@ -225,9 +221,7 @@
 
   /* Links */
   --link-text: var(--color-brand-text-o75); /* muted for group-hover dim */
-  --link-border: var(--color-brand-text-o20); /* = --border     */
   --link-text-hover: var(--color-brand-text);
-  --link-border-hover: var(--color-brand-text);
 
   /* Rich-text links */
   --rich-text-link: var(--text);

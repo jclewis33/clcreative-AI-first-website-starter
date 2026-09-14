@@ -58,7 +58,7 @@ import type { ImageMetadata } from "astro";
    tag-like pairs inside @example blocks are safe — it is the odd one out that
    breaks it, and the exact trigger interacts with the rest of the file, so do
    not reason about it — measure it.
-   scripts/hover-probe.mjs drives the real language server and fails if any
+   scripts/check-hover.mjs drives the real language server and fails if any
    component's `docs` tooltip goes missing; run `npm run check:hover`.
    Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
    pins the type rules: it imports the types from this file and a regression

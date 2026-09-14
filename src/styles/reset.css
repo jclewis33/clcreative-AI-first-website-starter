@@ -75,7 +75,7 @@ body {
   font-family: var(--font-primary);
   color: var(--text);
   background-color: var(--background);
-  text-transform: var(--text-transform-inherit);
+  text-transform: inherit;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-smoothing: antialiased;
