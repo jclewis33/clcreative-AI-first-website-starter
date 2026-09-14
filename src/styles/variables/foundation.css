@@ -56,7 +56,6 @@
      MAX-WIDTH
      ===================================================== */
 
-  --max-width-full: 100%; /* edge-to-edge                  */
   --max-width-wide: 120rem; /* 1920px — full-bleed sections  */
   --max-width-main: 90rem; /* 1440px — standard container   */
   --max-width-small: 50rem; /*  800px — cards / modals       */
@@ -83,15 +82,6 @@
   --border-width-main: 0.094rem; /* ≈ 1.5px */
 
   /* =====================================================
-     BORDER COLORS
-     Static border color tokens. Theme-aware --border is in themes.css.
-     ===================================================== */
-
-  --border-color-light: var(--color-light-100-o10); /* subtle separation   */
-  --border-color-dark: var(--color-dark-900-o50); /* stronger definition */
-  --border-color-brand: var(--color-brand-text-o20); /* emphasis            */
-
-  /* =====================================================
      BOX SHADOW
      ===================================================== */
 
@@ -107,7 +97,6 @@
      BUTTON SIZES
      ===================================================== */
 
-  --button-size-small: 2rem; /*  32px — compact / icon-only */
   --button-size-medium: 2.5rem; /*  40px — default toggle/icon */
   --button-size-large: 3rem; /*  48px — prominent CTA       */
 

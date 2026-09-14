@@ -29,7 +29,8 @@
 
    BREAKPOINT TIERS (requires a container-type: inline-size ancestor):
      large  — default, no query
-     medium — @container (width < 58em)  — ~928px
+     medium — @container (width < 58em)  — 928px of CONTAINER width, which is
+              a ~992px viewport once the default --site-margin is subtracted
      small  — @container (width < 35em)  — ~560px
      xsmall — @container (width < 20em)  — ~320px
 

@@ -114,9 +114,10 @@ so you can finish the webhook wiring.
 Per §5: enable Dependabot alerts, security updates, malware alerts, and grouped
 updates; plus account-level push protection.
 
-## Email / lead capture (if keeping the scorecard or similar forms)
+## Email / lead capture (only if the fork wires a form endpoint)
 
-Per §6: Resend + MailerLite keys and secrets — or drop the scorecard if unused.
+Per §6: the provider's keys go in as Cloudflare secrets; the starter ships no
+form endpoint, so skip this until one exists.
 
 ## Post-launch verification
 

@@ -173,7 +173,7 @@ dynamic route exports a `getStaticPaths` fed by a minimal slug-only query
 Only two kinds of routes opt into SSR with `export const prerender = false;`:
 
 - `src/pages/preview/**` — the draft-preview twins that Presentation iframes
-- `src/pages/api/**` — the scorecard endpoint and draft-mode cookie routes
+- `src/pages/api/**` — the draft-mode cookie set/clear routes
 
 Rules that keep this model healthy:
 

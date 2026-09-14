@@ -18,7 +18,7 @@ project id and return `null`/fallback instead of throwing, so:
 - `npm run build` passes and the site deploys to Cloudflare normally.
 
 So "no CMS" is **not** a code-removal prerequisite. A fork can ship a real site —
-home, contact, legal pages, the scorecard — without ever creating a Sanity project.
+home, contact, legal pages — without ever creating a Sanity project.
 
 > The guard is deliberately narrow. Once a **real** project id is in place, an
 > unreachable dataset **fails the build loudly** on purpose — never ship a deploy
@@ -88,7 +88,7 @@ module, then delete, then `npm install` to prune, then run the full CI gate. Exp
 `npm run check` to be the thing that finds every straggler — trust it over grep.
 
 **What the site keeps:** home, contact, legal pages (privacy/terms/cookie/
-disclaimer), 404, thank-you, the marketing scorecard, the style guide, and every
+disclaimer), 404, thank-you, the style guide, and every
 component that isn't fed by Sanity. That is a complete brochure site.
 
 > **Do not do Option B just because the user said "no CMS" in passing.** Option A

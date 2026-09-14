@@ -73,10 +73,9 @@ Here's everything that flows from `--color-brand-500` and `--color-brand-text` t
 
 ### Dark theme only
 
-| Semantic variable     | What it controls           | Source              |
-| --------------------- | -------------------------- | ------------------- |
-| `--heading-accent`    | `<strong>` inside headings | `--color-brand-500` |
-| `--link-border-hover` | Link underline on hover    | `--color-brand-500` |
+| Semantic variable  | What it controls           | Source              |
+| ------------------ | -------------------------- | ------------------- |
+| `--heading-accent` | `<strong>` inside headings | `--color-brand-500` |
 
 ### Brand theme (brand color is the background)
 
@@ -91,7 +90,6 @@ Here's everything that flows from `--color-brand-500` and `--color-brand-text` t
 | `--button-primary-text`       | Button label             | `--color-brand-500`                        |
 | `--button-secondary-*`        | Secondary button states  | `--color-brand-text` / `--color-brand-500` |
 | `--link-text`                 | Link text                | `--color-brand-text-o75`                   |
-| `--link-border`               | Link underlines          | `--color-brand-text-o20`                   |
 | `--nav-background`            | Nav bar fill             | `--color-brand-500`                        |
 | `--nav-banner-background`     | Announcement banner fill | `--color-brand-text`                       |
 | `--nav-banner-color`          | Announcement banner text | `--color-brand-500`                        |
@@ -138,7 +136,7 @@ This is independent of `--color-brand-text` and can be set to whatever shade wor
 
 ## Optional: Update the gradient
 
-The gradient in `themes.css` uses brand-400, brand-500, and brand-600. It updates automatically when you change brand-500, but you can adjust the stops or angle if needed:
+The gradient in `themes.css` uses brand-400, brand-500, and brand-600. It updates automatically when you change brand-500, but you can adjust the stops or angle if needed (`--gradient-primary-reverse`, used by `u-gradient-primary-reverse`, mirrors it — keep the stops in step):
 
 ```css
 --gradient-primary: linear-gradient(
@@ -359,7 +357,7 @@ If you need a secondary color to appear in places beyond heading accents (e.g. a
 
 ```css
 /* Example: secondary accent for links on hover */
---link-border-hover: var(--color-secondary-500);
+--link-text-hover: var(--color-secondary-500);
 ```
 
 The pattern is always the same:

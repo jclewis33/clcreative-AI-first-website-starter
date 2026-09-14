@@ -12,16 +12,11 @@ import type { HTMLAttributes } from "astro/types";
  * Visual's remote `<img>` branch and so bypasses the runtime `/_image` Worker
  * endpoint that fails on first load for locally-imported images on SSR routes.
  *
- * NOTE: every text value is stegaClean'd, including the visible heading + body.
- * This started as a hard requirement: the heading used to run through GSAP
- * SplitText, which measures and re-wraps the text, and the invisible stega
- * characters Sanity injects in draft mode broke that measurement (heading
- * rendered full-width/left-aligned instead of wrapping centered at its
- * max-width). The heading now uses the plain data-fade-in reveal, which does
- * not measure text, but the cleaning is kept on purpose so this section keeps
- * rendering identically to CTASection in draft mode. The cost is click-to-edit
- * overlays on this section (the document is still editable from the Studio
- * form panel); re-enabling them is a separate decision, not a cleanup.
+ * NOTE: every text value is stegaClean'd, including the visible heading + body,
+ * so this section renders identically to CTASection in draft mode (the
+ * invisible stega characters Sanity injects can otherwise change text
+ * measurement and wrapping). The cost is click-to-edit overlays on this
+ * section; the document is still editable from the Studio form panel.
  *
  * Keep this separate from CTASection.astro: CTASection stays the local-image
  * component for static (industry/location) pages and can diverge independently.
@@ -70,7 +65,7 @@ const {
 // Everything is stegaClean'd. The image asset must be cleaned (draft-mode stega
 // chars break the URL builder and silently 404 the image inside Presentation);
 // the visible heading/body are cleaned to keep draft-mode rendering identical
-// to CTASection — see the file header note for the history.
+// to CTASection — see the file header note.
 const cleanImage = stegaClean(cta.backgroundImage);
 // 1920 matches the project's full-width image convention; urlFor applies dpr(2)
 // for retina, so the served asset is up to 3840px wide.

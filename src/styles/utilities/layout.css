@@ -17,14 +17,13 @@
    inline-size measures content width only.
 
    RESPONSIVE STRATEGY:
-   Grid utilities inside .u-container use @container queries so
-   they respond to the container's width, not the viewport. This
-   means a 3-col grid inside a narrow sidebar will collapse
-   correctly without extra breakpoint logic.
+   Column counts are not a utility. The <Grid> component — and the
+   data-*-columns attributes it renders (utilities/responsive-columns.css)
+   — own per-tier column counts. Anything in this file that reacts to
+   width does so via @container queries against .u-container, so it
+   responds to the space it actually has, not the viewport.
 
-   Breakpoints:
-     62em (~992px) — medium: 3+4-col → 2-col
-     35em (~560px) — small:  all multi-col → 1-col
+   Tiers: 58em (~992px viewport) — medium · 35em (~560px) — small
 
    Note: grid gap uses --site-gutter (fluid via clamp).
    ============================================================ */
@@ -180,6 +179,10 @@
 .u-flex-nowrap {
   flex-wrap: nowrap;
 }
+/* Icons and logos beside text: never let them shrink */
+.u-flex-none {
+  flex: none;
+}
 
 /* Justify */
 .u-justify-start {
@@ -225,130 +228,9 @@
 
 /* =====================================================
        GRID UTILITIES
+   Column counts live on the <Grid> component; these are the
+   shells and special templates it and Layout build on.
    ================================================== */
-
-.u-grid-1 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-1);
-  display: grid;
-}
-
-.u-grid-2 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-2);
-  display: grid;
-}
-
-.u-grid-3 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-3);
-  display: grid;
-}
-
-.u-grid-4 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-4);
-  display: grid;
-}
-.u-grid-5 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-5);
-  display: grid;
-}
-.u-grid-6 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-6);
-  display: grid;
-}
-.u-grid-7 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-7);
-  display: grid;
-}
-.u-grid-8 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-8);
-  display: grid;
-}
-.u-grid-9 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-9);
-  display: grid;
-}
-.u-grid-10 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-10);
-  display: grid;
-}
-.u-grid-11 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-11);
-  display: grid;
-}
-.u-grid-12 {
-  gap: var(--site-gutter);
-  grid-template-rows: auto;
-  grid-auto-columns: 1fr;
-  grid-template-columns: var(--grid-12);
-  display: grid;
-}
-
-/* Medium — container ≤ 62em (~992px): 3+ col grids step down to 2 */
-@container (max-width: 62em) {
-  .u-grid-3,
-  .u-grid-4,
-  .u-grid-5,
-  .u-grid-6,
-  .u-grid-7,
-  .u-grid-8,
-  .u-grid-9,
-  .u-grid-10,
-  .u-grid-11,
-  .u-grid-12 {
-    grid-template-columns: var(--grid-2);
-  }
-}
-
-/* Small — container ≤ 35em (~560px): all multi-col grids collapse to 1 */
-@container (max-width: 35em) {
-  .u-grid-2,
-  .u-grid-3,
-  .u-grid-4,
-  .u-grid-5,
-  .u-grid-6,
-  .u-grid-7,
-  .u-grid-8,
-  .u-grid-9,
-  .u-grid-10,
-  .u-grid-11,
-  .u-grid-12 {
-    grid-template-columns: var(--grid-1);
-  }
-}
-
-/* Grid variants */
 
 /* Empty grid shell — define template-columns manually */
 .u-grid-custom {
@@ -656,7 +538,7 @@
 }
 
 /* Medium — collapse 3-col to 2-col */
-@container (max-width: 62em) {
+@container (max-width: 58em) {
   .u-text-columns-3 {
     columns: 2;
   }

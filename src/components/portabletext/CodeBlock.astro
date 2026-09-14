@@ -2,19 +2,17 @@
 /**
  * Code Block — Portable Text custom type component
  *
- * Renders both the legacy `codeBlock` nodes and the new `code` nodes
- * (from @sanity/code-input) as styled <pre><code> blocks with Shiki
- * syntax highlighting.
+ * Renders `code` nodes (from @sanity/code-input) as styled <pre><code>
+ * blocks with Shiki syntax highlighting.
  *
- * Legacy shape: { _type: "codeBlock", code: string, language?: string, filename?: string }
- * Plugin shape: { _type: "code", code: string, language?: string, filename?: string }
+ * Node shape: { _type: "code", code: string, language?: string, filename?: string }
  */
 
 import { Code } from "astro:components";
 import type { Props as PortableTextProps } from "astro-portabletext/types";
 
 interface CodeBlockNode {
-  _type: "codeBlock" | "code";
+  _type: "code";
   code: string;
   language?: string;
   filename?: string;

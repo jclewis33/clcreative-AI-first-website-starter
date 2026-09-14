@@ -70,13 +70,6 @@ interface Props extends HTMLAttributes<"textarea"> {
    */
   maxLines?: number;
 
-  /**
-   * Number of visible text rows. Legacy alias for `minLines` — prefer
-   * `minLines`, which also drives the auto-grow floor.
-   * @default 5
-   */
-  rows?: number;
-
   /** Helper text displayed below the textarea. */
   helperText?: string;
 
@@ -98,9 +91,8 @@ const {
   disabled = false,
   labelVariant = "default",
   value,
-  minLines,
+  minLines = 3,
   maxLines = 12,
-  rows,
   helperText,
   errorText,
   id,
@@ -112,10 +104,7 @@ const fieldId = id || `field-${name}`;
 const describedById = helperText || errorText ? `${fieldId}-hint` : undefined;
 const isFloating = labelVariant === "floating";
 const resolvedPlaceholder = isFloating ? placeholder || " " : placeholder;
-/* minLines wins; the legacy rows prop feeds it so old call sites keep their
-   height as the growth floor. */
-const resolvedMinLines = minLines ?? rows ?? 3;
-const linesStyle = `--_min-lines: ${resolvedMinLines}; --_max-lines: ${maxLines};`;
+const linesStyle = `--_min-lines: ${minLines}; --_max-lines: ${maxLines};`;
 ---
 
 <div class:list={["form_label_wrap", isFloating && "is-floating", className]}>
@@ -140,7 +129,7 @@ const linesStyle = `--_min-lines: ${resolvedMinLines}; --_max-lines: ${maxLines}
     placeholder={resolvedPlaceholder}
     required={required}
     disabled={disabled}
-    rows={resolvedMinLines}
+    rows={minLines}
     style={linesStyle}
     aria-describedby={describedById}
     aria-invalid={errorText ? "true" : undefined}

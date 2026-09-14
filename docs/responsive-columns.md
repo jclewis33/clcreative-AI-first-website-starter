@@ -4,32 +4,31 @@ This project uses a responsive column system built on CSS container queries. It 
 
 ---
 
-## Two Systems, One Project
+## Two ways in, one mechanism
 
-### 1. Class-based — `u-grid-*`
+### 1. The `<Grid>` component — the normal path
 
-Simple, automatic. Apply a class and the grid collapses at the standard breakpoints.
-
-```html
-<div class="u-grid-3">
-  <!-- 3 cols → 2 cols at medium → 1 col at small -->
-</div>
+```astro
+<Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={4}>
+  <Card … />
+  <Card … />
+  <Card … />
+</Grid>
 ```
 
-| Class      | Behavior                                |
-| ---------- | --------------------------------------- |
-| `u-grid-1` | Always 1 column                         |
-| `u-grid-2` | 2 cols → 1 col at 35em                  |
-| `u-grid-3` | 3 cols → 2 cols at 50em → 1 col at 35em |
-| `u-grid-4` | 4 cols → 2 cols at 50em → 1 col at 35em |
-
-**Use this when** the default collapse behavior is exactly what you want.
+Column counts per tier are props (`largeColumns`, `mediumColumns`, `smallColumns`,
+`xsmallColumns`; each lower tier inherits the one above when unset), and the
+gap props map to the `--space-*` scale. Every grid on a page should be one of
+these — there is no numbered `u-grid-N` utility. See the `component-api` skill
+for the full prop table.
 
 ---
 
 ### 2. Attribute-based — `data-*-columns`
 
-Full control. You specify the column count at every breakpoint tier using HTML attributes.
+What the component renders. Reach for it directly only in markup a component
+can't wrap (`set:html` content, hand-written blocks). You specify the column
+count at every breakpoint tier using HTML attributes.
 
 ```html
 <div data-large-columns="4" data-medium-columns="2" data-small-columns="1">
@@ -45,12 +44,12 @@ Full control. You specify the column count at every breakpoint tier using HTML a
 
 These breakpoints measure the **container's width**, not the viewport. This means grids respond to the space they actually have, not the screen size.
 
-| Tier     | Container query    | ~px        |
-| -------- | ------------------ | ---------- |
-| `large`  | default (no query) | all widths |
-| `medium` | `width < 58em`     | ~992px     |
-| `small`  | `width < 35em`     | ~560px     |
-| `xsmall` | `width < 20em`     | ~320px     |
+| Tier     | Container query    | ~px                               |
+| -------- | ------------------ | --------------------------------- |
+| `large`  | default (no query) | all widths                        |
+| `medium` | `width < 58em`     | ~928px container ≈ 992px viewport |
+| `small`  | `width < 35em`     | ~560px                            |
+| `xsmall` | `width < 20em`     | ~320px                            |
 
 > **Requires a container ancestor.** Any element with `container-type: inline-size` on a parent works. The `.u-container` class already sets this, so grids placed inside `.u-container` work automatically.
 
@@ -192,7 +191,7 @@ The system is powered by three pieces:
 
 2. **`data-large-columns="N"`** on the grid element — sets `--column-count: N` and `display: grid`.
 
-3. **`@container (width < 50em)`** (and 35em, 20em) — at each tier, overrides `--column-count` based on `data-medium-columns` / `data-small-columns` / `data-xsmall-columns`, and sets the utility flags on all `*` descendants.
+3. **`@container (width < 58em)`** (and 35em, 20em) — at each tier, overrides `--column-count` based on `data-medium-columns` / `data-small-columns` / `data-xsmall-columns`, and sets the utility flags on all `*` descendants.
 
 The shared rule `grid-template-columns: repeat(var(--column-count), minmax(0, 1fr))` always picks up whatever `--column-count` is currently set to, so no per-breakpoint `grid-template-columns` rules are needed.
 

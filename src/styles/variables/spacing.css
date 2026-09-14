@@ -1,9 +1,8 @@
 /* ==========================================================================
    SPACING SCALE — layer(variables)
    ==========================================================================
-   Owns:      --space-1..8 (the scale), --section-space-*, --margin-*.
-   Does not:  --gap-* aliases onto this scale → variables/layout.css
-              --site-margin, --site-gutter    → variables/foundation.css
+   Owns:      --space-1..8 (the scale) and --section-space-*.
+   Does not:  --site-margin, --site-gutter    → variables/foundation.css
               the .u-padding-* / .u-margin-* classes that consume these
                                               → utilities/spacing.css
 
@@ -37,21 +36,9 @@
   /* ========== SECTION SPACING ========= */
   /* Fluid vertical padding for page sections */
 
-  --section-space-none: 0px;
   --section-space-xsmall: clamp(1.25rem, 1.071vw + 1.036rem, 2rem);
   --section-space-small: clamp(3rem, 2.857vw + 2.429rem, 5rem);
   --section-space-main: clamp(4rem, 4.286vw + 3.143rem, 7rem);
   --section-space-large: clamp(5.5rem, 6.429vw + 4.214rem, 10rem);
   --section-space-page-top: clamp(10rem, 5.714vw + 8.857rem, 14rem);
-
-  /* ========== MARGIN VARIABLES ========= */
-  /* All reference the spacing scale above */
-
-  --margin-xxlarge: var(--section-space-main);
-  --margin-xlarge: var(--section-space-small);
-  --margin-large: var(--space-8);
-  --margin-medium: var(--space-6);
-  --margin-small: var(--space-3);
-  --margin-xsmall: var(--space-1);
-  --margin-xxsmall: 0.25rem; /* below scale minimum, kept as fixed value */
 }

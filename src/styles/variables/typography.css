@@ -51,24 +51,6 @@
 
   --letter-spacing-tight: -0.03em;
   --letter-spacing-normal: 0em;
-  --letter-spacing-wide: 0.05em; /* eyebrow / allcaps labels */
-
-  /* =====================================================
-     TEXT TRANSFORMS
-     ===================================================== */
-
-  --text-transform-none: none;
-  --text-transform-uppercase: uppercase;
-  --text-transform-capitalize: capitalize;
-  --text-transform-lowercase: lowercase;
-  --text-transform-inherit: inherit;
-
-  /* =====================================================
-     TEXT WRAP
-     ===================================================== */
-
-  --text-wrap-balance: balance; /* headings — even line breaks */
-  --text-wrap-pretty: pretty; /* body text — avoids orphans */
 
   /* =====================================================
      DISPLAY HEADING VARIABLES
@@ -195,8 +177,7 @@
   --eyebrow-font-family: var(--font-tertiary);
   --eyebrow-line-height: var(--line-height-medium);
   --eyebrow-weight: 400;
-  --eyebrow-text-transform: var(--text-transform-uppercase);
-  --eyebrow-letter-spacing: var(--letter-spacing-tight);
+  --eyebrow-text-transform: uppercase;
   --eyebrow-margin-top: 0;
   --eyebrow-margin-bottom: var(--space-3);
 
@@ -257,24 +238,4 @@
   --text-xlarge-text-transform: inherit;
   --text-xlarge-margin-top: 0;
   --text-xlarge-margin-bottom: var(--space-4);
-
-  /* =====================================================
-     TEXT MAX WIDTH
-     Maximum readable line width for prose / rich-text blocks.
-     ===================================================== */
-
-  --text-max-width: var(--max-width-narrow); /* 48rem / 768px */
-
-  /* =====================================================
-     SECONDARY HEADING SIZES
-     Optional alternate size scale for components that need
-     a larger type hierarchy than the default.
-     ===================================================== */
-
-  --h1-size-secondary: clamp(2.75rem, 2.5vw + 2.25rem, 4.5rem);
-  --h2-size-secondary: clamp(2.5rem, 2.143vw + 2.071rem, 4rem);
-  --h3-size-secondary: clamp(2.25rem, 1.071vw + 2.036rem, 3rem);
-  --h4-size-secondary: clamp(2rem, 0.714vw + 1.857rem, 2.5rem);
-  --h5-size-secondary: clamp(1.5rem, 0.714vw + 1.357rem, 2rem);
-  --h6-size-secondary: clamp(1.25rem, 0.357vw + 1.179rem, 1.5rem);
 }

@@ -374,8 +374,8 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
    it dark across all themes by setting the same dark values in each theme block.
 
    .footer_wrap remaps these onto the standard theme aliases (--background,
-   --text, --border) and derives link variables (--link-text, --link-border,
-   --link-text-hover, --link-border-hover) from --footer-text via color-mix().
+   --text, --border) and derives the link variables (--link-text,
+   --link-text-hover) from --footer-text via color-mix().
    This ensures all descendants resolve to the footer palette, not the page's.
 
    Outer wrapper: footer_wrap
@@ -413,9 +413,7 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
 
       /* Link variables — derived from --footer-text so they stay in palette */
       --link-text: color-mix(in srgb, var(--footer-text) 75%, transparent);
-      --link-border: var(--footer-border);
       --link-text-hover: var(--footer-text);
-      --link-border-hover: var(--footer-text);
 
       font-family: var(--font-tertiary);
       text-transform: uppercase;

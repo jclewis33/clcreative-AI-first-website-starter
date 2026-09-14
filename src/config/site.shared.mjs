@@ -6,10 +6,9 @@
  * `src/config/site.ts` is the canonical site config, but a few files are
  * evaluated OUTSIDE the app's module graph and can't import a `.ts` that pulls
  * in app code — `astro.config.mjs`, `sanity.config.ts`, `sanity.cli.ts`, and the
- * `scripts/*.mjs`. They used to each carry a hand-synced literal copy of these
- * values (5 copies that silently drifted). This leaf module has no dependencies,
- * so every one of those contexts CAN import it. `site.ts` imports it too — so
- * there is exactly one source of truth.
+ * `scripts/*.mjs`. This leaf module has no dependencies, so every one of those
+ * contexts CAN import it instead of carrying its own literal copy. `site.ts`
+ * imports it too — so there is exactly one source of truth.
  *
  * The only file that still can't import this is `wrangler.jsonc` (it's JSON).
  * `scripts/check-config-sync.mjs` validates that its `vars` match these values.

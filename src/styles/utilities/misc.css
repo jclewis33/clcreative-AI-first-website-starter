@@ -3,7 +3,7 @@
    ==========================================================================
    Owns:      the small, single-purpose `u-` classes that belong to no larger
               system — .u-button-reset, .u-sr-only, .u-heading-accent,
-              .u-background-transparent, .u-min-height-screen.
+              .u-min-height-screen.
    Does not:  colors + backgrounds  → utilities/visual-utilities.css
               text styles           → utilities/typography.css
               padding + margin      → utilities/spacing.css
@@ -48,11 +48,6 @@
 /* Color utilities live in visual-utilities.css so they load *after*
    utilities/typography.css and can override text-style color defaults
    (e.g. the eyebrow's `color: var(--heading-accent)`). */
-
-/* Background — transparent only (theme-aware bg-1/2/skeleton live in visual-utilities.css) */
-.u-background-transparent {
-  background-color: transparent;
-}
 
 /* Min-height */
 .u-min-height-screen {

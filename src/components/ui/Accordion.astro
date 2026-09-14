@@ -43,7 +43,6 @@ interface Props extends HTMLAttributes<"div"> {
    * **Accordion props:**
    * - `closePrevious` — close open item when another opens (default true)
    * - `openByDefault` — 1-based index to open on load, 0 = all closed (default 0)
-   * - `closeOnSecondClick` — deprecated no-op: a native details always closes on re-click
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
    *
@@ -61,15 +60,6 @@ interface Props extends HTMLAttributes<"div"> {
   closePrevious?: boolean;
 
   /**
-   * Deprecated no-op: a native `details` always closes when its open
-   * summary is clicked, so this behavior is permanent now. The prop is
-   * kept so old call sites keep type-checking; a DEV warning fires when
-   * `false` is passed.
-   * @default true
-   */
-  closeOnSecondClick?: boolean;
-
-  /**
    * 1-based index of the item to open by default on load.
    * `0` means all items start closed.
    * @default 0
@@ -84,18 +74,10 @@ interface Props extends HTMLAttributes<"div"> {
 const {
   docs,
   closePrevious = true,
-  closeOnSecondClick = true,
   openByDefault = 0,
   class: className,
   ...rest
 } = Astro.props;
-
-if (import.meta.env.DEV && closeOnSecondClick === false) {
-  console.warn(
-    "\n[Accordion] `closeOnSecondClick={false}` no longer does anything — a " +
-      "native details element always closes on re-click. Drop the prop.\n",
-  );
-}
 
 /* Capture the rendered items ONCE (render-once rule, src/lib/slots.ts), then
    do the group wiring as a string pass: every item's data-accordion-group

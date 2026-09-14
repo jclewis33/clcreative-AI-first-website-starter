@@ -27,6 +27,10 @@ import type { HTMLAttributes } from "astro/types";
  * ```
  */
 
+/* Named on purpose — an inline union here loses its editor tooltip (see
+   CLAUDE.md, Props & TypeScript). */
+type FormEncoding = "form-data" | "json";
+
 interface Props extends HTMLAttributes<"form"> {
   /**
    * Form name — used as the `name` attribute on the `<form>` element.
@@ -45,6 +49,17 @@ interface Props extends HTMLAttributes<"form"> {
    * @default 'POST'
    */
   method?: "GET" | "POST";
+
+  /**
+   * How the fetch submit encodes the fields. `form-data` posts multipart
+   * `FormData` (what most form handlers and the native fallback expect).
+   * `json` posts a JSON object keyed by field name (repeated names become
+   * arrays) with `Content-Type: application/json` — the shape CRM inbound
+   * webhooks such as Go High Level expect. The no-JS native fallback always
+   * posts form-encoded regardless.
+   * @default 'form-data'
+   */
+  encoding?: FormEncoding;
 
   /**
    * Success message shown in place of the fields once the form has sent
@@ -69,6 +84,7 @@ const {
   name,
   action,
   method = "POST",
+  encoding = "form-data",
   successMessage,
   errorMessage,
   id,
@@ -82,6 +98,7 @@ const {
   id={id}
   data-state="idle"
   data-endpoint={action}
+  data-encoding={encoding}
 >
   <form
     class="form_element"
@@ -139,10 +156,31 @@ const {
         try {
           const endpoint = wrap.dataset.endpoint;
           if (endpoint) {
+            const data = new FormData(form);
+            const asJson = wrap.dataset.encoding === "json";
+            /* JSON mode: one key per field; a repeated name (checkbox
+               groups) becomes an array so nothing is silently dropped. */
+            const payload: Record<string, unknown> = {};
+            if (asJson) {
+              for (const [key, value] of data) {
+                const prior = payload[key];
+                payload[key] =
+                  prior === undefined
+                    ? value
+                    : Array.isArray(prior)
+                      ? [...prior, value]
+                      : [prior, value];
+              }
+            }
             const answer = await fetch(endpoint, {
               method: form.method || "post",
-              body: new FormData(form),
-              headers: { Accept: "application/json" },
+              body: asJson ? JSON.stringify(payload) : data,
+              headers: asJson
+                ? {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                  }
+                : { Accept: "application/json" },
             });
             if (!answer.ok) throw new Error(String(answer.status));
           }

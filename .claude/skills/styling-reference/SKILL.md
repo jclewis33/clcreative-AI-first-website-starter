@@ -20,15 +20,13 @@ overflow.
 **Spacing system — three tiers** (all fluid via `clamp()` between 20em/320px
 and 90em/1440px):
 
-| Variable group                     | Purpose                                                            | Range               |
-| ---------------------------------- | ------------------------------------------------------------------ | ------------------- |
-| `--space-1` … `--space-8`          | Fluid micro-spacing (margins, gaps, text spacing)                  | 6px–64px            |
-| `--section-space-small/main/large` | Fluid section vertical padding                                     | 3rem–10rem          |
-| `--gap-1` … `--gap-8`              | Gap aliases mapping to the space scale                             | Same as `--space-*` |
-| `--site-margin`                    | Fluid horizontal container gutter (used in container width calc)   | 1rem–3rem           |
-| `--site-gutter`                    | Fluid column gap for column-width calculations                     | 1rem–2rem           |
-| `--grid-breakout`                  | Named-line grid for full-bleed layouts (12-col + viewport gutters) | —                   |
-| `--grid-breakout-single`           | Mobile version of the breakout grid                                | —                   |
+| Variable group                     | Purpose                                                            | Range      |
+| ---------------------------------- | ------------------------------------------------------------------ | ---------- |
+| `--space-1` … `--space-8`          | Fluid micro-spacing (margins, gaps, text spacing)                  | 6px–64px   |
+| `--section-space-small/main/large` | Fluid section vertical padding                                     | 3rem–10rem |
+| `--site-margin`                    | Fluid horizontal container gutter (used in container width calc)   | 1rem–3rem  |
+| `--site-gutter`                    | Fluid column gap for column-width calculations                     | 1rem–2rem  |
+| `--grid-breakout`                  | Named-line grid for full-bleed layouts (12-col + viewport gutters) | —          |
 
 **Fluid tokens are edited via their `-min`/`-max` companions** (unitless px
 numbers in [foundation.css](../../../src/styles/variables/foundation.css)) —
@@ -102,39 +100,43 @@ palette. Only the three `--footer-*` variables need setting per theme.
 
 ## Utility classes (the full list)
 
-See `src/styles/utilities/` for source. Categories:
+Source: `src/styles/utilities/` (one file per group; import order in
+`global.css` is load-bearing). Names below are the real class names — check
+here before guessing a Tailwind-style name.
 
-| Category           | Example classes                                                                                                                                                                         |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Typography         | `u-text-style-h1`–`h6`, `u-text-style-eyebrow`, `u-display-xl/lg/md/sm`, `u-text-style-tiny/small/regular/large/xlarge`                                                                 |
-| Text style         | `u-text-style-bold/italic/muted/strikethrough/nowrap`                                                                                                                                   |
-| Text align         | `u-text-align-left/center/right`                                                                                                                                                        |
-| Spacing — padding  | `u-padding-0`–`8`, `u-padding-small/main/large`, `u-padding-sitemargin/gutter`, `u-padding-block-*`, `u-padding-inline-*`, `u-padding-top/bottom/left/right-*`                          |
-| Spacing — margin   | `u-margin-top/bottom-0`–`8`, `u-margin-top/bottom-auto/gutter`                                                                                                                          |
-| Layout — container | `u-container`, `u-container-narrow`, `u-container-wide`, `u-container-full`                                                                                                             |
-| Layout — flex      | `u-display-flex`, `u-flex-direction-row/column`, `u-flex-wrap`, `u-justify-content-start/center/end/between`, `u-align-items-start/center/end`                                          |
-| Layout — grid      | `u-grid-1`–`u-grid-12`                                                                                                                                                                  |
-| Layout — gap       | `u-gap-gutter`, `u-gap-0`–`8`, `u-gap-row-0`–`8`, `u-gap-column-0`–`8`, `u-gap-inherit`                                                                                                 |
-| Background         | `u-background-1`, `u-background-2`, `u-background-skeleton`                                                                                                                             |
-| Gradient           | `u-gradient-text`, `u-gradient-light-blue`, `u-gradient-light-blue-reverse`                                                                                                             |
-| Shadow             | `u-box-shadow-xxsmall`–`xxlarge`                                                                                                                                                        |
-| Radius             | `u-radius-none/xsmall/small/medium/large/xlarge/main/full/section`                                                                                                                      |
-| Display            | `u-display-flex/none/block/inline-block`                                                                                                                                                |
-| Visibility         | `u-visible`, `u-invisible`, `u-hide`, `u-hide-on-xsmall/small/medium/large`                                                                                                             |
-| Overflow           | `u-overflow-hidden/auto/visible/scroll`                                                                                                                                                 |
-| Dimension          | `u-w-100`, `u-h-100`                                                                                                                                                                    |
-| Max width          | `u-max-width-xlarge/large/medium/small/xsmall/xxsmall`                                                                                                                                  |
-| Z-index            | `u-z-index-1`, `u-z-index-2`                                                                                                                                                            |
-| Aspect ratio       | `u-aspect-ratio-portrait/landscape/widescreen/square`                                                                                                                                   |
-| Icon               | `u-icon-16/24/32/48/64`                                                                                                                                                                 |
-| Image              | `u-image-wrapper`, `u-image`, `u-image-wrapper.is-background`                                                                                                                           |
-| Content wrapper    | `u-content-wrapper`, `.is-center-align`, `.is-left-align`, `.is-right-align`, `.is-center-align-mobile`                                                                                 |
-| Rich text          | `u-rich-text` — vertical rhythm for CMS/prose content (bare heading + paragraph tags)                                                                                                   |
-| List               | `u-list` — bullet/ordered list spacing without the rich-text wrapper; font-size via `:where()` so any `u-text-style-*` overrides it; direct `li` children get `--space-2` between items |
-| Button             | `u-button-reset` (`u-button-wrapper` is applied by `<ButtonWrapper>` — use the component)                                                                                               |
-| Color              | `u-inherit-color`                                                                                                                                                                       |
-| Text shrink        | `u-text-shrink` — add to a flex-row parent with icon + Text children to prevent overflow                                                                                                |
-| Accessibility      | `u-sr-only`                                                                                                                                                                             |
+| Group               | Classes                                                                                                                                                                                                   |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Text styles         | `u-text-style-h1`–`h6`, `u-text-style-eyebrow`, `u-display-xl/lg/md/sm`, `u-text-style-tiny/small/regular/large/xlarge`, `u-text` (the text element class), `u-font-mono`                                 |
+| Text emphasis       | `u-text-style-bold/italic/muted/underline/strikethrough/nowrap`, `u-weight-regular/medium/bold`                                                                                                           |
+| Text layout         | `u-text-align-left/center/right/inherit`, `u-text-wrap-balance/pretty/default`, `u-text-transform-uppercase/lowercase/capitalize/none`, `u-letter-spacing-tight/normal`                                   |
+| Line height & clamp | `u-line-height-small/medium/large/huge`, `u-line-clamp-1`–`6`, `u-text-columns-2/3`                                                                                                                       |
+| Rich text           | `u-rich-text` — vertical rhythm for CMS/prose content (bare heading + paragraph tags)                                                                                                                     |
+| List                | `u-list` — bullet/ordered list spacing without the rich-text wrapper; font-size via `:where()` so any `u-text-style-*` overrides it; direct `li` children get `--space-2` between items                   |
+| Text shrink         | `u-text-shrink` — add to a flex-row parent with icon + Text children to prevent overflow                                                                                                                  |
+| Spacing — padding   | `u-padding-0`–`8`, `u-padding-small/main/large`, `u-padding-sitemargin/gutter`, `u-padding-block-*`, `u-padding-inline-*`, `u-padding-top/bottom/left/right-*` (same suffixes)                            |
+| Spacing — margin    | `u-margin-top/bottom-0`–`8`, `u-margin-top/bottom-auto/gutter`, `u-margin-inline-auto`, `u-margin-trim`, `u-ignore-trim`                                                                                  |
+| Layout — container  | `u-container`, `u-container-narrow`, `u-container-wide`, `u-container-full`                                                                                                                               |
+| Layout — flex       | `u-flex`, `u-flex-row/column`, `u-flex-wrap/nowrap`, `u-flex-none` (icons beside text), `u-justify-start/center/end/between`, `u-align-start/center/end/stretch`, `u-align-self-*`, `u-order-first/last`  |
+| Layout — grid       | `u-grid-autofit`, `u-grid-autofill`, `u-grid-subgrid`, `u-grid-breakout`, `u-grid-custom`, `u-span-1`–`12`, `u-span-full`, `u-column-start-1`–`12`/`auto`, `u-row-span-1`–`6`, `u-row-start-1`–`6`/`auto` |
+| Layout — gap        | `u-gap-gutter`, `u-gap-0`–`8`, `u-gap-row-0`–`8`, `u-gap-column-0`–`8`, `u-gap-inherit`                                                                                                                   |
+| Content wrapper     | `u-content-wrapper`, `.is-center-align`, `.is-left-align`, `.is-right-align`, `.is-center-align-mobile` (applied by `<Layout>`)                                                                           |
+| Display             | `u-display-block/inline/inline-block/inline-flex/inline-grid/contents/none`                                                                                                                               |
+| Visibility          | `u-visible`, `u-invisible`, `u-hide-on-xsmall/small/medium/large` (container-query tiers)                                                                                                                 |
+| Position            | `u-position-static/relative/absolute/fixed/sticky`, `u-cover`, `u-cover-absolute`, `u-overlay`                                                                                                            |
+| Z-index             | `u-zindex-negative/0/1/2/3/unset`                                                                                                                                                                         |
+| Dimension           | `u-width-full/auto`, `u-height-full/auto`, `u-min-width-auto`, `u-min-height-screen`                                                                                                                      |
+| Max width           | `u-max-width-xxsmall/xsmall/small/medium/large/xlarge/full/none`                                                                                                                                          |
+| Overflow            | `u-overflow-hidden/clip/visible/x-auto/y-auto`                                                                                                                                                            |
+| Aspect ratio & fit  | `u-ratio-1-1/16-9/2-1/2-3/3-2/4-5/5-4`, `u-object-fit-cover/contain`                                                                                                                                      |
+| Background & color  | `u-background-1`, `u-background-2`, `u-background-skeleton`, `u-color-brand/faded/inherit`, `u-heading-accent`, `u-gradient-text`, `u-gradient-primary`, `u-gradient-primary-reverse`                     |
+| Shadow              | `u-box-shadow-xxsmall/xsmall/small/medium/large/xlarge/xxlarge`                                                                                                                                           |
+| Radius              | `u-radius-none/xsmall/small/medium/main/large/xlarge/full/round/section/inherit`                                                                                                                          |
+| Icon                | `u-icon-16/24/32/48/64`                                                                                                                                                                                   |
+| Image               | `u-image-wrapper`, `u-image`                                                                                                                                                                              |
+| Interaction         | `u-pointer-on/off`, `u-button-reset` (`u-button-wrapper` is applied by `<ButtonWrapper>` — use the component)                                                                                             |
+| Animation           | `u-hero-fade` — pure-CSS staggered entrance for above-the-fold content                                                                                                                                    |
+| Theme               | `u-theme-light/dark/brand` (defined in `variables/themes.css`; `<Section theme>` applies them)                                                                                                            |
+| Accessibility       | `u-sr-only`                                                                                                                                                                                               |
 
 ## Responsive Variable System
 
@@ -145,7 +147,7 @@ any component's CSS can reference them without writing container queries.
 
 **Breakpoint tiers** (requires a `container-type: inline-size` ancestor like
 `u-container`): **large** — default (no query) · **medium** —
-`@container (width < 58em)` (~928px) · **small** — `@container (width < 35em)`
+`@container (width < 58em)` (~928px container ≈ 992px viewport) · **small** — `@container (width < 35em)`
 (~560px) · **xsmall** — `@container (width < 20em)` (~320px).
 
 **Flags per tier** (undefined at larger tiers — use the CSS fallback value):
@@ -341,10 +343,9 @@ CSS, not inline — `stroke-width: var(--border-width-main)`,
 
 - **Component CSS with no single owning component** →
   `src/styles/components/` (add to `global.css` with `layer(components)`).
-  Qualifying files today: `forms.css` (one stylesheet for the whole form
-  family, shared by the contact page + SignUpForm — the documented exception
-  to co-location) and `marketing-scorecard.css` (owned by a React `.tsx`,
-  which can't hold an Astro style block).
+  The one qualifying file today is `forms.css` (one stylesheet for the whole
+  form family, shared by the contact page + SignUpForm — the documented
+  exception to co-location).
 - **Page-specific classes** → `src/styles/pages/[page].css`, opening with
   `@layer pages { … }` in-file (ESM imports can't carry `layer()`).
 - **Utilities** (`u-`) → `src/styles/utilities/` (existing files; import

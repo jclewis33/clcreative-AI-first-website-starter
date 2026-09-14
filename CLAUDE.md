@@ -54,7 +54,7 @@ dashes between words, applied on top of a custom class and **always scoped**:
 
 ```html
 <section class="cta_wrap u-padding-block-large is-dark">
-  <div class="cta_layout u-container u-grid-2 u-gap-gutter">
+  <div class="cta_layout u-container u-gap-gutter">
     <h2 class="cta_title u-text-style-h2">Heading</h2>
   </div>
 </section>
@@ -94,7 +94,7 @@ src/
     ├── variables/    # foundation, colors, themes, typography, spacing, layout, nav
     ├── base/         # Element/attribute defaults only
     ├── utilities/    # Every u- class (import order is load-bearing)
-    ├── components/   # ONLY component CSS with no single owner (forms.css, marketing-scorecard.css)
+    ├── components/   # ONLY component CSS with no single owner (forms.css)
     └── pages/        # Page CSS; imported by the page, opens with @layer pages { }
 ```
 
@@ -142,14 +142,11 @@ const content = await slotContent(Astro.slots);
   second render silently drops the hoisted `<script>` of every component
   inside the slot, page-wide (measured: one Slider in a Card footer killed
   both sliders on the page).
-- Frontmatter capture is safe on the current setup — verified against both
-  historical failure modes (script drop, and the image-service cold-start
-  `validateOptions` crash) on Astro 6.4.6: dev cold start ×3, production
-  build A/B, SSR `/preview` cold start ×2 (slotContent spike, 2026-08-27).
-  Re-verified on the Astro 7.3.2 upgrade (2026-09-14): dev cold start, and a
-  production build whose per-page `<script>`/`<style>` sets matched the
-  Astro 6 build exactly. If a `validateOptions` error ever reappears on a
-  cold start, re-run that spike before changing anything.
+- Frontmatter capture is verified safe on the current setup against both
+  known failure modes (the script drop above, and an image-service
+  `validateOptions` crash on cold start) — checked on dev cold start,
+  production build, and SSR `/preview` cold start. If a `validateOptions`
+  error ever appears on a cold start, re-measure before changing anything.
 - `Astro.slots.has()` stays fine for cheap "was it passed" checks.
 - Section, Card, Carousel, Dropdown, Accordion(Item) already work this way —
   their empty slots emit nothing. `render={false}` still expresses "skip"

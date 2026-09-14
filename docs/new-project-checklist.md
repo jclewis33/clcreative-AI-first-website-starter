@@ -31,16 +31,14 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
 
 ## 1. What carries over with the code (✅ in-code — verify only)
 
-| Protection                                                    | Where it lives                                                         | How to verify                                                                                                                                                                                                                                     |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTTP security headers (SSR)                                   | `src/middleware.ts`                                                    | `curl -sI` an SSR route (`/preview/blog/<slug>`) → CSP `frame-ancestors` (allows the hosted Studio origin), HSTS, nosniff, Referrer-Policy, Permissions-Policy, plus `X-Robots-Tag: noindex` + `Cache-Control: private, no-cache` on `/preview/*` |
-| HTTP security headers (static)                                | `public/_headers`                                                      | `curl -sI` the homepage after deploy — same five headers                                                                                                                                                                                          |
-| API input hardening                                           | `src/pages/api/scorecard.ts`                                           | 50 KB body cap (413), strict field-by-field validation (400), honeypot fake-success — see §7 test commands                                                                                                                                        |
-| Form honeypot                                                 | `MarketingScorecard.tsx` (`company` field) + `.scorecard_hp_field` CSS | Hidden field present in the email-gate form                                                                                                                                                                                                       |
-| CI gates                                                      | `.github/workflows/ci.yml`                                             | Runs automatically on the new repo: config sync, `astro check`, build, `npm audit` (fails on high/critical)                                                                                                                                       |
-| Dependabot config                                             | `.github/dependabot.yml`                                               | Weekly grouped updates + **review the ignore rules** (§8 — they may be obsolete by the time you fork)                                                                                                                                             |
-| Draft-mode security                                           | `@sanity/preview-url-secret` validation, cookie-gated `loadQuery`      | Drafts can't leak to public visitors — architecture note in CLAUDE.md                                                                                                                                                                             |
-| JSON-LD escaping, trailing-slash config, iOS-zoom-safe inputs | Various                                                                | Already enforced by code + CLAUDE.md conventions                                                                                                                                                                                                  |
+| Protection                                                    | Where it lives                                                    | How to verify                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP security headers (SSR)                                   | `src/middleware.ts`                                               | `curl -sI` an SSR route (`/preview/blog/<slug>`) → CSP `frame-ancestors` (allows the hosted Studio origin), HSTS, nosniff, Referrer-Policy, Permissions-Policy, plus `X-Robots-Tag: noindex` + `Cache-Control: private, no-cache` on `/preview/*` |
+| HTTP security headers (static)                                | `public/_headers`                                                 | `curl -sI` the homepage after deploy — same five headers                                                                                                                                                                                          |
+| CI gates                                                      | `.github/workflows/ci.yml`                                        | Runs automatically on the new repo: config sync, `astro check`, build, `npm audit` (fails on high/critical)                                                                                                                                       |
+| Dependabot config                                             | `.github/dependabot.yml`                                          | Weekly grouped updates + **review the ignore rules** (§8 — they may be obsolete by the time you fork)                                                                                                                                             |
+| Draft-mode security                                           | `@sanity/preview-url-secret` validation, cookie-gated `loadQuery` | Drafts can't leak to public visitors — architecture note in CLAUDE.md                                                                                                                                                                             |
+| JSON-LD escaping, trailing-slash config, iOS-zoom-safe inputs | Various                                                           | Already enforced by code + CLAUDE.md conventions                                                                                                                                                                                                  |
 
 ---
 
@@ -52,7 +50,7 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
 4. **`.env`** — copy from [.env.example](../.env.example), fill in. **Never commit it** (gitignore already covers it; GitHub push protection is the backstop).
 5. Brand: `--color-brand-500` in [colors.css](../src/styles/variables/colors.css) + the `SITE.brand.color` mirror; [logo-paths.ts](../src/config/logo-paths.ts) for the wordmark.
 6. `src/data/site-structure.ts` — pages, nav, footer, banner for the new site.
-7. Third-party integration ids in `SITE.integrations` ([site.ts](../src/config/site.ts)) — GTM, MailerLite, Usercentrics, and the HoneyBook placement id. **All ship blank (`""`) = off**; fill in the ones the new site uses (Head.astro only injects each script when its id is set). The `HoneyBookEmbed*` components ([src/components/ui/](../src/components/ui/)) are currently **unused** — wire one in where you want a booking/contact form, or delete them.
+7. Third-party integration ids in `SITE.integrations` ([site.ts](../src/config/site.ts)) — GTM, MailerLite, and Usercentrics. **All ship blank (`""`) = off**; fill in the ones the new site uses (Head.astro only injects each script when its id is set).
 
 ---
 
@@ -72,14 +70,13 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
    - ⚠️ **Never add `limits: { cpu_ms }` to `wrangler.jsonc`** — CPU limits exist only on **Workers Paid**. On the Free plan the build stays green and then `wrangler versions upload` fails (`CPU limits are not supported for the Free plan. [code: 100328]`) — nothing ships and production silently keeps the previous build, which reads as "all my changes broke" during verification. It's unnecessary anyway: the content routes are prerendered, so the only SSR surface is `/api/*` + `/preview/*`.
 2. **Custom domain** attached to the worker; DNS through Cloudflare.
 3. **SSL/TLS → Edge Certificates → "Always Use HTTPS" = On** (pairs with the HSTS header the code already sends).
-4. **WAF rate-limiting rule** (Security → Security rules → Create rule → Rate limiting rule — free plan includes one):
-   - Name: `Scorecard API limit` (or the fork's form endpoint)
+4. **WAF rate-limiting rule** — only once the fork adds a public POST endpoint (a form handler, for example; the starter ships none). Security → Security rules → Create rule → Rate limiting rule (free plan includes one):
    - Custom filter expression:
      ```
-     (http.request.uri.path eq "/api/scorecard" and http.request.method eq "POST")
+     (http.request.uri.path eq "/api/<endpoint>" and http.request.method eq "POST")
      ```
    - 5 requests / 10 seconds per IP → **Block**, 10 s duration
-   - Adjust the path if the fork renames or adds POST endpoints — every public POST endpoint should sit behind a rule like this.
+   - Every public POST endpoint should sit behind a rule like this.
 5. Optional: **Security.txt** (Security → Settings) — publishes `/.well-known/security.txt` with your contact for vulnerability reports.
 6. **Rebuild-debounce Worker + Sanity publish webhook — REQUIRED, not optional.** The content routes are **prerendered**, so a Sanity publish reaches the live site only via a rebuild: until this webhook chain is wired, publishing changes **nothing** on production (draft preview in the Studio still works — `/preview/*` fetches live). A standalone Worker in [`workers/rebuild-debounce/`](../workers/rebuild-debounce/) debounces a burst of publishes into one build (~5 min quiet window, so publish-to-live is typically ~5–20 min). Deploy it and wire the webhook per its own [README](../workers/rebuild-debounce/README.md):
    - `cd workers/rebuild-debounce && npm install && npx wrangler deploy` (rename `name` in its `wrangler.jsonc` to match this fork's worker first).
@@ -133,12 +130,9 @@ Finally: open one trivial PR (or wait for Dependabot's first) and confirm both C
 
 ---
 
-## 6. Email / lead-capture services (🔁 per-fork, if keeping the scorecard or similar forms)
+## 6. Email / lead-capture services (🔁 per-fork, only if the fork wires a form endpoint)
 
-1. **Resend**: API key, verify the new sending domain, set `RESEND_FROM` (or update the fallback in `scorecard.ts` — search for `fork:`).
-2. **MailerLite**: API key + group ID.
-3. Set `MAILERLITE_API_KEY`, `MAILERLITE_GROUP_ID`, `RESEND_API_KEY`, `RESEND_FROM`, `NOTIFICATION_EMAIL` in Cloudflare (secrets for keys, vars for the rest) and local `.env`.
-4. If the fork drops the scorecard: delete `src/pages/api/scorecard.ts`, `MarketingScorecard.tsx`, and the WAF rule — don't leave a dead authenticated endpoint around.
+The starter ships no form endpoint: `<Form>` without an `action` reports success and sends nothing. When a fork adds a handler under `src/pages/api/`, put the provider keys in as Cloudflare **secrets** (never plain vars), mirror them in local `.env`, and add the WAF rate-limit rule from §2.
 
 ---
 
@@ -159,20 +153,11 @@ curl -sI https://www.<domain>/preview/blog/<slug> | grep -iE "x-frame|cache-cont
 curl -s https://www.<domain>/sitemap-0.xml | grep -c "<loc>"
 curl -s https://www.<domain>/sitemap-0.xml | grep -E "/preview|/thank-you" || echo "OK: no excluded URLs"
 
-# API validation: bad email -> 400, oversized -> 413, honeypot -> fake 200
-curl -s -w " [%{http_code}]" -X POST https://www.<domain>/api/scorecard \
-  -H 'content-type: application/json' -d '{"firstName":"T","email":"bad","totalScore":1,"maxScore":105,"tier":"x","rooms":[{"name":"a","subtitle":"b","score":1,"max":15,"questions":[]}]}'
-curl -s -w " [%{http_code}]" -X POST https://www.<domain>/api/scorecard \
-  -H 'content-type: application/json' -d '{"company":"bot","firstName":"T","email":"t@example.com","totalScore":1,"maxScore":105,"tier":"x","rooms":[]}'
-
-# Rate limit: 9 rapid POSTs -> first 5 reach the API (400), rest blocked (429), recovers after ~10s
-for i in $(seq 1 9); do curl -s -o /dev/null -w "%{http_code} " -X POST https://www.<domain>/api/scorecard -H 'content-type: application/json' -d '{}'; done; echo
-
 # Dependency health
 npm audit --omit=dev --audit-level=critical   # expect 0 critical (matches the CI gate)
 ```
 
-Plus, in a browser: the hosted Studio loads at `https://<studioHost>.sanity.studio` and its Presentation tool previews the live site (click-to-edit overlays appear), and one full form submission delivers the complete notification email.
+Plus, in a browser: the hosted Studio loads at `https://<studioHost>.sanity.studio` and its Presentation tool previews the live site (click-to-edit overlays appear), and — if the fork wired a form endpoint — one full submission delivers.
 
 ---
 

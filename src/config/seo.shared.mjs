@@ -1,12 +1,9 @@
 /**
  * Which routes must stay out of search results — the single source of truth.
  *
- * Three surfaces need this same fact, and they used to hold three hand-synced
- * copies of it: the sitemap filter in astro.config.mjs, public/robots.txt
- * (whose comment literally read "Keep in sync with SITEMAP_EXCLUDE_PATHS"),
- * and the X-Robots-Tag in src/middleware.ts. Duplicated facts drift — the
- * same reasoning behind scripts/check-config-sync.mjs — so they now all read
- * from here:
+ * Four surfaces need this same fact. Duplicated facts drift — the same
+ * reasoning behind scripts/check-config-sync.mjs — so they all read from
+ * here instead of carrying their own copy:
  *
  *   - astro.config.mjs  → sitemap `filter`
  *   - src/pages/robots.txt.ts → generated Disallow lines (no static file)

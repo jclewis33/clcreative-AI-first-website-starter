@@ -21,14 +21,14 @@ import type { HTMLAttributes } from "astro/types";
  * attribute is fine and often reads better; Fragment's only edge is that
  * repeating leaves an inert `slot` attribute on each rendered element.
  *
- * The column wrappers are generated here, so there is nothing to get wrong.
- * (The old  used `display: contents`, which erased the column box and let
- * a ratio'd <Visual> balloon — a hazard that needed a dev-time guardrail.
- * A generated column is a real flex box, so that failure cannot occur.)
+ * The column wrappers are generated here, so there is nothing to get wrong:
+ * a generated column is a real flex box, so a ratio'd <Visual> inside it
+ * cannot balloon the way it would in a `display: contents` wrapper.
  *
  * All two-column variants collapse to a single stacked column when the nearest
- * `.u-container` is narrower than 58em (928px). Use `collapseAt="small"` to
- * keep columns until 560px instead.
+ * `.u-container` is narrower than 58em (928px of container width — a ~992px
+ * viewport at the default site margin). Use `collapseAt="small"` to keep
+ * columns until 560px instead.
  *
  * @example Two columns — content and an image
  * ```astro
@@ -113,7 +113,7 @@ import type { HTMLAttributes } from "astro/types";
    tag-like pairs inside @example blocks are safe — it is the odd one out that
    breaks it, and the exact trigger interacts with the rest of the file, so do
    not reason about it — measure it.
-   scripts/hover-probe.mjs drives the real language server and fails if any
+   scripts/check-hover.mjs drives the real language server and fails if any
    component's `docs` tooltip goes missing; run `npm run check:hover`.
    Plain `tsc` was never fooled, which is why src/lib/prop-contracts.test-d.ts
    pins the type rules: it imports the types from this file and a regression
@@ -326,18 +326,18 @@ interface BaseProps extends HTMLAttributes<"div"> {
    *
    * | Number | Variable     | Size          |
    * |--------|--------------|---------------|
-   * | `1`    | `--gap-1`    | 6 - 8px       |
-   * | `2`    | `--gap-2`    | 10 - 12px     |
-   * | `3`    | `--gap-3`    | 14 - 16px     |
-   * | `4`    | `--gap-4`    | 20 - 24px     |
-   * | `5`    | `--gap-5`    | 28 - 32px     |
-   * | `6`    | `--gap-6`    | 32 - 40px     |
-   * | `7`    | `--gap-7`    | 36 - 48px     |
-   * | `8`    | `--gap-8`    | 40 - 64px     |
+   * | `1`    | `--space-1`  | 6 - 8px       |
+   * | `2`    | `--space-2`  | 10 - 12px     |
+   * | `3`    | `--space-3`  | 14 - 16px     |
+   * | `4`    | `--space-4`  | 20 - 24px     |
+   * | `5`    | `--space-5`  | 28 - 32px     |
+   * | `6`    | `--space-6`  | 32 - 40px     |
+   * | `7`    | `--space-7`  | 36 - 48px     |
+   * | `8`    | `--space-8`  | 40 - 64px     |
    *
    * @default 'var(--site-gutter)' (fluid 1-2rem)
    * @example columnGap={6}
-   * @example columnGap="var(--gap-8)"
+   * @example columnGap="var(--space-8)"
    * @example columnGap="0px"
    * @example columnGap="3rem"
    */
@@ -450,11 +450,11 @@ export type Props = BaseProps &
          * banner if present) using `--nav-height-total`. This prop controls
          * the extra breathing room below the nav.
          *
-         * Accepts any CSS length value, gap variables (`--gap-1` to `--gap-8`),
-         * or spacing variables (`--space-1` to `--space-8`).
+         * Accepts any CSS length value or a spacing variable
+         * (`--space-1` to `--space-8`).
          *
          * @default 'var(--space-3)' (approx 16px)
-         * @example stickyOffset="var(--gap-4)"
+         * @example stickyOffset="var(--space-4)"
          * @example stickyOffset="var(--space-6)"
          * @example stickyOffset="2rem"
          * @example stickyOffset="0px"
