@@ -20,13 +20,22 @@ to `action`. **With no `action`, the form sends nothing and reports
 success** — placeholder mode for the starter; wire `action` to a real
 endpoint per project.
 
-| Prop             | Type              | Default  | Description                                        |
-| ---------------- | ----------------- | -------- | -------------------------------------------------- |
-| `name`           | `string`          | —        | `name` on the `<form>`                             |
-| `action`         | `string`          | —        | Fetch target + native fallback; omit = placeholder |
-| `method`         | `'GET'`\|`'POST'` | `'POST'` | HTTP method                                        |
-| `successMessage` | `string`          | —        | Shown in place of the fields once sent             |
-| `errorMessage`   | `string`          | —        | Shown beneath the fields on failure                |
+| Prop             | Type                    | Default       | Description                                                                                             |
+| ---------------- | ----------------------- | ------------- | ------------------------------------------------------------------------------------------------------- |
+| `name`           | `string`                | —             | `name` on the `<form>`                                                                                  |
+| `action`         | `string`                | —             | Fetch target + native fallback; omit = placeholder                                                      |
+| `method`         | `'GET'`\|`'POST'`       | `'POST'`      | HTTP method                                                                                             |
+| `encoding`       | `'form-data'`\|`'json'` | `'form-data'` | Fetch body: multipart `FormData`, or a JSON object keyed by field name (CRM inbound webhooks, e.g. GHL) |
+| `successMessage` | `string`                | —             | Shown in place of the fields once sent                                                                  |
+| `errorMessage`   | `string`                | —             | Shown beneath the fields on failure                                                                     |
+
+**Wiring a CRM.** Two routes, neither touches the starter's code: embed the
+CRM's own form (Go High Level, HubSpot… all ship an embed snippet — drop it
+in a Section) or keep this `<Form>` and point `action` at the CRM's inbound
+webhook URL with `encoding="json"` (a GHL workflow's Inbound Webhook trigger
+takes a JSON body keyed by field name). MailerLite is a separate, optional
+script in the head (`SITE.integrations.mailerLiteAccount`, blank = off) and
+has nothing to do with the form components.
 
 ## `<FormField>`
 
