@@ -146,8 +146,10 @@ const content = await slotContent(Astro.slots);
   historical failure modes (script drop, and the image-service cold-start
   `validateOptions` crash) on Astro 6.4.6: dev cold start ×3, production
   build A/B, SSR `/preview` cold start ×2 (slotContent spike, 2026-08-27).
-  If a `validateOptions` error ever reappears on a cold start, re-run that
-  spike before changing anything.
+  Re-verified on the Astro 7.3.2 upgrade (2026-09-14): dev cold start, and a
+  production build whose per-page `<script>`/`<style>` sets matched the
+  Astro 6 build exactly. If a `validateOptions` error ever reappears on a
+  cold start, re-run that spike before changing anything.
 - `Astro.slots.has()` stays fine for cheap "was it passed" checks.
 - Section, Card, Carousel, Dropdown, Accordion(Item) already work this way —
   their empty slots emit nothing. `render={false}` still expresses "skip"
@@ -232,6 +234,10 @@ const content = await slotContent(Astro.slots);
 - **Formatting:** Prettier owns it — `npm run format` before committing;
   `format:check` gates CI. `Head.astro` and `BaseLayout.astro` are
   `.prettierignore`d (format by hand).
+- **Whitespace:** `compressHTML: true` is pinned in `astro.config.mjs` —
+  don't switch to Astro 7's `"jsx"` default. Under JSX rules a Prettier line
+  break between an inline element and its neighbour renders as no space
+  (measured on the 7.3.2 upgrade: footer copyright, required-field `*`).
 - **Merging classes:** always `class:list` (base class first, conditional
   modifiers, caller's `className` last). Merging inline **styles** is
   separate: `[computed, userStyle].filter(Boolean).join("; ")`.

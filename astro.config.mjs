@@ -275,6 +275,17 @@ export default defineConfig({
   // Optional: If your site is hosted in a subdirectory, specify the base path.
   // base: '/your-subdirectory/',
 
+  // HTML-aware whitespace compression, pinned on purpose. Astro 7 changed the
+  // default to "jsx", which strips whitespace between elements the way React
+  // does — including the newline Prettier inserts between an inline element
+  // and its neighbour (`Full Name` + `<span>*</span>`, `©` + `<span>2026</span>`).
+  // Those newlines are a rendered space under HTML rules and NOTHING under JSX
+  // rules, so Prettier's line-wrapping silently deletes visible spaces. Measured
+  // on the 7.3.2 upgrade: 308 sibling boundaries lost their space in "jsx" mode
+  // (footer copyright, required-field markers, tag + button rows); `true`
+  // reproduced the Astro 6 output byte-for-byte apart from asset hashes.
+  compressHTML: true,
+
   // Optional: Control whether URLs have trailing slashes. Options are "always", "never", or "ignore".
   trailingSlash: "never",
 });
