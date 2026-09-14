@@ -4,32 +4,31 @@ This project uses a responsive column system built on CSS container queries. It 
 
 ---
 
-## Two Systems, One Project
+## Two ways in, one mechanism
 
-### 1. Class-based — `u-grid-*`
+### 1. The `<Grid>` component — the normal path
 
-Simple, automatic. Apply a class and the grid collapses at the standard breakpoints.
-
-```html
-<div class="u-grid-3">
-  <!-- 3 cols → 2 cols at medium → 1 col at small -->
-</div>
+```astro
+<Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={4}>
+  <Card … />
+  <Card … />
+  <Card … />
+</Grid>
 ```
 
-| Class      | Behavior                                |
-| ---------- | --------------------------------------- |
-| `u-grid-1` | Always 1 column                         |
-| `u-grid-2` | 2 cols → 1 col at 35em                  |
-| `u-grid-3` | 3 cols → 2 cols at 58em → 1 col at 35em |
-| `u-grid-4` | 4 cols → 2 cols at 58em → 1 col at 35em |
-
-**Use this when** the default collapse behavior is exactly what you want.
+Column counts per tier are props (`largeColumns`, `mediumColumns`, `smallColumns`,
+`xsmallColumns`; each lower tier inherits the one above when unset), and the
+gap props map to the `--space-*` scale. Every grid on a page should be one of
+these — there is no numbered `u-grid-N` utility. See the `component-api` skill
+for the full prop table.
 
 ---
 
 ### 2. Attribute-based — `data-*-columns`
 
-Full control. You specify the column count at every breakpoint tier using HTML attributes.
+What the component renders. Reach for it directly only in markup a component
+can't wrap (`set:html` content, hand-written blocks). You specify the column
+count at every breakpoint tier using HTML attributes.
 
 ```html
 <div data-large-columns="4" data-medium-columns="2" data-small-columns="1">

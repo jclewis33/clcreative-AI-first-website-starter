@@ -54,7 +54,7 @@ dashes between words, applied on top of a custom class and **always scoped**:
 
 ```html
 <section class="cta_wrap u-padding-block-large is-dark">
-  <div class="cta_layout u-container u-grid-2 u-gap-gutter">
+  <div class="cta_layout u-container u-gap-gutter">
     <h2 class="cta_title u-text-style-h2">Heading</h2>
   </div>
 </section>

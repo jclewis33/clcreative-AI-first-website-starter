@@ -394,7 +394,13 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
             </div>
 
             <h3 class="styleguide_subsection_title">Text Wrap</h3>
-            <div class="u-grid-3" style="gap:var(--space-3)">
+            <Grid
+              largeColumns={3}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={3}
+              columnGap={3}
+            >
               {
                 [
                   { cls: "u-text-wrap-default", label: "wrap (default)" },
@@ -415,7 +421,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   </div>
                 ))
               }
-            </div>
+            </Grid>
           </div>
 
           <!-- Text Alignment -->
@@ -1371,7 +1377,13 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
           <div id="spacing-padding">
             <h3 class="styleguide_subsection_title">Padding Scale</h3>
             <div class="styleguide_card_wrap u-margin-trim">
-              <div class="u-grid-4" style="gap:var(--space-3)">
+              <Grid
+                largeColumns={4}
+                mediumColumns={2}
+                smallColumns={1}
+                rowGap={3}
+                columnGap={3}
+              >
                 {
                   [0, 1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
                     <div style="text-align:center">
@@ -1387,11 +1399,17 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                     </div>
                   ))
                 }
-              </div>
+              </Grid>
             </div>
 
             <h3 class="styleguide_subsection_title">Padding Block vs Inline</h3>
-            <div class="u-grid-2" style="gap:var(--space-3)">
+            <Grid
+              largeColumns={2}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={3}
+              columnGap={3}
+            >
               <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-padding-block-4 (vertical only)</span>
                 <div
@@ -1416,7 +1434,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   </div>
                 </div>
               </div>
-            </div>
+            </Grid>
 
             <h3 class="styleguide_subsection_title">Named Padding</h3>
             <div class="styleguide_card_wrap u-margin-trim">
@@ -1606,7 +1624,13 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
             </div>
 
             <h3 class="styleguide_subsection_title">Flex Direction</h3>
-            <div class="u-grid-2" style="gap:var(--space-3)">
+            <Grid
+              largeColumns={2}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={3}
+              columnGap={3}
+            >
               <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-flex .u-flex-row</span>
                 <div class="u-flex u-flex-row u-gap-2">
@@ -1647,10 +1671,16 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   </div>
                 </div>
               </div>
-            </div>
+            </Grid>
 
             <h3 class="styleguide_subsection_title">Flex Wrap</h3>
-            <div class="u-grid-2" style="gap:var(--space-3)">
+            <Grid
+              largeColumns={2}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={3}
+              columnGap={3}
+            >
               <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-flex-nowrap</span>
                 <div
@@ -1680,7 +1710,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   }
                 </div>
               </div>
-            </div>
+            </Grid>
 
             <h3 class="styleguide_subsection_title">Justify Content</h3>
             {
@@ -1714,7 +1744,13 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
             }
 
             <h3 class="styleguide_subsection_title">Align Items</h3>
-            <div class="u-grid-3" style="gap:var(--space-3)">
+            <Grid
+              largeColumns={3}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={3}
+              columnGap={3}
+            >
               {
                 [
                   { cls: "u-align-start", label: "start" },
@@ -1743,7 +1779,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   </div>
                 ))
               }
-            </div>
+            </Grid>
 
             <h3 class="styleguide_subsection_title">Order</h3>
             <div class="styleguide_card_wrap u-margin-trim">
@@ -1826,9 +1862,9 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
             <h3 class="styleguide_subsection_title">Column Span</h3>
             <div class="styleguide_card_wrap u-margin-trim">
               <span class="tag_wrap"
-                >.u-span-2 / .u-span-full on a u-grid-4</span
+                >.u-span-2 / .u-span-full in a 4-column Grid</span
               >
-              <div class="u-grid-4">
+              <Grid largeColumns={4} mediumColumns={2} smallColumns={1}>
                 <div class="styleguide_grid_cell" style="opacity:0.15"></div>
                 <div
                   class="styleguide_grid_cell u-span-2"
@@ -1849,13 +1885,13 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                     style="opacity:1; color:var(--text)">u-span-full</span
                   >
                 </div>
-              </div>
+              </Grid>
             </div>
 
             <h3 class="styleguide_subsection_title">Column Start</h3>
             <div class="styleguide_card_wrap u-margin-trim">
-              <span class="tag_wrap">.u-column-start-* on a u-grid-4</span>
-              <div class="u-grid-4">
+              <span class="tag_wrap">.u-column-start-* in a 4-column Grid</span>
+              <Grid largeColumns={4} mediumColumns={2} smallColumns={1}>
                 <div
                   class="styleguide_grid_cell u-column-start-2"
                   style="opacity:0.35; display:flex; align-items:center; justify-content:center"
@@ -1876,13 +1912,13 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                     style="opacity:1; color:var(--text)">start-3 span-2</span
                   >
                 </div>
-              </div>
+              </Grid>
             </div>
 
             <h3 class="styleguide_subsection_title">Row Span</h3>
             <div class="styleguide_card_wrap u-margin-trim">
-              <span class="tag_wrap">.u-row-span-2 on a u-grid-3</span>
-              <div class="u-grid-3">
+              <span class="tag_wrap">.u-row-span-2 in a 3-column Grid</span>
+              <Grid largeColumns={3} mediumColumns={2} smallColumns={1}>
                 <div
                   class="styleguide_grid_cell u-row-span-2"
                   style="opacity:0.35; height:auto; display:flex; align-items:center; justify-content:center"
@@ -1896,11 +1932,17 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                 <div class="styleguide_grid_cell" style="opacity:0.15"></div>
                 <div class="styleguide_grid_cell" style="opacity:0.2"></div>
                 <div class="styleguide_grid_cell" style="opacity:0.2"></div>
-              </div>
+              </Grid>
             </div>
 
             <h3 class="styleguide_subsection_title">Autofit vs Autofill</h3>
-            <div class="u-grid-2" style="gap:var(--space-3)">
+            <Grid
+              largeColumns={2}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={3}
+              columnGap={3}
+            >
               <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-grid-autofit (min 5rem)</span>
                 <div class="u-grid-autofit" style="--col-min:5rem">
@@ -1923,7 +1965,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   3 items — columns stay at min-width, empty tracks preserved
                 </p>
               </div>
-            </div>
+            </Grid>
           </div>
 
           <!-- Gap -->
@@ -2177,7 +2219,13 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
           <!-- Overflow -->
           <div id="misc-overflow">
             <h3 class="styleguide_subsection_title">Overflow</h3>
-            <div class="u-grid-2" style="gap:var(--space-3)">
+            <Grid
+              largeColumns={2}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={3}
+              columnGap={3}
+            >
               {
                 [
                   { cls: "u-overflow-visible", label: "visible" },
@@ -2196,7 +2244,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   </div>
                 ))
               }
-            </div>
+            </Grid>
 
             <h3 class="styleguide_subsection_title">Visibility</h3>
             <div class="styleguide_card_wrap u-margin-trim">
@@ -2271,7 +2319,13 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
           <!-- Dimensions -->
           <div id="misc-dimensions">
             <h3 class="styleguide_subsection_title">Dimensions</h3>
-            <div class="u-grid-2" style="gap:var(--space-3)">
+            <Grid
+              largeColumns={2}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={3}
+              columnGap={3}
+            >
               <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-width-full</span>
                 <div
@@ -2296,13 +2350,19 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   height: 100% (fills parent)
                 </p>
               </div>
-            </div>
+            </Grid>
           </div>
 
           <!-- Object Fit -->
           <div id="misc-objectfit">
             <h3 class="styleguide_subsection_title">Object Fit</h3>
-            <div class="u-grid-2" style="gap:var(--space-3)">
+            <Grid
+              largeColumns={2}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={3}
+              columnGap={3}
+            >
               <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-object-fit-cover</span>
                 <div
@@ -2332,13 +2392,19 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   Scales to fit, no cropping
                 </p>
               </div>
-            </div>
+            </Grid>
           </div>
 
           <!-- Button Wrappers -->
           <div id="misc-button-wrappers">
             <h3 class="styleguide_subsection_title">Button Wrappers</h3>
-            <div class="u-grid-2" style="gap:var(--space-3)">
+            <Grid
+              largeColumns={2}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={3}
+              columnGap={3}
+            >
               <div class="styleguide_card_wrap u-margin-trim">
                 <span class="tag_wrap">.u-button-wrapper</span>
                 <ButtonWrapper>
@@ -2358,7 +2424,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                   >
                 </ButtonWrapper>
               </div>
-            </div>
+            </Grid>
           </div>
 
           <!-- Responsive Columns -->
@@ -2417,7 +2483,13 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                 Use them in <code>var()</code> to control any property at specific
                 breakpoints without writing container queries.
               </p>
-              <div class="u-grid-2" style="gap:var(--space-2)">
+              <Grid
+                largeColumns={2}
+                mediumColumns={2}
+                smallColumns={1}
+                rowGap={2}
+                columnGap={2}
+              >
                 {
                   [
                     { flag: "--flex-{tier}", val: "flex" },
@@ -2441,7 +2513,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
                     </div>
                   ))
                 }
-              </div>
+              </Grid>
               <p class="u-text-style-tiny u-text-style-muted u-margin-top-3">
                 Replace <code>{`{tier}`}</code> with <code>medium</code>, <code
                   >small</code

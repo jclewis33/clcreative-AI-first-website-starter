@@ -1,29 +1,14 @@
 /* ==========================================================================
    GRID & LAYOUT — layer(variables)
    ==========================================================================
-   Owns:      --grid-1..12 (column templates) and the breakout grid.
+   Owns:      the breakout grid (named-line template for full-bleed layouts).
    Does not:  --space-1..8, the gap scale         → variables/spacing.css
               --site-margin, --site-gutter       → variables/foundation.css
-              the .u-grid-* / .u-gap-* classes that consume these
+              the .u-grid-breakout / .u-gap-* classes that consume these
                                                  → utilities/layout.css
    ========================================================================== */
 
 :root {
-  /* ========== GRID COLUMNS ========== */
-
-  --grid-1: repeat(1, minmax(0, 1fr));
-  --grid-2: repeat(2, minmax(0, 1fr));
-  --grid-3: repeat(3, minmax(0, 1fr));
-  --grid-4: repeat(4, minmax(0, 1fr));
-  --grid-5: repeat(5, minmax(0, 1fr));
-  --grid-6: repeat(6, minmax(0, 1fr));
-  --grid-7: repeat(7, minmax(0, 1fr));
-  --grid-8: repeat(8, minmax(0, 1fr));
-  --grid-9: repeat(9, minmax(0, 1fr));
-  --grid-10: repeat(10, minmax(0, 1fr));
-  --grid-11: repeat(11, minmax(0, 1fr));
-  --grid-12: repeat(12, minmax(0, 1fr));
-
   /* ========== BREAKOUT GRID ========== */
   /* Named-line grid for full-bleed layouts.
      Mirrors the 12-column site grid between content-start/content-end,
