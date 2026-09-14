@@ -177,7 +177,7 @@ const categorySections = categoryConfig
     <Layout variant="stack">
       <Heading
         data-prevent-flicker="true"
-        data-split-text
+        data-fade-in
         tag="h1"
         variant="h1"
         balance>Blog</Heading
@@ -260,7 +260,7 @@ const categorySections = categoryConfig
         >
           <div class="blog_section_header">
             <div class="blog_section_header_text">
-              <Heading data-split-text tag="h2" marginBottom={0}>
+              <Heading data-fade-in tag="h2" marginBottom={0}>
                 {cat.name}
               </Heading>
               <Text data-fade-in muted marginBottom={0}>
@@ -385,7 +385,7 @@ const categorySections = categoryConfig
     latestPosts.length > 0 && (
       <Section gap={6} id="latest" class="blog_category_section">
         <div class="blog_section_header">
-          <Heading data-prevent-flicker="true" data-split-text marginBottom={0}>
+          <Heading data-prevent-flicker="true" data-fade-in marginBottom={0}>
             Latest
           </Heading>
         </div>
