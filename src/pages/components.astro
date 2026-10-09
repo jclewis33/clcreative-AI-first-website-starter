@@ -77,6 +77,14 @@ import type { ImageMetadata } from "astro";
 import ProjectCard from "@/components/ui/ProjectCard.astro";
 import ProjectBrowser from "@/components/ui/ProjectBrowser.astro";
 import GalleryBrowser from "@/components/ui/GalleryBrowser.astro";
+import "@/styles/pages/components-demo.css";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import ImagePair from "@/components/ui/ImagePair.astro";
+import ServiceIcon, {
+  type ServiceIconName,
+} from "@/components/ui/ServiceIcon.astro";
+import serviceIcons from "@/data/service-icons.json";
 import { PROJECT_CATEGORIES } from "@/config/projects";
 import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
 import demoPhoto2 from "@/assets/placeholder-images/ai-first-starter-2.webp";
@@ -186,6 +194,9 @@ const COMPONENT_INDEX = [
   { slug: "project-card", text: "ProjectCard" },
   { slug: "project-browser", text: "ProjectBrowser" },
   { slug: "gallery-browser", text: "GalleryBrowser" },
+  { slug: "cta-button", text: "CtaButton & LeadFormModal" },
+  { slug: "image-pair", text: "ImagePair" },
+  { slug: "service-icon", text: "ServiceIcon" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -2216,6 +2227,81 @@ const demoGallery = [
       >
     </Layout>
     <GalleryBrowser items={demoGallery} categories={PROJECT_CATEGORIES} />
+  </Section>
+
+  <Section theme="light" id="cta-button">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">CtaButton &amp; LeadFormModal</Heading>
+      <Heading tag="h2"
+        >Section buttons that link, call, or open the estimate form</Heading
+      >
+      <Text muted
+        >Every section takes its buttons as SectionCta objects. "Get an
+        estimate" opens the LeadFormModal below; the last button points at a
+        modal that isn't on the page and still renders safely.</Text
+      >
+    </Layout>
+    <ButtonWrapper>
+      <CtaButton cta={{ label: "Get an estimate", modal: "demo-estimate" }} />
+      <CtaButton phone variant="secondary" />
+      <CtaButton
+        cta={{ label: "See our work", href: "/projects" }}
+        variant="text"
+      />
+      <CtaButton
+        cta={{ label: "Orphan trigger", modal: "missing-modal" }}
+        variant="secondary"
+      />
+    </ButtonWrapper>
+    <LeadFormModal
+      id="demo-estimate"
+      formId="contact"
+      heading="Get a free estimate"
+      text="Tell us a little about the project and we'll be in touch."
+    />
+  </Section>
+
+  <Section theme="light" id="image-pair">
+    <Layout variant="columns" ratio="6-6" verticalAlign="center">
+      <Heading variant="eyebrow">ImagePair</Heading>
+      <Heading tag="h2">Two portrait photos, the second offset</Heading>
+      <Text muted
+        >Used by ServiceArea when there's no map, and by IncludedList.</Text
+      >
+      <ImagePair
+        slot="column2"
+        images={[
+          {
+            src: demoPhoto1,
+            alt: "A finished kitchen seen from the dining area",
+          },
+          {
+            src: demoPhoto2,
+            alt: "A close view of new cabinetry and lighting",
+          },
+        ]}
+      />
+    </Layout>
+  </Section>
+
+  <Section theme="light" id="service-icon">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">ServiceIcon</Heading>
+      <Heading tag="h2">A neutral icon set for service cards</Heading>
+      <Text muted
+        >Add an icon by adding a key to src/data/service-icons.json.</Text
+      >
+    </Layout>
+    <div class="service-icon-demo_list">
+      {
+        (Object.keys(serviceIcons) as ServiceIconName[]).map((name) => (
+          <div class="service-icon-demo_item">
+            <ServiceIcon name={name} />
+            <span class="service-icon-demo_label">{name}</span>
+          </div>
+        ))
+      }
+    </div>
   </Section>
 
   <!-- ============================================================

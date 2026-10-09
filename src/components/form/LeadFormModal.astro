@@ -1,0 +1,86 @@
+---
+import type { ComponentProps } from "astro/types";
+import Modal from "@/components/ui/Modal.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import LeadForm from "@/components/form/LeadForm.astro";
+import type { FormId } from "@/config/forms";
+
+/* Borrow LeadForm's own option types so the two can never drift. */
+type LeadFormModalFields = ComponentProps<typeof LeadForm>["fields"];
+type LeadFormModalOptions = ComponentProps<typeof LeadForm>["projectOptions"];
+
+interface Props {
+  /**
+   * **LeadFormModal** — a pop-up `<LeadForm>` (the "Get an estimate"
+   * pattern). Place it **once** per page; any section CTA with
+   * `modal: "<id>"` (or any element with `data-modal-trigger="<id>"`) opens
+   * it.
+   *
+   * - `id` — the modal id the CTAs point at
+   * - `formId` — which `src/config/forms.ts` entry it submits as (public)
+   * - `heading`, `text` — the copy above the form
+   * - `fields`, `projectOptions` — passed to LeadForm
+   *
+   * @example
+   * <LeadFormModal id="estimate" formId="contact" heading="Get a free estimate" />
+   * <CtaButton cta={{ label: "Get an estimate", modal: "estimate" }} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Modal id — what `SectionCta.modal` / `data-modal-trigger` point at. */
+  id: string;
+
+  /** The forms-registry entry this form submits as. Must be a public form. */
+  formId: FormId;
+
+  /** Heading above the form. */
+  heading: string;
+
+  /** Optional line under the heading. */
+  text?: string;
+
+  /** LeadForm field preset. @default 'contact' */
+  fields?: LeadFormModalFields;
+
+  /** Quote preset: project-type choices. */
+  projectOptions?: LeadFormModalOptions;
+}
+
+const {
+  docs,
+  render = true,
+  id,
+  formId,
+  heading,
+  text,
+  fields,
+  projectOptions,
+} = Astro.props;
+
+if (import.meta.env.DEV && render && (!id || !formId || !heading)) {
+  console.warn(
+    "[LeadFormModal] Needs `id`, `formId` and `heading`; nothing renders.",
+  );
+}
+---
+
+{
+  render && id && formId && heading && (
+    <Modal id={id} variant="small" ariaLabel={heading}>
+      <Heading tag="h2" variant="h3">
+        {heading}
+      </Heading>
+      {text && <Text muted>{text}</Text>}
+      <LeadForm
+        formId={formId}
+        id={`${id}-form`}
+        fields={fields}
+        projectOptions={projectOptions}
+      />
+    </Modal>
+  )
+}
