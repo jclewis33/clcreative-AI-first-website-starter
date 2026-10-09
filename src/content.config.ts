@@ -23,7 +23,25 @@ const iconNames = Object.keys(ICONS) as [
 const alt = z.string().min(1, "Alt text can't be empty");
 
 const services = defineCollection({
-  loader: glob({ pattern: "*.json", base: "./src/content/services" }),
+  loader: glob({
+    pattern: "*.json",
+    base: "./src/content/services",
+    /* The filename IS the slug, used as-is by both the page route and the
+       nav (src/lib/service-nav.ts). Astro's default would slugify it — so
+       "Deck Building.json" would build /services/deck-building while the
+       nav linked to "/services/Deck Building" (a 404). Rejecting anything
+       but lowercase-kebab keeps the two identical. A "slug" key in the
+       file is ignored for the same reason. */
+    generateId: ({ entry }) => {
+      const id = entry.replace(/\.json$/, "");
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
+        throw new Error(
+          `Service file "${entry}" must be named in lowercase-kebab-case, e.g. "deck-building.json" — the filename becomes the URL /services/<name>.`,
+        );
+      }
+      return id;
+    },
+  }),
   schema: ({ image }) =>
     z.object({
       /** Service name — page title base, breadcrumb, card title. */

@@ -1,8 +1,10 @@
 /**
  * The nav / footer / page-registry view of the service files — synchronous,
  * so src/data/site-structure.ts can use it. It reads the same JSON files as
- * the `services` content collection (src/content.config.ts), so the two can
- * never disagree; the collection is what validates them.
+ * the `services` content collection (src/content.config.ts). Both use the
+ * raw filename as the slug — the collection's generateId rejects anything
+ * but lowercase-kebab, so the nav link and the page URL always match. The
+ * collection is what validates the files.
  *
  * Only the fields the menus need are read here. `import.meta.glob` is a
  * Vite feature: this module (and site-structure.ts) are only ever loaded

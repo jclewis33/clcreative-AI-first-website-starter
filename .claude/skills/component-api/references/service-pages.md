@@ -10,14 +10,16 @@ sitemap and llms.txt all come from the same files
 
 1. Copy `src/content/services/kitchen-remodeling.json` to
    `src/content/services/<slug>.json`. The filename is the URL:
-   `/services/<slug>`. Never use `contact` or another existing route name.
+   `/services/<slug>`. Use lowercase-kebab-case (`deck-building.json`);
+   anything else fails the build with a message saying so.
 2. Put its photos in `src/content/services/images/` (WebP, about 2000px
    wide for the hero and 1400px for the rest) and point at them with
    `"./images/<file>.webp"`.
 3. Write the copy (rules below) and set `order` to place it in the nav.
-4. Run `npm run check`. A missing field, an empty alt, an unknown icon or a
-   wrong photo path fails with a message naming the field. A missing photo
-   fails `npm run build` with `ImageNotFound`.
+4. Run `npm run check`. A missing field, an empty alt or an unknown icon
+   fails with a message naming the file and the field. A missing or wrong
+   photo path only fails `npm run build` (`ImageNotFound`, naming the image
+   path but not the service file).
 
 To remove a service, delete its file and its photos.
 
