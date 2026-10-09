@@ -29,13 +29,49 @@ endpoint per project.
 | `successMessage` | `string`                | —             | Shown in place of the fields once sent                                                                  |
 | `errorMessage`   | `string`                | —             | Shown beneath the fields on failure                                                                     |
 
-**Wiring a CRM.** Two routes, neither touches the starter's code: embed the
-CRM's own form (Go High Level, HubSpot… all ship an embed snippet — drop it
-in a Section) or keep this `<Form>` and point `action` at the CRM's inbound
-webhook URL with `encoding="json"` (a GHL workflow's Inbound Webhook trigger
-takes a JSON body keyed by field name). MailerLite is a separate, optional
-script in the head (`SITE.integrations.mailerLiteAccount`, blank = off) and
-has nothing to do with the form components.
+**Wiring a CRM.** GoHighLevel is built in. Use `<LeadForm>` below rather
+than pointing a bare `<Form>` at a webhook. Other CRMs: embed the CRM's own
+form snippet in a Section. MailerLite is a separate, optional script in the
+head (`SITE.integrations.mailerLiteAccount`, blank = off) and has nothing to
+do with the form components.
+
+## `<LeadForm>` (GoHighLevel)
+
+A ready-made form wired to GHL: first/last name, email, phone, message, a
+hidden bot trap and the A2P SMS consent box.
+
+How it works:
+
+- It posts JSON to `/api/lead` with its `formId`.
+- The server reads that form's **tags** and `source` from
+  `src/config/forms.ts`, never from the browser.
+- It then creates or updates the contact, saves the message as a note, and
+  adds the tags. The tags start the GHL automations ("Contact Tag added").
+- Failures show `<Form>`'s error state; nothing is faked.
+
+| Prop                                              | Type                   | Default              | Description                                                                 |
+| ------------------------------------------------- | ---------------------- | -------------------- | --------------------------------------------------------------------------- |
+| `formId`                                          | `FormId`               | —                    | Registry entry. Must be `access: "public"`                                  |
+| `fields`                                          | `'contact'`\|`'quote'` | `'contact'`          | `quote` adds project-type + timeline selects                                |
+| `projectOptions` / `timelineOptions`              | `{label,value}[]`      | — / 3 defaults       | Quote selects. The chosen **label** is saved                                |
+| `messageLabel` / `messagePlaceholder`             | `string`               | `'How can we help?'` | Message box copy                                                            |
+| `submitLabel` / `successMessage` / `errorMessage` | `string`               | sensible defaults    | Copy. The error default includes `SITE.phone`                               |
+| `buttonWidth`                                     | `'full'`\|`'auto'`     | `'full'`             | Submit width                                                                |
+| `id`                                              | `string`               | `lead-<formId>`      | Field-id prefix. **Required to be unique when a page shows the form twice** |
+
+```astro
+<LeadForm formId="contact" messageLabel="What do you need help with?" />
+<LeadForm
+  formId="quote"
+  fields="quote"
+  projectOptions={[{ label: "Roof repair", value: "roof" }]}
+/>
+```
+
+**Staff forms** (`access: "staff"`, e.g. review request, yearly follow-up)
+never use LeadForm. They appear automatically on the Client tools page
+(`/tools`), which Cloudflare Access gates. To add a form or automation, add
+one entry to `src/config/forms.ts`. Full setup: `docs/ghl-forms.md`.
 
 ## `<FormField>`
 

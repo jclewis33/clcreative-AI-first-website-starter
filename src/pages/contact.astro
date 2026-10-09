@@ -15,10 +15,7 @@ import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
-import Button from "@/components/ui/Button.astro";
-import Form from "@/components/form/Form.astro";
-import FormField from "@/components/form/FormField.astro";
-import FormTextarea from "@/components/form/FormTextarea.astro";
+import LeadForm from "@/components/form/LeadForm.astro";
 import { SITE } from "@/config/site";
 
 import "@/styles/pages/contact.css";
@@ -160,20 +157,14 @@ import contactHero from "@/assets/placeholder-images/ai-first-starter-5.webp";
         </div>
       </div>
 
-      <Form
+      <LeadForm
         data-prevent-flicker="true"
         data-fade-in
         slot="column2"
-        name="contact"
+        formId="contact"
         class="contact_form_wrap"
-        successMessage="Thanks — we'll be in touch."
-        errorMessage="Something went wrong. Please try again."
-      >
-        <FormField label="Name" name="name" required />
-        <FormField label="Email" name="email" type="email" required />
-        <FormTextarea label="Message" name="message" minLines={5} required />
-        <Button type="submit" ariaLabel="Send message">Send Message</Button>
-      </Form>
+        submitLabel="Send message"
+      />
     </Layout>
   </Section>
 

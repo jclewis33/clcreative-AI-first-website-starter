@@ -70,10 +70,10 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
    - ⚠️ **Never add `limits: { cpu_ms }` to `wrangler.jsonc`** — CPU limits exist only on **Workers Paid**. On the Free plan the build stays green and then `wrangler versions upload` fails (`CPU limits are not supported for the Free plan. [code: 100328]`) — nothing ships and production silently keeps the previous build, which reads as "all my changes broke" during verification. It's unnecessary anyway: the content routes are prerendered, so the only SSR surface is `/api/*` + `/preview/*`.
 2. **Custom domain** attached to the worker; DNS through Cloudflare.
 3. **SSL/TLS → Edge Certificates → "Always Use HTTPS" = On** (pairs with the HSTS header the code already sends).
-4. **WAF rate-limiting rule** — only once the fork adds a public POST endpoint (a form handler, for example; the starter ships none). Security → Security rules → Create rule → Rate limiting rule (free plan includes one):
+4. **WAF rate-limiting rule** — for the public POST endpoint `/api/lead` (the GoHighLevel form handler, §6). Security → Security rules → Create rule → Rate limiting rule (free plan includes one):
    - Custom filter expression:
      ```
-     (http.request.uri.path eq "/api/<endpoint>" and http.request.method eq "POST")
+     (http.request.uri.path eq "/api/lead" and http.request.method eq "POST")
      ```
    - 5 requests / 10 seconds per IP → **Block**, 10 s duration
    - Every public POST endpoint should sit behind a rule like this.
@@ -130,9 +130,16 @@ Finally: open one trivial PR (or wait for Dependabot's first) and confirm both C
 
 ---
 
-## 6. Email / lead-capture services (🔁 per-fork, only if the fork wires a form endpoint)
+## 6. GoHighLevel forms (🔁 per-fork)
 
-The starter ships no form endpoint: `<Form>` without an `action` reports success and sends nothing. When a fork adds a handler under `src/pages/api/`, put the provider keys in as Cloudflare **secrets** (never plain vars), mirror them in local `.env`, and add the WAF rate-limit rule from §2.
+The starter ships a GoHighLevel lead pipeline. `<LeadForm>` posts to `/api/lead`, and the staff-only Client tools page lives at `/tools`. Each form's tags are set in `src/config/forms.ts`. Per fork:
+
+- [ ] Set the tags in `src/config/forms.ts` to match the client's GHL workflows ("Contact Tag added" triggers; turn "Allow re-entry" on for `retrigger` forms).
+- [ ] Add `GHL_API_TOKEN` and `GHL_LOCATION_ID` as Cloudflare **secrets** (never plain vars), and put them in local `.env`.
+- [ ] Add the WAF rate-limit rule from §2 for `/api/lead`.
+- [ ] Set up Cloudflare Access on the `/tools` path, then set `CF_ACCESS_TEAM_DOMAIN` and `CF_ACCESS_AUD`. Without them, `/tools/submit` refuses every request.
+
+Full walkthrough: [ghl-forms.md](ghl-forms.md).
 
 ---
 

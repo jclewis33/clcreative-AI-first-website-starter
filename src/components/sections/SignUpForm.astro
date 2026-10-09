@@ -5,7 +5,7 @@ import Layout from "@/components/ui/Layout.astro";
  * SignUpForm — centered card with heading, subtext, and a simple contact form.
  *
  * Renders a rounded card inside a section with a generic form (name, email,
- * message). Wire up submission via client-side JS or a form action.
+ * phone, message) — a `<LeadForm formId="contact">` posting to GoHighLevel.
  *
  * @example Default usage
  * ```astro
@@ -21,10 +21,7 @@ import Layout from "@/components/ui/Layout.astro";
 import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
-import Button from "@/components/ui/Button.astro";
-import Form from "@/components/form/Form.astro";
-import FormField from "@/components/form/FormField.astro";
-import FormTextarea from "@/components/form/FormTextarea.astro";
+import LeadForm from "@/components/form/LeadForm.astro";
 
 /* Single source for the padding union: Section.astro — never re-declare
    these values locally; the copies this replaced had all drifted. */
@@ -84,12 +81,7 @@ const {
         against the panel instead of inheriting the dark card's white. */
     }
     <div class="signup_form_panel" data-theme-invert>
-      <Form name="signup" class="signup_form">
-        <FormField label="Name" name="name" required />
-        <FormField label="Email" name="email" variant="email" required />
-        <FormTextarea label="Message" name="message" minLines={4} />
-        <Button type="submit" ariaLabel="Submit">Submit</Button>
-      </Form>
+      <LeadForm formId="contact" id="signup-form" class="signup_form" />
     </div>
   </div>
 </Section>
