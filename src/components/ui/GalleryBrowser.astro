@@ -1,0 +1,292 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Visual from "@/components/ui/Visual.astro";
+import Lightbox from "@/components/ui/Lightbox.astro";
+import { photoUrl, type SanityPhoto } from "@/lib/projects";
+import { galleryCaptionMeta } from "@/lib/project-format";
+
+/**
+ * GalleryBrowser — the /gallery grid: category chips on top, square photo
+ * tiles with a caption overlay, and a click-to-enlarge lightbox.
+ *
+ * - Chips are real radio buttons (one group), so the filter is keyboard- and
+ *   screen-reader-friendly; the script hides tiles that don't match.
+ * - Each tile is a `<button>` that opens the large photo in a `<Lightbox>`;
+ *   previous / next steps through the photos the current filter shows.
+ * - Without JS every photo shows and the chips/lightbox stay inert.
+ *
+ * @example
+ * <GalleryBrowser items={items} categories={PROJECT_CATEGORIES} />
+ */
+
+export interface GalleryItem {
+  id: string;
+  caption: string;
+  category: string;
+  categoryLabel: string;
+  /** As the editor wrote it; "" when not set. */
+  location: string;
+  /** Title of the linked project; "" when unlinked or the project was deleted. */
+  projectTitle: string;
+  /** Tile-size photo. */
+  thumb: SanityPhoto;
+  /** Large photo for the lightbox. */
+  full: SanityPhoto;
+}
+
+interface Category {
+  title: string;
+  value: string;
+}
+
+export interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **GalleryBrowser** — filterable photo grid with a lightbox. `items` are
+   * `GalleryItem`s (thumb + full photo, caption, category); `categories` are
+   * the chip options (value + title).
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The photos. Renders nothing when empty. */
+  items: GalleryItem[];
+
+  /** The filter chips, in order ("All photos" is added first). */
+  categories: Category[];
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  items,
+  categories,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const used = new Set(items.map((item) => item.category));
+const chips = [
+  { title: "All photos", value: "" },
+  ...categories.filter((c) => used.has(c.value)),
+];
+const captionMeta = (item: GalleryItem) =>
+  [item.categoryLabel, galleryCaptionMeta(item.location, item.projectTitle)]
+    .filter(Boolean)
+    .join(" · ");
+---
+
+{
+  render && items.length > 0 && (
+    <div class:list={["gallery-browser_wrap", className]} {...rest}>
+      <fieldset class="gallery-browser_chips">
+        <legend class="u-sr-only">Filter photos by type</legend>
+        {chips.map((chip, i) => (
+          <label class="gallery-browser_chip">
+            <input
+              class="gallery-browser_radio"
+              type="radio"
+              name="gallery-category"
+              value={chip.value}
+              checked={i === 0}
+            />
+            {chip.title}
+          </label>
+        ))}
+      </fieldset>
+
+      <Lightbox label="Photo gallery">
+        <ul class="gallery-browser_grid">
+          {items.map((item) => (
+            <li class="gallery-browser_item" data-category={item.category}>
+              <button
+                type="button"
+                class="gallery-browser_tile"
+                data-lightbox-src={photoUrl(item.full)}
+                data-lightbox-alt={item.full.alt}
+                data-lightbox-caption={[item.caption, captionMeta(item)]
+                  .filter(Boolean)
+                  .join(" · ")}
+              >
+                <Visual
+                  src={item.thumb.src}
+                  alt={item.thumb.alt}
+                  width={item.thumb.width}
+                  height={item.thumb.height}
+                  position={item.thumb.position}
+                  ratio="square"
+                  sizes="(min-width: 58em) 20rem, (min-width: 35em) 45vw, 90vw"
+                />
+                <span class="gallery-browser_caption" data-theme="dark">
+                  <span class="gallery-browser_caption_title">
+                    {item.caption}
+                  </span>
+                  <span class="gallery-browser_caption_meta">
+                    {captionMeta(item)}
+                  </span>
+                </span>
+                <span class="u-sr-only">Enlarge photo</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </Lightbox>
+    </div>
+  )
+}
+
+<script>
+  function initGalleryBrowser() {
+    for (const wrap of document.querySelectorAll<HTMLElement>(
+      ".gallery-browser_wrap",
+    )) {
+      if (wrap.dataset.init) continue;
+      wrap.dataset.init = "true";
+
+      const items = [
+        ...wrap.querySelectorAll<HTMLElement>(".gallery-browser_item"),
+      ];
+
+      // ── Filter ──────────────────────────────────────────
+      wrap.addEventListener("change", (event) => {
+        const radio = event.target as HTMLInputElement;
+        if (!radio.matches(".gallery-browser_radio")) return;
+        for (const item of items) {
+          item.hidden =
+            Boolean(radio.value) && item.dataset.category !== radio.value;
+        }
+      });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initGalleryBrowser);
+  } else {
+    initGalleryBrowser();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .gallery-browser_wrap {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      width: 100%;
+    }
+
+    /* ── Chips ─────────────────────────────────────────── */
+    .gallery-browser_chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .gallery-browser_chip {
+      position: relative;
+      padding: 0.75em 1.35em;
+      border: var(--border-width-main) solid var(--button-secondary-border);
+      border-radius: var(--radius-full);
+      background-color: var(--background-2);
+      color: var(--text);
+      font-weight: 600;
+      font-size: var(--text-small-size);
+      cursor: pointer;
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+    }
+
+    .gallery-browser_chip:has(:checked) {
+      border-color: var(--text);
+      background-color: var(--text);
+      color: var(--background);
+    }
+
+    .gallery-browser_chip:has(:focus-visible) {
+      outline: var(--border-width-main) solid var(--color-focus-state);
+      outline-offset: 0.2rem;
+    }
+
+    .gallery-browser_radio {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── Grid ──────────────────────────────────────────── */
+    .gallery-browser_grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+      gap: var(--space-3);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .gallery-browser_item[hidden] {
+      display: none;
+    }
+
+    .gallery-browser_tile {
+      position: relative;
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-main);
+      overflow: hidden;
+      cursor: zoom-in;
+      text-align: left;
+    }
+
+    .gallery-browser_tile .u-image {
+      transition: transform 0.5s ease;
+    }
+
+    .gallery-browser_caption {
+      position: absolute;
+      inset: auto var(--space-3) var(--space-3);
+      display: grid;
+      gap: 0.15em;
+      padding: 0.6rem 0.9rem;
+      border-radius: var(--radius-xlarge);
+      background-color: var(--overlay-scrim);
+      color: var(--text);
+      font-size: var(--text-small-size);
+      line-height: 1.3;
+    }
+
+    .gallery-browser_caption_title {
+      font-weight: 600;
+    }
+
+    .gallery-browser_caption_meta {
+      font-size: var(--text-tiny-size);
+      opacity: 0.8;
+    }
+
+    @media (hover: hover) {
+      .gallery-browser_tile:hover .u-image {
+        transform: scale(1.04);
+      }
+
+      .gallery-browser_chip:hover {
+        border-color: var(--text);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gallery-browser_tile .u-image {
+        transition: none;
+      }
+    }
+  }
+</style>

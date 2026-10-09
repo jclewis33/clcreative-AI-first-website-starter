@@ -11,13 +11,18 @@
  * Every string is stegaClean'd: in Presentation draft mode Sanity embeds
  * invisible characters in strings, which break URLs, filters and comparisons.
  */
+import type { ImageMetadata } from "astro";
 import { stegaClean } from "@sanity/client/stega";
 import { urlFor, hotspotPosition } from "@/sanity/lib/image";
 import { categoryTitle } from "@/config/projects";
 
-/** A sized, positioned image ready for `<Visual>`. */
+/**
+ * A sized, positioned image ready for `<Visual>`. `src` is a Sanity CDN URL
+ * from `sanityPhoto()`, or an imported local image — so the same cards and
+ * tiles work for a site without the CMS (and for the /components demos).
+ */
 export interface SanityPhoto {
-  src: string;
+  src: string | ImageMetadata;
   alt: string;
   width: number;
   height: number;
@@ -103,4 +108,9 @@ export function toProjectCards(rows: ProjectCardSource[]): ProjectCardData[] {
   return rows
     .map(toProjectCard)
     .filter((card): card is ProjectCardData => card !== null);
+}
+
+/** The URL string of a photo, whichever kind of `src` it carries. */
+export function photoUrl(photo: SanityPhoto): string {
+  return typeof photo.src === "string" ? photo.src : photo.src.src;
 }

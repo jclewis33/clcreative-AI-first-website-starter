@@ -72,6 +72,7 @@ import FactPhoto from "@/components/ui/FactPhoto.astro";
 import SwipeRow from "@/components/ui/SwipeRow.astro";
 import Lightbox from "@/components/ui/Lightbox.astro";
 import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
+import ProjectCard from "@/components/ui/ProjectCard.astro";
 import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
 import demoPhoto2 from "@/assets/placeholder-images/ai-first-starter-2.webp";
 import demoPhoto3 from "@/assets/placeholder-images/ai-first-starter-3.webp";
@@ -176,6 +177,7 @@ const COMPONENT_INDEX = [
   { slug: "swipe-row", text: "SwipeRow" },
   { slug: "lightbox", text: "Lightbox" },
   { slug: "breadcrumbs", text: "Breadcrumbs" },
+  { slug: "project-card", text: "ProjectCard" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -2026,6 +2028,55 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         <Icon slot="icon" src={arrowIcon} variant="small" />
       </Button>
     </ButtonWrapper>
+  </Section>
+
+  <Section theme="light" id="project-card">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">ProjectCard</Heading>
+      <Heading tag="h2"
+        >A project card for /projects and featured strips</Heading
+      >
+      <Text muted
+        >Real cards are built from Sanity with toProjectCards(). The second card
+        has no location, so its meta line is left out.</Text
+      >
+    </Layout>
+    <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
+      <ProjectCard
+        project={{
+          id: "demo-1",
+          title: "Kitchen remodel",
+          href: "/projects",
+          category: "remodel",
+          categoryLabel: "Remodel",
+          location: "Springfield, IL",
+          image: {
+            src: demoPhoto1,
+            alt: "A remodeled kitchen with white cabinets",
+            width: demoPhoto1.width,
+            height: demoPhoto1.height,
+            position: "center",
+          },
+        }}
+      />
+      <ProjectCard
+        project={{
+          id: "demo-2",
+          title: "Storefront refresh",
+          href: "/projects",
+          category: "commercial",
+          categoryLabel: "Commercial",
+          location: "",
+          image: {
+            src: demoPhoto2,
+            alt: "A refreshed storefront with new signage",
+            width: demoPhoto2.width,
+            height: demoPhoto2.height,
+            position: "center",
+          },
+        }}
+      />
+    </Grid>
   </Section>
 
   <!-- ============================================================

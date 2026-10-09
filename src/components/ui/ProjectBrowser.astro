@@ -1,0 +1,282 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Grid from "@/components/ui/Grid.astro";
+import Button from "@/components/ui/Button.astro";
+import ProjectCard from "@/components/ui/ProjectCard.astro";
+import type { ProjectCardData } from "@/lib/projects";
+
+/**
+ * ProjectBrowser — the /projects grid with a search box ("Search projects or
+ * cities"), a "Project type" select, a live count, and an empty state with
+ * "Show all projects".
+ *
+ * Every card is rendered at build time; filtering only hides cards, so the
+ * full list is in the HTML for search engines and for visitors without JS
+ * (the filter bar is hidden until the script runs).
+ *
+ * @example
+ * <ProjectBrowser projects={toProjectCards(rows)} />
+ */
+/** One filter option — usually an entry of PROJECT_CATEGORIES. */
+type ProjectBrowserCategory = { title: string; value: string };
+
+export interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **ProjectBrowser** — searchable, filterable project grid. `projects` is
+   * the array from `toProjectCards()`; `categories` is the filter list
+   * (pass `PROJECT_CATEGORIES` from `@/config/projects`). Only categories
+   * that at least one project uses appear in the select.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The projects, already mapped with `toProjectCards()`. */
+  projects: ProjectCardData[];
+
+  /** Filter options; only the ones in use are shown. */
+  categories: ProjectBrowserCategory[];
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  projects,
+  categories,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const used = new Set(projects.map((p) => p.category));
+const options = categories.filter((c) => used.has(c.value));
+const countLabel = (n: number) => `${n} project${n === 1 ? "" : "s"}`;
+---
+
+{
+  render && (
+    <div class:list={["project-browser_wrap", className]} {...rest}>
+      <div class="project-browser_bar" hidden>
+        <label class="project-browser_search">
+          <span class="u-sr-only">Search projects or cities</span>
+          <svg
+            class="project-browser_search_icon"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            class="project-browser_input"
+            type="search"
+            placeholder="Search projects or locations"
+            autocomplete="off"
+          />
+        </label>
+        <label class="project-browser_type">
+          <span class="project-browser_type_label">Project type</span>
+          <select class="project-browser_select">
+            <option value="">All projects</option>
+            {options.map((c) => (
+              <option value={c.value}>{c.title}</option>
+            ))}
+          </select>
+        </label>
+        <p class="project-browser_count" aria-live="polite">
+          {countLabel(projects.length)}
+        </p>
+      </div>
+
+      <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={5}>
+        {projects.map((project) => (
+          <ProjectCard
+            project={project}
+            data-search={`${project.title} ${project.location} ${project.categoryLabel}`.toLowerCase()}
+          />
+        ))}
+      </Grid>
+
+      <div class="project-browser_empty" hidden>
+        <p class="project-browser_empty_text">No projects match that search.</p>
+        <Button variant="secondary" class="project-browser_reset">
+          Show all projects
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+<script>
+  function initProjectBrowser() {
+    for (const wrap of document.querySelectorAll<HTMLElement>(
+      ".project-browser_wrap",
+    )) {
+      if (wrap.dataset.init) continue;
+      wrap.dataset.init = "true";
+
+      const bar = wrap.querySelector<HTMLElement>(".project-browser_bar");
+      const input = wrap.querySelector<HTMLInputElement>(
+        ".project-browser_input",
+      );
+      const select = wrap.querySelector<HTMLSelectElement>(
+        ".project-browser_select",
+      );
+      const count = wrap.querySelector<HTMLElement>(".project-browser_count");
+      const empty = wrap.querySelector<HTMLElement>(".project-browser_empty");
+      const reset = wrap.querySelector<HTMLButtonElement>(
+        ".project-browser_reset",
+      );
+      const cards = [
+        ...wrap.querySelectorAll<HTMLElement>(".project-card_wrap"),
+      ];
+      if (!bar || !input || !select || !count || !empty) continue;
+
+      // Deep link: /projects?type=commercial preselects a category.
+      const initialType = new URLSearchParams(location.search).get("type");
+      if (initialType) select.value = initialType;
+
+      const apply = () => {
+        const query = input.value.trim().toLowerCase();
+        const type = select.value;
+        let shown = 0;
+        for (const card of cards) {
+          const match =
+            (!type || card.dataset.category === type) &&
+            (!query || (card.dataset.search ?? "").includes(query));
+          card.hidden = !match;
+          if (match) shown += 1;
+        }
+        count.textContent = `${shown} project${shown === 1 ? "" : "s"}`;
+        empty.hidden = shown > 0;
+      };
+
+      input.addEventListener("input", apply);
+      select.addEventListener("change", apply);
+      reset?.addEventListener("click", () => {
+        input.value = "";
+        select.value = "";
+        apply();
+        input.focus();
+      });
+
+      bar.hidden = false;
+      apply();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initProjectBrowser);
+  } else {
+    initProjectBrowser();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .project-browser_wrap {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      width: 100%;
+    }
+
+    /* Filter bar — a white panel: search, type select, count */
+    .project-browser_bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3) var(--space-4);
+      padding: var(--space-3);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+    }
+
+    .project-browser_bar[hidden] {
+      display: none;
+    }
+
+    .project-browser_search {
+      position: relative;
+      flex: 1 1 18rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .project-browser_search_icon {
+      position: absolute;
+      left: 1rem;
+      width: 1.1rem;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      stroke: color-mix(in srgb, var(--text) 60%, transparent);
+      stroke-width: 2;
+      stroke-linecap: round;
+      pointer-events: none;
+    }
+
+    .project-browser_input,
+    .project-browser_select {
+      height: 3.25rem;
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-xlarge);
+      background-color: var(--background);
+      color: var(--text);
+      font: inherit;
+      font-size: 1rem;
+    }
+
+    .project-browser_input {
+      width: 100%;
+      padding: 0 1rem 0 2.75rem;
+      border-color: transparent;
+    }
+
+    .project-browser_type {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-weight: 600;
+      font-size: var(--text-small-size);
+    }
+
+    .project-browser_select {
+      min-width: 14rem;
+      padding: 0 1rem;
+      background-color: var(--background-2);
+    }
+
+    .project-browser_count {
+      margin-left: auto;
+      padding-inline: var(--space-2);
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, var(--text) 65%, transparent);
+    }
+
+    .project-browser_wrap .project-card_wrap[hidden] {
+      display: none;
+    }
+
+    .project-browser_empty {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-4);
+      padding: var(--space-6);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+    }
+
+    .project-browser_empty[hidden] {
+      display: none;
+    }
+
+    .project-browser_empty_text {
+      font-weight: 600;
+    }
+  }
+</style>
