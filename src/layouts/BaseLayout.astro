@@ -69,6 +69,7 @@ import {
   localBusinessJsonLd,
   webPageJsonLd,
   breadcrumbJsonLd,
+  breadcrumbListJsonLd,
 } from"@/lib/jsonld";
 
 // Prerendered pages are baked at build time with no request, so cookies
@@ -86,6 +87,7 @@ interface Props {
    * - `description` — meta description for SEO
    * - `canonical` — canonical URL
    * - `theme` — page-level theme: light, dark, brand (default 'dark')
+   * - `breadcrumbs` — explicit `{ name, path }[]` trail for the BreadcrumbList JSON-LD; pass it when the page shows `<Breadcrumbs>`
    *
    * To change the site-wide default theme, update the default value below.
    *
@@ -129,9 +131,17 @@ interface Props {
    * old per-page raw `<script type="application/ld+json">` blocks.
    */
   schema?: unknown;
+
+  /**
+   * Explicit breadcrumb trail for the BreadcrumbList JSON-LD (Home first,
+   * current page last). Pass it whenever the page shows `<Breadcrumbs>` so
+   * the schema matches the visible trail. Omitted, the trail is derived from
+   * the URL path.
+   */
+  breadcrumbs?: { name: string; path: string }[];
 }
 
-const { docs, title, description, canonical, ogImage, ogTitle, ogDescription, theme = 'light', schema } = Astro.props;
+const { docs, title, description, canonical, ogImage, ogTitle, ogDescription, theme = 'light', schema, breadcrumbs } = Astro.props;
 
 // ── Baseline JSON-LD (auto-emitted on every page) ──────────────────
 // Layer 1: sitewide LocalBusiness anchor + a per-page WebPage and (when
@@ -145,7 +155,9 @@ const canonicalUrl = `${SITE.url}${canonicalPath}`;
 
 const sitewideLocalBusiness = localBusinessJsonLd();
 const webPageSchema = webPageJsonLd({ url: canonicalUrl, title, description });
-const breadcrumbSchema = breadcrumbJsonLd(canonicalPath);
+const breadcrumbSchema = breadcrumbs
+  ? breadcrumbListJsonLd(breadcrumbs)
+  : breadcrumbJsonLd(canonicalPath);
 
 // ── Banner Config ──────────────────────────────────────────────────
 // The announcement bar is configured in src/data/site-structure.ts (BANNER):

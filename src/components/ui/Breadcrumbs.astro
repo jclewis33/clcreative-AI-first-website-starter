@@ -1,0 +1,114 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+/**
+ * Breadcrumbs — the "Home / Services / Insurance Repair" trail above a page
+ * title. The last crumb is the current page (no link, `aria-current`).
+ *
+ * Visual only: the matching `BreadcrumbList` JSON-LD is built from the same
+ * array by `breadcrumbJsonLd()` in src/lib/jsonld.ts, so pass one array to both.
+ *
+ * @example
+ * <Breadcrumbs items={[
+ *   { label: "Home", href: "/" },
+ *   { label: "Services" },
+ *   { label: "Insurance Repair" },
+ * ]} />
+ */
+
+interface Crumb {
+  label: string;
+  /** Omit on the current page and on crumbs with no page of their own. */
+  href?: string;
+}
+
+export interface Props extends HTMLAttributes<"nav"> {
+  /**
+   * **Breadcrumbs** — a small trail of links above a page title. `items` is
+   * the path from Home to the current page; the last item renders as the
+   * current page.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The trail, from Home to the current page. Renders nothing when empty. */
+  items: Crumb[];
+
+  /** Extra classes on the nav. */
+  class?: string;
+}
+
+const { docs, render = true, items, class: className, ...rest } = Astro.props;
+const last = items.length - 1;
+---
+
+{
+  render && items.length > 0 && (
+    <nav
+      class:list={["breadcrumbs_wrap", className]}
+      aria-label="Breadcrumb"
+      {...rest}
+    >
+      <ol class="breadcrumbs_list">
+        {items.map((item, i) => (
+          <li class="breadcrumbs_item">
+            {i === last ? (
+              <span class="breadcrumbs_current" aria-current="page">
+                {item.label}
+              </span>
+            ) : item.href ? (
+              <a class="breadcrumbs_link" href={item.href}>
+                {item.label}
+              </a>
+            ) : (
+              <span class="breadcrumbs_text">{item.label}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .breadcrumbs_list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.625em;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, var(--text) 65%, transparent);
+    }
+
+    .breadcrumbs_item {
+      display: flex;
+      gap: 0.625em;
+    }
+
+    .breadcrumbs_item + .breadcrumbs_item::before {
+      content: "/";
+    }
+
+    .breadcrumbs_link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .breadcrumbs_current {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    @media (hover: hover) {
+      .breadcrumbs_link:hover {
+        color: var(--text);
+        text-decoration: underline;
+      }
+    }
+  }
+</style>

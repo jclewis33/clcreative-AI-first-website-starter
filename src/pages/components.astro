@@ -71,6 +71,7 @@ import BeforeAfter from "@/components/ui/BeforeAfter.astro";
 import FactPhoto from "@/components/ui/FactPhoto.astro";
 import SwipeRow from "@/components/ui/SwipeRow.astro";
 import Lightbox from "@/components/ui/Lightbox.astro";
+import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
 import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
 import demoPhoto2 from "@/assets/placeholder-images/ai-first-starter-2.webp";
 import demoPhoto3 from "@/assets/placeholder-images/ai-first-starter-3.webp";
@@ -174,6 +175,7 @@ const COMPONENT_INDEX = [
   { slug: "fact-photo", text: "FactPhoto" },
   { slug: "swipe-row", text: "SwipeRow" },
   { slug: "lightbox", text: "Lightbox" },
+  { slug: "breadcrumbs", text: "Breadcrumbs" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -1998,6 +2000,32 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         </div>
       </Grid>
     </Lightbox>
+  </Section>
+
+  <Section theme="light" id="breadcrumbs">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">Breadcrumbs</Heading>
+      <Heading tag="h2"
+        >A trail back up the site; the current page is not a link</Heading
+      >
+      <Text muted
+        >Pass the same trail to BaseLayout's breadcrumbs prop so the
+        BreadcrumbList schema matches what visitors see.</Text
+      >
+    </Layout>
+    <Breadcrumbs
+      items={[
+        { label: "Home", href: "/" },
+        { label: "Projects", href: "/projects" },
+        { label: "Kitchen remodel" },
+      ]}
+    />
+    <ButtonWrapper>
+      <Button href="/contact" iconPosition="start" ariaLabel="Call us">
+        Call us
+        <Icon slot="icon" src={arrowIcon} variant="small" />
+      </Button>
+    </ButtonWrapper>
   </Section>
 
   <!-- ============================================================
