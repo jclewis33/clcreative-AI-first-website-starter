@@ -1,0 +1,133 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+/**
+ * ChipList — a wrapping row of small pills ("Damage assessment",
+ * "Permits & code requirements", …). A chip with an `href` is a link and
+ * gets an up-right arrow; one without is a plain label.
+ *
+ * @example
+ * <ChipList items={[{ label: "Free estimates" }, { label: "Remodeling", href: "/services/remodeling" }]} />
+ */
+
+interface Chip {
+  label: string;
+  /** Makes the chip a link (shown with an arrow). */
+  href?: string;
+  /** Rendered as `data-key`, so a script can pair the chip with something else. */
+  key?: string;
+}
+
+export interface Props extends HTMLAttributes<"ul"> {
+  /**
+   * **ChipList** — pills in a wrapping row. `items` is `{ label, href? }[]`;
+   * linked chips show an arrow.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The chips. Renders nothing when empty. */
+  items: Chip[];
+
+  /** Extra classes on the list. */
+  class?: string;
+}
+
+const { docs, render = true, items, class: className, ...rest } = Astro.props;
+---
+
+{
+  render && items.length > 0 && (
+    <ul class:list={["chip-list_wrap", className]} {...rest}>
+      {items.map((chip) => (
+        <li class="chip-list_item">
+          {chip.href ? (
+            <a
+              class="chip-list_chip is-link"
+              href={chip.href}
+              data-key={chip.key}
+            >
+              {chip.label}
+              <svg
+                class="chip-list_icon"
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <path d="M7 17 17 7M8 7h9v9" />
+              </svg>
+            </a>
+          ) : (
+            <span class="chip-list_chip" data-key={chip.key}>
+              {chip.label}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .chip-list_wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .chip-list_item {
+      display: flex;
+    }
+
+    .chip-list_chip {
+      display: inline-block;
+      padding: 0.6em 1.1em;
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-full);
+      background-color: var(--background-2);
+      color: var(--text);
+      font-size: var(--text-small-size);
+      font-weight: 500;
+      line-height: 1.2;
+      text-decoration: none;
+    }
+
+    .chip-list_chip.is-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+      transition:
+        border-color 0.2s ease,
+        color 0.2s ease;
+    }
+
+    /* Up-right arrow: "this goes somewhere" */
+    .chip-list_icon {
+      width: 0.9em;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: translate 0.2s ease;
+    }
+
+    @media (hover: hover) {
+      .chip-list_chip.is-link:hover .chip-list_icon {
+        translate: 0.1em -0.1em;
+      }
+
+      .chip-list_chip.is-link:hover {
+        border-color: var(--heading-accent);
+        color: var(--heading-accent);
+      }
+    }
+  }
+</style>

@@ -1,0 +1,142 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+/**
+ * StepList — a numbered process ("01 Call us, day or night …").
+ *
+ * - `list` (default) — a vertical list, big red number on the left, hairline
+ *   dividers between steps (service pages, dark section).
+ * - `cards` — one card per step in a row (the homepage "How it works"). The
+ *   row wraps to fewer columns as the container narrows.
+ *
+ * Numbers are generated (01, 02, …) and hidden from screen readers — the
+ * `<ol>` already announces the order.
+ *
+ * @example
+ * <StepList steps={[{ title: "Call us", text: "We call you back within the hour." }]} />
+ */
+
+interface Step {
+  title: string;
+  text: string;
+}
+
+type StepListVariant =
+  /** Vertical list with dividers */
+  | "list"
+  /** A row of cards */
+  | "cards";
+
+export interface Props extends HTMLAttributes<"ol"> {
+  /**
+   * **StepList** — numbered steps. `steps` is an array of `{ title, text }`;
+   * `variant` picks the ruled vertical list or a row of cards.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The steps, in order. Renders nothing when empty. */
+  steps: Step[];
+
+  /** Ruled vertical list or a row of cards. @default "list" */
+  variant?: StepListVariant;
+
+  /** Extra classes on the list. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  steps,
+  variant = "list",
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && steps.length > 0 && (
+    <ol
+      class:list={["step-list_wrap", className]}
+      data-variant={variant}
+      {...rest}
+    >
+      {steps.map((step, i) => (
+        <li class="step-list_item">
+          <span class="step-list_number" aria-hidden="true">
+            {String(i + 1).padStart(2, "0")}
+          </span>
+          <div class="step-list_body u-margin-trim">
+            <h3 class="step-list_title u-text-style-h6">{step.title}</h3>
+            <p class="step-list_text">{step.text}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .step-list_wrap {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      width: 100%;
+    }
+
+    .step-list_number {
+      font-family: var(--font-primary);
+      font-weight: var(--font-weight-bold);
+      font-size: var(--h3-size);
+      line-height: 1;
+      color: var(--button-primary-background);
+    }
+
+    .step-list_title {
+      margin-bottom: var(--space-2);
+    }
+
+    .step-list_text {
+      color: color-mix(in srgb, var(--text) 70%, transparent);
+    }
+
+    .step-list_wrap[data-variant="cards"] .step-list_text {
+      font-size: var(--text-small-size);
+    }
+
+    /* ── list ─────────────────────────────────────────────────── */
+    .step-list_wrap[data-variant="list"] {
+      border-bottom: var(--border-width-main) solid var(--border);
+    }
+
+    .step-list_wrap[data-variant="list"] .step-list_item {
+      display: grid;
+      grid-template-columns: 4.5rem minmax(0, 1fr);
+      column-gap: var(--space-4);
+      padding-block: var(--space-5);
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    /* ── cards ────────────────────────────────────────────────── */
+    .step-list_wrap[data-variant="cards"] {
+      display: grid;
+      /* A card never gets narrower than 15rem; the row wraps first. */
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+      gap: var(--space-3);
+    }
+
+    .step-list_wrap[data-variant="cards"] .step-list_item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-5);
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+    }
+  }
+</style>
