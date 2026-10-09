@@ -92,6 +92,8 @@ import ServiceCards from "@/components/sections/ServiceCards.astro";
 import ProcessSteps from "@/components/sections/ProcessSteps.astro";
 import StorySplit from "@/components/sections/StorySplit.astro";
 import IncludedList from "@/components/sections/IncludedList.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
+import SampleMap from "@/assets/maps/sample-service-area.svg";
 import demoPhoto5 from "@/assets/placeholder-images/ai-first-starter-5.webp";
 import { PROJECT_CATEGORIES } from "@/config/projects";
 import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
@@ -214,6 +216,7 @@ const COMPONENT_INDEX = [
   { slug: "process-steps", text: "ProcessSteps" },
   { slug: "story-split", text: "StorySplit" },
   { slug: "included-list", text: "IncludedList" },
+  { slug: "service-area", text: "ServiceArea" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -2540,6 +2543,28 @@ const demoGallery = [
     images={[
       { src: demoPhoto1, alt: "Finished cabinets and counters" },
       { src: demoPhoto2, alt: "New tile backsplash detail" },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="service-area">
+    <Heading variant="eyebrow">ServiceArea</Heading>
+    <Heading tag="h2"
+      >Places served, linked to a client map, or beside photos</Heading
+    >
+  </Section>
+  <ServiceArea
+    heading="Serving the whole county"
+    text="Point at a place to see it on the map."
+    areas={["North County", "Your City", "Neighboring City", "Fort Bend"]}
+    map={SampleMap}
+    cta={{ label: "Check your address", modal: "demo-estimate" }}
+  />
+  <ServiceArea
+    eyebrow="Service area"
+    heading="Close to home, wherever that is"
+    images={[
+      { src: demoPhoto3, alt: "A finished home exterior on a quiet street" },
+      { src: demoPhoto4, alt: "A crew member loading tools into a truck" },
     ]}
   />
 

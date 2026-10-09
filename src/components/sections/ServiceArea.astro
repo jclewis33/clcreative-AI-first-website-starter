@@ -1,0 +1,259 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import ChipList from "@/components/ui/ChipList.astro";
+import ImagePair from "@/components/ui/ImagePair.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+import { SITE } from "@/config/site";
+
+type ServiceAreaImage = { src: ImageMetadata | string; alt: string };
+/** An SVG imported as a component: `import Map from "@/assets/maps/x.svg"`. */
+type ServiceAreaMap = (props: Record<string, unknown>) => unknown;
+type ServiceAreaTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ServiceArea** — where the business works: a chip per place, beside
+   * either a map or a pair of photos.
+   *
+   * **Map contract:** import the client's SVG as a component and pass it as
+   * `map`. Every region that should light up carries `data-area="<name>"`,
+   * where `<name>` equals one of `areas` exactly. Hovering or focusing a
+   * chip highlights its region, and hovering a region highlights its chip.
+   * See src/assets/maps/sample-service-area.svg.
+   *
+   * - `areas` — place names (default `SITE.serviceAreas`)
+   * - `map`, `mapLabel` — the SVG and its accessible description
+   * - `images` — two photos, shown when there's no `map`
+   * - `cta` — optional button under the chips
+   *
+   * @example
+   * import Map from "@/assets/maps/client-map.svg";
+   * <ServiceArea heading="Serving the whole county" map={Map} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. @default 'Where we work' */
+  eyebrow?: string;
+
+  /** Section heading. Required. */
+  heading: string;
+
+  /** Intro paragraph. */
+  text?: string;
+
+  /** Place names, one chip each. @default SITE.serviceAreas */
+  areas?: readonly string[];
+
+  /** The client's map, imported as an SVG component. */
+  map?: ServiceAreaMap;
+
+  /** Accessible description of the map. @default "Map of <areas>" */
+  mapLabel?: string;
+
+  /** Two photos, shown when there's no `map`. */
+  images?: ServiceAreaImage[];
+
+  /** Optional button under the chips. */
+  cta?: SectionCta;
+
+  /** Section theme. */
+  theme?: ServiceAreaTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow = "Where we work",
+  heading,
+  text,
+  areas = SITE.serviceAreas,
+  map: Map,
+  mapLabel,
+  images = [],
+  cta,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const chips = areas.map((area) => ({ label: area, key: area }));
+const hasMedia = Boolean(Map) || images.length === 2;
+const hasContent = chips.length > 0 || hasMedia;
+
+if (import.meta.env.DEV && render) {
+  if (!heading)
+    console.warn("[ServiceArea] `heading` is required; nothing renders.");
+  else if (!hasContent)
+    console.warn(
+      "[ServiceArea] needs areas, a map, or images; nothing renders.",
+    );
+}
+---
+
+{
+  render && heading && hasContent && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["service-area_wrap", className]}
+      {...rest}
+    >
+      <Layout
+        variant={hasMedia ? "columns" : "stack"}
+        ratio="5-6"
+        verticalAlign="center"
+        rowGap={4}
+      >
+        {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+        <Heading tag="h2">{heading}</Heading>
+        {text && <Text muted>{text}</Text>}
+        {chips.length > 0 && (
+          <ChipList items={chips} class="service-area_chips" />
+        )}
+        {cta && <CtaButton cta={cta} variant="secondary" />}
+
+        {Map ? (
+          <div slot="column2" class="service-area_map">
+            <Map
+              class="service-area_svg"
+              role="img"
+              aria-label={mapLabel ?? `Map of ${areas.join(", ")}`}
+            />
+          </div>
+        ) : images.length === 2 ? (
+          <ImagePair slot="column2" images={images} />
+        ) : null}
+      </Layout>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .service-area_map {
+      overflow: hidden;
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+      color: var(--text);
+    }
+
+    .service-area_svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* Labels, roads and other artwork must not block the regions under
+       them, or pointing at a place name highlights nothing. Only regions
+       take the pointer. */
+    .service-area_svg *:not([data-area]) {
+      pointer-events: none;
+    }
+
+    .service-area_svg [data-area] {
+      pointer-events: auto;
+    }
+
+    /* Regions: any [data-area] in the map. Tinted with the accent colour,
+       stronger when the paired chip (or the region itself) is active. */
+    .service-area_map [data-area] {
+      fill: var(--heading-accent);
+      fill-opacity: 0.1;
+      stroke: var(--heading-accent);
+      stroke-opacity: 0.4;
+      stroke-width: 1.5;
+      transition:
+        fill-opacity 0.2s ease,
+        stroke-opacity 0.2s ease;
+    }
+
+    .service-area_map [data-area].is-active {
+      fill-opacity: 0.35;
+      stroke-opacity: 1;
+    }
+
+    .service-area_wrap .chip-list_chip {
+      transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+    }
+
+    .service-area_wrap .chip-list_chip.is-active {
+      border-color: var(--heading-accent);
+      background-color: var(--heading-accent);
+      color: var(--background);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .service-area_map [data-area],
+      .service-area_wrap .chip-list_chip {
+        transition: none;
+      }
+    }
+  }
+</style>
+
+<script>
+  /* Pair each chip (data-key) with its map region (data-area): pointing at
+     or focusing either one highlights both. Names are matched exactly and
+     escaped, so "Fort Bend" or "St. Louis" work as keys. */
+  function initServiceArea() {
+    for (const wrap of document.querySelectorAll<HTMLElement>(
+      ".service-area_wrap",
+    )) {
+      if (wrap.dataset.init) continue;
+      wrap.dataset.init = "true";
+
+      const setActive = (key: string, on: boolean) => {
+        const k = CSS.escape(key);
+        for (const el of wrap.querySelectorAll(
+          `[data-key="${k}"], [data-area="${k}"]`,
+        )) {
+          el.classList.toggle("is-active", on);
+        }
+      };
+
+      for (const el of wrap.querySelectorAll<HTMLElement | SVGElement>(
+        ".chip-list_chip[data-key], .service-area_map [data-area]",
+      )) {
+        const key =
+          (el as HTMLElement).dataset.key ?? (el as HTMLElement).dataset.area;
+        if (!key) continue;
+        el.addEventListener("pointerenter", () => setActive(key, true));
+        el.addEventListener("pointerleave", () => setActive(key, false));
+        el.addEventListener("focusin", () => setActive(key, true));
+        el.addEventListener("focusout", () => setActive(key, false));
+      }
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initServiceArea);
+  } else {
+    initServiceArea();
+  }
+</script>
