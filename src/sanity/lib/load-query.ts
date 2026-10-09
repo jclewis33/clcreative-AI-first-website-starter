@@ -1,7 +1,6 @@
 import type { ClientPerspective, QueryParams } from "@sanity/client";
 import { sanityClient } from "sanity:client";
-
-const token = import.meta.env.SANITY_API_READ_TOKEN;
+import { getSecret } from "astro:env/server";
 
 function parsePerspective(
   raw: string | undefined,
@@ -40,6 +39,10 @@ export async function loadQuery<const Q extends string>({
   perspectiveCookie?: string | undefined;
 }) {
   const draftMode = perspectiveCookie ? true : false;
+  /* Read per request, not at build: `import.meta.env` is replaced at build
+     time, and the Worker secret only exists at runtime. getSecret() reads
+     the Cloudflare binding on the Worker and .env / process.env locally. */
+  const token = draftMode ? getSecret("SANITY_API_READ_TOKEN") : undefined;
   if (draftMode && !token) {
     throw new Error(
       "The `SANITY_API_READ_TOKEN` environment variable is required during Visual Editing.",

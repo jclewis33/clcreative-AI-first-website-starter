@@ -5,8 +5,10 @@ import { blogFaq } from "./blogFaq";
 import { blogPost } from "./blogPost";
 import { callout } from "./callout";
 import { caseStudy } from "./caseStudy";
+import { galleryItem } from "./galleryItem";
 import { ctaSection } from "./ctaSection";
 import { glossaryTerm } from "./glossaryTerm";
+import { project } from "./project";
 import { seo } from "./seo";
 import { siteSettings } from "./siteSettings";
 import { testimonial } from "./testimonial";
@@ -21,6 +23,8 @@ export const schema = {
     blogPost,
     callout,
     caseStudy,
+    project,
+    galleryItem,
     ctaSection,
     glossaryTerm,
     seo,

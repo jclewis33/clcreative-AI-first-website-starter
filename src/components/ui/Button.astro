@@ -109,6 +109,12 @@ type ButtonSize = "default" | "small" | "large";
  */
 type ButtonHoverTheme = "light" | "dark" | "brand";
 
+type ButtonIconPosition =
+  /** Icon after the label (default) */
+  | "end"
+  /** Icon before the label */
+  | "start";
+
 /**
  * Button — theme-aware, trigger-driven button using the wrapper pattern.
  *
@@ -162,6 +168,7 @@ interface BaseProps {
    *   button has visible text — the text is the accessible name)
    * - `square` — removes pill radius
    * - `fullWidth` — stretches button to 100% width (default `false`)
+   * - `iconPosition` — `'end'` (default) or `'start'`: which side of the label the icon sits on
    * - `hoverTheme` — `'light'` | `'dark'` | `'brand'` — hover tokens override
    * - `supportText` — small muted line under the button
    * - Also accepts the standard attributes of the element it renders
@@ -225,6 +232,13 @@ interface BaseProps {
    * @default false
    */
   fullWidth?: boolean;
+
+  /**
+   * Which side of the label the `icon` slot sits on.
+   * @default 'end'
+   * @example iconPosition="start"
+   */
+  iconPosition?: ButtonIconPosition;
 
   /**
    * Override which theme's hover tokens the button uses.
@@ -314,6 +328,7 @@ const {
   type = "button",
   square = false,
   fullWidth = false,
+  iconPosition = "end",
   hoverTheme,
   supportText,
   id,
@@ -383,6 +398,7 @@ const tagAttrs = resolvedHref
         data-button-size={dataSize}
         data-button-hover={dataHoverTheme}
         data-button
+        data-icon-position={iconPosition === "start" ? "start" : undefined}
         id={id}
         aria-label={resolvedAriaLabel}
         {...tagAttrs}
@@ -410,6 +426,7 @@ const tagAttrs = resolvedHref
       data-button-size={dataSize}
       data-button-hover={dataHoverTheme}
       data-button
+      data-icon-position={iconPosition === "start" ? "start" : undefined}
       id={id}
       aria-label={resolvedAriaLabel}
       {...tagAttrs}
@@ -770,6 +787,12 @@ const tagAttrs = resolvedHref
       margin-top: -0.5rem;
       margin-bottom: -0.5rem;
       display: flex;
+    }
+
+    /* Leading icon (iconPosition="start") — sized to the label, e.g. a phone */
+    [data-icon-position="start"] .button_main_icon {
+      order: -1;
+      width: 1.1em;
     }
 
     /* Hide the icon wrapper when the slot is empty */

@@ -20,6 +20,7 @@ const ROUTE_BY_TYPE: Record<string, string> = {
   blogPost: "/blog",
   caseStudy: "/case-studies",
   glossaryTerm: "/glossary",
+  project: "/projects",
 };
 
 type PreviewDoc = {

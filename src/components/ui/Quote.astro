@@ -1,0 +1,248 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+/**
+ * Quote — a customer review: a quote mark, the review text, and who said it.
+ * Renders a semantic `<figure>` / `<blockquote>` / `<figcaption>`.
+ *
+ * Colors follow the ambient theme, so the same component works in the red
+ * band (`<Section theme="brand">`), on a red card, or on a light card.
+ *
+ * - `large` — the headline review (red band, featured card)
+ * - `regular` — a smaller review card body
+ *
+ * @example
+ * <Quote text="They handled everything." name="K.C." meta="Kitchen remodel" />
+ */
+
+type QuoteSize =
+  /** Biggest — a full-width review band (the red section) */
+  | "band"
+  /** Big heading-style text (feature review) */
+  | "large"
+  /** Body-size text (review cards) */
+  | "regular"
+  /** Compact — a small floating review badge */
+  | "small";
+
+type QuoteMark =
+  /** Stroked quotation-mark icon — the site's one quote mark */
+  | "icon"
+  /** No mark */
+  | "none";
+
+export interface Props extends HTMLAttributes<"figure"> {
+  /**
+   * **Quote** — a customer review. `text` without the curly quotes (they're
+   * added), `name` like "Sandra D." (first name, last initial), `meta` for the
+   * context line ("Kitchen remodel · Springfield"). `size` switches between the
+   * large headline treatment, a regular review card, and a compact badge.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The review text, without surrounding quote marks. */
+  text: string;
+
+  /** Who said it — first name and last initial. */
+  name?: string;
+
+  /** Context line under the name, e.g. "Kitchen remodel · Springfield". */
+  meta?: string;
+
+  /** Large headline or regular card text. @default "large" */
+  size?: QuoteSize;
+
+  /** The decorative quote mark above the text. @default "icon" */
+  mark?: QuoteMark;
+
+  /**
+   * Fill the container's height: the mark sits at the top, the name at the
+   * bottom, and the quote between them (review cards in a row). @default false
+   */
+  spread?: boolean;
+
+  /** Extra classes on the figure. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  text,
+  name,
+  meta,
+  size = "large",
+  mark = "icon",
+  spread = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV) {
+  if (!text)
+    console.warn("[Quote] `text` is required; nothing renders without it.");
+  if (!["band", "large", "regular", "small"].includes(size))
+    console.warn(`[Quote] Unknown size "${size}".`);
+  if (!["icon", "none"].includes(mark))
+    console.warn(`[Quote] Unknown mark "${mark}". Use "icon" or "none".`);
+}
+---
+
+{
+  render && text && (
+    <figure
+      class:list={["quote_wrap", spread && "is-spread", className]}
+      data-size={size}
+      {...rest}
+    >
+      {mark === "icon" && (
+        <svg
+          class="quote_mark is-icon"
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <path d="M3 21c3 0 7-1 7-8V5H3v7h4" />
+          <path d="M14 21c3 0 7-1 7-8V5h-7v7h4" />
+        </svg>
+      )}
+      <blockquote class="quote_text">
+        <p>“{text}”</p>
+      </blockquote>
+      {(name || meta) && (
+        <figcaption class="quote_caption">
+          {name && <span class="quote_name">{name}</span>}
+          {meta && <span class="quote_meta">{meta}</span>}
+        </figcaption>
+      )}
+    </figure>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .quote_wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: inherit;
+      gap: var(--space-5);
+      margin: 0;
+      text-align: inherit;
+    }
+
+    .quote_mark {
+      width: 2.25rem;
+      aspect-ratio: 40 / 28;
+      flex-shrink: 0;
+      fill: color-mix(in srgb, var(--text) 70%, transparent);
+    }
+
+    .quote_mark.is-icon {
+      width: 2.75rem;
+      aspect-ratio: 1 / 1;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.7;
+    }
+
+    /* Spread: mark top, name bottom, quote between (fills a card) */
+    .quote_wrap.is-spread {
+      flex-grow: 1;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    .quote_text {
+      margin: 0;
+      max-width: 36ch;
+      margin-inline: var(--_text-inline-margin, 0);
+    }
+
+    .quote_wrap[data-size="large"] .quote_text {
+      font-family: var(--font-primary);
+      font-weight: 600;
+      font-size: var(--h4-size);
+      line-height: 1.2;
+      text-wrap: balance;
+    }
+
+    .quote_wrap[data-size="band"] .quote_text {
+      font-family: var(--font-primary);
+      font-weight: 600;
+      font-size: var(--h2-size);
+      line-height: 1.15;
+      max-width: 65rem;
+      text-wrap: balance;
+    }
+
+    .quote_wrap[data-size="band"] .quote_mark.is-icon {
+      width: 3.5rem;
+    }
+
+    .quote_wrap[data-size="regular"] .quote_text {
+      font-size: var(--text-large-size);
+      line-height: 1.55;
+      max-width: none;
+    }
+
+    .quote_caption {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25em;
+      font-size: var(--text-small-size);
+    }
+
+    .quote_name {
+      font-weight: 700;
+    }
+
+    .quote_meta {
+      color: color-mix(in srgb, var(--text) 75%, transparent);
+    }
+
+    .quote_wrap[data-size="small"] {
+      gap: var(--space-2);
+    }
+
+    /* The quote's paragraph never carries text rhythm margin here — the
+       wrapper's gap is the only space between quote and name. */
+    .quote_text p {
+      margin: 0;
+    }
+
+    .quote_wrap[data-size="small"] .quote_text {
+      font-size: 1rem;
+      line-height: 1.5;
+      max-width: none;
+    }
+
+    .quote_wrap[data-size="regular"] .quote_caption,
+    .quote_wrap[data-size="small"] .quote_caption {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.35em;
+      color: color-mix(in srgb, var(--text) 70%, transparent);
+    }
+
+    .quote_wrap[data-size="small"] .quote_caption {
+      font-size: var(--text-tiny-size);
+    }
+
+    .quote_wrap[data-size="regular"] .quote_name,
+    .quote_wrap[data-size="small"] .quote_name {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .quote_wrap[data-size="regular"] .quote_meta::before,
+    .quote_wrap[data-size="small"] .quote_meta::before {
+      content: "· ";
+    }
+  }
+</style>

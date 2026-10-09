@@ -1,0 +1,371 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+/**
+ * Lightbox — wraps a set of photo triggers and opens them large in a native
+ * `<dialog>`, with previous / next buttons, arrow keys, swipe, and a
+ * "2 of 6" counter.
+ *
+ * Any element inside the slot with a `data-lightbox-src` attribute is a
+ * trigger — make it a real `<button>`. Optional `data-lightbox-alt` and
+ * `data-lightbox-caption` fill the large image's alt text and caption.
+ * Triggers inside a `[hidden]` ancestor (a filtered-out gallery tile) are
+ * skipped, so previous / next only walks the photos on screen.
+ *
+ * Esc, the × button, or a click on the backdrop closes it; focus returns to
+ * the trigger. Without JS the triggers are inert and the thumbnails still show.
+ *
+ * @example
+ * <Lightbox label="Project photos">
+ *   <button type="button" data-lightbox-src={large} data-lightbox-alt={alt}>
+ *     <Visual src={thumb} alt={alt} ratio="3 / 2" />
+ *   </button>
+ * </Lightbox>
+ */
+
+export interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **Lightbox** — photo triggers (`data-lightbox-src`) open large in a
+   * dialog you can step through. `label` names the dialog for screen
+   * readers.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Accessible name for the dialog. @default "Photos" */
+  label?: string;
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  label = "Photos",
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && (
+    <div class:list={["lightbox_wrap", className]} {...rest}>
+      <slot />
+
+      {/* The large image element is created by the script, so the markup
+          never ships an image without a source. */}
+      <dialog class="lightbox_dialog" aria-label={label} data-theme="dark">
+        <div class="lightbox_inner">
+          <div class="lightbox_bar">
+            <p class="lightbox_count" aria-live="polite" />
+            <button
+              type="button"
+              class="lightbox_close"
+              data-theme="light"
+              aria-label="Close"
+            >
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 6l12 12M18 6 6 18" />
+              </svg>
+            </button>
+          </div>
+          <figure class="lightbox_figure">
+            <div class="lightbox_media" />
+            <figcaption class="lightbox_caption" />
+          </figure>
+          <button
+            type="button"
+            class="lightbox_step is-prev"
+            data-theme="light"
+            data-step="-1"
+            aria-label="Previous photo"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="lightbox_step is-next"
+            data-theme="light"
+            data-step="1"
+            aria-label="Next photo"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        </div>
+      </dialog>
+    </div>
+  )
+}
+
+<script>
+  const SWIPE = 50;
+
+  function initLightboxes() {
+    for (const wrap of document.querySelectorAll<HTMLElement>(
+      ".lightbox_wrap",
+    )) {
+      if (wrap.dataset.init) continue;
+      wrap.dataset.init = "true";
+
+      const dialog = wrap.querySelector<HTMLDialogElement>(".lightbox_dialog");
+      const media = dialog?.querySelector<HTMLElement>(".lightbox_media");
+      const caption = dialog?.querySelector<HTMLElement>(".lightbox_caption");
+      const count = dialog?.querySelector<HTMLElement>(".lightbox_count");
+      if (!dialog || !media || !caption || !count) continue;
+
+      const img = document.createElement("img");
+      img.className = "lightbox_img";
+      img.decoding = "async";
+      img.addEventListener("load", () => img.classList.remove("is-loading"));
+      media.append(img);
+
+      let triggers: HTMLElement[] = [];
+      let index = 0;
+      let opener: HTMLElement | null = null;
+
+      /* Only the photos currently on screen (a gallery filter hides tiles). */
+      const visible = () =>
+        [...wrap.querySelectorAll<HTMLElement>("[data-lightbox-src]")].filter(
+          (el) => !el.closest("[hidden]") && !dialog.contains(el),
+        );
+
+      const preload = (i: number) => {
+        const src = triggers[i]?.dataset.lightboxSrc;
+        if (src) new Image().src = src;
+      };
+
+      const show = (i: number) => {
+        const total = triggers.length;
+        index = (i + total) % total;
+        const trigger = triggers[index];
+        const src = trigger.dataset.lightboxSrc ?? "";
+        if (img.getAttribute("src") !== src) {
+          img.classList.add("is-loading");
+          img.src = src;
+        }
+        img.alt = trigger.dataset.lightboxAlt ?? "";
+        caption.textContent = trigger.dataset.lightboxCaption ?? "";
+        caption.hidden = !caption.textContent;
+        count.textContent = total > 1 ? `${index + 1} of ${total}` : "";
+        dialog.classList.toggle("is-single", total < 2);
+        if (total > 1) {
+          preload(index + 1);
+          preload(index - 1);
+        }
+      };
+
+      wrap.addEventListener("click", (event) => {
+        const trigger = (event.target as HTMLElement).closest<HTMLElement>(
+          "[data-lightbox-src]",
+        );
+        if (!trigger || dialog.contains(trigger)) return;
+        triggers = visible();
+        opener = trigger;
+        show(Math.max(0, triggers.indexOf(trigger)));
+        dialog.showModal();
+      });
+
+      for (const step of dialog.querySelectorAll<HTMLElement>("[data-step]")) {
+        step.addEventListener("click", () =>
+          show(index + Number(step.dataset.step)),
+        );
+      }
+
+      /* Arrow keys only while the dialog is open (listener is on the dialog,
+         never the document). */
+      dialog.addEventListener("keydown", (event) => {
+        if (triggers.length < 2) return;
+        if (event.key === "ArrowLeft") show(index - 1);
+        if (event.key === "ArrowRight") show(index + 1);
+      });
+
+      /* Touch swipe on the photo */
+      let startX = 0;
+      media.addEventListener(
+        "pointerdown",
+        (event) => {
+          startX = event.clientX;
+        },
+        { passive: true },
+      );
+      media.addEventListener("pointerup", (event) => {
+        if (event.pointerType === "mouse" || triggers.length < 2) return;
+        const dx = event.clientX - startX;
+        if (Math.abs(dx) > SWIPE) show(index + (dx < 0 ? 1 : -1));
+      });
+
+      dialog
+        .querySelector(".lightbox_close")
+        ?.addEventListener("click", () => dialog.close());
+      /* A click on the backdrop (the dialog element itself) closes it. */
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close();
+      });
+      dialog.addEventListener("close", () => opener?.focus());
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initLightboxes);
+  } else {
+    initLightboxes();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .lightbox_wrap {
+      display: contents;
+    }
+
+    .lightbox_dialog {
+      width: min(100vw - var(--site-margin) * 2, 72rem);
+      max-width: none;
+      max-height: 100svh;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      overflow: visible;
+    }
+
+    .lightbox_dialog::backdrop {
+      background-color: color-mix(
+        in srgb,
+        var(--color-dark-900) 88%,
+        transparent
+      );
+      -webkit-backdrop-filter: blur(0.25rem);
+      backdrop-filter: blur(0.25rem);
+    }
+
+    .lightbox_inner {
+      position: relative;
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .lightbox_bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    .lightbox_count {
+      margin: 0;
+      font-size: var(--text-small-size);
+      font-variant-numeric: tabular-nums;
+      opacity: 0.8;
+    }
+
+    .lightbox_figure {
+      display: grid;
+      gap: var(--space-3);
+      margin: 0;
+    }
+
+    .lightbox_media {
+      display: grid;
+      place-items: center;
+      touch-action: pan-y;
+    }
+
+    .lightbox_img {
+      display: block;
+      max-width: 100%;
+      max-height: 78svh;
+      object-fit: contain;
+      border-radius: var(--radius-main);
+      transition: opacity 0.3s ease;
+    }
+
+    .lightbox_img.is-loading {
+      opacity: 0;
+    }
+
+    .lightbox_caption {
+      text-align: center;
+      font-size: var(--text-small-size);
+    }
+
+    /* Round white buttons (the light theme's surface on the dark backdrop) */
+    .lightbox_close,
+    .lightbox_step {
+      display: grid;
+      place-items: center;
+      width: 2.75rem;
+      flex-shrink: 0;
+      aspect-ratio: 1;
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-full);
+      background-color: var(--background);
+      color: var(--text);
+      cursor: pointer;
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+    }
+
+    .lightbox_close svg,
+    .lightbox_step svg {
+      width: 1.25rem;
+      aspect-ratio: 1;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .lightbox_close {
+      margin-left: auto;
+    }
+
+    /* Previous / next float over the photo's edges */
+    .lightbox_step {
+      position: absolute;
+      top: 50%;
+      translate: 0 -50%;
+    }
+
+    .lightbox_step.is-prev {
+      left: var(--space-3);
+    }
+
+    .lightbox_step.is-next {
+      right: var(--space-3);
+    }
+
+    .lightbox_dialog.is-single .lightbox_step {
+      display: none;
+    }
+
+    .lightbox_close:focus-visible,
+    .lightbox_step:focus-visible {
+      outline: var(--border-width-main) solid var(--color-focus-state);
+      outline-offset: 0.2rem;
+    }
+
+    @media (hover: hover) {
+      .lightbox_close:hover,
+      .lightbox_step:hover {
+        background-color: var(--button-primary-background);
+        color: var(--button-primary-text);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lightbox_img {
+        transition: none;
+      }
+    }
+  }
+</style>

@@ -2,11 +2,13 @@ import type { APIRoute } from "astro";
 import { validatePreviewUrl } from "@sanity/preview-url-secret";
 import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
 import { sanityClient } from "sanity:client";
+import { getSecret } from "astro:env/server";
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request, cookies, redirect }) => {
-  const token = import.meta.env.SANITY_API_READ_TOKEN;
+  /* Runtime read — see load-query.ts. */
+  const token = getSecret("SANITY_API_READ_TOKEN");
 
   if (!token) {
     return new Response("Server misconfigured: missing read token", {

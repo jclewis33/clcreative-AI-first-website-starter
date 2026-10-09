@@ -1,0 +1,263 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Visual from "@/components/ui/Visual.astro";
+
+/**
+ * BeforeAfter — a drag-to-compare photo pair. The "after" photo is revealed
+ * to the right of a handle the visitor drags across the frame.
+ *
+ * The control is a real `<input type="range">` stretched invisibly over the
+ * frame: mouse and touch drag it, the keyboard moves it with the arrow keys,
+ * and screen readers announce it. The only script mirrors its value into
+ * `--_pos`. Without JS the frame shows a 50/50 split.
+ *
+ * Both photos should share one crop/aspect ratio so the rooms line up.
+ *
+ * @example
+ * <BeforeAfter before={beforeImg} beforeAlt="…" after={afterImg} afterAlt="…" />
+ */
+
+export interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **BeforeAfter** — drag-to-compare photos. `before` / `after` are imported
+   * images with their alt text; `label` names the slider for screen readers.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The "before" photo (shown on the left). */
+  before: ImageMetadata;
+
+  /** Alt text for the before photo. */
+  beforeAlt: string;
+
+  /** The "after" photo (revealed on the right). */
+  after: ImageMetadata;
+
+  /** Alt text for the after photo. */
+  afterAlt: string;
+
+  /** Accessible name for the slider. @default "Drag to compare before and after" */
+  label?: string;
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  before,
+  beforeAlt,
+  after,
+  afterAlt,
+  label = "Drag to compare before and after",
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV) {
+  if (!before || !after)
+    console.warn(
+      "[BeforeAfter] Both `before` and `after` images are required; nothing renders without them.",
+    );
+  if (!beforeAlt || !afterAlt)
+    console.warn(
+      "[BeforeAfter] Give both photos real alt text (`beforeAlt`, `afterAlt`).",
+    );
+}
+---
+
+{
+  render && before && after && (
+    <div class:list={["before-after_wrap", className]} {...rest}>
+      <div class="before-after_frame" data-theme="dark">
+        <div class="before-after_layer">
+          <Visual
+            variant="background"
+            src={before}
+            alt={beforeAlt}
+            loading="lazy"
+            sizes="(min-width: 80rem) 80rem, 100vw"
+          />
+        </div>
+        <div class="before-after_layer is-after">
+          <Visual
+            variant="background"
+            src={after}
+            alt={afterAlt}
+            loading="lazy"
+            sizes="(min-width: 80rem) 80rem, 100vw"
+          />
+        </div>
+        <span class="before-after_label is-before" aria-hidden="true">
+          Before
+        </span>
+        <span
+          class="before-after_label is-after"
+          data-theme="light"
+          aria-hidden="true"
+        >
+          After
+        </span>
+        <span class="before-after_handle" data-theme="light" aria-hidden="true">
+          <span class="before-after_knob">
+            <svg viewBox="0 0 24 24" fill="none" class="before-after_icon">
+              <path d="m9 7-5 5 5 5M15 7l5 5-5 5" />
+            </svg>
+          </span>
+        </span>
+        <input
+          class="before-after_range"
+          type="range"
+          min="0"
+          max="100"
+          value="50"
+          aria-label={label}
+        />
+      </div>
+    </div>
+  )
+}
+
+<script>
+  function initBeforeAfter() {
+    for (const range of document.querySelectorAll<HTMLInputElement>(
+      ".before-after_range",
+    )) {
+      if (range.dataset.init) continue;
+      range.dataset.init = "true";
+      const frame = range.closest<HTMLElement>(".before-after_frame");
+      if (!frame) continue;
+      const update = () => frame.style.setProperty("--_pos", `${range.value}%`);
+      range.addEventListener("input", update);
+      update();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initBeforeAfter);
+  } else {
+    initBeforeAfter();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .before-after_wrap {
+      container-type: inline-size;
+      width: 100%;
+    }
+
+    .before-after_frame {
+      --_pos: 50%;
+      position: relative;
+      aspect-ratio: 8 / 3;
+      border-radius: calc(var(--radius-main) + 0.25rem);
+      overflow: hidden;
+      isolation: isolate;
+      user-select: none;
+    }
+
+    @container (width < 35em) {
+      .before-after_frame {
+        aspect-ratio: 4 / 3;
+      }
+    }
+
+    .before-after_layer {
+      position: absolute;
+      inset: 0;
+    }
+
+    .before-after_layer.is-after {
+      clip-path: inset(0 0 0 var(--_pos));
+    }
+
+    .before-after_label {
+      position: absolute;
+      top: var(--space-4);
+      z-index: 2;
+      padding: 0.4em 1em;
+      border-radius: var(--radius-full);
+      font-size: var(--text-tiny-size);
+      font-weight: 700;
+      letter-spacing: var(--eyebrow-letter-spacing);
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    /* The frame is pinned dark (white text on a scrim); the after label,
+       handle and knob are pinned light (white surface, ink text). */
+    .before-after_label.is-before {
+      left: var(--space-4);
+      background-color: var(--overlay-scrim);
+      color: var(--text);
+    }
+
+    .before-after_label.is-after {
+      right: var(--space-4);
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    .before-after_handle {
+      position: absolute;
+      inset-block: 0;
+      left: var(--_pos);
+      z-index: 2;
+      width: var(--border-width-main);
+      translate: -50% 0;
+      background-color: var(--background);
+      pointer-events: none;
+    }
+
+    .before-after_knob {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      translate: -50% -50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 3.5rem;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-full);
+      background-color: var(--background);
+      color: var(--text);
+      box-shadow: 0 0.25rem 1rem var(--overlay-scrim);
+    }
+
+    .before-after_icon {
+      width: 1.25rem;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* The real control — invisible, full-frame, above everything. */
+    .before-after_range {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      cursor: ew-resize;
+      appearance: none;
+    }
+
+    .before-after_frame:has(.before-after_range:focus-visible)
+      .before-after_knob {
+      outline: var(--border-width-main) solid var(--color-focus-state);
+      outline-offset: 0.25rem;
+    }
+  }
+</style>

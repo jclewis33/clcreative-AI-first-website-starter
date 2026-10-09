@@ -120,6 +120,18 @@ export const PAGES: SitePage[] = [
     group: "index",
   },
   {
+    path: "/projects",
+    title: "Projects",
+    desc: "Recent projects with photos and details.",
+    group: "index",
+  },
+  {
+    path: "/gallery",
+    title: "Photo gallery",
+    desc: "Photos from recent work.",
+    group: "index",
+  },
+  {
     path: "/glossary",
     title: "Glossary",
     desc: "A glossary of terms.",
@@ -263,7 +275,14 @@ const DEV_FOOTER_LINKS: FooterLink[] = import.meta.env.DEV
 export const FOOTER_GROUPS: FooterGroup[] = [
   {
     title: "Resources",
-    links: ["/blog", "/case-studies", "/glossary", ...DEV_FOOTER_LINKS],
+    links: [
+      "/blog",
+      "/case-studies",
+      "/projects",
+      "/gallery",
+      "/glossary",
+      ...DEV_FOOTER_LINKS,
+    ],
   },
   {
     title: "Company",

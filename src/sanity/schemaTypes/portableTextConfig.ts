@@ -20,6 +20,7 @@ export const internalLinkAnnotation = {
         { type: "blogPost" },
         { type: "caseStudy" },
         { type: "glossaryTerm" },
+        { type: "project" },
       ],
       validation: (rule: any) => rule.required(),
     },

@@ -1,0 +1,73 @@
+---
+/**
+ * /gallery — every Sanity `galleryItem` (monthly jobsite photos), filterable
+ * by category, with a click-to-enlarge lightbox. Prerendered; publishing in
+ * the Studio triggers a rebuild.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import GalleryBrowser, {
+  type GalleryItem,
+} from "@/components/ui/GalleryBrowser.astro";
+import CTASection from "@/components/sections/CTASection.astro";
+import { stegaClean } from "@sanity/client/stega";
+import { SITE } from "@/config/site";
+import { getPage } from "@/data/site-structure";
+import { sanityPhoto } from "@/lib/projects";
+import { photoAlt } from "@/lib/project-format";
+import { loadGallery } from "@/sanity/lib/page-data";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import { PROJECT_CATEGORIES, categoryTitle } from "@/config/projects";
+
+const rows = await loadGallery(getDraftModeProps(Astro));
+
+const items: GalleryItem[] = rows.flatMap((row) => {
+  const caption = stegaClean(row.caption) ?? "";
+  const alt = photoAlt(row.imageAlt, caption || "Gallery photo");
+  const thumb = sanityPhoto(row.image, alt, row.imageMeta, 640);
+  const full = sanityPhoto(row.image, alt, row.imageMeta, 1800);
+  if (!thumb || !full) return [];
+  const category = stegaClean(row.category) ?? "";
+  return [
+    {
+      id: row._id,
+      caption,
+      category,
+      categoryLabel: categoryTitle(category),
+      location: stegaClean(row.location)?.trim() ?? "",
+      projectTitle: stegaClean(row.project?.title)?.trim() ?? "",
+      thumb,
+      full,
+    },
+  ];
+});
+---
+
+<BaseLayout
+  title={`Photo gallery | ${SITE.name}`}
+  description={getPage("/gallery")?.desc}
+  canonical={`${SITE.url}/gallery`}
+>
+  <Section gap={7} class="u-hero-fade">
+    <Layout ratio="7-5" verticalAlign="end" rowGap={3}>
+      <Heading variant="eyebrow">Our work</Heading>
+      <Heading tag="h1" variant="display-xl">Photo gallery</Heading>
+      <Text slot="column2" variant="large" muted>
+        Photos from recent jobs. For the full story on a job, see our{" "}
+        <a href="/projects">projects</a>.
+      </Text>
+    </Layout>
+    {
+      items.length > 0 ? (
+        <GalleryBrowser items={items} categories={PROJECT_CATEGORIES} />
+      ) : (
+        <Text muted>Photos coming soon.</Text>
+      )
+    }
+  </Section>
+
+  <CTASection />
+</BaseLayout>

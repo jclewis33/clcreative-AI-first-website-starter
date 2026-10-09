@@ -180,6 +180,7 @@
   --eyebrow-text-transform: uppercase;
   --eyebrow-margin-top: 0;
   --eyebrow-margin-bottom: var(--space-3);
+  --eyebrow-letter-spacing: 0.14em;
 
   /* =====================================================
      TEXT SIZE VARIABLES

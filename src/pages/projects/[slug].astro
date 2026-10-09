@@ -1,0 +1,26 @@
+---
+/**
+ * Public project page — PRERENDERED from the Sanity `project` documents.
+ * Editors preview drafts via the SSR twin at /preview/projects/[slug], which
+ * calls the exact same loader and template.
+ */
+import ProjectTemplate from "@/components/templates/ProjectTemplate.astro";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import { loadProjectPage, getProjectStaticPaths } from "@/sanity/lib/page-data";
+
+// Must be an imported helper: Astro extracts getStaticPaths into its own
+// module at build time, so frontmatter siblings are not in scope here.
+export const getStaticPaths = getProjectStaticPaths;
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const data = await loadProjectPage(slug, getDraftModeProps(Astro));
+if (!data) return Astro.redirect("/404");
+---
+
+<ProjectTemplate
+  project={data.project}
+  relatedProjects={data.relatedProjects}
+  defaultCtaSection={data.defaultCtaSection}
+/>

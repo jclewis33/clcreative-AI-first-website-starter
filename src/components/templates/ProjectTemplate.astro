@@ -1,0 +1,268 @@
+---
+/**
+ * ProjectTemplate — the /projects/[slug] page body, shared by the prerendered
+ * public route and its SSR /preview twin so the two never drift. Props are
+ * typed from the loader that feeds them (loadProjectPage in page-data.ts).
+ */
+import "@/styles/pages/projects.css";
+import { stegaClean } from "@sanity/client/stega";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Lightbox from "@/components/ui/Lightbox.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Button from "@/components/ui/Button.astro";
+import Visual from "@/components/ui/Visual.astro";
+import FormattedDate from "@/components/ui/FormattedDate.astro";
+import Quote from "@/components/ui/Quote.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import SwipeRow from "@/components/ui/SwipeRow.astro";
+import ProjectCard from "@/components/ui/ProjectCard.astro";
+import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
+import { SITE } from "@/config/site";
+import {
+  photoUrl,
+  projectPath,
+  sanityPhoto,
+  toProjectCards,
+} from "@/lib/projects";
+import type { loadProjectPage } from "@/sanity/lib/page-data";
+import { categoryTitle } from "@/config/projects";
+import { photoAlt } from "@/lib/project-format";
+import { portableTextToHtml } from "@/sanity/lib/portable-text";
+
+type PageData = NonNullable<Awaited<ReturnType<typeof loadProjectPage>>>;
+
+interface Props {
+  project: PageData["project"];
+  relatedProjects: PageData["relatedProjects"];
+  defaultCtaSection: PageData["defaultCtaSection"];
+}
+
+const { project, relatedProjects, defaultCtaSection } = Astro.props;
+
+const slug = stegaClean(project.slug) ?? "";
+const title = stegaClean(project.title) ?? "Project";
+const path = projectPath(slug);
+const category = categoryTitle(stegaClean(project.category));
+const location = stegaClean(project.location)?.trim();
+const service = stegaClean(project.service)?.trim();
+const completed = stegaClean(project.completed);
+const hero = sanityPhoto(
+  project.heroImage,
+  photoAlt(project.imageAlt, title),
+  project.heroImageMeta,
+  1600,
+);
+const photos = (project.photos ?? []).flatMap((p) => {
+  const alt = photoAlt(p.alt, `${title} photo`);
+  const photo = sanityPhoto(p, alt, p.meta, 1200);
+  const large = sanityPhoto(p, alt, p.meta, 1600);
+  if (!photo || !large) return [];
+  return [{ photo, large, label: stegaClean(p.label) }];
+});
+
+/* The write-up (optional). Its plain text doubles as the SEO fallback. */
+const writeUpHtml = portableTextToHtml(project.description);
+const writeUpText = (project.description ?? [])
+  .flatMap((block) => block.children ?? [])
+  .map((span) => span.text ?? "")
+  .join("")
+  .trim();
+const related = toProjectCards(relatedProjects);
+const quoteText = stegaClean(project.quote?.text);
+
+const description =
+  stegaClean(project.seoDescription) ||
+  stegaClean(writeUpText)?.slice(0, 155) ||
+  `${title}${category ? `: a ${category.toLowerCase()} project` : ""} by ${SITE.name}.`;
+
+const facts = [
+  location && { label: "Location", value: location },
+  service && { label: "Service", value: service },
+].filter(Boolean) as { label: string; value: string }[];
+/* The story section shows when there is a write-up or any fact to list. */
+const hasStory = Boolean(writeUpHtml) || facts.length > 0 || Boolean(completed);
+---
+
+<BaseLayout
+  title={`${title} | ${SITE.name}`}
+  description={description}
+  canonical={`${SITE.url}${path}`}
+  breadcrumbs={[
+    { name: "Home", path: "/" },
+    { name: "Projects", path: "/projects" },
+    { name: title, path },
+  ]}
+>
+  <!-- Hero -->
+  <Section gap={6} class="u-hero-fade">
+    <Breadcrumbs
+      items={[
+        { label: "Home", href: "/" },
+        { label: "Projects", href: "/projects" },
+        { label: title },
+      ]}
+    />
+    <div class="project-hero_head">
+      <div class="project-hero_tags">
+        {category && <span class="project-hero_badge">{category}</span>}
+      </div>
+      <Heading tag="h1" variant="display-lg">{title}</Heading>
+    </div>
+    {
+      hero && (
+        <Visual
+          src={hero.src}
+          alt={hero.alt}
+          width={hero.width}
+          height={hero.height}
+          position={hero.position}
+          ratio="16 / 9"
+          priority
+          sizes="(min-width: 80rem) 80rem, 100vw"
+          class="project-hero_img"
+        />
+      )
+    }
+  </Section>
+
+  <!-- The story (write-up + facts) -->
+  <Section render={hasStory}>
+    <Layout
+      ratio="7-5"
+      verticalAlign="start"
+      data-fade-list
+      data-prevent-flicker="true"
+    >
+      {
+        writeUpHtml && (
+          <div
+            class="project-story_text u-rich-text u-text-style-large u-text-style-muted"
+            set:html={writeUpHtml}
+          />
+        )
+      }
+      <dl slot="column2" class="project-facts_list">
+        {
+          facts.map((fact) => (
+            <div class="project-facts_item">
+              <dt class="project-facts_label">{fact.label}</dt>
+              <dd class="project-facts_value">{fact.value}</dd>
+            </div>
+          ))
+        }
+        {
+          completed && (
+            <div class="project-facts_item">
+              <dt class="project-facts_label">Completed</dt>
+              <dd class="project-facts_value">
+                <FormattedDate
+                  date={completed}
+                  format={{ month: "long", year: "numeric" }}
+                />
+              </dd>
+            </div>
+          )
+        }
+      </dl>
+    </Layout>
+  </Section>
+
+  <!-- Photos -->
+  <Section render={photos.length > 0} paddingTop="none">
+    <Heading tag="h2" variant="h3" data-fade-up data-prevent-flicker="true"
+      >Project photos</Heading
+    >
+    <Lightbox label={`${title} photos`}>
+      <Grid
+        largeColumns={2}
+        mediumColumns={2}
+        smallColumns={1}
+        rowGap={4}
+        data-fade-list
+        data-prevent-flicker="true"
+      >
+        {
+          photos.map(({ photo, large, label }, i) => (
+            <button
+              type="button"
+              class:list={[
+                "project-photo_wrap",
+                // An odd photo out spans the full row so the grid never ends ragged.
+                i === photos.length - 1 &&
+                  photos.length % 2 === 1 &&
+                  "u-span-full",
+              ]}
+              data-lightbox-src={photoUrl(large)}
+              data-lightbox-alt={large.alt}
+              data-lightbox-caption={label}
+            >
+              <Visual
+                src={photo.src}
+                alt={photo.alt}
+                width={photo.width}
+                height={photo.height}
+                position={photo.position}
+                ratio="3 / 2"
+                sizes="(min-width: 58em) 40rem, 100vw"
+              />
+              {label && (
+                <span
+                  class:list={[
+                    "project-photo_label",
+                    label === "After" && "is-after",
+                  ]}
+                >
+                  {label}
+                </span>
+              )}
+              <span class="u-sr-only">Enlarge photo</span>
+            </button>
+          ))
+        }
+      </Grid>
+    </Lightbox>
+  </Section>
+
+  <!-- Customer quote (optional) -->
+  <Section theme="brand" render={Boolean(quoteText)}>
+    <Layout variant="stack-centered" data-fade-up data-prevent-flicker="true">
+      {
+        quoteText && (
+          <Quote
+            text={quoteText}
+            name={stegaClean(project.quote?.name) ?? undefined}
+            size="band"
+          />
+        )
+      }
+    </Layout>
+  </Section>
+
+  <!-- More projects -->
+  <Section render={related.length > 0}>
+    <SectionHeader
+      heading="More projects"
+      size="h2"
+      data-fade-up
+      data-prevent-flicker="true"
+    >
+      <Button slot="action" variant="secondary" href="/projects"
+        >All projects</Button
+      >
+    </SectionHeader>
+    <SwipeRow
+      columns={3}
+      label="More projects"
+      data-fade-up
+      data-prevent-flicker="true"
+    >
+      {related.map((card) => <ProjectCard project={card} />)}
+    </SwipeRow>
+  </Section>
+
+  {defaultCtaSection && <SanityCtaSection cta={defaultCtaSection} />}
+</BaseLayout>

@@ -1,0 +1,153 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+/**
+ * CheckList — a list of short items, each with a red checkmark.
+ *
+ * Two looks:
+ * - `ruled` (default) — hairline dividers between items, optional two columns
+ *   (the service page "What's included" list).
+ * - `plain` — no dividers, roomier lines (the audience cards).
+ *
+ * @example
+ * <CheckList items={["Damage assessment", "Permits & inspections"]} columns={2} />
+ */
+
+type CheckListVariant =
+  /** Hairline dividers between items */
+  | "ruled"
+  /** No dividers — for lists inside cards */
+  | "plain";
+
+type CheckListColumns = 1 | 2;
+
+export interface Props extends HTMLAttributes<"ul"> {
+  /**
+   * **CheckList** — items with a checkmark. `items` is an array of strings;
+   * `variant` picks ruled (dividers) or plain; `columns` splits a ruled list
+   * into two columns on wide containers (one column below ~560px).
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The items. Renders nothing when empty. */
+  items: string[];
+
+  /** Ruled (dividers) or plain. @default "ruled" */
+  variant?: CheckListVariant;
+
+  /** One or two columns (two collapses to one on small containers). @default 1 */
+  columns?: CheckListColumns;
+
+  /** Extra classes on the list. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  items = [],
+  variant = "ruled",
+  columns = 1,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV) {
+  if (!items?.length)
+    console.warn("[CheckList] `items` is empty or missing; nothing renders.");
+  if (!["ruled", "plain"].includes(variant))
+    console.warn(
+      `[CheckList] Unknown variant "${variant}". Use "ruled" or "plain".`,
+    );
+  if (![1, 2].includes(columns))
+    console.warn(`[CheckList] Unknown columns "${columns}". Use 1 or 2.`);
+}
+---
+
+{
+  render && items.length > 0 && (
+    <ul
+      class:list={["check-list_wrap", className]}
+      data-variant={variant}
+      data-columns={columns}
+      {...rest}
+    >
+      {items.map((item) => (
+        <li class="check-list_item">
+          <svg
+            class="check-list_icon"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path d="m4 12.5 5 5L20 6.5" />
+          </svg>
+          <span class="check-list_text">{item}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .check-list_wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      column-gap: var(--space-5);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      width: 100%;
+    }
+
+    .check-list_item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75em;
+    }
+
+    .check-list_icon {
+      width: 1.25em;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      margin-top: 0.15em;
+      stroke: var(--heading-accent);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .check-list_text {
+      min-width: 0;
+    }
+
+    /* Ruled — hairlines between items, medium weight */
+    .check-list_wrap[data-variant="ruled"] .check-list_item {
+      padding-block: var(--space-3);
+      border-top: var(--border-width-main) solid var(--border);
+      font-weight: 500;
+    }
+
+    /* Plain — no rules, the gap spaces the items */
+    .check-list_wrap[data-variant="plain"] {
+      row-gap: var(--space-3);
+    }
+
+    .check-list_wrap[data-variant="plain"] .check-list_text {
+      color: color-mix(in srgb, var(--text) 80%, transparent);
+    }
+
+    /* Two columns when each can be at least 14rem wide; the 40% floor caps
+       it at two, so a wide container never grows a third column. */
+    .check-list_wrap[data-columns="2"] {
+      grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, max(14rem, 40%)), 1fr)
+      );
+    }
+  }
+</style>

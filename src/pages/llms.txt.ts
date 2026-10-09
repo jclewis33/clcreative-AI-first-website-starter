@@ -12,9 +12,11 @@ import { loadQuery } from "@/sanity/lib/load-query";
 import {
   BLOG_POSTS_QUERY,
   CASE_STUDIES_QUERY,
+  PROJECTS_QUERY,
   GLOSSARY_TERMS_QUERY,
 } from "@/sanity/lib/queries";
 import { SITE_URL, SITE_NAME, SITE_SUMMARY } from "@/config/site";
+import { categoryTitle } from "@/config/projects";
 import {
   MAIN_PAGES,
   SERVICE_PAGES,
@@ -28,6 +30,7 @@ import { isNoindexRoute } from "@/config/seo.shared.mjs";
 import type {
   BLOG_POSTS_QUERY_RESULT,
   CASE_STUDIES_QUERY_RESULT,
+  PROJECTS_QUERY_RESULT,
   GLOSSARY_TERMS_QUERY_RESULT,
 } from "@/sanity/sanity.types";
 
@@ -73,7 +76,7 @@ function dynamicLine(
 export const GET: APIRoute = async () => {
   // Tolerate an empty or unreachable dataset (e.g. a fresh fork before
   // `/setup`) — the file still renders the static page index.
-  const [posts, caseStudies, glossary] = await Promise.all([
+  const [posts, caseStudies, glossary, projects] = await Promise.all([
     loadQuery({ query: BLOG_POSTS_QUERY })
       .then((r) => r.data)
       .catch((): BLOG_POSTS_QUERY_RESULT => []),
@@ -83,6 +86,9 @@ export const GET: APIRoute = async () => {
     loadQuery({ query: GLOSSARY_TERMS_QUERY })
       .then((r) => r.data)
       .catch((): GLOSSARY_TERMS_QUERY_RESULT => []),
+    loadQuery({ query: PROJECTS_QUERY })
+      .then((r) => r.data)
+      .catch((): PROJECTS_QUERY_RESULT => []),
   ]);
 
   // Mirror the sitemap rule: hide case studies marked "coming soon".
@@ -116,6 +122,21 @@ export const GET: APIRoute = async () => {
       `## Case Studies\n${listableCaseStudies
         .map((c) =>
           dynamicLine(c.title, `/case-studies/${c.slug}`, c.description),
+        )
+        .join("\n")}`,
+    );
+  }
+
+  const listableProjects = (projects ?? []).filter(listable);
+  if (listableProjects.length) {
+    sections.push(
+      `## Projects\n${listableProjects
+        .map((p) =>
+          dynamicLine(
+            p.title,
+            `/projects/${p.slug}`,
+            [categoryTitle(p.category), p.location].filter(Boolean).join(" · "),
+          ),
         )
         .join("\n")}`,
     );

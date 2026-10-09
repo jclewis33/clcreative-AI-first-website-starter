@@ -140,6 +140,28 @@ export function breadcrumbJsonLd(pathname: string, siteUrl: string = SITE.url) {
   };
 }
 
+/**
+ * BreadcrumbList from an explicit trail (Home first, current page last). Use
+ * when a URL segment has no page of its own, so the list never points at a
+ * 404. `path` is site-relative.
+ */
+export function breadcrumbListJsonLd(
+  items: { name: string; path: string }[],
+  siteUrl: string = SITE.url,
+) {
+  if (items.length === 0) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((crumb, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: crumb.name,
+      item: `${siteUrl}${crumb.path === "/" ? "" : crumb.path}`,
+    })),
+  };
+}
+
 /* ── Layer 2: opt-in per-page Service (+ optional FAQ) schema ───────── */
 
 export interface ServiceFaqOptions {

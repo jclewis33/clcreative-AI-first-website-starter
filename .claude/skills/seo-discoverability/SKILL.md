@@ -155,7 +155,10 @@ slash, `title` is the page title with the ` | Your Company` suffix stripped,
 and `desc` is the page's meta description. Because nav and footer reference
 pages by path from this same registry, adding the page here once + referencing
 its path in `NAV_MENU`/`FOOTER_GROUPS` is all that's needed — one registry,
-never three separate lists. New **CMS** content needs nothing here.
+never three separate lists. New **CMS** content needs nothing here — but
+its _index_ page does: `/projects` and `/gallery` (the photo portfolio) are
+`group: "index"` entries, linked from the footer Resources group and left out
+of `NAV_MENU` by default; add them to the nav on sites that use them.
 
 To verify: `npm run dev`, then open `/llms.txt` and `/llms-full.txt` and
 confirm the new page appears.

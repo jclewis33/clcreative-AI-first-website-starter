@@ -63,6 +63,25 @@ import FormCheckbox from "@/components/form/FormCheckbox.astro";
 import FormRadio from "@/components/form/FormRadio.astro";
 import FormRange from "@/components/form/FormRange.astro";
 import LeadForm from "@/components/form/LeadForm.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import CheckList from "@/components/ui/CheckList.astro";
+import ChipList from "@/components/ui/ChipList.astro";
+import StepList from "@/components/ui/StepList.astro";
+import Quote from "@/components/ui/Quote.astro";
+import BeforeAfter from "@/components/ui/BeforeAfter.astro";
+import FactPhoto from "@/components/ui/FactPhoto.astro";
+import SwipeRow from "@/components/ui/SwipeRow.astro";
+import Lightbox from "@/components/ui/Lightbox.astro";
+import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
+import type { ImageMetadata } from "astro";
+import ProjectCard from "@/components/ui/ProjectCard.astro";
+import ProjectBrowser from "@/components/ui/ProjectBrowser.astro";
+import GalleryBrowser from "@/components/ui/GalleryBrowser.astro";
+import { PROJECT_CATEGORIES } from "@/config/projects";
+import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
+import demoPhoto2 from "@/assets/placeholder-images/ai-first-starter-2.webp";
+import demoPhoto3 from "@/assets/placeholder-images/ai-first-starter-3.webp";
+import demoPhoto4 from "@/assets/placeholder-images/ai-first-starter-4.webp";
 import Visual from "@/components/ui/Visual.astro";
 import Overlay from "@/components/ui/Overlay.astro";
 import BlogPostGrid from "@/components/sections/BlogPostGrid.astro";
@@ -154,6 +173,19 @@ const COMPONENT_INDEX = [
   { slug: "accordion", text: "Accordion" },
   { slug: "forms", text: "Form components" },
   { slug: "lead-form", text: "LeadForm (GoHighLevel)" },
+  { slug: "section-header", text: "SectionHeader" },
+  { slug: "check-list", text: "CheckList" },
+  { slug: "chip-list", text: "ChipList" },
+  { slug: "step-list", text: "StepList" },
+  { slug: "quote", text: "Quote" },
+  { slug: "before-after", text: "BeforeAfter" },
+  { slug: "fact-photo", text: "FactPhoto" },
+  { slug: "swipe-row", text: "SwipeRow" },
+  { slug: "lightbox", text: "Lightbox" },
+  { slug: "breadcrumbs", text: "Breadcrumbs" },
+  { slug: "project-card", text: "ProjectCard" },
+  { slug: "project-browser", text: "ProjectBrowser" },
+  { slug: "gallery-browser", text: "GalleryBrowser" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -187,6 +219,86 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
   (): TestimonialData[] => [],
 );
+/* Hand-built sample data for the ProjectBrowser / GalleryBrowser demos —
+   real pages map Sanity rows with toProjectCards() / sanityPhoto(). */
+const demoPhotoOf = (img: ImageMetadata, alt: string) => ({
+  src: img,
+  alt,
+  width: img.width,
+  height: img.height,
+  position: "center" as const,
+});
+const demoProjects = [
+  {
+    id: "d1",
+    title: "Kitchen remodel",
+    href: "/projects",
+    category: "remodel",
+    categoryLabel: "Remodel",
+    location: "Springfield, IL",
+    image: demoPhotoOf(demoPhoto1, "A remodeled kitchen with white cabinets"),
+  },
+  {
+    id: "d2",
+    title: "Storefront refresh",
+    href: "/projects",
+    category: "commercial",
+    categoryLabel: "Commercial",
+    location: "Decatur, IL",
+    image: demoPhotoOf(demoPhoto2, "A refreshed storefront with new signage"),
+  },
+  {
+    id: "d3",
+    title: "Porch repair",
+    href: "/projects",
+    category: "repair",
+    categoryLabel: "Repair",
+    location: "",
+    image: demoPhotoOf(demoPhoto3, "A repaired front porch with new railings"),
+  },
+];
+const demoGallery = [
+  {
+    id: "g1",
+    caption: "New island and lighting",
+    category: "remodel",
+    categoryLabel: "Remodel",
+    location: "Springfield, IL",
+    projectTitle: "Kitchen remodel",
+    thumb: demoPhotoOf(demoPhoto1, "A kitchen island under pendant lights"),
+    full: demoPhotoOf(demoPhoto1, "A kitchen island under pendant lights"),
+  },
+  {
+    id: "g2",
+    caption: "Signage install",
+    category: "commercial",
+    categoryLabel: "Commercial",
+    location: "",
+    projectTitle: "",
+    thumb: demoPhotoOf(demoPhoto2, "New signage on a storefront"),
+    full: demoPhotoOf(demoPhoto2, "New signage on a storefront"),
+  },
+  {
+    id: "g3",
+    caption: "Railing detail",
+    category: "repair",
+    categoryLabel: "Repair",
+    location: "Decatur, IL",
+    projectTitle: "",
+    thumb: demoPhotoOf(demoPhoto3, "A close view of new porch railings"),
+    full: demoPhotoOf(demoPhoto3, "A close view of new porch railings"),
+  },
+  {
+    id: "g4",
+    caption: "Finished living room",
+    category: "remodel",
+    categoryLabel: "Remodel",
+    location: "",
+    projectTitle: "Kitchen remodel",
+    thumb: demoPhotoOf(demoPhoto4, "A finished open-plan living room"),
+    full: demoPhotoOf(demoPhoto4, "A finished open-plan living room"),
+  },
+];
 ---
 
 <BaseLayout
@@ -1746,6 +1858,364 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         submitLabel="Request a quote"
       />
     </Layout>
+  </Section>
+
+  {
+    /* ================================================================
+    LOCAL-SERVICE BUILDING BLOCKS
+    ================================================================ */
+  }
+  <Section theme="light" id="section-header">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">SectionHeader</Heading>
+      <Heading tag="h2">Eyebrow and heading, with an intro or an action</Heading
+      >
+    </Layout>
+    <SectionHeader
+      eyebrow="Our services"
+      heading="Everything your project needs"
+      intro="One team from the first call to the final walkthrough."
+    />
+    <SectionHeader eyebrow="Recent work" heading="See what we've built">
+      <Button
+        slot="action"
+        variant="secondary"
+        href="/case-studies"
+        ariaLabel="View all work">View all work</Button
+      >
+    </SectionHeader>
+  </Section>
+
+  <Section theme="light" id="check-list">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">CheckList</Heading>
+      <Heading tag="h2"
+        >Checkmark lists: ruled or plain, one or two columns</Heading
+      >
+    </Layout>
+    <Layout variant="columns" ratio="6-6">
+      <CheckList
+        items={[
+          "Free estimates",
+          "Licensed and insured",
+          "Clean job sites",
+          "Warranty on all work",
+        ]}
+      />
+      <CheckList
+        slot="column2"
+        variant="plain"
+        columns={2}
+        items={[
+          "Permits handled",
+          "Daily updates",
+          "Fixed pricing",
+          "Local crews",
+          "Same-week starts",
+          "Final walkthrough",
+        ]}
+      />
+    </Layout>
+  </Section>
+
+  <Section theme="light" id="chip-list">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">ChipList</Heading>
+      <Heading tag="h2"
+        >A wrapping row of pills; linked chips get an arrow</Heading
+      >
+    </Layout>
+    <ChipList
+      items={[
+        { label: "Kitchens" },
+        { label: "Bathrooms" },
+        { label: "Additions" },
+        { label: "Remodeling", href: "/contact" },
+        { label: "Repairs", href: "/contact" },
+      ]}
+    />
+  </Section>
+
+  <Section theme="light" id="step-list">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">StepList</Heading>
+      <Heading tag="h2">A numbered process, as a list or as cards</Heading>
+    </Layout>
+    <Layout variant="columns" ratio="5-7">
+      <Heading tag="h3" variant="h2">List</Heading>
+      <StepList
+        slot="column2"
+        steps={[
+          { title: "Call", text: "Tell us what you need." },
+          { title: "Inspect", text: "We visit and measure." },
+          { title: "Plan", text: "You get a clear, fixed quote." },
+          { title: "Build", text: "Our crew gets it done." },
+        ]}
+      />
+    </Layout>
+    <Heading tag="h3" variant="h2">Cards</Heading>
+    <StepList
+      variant="cards"
+      steps={[
+        { title: "Call", text: "Tell us what you need." },
+        { title: "Inspect", text: "We visit and measure." },
+        { title: "Plan", text: "You get a clear, fixed quote." },
+        { title: "Build", text: "Our crew gets it done." },
+      ]}
+    />
+  </Section>
+
+  <Section theme="light" id="quote">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">Quote</Heading>
+      <Heading tag="h2">Reviews and quotes in four sizes</Heading>
+    </Layout>
+    <Quote
+      size="large"
+      text="They kept us informed every day and finished on schedule."
+      name="Jordan P."
+      meta="Kitchen remodel · Springfield"
+    />
+    <Grid largeColumns={2} mediumColumns={2} smallColumns={1} rowGap={6}>
+      <Quote
+        size="regular"
+        text="Clean, careful and fair on price."
+        name="Sam R."
+        meta="Bathroom"
+      />
+      <Quote
+        size="small"
+        mark="none"
+        text="Would hire again in a heartbeat."
+        name="Alex T."
+      />
+    </Grid>
+  </Section>
+  <Section theme="brand">
+    <Quote
+      size="band"
+      text="The best contractor we've worked with."
+      name="Morgan L."
+    />
+  </Section>
+
+  <Section theme="light" id="before-after">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">BeforeAfter</Heading>
+      <Heading tag="h2"
+        >Drag, or use the arrow keys, to compare two photos</Heading
+      >
+    </Layout>
+    <BeforeAfter
+      before={demoPhoto1}
+      beforeAlt="The space before the project, with the original layout"
+      after={demoPhoto2}
+      afterAlt="The same space after the project, fully finished"
+    />
+  </Section>
+
+  <Section theme="light" id="fact-photo">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">FactPhoto</Heading>
+      <Heading tag="h2"
+        >A large photo with fact cards over its bottom edge</Heading
+      >
+    </Layout>
+    <FactPhoto
+      src={demoPhoto3}
+      alt="A finished project photographed in daylight"
+      facts={[
+        { title: "15+ years", text: "Serving the area" },
+        { title: "Licensed", text: "And fully insured" },
+        { title: "Warranty", text: "On every job" },
+      ]}
+    />
+  </Section>
+
+  <Section theme="light" id="swipe-row">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">SwipeRow</Heading>
+      <Heading tag="h2"
+        >A grid that becomes a swipe row on smaller screens</Heading
+      >
+    </Layout>
+    <SwipeRow columns={3} label="Example cards">
+      <Card title="Kitchens" href="/contact" ariaLabel="Kitchens">
+        <Visual
+          slot="visual"
+          src={demoPhoto1}
+          alt="A modern kitchen with an island"
+        />
+      </Card>
+      <Card title="Bathrooms" href="/contact" ariaLabel="Bathrooms">
+        <Visual
+          slot="visual"
+          src={demoPhoto2}
+          alt="A bright bathroom with a walk-in shower"
+        />
+      </Card>
+      <Card title="Additions" href="/contact" ariaLabel="Additions">
+        <Visual
+          slot="visual"
+          src={demoPhoto3}
+          alt="A new room added onto a house"
+        />
+      </Card>
+    </SwipeRow>
+  </Section>
+
+  <Section theme="light" id="lightbox">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">Lightbox</Heading>
+      <Heading tag="h2"
+        >Click a photo to view it large and step through the set</Heading
+      >
+      <Text muted
+        >The fourth photo sits inside a hidden wrapper, as a filter would leave
+        it, so the viewer skips it.</Text
+      >
+    </Layout>
+    <Lightbox label="Demo photos">
+      <Grid largeColumns={3} mediumColumns={3} smallColumns={1} rowGap={4}>
+        {
+          [
+            {
+              img: demoPhoto1,
+              alt: "Project photo one, the front of the building",
+            },
+            { img: demoPhoto2, alt: "Project photo two, the main room" },
+            {
+              img: demoPhoto3,
+              alt: "Project photo three, the finished detail work",
+            },
+          ].map((p) => (
+            <button
+              type="button"
+              class="lightbox-demo_item u-button-reset"
+              data-lightbox-src={p.img.src}
+              data-lightbox-alt={p.alt}
+            >
+              <Visual src={p.img} alt={p.alt} ratio="landscape" />
+            </button>
+          ))
+        }
+        <div class="lightbox-demo_hidden" hidden>
+          <button
+            type="button"
+            class="lightbox-demo_item u-button-reset"
+            data-lightbox-src={demoPhoto4.src}
+            data-lightbox-alt="Hidden project photo four"
+          >
+            <Visual
+              src={demoPhoto4}
+              alt="Hidden project photo four"
+              ratio="landscape"
+            />
+          </button>
+        </div>
+      </Grid>
+    </Lightbox>
+  </Section>
+
+  <Section theme="light" id="breadcrumbs">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">Breadcrumbs</Heading>
+      <Heading tag="h2"
+        >A trail back up the site; the current page is not a link</Heading
+      >
+      <Text muted
+        >Pass the same trail to BaseLayout's breadcrumbs prop so the
+        BreadcrumbList schema matches what visitors see.</Text
+      >
+    </Layout>
+    <Breadcrumbs
+      items={[
+        { label: "Home", href: "/" },
+        { label: "Projects", href: "/projects" },
+        { label: "Kitchen remodel" },
+      ]}
+    />
+    <ButtonWrapper>
+      <Button href="/contact" iconPosition="start" ariaLabel="Call us">
+        Call us
+        <Icon slot="icon" src={arrowIcon} variant="small" />
+      </Button>
+    </ButtonWrapper>
+  </Section>
+
+  <Section theme="light" id="project-card">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">ProjectCard</Heading>
+      <Heading tag="h2"
+        >A project card for /projects and featured strips</Heading
+      >
+      <Text muted
+        >Real cards are built from Sanity with toProjectCards(). The second card
+        has no location, so its meta line is left out.</Text
+      >
+    </Layout>
+    <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
+      <ProjectCard
+        project={{
+          id: "demo-1",
+          title: "Kitchen remodel",
+          href: "/projects",
+          category: "remodel",
+          categoryLabel: "Remodel",
+          location: "Springfield, IL",
+          image: {
+            src: demoPhoto1,
+            alt: "A remodeled kitchen with white cabinets",
+            width: demoPhoto1.width,
+            height: demoPhoto1.height,
+            position: "center",
+          },
+        }}
+      />
+      <ProjectCard
+        project={{
+          id: "demo-2",
+          title: "Storefront refresh",
+          href: "/projects",
+          category: "commercial",
+          categoryLabel: "Commercial",
+          location: "",
+          image: {
+            src: demoPhoto2,
+            alt: "A refreshed storefront with new signage",
+            width: demoPhoto2.width,
+            height: demoPhoto2.height,
+            position: "center",
+          },
+        }}
+      />
+    </Grid>
+  </Section>
+
+  <Section theme="light" id="project-browser">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">ProjectBrowser</Heading>
+      <Heading tag="h2">Search and filter projects, as on /projects</Heading>
+      <Text muted
+        >Only categories that at least one project uses appear in the select.
+        Try searching for "Decatur".</Text
+      >
+    </Layout>
+    <ProjectBrowser projects={demoProjects} categories={PROJECT_CATEGORIES} />
+  </Section>
+
+  <Section theme="light" id="gallery-browser">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">GalleryBrowser</Heading>
+      <Heading tag="h2"
+        >Filter chips, square tiles and a lightbox, as on /gallery</Heading
+      >
+      <Text muted
+        >Captions combine the category, location and linked project, leaving out
+        whatever is missing.</Text
+      >
+    </Layout>
+    <GalleryBrowser items={demoGallery} categories={PROJECT_CATEGORIES} />
   </Section>
 
   <!-- ============================================================

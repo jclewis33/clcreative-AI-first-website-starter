@@ -1,0 +1,95 @@
+---
+/**
+ * /projects — every Sanity `project`, searchable and filterable by type.
+ * Prerendered at build time; publishing in the Studio triggers a rebuild.
+ */
+import "@/styles/pages/projects.css";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Button from "@/components/ui/Button.astro";
+import Visual from "@/components/ui/Visual.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import ProjectBrowser from "@/components/ui/ProjectBrowser.astro";
+import CTASection from "@/components/sections/CTASection.astro";
+import { PROJECT_CATEGORIES } from "@/config/projects";
+import { SITE } from "@/config/site";
+import { getPage } from "@/data/site-structure";
+import { toProjectCards, sanityPhoto } from "@/lib/projects";
+import { photoAlt } from "@/lib/project-format";
+import { loadProjects, loadGallery } from "@/sanity/lib/page-data";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+
+const draft = getDraftModeProps(Astro);
+const [projectRows, galleryRows] = await Promise.all([
+  loadProjects(draft),
+  loadGallery(draft),
+]);
+const projects = toProjectCards(projectRows);
+const thumbs = galleryRows
+  .slice(0, 3)
+  .map((item) =>
+    sanityPhoto(
+      item.image,
+      photoAlt(item.imageAlt, item.caption ?? "Gallery photo"),
+      item.imageMeta,
+      240,
+    ),
+  )
+  .filter((p) => p !== undefined);
+---
+
+<BaseLayout
+  title={`Projects | ${SITE.name}`}
+  description={getPage("/projects")?.desc}
+  canonical={`${SITE.url}/projects`}
+>
+  <Section gap={7} class="u-hero-fade">
+    <SectionHeader
+      eyebrow="Our work"
+      heading="Projects"
+      tag="h1"
+      size="display-xl"
+      intro="A look at recent work. Pick a type of project or search by location to find work like yours."
+    />
+    {
+      projects.length > 0 ? (
+        <ProjectBrowser projects={projects} categories={PROJECT_CATEGORIES} />
+      ) : (
+        <Text muted>New projects are on the way. Check back soon.</Text>
+      )
+    }
+  </Section>
+
+  <Section render={thumbs.length > 0}>
+    <div class="projects-gallery_wrap" data-fade-up data-prevent-flicker="true">
+      <div class="projects-gallery_thumbs" aria-hidden="true">
+        {
+          thumbs.map((thumb) => (
+            <Visual
+              src={thumb.src}
+              alt={thumb.alt}
+              width={thumb.width}
+              height={thumb.height}
+              position={thumb.position}
+              ratio="square"
+              class="projects-gallery_thumb"
+            />
+          ))
+        }
+      </div>
+      <div class="projects-gallery_text u-margin-trim">
+        <Heading tag="h2" variant="h3" marginBottom={1}>
+          More photos from the field
+        </Heading>
+        <Text muted>Photos from recent work.</Text>
+      </div>
+      <Button href="/gallery" class="projects-gallery_button"
+        >View the gallery</Button
+      >
+    </div>
+  </Section>
+
+  <CTASection />
+</BaseLayout>

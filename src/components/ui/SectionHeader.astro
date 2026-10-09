@@ -1,0 +1,124 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+
+/**
+ * SectionHeader — the heading row that opens most sections: an eyebrow and a
+ * heading on the left, and optionally a short intro (or an action button, via
+ * the `action` slot) on the right, bottom-aligned. With neither, it is a plain
+ * eyebrow + heading stack.
+ *
+ * Built on `<Layout>`, so it collapses to one column on narrow containers.
+ *
+ * @example
+ * <SectionHeader eyebrow="What we repair" heading="The damage we repair" intro="Every job is different…" />
+ * @example With an action instead of an intro
+ * <SectionHeader heading="Other ways we help">
+ *   <Button slot="action" variant="secondary" href="/#services">All services</Button>
+ * </SectionHeader>
+ */
+
+type HeadingTag = "h1" | "h2" | "h3";
+type HeadingSize = "display-xl" | "display-lg" | "h1" | "h2" | "h3";
+
+export interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **SectionHeader** — eyebrow + heading, with an optional right-hand
+   * `intro` paragraph or `action` slot. `tag` is the heading level (default
+   * h2); `size` its visual tier (default h1 — the design's section heading).
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small red label above the heading. */
+  eyebrow?: string;
+
+  /** The heading text. */
+  heading: string;
+
+  /** Right-hand paragraph (bottom-aligned with the heading). */
+  intro?: string;
+
+  /** Heading level. @default "h2" */
+  tag?: HeadingTag;
+
+  /** Heading visual size. @default "h1" */
+  size?: HeadingSize;
+
+  /** Extra classes on the layout. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  intro,
+  tag = "h2",
+  size = "h1",
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV) {
+  if (!heading)
+    console.warn(
+      "[SectionHeader] `heading` is required; nothing renders without it.",
+    );
+  if (!["h1", "h2", "h3"].includes(tag))
+    console.warn(`[SectionHeader] Unknown tag "${tag}". Use h1, h2 or h3.`);
+  if (!["display-xl", "display-lg", "h1", "h2", "h3"].includes(size))
+    console.warn(`[SectionHeader] Unknown size "${size}".`);
+}
+
+const hasAction = Astro.slots.has("action");
+const split = Boolean(intro) || hasAction;
+---
+
+{
+  render &&
+    heading &&
+    (split ? (
+      <Layout
+        ratio="7-5"
+        verticalAlign="end"
+        rowGap={3}
+        class:list={["section-header_wrap", className]}
+        {...rest}
+      >
+        {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+        <Heading tag={tag} variant={size} maxWidth="40rem">
+          {heading}
+        </Heading>
+        <div slot="column2" class="section-header_aside">
+          {intro && <Text muted>{intro}</Text>}
+          <slot name="action" />
+        </div>
+      </Layout>
+    ) : (
+      <Layout
+        variant="stack"
+        class:list={["section-header_wrap", className]}
+        {...rest}
+      >
+        {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+        <Heading tag={tag} variant={size}>
+          {heading}
+        </Heading>
+      </Layout>
+    ))
+}
+
+<style is:global>
+  @layer components {
+    .section-header_aside {
+      justify-self: var(--start-medium, end);
+      max-width: 34rem;
+    }
+  }
+</style>

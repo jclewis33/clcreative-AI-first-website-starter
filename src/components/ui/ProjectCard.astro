@@ -1,0 +1,167 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Card from "@/components/ui/Card.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import type { ProjectCardData } from "@/lib/projects";
+
+/**
+ * ProjectCard — a project tile built on `<Card>`: photo with a category badge,
+ * title, the location line (as the editor wrote it), and "View project →". The whole
+ * card is one link.
+ *
+ * Takes the view model from `toProjectCard()` in src/lib/projects.ts, so it
+ * never sees raw Sanity shapes.
+ *
+ * `compact` drops the category badge and the "View project" line (the
+ * homepage strip under the before/after slider).
+ *
+ * @example
+ * <ProjectCard project={toProjectCard(row)} />
+ */
+/* The HTML `title` attribute is omitted: Card owns a `title` prop. */
+export interface Props extends Omit<HTMLAttributes<"div">, "title"> {
+  /**
+   * **ProjectCard** — a linked project tile. `project` is a
+   * `ProjectCardData` from `toProjectCard()`. `compact` for the slimmer
+   * homepage version.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The card data (from `toProjectCard()`). */
+  project: ProjectCardData;
+
+  /** Slim version: no badge, no "View project" line, no card surface. @default false */
+  compact?: boolean;
+
+  /** Heading level for the title. @default "h3" */
+  headingTag?: "h2" | "h3";
+
+  /** Extra classes on the card. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  project,
+  compact = false,
+  headingTag = "h3",
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && !project) {
+  console.warn(
+    "[ProjectCard] `project` is required; nothing renders without it.",
+  );
+}
+---
+
+{
+  render && project && (
+    <Card
+      href={project.href}
+      class:list={["project-card_wrap", compact && "is-compact", className]}
+      data-category={project.category}
+      {...rest}
+    >
+      <Fragment slot="visual">
+        {project.image && (
+          <Visual
+            src={project.image.src}
+            alt={project.image.alt}
+            width={project.image.width}
+            height={project.image.height}
+            position={project.image.position}
+            sizes="(min-width: 58em) 26rem, (min-width: 35em) 45vw, 90vw"
+          />
+        )}
+        {!compact && project.categoryLabel && (
+          <span class="project-card_badge">{project.categoryLabel}</span>
+        )}
+      </Fragment>
+      <Heading
+        slot="title"
+        tag={headingTag}
+        variant="h5"
+        class="project-card_title"
+      >
+        {project.title}
+      </Heading>
+      {project.location && (
+        <Text variant="small" muted>
+          {project.location}
+        </Text>
+      )}
+      {!compact && (
+        <span slot="footer" class="project-card_cta">
+          View project <span aria-hidden="true">→</span>
+        </span>
+      )}
+    </Card>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* [data-card-variant] lifts this over Card's own 16/9 variant rule. */
+    .project-card_wrap[data-card-variant] .card_primary_visual {
+      position: relative;
+      aspect-ratio: 41 / 28;
+    }
+
+    .project-card_wrap .card_primary_footer {
+      padding-top: var(--space-2);
+    }
+
+    .project-card_wrap .project-card_title {
+      margin-bottom: var(--space-1);
+    }
+
+    .project-card_badge {
+      position: absolute;
+      top: var(--space-3);
+      z-index: 1;
+      padding: 0.45em 0.9em;
+      border-radius: var(--radius-full);
+      font-size: var(--text-tiny-size);
+      font-weight: 700;
+      letter-spacing: var(--eyebrow-letter-spacing);
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .project-card_badge {
+      left: var(--space-3);
+      background-color: var(--background-2);
+      color: var(--text);
+    }
+
+    .project-card_cta {
+      color: var(--heading-accent);
+      font-size: var(--text-small-size);
+      font-weight: 600;
+    }
+
+    /* Compact: photo + caption, no card surface */
+    .project-card_wrap.is-compact .card_primary_element {
+      background-color: transparent;
+      border-radius: 0;
+      overflow: visible;
+    }
+
+    .project-card_wrap.is-compact[data-card-variant] .card_primary_visual {
+      aspect-ratio: 41 / 22;
+      border-radius: var(--radius-main);
+    }
+
+    .project-card_wrap.is-compact .card_primary_content {
+      padding: var(--space-3) 0 0;
+    }
+  }
+</style>

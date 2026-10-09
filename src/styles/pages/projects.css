@@ -1,0 +1,165 @@
+/* Page-specific styles for /projects and /projects/[slug].
+   Wrapped in the `pages` layer — declared in-file because this stylesheet is
+   pulled in by an ESM `import`, which cannot carry a layer(). */
+@layer pages {
+  /* ==========================================================================
+     /projects — "More photos from the field" strip
+     ========================================================================== */
+
+  .projects-gallery_wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-5);
+  }
+
+  .projects-gallery_thumbs {
+    display: flex;
+    gap: var(--space-2);
+    flex-shrink: 0;
+  }
+
+  .projects-gallery_thumb {
+    width: 6rem;
+    border-radius: var(--radius-large);
+  }
+
+  .projects-gallery_text {
+    flex: 1 1 18rem;
+    min-width: 0;
+  }
+
+  .projects-gallery_button {
+    flex-shrink: 0;
+  }
+}
+
+@layer pages {
+  /* ==========================================================================
+     /projects/[slug] — project detail
+     ========================================================================== */
+
+  .project-hero_head {
+    max-width: 56rem;
+  }
+
+  /* Category pill, with room before the title */
+  .project-hero_tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+  }
+
+  .project-hero_badge {
+    padding: 0.5em 1em;
+    border: var(--border-width-main) solid var(--border);
+    border-radius: var(--radius-full);
+    background-color: var(--background-2);
+    font-size: var(--text-tiny-size);
+    font-weight: 700;
+    letter-spacing: var(--eyebrow-letter-spacing);
+    text-transform: uppercase;
+  }
+
+  .project-hero_img {
+    border-radius: calc(var(--radius-main) + 0.25rem);
+  }
+
+  /* Facts — side by side in one row, label over value, between hairlines */
+  .project-facts_list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-7);
+    margin: 0;
+    padding-block: var(--space-4);
+    border-block: var(--border-width-main) solid var(--border);
+  }
+
+  .project-facts_item {
+    min-width: 0;
+  }
+
+  .project-facts_label {
+    font-size: var(--text-tiny-size);
+    font-weight: 700;
+    letter-spacing: var(--eyebrow-letter-spacing);
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--text) 65%, transparent);
+  }
+
+  .project-facts_value {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .project-facts_value a {
+    color: var(--heading-accent);
+    text-decoration: none;
+  }
+
+  /* Photos — each one a button that opens the lightbox; label pill over
+     the corner */
+  .project-photo_wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-main);
+    background: none;
+    overflow: clip;
+    cursor: zoom-in;
+    text-align: left;
+  }
+
+  .project-photo_wrap .u-image-wrapper {
+    border-radius: var(--radius-main);
+  }
+
+  .project-photo_wrap .u-image {
+    transition: scale 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .project-photo_wrap:focus-visible {
+    outline: var(--border-width-main) solid var(--color-focus-state);
+    outline-offset: 0.25rem;
+  }
+
+  .project-photo_label {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    padding: 0.45em 0.9em;
+    border-radius: var(--radius-full);
+    background-color: var(--text);
+    color: var(--background);
+    font-size: var(--text-tiny-size);
+    font-weight: 700;
+    letter-spacing: var(--eyebrow-letter-spacing);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .project-photo_label.is-after {
+    background-color: var(--background);
+    color: var(--text);
+  }
+
+  @media (hover: hover) {
+    .project-photo_wrap:hover .u-image {
+      scale: 1.04;
+    }
+
+    .project-facts_value a:hover {
+      text-decoration: underline;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-photo_wrap .u-image {
+      transition: none;
+    }
+  }
+}

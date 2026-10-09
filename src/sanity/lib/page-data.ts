@@ -37,6 +37,12 @@ import {
   GLOSSARY_TERMS_QUERY,
   GLOSSARY_SLUGS_QUERY,
   SITE_SETTINGS_QUERY,
+  PROJECT_QUERY,
+  PROJECT_SLUGS_QUERY,
+  RELATED_PROJECTS_QUERY,
+  PROJECTS_QUERY,
+  FEATURED_PROJECTS_QUERY,
+  GALLERY_QUERY,
 } from "./queries";
 import { SANITY_PROJECT_ID } from "@/config/site.shared.mjs";
 import type { RELATED_BLOG_POSTS_QUERY_RESULT } from "@/sanity/sanity.types";
@@ -160,6 +166,40 @@ export async function loadGlossaryTermPage(
   };
 }
 
+/* ── Project ───────────────────────────────────────────────────────────────── */
+
+/**
+ * Project detail page: the project, up to three "More projects" cards (same
+ * category first, filtered in GROQ), and the site-wide default CTA section.
+ * Returns null when not found.
+ */
+export async function loadProjectPage(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
+  const { data: project } = await loadQuery({
+    query: PROJECT_QUERY,
+    params: { slug },
+    ...draftProps,
+  });
+  if (!project) return null;
+
+  const [{ data: related }, { data: settings }] = await Promise.all([
+    loadQuery({
+      query: RELATED_PROJECTS_QUERY,
+      params: { slug, category: project.category ?? "" },
+      ...draftProps,
+    }),
+    loadQuery({ query: SITE_SETTINGS_QUERY, ...draftProps }),
+  ]);
+
+  return {
+    project,
+    relatedProjects: (related ?? []).slice(0, 3),
+    defaultCtaSection: settings?.defaultCtaSection ?? null,
+  };
+}
+
 /* ── getStaticPaths helpers ────────────────────────────────────────────────── */
 
 /** URL slug for a category display name — keep in sync with the category
@@ -251,6 +291,14 @@ export async function getBlogPostStaticPaths() {
   return (slugs ?? []).map((slug) => ({ params: { slug } }));
 }
 
+export async function getProjectStaticPaths() {
+  const slugs = await fetchStaticPathList<string>(
+    PROJECT_SLUGS_QUERY,
+    "project",
+  );
+  return (slugs ?? []).map((slug) => ({ params: { slug } }));
+}
+
 export async function getCaseStudyStaticPaths() {
   const slugs = await fetchStaticPathList<string>(
     CASE_STUDY_SLUGS_QUERY,
@@ -290,4 +338,43 @@ export async function getBlogCategoryStaticPaths() {
     paths.push({ params: { category: slug }, props: { categoryName: name } });
   }
   return paths;
+}
+
+/* ── Project + gallery listings ────────────────────────────────────────────── */
+
+/*
+ * Listing helpers for the prerendered /projects and /gallery pages and any
+ * featured-projects strip. Build-safe via loadPageQuery: empty array on a fresh fork,
+ * loud failure on a real project. Pass getDraftModeProps(Astro) when the
+ * caller may run under /preview.
+ */
+
+/** Every project in card shape, newest first. */
+export function loadProjects(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: PROJECTS_QUERY,
+    draftProps,
+    fallback: [],
+    label: "projects",
+  });
+}
+
+/** Up to three projects marked Featured, newest first. */
+export function loadFeaturedProjects(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: FEATURED_PROJECTS_QUERY,
+    draftProps,
+    fallback: [],
+    label: "featured projects",
+  });
+}
+
+/** Every gallery photo, newest first. */
+export function loadGallery(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: GALLERY_QUERY,
+    draftProps,
+    fallback: [],
+    label: "gallery",
+  });
 }

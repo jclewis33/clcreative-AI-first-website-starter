@@ -90,8 +90,13 @@ export const BLOG_POST_QUERY =
           _type,
           "slug": slug.current,
           "title": coalesce(title, term),
-          "description": coalesce(description, shortDefinition),
-          image
+          // A project's description is rich text — use its SEO line and
+          // hero photo so the link card stays a plain string + image.
+          "description": select(
+            _type == "project" => seoDescription,
+            coalesce(description, shortDefinition)
+          ),
+          "image": select(_type == "project" => heroImage, image)
         }
       }
     }
@@ -352,8 +357,13 @@ export const GLOSSARY_TERM_QUERY =
           _type,
           "slug": slug.current,
           "title": coalesce(title, term),
-          "description": coalesce(description, shortDefinition),
-          image
+          // A project's description is rich text — use its SEO line and
+          // hero photo so the link card stays a plain string + image.
+          "description": select(
+            _type == "project" => seoDescription,
+            coalesce(description, shortDefinition)
+          ),
+          "image": select(_type == "project" => heroImage, image)
         }
       }
     }
@@ -418,4 +428,96 @@ export const FEATURED_CASE_STUDIES_QUERY =
   description,
   image,
   "imageAlt": coalesce(imageAlt, image.asset->altText, "")
+}`);
+
+/* ── Projects ─────────────────────────────────────────────────────────────── */
+
+/**
+ * Card fields for a project — shared by the listing, featured, and related
+ * queries so every project card receives the same shape. `heroImage` is left
+ * as the raw image object (asset ref + hotspot + crop) for `urlFor()` /
+ * `hotspotPosition()` in ./image.ts; `heroImageMeta` carries the intrinsic
+ * dimensions and LQIP for width/height attributes and placeholders.
+ */
+const PROJECT_CARD_PROJECTION = `{
+  _id,
+  title,
+  "slug": slug.current,
+  category,
+  location,
+  heroImage,
+  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),
+  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },
+  featured,
+  completed
+}`;
+
+/** All projects for the /projects listing, newest first. */
+export const PROJECTS_QUERY = defineQuery(`*[_type == "project"]
+  | order(completed desc, _createdAt desc) ${PROJECT_CARD_PROJECTION}`);
+
+/** All project slugs for getStaticPaths. */
+export const PROJECT_SLUGS_QUERY = defineQuery(
+  `*[_type == "project" && defined(slug.current)].slug.current`,
+);
+
+/** Single project by slug, with every field the detail page renders. */
+export const PROJECT_QUERY =
+  defineQuery(`*[_type == "project" && slug.current == $slug][0] {
+  _id,
+  _updatedAt,
+  title,
+  "slug": slug.current,
+  category,
+  location,
+  service,
+  completed,
+  featured,
+  heroImage,
+  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),
+  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },
+  photos[] {
+    _key,
+    asset,
+    hotspot,
+    crop,
+    label,
+    "alt": coalesce(alt, asset->altText, ""),
+    "meta": asset->metadata{ dimensions, lqip }
+  },
+  description,
+  quote { text, name },
+  seoDescription
+}`);
+
+/**
+ * "More projects" for a project detail page, filtered in GROQ: every other
+ * project, same category first, then newest. `[0...4]` is a one-card buffer
+ * over the 3-card slot. Pass `$category` from the loaded project.
+ */
+export const RELATED_PROJECTS_QUERY = defineQuery(`*[
+  _type == "project"
+  && defined(slug.current)
+  && slug.current != $slug
+] | order((category == $category) desc, completed desc, _createdAt desc) [0...4] ${PROJECT_CARD_PROJECTION}`);
+
+/** Projects flagged Featured (up to three), newest first. */
+export const FEATURED_PROJECTS_QUERY = defineQuery(`*[
+  _type == "project" && featured == true
+] | order(completed desc, _createdAt desc) [0...3] ${PROJECT_CARD_PROJECTION}`);
+
+/* ── Gallery ──────────────────────────────────────────────────────────────── */
+
+/** Every gallery photo, newest first. Image raw (hotspot/crop) for urlFor. */
+export const GALLERY_QUERY = defineQuery(`*[_type == "galleryItem"]
+  | order(added desc, _createdAt desc) {
+  _id,
+  image,
+  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),
+  "imageMeta": image.asset->metadata{ dimensions, lqip },
+  caption,
+  category,
+  location,
+  added,
+  "project": project->{ title, "slug": slug.current }
 }`);
