@@ -1,0 +1,84 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Visual from "@/components/ui/Visual.astro";
+
+type PhotoBandFocus = { x: number; y: number };
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **PhotoBand** — a full-width photo strip that breaks up a long page.
+   * Edge to edge, no padding, a fixed fluid height.
+   *
+   * @example
+   * <PhotoBand image={crew} alt="Our crew framing a new addition" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The photo (imported image or URL). Required. */
+  image: ImageMetadata | string;
+
+  /** Real alt text for the photo. Required. */
+  alt: string;
+
+  /** Focal point, as percentages. */
+  position?: PhotoBandFocus;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  image,
+  alt,
+  position,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!image) console.warn("[PhotoBand] `image` is required; nothing renders.");
+  if (!alt) console.warn("[PhotoBand] Give the photo real alt text (`alt`).");
+}
+---
+
+{
+  render && image && (
+    <Section
+      padding="none"
+      container="full"
+      id={id}
+      class:list={["photo-band_wrap", className]}
+      {...rest}
+    >
+      <div class="photo-band_frame">
+        <Visual
+          src={image}
+          alt={alt || "Photo"}
+          variant="background"
+          position={position}
+        />
+      </div>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .photo-band_frame {
+      position: relative;
+      block-size: clamp(11rem, 26vw, 24rem);
+      overflow: hidden;
+    }
+  }
+</style>

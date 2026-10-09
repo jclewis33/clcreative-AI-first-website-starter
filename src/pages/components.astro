@@ -85,6 +85,10 @@ import ServiceIcon, {
   type ServiceIconName,
 } from "@/components/ui/ServiceIcon.astro";
 import serviceIcons from "@/data/service-icons.json";
+import Hero from "@/components/sections/Hero.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import PhotoBand from "@/components/sections/PhotoBand.astro";
+import demoPhoto5 from "@/assets/placeholder-images/ai-first-starter-5.webp";
 import { PROJECT_CATEGORIES } from "@/config/projects";
 import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
 import demoPhoto2 from "@/assets/placeholder-images/ai-first-starter-2.webp";
@@ -197,6 +201,11 @@ const COMPONENT_INDEX = [
   { slug: "cta-button", text: "CtaButton & LeadFormModal" },
   { slug: "image-pair", text: "ImagePair" },
   { slug: "service-icon", text: "ServiceIcon" },
+  { slug: "hero-background", text: "Hero (background)" },
+  { slug: "hero-split", text: "Hero (split)" },
+  { slug: "hero-text", text: "Hero (text)" },
+  { slug: "stats-strip", text: "StatsStrip" },
+  { slug: "photo-band", text: "PhotoBand" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -2303,6 +2312,89 @@ const demoGallery = [
       }
     </div>
   </Section>
+
+  {
+    /* ================================================================
+    LOCAL-SERVICE SECTIONS — each renders its own <Section>
+    ================================================================ */
+  }
+  <Section theme="light" padding="small" id="hero-background">
+    <Heading variant="eyebrow">Hero — background</Heading>
+    <Heading tag="h2"
+      >Photo behind the text, call button from SITE.phone</Heading
+    >
+  </Section>
+  <Hero
+    eyebrow="Kitchen, bath and whole-home remodeling"
+    heading="Remodels done <strong>right the first time</strong>, on schedule and on budget"
+    text="One local crew from the first visit to the final walkthrough."
+    image={demoPhoto5}
+    imageAlt="A bright remodeled living space with large windows"
+    primaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
+    proof={{ rating: 5, text: "Rated 4.9 by local homeowners" }}
+  />
+
+  <Section theme="light" padding="small" id="hero-split">
+    <Heading variant="eyebrow">Hero — split</Heading>
+    <Heading tag="h2"
+      >Text left, photo right, with breadcrumbs and a badge</Heading
+    >
+  </Section>
+  <Hero
+    variant="split"
+    breadcrumbs={[
+      { label: "Home", href: "/" },
+      { label: "Services", href: "/contact" },
+      { label: "Kitchen remodeling" },
+    ]}
+    eyebrow="Kitchen remodeling"
+    heading="A kitchen built around <strong>how you cook</strong>"
+    text="Layout, cabinets, counters and lighting, planned and built by one team."
+    image={demoPhoto1}
+    imageAlt="A remodeled kitchen with an island and pendant lights"
+    primaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
+    badge={{ value: "Since 2009", label: "Family owned" }}
+  />
+
+  <Section theme="light" padding="small" id="hero-text">
+    <Heading variant="eyebrow">Hero — text</Heading>
+    <Heading tag="h2">No photo, for contact and simple pages</Heading>
+  </Section>
+  <Hero
+    eyebrow="Contact"
+    heading="Talk to a real person <strong>today</strong>"
+    text="Call, or send the form and we'll call you back."
+    primaryCta={{ label: "Send a message", href: "#lead-form" }}
+  />
+
+  <Section theme="light" padding="small" id="stats-strip">
+    <Heading variant="eyebrow">StatsStrip</Heading>
+    <Heading tag="h2">Proof points as numbers or as words</Heading>
+  </Section>
+  <StatsStrip
+    items={[
+      { value: "15+", label: "Years in business" },
+      { value: "4.9", label: "Average rating" },
+      { value: "1,200", label: "Projects finished" },
+      { value: "100%", label: "Licensed and insured" },
+    ]}
+  />
+  <StatsStrip
+    valueSize="word"
+    theme="light"
+    items={[
+      { value: "Licensed", label: "And fully insured" },
+      { value: "Same week", label: "Estimates" },
+      { value: "Fixed price", label: "No surprises" },
+      { value: "Local", label: "Crews you'll see again" },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="photo-band">
+    <Heading variant="eyebrow">PhotoBand</Heading>
+    <Heading tag="h2">A full-width photo strip</Heading>
+  </Section>
+  <PhotoBand image={demoPhoto3} alt="A crew at work on a finished exterior" />
 
   <!-- ============================================================
        9. MODALS
