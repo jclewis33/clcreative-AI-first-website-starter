@@ -391,11 +391,11 @@ route exists), **then the Studio**.
 
 ## Required env vars
 
-| Name                       | Where                                          | Purpose                                                                                            |
-| -------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `PUBLIC_SANITY_PROJECT_ID` | `wrangler.jsonc` `vars` + local `.env`         | Sanity project                                                                                     |
-| `PUBLIC_SANITY_DATASET`    | `wrangler.jsonc` `vars` + local `.env`         | Dataset name                                                                                       |
-| `SANITY_API_READ_TOKEN`    | Cloudflare **encrypted secret** + local `.env` | Viewer token — validates preview secrets, authenticates draft fetches. Never a plain wrangler var. |
+| Name                       | Where                                          | Purpose                                                                                                                                                                                                                                                                                  |
+| -------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_SANITY_PROJECT_ID` | `wrangler.jsonc` `vars` + local `.env`         | Sanity project                                                                                                                                                                                                                                                                           |
+| `PUBLIC_SANITY_DATASET`    | `wrangler.jsonc` `vars` + local `.env`         | Dataset name                                                                                                                                                                                                                                                                             |
+| `SANITY_API_READ_TOKEN`    | Cloudflare **encrypted secret** + local `.env` | Viewer token — validates preview secrets, authenticates draft fetches. Never a plain wrangler var. Read at **runtime** with `getSecret()` from `astro:env/server` (load-query.ts, draft-mode/enable.ts) — `import.meta.env` is baked in at build, when the Worker secret does not exist. |
 
 The Sanity project needs `https://www.example.com` (and
 `http://localhost:4321` for dev) as CORS origins with **Allow credentials**.
