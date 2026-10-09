@@ -1,0 +1,109 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type CallBandTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **CallBand** — a dark closing band: a heading on the left, the
+   * `SITE.phone` call button and a second button on the right. A lighter
+   * alternative to CTASection for the bottom of service and project pages.
+   *
+   * - `heading` (HTML allowed; `<strong>` = accent), `text`
+   * - `secondaryCta` — default `{ label: "Contact us", href: "/contact" }`;
+   *   pass `{ label, modal }` to open the estimate form instead
+   *
+   * @example
+   * <CallBand heading="Ready to start?" secondaryCta={{ label: "Get an estimate", modal: "estimate-modal" }} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Band heading. Required. */
+  heading: string;
+
+  /** Supporting line. */
+  text?: string;
+
+  /** The second button. @default { label: "Contact us", href: "/contact" } */
+  secondaryCta?: SectionCta;
+
+  /** Section theme. @default 'dark' */
+  theme?: CallBandTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  heading,
+  text,
+  secondaryCta = { label: "Contact us", href: "/contact" },
+  theme = "dark",
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !heading) {
+  console.warn("[CallBand] `heading` is required; nothing renders.");
+}
+---
+
+{
+  render && heading && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["call-band_wrap", className]}
+      {...rest}
+    >
+      <Layout ratio="7-5" verticalAlign="center">
+        <Heading tag="h2" variant="h1" accent>
+          <Fragment set:html={heading} />
+        </Heading>
+        {text && <Text muted>{text}</Text>}
+        <div slot="column2" class="call-band_actions">
+          <CtaButton phone fullWidth size="large" />
+          <CtaButton
+            cta={secondaryCta}
+            variant="secondary"
+            fullWidth
+            size="large"
+          />
+        </div>
+      </Layout>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .call-band_actions {
+      display: grid;
+      gap: var(--space-3);
+      width: 100%;
+      max-width: 22rem;
+      justify-self: var(--start-medium, end);
+    }
+  }
+</style>

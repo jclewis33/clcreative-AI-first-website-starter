@@ -1,0 +1,84 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import ICONS from "@/data/service-icons.json";
+
+/** Every icon in src/data/service-icons.json — add one there and it appears here. */
+export type ServiceIconName = keyof typeof ICONS;
+
+/**
+ * ServiceIcon — one of the 24×24 stroke icons from src/data/service-icons.json,
+ * sitting in a small rounded tile (the "what we repair" card icon).
+ *
+ * The icon paths are data, so adding an icon is one JSON edit — the
+ * `ServiceIconName` type is derived from the file's keys. Decorative: the tile is
+ * `aria-hidden`, because the card title beside it carries the meaning.
+ *
+ * @example
+ * <ServiceIcon name="kitchen" />
+ */
+export interface Props extends HTMLAttributes<"span"> {
+  /**
+   * **ServiceIcon** — a stroke icon in a rounded tile. `name` picks the icon
+   * from src/data/service-icons.json; the tile takes the card's
+   * `--background-2` surface flipped to `--background`.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Which icon to draw. Unknown names render nothing (with a dev warning). */
+  name: ServiceIconName;
+
+  /** Extra classes on the tile. */
+  class?: string;
+}
+
+const { docs, render = true, name, class: className, ...rest } = Astro.props;
+
+const paths = (ICONS as Record<string, string>)[name];
+if (!paths && render && import.meta.env.DEV) {
+  console.warn(
+    `[ServiceIcon] Unknown icon "${name}". Available: ${Object.keys(ICONS).join(", ")}.`,
+  );
+}
+---
+
+{
+  render && paths && (
+    <span
+      class:list={["service-icon_wrap", className]}
+      aria-hidden="true"
+      {...rest}
+    >
+      <svg class="service-icon_svg" viewBox="0 0 24 24" fill="none">
+        <Fragment set:html={paths} />
+      </svg>
+    </span>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .service-icon_wrap {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      width: 3.25rem;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-xlarge);
+      background-color: var(--background);
+      color: var(--heading-accent);
+    }
+
+    .service-icon_svg {
+      width: 1.5rem;
+      aspect-ratio: 1 / 1;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+</style>

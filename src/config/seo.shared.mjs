@@ -21,7 +21,11 @@
  */
 
 /** Pages that exist only for local development; stripped from the build. */
-export const DEV_ONLY_PATHS = ["/style-guide", "/components"];
+export const DEV_ONLY_PATHS = [
+  "/style-guide",
+  "/components",
+  "/demo/local-service",
+];
 
 /**
  * Whole path segments: matches `/x` and `/x/...`, never `/blog/x-something`.

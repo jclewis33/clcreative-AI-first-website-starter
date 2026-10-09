@@ -1,0 +1,19 @@
+/* Demo-only layout for /components (dev-only page). */
+@layer pages {
+  .service-icon-demo_list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 7rem), 1fr));
+    gap: var(--space-5);
+  }
+
+  .service-icon-demo_item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .service-icon-demo_label {
+    font-size: var(--text-small-size);
+  }
+}

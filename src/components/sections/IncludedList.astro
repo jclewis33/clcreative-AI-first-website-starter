@@ -1,0 +1,113 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import CheckList from "@/components/ui/CheckList.astro";
+import ImagePair from "@/components/ui/ImagePair.astro";
+
+type IncludedImage = { src: ImageMetadata | string; alt: string };
+type IncludedListTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **IncludedList** — "what's included": a two-column checklist beside an
+   * offset pair of photos. Made for service pages.
+   *
+   * - `eyebrow`, `heading`, `text` — the intro
+   * - `items` — the checklist lines
+   * - `images` — two `{ src, alt }` photos (optional; without them the
+   *   checklist takes the full width)
+   *
+   * @example
+   * <IncludedList heading="What's included" items={["Permits", "Demolition", "Cabinets", "Cleanup"]} images={[a, b]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. Required. */
+  heading: string;
+
+  /** Intro paragraph. */
+  text?: string;
+
+  /** The checklist lines. Empty renders nothing. */
+  items: string[];
+
+  /** Two photos beside the list. */
+  images?: IncludedImage[];
+
+  /** Section theme. */
+  theme?: IncludedListTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  items = [],
+  images = [],
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!heading)
+    console.warn("[IncludedList] `heading` is required; nothing renders.");
+  if (!Astro.props.items?.length)
+    console.warn(
+      "[IncludedList] `items` is empty or missing; nothing renders.",
+    );
+}
+---
+
+{
+  render && heading && items.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["included-list_wrap", className]}
+      {...rest}
+    >
+      {images.length === 2 ? (
+        <Layout ratio="6-6" verticalAlign="center">
+          {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+          <Heading tag="h2">{heading}</Heading>
+          {text && <Text muted>{text}</Text>}
+          <CheckList items={items} columns={2} />
+          <ImagePair slot="column2" images={images} />
+        </Layout>
+      ) : (
+        <Layout variant="stack">
+          {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+          <Heading tag="h2">{heading}</Heading>
+          {text && <Text muted>{text}</Text>}
+          <CheckList items={items} columns={2} />
+        </Layout>
+      )}
+    </Section>
+  )
+}

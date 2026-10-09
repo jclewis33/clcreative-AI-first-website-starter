@@ -1,0 +1,109 @@
+---
+import type { ComponentProps } from "astro/types";
+import Button from "@/components/ui/Button.astro";
+import Icon from "@/components/ui/Icon.astro";
+import phoneIcon from "@/assets/icons/phone.svg";
+import type { SectionCta } from "@/lib/cta";
+import { SITE } from "@/config/site";
+
+/* Borrow Button's own option types so the two can never drift. */
+type CtaButtonVariant = ComponentProps<typeof Button>["variant"];
+type CtaButtonSize = ComponentProps<typeof Button>["size"];
+
+interface Props {
+  /**
+   * **CtaButton** — renders a section's `SectionCta` as a `<Button>`.
+   *
+   * - `cta` — `{ label, href?, modal? }`. With `modal`, the button opens the
+   *   `<Modal>` of that id (e.g. a `<LeadFormModal>`); otherwise it links to
+   *   `href`.
+   * - `phone` — ignore `cta` and render the click-to-call button from
+   *   `SITE.phone`, with a phone icon before the number.
+   * - `variant`, `size`, `fullWidth` — passed to `Button`.
+   *
+   * Renders nothing (with a dev warning) when neither `phone` nor a
+   * `cta.label` is given.
+   *
+   * @example
+   * <CtaButton cta={{ label: "Get an estimate", modal: "estimate-modal" }} />
+   * <CtaButton phone variant="secondary" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The CTA to render. Not needed when `phone` is set. */
+  cta?: SectionCta;
+
+  /** Render the click-to-call button from `SITE.phone` instead of `cta`. */
+  phone?: boolean;
+
+  /** Button style. @default 'primary' */
+  variant?: CtaButtonVariant;
+
+  /** Button size. @default 'default' */
+  size?: CtaButtonSize;
+
+  /** Stretch to the full width of the parent. @default false */
+  fullWidth?: boolean;
+
+  /** Extra classes on the button. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  cta,
+  phone = false,
+  variant,
+  size,
+  fullWidth,
+  class: className,
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !phone && !cta?.label) {
+  console.warn("[CtaButton] Needs `cta.label` (or `phone`); nothing renders.");
+}
+---
+
+{
+  render &&
+    (phone ? (
+      <Button
+        href={`tel:${SITE.phone.tel}`}
+        variant={variant}
+        size={size}
+        fullWidth={fullWidth}
+        iconPosition="start"
+        ariaLabel={`Call ${SITE.phone.display}`}
+        class={className}
+      >
+        {SITE.phone.display}
+        <Icon slot="icon" src={phoneIcon} variant="small" />
+      </Button>
+    ) : cta?.label && cta.modal ? (
+      <Button
+        variant={variant}
+        size={size}
+        fullWidth={fullWidth}
+        ariaLabel={cta.label}
+        data-modal-trigger={cta.modal}
+        class={className}
+      >
+        {cta.label}
+      </Button>
+    ) : cta?.label ? (
+      <Button
+        href={cta.href ?? "/contact"}
+        variant={variant}
+        size={size}
+        fullWidth={fullWidth}
+        ariaLabel={cta.label}
+        class={className}
+      >
+        {cta.label}
+      </Button>
+    ) : null)
+}

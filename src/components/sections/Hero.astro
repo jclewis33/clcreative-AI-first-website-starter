@@ -1,0 +1,337 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
+import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+import { SITE } from "@/config/site";
+
+type HeroVariant =
+  /** Photo fills the section behind the text, with a dark overlay */
+  | "background"
+  /** Text on the left, photo on the right */
+  | "split"
+  /** Text only — no photo */
+  | "text";
+type HeroTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+type HeroCrumb = { label: string; href?: string };
+type HeroProof = { rating?: number; text: string };
+type HeroBadge = { value: string; label: string };
+type HeroFocus = { x: number; y: number };
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **Hero** — the first section of a local-service page.
+   *
+   * - `variant` — `'background'` (photo behind the text), `'split'` (photo
+   *   on the right) or `'text'` (no photo). Defaults to `'background'` when
+   *   an `image` is given, else `'text'`.
+   * - `heading` — the H1; HTML allowed, `<strong>` marks the accent words
+   * - `primaryCta`, `secondaryCta` — `SectionCta` buttons (link or pop-up)
+   * - `showPhone` — the `SITE.phone` call button (default `true`)
+   * - `breadcrumbs` — trail above the eyebrow (also pass it to BaseLayout's
+   *   `breadcrumbs` prop so the schema matches)
+   * - `proof` — a trust line, with optional star rating
+   * - `badge` — a small card, e.g. `{ value: "Since 2009", label: "Family owned" }`.
+   *   Defaults to "Since {SITE.founded}" when `SITE.founded` is set; pass
+   *   `false` to hide it
+   *
+   * Renders nothing (with a dev warning) without a `heading`.
+   *
+   * @example
+   * <Hero
+   *   eyebrow="Kitchen and bath remodeling"
+   *   heading="Remodels done <strong>right</strong>, on schedule"
+   *   text="One local crew from design to the final walkthrough."
+   *   image={heroPhoto}
+   *   imageAlt="A finished kitchen with a large island"
+   *   primaryCta={{ label: "Get an estimate", modal: "estimate-modal" }}
+   * />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** The H1. HTML allowed; wrap accent words in `<strong>`. Required. */
+  heading: string;
+
+  /** Supporting paragraph under the heading. */
+  text?: string;
+
+  /** Hero photo (imported image or URL). Needed for `background` and `split`. */
+  image?: ImageMetadata | string;
+
+  /** Alt text for the photo. */
+  imageAlt?: string;
+
+  /** Focal point of the photo, as percentages. */
+  imagePosition?: HeroFocus;
+
+  /** Layout. @default 'background' with an image, else 'text' */
+  variant?: HeroVariant;
+
+  /** Main button — links, or opens a modal (e.g. the estimate form). */
+  primaryCta?: SectionCta;
+
+  /** Show the `SITE.phone` call button. @default true */
+  showPhone?: boolean;
+
+  /** Optional third button. */
+  secondaryCta?: SectionCta;
+
+  /** Breadcrumb trail above the eyebrow (service and detail pages). */
+  breadcrumbs?: HeroCrumb[];
+
+  /** Trust line under the buttons. `rating` adds that many of 5 stars. */
+  proof?: HeroProof;
+
+  /**
+   * Small card, e.g. "Since 2009 / Family owned". Defaults to
+   * "Since {SITE.founded}" when that is set; `false` hides it.
+   */
+  badge?: HeroBadge | false;
+
+  /** Section theme. @default 'dark' for background, else inherit */
+  theme?: HeroTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section top padding. */
+  paddingTop?: PaddingSize;
+
+  /** Section bottom padding. */
+  paddingBottom?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  image,
+  imageAlt,
+  imagePosition,
+  variant: variantProp,
+  primaryCta,
+  showPhone = true,
+  secondaryCta,
+  breadcrumbs,
+  proof,
+  badge: badgeProp,
+  theme: themeProp,
+  padding,
+  paddingTop = padding,
+  paddingBottom = padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* SITE.founded supplies a default "Since …" badge; a page can override or
+   pass `badge={false}` to hide it. */
+const badge: HeroBadge | undefined =
+  badgeProp === false
+    ? undefined
+    : (badgeProp ??
+      (SITE.founded
+        ? { value: `Since ${SITE.founded}`, label: SITE.name }
+        : undefined));
+
+const variant: HeroVariant = variantProp ?? (image ? "background" : "text");
+const theme: HeroTheme =
+  themeProp ?? (variant === "background" ? "dark" : undefined);
+const hasPhoto = variant !== "text" && Boolean(image);
+/* Never alt="" (CLAUDE.md): fall back to the heading's plain text. */
+const photoAlt = imageAlt || heading?.replace(/<[^>]+>/g, "") || "";
+const stars = proof?.rating
+  ? Math.max(0, Math.min(5, Math.round(proof.rating)))
+  : 0;
+
+if (import.meta.env.DEV && render) {
+  if (!heading) console.warn("[Hero] `heading` is required; nothing renders.");
+  if (variantProp && !["background", "split", "text"].includes(variantProp))
+    console.warn(`[Hero] Unknown variant "${variantProp}".`);
+  if (variant !== "text" && !image)
+    console.warn(
+      `[Hero] variant "${variant}" needs an \`image\`; showing text only.`,
+    );
+  if (image && !imageAlt)
+    console.warn("[Hero] Give the photo real alt text (`imageAlt`).");
+}
+---
+
+{
+  render && heading && (
+    <Section
+      theme={theme}
+      minHeight={variant === "background" && hasPhoto}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      id={id}
+      class:list={["hero_wrap", `is-${hasPhoto ? variant : "text"}`, className]}
+      {...rest}
+    >
+      {variant === "background" && hasPhoto && (
+        <Fragment slot="background">
+          <Visual
+            src={image!}
+            alt={photoAlt}
+            variant="background"
+            position={imagePosition}
+            priority
+          />
+          <Overlay variant="gradient" strengthTop={55} strengthBottom={80} />
+        </Fragment>
+      )}
+
+      <Layout
+        variant={variant === "split" && hasPhoto ? "columns" : "stack"}
+        ratio="6-6"
+        verticalAlign="center"
+        class="hero_layout u-hero-fade"
+      >
+        {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} /> : null}
+        {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+        <Heading tag="h1" variant="display-lg" accent class="hero_title">
+          <Fragment set:html={heading} />
+        </Heading>
+        {text && (
+          <Text variant="large" class="hero_text">
+            {text}
+          </Text>
+        )}
+        {(primaryCta || showPhone || secondaryCta) && (
+          <ButtonWrapper>
+            {primaryCta && <CtaButton cta={primaryCta} size="large" />}
+            {showPhone && <CtaButton phone variant="secondary" size="large" />}
+            {secondaryCta && (
+              <CtaButton cta={secondaryCta} variant="text" size="large" />
+            )}
+          </ButtonWrapper>
+        )}
+        {proof?.text && (
+          <p class="hero_proof">
+            {stars > 0 && (
+              <span
+                class="hero_stars"
+                role="img"
+                aria-label={`${proof.rating} out of 5 stars`}
+              >
+                {"★".repeat(stars)}
+              </span>
+            )}
+            <span class="hero_proof_text">{proof.text}</span>
+          </p>
+        )}
+        {badge && variant !== "split" && (
+          <p class="hero_badge" data-theme-invert>
+            <span class="hero_badge_value">{badge.value}</span>
+            <span class="hero_badge_label">{badge.label}</span>
+          </p>
+        )}
+
+        {variant === "split" && hasPhoto && (
+          <div slot="column2" class="hero_media">
+            <Visual
+              src={image!}
+              alt={photoAlt}
+              ratio="landscape"
+              position={imagePosition}
+              priority
+            />
+            {badge && (
+              <p class="hero_badge is-floating" data-theme-invert>
+                <span class="hero_badge_value">{badge.value}</span>
+                <span class="hero_badge_label">{badge.label}</span>
+              </p>
+            )}
+          </div>
+        )}
+      </Layout>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .hero_wrap.is-background .hero_layout {
+      max-width: 48rem;
+    }
+
+    .hero_proof {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2);
+      /* Space it off the button row the way ButtonWrapper spaces itself
+         off the text above (top margin, --space-5). */
+      margin: var(--space-5) 0 0;
+      font-size: var(--text-small-size);
+    }
+
+    .hero_stars {
+      flex-shrink: 0;
+      color: var(--heading-accent);
+      letter-spacing: 0.1em;
+    }
+
+    .hero_proof_text {
+      min-width: 0;
+    }
+
+    .hero_media {
+      position: relative;
+    }
+
+    .hero_badge {
+      display: inline-flex;
+      flex-direction: column;
+      align-self: flex-start;
+      gap: var(--space-1);
+      margin: var(--space-5) 0 0;
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-main);
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    .hero_badge.is-floating {
+      margin: 0;
+      position: absolute;
+      inset-inline-start: var(--space-4);
+      inset-block-end: var(--space-4);
+    }
+
+    .hero_badge_value {
+      font-family: var(--font-primary);
+      font-size: var(--h4-size);
+      font-weight: 700;
+      line-height: 1;
+      color: var(--heading-accent);
+    }
+
+    .hero_badge_label {
+      font-size: var(--text-small-size);
+    }
+  }
+</style>

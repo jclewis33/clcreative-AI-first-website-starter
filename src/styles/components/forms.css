@@ -275,6 +275,16 @@
   color: var(--color-error-red);
 }
 
+/* An inverted (light) panel inside a dark or brand section — e.g. the
+   LeadFormSection form panel — reads as light, so it needs the light-theme
+   red back. Without this the asterisk turns near-white on a light panel. */
+[data-theme="dark"] [data-theme-invert] .form_required,
+[data-theme="brand"] [data-theme-invert] .form_required,
+.u-theme-dark [data-theme-invert] .form_required,
+.u-theme-brand [data-theme-invert] .form_required {
+  color: var(--color-error-red-dark);
+}
+
 /* ========= HELPER / ERROR TEXT ========= */
 
 .form_helper_text {
@@ -291,6 +301,13 @@
 
 [data-theme="dark"] .form_helper_text.is-error {
   color: var(--color-error-red);
+}
+
+[data-theme="dark"] [data-theme-invert] .form_helper_text.is-error,
+[data-theme="brand"] [data-theme-invert] .form_helper_text.is-error,
+.u-theme-dark [data-theme-invert] .form_helper_text.is-error,
+.u-theme-brand [data-theme-invert] .form_helper_text.is-error {
+  color: var(--color-error-red-dark);
 }
 
 /* ========= SELECT ========= */

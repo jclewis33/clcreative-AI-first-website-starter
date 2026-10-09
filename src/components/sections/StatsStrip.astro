@@ -1,0 +1,140 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+
+type StatsStripItem = { value: string; label: string };
+type StatsStripValueSize =
+  /** Big figures — "15+", "4.9", "2,400" */
+  | "number"
+  /** Short words — "Licensed", "Same day" (smaller so they fit) */
+  | "word";
+type StatsStripTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **StatsStrip** — a slim band of proof points (years in business,
+   * reviews, licences). Four across, two on phones.
+   *
+   * - `items` — `{ value, label }[]` (four reads best)
+   * - `valueSize` — `'number'` (default) or `'word'` for text values
+   * - `theme` — default `'dark'`
+   *
+   * @example
+   * <StatsStrip items={[{ value: "15+", label: "Years in business" }, { value: "4.9", label: "Google rating" }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The proof points. Empty renders nothing. */
+  items: StatsStripItem[];
+
+  /** Value styling. @default 'number' */
+  valueSize?: StatsStripValueSize;
+
+  /** Section theme. @default 'dark' */
+  theme?: StatsStripTheme;
+
+  /** Section padding (top and bottom). @default 'small' */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  items = [],
+  valueSize = "number",
+  theme = "dark",
+  padding = "small",
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!Astro.props.items?.length)
+    console.warn("[StatsStrip] `items` is empty or missing; nothing renders.");
+  if (!["number", "word"].includes(valueSize))
+    console.warn(`[StatsStrip] Unknown valueSize "${valueSize}".`);
+}
+---
+
+{
+  render && items.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["stats-strip_wrap", className]}
+      {...rest}
+    >
+      <div class="stats-strip_contain">
+        <ul
+          class:list={["stats-strip_list", valueSize === "word" && "is-words"]}
+        >
+          {items.map((item) => (
+            <li class="stats-strip_item">
+              <span class="stats-strip_value">{item.value}</span>
+              <span class="stats-strip_label">{item.label}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .stats-strip_contain {
+      container-type: inline-size;
+    }
+
+    .stats-strip_list {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-5);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .stats-strip_item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      min-width: 0;
+    }
+
+    .stats-strip_value {
+      font-family: var(--font-primary);
+      font-size: var(--h3-size);
+      font-weight: 700;
+      line-height: 1;
+      color: var(--heading-accent);
+    }
+
+    .stats-strip_list.is-words .stats-strip_value {
+      font-size: var(--h5-size);
+    }
+
+    .stats-strip_label {
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, var(--text) 70%, transparent);
+    }
+
+    @container (max-width: 35em) {
+      .stats-strip_list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  }
+</style>

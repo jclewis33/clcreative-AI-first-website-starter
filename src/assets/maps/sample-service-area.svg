@@ -1,0 +1,22 @@
+<!--
+  Sample service-area map for the ServiceArea section demo.
+
+  THE CONTRACT: every region that should light up with its chip carries
+  data-area="<name>", and <name> must equal one of the section's `areas`
+  strings exactly (default: SITE.serviceAreas), spaces and capitals included.
+  Fill and stroke come from the section's CSS, so leave regions unfilled.
+  Anything without data-area (roads, labels, outlines) is just artwork.
+  Replace this file with a real map per client.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <path data-area="North County" d="M20 20 L200 20 L210 110 L30 120 Z" />
+  <path data-area="Your City" d="M210 110 L200 20 L380 30 L370 140 Z" />
+  <path data-area="Neighboring City" d="M30 120 L210 110 L220 280 L40 270 Z" />
+  <path data-area="Fort Bend" d="M210 110 L370 140 L360 280 L220 280 Z" />
+  <g class="service-area-sample_labels" font-size="14" text-anchor="middle" fill="currentColor">
+    <text x="115" y="70">North County</text>
+    <text x="290" y="75">Your City</text>
+    <text x="125" y="200">Neighboring City</text>
+    <text x="290" y="215">Fort Bend</text>
+  </g>
+</svg>

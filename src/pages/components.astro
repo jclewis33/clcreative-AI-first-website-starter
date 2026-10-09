@@ -77,6 +77,27 @@ import type { ImageMetadata } from "astro";
 import ProjectCard from "@/components/ui/ProjectCard.astro";
 import ProjectBrowser from "@/components/ui/ProjectBrowser.astro";
 import GalleryBrowser from "@/components/ui/GalleryBrowser.astro";
+import "@/styles/pages/components-demo.css";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import ImagePair from "@/components/ui/ImagePair.astro";
+import ServiceIcon, {
+  type ServiceIconName,
+} from "@/components/ui/ServiceIcon.astro";
+import serviceIcons from "@/data/service-icons.json";
+import Hero from "@/components/sections/Hero.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import PhotoBand from "@/components/sections/PhotoBand.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import StorySplit from "@/components/sections/StorySplit.astro";
+import IncludedList from "@/components/sections/IncludedList.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import SampleMap from "@/assets/maps/sample-service-area.svg";
+import demoPhoto5 from "@/assets/placeholder-images/ai-first-starter-5.webp";
 import { PROJECT_CATEGORIES } from "@/config/projects";
 import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
 import demoPhoto2 from "@/assets/placeholder-images/ai-first-starter-2.webp";
@@ -186,6 +207,23 @@ const COMPONENT_INDEX = [
   { slug: "project-card", text: "ProjectCard" },
   { slug: "project-browser", text: "ProjectBrowser" },
   { slug: "gallery-browser", text: "GalleryBrowser" },
+  { slug: "cta-button", text: "CtaButton & LeadFormModal" },
+  { slug: "image-pair", text: "ImagePair" },
+  { slug: "service-icon", text: "ServiceIcon" },
+  { slug: "hero-background", text: "Hero (background)" },
+  { slug: "hero-split", text: "Hero (split)" },
+  { slug: "hero-text", text: "Hero (text)" },
+  { slug: "stats-strip", text: "StatsStrip" },
+  { slug: "photo-band", text: "PhotoBand" },
+  { slug: "service-cards", text: "ServiceCards" },
+  { slug: "process-steps", text: "ProcessSteps" },
+  { slug: "story-split", text: "StorySplit" },
+  { slug: "included-list", text: "IncludedList" },
+  { slug: "service-area", text: "ServiceArea" },
+  { slug: "reviews", text: "Reviews" },
+  { slug: "lead-form-section", text: "LeadFormSection" },
+  { slug: "call-band", text: "CallBand" },
+  { slug: "cta-section-cta", text: "CTASection with SectionCta" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -2217,6 +2255,415 @@ const demoGallery = [
     </Layout>
     <GalleryBrowser items={demoGallery} categories={PROJECT_CATEGORIES} />
   </Section>
+
+  <Section theme="light" id="cta-button">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">CtaButton &amp; LeadFormModal</Heading>
+      <Heading tag="h2"
+        >Section buttons that link, call, or open the estimate form</Heading
+      >
+      <Text muted
+        >Every section takes its buttons as SectionCta objects. "Get an
+        estimate" opens the LeadFormModal below; the last button points at a
+        modal that isn't on the page and still renders safely.</Text
+      >
+    </Layout>
+    <ButtonWrapper>
+      <CtaButton cta={{ label: "Get an estimate", modal: "demo-estimate" }} />
+      <CtaButton phone variant="secondary" />
+      <CtaButton
+        cta={{ label: "See our work", href: "/projects" }}
+        variant="text"
+      />
+      <CtaButton
+        cta={{ label: "Orphan trigger", modal: "missing-modal" }}
+        variant="secondary"
+      />
+    </ButtonWrapper>
+    <LeadFormModal
+      id="demo-estimate"
+      formId="contact"
+      heading="Get a free estimate"
+      text="Tell us a little about the project and we'll be in touch."
+    />
+  </Section>
+
+  <Section theme="light" id="image-pair">
+    <Layout variant="columns" ratio="6-6" verticalAlign="center">
+      <Heading variant="eyebrow">ImagePair</Heading>
+      <Heading tag="h2">Two portrait photos, the second offset</Heading>
+      <Text muted
+        >Used by ServiceArea when there's no map, and by IncludedList.</Text
+      >
+      <ImagePair
+        slot="column2"
+        images={[
+          {
+            src: demoPhoto1,
+            alt: "A finished kitchen seen from the dining area",
+          },
+          {
+            src: demoPhoto2,
+            alt: "A close view of new cabinetry and lighting",
+          },
+        ]}
+      />
+    </Layout>
+  </Section>
+
+  <Section theme="light" id="service-icon">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">ServiceIcon</Heading>
+      <Heading tag="h2">A neutral icon set for service cards</Heading>
+      <Text muted
+        >Add an icon by adding a key to src/data/service-icons.json.</Text
+      >
+    </Layout>
+    <div class="service-icon-demo_list">
+      {
+        (Object.keys(serviceIcons) as ServiceIconName[]).map((name) => (
+          <div class="service-icon-demo_item">
+            <ServiceIcon name={name} />
+            <span class="service-icon-demo_label">{name}</span>
+          </div>
+        ))
+      }
+    </div>
+  </Section>
+
+  {
+    /* ================================================================
+    LOCAL-SERVICE SECTIONS — each renders its own <Section>
+    ================================================================ */
+  }
+  <Section theme="light" padding="small" id="hero-background">
+    <Heading variant="eyebrow">Hero — background</Heading>
+    <Heading tag="h2"
+      >Photo behind the text, call button from SITE.phone</Heading
+    >
+  </Section>
+  <Hero
+    eyebrow="Kitchen, bath and whole-home remodeling"
+    heading="Remodels done <strong>right the first time</strong>, on schedule and on budget"
+    text="One local crew from the first visit to the final walkthrough."
+    image={demoPhoto5}
+    imageAlt="A bright remodeled living space with large windows"
+    primaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
+    proof={{ rating: 5, text: "Rated 4.9 by local homeowners" }}
+  />
+
+  <Section theme="light" padding="small" id="hero-split">
+    <Heading variant="eyebrow">Hero — split</Heading>
+    <Heading tag="h2"
+      >Text left, photo right, with breadcrumbs and a badge</Heading
+    >
+  </Section>
+  <Hero
+    variant="split"
+    breadcrumbs={[
+      { label: "Home", href: "/" },
+      { label: "Services", href: "/contact" },
+      { label: "Kitchen remodeling" },
+    ]}
+    eyebrow="Kitchen remodeling"
+    heading="A kitchen built around <strong>how you cook</strong>"
+    text="Layout, cabinets, counters and lighting, planned and built by one team."
+    image={demoPhoto1}
+    imageAlt="A remodeled kitchen with an island and pendant lights"
+    primaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
+    badge={{ value: "Since 2009", label: "Family owned" }}
+  />
+
+  <Section theme="light" padding="small" id="hero-text">
+    <Heading variant="eyebrow">Hero — text</Heading>
+    <Heading tag="h2">No photo, for contact and simple pages</Heading>
+  </Section>
+  <Hero
+    eyebrow="Contact"
+    heading="Talk to a real person <strong>today</strong>"
+    text="Call, or send the form and we'll call you back."
+    primaryCta={{ label: "Send a message", href: "#lead-form" }}
+  />
+
+  <Section theme="light" padding="small" id="stats-strip">
+    <Heading variant="eyebrow">StatsStrip</Heading>
+    <Heading tag="h2">Proof points as numbers or as words</Heading>
+  </Section>
+  <StatsStrip
+    items={[
+      { value: "15+", label: "Years in business" },
+      { value: "4.9", label: "Average rating" },
+      { value: "1,200", label: "Projects finished" },
+      { value: "100%", label: "Licensed and insured" },
+    ]}
+  />
+  <StatsStrip
+    valueSize="word"
+    theme="light"
+    items={[
+      { value: "Licensed", label: "And fully insured" },
+      { value: "Same week", label: "Estimates" },
+      { value: "Fixed price", label: "No surprises" },
+      { value: "Local", label: "Crews you'll see again" },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="photo-band">
+    <Heading variant="eyebrow">PhotoBand</Heading>
+    <Heading tag="h2">A full-width photo strip</Heading>
+  </Section>
+  <PhotoBand image={demoPhoto3} alt="A crew at work on a finished exterior" />
+
+  <Section theme="light" padding="small" id="service-cards">
+    <Heading variant="eyebrow">ServiceCards</Heading>
+    <Heading tag="h2"
+      >Services as a grid with icons, or a swipe row with photos</Heading
+    >
+  </Section>
+  <ServiceCards
+    eyebrow="What we do"
+    heading="Every room, one crew"
+    intro="From a single bathroom to a whole-home remodel."
+    items={[
+      {
+        title: "Kitchens",
+        text: "Layouts, cabinets, counters and lighting.",
+        icon: "kitchen",
+        href: "/contact",
+      },
+      {
+        title: "Bathrooms",
+        text: "Tile, showers, vanities and ventilation.",
+        icon: "bath",
+        href: "/contact",
+      },
+      {
+        title: "Additions",
+        text: "More room without moving house.",
+        icon: "addition",
+        href: "/contact",
+      },
+    ]}
+  />
+  <ServiceCards
+    layout="swipe"
+    theme="dark"
+    heading="Related services"
+    moreLabel="View service"
+    items={[
+      {
+        title: "Kitchen remodeling",
+        text: "Plan, build and finish.",
+        image: demoPhoto1,
+        imageAlt: "A remodeled kitchen with an island",
+        href: "/contact",
+      },
+      {
+        title: "Bathroom remodeling",
+        text: "Showers, tile and vanities.",
+        image: demoPhoto2,
+        imageAlt: "A bright bathroom with a walk-in shower",
+        href: "/contact",
+      },
+      {
+        title: "Home additions",
+        text: "New rooms, built to match.",
+        image: demoPhoto3,
+        imageAlt: "A new room added onto a house",
+        href: "/contact",
+      },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="process-steps">
+    <Heading variant="eyebrow">ProcessSteps</Heading>
+    <Heading tag="h2"
+      >How it works, as a list beside a photo or as cards</Heading
+    >
+  </Section>
+  <ProcessSteps
+    eyebrow="How it works"
+    heading="From first call to final walkthrough"
+    text="A clear plan and a fixed price before any work starts."
+    image={demoPhoto4}
+    imageAlt="A project manager walking a homeowner through plans"
+    steps={[
+      { title: "Call or send the form", text: "Tell us about the project." },
+      { title: "On-site visit", text: "We measure, listen and take photos." },
+      { title: "Fixed quote", text: "A written price with no surprises." },
+      { title: "Build", text: "One crew, daily updates, clean site." },
+    ]}
+  />
+  <ProcessSteps
+    variant="cards"
+    theme="dark"
+    heading="What happens next"
+    steps={[
+      { title: "We call you back", text: "Usually the same business day." },
+      { title: "We visit", text: "A free on-site estimate." },
+      { title: "You decide", text: "No pressure and no deposit to talk." },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="story-split">
+    <Heading variant="eyebrow">StorySplit</Heading>
+    <Heading tag="h2"
+      >Meet the owner, or why choose us, with optional reasons</Heading
+    >
+  </Section>
+  <StorySplit
+    eyebrow="Why choose us"
+    heading="A local company that answers the phone"
+    paragraphs={[
+      "We started with one truck and a promise to show up when we said we would.",
+      "Today the same family runs every job, and the crew you meet is the crew that builds.",
+    ]}
+    image={demoPhoto5}
+    imageAlt="The owner standing in front of a finished home"
+    reasons={[
+      { title: "Fixed pricing", text: "The quote is the price." },
+      { title: "One crew", text: "The same faces start to finish." },
+      { title: "Clean sites", text: "Swept and tidy every day." },
+      { title: "Warranty", text: "Two years on workmanship." },
+    ]}
+    cta={{ label: "Get an estimate", modal: "demo-estimate" }}
+  />
+
+  <Section theme="light" padding="small" id="included-list">
+    <Heading variant="eyebrow">IncludedList</Heading>
+    <Heading tag="h2">What's included, beside an offset photo pair</Heading>
+  </Section>
+  <IncludedList
+    eyebrow="What's included"
+    heading="Everything a kitchen remodel needs"
+    text="One price covers the whole job."
+    items={[
+      "Design and layout",
+      "Permits",
+      "Demolition and haul-away",
+      "Cabinets and counters",
+      "Plumbing and electrical",
+      "Tile and flooring",
+      "Lighting",
+      "Final cleanup",
+    ]}
+    images={[
+      { src: demoPhoto1, alt: "Finished cabinets and counters" },
+      { src: demoPhoto2, alt: "New tile backsplash detail" },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="service-area">
+    <Heading variant="eyebrow">ServiceArea</Heading>
+    <Heading tag="h2"
+      >Places served, linked to a client map, or beside photos</Heading
+    >
+  </Section>
+  <ServiceArea
+    heading="Serving the whole county"
+    text="Point at a place to see it on the map."
+    areas={["North County", "Your City", "Neighboring City", "Fort Bend"]}
+    map={SampleMap}
+    cta={{ label: "Check your address", modal: "demo-estimate" }}
+  />
+  <ServiceArea
+    eyebrow="Service area"
+    heading="Close to home, wherever that is"
+    images={[
+      { src: demoPhoto3, alt: "A finished home exterior on a quiet street" },
+      { src: demoPhoto4, alt: "A crew member loading tools into a truck" },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="reviews">
+    <Heading variant="eyebrow">Reviews</Heading>
+    <Heading tag="h2"
+      >A featured review with two beside it, or a grid, with a rating badge</Heading
+    >
+  </Section>
+  <Reviews
+    rating={4.9}
+    count={127}
+    allReviewsHref="https://example.com/reviews"
+    reviews={[
+      {
+        text: "They kept us informed every single day and finished the week they said they would. The kitchen is exactly what we drew on a napkin.",
+        name: "Jordan P.",
+        meta: "Kitchen remodel",
+      },
+      {
+        text: "Clean, careful and fair on price.",
+        name: "Sam R.",
+        meta: "Bathroom",
+      },
+      {
+        text: "Would hire them again in a heartbeat.",
+        name: "Alex T.",
+        meta: "Addition",
+      },
+    ]}
+  />
+  <Reviews
+    layout="grid"
+    theme="dark"
+    heading="Neighbors who hired us"
+    reviews={[
+      { text: "On time, on budget, no surprises.", name: "Morgan L." },
+      {
+        text: "The crew treated our house like their own.",
+        name: "Casey D.",
+        meta: "Deck",
+      },
+      {
+        text: "Best contractor we've worked with.",
+        name: "Riley K.",
+        meta: "Basement",
+      },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="lead-form-section">
+    <Heading variant="eyebrow">LeadFormSection</Heading>
+    <Heading tag="h2"
+      >The estimate section: intro and phone line beside the form</Heading
+    >
+  </Section>
+  <LeadFormSection
+    id="demo-lead-section"
+    eyebrow="Free estimate"
+    heading="Tell us about your <strong>project</strong>"
+    text="We'll call you back within one business day."
+    formId="contact"
+    fields="quote"
+    projectOptions={[
+      { label: "Kitchen", value: "kitchen" },
+      { label: "Bathroom", value: "bathroom" },
+      { label: "Addition", value: "addition" },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="call-band">
+    <Heading variant="eyebrow">CallBand</Heading>
+    <Heading tag="h2"
+      >A dark closing band with the phone and a second button</Heading
+    >
+  </Section>
+  <CallBand
+    heading="Ready to <strong>get started</strong>?"
+    text="Call now, or get an estimate online."
+    secondaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
+  />
+
+  <Section theme="light" padding="small" id="cta-section-cta">
+    <Heading variant="eyebrow">CTASection with SectionCta</Heading>
+    <Heading tag="h2">The closing CTA can now open the estimate pop-up</Heading>
+  </Section>
+  <CTASection
+    heading="Let's build something <strong>you'll love</strong>"
+    text="A free on-site estimate, with no pressure."
+    primaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
+    secondaryCta={{ label: "See our work", href: "/projects" }}
+  />
 
   <!-- ============================================================
        9. MODALS

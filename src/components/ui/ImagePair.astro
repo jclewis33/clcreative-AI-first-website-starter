@@ -1,0 +1,85 @@
+---
+import type { ImageMetadata } from "astro";
+import Visual from "@/components/ui/Visual.astro";
+
+/** One photo in the pair. */
+type ImagePairImage = { src: ImageMetadata | string; alt: string };
+
+interface Props {
+  /**
+   * **ImagePair** — two portrait photos side by side, the second dropped
+   * lower for an offset, editorial look. The offset goes away on narrow
+   * containers. Used by ServiceArea (when there's no map) and IncludedList.
+   *
+   * - `images` — exactly two `{ src, alt }` (imported images or URLs)
+   *
+   * @example
+   * <ImagePair images={[{ src: deck, alt: "New cedar deck" }, { src: patio, alt: "Paver patio at dusk" }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Exactly two photos. Fewer renders nothing; extras are ignored. */
+  images: ImagePairImage[];
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const { docs, render = true, images = [], class: className } = Astro.props;
+const pair = images.slice(0, 2);
+
+if (import.meta.env.DEV && render && (Astro.props.images?.length ?? 0) !== 2) {
+  console.warn(
+    `[ImagePair] Expects exactly 2 images, got ${Astro.props.images?.length ?? 0}.`,
+  );
+}
+---
+
+{
+  render && pair.length === 2 && (
+    <div class:list={["image-pair_wrap", className]}>
+      <div class="image-pair_layout">
+        <Visual
+          src={pair[0].src}
+          alt={pair[0].alt}
+          ratio="portrait"
+          class="image-pair_img"
+        />
+        <Visual
+          src={pair[1].src}
+          alt={pair[1].alt}
+          ratio="portrait"
+          class="image-pair_img is-offset"
+        />
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .image-pair_wrap {
+      container-type: inline-size;
+    }
+
+    .image-pair_layout {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+      gap: var(--space-3);
+    }
+
+    .image-pair_img.is-offset {
+      margin-top: var(--space-6);
+    }
+
+    @container (max-width: 35em) {
+      .image-pair_img.is-offset {
+        margin-top: 0;
+      }
+    }
+  }
+</style>

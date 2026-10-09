@@ -1,0 +1,175 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Card from "@/components/ui/Card.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import SwipeRow from "@/components/ui/SwipeRow.astro";
+import ServiceIcon, {
+  type ServiceIconName,
+} from "@/components/ui/ServiceIcon.astro";
+
+type ServiceCardItem = {
+  title: string;
+  text?: string;
+  image?: ImageMetadata | string;
+  imageAlt?: string;
+  /** Whole card links here. */
+  href?: string;
+  /** Shown instead of a photo when there's no `image`. */
+  icon?: ServiceIconName;
+};
+type ServiceCardsLayout =
+  /** 3 → 2 → 1 column grid */
+  | "grid"
+  /** Swipe row on phones — good for "related services" */
+  | "swipe";
+type ServiceCardsTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ServiceCards** — the services a business offers, as cards. Each card
+   * can link to its service page (the whole card is the link) and shows a
+   * photo, or a ServiceIcon when there's no photo.
+   *
+   * - `eyebrow`, `heading`, `intro` — the section header (optional)
+   * - `items` — `{ title, text?, image?, imageAlt?, href?, icon? }[]`
+   * - `layout` — `'grid'` (default) or `'swipe'` (a swipe row on phones;
+   *   use it for "related services")
+   * - `moreLabel` — the "Learn more" line on linked cards
+   *
+   * @example
+   * <ServiceCards heading="What we do" items={[{ title: "Kitchens", text: "…", image: kitchen, imageAlt: "…", href: "/services/kitchens" }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. */
+  heading?: string;
+
+  /** Intro beside the heading. */
+  intro?: string;
+
+  /** The service cards. Empty renders nothing. */
+  items: ServiceCardItem[];
+
+  /** Grid, or a swipe row on phones. @default 'grid' */
+  layout?: ServiceCardsLayout;
+
+  /** Text on linked cards. @default 'Learn more' */
+  moreLabel?: string;
+
+  /** Section theme. */
+  theme?: ServiceCardsTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  intro,
+  items = [],
+  layout = "grid",
+  moreLabel = "Learn more",
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/* One card list, two containers: a responsive grid, or a swipe row. */
+/* Card's link props are an either/or union — return one side exactly so
+   the spread type-checks. */
+type CardLink = { href: string; ariaLabel: string } | { href?: never };
+const cardLink = (item: ServiceCardItem): CardLink =>
+  item.href ? { href: item.href, ariaLabel: item.title } : {};
+
+/* Typed loosely: the two containers take different props, and TS can't
+   check a spread against a union of components. Both prop sets are fixed
+   literals right below. */
+const Wrapper: any = layout === "swipe" ? SwipeRow : Grid;
+const wrapperProps =
+  layout === "swipe"
+    ? { columns: 3 as const, label: heading ?? "Services" }
+    : { largeColumns: 3, mediumColumns: 2, smallColumns: 1, rowGap: 6 };
+
+if (import.meta.env.DEV && render) {
+  if (!Astro.props.items?.length)
+    console.warn(
+      "[ServiceCards] `items` is empty or missing; nothing renders.",
+    );
+  if (!["grid", "swipe"].includes(layout))
+    console.warn(`[ServiceCards] Unknown layout "${layout}".`);
+}
+---
+
+{
+  render && items.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["service-cards_wrap", className]}
+      {...rest}
+    >
+      {heading && (
+        <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      )}
+      <Wrapper {...wrapperProps}>
+        {items.map((item) => (
+          <Card {...cardLink(item)} class="service-cards_card">
+            {item.image ? (
+              <Visual
+                slot="visual"
+                src={item.image}
+                alt={item.imageAlt || item.title}
+                ratio="landscape"
+              />
+            ) : null}
+            {!item.image && item.icon ? <ServiceIcon name={item.icon} /> : null}
+            <Heading slot="title" tag="h3" variant="h5">
+              {item.title}
+            </Heading>
+            {item.text && <Text variant="small">{item.text}</Text>}
+            {item.href && (
+              <span slot="footer" class="service-cards_more">
+                {moreLabel}
+              </span>
+            )}
+          </Card>
+        ))}
+      </Wrapper>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .service-cards_more {
+      font-size: var(--text-small-size);
+      font-weight: 600;
+      color: var(--heading-accent);
+    }
+  }
+</style>

@@ -1,0 +1,131 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import StepList from "@/components/ui/StepList.astro";
+
+type ProcessStep = { title: string; text: string };
+type ProcessStepsVariant =
+  /** Header (and optional photo) left, numbered list right */
+  | "list"
+  /** Header on top, numbered cards in a row */
+  | "cards";
+type ProcessStepsTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ProcessSteps** — "how it works": numbered steps from first call to
+   * finished job.
+   *
+   * - `eyebrow`, `heading`, `text` — the intro
+   * - `steps` — `{ title, text }[]` (numbers are generated)
+   * - `image`, `imageAlt` — optional photo under the intro (`list` only)
+   * - `variant` — `'list'` (default) or `'cards'`
+   *
+   * @example
+   * <ProcessSteps heading="How it works" steps={[{ title: "Call", text: "Tell us what you need." }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. Required. */
+  heading: string;
+
+  /** Intro paragraph. */
+  text?: string;
+
+  /** The steps. Empty renders nothing. */
+  steps: ProcessStep[];
+
+  /** Optional photo under the intro (`list` variant). */
+  image?: ImageMetadata | string;
+
+  /** Alt text for the photo. */
+  imageAlt?: string;
+
+  /** Layout. @default 'list' */
+  variant?: ProcessStepsVariant;
+
+  /** Section theme. */
+  theme?: ProcessStepsTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  steps = [],
+  image,
+  imageAlt,
+  variant = "list",
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!heading)
+    console.warn("[ProcessSteps] `heading` is required; nothing renders.");
+  if (!Astro.props.steps?.length)
+    console.warn(
+      "[ProcessSteps] `steps` is empty or missing; nothing renders.",
+    );
+  if (!["list", "cards"].includes(variant))
+    console.warn(`[ProcessSteps] Unknown variant "${variant}".`);
+}
+---
+
+{
+  render && heading && steps.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["process-steps_wrap", className]}
+      {...rest}
+    >
+      {variant === "cards" ? (
+        <>
+          <SectionHeader eyebrow={eyebrow} heading={heading} intro={text} />
+          <StepList steps={steps} variant="cards" />
+        </>
+      ) : (
+        <Layout ratio="5-7" verticalAlign="start">
+          <Layout variant="stack">
+            {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+            <Heading tag="h2">{heading}</Heading>
+            {text && <Text muted>{text}</Text>}
+            {image && (
+              <Visual src={image} alt={imageAlt || heading} ratio="landscape" />
+            )}
+          </Layout>
+          <StepList slot="column2" steps={steps} variant="list" />
+        </Layout>
+      )}
+    </Section>
+  )
+}

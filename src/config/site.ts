@@ -85,6 +85,26 @@ export const SITE = {
   /** Founder / person name (schema.org `founder`, `author` fallback). */
   founder: "Your Name",
 
+  /** Year the business started — the Hero badge ("Since …"). `null` = no badge. */
+  founded: null as number | null,
+
+  /**
+   * Places the business serves — the ServiceArea chips. When the section
+   * shows a map, each map region's `data-area` must equal one of these
+   * strings exactly. Placeholders: replace per client.
+   */
+  serviceAreas: ["Your City", "Neighboring City", "North County"],
+
+  /** Public reviews page (e.g. the Google Business Profile). Blank = no "Read all reviews" link. */
+  reviewsUrl: "",
+
+  /**
+   * The thin bar above the nav (UtilityBar). `null` = off. `text` is the
+   * message ("24/7 emergency service"); `areaLabel` sits on the right on
+   * desktop ("Serving Your City and nearby").
+   */
+  utilityBar: null as { text: string; areaLabel?: string } | null,
+
   /** Home-based — no street line by design. */
   address: {
     locality: "Your City",

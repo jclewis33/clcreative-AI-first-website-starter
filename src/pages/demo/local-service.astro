@@ -1,0 +1,195 @@
+---
+/**
+ * Local-service sample home page — DEV ONLY (`/demo/local-service` is in DEV_ONLY_PATHS,
+ * so the build strips it). It stacks the local-service sections into a
+ * full page for a fictional remodeler, as a starting point to copy when
+ * building a real client's home page. All copy and photos are placeholders.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import PhotoBand from "@/components/sections/PhotoBand.astro";
+import StorySplit from "@/components/sections/StorySplit.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import FAQ from "@/components/sections/FAQ.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import SampleMap from "@/assets/maps/sample-service-area.svg";
+import heroPhoto from "@/assets/placeholder-images/ai-first-starter-5.webp";
+import kitchenPhoto from "@/assets/placeholder-images/ai-first-starter-1.webp";
+import bathPhoto from "@/assets/placeholder-images/ai-first-starter-2.webp";
+import additionPhoto from "@/assets/placeholder-images/ai-first-starter-3.webp";
+import processPhoto from "@/assets/placeholder-images/ai-first-starter-4.webp";
+import bandPhoto from "@/assets/placeholder-images/ai-first-starter-6.webp";
+import ownerPhoto from "@/assets/placeholder-images/ai-first-starter-7.webp";
+
+const ESTIMATE = "estimate-modal";
+const estimateCta = { label: "Get a free estimate", modal: ESTIMATE };
+const projectOptions = [
+  { label: "Kitchen", value: "kitchen" },
+  { label: "Bathroom", value: "bathroom" },
+  { label: "Addition", value: "addition" },
+  { label: "Something else", value: "other" },
+];
+---
+
+<BaseLayout
+  title="Local-service sample page"
+  description="A sample home page built from the local-service sections."
+>
+  <Hero
+    eyebrow="Kitchen, bath and whole-home remodeling"
+    heading="Remodels done <strong>right the first time</strong>"
+    text="One local crew from the first visit to the final walkthrough, with a fixed price before any work starts."
+    image={heroPhoto}
+    imageAlt="A bright remodeled living space with large windows"
+    primaryCta={estimateCta}
+    proof={{ rating: 5, text: "Rated 4.9 by 127 local homeowners" }}
+  />
+
+  <StatsStrip
+    items={[
+      { value: "15+", label: "Years in business" },
+      { value: "4.9", label: "Average rating" },
+      { value: "1,200", label: "Projects finished" },
+      { value: "2 yr", label: "Workmanship warranty" },
+    ]}
+  />
+
+  <ServiceCards
+    eyebrow="What we do"
+    heading="Every room, one crew"
+    intro="From a single bathroom to a whole-home remodel."
+    items={[
+      {
+        title: "Kitchens",
+        text: "Layouts, cabinets, counters and lighting.",
+        image: kitchenPhoto,
+        imageAlt: "A remodeled kitchen with an island",
+        href: "/contact",
+      },
+      {
+        title: "Bathrooms",
+        text: "Tile, showers, vanities and ventilation.",
+        image: bathPhoto,
+        imageAlt: "A bright bathroom with a walk-in shower",
+        href: "/contact",
+      },
+      {
+        title: "Additions",
+        text: "More room without moving house.",
+        image: additionPhoto,
+        imageAlt: "A new room added onto a house",
+        href: "/contact",
+      },
+    ]}
+  />
+
+  <ServiceArea
+    heading="Serving the whole county"
+    text="Point at a place to see it on the map."
+    areas={["North County", "Your City", "Neighboring City", "Fort Bend"]}
+    map={SampleMap}
+  />
+
+  <ProcessSteps
+    eyebrow="How it works"
+    heading="From first call to final walkthrough"
+    text="A clear plan and a fixed price before any work starts."
+    image={processPhoto}
+    imageAlt="A project manager walking a homeowner through plans"
+    steps={[
+      { title: "Call or send the form", text: "Tell us about the project." },
+      { title: "On-site visit", text: "We measure, listen and take photos." },
+      { title: "Fixed quote", text: "A written price with no surprises." },
+      { title: "Build", text: "One crew, daily updates, clean site." },
+    ]}
+  />
+
+  <PhotoBand image={bandPhoto} alt="A finished open-plan living space" />
+
+  <StorySplit
+    eyebrow="Why choose us"
+    heading="A local company that answers the phone"
+    paragraphs={[
+      "We started with one truck and a promise to show up when we said we would.",
+      "Today the same family runs every job, and the crew you meet is the crew that builds.",
+    ]}
+    image={ownerPhoto}
+    imageAlt="The owner standing in front of a finished home"
+    reasons={[
+      { title: "Fixed pricing", text: "The quote is the price." },
+      { title: "One crew", text: "The same faces start to finish." },
+      { title: "Clean sites", text: "Swept and tidy every day." },
+      { title: "Warranty", text: "Two years on workmanship." },
+    ]}
+  />
+
+  <Reviews
+    rating={4.9}
+    count={127}
+    reviews={[
+      {
+        text: "They kept us informed every single day and finished the week they said they would.",
+        name: "Jordan P.",
+        meta: "Kitchen remodel",
+      },
+      {
+        text: "Clean, careful and fair on price.",
+        name: "Sam R.",
+        meta: "Bathroom",
+      },
+      {
+        text: "Would hire them again in a heartbeat.",
+        name: "Alex T.",
+        meta: "Addition",
+      },
+    ]}
+  />
+
+  <LeadFormSection
+    eyebrow="Free estimate"
+    heading="Tell us about your <strong>project</strong>"
+    text="We'll call you back within one business day."
+    formId="contact"
+    fields="quote"
+    projectOptions={projectOptions}
+  />
+
+  <FAQ
+    eyebrow="Questions"
+    items={[
+      {
+        question: "Do you give free estimates?",
+        answer: "Yes. We visit, measure and send a written, fixed price.",
+      },
+      {
+        question: "Are you licensed and insured?",
+        answer: "Yes, fully licensed and insured for every job we take on.",
+      },
+      {
+        question: "How soon can you start?",
+        answer: "Most projects start within two to four weeks of signing.",
+      },
+    ]}
+  />
+
+  <CallBand
+    heading="Ready to <strong>get started</strong>?"
+    text="Call now, or get a free estimate online."
+    secondaryCta={estimateCta}
+  />
+
+  <LeadFormModal
+    id={ESTIMATE}
+    formId="contact"
+    heading="Get a free estimate"
+    text="Tell us a little about the project and we'll be in touch."
+    fields="quote"
+    projectOptions={projectOptions}
+  />
+</BaseLayout>

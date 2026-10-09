@@ -51,6 +51,11 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
 5. Brand: `--color-brand-500` in [colors.css](../src/styles/variables/colors.css) + the `SITE.brand.color` mirror; [logo-paths.ts](../src/config/logo-paths.ts) for the wordmark.
 6. `src/data/site-structure.ts` — pages, nav, footer, banner for the new site.
 7. Third-party integration ids in `SITE.integrations` ([site.ts](../src/config/site.ts)) — GTM, MailerLite, and Usercentrics. **All ship blank (`""`) = off**; fill in the ones the new site uses (Head.astro only injects each script when its id is set).
+8. Local-service fields in [site.ts](../src/config/site.ts), used by the sections in `src/components/sections/`:
+   - `founded`: the Hero badge year (`null` = no badge).
+   - `serviceAreas`: the ServiceArea chips. Each must match a `data-area` in the client's map exactly.
+   - `reviewsUrl`: the Reviews "Read all reviews" link (blank = hidden).
+   - `utilityBar`: the bar above the nav (`null` = off).
 
 ---
 
