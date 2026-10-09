@@ -25,9 +25,11 @@ export const DEV_ONLY_PATHS = ["/style-guide", "/components"];
 
 /**
  * Whole path segments: matches `/x` and `/x/...`, never `/blog/x-something`.
- * `/preview` is the editor-only SSR draft tree.
+ * `/preview` is the editor-only SSR draft tree. `/tools` is the private
+ * Client tools page (staff GHL forms, gated by Cloudflare Access) — it ships
+ * to production, so it is here rather than in DEV_ONLY_PATHS.
  */
-export const NOINDEX_PATHS = [...DEV_ONLY_PATHS, "/preview"];
+export const NOINDEX_PATHS = [...DEV_ONLY_PATHS, "/preview", "/tools"];
 
 /**
  * Literal prefixes, mirroring how a robots.txt `Disallow` behaves: one

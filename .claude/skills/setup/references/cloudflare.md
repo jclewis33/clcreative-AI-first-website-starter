@@ -114,10 +114,17 @@ so you can finish the webhook wiring.
 Per §5: enable Dependabot alerts, security updates, malware alerts, and grouped
 updates; plus account-level push protection.
 
-## Email / lead capture (only if the fork wires a form endpoint)
+## GoHighLevel forms
 
-Per §6: the provider's keys go in as Cloudflare secrets; the starter ships no
-form endpoint, so skip this until one exists.
+Per §6 and `docs/ghl-forms.md`:
+
+- `GHL_API_TOKEN` and `GHL_LOCATION_ID` go in as **encrypted secrets**.
+- Set the tags in `src/config/forms.ts` to match the client's GHL workflows.
+- Gate `/tools` with a Cloudflare Access self-hosted application (path
+  `tools`, email one-time PIN). Then set the plain vars `CF_ACCESS_TEAM_DOMAIN`
+  and `CF_ACCESS_AUD`.
+- Access is dashboard work, so **guide the user through it** rather than
+  running anything.
 
 ## Post-launch verification
 

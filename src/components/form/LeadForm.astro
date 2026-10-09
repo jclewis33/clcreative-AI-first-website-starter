@@ -1,0 +1,238 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Form from "@/components/form/Form.astro";
+import FormField from "@/components/form/FormField.astro";
+import FormFieldset from "@/components/form/FormFieldset.astro";
+import FormSelect from "@/components/form/FormSelect.astro";
+import FormTextarea from "@/components/form/FormTextarea.astro";
+import FormCheckbox from "@/components/form/FormCheckbox.astro";
+import Button from "@/components/ui/Button.astro";
+import { FORMS, HONEYPOT_FIELD, type FormId } from "@/config/forms";
+import { SITE } from "@/config/site";
+
+/* Named on purpose — inline unions lose their editor tooltips. */
+type LeadFormFields = "contact" | "quote";
+type LeadFormButtonWidth = "full" | "auto";
+type LeadFormOption = { label: string; value: string };
+
+/* name/action/method are set by LeadForm itself — not caller overridable. */
+interface Props extends Omit<
+  HTMLAttributes<"form">,
+  "name" | "action" | "method"
+> {
+  /**
+   * **LeadForm** — a ready-made form wired to GoHighLevel.
+   *
+   * Posts JSON to `/api/lead`. The server looks `formId` up in
+   * `src/config/forms.ts` and creates or updates the contact, saves the
+   * message as a note, and adds that form's tags — which start the GHL
+   * automations. Includes a hidden bot trap and the A2P SMS consent box.
+   * Success and failure states come from `<Form>`. Setup:
+   * `docs/ghl-forms.md`.
+   *
+   * - `formId` — which registry entry (public forms only)
+   * - `fields` — `'contact'` (name, email, phone, message) or `'quote'` (adds
+   *   project type and timeline selects)
+   * - `projectOptions` / `timelineOptions` — the quote selects' choices
+   * - `messageLabel`, `messagePlaceholder`, `submitLabel`, `successMessage`,
+   *   `errorMessage` — copy
+   * - `buttonWidth` — `'full'` (default) or `'auto'`
+   *
+   * @example
+   * ```astro
+   * <LeadForm formId="contact" messageLabel="What do you need help with?" />
+   * ```
+   */
+  docs?: string;
+
+  /** Set `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Which entry in `src/config/forms.ts` this form submits as. Must be a public form. */
+  formId: FormId;
+
+  /**
+   * Field preset. `contact`: first/last name, email, phone, message. `quote`:
+   * the same plus project-type and timeline selects (saved to the note).
+   * @default 'contact'
+   */
+  fields?: LeadFormFields;
+
+  /** Quote preset: project-type choices. The chosen label is saved. */
+  projectOptions?: LeadFormOption[];
+
+  /** Quote preset: timeline choices. The chosen label is saved. */
+  timelineOptions?: LeadFormOption[];
+
+  /** Label above the message box. @default 'How can we help?' */
+  messageLabel?: string;
+
+  /** Placeholder inside the message box. */
+  messagePlaceholder?: string;
+
+  /** Submit button text. @default 'Send' */
+  submitLabel?: string;
+
+  /** Shown in place of the fields once sent. */
+  successMessage?: string;
+
+  /** Shown under the fields when sending fails. */
+  errorMessage?: string;
+
+  /** Submit button width. @default 'full' */
+  buttonWidth?: LeadFormButtonWidth;
+
+  /** Unique prefix for field ids — needed when one page shows the form twice. */
+  id?: string;
+
+  /** Extra classes on the outer `.form_wrap`. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  formId,
+  fields = "contact",
+  projectOptions = [],
+  timelineOptions = [
+    { label: "As soon as possible", value: "asap" },
+    { label: "Within 1–3 months", value: "1-3-months" },
+    { label: "Just planning", value: "planning" },
+  ],
+  messageLabel = "How can we help?",
+  messagePlaceholder,
+  submitLabel = "Send",
+  successMessage = "Thanks — we got your message and will be in touch shortly.",
+  errorMessage = `Something went wrong. Please try again, or call us at ${SITE.phone.display}.`,
+  buttonWidth = "full",
+  id = `lead-${formId}`,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const form = FORMS[formId];
+if (import.meta.env.DEV) {
+  if (!form) console.warn(`[LeadForm] Unknown formId "${formId}".`);
+  else if (form.access !== "public")
+    console.warn(
+      `[LeadForm] "${formId}" is a staff form — it belongs on /tools, not a public page.`,
+    );
+  if (fields === "quote" && projectOptions.length === 0)
+    console.warn(`[LeadForm] fields="quote" without projectOptions.`);
+}
+---
+
+{
+  render && form && (
+    <Form
+      name={formId}
+      action="/api/lead"
+      encoding="json"
+      successMessage={successMessage}
+      errorMessage={errorMessage}
+      id={id}
+      class={["lead-form_wrap", className].filter(Boolean).join(" ")}
+      {...rest}
+    >
+      <input type="hidden" name="formId" value={formId} />
+
+      <FormFieldset columns={2}>
+        <FormField
+          label="First name"
+          name="firstName"
+          variant="first-name"
+          id={`${id}-first`}
+          required
+        />
+        <FormField
+          label="Last name"
+          name="lastName"
+          variant="last-name"
+          id={`${id}-last`}
+        />
+        <FormField
+          label="Email"
+          name="email"
+          variant="email"
+          id={`${id}-email`}
+          required
+        />
+        <FormField
+          label="Phone"
+          name="phone"
+          variant="phone"
+          id={`${id}-phone`}
+          required
+        />
+      </FormFieldset>
+
+      {fields === "quote" && (
+        <FormFieldset columns={2}>
+          <FormSelect
+            label="Project type"
+            name="projectType"
+            options={projectOptions.map((o) => ({ ...o, value: o.label }))}
+            placeholderOption="Choose one"
+            id={`${id}-project`}
+          />
+          <FormSelect
+            label="Timeline"
+            name="timeline"
+            options={timelineOptions.map((o) => ({ ...o, value: o.label }))}
+            placeholderOption="Choose one"
+            id={`${id}-timeline`}
+          />
+        </FormFieldset>
+      )}
+
+      <FormTextarea
+        label={messageLabel}
+        name="message"
+        placeholder={messagePlaceholder}
+        id={`${id}-message`}
+      />
+
+      {/* Bot trap: off-screen, out of the tab order, hidden from assistive
+          tech. People never fill it; form-filling bots do. */}
+      <div class="lead-form_trap" aria-hidden="true">
+        <label for={`${id}-trap`}>Company website</label>
+        <input
+          type="text"
+          name={HONEYPOT_FIELD}
+          id={`${id}-trap`}
+          tabindex="-1"
+          autocomplete="off"
+        />
+      </div>
+
+      <FormCheckbox
+        name="smsConsent"
+        id={`${id}-consent`}
+        label={`I consent to receive SMS notifications, alerts and occasional marketing communication from ${SITE.name}. Message frequency varies. Message & data rates may apply. Text HELP for assistance. Reply STOP to unsubscribe.`}
+      />
+
+      <Button
+        type="submit"
+        fullWidth={buttonWidth === "full"}
+        ariaLabel={submitLabel}
+      >
+        {submitLabel}
+      </Button>
+    </Form>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* Off-screen rather than display:none — some bots skip fields that are
+       display:none, but fill anything positioned. */
+    .lead-form_trap {
+      position: absolute;
+      inset-inline-start: -100vw;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+    }
+  }
+</style>
