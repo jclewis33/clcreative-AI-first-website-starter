@@ -283,7 +283,9 @@ if (import.meta.env.DEV && render) {
       flex-wrap: wrap;
       align-items: center;
       gap: var(--space-2);
-      margin: 0;
+      /* Space it off the button row the way ButtonWrapper spaces itself
+         off the text above (top margin, --space-5). */
+      margin: var(--space-5) 0 0;
       font-size: var(--text-small-size);
     }
 
@@ -306,7 +308,7 @@ if (import.meta.env.DEV && render) {
       flex-direction: column;
       align-self: flex-start;
       gap: var(--space-1);
-      margin: 0;
+      margin: var(--space-5) 0 0;
       padding: var(--space-3) var(--space-4);
       border-radius: var(--radius-main);
       background-color: var(--background);
@@ -314,6 +316,7 @@ if (import.meta.env.DEV && render) {
     }
 
     .hero_badge.is-floating {
+      margin: 0;
       position: absolute;
       inset-inline-start: var(--space-4);
       inset-block-end: var(--space-4);
