@@ -11,6 +11,7 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
 import type { SectionCta } from "@/lib/cta";
+import { SITE } from "@/config/site";
 
 type HeroVariant =
   /** Photo fills the section behind the text, with a dark overlay */
@@ -39,7 +40,9 @@ interface Props extends HTMLAttributes<"section"> {
    * - `breadcrumbs` — trail above the eyebrow (also pass it to BaseLayout's
    *   `breadcrumbs` prop so the schema matches)
    * - `proof` — a trust line, with optional star rating
-   * - `badge` — a small card, e.g. `{ value: "Since 2009", label: "Family owned" }`
+   * - `badge` — a small card, e.g. `{ value: "Since 2009", label: "Family owned" }`.
+   *   Defaults to "Since {SITE.founded}" when `SITE.founded` is set; pass
+   *   `false` to hide it
    *
    * Renders nothing (with a dev warning) without a `heading`.
    *
@@ -50,7 +53,7 @@ interface Props extends HTMLAttributes<"section"> {
    *   text="One local crew from design to the final walkthrough."
    *   image={heroPhoto}
    *   imageAlt="A finished kitchen with a large island"
-   *   primaryCta={{ label: "Get an estimate", modal: "estimate" }}
+   *   primaryCta={{ label: "Get an estimate", modal: "estimate-modal" }}
    * />
    */
   docs?: string;
@@ -94,8 +97,11 @@ interface Props extends HTMLAttributes<"section"> {
   /** Trust line under the buttons. `rating` adds that many of 5 stars. */
   proof?: HeroProof;
 
-  /** Small card, e.g. "Since 2009 / Family owned". */
-  badge?: HeroBadge;
+  /**
+   * Small card, e.g. "Since 2009 / Family owned". Defaults to
+   * "Since {SITE.founded}" when that is set; `false` hides it.
+   */
+  badge?: HeroBadge | false;
 
   /** Section theme. @default 'dark' for background, else inherit */
   theme?: HeroTheme;
@@ -131,7 +137,7 @@ const {
   secondaryCta,
   breadcrumbs,
   proof,
-  badge,
+  badge: badgeProp,
   theme: themeProp,
   padding,
   paddingTop = padding,
@@ -140,6 +146,16 @@ const {
   class: className,
   ...rest
 } = Astro.props;
+
+/* SITE.founded supplies a default "Since …" badge; a page can override or
+   pass `badge={false}` to hide it. */
+const badge: HeroBadge | undefined =
+  badgeProp === false
+    ? undefined
+    : (badgeProp ??
+      (SITE.founded
+        ? { value: `Since ${SITE.founded}`, label: SITE.name }
+        : undefined));
 
 const variant: HeroVariant = variantProp ?? (image ? "background" : "text");
 const theme: HeroTheme =

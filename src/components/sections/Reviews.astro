@@ -102,6 +102,10 @@ const stars = rating ? Math.max(0, Math.min(5, Math.round(rating))) : 0;
 if (import.meta.env.DEV && render) {
   if (!Astro.props.reviews?.length)
     console.warn("[Reviews] `reviews` is empty or missing; nothing renders.");
+  if (layout === "featured" && reviews.length > 3)
+    console.warn(
+      `[Reviews] The featured layout shows 3 reviews; ${reviews.length - 3} more are hidden. Use layout="grid" to show them all.`,
+    );
   if (layoutProp && !["featured", "grid"].includes(layoutProp))
     console.warn(`[Reviews] Unknown layout "${layoutProp}".`);
 }

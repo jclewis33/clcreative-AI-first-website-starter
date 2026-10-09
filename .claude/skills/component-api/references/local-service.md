@@ -84,7 +84,7 @@ is a complete example — copy it as the starting point for a client home page:
   heading="Remodels done <strong>right</strong>"
   image={hero}
   imageAlt="…"
-  primaryCta={{ label: "Get a free estimate", modal: "estimate" }}
+  primaryCta={{ label: "Get a free estimate", modal: "estimate-modal" }}
 />
 <StatsStrip items={stats} />
 <ServiceCards heading="Every room, one crew" items={services} />
@@ -111,7 +111,11 @@ is a complete example — copy it as the starting point for a client home page:
 <FAQ items={faqs} />
 <CallBand
   heading="Ready to get started?"
-  secondaryCta={{ label: "Get a free estimate", modal: "estimate" }}
+  secondaryCta={{ label: "Get a free estimate", modal: "estimate-modal" }}
 />
-<LeadFormModal id="estimate" formId="contact" heading="Get a free estimate" />
+<LeadFormModal
+  id="estimate-modal"
+  formId="contact"
+  heading="Get a free estimate"
+/>
 ```

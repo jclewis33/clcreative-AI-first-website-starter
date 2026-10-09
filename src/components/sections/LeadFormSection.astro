@@ -59,7 +59,11 @@ interface Props extends HTMLAttributes<"section"> {
   /** Section padding (top and bottom). */
   padding?: PaddingSize;
 
-  /** Section id for anchor links. @default 'estimate' */
+  /**
+   * Section id for anchor links. Also prefixes the form field ids, so two
+   * forms on one page need different ids.
+   * @default 'lead-form-section'
+   */
   id?: string;
 
   /** Extra classes on the section. */
@@ -78,7 +82,7 @@ const {
   showPhone = true,
   theme = "dark",
   padding,
-  id = "estimate",
+  id = "lead-form-section",
   class: className,
   ...rest
 } = Astro.props;
