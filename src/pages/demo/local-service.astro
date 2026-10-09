@@ -18,15 +18,14 @@ import LeadFormSection from "@/components/sections/LeadFormSection.astro";
 import FAQ from "@/components/sections/FAQ.astro";
 import CallBand from "@/components/sections/CallBand.astro";
 import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import { getServices, servicePath } from "@/lib/services";
 import SampleMap from "@/assets/maps/sample-service-area.svg";
 import heroPhoto from "@/assets/placeholder-images/ai-first-starter-5.webp";
-import kitchenPhoto from "@/assets/placeholder-images/ai-first-starter-1.webp";
-import bathPhoto from "@/assets/placeholder-images/ai-first-starter-2.webp";
-import additionPhoto from "@/assets/placeholder-images/ai-first-starter-3.webp";
 import processPhoto from "@/assets/placeholder-images/ai-first-starter-4.webp";
 import bandPhoto from "@/assets/placeholder-images/ai-first-starter-6.webp";
 import ownerPhoto from "@/assets/placeholder-images/ai-first-starter-7.webp";
 
+const services = await getServices();
 const ESTIMATE = "estimate-modal";
 const estimateCta = { label: "Get a free estimate", modal: ESTIMATE };
 const projectOptions = [
@@ -61,32 +60,17 @@ const projectOptions = [
   />
 
   <ServiceCards
+    id="services"
     eyebrow="What we do"
     heading="Every room, one crew"
     intro="From a single bathroom to a whole-home remodel."
-    items={[
-      {
-        title: "Kitchens",
-        text: "Layouts, cabinets, counters and lighting.",
-        image: kitchenPhoto,
-        imageAlt: "A remodeled kitchen with an island",
-        href: "/contact",
-      },
-      {
-        title: "Bathrooms",
-        text: "Tile, showers, vanities and ventilation.",
-        image: bathPhoto,
-        imageAlt: "A bright bathroom with a walk-in shower",
-        href: "/contact",
-      },
-      {
-        title: "Additions",
-        text: "More room without moving house.",
-        image: additionPhoto,
-        imageAlt: "A new room added onto a house",
-        href: "/contact",
-      },
-    ]}
+    items={services.map((s) => ({
+      title: s.data.title,
+      text: s.data.cardText,
+      image: s.data.cardImage,
+      imageAlt: s.data.cardImageAlt,
+      href: servicePath(s.id),
+    }))}
   />
 
   <ServiceArea

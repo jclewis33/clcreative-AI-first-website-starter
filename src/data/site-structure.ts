@@ -69,7 +69,10 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
+import { SERVICE_NAV } from "@/lib/service-nav";
+
 /** llms.txt section a page belongs to (also its broad category). */
+
 export type PageGroup = "main" | "service" | "location" | "index" | "optional";
 
 export interface SitePage {
@@ -105,6 +108,18 @@ export const PAGES: SitePage[] = [
     desc: "Get in touch.",
     group: "main",
   },
+
+  // ── Service pages — generated from src/content/services/*.json ──────────
+  // Add or remove a service by adding or removing its file; nothing to edit
+  // here.
+  ...SERVICE_NAV.map((service): SitePage => ({
+    path: service.path,
+    title: service.title,
+    navLabel: service.navLabel,
+    footerLabel: service.navLabel,
+    desc: service.description,
+    group: "service",
+  })),
 
   // ── Collection index / landing pages ─────────────────────────────────────
   {
@@ -237,6 +252,9 @@ const DEV_NAV_LINKS: NavMenuItem[] = import.meta.env.DEV
  * See "Add a link to the NAVBAR" in the header for the recipe.
  */
 export const NAV_MENU: NavMenuItem[] = [
+  ...(SERVICE_NAV.length
+    ? [{ label: "Services", children: SERVICE_NAV.map((s) => s.path) }]
+    : []),
   { path: "/blog" },
   { path: "/case-studies" },
   { path: "/glossary" },
@@ -273,6 +291,9 @@ const DEV_FOOTER_LINKS: FooterLink[] = import.meta.env.DEV
  * See "Add a link to the FOOTER" in the header for the recipe.
  */
 export const FOOTER_GROUPS: FooterGroup[] = [
+  ...(SERVICE_NAV.length
+    ? [{ title: "Services", links: SERVICE_NAV.map((s) => s.path) }]
+    : []),
   {
     title: "Resources",
     links: [

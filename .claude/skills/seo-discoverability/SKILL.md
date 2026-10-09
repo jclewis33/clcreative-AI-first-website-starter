@@ -141,13 +141,13 @@ hand-curated** in the `PAGES` registry in
 source of truth that also drives the nav and footer. **Whenever you add a new
 static page**, add one `PAGES` entry with the matching `group`:
 
-| New page type              | `group` value on the `PAGES` entry |
-| -------------------------- | ---------------------------------- |
-| Top-level marketing page   | `"main"`                           |
-| Service (`/services/*`)    | `"service"`                        |
-| Location (`/web-design-*`) | `"location"`                       |
-| Collection index / landing | `"index"`                          |
-| Legal / policy page        | `"optional"`                       |
+| New page type              | `group` value on the `PAGES` entry                 |
+| -------------------------- | -------------------------------------------------- |
+| Top-level marketing page   | `"main"`                                           |
+| Service (`/services/*`)    | none, generated from `src/content/services/*.json` |
+| Location (`/web-design-*`) | `"location"`                                       |
+| Collection index / landing | `"index"`                                          |
+| Legal / policy page        | `"optional"`                                       |
 
 Each entry is `{ path, title, desc, group }` (plus optional `navLabel` /
 `footerLabel` overrides) — `path` is the site-relative URL with no trailing
