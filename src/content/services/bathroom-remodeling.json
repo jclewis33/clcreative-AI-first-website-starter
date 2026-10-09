@@ -1,0 +1,90 @@
+{
+  "title": "Bathroom remodeling",
+  "navLabel": "Bathrooms",
+  "order": 20,
+  "seoTitle": "Bathroom Remodeling",
+  "seoDescription": "Bathroom remodeling with walk-in showers, tile, vanities and ventilation, built by one local crew with a fixed price and a two-year warranty.",
+  "cardText": "Showers, tile, vanities and ventilation, done right the first time.",
+  "cardImage": "./images/sample-4.webp",
+  "cardImageAlt": "A bright bathroom with a walk-in shower and glass door",
+  "icon": "bath",
+  "hero": {
+    "eyebrow": "Bathroom remodeling",
+    "heading": "A bathroom that's <strong>easy to live with</strong>",
+    "text": "Walk-in showers, new tile and vanities, and the ventilation and waterproofing behind them, built to last.",
+    "image": "./images/sample-4.webp",
+    "imageAlt": "A remodeled bathroom with a walk-in shower and floating vanity"
+  },
+  "highlights": [
+    { "value": "500+", "label": "Bathrooms finished" },
+    { "value": "3 wk", "label": "Typical build time" },
+    { "value": "Fixed", "label": "Price before we start" },
+    { "value": "2 yr", "label": "Workmanship warranty" }
+  ],
+  "scope": {
+    "heading": "What we work on",
+    "items": [
+      {
+        "title": "Showers and tubs",
+        "text": "Walk-in showers, tub-to-shower conversions and new tubs.",
+        "icon": "bath"
+      },
+      {
+        "title": "Tile and floors",
+        "text": "Wall and floor tile set over proper waterproofing.",
+        "icon": "grid"
+      },
+      {
+        "title": "Vanities and storage",
+        "text": "Vanities, mirrors and storage that fit the room.",
+        "icon": "house"
+      },
+      {
+        "title": "Ventilation",
+        "text": "Quiet fans vented outside, so moisture doesn't linger.",
+        "icon": "wind"
+      }
+    ]
+  },
+  "included": {
+    "heading": "What's included",
+    "items": [
+      "Design help",
+      "Permits",
+      "Demolition",
+      "Waterproofing",
+      "Plumbing",
+      "Tile",
+      "Vanity and fixtures",
+      "Final cleanup"
+    ],
+    "images": [
+      {
+        "src": "./images/sample-5.webp",
+        "alt": "A finished bathroom with large-format wall tile"
+      },
+      {
+        "src": "./images/sample-6.webp",
+        "alt": "A new vanity with a stone top and mirror"
+      }
+    ]
+  },
+  "faqs": [
+    {
+      "question": "How long does a bathroom remodel take?",
+      "answer": "Most bathrooms take two to four weeks of work. Tile and waterproofing need curing time, which we build into the schedule."
+    },
+    {
+      "question": "Can you convert a tub to a walk-in shower?",
+      "answer": "Yes. It's one of our most common jobs, and we check the plumbing and floor during the estimate."
+    },
+    {
+      "question": "Do you handle permits?",
+      "answer": "Yes. We pull the permits and schedule the inspections as part of the job."
+    }
+  ],
+  "cta": {
+    "heading": "Ready for a <strong>better bathroom</strong>?",
+    "text": "Call now, or get a free on-site estimate."
+  }
+}
