@@ -1,0 +1,133 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+type LinkListItem = { title: string; text?: string; href: string };
+
+interface Props extends HTMLAttributes<"ul"> {
+  /**
+   * **LinkList** — a ruled list of links, each a title with a short hint
+   * and an arrow. Made for "Not sure what to ask for?" service lists on a
+   * contact page, or any short index of pages.
+   *
+   * - `items` — `{ title, text?, href }[]`
+   *
+   * @example
+   * <LinkList items={[{ title: "Kitchen remodeling", text: "Layouts, cabinets, counters", href: "/services/kitchen-remodeling" }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The links. Empty renders nothing. */
+  items: LinkListItem[];
+
+  /** Extra classes on the list. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  items = [],
+  class: className,
+  ...rest
+} = Astro.props;
+const links = items.filter((item) => item.title && item.href);
+
+if (import.meta.env.DEV && render && !links.length) {
+  console.warn("[LinkList] `items` is empty or missing; nothing renders.");
+}
+---
+
+{
+  render && links.length > 0 && (
+    <ul class:list={["link-list_wrap", className]} {...rest}>
+      {links.map((item) => (
+        <li class="link-list_item">
+          <a class="link-list_link" href={item.href}>
+            <span class="link-list_title">{item.title}</span>
+            {item.text && <span class="link-list_text">{item.text}</span>}
+            <svg
+              class="link-list_arrow"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .link-list_wrap {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .link-list_item {
+      border-bottom: var(--border-width-main) solid var(--border);
+    }
+
+    .link-list_link {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: var(--space-4);
+      row-gap: var(--space-1);
+      align-items: center;
+      padding-block: var(--space-4);
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .link-list_title {
+      font-family: var(--font-primary);
+      font-size: var(--h5-size);
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .link-list_text {
+      grid-column: 1;
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, var(--text) 70%, transparent);
+    }
+
+    .link-list_arrow {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      flex-shrink: 0;
+      width: 1.25rem;
+      aspect-ratio: 1 / 1;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: translate 0.2s ease;
+    }
+
+    @media (hover: hover) {
+      .link-list_link:hover .link-list_title {
+        color: var(--heading-accent);
+      }
+
+      .link-list_link:hover .link-list_arrow {
+        translate: 0.25rem 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .link-list_title,
+      .link-list_arrow {
+        transition: none;
+      }
+    }
+  }
+</style>
