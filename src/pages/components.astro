@@ -93,6 +93,9 @@ import ProcessSteps from "@/components/sections/ProcessSteps.astro";
 import StorySplit from "@/components/sections/StorySplit.astro";
 import IncludedList from "@/components/sections/IncludedList.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import CallBand from "@/components/sections/CallBand.astro";
 import SampleMap from "@/assets/maps/sample-service-area.svg";
 import demoPhoto5 from "@/assets/placeholder-images/ai-first-starter-5.webp";
 import { PROJECT_CATEGORIES } from "@/config/projects";
@@ -217,6 +220,10 @@ const COMPONENT_INDEX = [
   { slug: "story-split", text: "StorySplit" },
   { slug: "included-list", text: "IncludedList" },
   { slug: "service-area", text: "ServiceArea" },
+  { slug: "reviews", text: "Reviews" },
+  { slug: "lead-form-section", text: "LeadFormSection" },
+  { slug: "call-band", text: "CallBand" },
+  { slug: "cta-section-cta", text: "CTASection with SectionCta" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -2566,6 +2573,96 @@ const demoGallery = [
       { src: demoPhoto3, alt: "A finished home exterior on a quiet street" },
       { src: demoPhoto4, alt: "A crew member loading tools into a truck" },
     ]}
+  />
+
+  <Section theme="light" padding="small" id="reviews">
+    <Heading variant="eyebrow">Reviews</Heading>
+    <Heading tag="h2"
+      >A featured review with two beside it, or a grid, with a rating badge</Heading
+    >
+  </Section>
+  <Reviews
+    rating={4.9}
+    count={127}
+    allReviewsHref="https://example.com/reviews"
+    reviews={[
+      {
+        text: "They kept us informed every single day and finished the week they said they would. The kitchen is exactly what we drew on a napkin.",
+        name: "Jordan P.",
+        meta: "Kitchen remodel",
+      },
+      {
+        text: "Clean, careful and fair on price.",
+        name: "Sam R.",
+        meta: "Bathroom",
+      },
+      {
+        text: "Would hire them again in a heartbeat.",
+        name: "Alex T.",
+        meta: "Addition",
+      },
+    ]}
+  />
+  <Reviews
+    layout="grid"
+    theme="dark"
+    heading="Neighbors who hired us"
+    reviews={[
+      { text: "On time, on budget, no surprises.", name: "Morgan L." },
+      {
+        text: "The crew treated our house like their own.",
+        name: "Casey D.",
+        meta: "Deck",
+      },
+      {
+        text: "Best contractor we've worked with.",
+        name: "Riley K.",
+        meta: "Basement",
+      },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="lead-form-section">
+    <Heading variant="eyebrow">LeadFormSection</Heading>
+    <Heading tag="h2"
+      >The estimate section: intro and phone line beside the form</Heading
+    >
+  </Section>
+  <LeadFormSection
+    id="demo-lead-section"
+    eyebrow="Free estimate"
+    heading="Tell us about your <strong>project</strong>"
+    text="We'll call you back within one business day."
+    formId="contact"
+    fields="quote"
+    projectOptions={[
+      { label: "Kitchen", value: "kitchen" },
+      { label: "Bathroom", value: "bathroom" },
+      { label: "Addition", value: "addition" },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="call-band">
+    <Heading variant="eyebrow">CallBand</Heading>
+    <Heading tag="h2"
+      >A dark closing band with the phone and a second button</Heading
+    >
+  </Section>
+  <CallBand
+    heading="Ready to <strong>get started</strong>?"
+    text="Call now, or get an estimate online."
+    secondaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
+  />
+
+  <Section theme="light" padding="small" id="cta-section-cta">
+    <Heading variant="eyebrow">CTASection with SectionCta</Heading>
+    <Heading tag="h2">The closing CTA can now open the estimate pop-up</Heading>
+  </Section>
+  <CTASection
+    heading="Let's build something <strong>you'll love</strong>"
+    text="A free on-site estimate, with no pressure."
+    primaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
+    secondaryCta={{ label: "See our work", href: "/projects" }}
   />
 
   <!-- ============================================================

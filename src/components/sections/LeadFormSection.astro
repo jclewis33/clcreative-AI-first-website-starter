@@ -1,0 +1,151 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import LeadForm from "@/components/form/LeadForm.astro";
+import type { FormId } from "@/config/forms";
+import { SITE } from "@/config/site";
+
+type LeadFormSectionFields = ComponentProps<typeof LeadForm>["fields"];
+type LeadFormSectionOptions = ComponentProps<typeof LeadForm>["projectOptions"];
+type LeadFormSectionTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **LeadFormSection** — the "get an estimate" section: an intro and a
+   * "rather talk now?" phone line on the left, the GoHighLevel LeadForm in
+   * a light panel on the right.
+   *
+   * - `formId` — which `src/config/forms.ts` entry it submits as (public)
+   * - `fields`, `projectOptions` — passed to LeadForm
+   * - `showPhone` — the phone line (default `true`)
+   * - `theme` — default `'dark'`; the form panel always reads light
+   *
+   * @example
+   * <LeadFormSection heading="Get a free estimate" formId="contact" fields="quote" projectOptions={[…]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. HTML allowed; `<strong>` = accent. Required. */
+  heading: string;
+
+  /** Intro paragraph. */
+  text?: string;
+
+  /** The forms-registry entry this form submits as. Required. */
+  formId: FormId;
+
+  /** LeadForm field preset. @default 'contact' */
+  fields?: LeadFormSectionFields;
+
+  /** Quote preset: project-type choices. */
+  projectOptions?: LeadFormSectionOptions;
+
+  /** Show the "Rather talk now? Call …" line. @default true */
+  showPhone?: boolean;
+
+  /** Section theme. @default 'dark' */
+  theme?: LeadFormSectionTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. @default 'estimate' */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  formId,
+  fields,
+  projectOptions,
+  showPhone = true,
+  theme = "dark",
+  padding,
+  id = "estimate",
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!heading)
+    console.warn("[LeadFormSection] `heading` is required; nothing renders.");
+  if (!formId)
+    console.warn("[LeadFormSection] `formId` is required; nothing renders.");
+}
+---
+
+{
+  render && heading && formId && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["lead-form-section_wrap", className]}
+      {...rest}
+    >
+      <Layout ratio="5-7" verticalAlign="start">
+        {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+        <Heading tag="h2" accent>
+          <Fragment set:html={heading} />
+        </Heading>
+        {text && <Text muted>{text}</Text>}
+        {showPhone && (
+          <Text variant="small" muted>
+            Rather talk now? Call{" "}
+            <a class="lead-form-section_phone" href={`tel:${SITE.phone.tel}`}>
+              {SITE.phone.display}
+            </a>
+          </Text>
+        )}
+        <div slot="column2" class="lead-form-section_panel" data-theme-invert>
+          <LeadForm
+            formId={formId}
+            id={`${id}-form`}
+            fields={fields}
+            projectOptions={projectOptions}
+          />
+        </div>
+      </Layout>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .lead-form-section_panel {
+      padding: var(--space-5);
+      border-radius: var(--radius-main);
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    .lead-form-section_phone {
+      font-weight: 700;
+      color: var(--heading-accent);
+      white-space: nowrap;
+    }
+
+    @media (hover: hover) {
+      .lead-form-section_phone:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+</style>
