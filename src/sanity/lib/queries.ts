@@ -90,8 +90,13 @@ export const BLOG_POST_QUERY =
           _type,
           "slug": slug.current,
           "title": coalesce(title, term),
-          "description": coalesce(description, shortDefinition),
-          image
+          // A project's description is rich text — use its SEO line and
+          // hero photo so the link card stays a plain string + image.
+          "description": select(
+            _type == "project" => seoDescription,
+            coalesce(description, shortDefinition)
+          ),
+          "image": select(_type == "project" => heroImage, image)
         }
       }
     }
@@ -352,8 +357,13 @@ export const GLOSSARY_TERM_QUERY =
           _type,
           "slug": slug.current,
           "title": coalesce(title, term),
-          "description": coalesce(description, shortDefinition),
-          image
+          // A project's description is rich text — use its SEO line and
+          // hero photo so the link card stays a plain string + image.
+          "description": select(
+            _type == "project" => seoDescription,
+            coalesce(description, shortDefinition)
+          ),
+          "image": select(_type == "project" => heroImage, image)
         }
       }
     }

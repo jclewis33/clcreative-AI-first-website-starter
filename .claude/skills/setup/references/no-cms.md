@@ -38,7 +38,7 @@ What to do:
 - Skip the whole Sanity branch.
 - **Hide the empty content routes from navigation** so visitors don't land on empty
   listings. In [site-structure.ts](../../../../src/data/site-structure.ts), remove
-  or comment the `/blog`, `/case-studies`, and `/glossary` entries from the nav
+  or comment the `/blog`, `/case-studies`, `/projects`, `/gallery` and `/glossary` entries from the nav
   `PAGES` and from the footer `links` array. The routes still build; they're just
   not linked.
 - Tell the user the on-ramp: when they want the CMS later, run `/setup` again and
@@ -53,17 +53,17 @@ dependency gone** — for bundle size, for supply-chain surface, or because the
 project is a pure brochure site. Confirm before starting; it is not reversible
 without a git revert.
 
-**Scope, measured against the current tree — about 64 files deleted and 11
+**Scope, measured against the current tree — about 78 files deleted and 11
 edited:**
 
 | Delete                                                                                 | Count |
 | -------------------------------------------------------------------------------------- | ----- |
-| `src/sanity/**` (schema, lib, components)                                              | 29    |
+| `src/sanity/**` (schema, lib, components)                                              | 31    |
 | `src/components/portabletext/**`                                                       | 8     |
-| Content + preview + draft-mode routes                                                  | 12    |
-| Templates (BlogPost, CaseStudy, GlossaryTerm)                                          | 3     |
+| Content + preview + draft-mode routes                                                  | 15    |
+| Templates (BlogPost, CaseStudy, GlossaryTerm, Project)                                 | 4     |
 | Sections (SanityCtaSection, CaseStudyFeatured, SingleTestimonial, TestimonialShowcase) | 4     |
-| UI (CaseStudyCard, TestimonialCard)                                                    | 2     |
+| UI (CaseStudyCard, TestimonialCard, ProjectCard, ProjectBrowser, GalleryBrowser)       | 5     |
 | React islands (SanityVisualEditing, DisableDraftMode)                                  | 2     |
 | Root config (`sanity.config.ts`, `sanity.cli.ts`, `sanity-typegen.json`)               | 3     |
 
@@ -81,7 +81,13 @@ edited:**
 - `src/lib/jsonld.ts`, `src/lib/read-time.ts`, `src/pages/llms.txt.ts`,
   `src/pages/llms-full.txt.ts`, `src/pages/components.astro`, `src/env.d.ts`.
 - [site-structure.ts](../../../../src/data/site-structure.ts) — remove the
-  `/blog`, `/case-studies`, `/glossary` nav and footer entries (as in Option A).
+  `/blog`, `/case-studies`, `/projects`, `/gallery`, `/glossary` nav and footer
+  entries (as in Option A).
+- Projects + gallery also delete `src/config/projects.ts`, `src/lib/projects.ts`,
+  `src/lib/project-format.ts`, `scripts/check-projects.mjs`,
+  `src/styles/pages/projects.css`, and `src/pages/gallery.astro` (the project
+  routes are in the "Content + preview" count above). **Keep** `Lightbox` and
+  the other `ui/` building blocks — they don't depend on Sanity.
 
 **Order of work:** edit the six mixed files first so nothing imports a deleted
 module, then delete, then `npm install` to prune, then run the full CI gate. Expect

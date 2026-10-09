@@ -319,8 +319,10 @@ zero Studio imports) are **separate modules**. Keep them separate.
 **Desk structure** (the `structureTool({ structure })` resolver). An explicit
 `S.list()` — **every new document type must be added here by hand** or it will
 not appear in the desk. Layout: Site Settings (pinned singleton) · Blog Posts /
-Case Studies / Glossary at top level with curated sub-views (Featured, Drafts,
-Coming Soon — plain GROQ filters on `S.documentList()`) · Reusable Content and
+Case Studies / Glossary / Projects (All, Featured, one list per category from
+`src/config/projects.ts`) / Gallery photos at top level, with curated sub-views
+(Featured, Drafts, Coming Soon — plain GROQ filters on `S.documentList()`) ·
+Reusable Content and
 People & Social folders. The `SINGLETON_TYPES` / `SINGLETON_ACTIONS` logic
 keeps `siteSettings` a singleton — leave it intact.
 
@@ -331,7 +333,8 @@ always safe. Object/array-member sub-fields do not take groups.
 
 **Icons.** Every document type sets `icon:` on its `defineType` (from
 `@sanity/icons`). Current mapping: blogPost→`DocumentTextIcon`,
-caseStudy→`CaseIcon`, glossaryTerm→`BookIcon`, author→`UserIcon`,
+caseStudy→`CaseIcon`, glossaryTerm→`BookIcon`, project→`ProjectsIcon`,
+galleryItem→`ImageIcon`, author→`UserIcon`,
 testimonial→`CommentIcon`, blogCta→`BellIcon`, ctaSection→`BlockElementIcon`,
 siteSettings→`CogIcon`.
 
@@ -450,4 +453,29 @@ function per content type, called by both the public prerendered route and its
 4. **Presentation location** — a `defineLocations` entry in `resolve.ts`
    pointing at `/preview/<type>/<slug>`, followed by a Studio deploy.
 
-The sitemap and llms endpoints pick the new route up automatically.
+The sitemap picks the new route up automatically. **llms.txt / llms-full.txt do not** — each content type needs an explicit section there (see the case-studies and projects blocks in `src/pages/llms*.txt.ts`), using `.catch(() => [])` so a fresh fork still builds.
+
+## Projects + gallery (photo portfolio)
+
+`project` (detail page `/projects/<slug>`, preview twin
+`/preview/projects/<slug>`) and `galleryItem` (no detail page; listed on
+`/gallery`) are the photo-led portfolio for trade / local-service sites —
+separate from `caseStudy`, the long-form marketing story. A site can use
+either, or both.
+
+- **Categories** live in `src/config/projects.ts` — plain data shared by the
+  schema dropdown, the desk's per-category lists and the public filters.
+  Placeholders: replace per client. `categoryTitle()` falls back to the raw
+  value, so a renamed category never breaks a page.
+- **Location** is one free-text field shown exactly as written — no region
+  suffix is appended anywhere.
+- **Loaders** (`page-data.ts`): `loadProjectPage` (project + related, same
+  category first, filtered in GROQ + the default CTA section),
+  `getProjectStaticPaths`, `loadProjects`, `loadFeaturedProjects`,
+  `loadGallery` — all placeholder-safe.
+- **View models** (`src/lib/projects.ts`): `toProjectCards()`,
+  `sanityPhoto()`, `photoUrl()`. Pure formatters live in
+  `src/lib/project-format.ts` and are covered by
+  `node scripts/check-projects.mjs`.
+- `/projects` and `/gallery` are prerendered with no preview twin (like the
+  case-studies index); gallery edits appear after the publish rebuild.

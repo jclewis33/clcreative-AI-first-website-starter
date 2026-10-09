@@ -13,12 +13,14 @@ import {
   BLOG_POSTS_QUERY,
   BLOG_POST_QUERY,
   CASE_STUDIES_QUERY,
+  PROJECTS_QUERY,
   CASE_STUDY_QUERY,
   GLOSSARY_TERMS_QUERY,
   GLOSSARY_TERM_QUERY,
 } from "@/sanity/lib/queries";
 import { portableTextToMarkdown } from "@/sanity/lib/portable-text";
 import { SITE_URL, SITE_NAME, SITE_SUMMARY } from "@/config/site";
+import { categoryTitle } from "@/config/projects";
 import {
   MAIN_PAGES,
   SERVICE_PAGES,
@@ -31,6 +33,7 @@ import {
 import type {
   BLOG_POSTS_QUERY_RESULT,
   CASE_STUDIES_QUERY_RESULT,
+  PROJECTS_QUERY_RESULT,
   GLOSSARY_TERMS_QUERY_RESULT,
   CASE_STUDY_QUERY_RESULT,
 } from "@/sanity/sanity.types";
@@ -97,7 +100,7 @@ export const GET: APIRoute = async () => {
   // 1. Fetch the listings to know what exists (and order). Tolerate an empty
   //    or unreachable dataset (e.g. a fresh fork before `/setup`) — the file
   //    still renders the static page index.
-  const [posts, caseStudies, glossary] = await Promise.all([
+  const [posts, caseStudies, glossary, projects] = await Promise.all([
     loadQuery({ query: BLOG_POSTS_QUERY })
       .then((r) => r.data)
       .catch((): BLOG_POSTS_QUERY_RESULT => []),
@@ -107,6 +110,9 @@ export const GET: APIRoute = async () => {
     loadQuery({ query: GLOSSARY_TERMS_QUERY })
       .then((r) => r.data)
       .catch((): GLOSSARY_TERMS_QUERY_RESULT => []),
+    loadQuery({ query: PROJECTS_QUERY })
+      .then((r) => r.data)
+      .catch((): PROJECTS_QUERY_RESULT => []),
   ]);
 
   const postSlugs = (posts ?? []).map((p) => p.slug);
@@ -168,6 +174,19 @@ export const GET: APIRoute = async () => {
       if (cs.description) out.push(cs.description);
       const md = caseStudyContentToMarkdown(cs.content);
       if (md) out.push(md);
+    }
+  }
+
+  const listedProjects = (projects ?? []).filter((p) => p.title && p.slug);
+  if (listedProjects.length) {
+    out.push("---", "# Projects");
+    for (const p of listedProjects) {
+      out.push(`## ${p.title}`);
+      out.push(`URL: ${SITE_URL}/projects/${p.slug}`);
+      const meta = [categoryTitle(p.category), p.location]
+        .filter(Boolean)
+        .join(" · ");
+      if (meta) out.push(meta);
     }
   }
 

@@ -19,7 +19,10 @@ import {
   UserIcon,
   CommentIcon,
   FilterIcon,
+  ProjectsIcon,
+  ImageIcon,
 } from "@sanity/icons";
+import { PROJECT_CATEGORIES } from "./src/config/projects";
 import {
   SANITY_PROJECT_ID,
   SANITY_DATASET,
@@ -38,10 +41,20 @@ import {
 const SINGLETON_TYPES = new Set(["siteSettings"]);
 const SINGLETON_ACTIONS = new Set(["publish", "discardChanges", "restore"]);
 // Types with a public detail page — get the "View on site" document action.
-const PREVIEWABLE_TYPES = new Set(["blogPost", "caseStudy", "glossaryTerm"]);
+const PREVIEWABLE_TYPES = new Set([
+  "blogPost",
+  "caseStudy",
+  "glossaryTerm",
+  "project",
+]);
 
 // Sort newest-first — mirrors the `dateDesc` ordering defined on the schemas.
 const DATE_DESC = [{ field: "date", direction: "desc" as const }];
+// Projects sort by completion date, then creation (mirrors `completedDesc`).
+const PROJECT_ORDER = [
+  { field: "completed", direction: "desc" as const },
+  { field: "_createdAt", direction: "desc" as const },
+];
 
 // Required on any S.documentList() with a custom .filter() — Sanity warns
 // ("No apiVersion specified for document type list with custom filter") and
@@ -103,6 +116,64 @@ export default defineConfig({
                 S.documentTypeList("glossaryTerm")
                   .title("Glossary Terms")
                   .defaultOrdering([{ field: "term", direction: "asc" }]),
+              ),
+            // Projects: all, featured, then one list per category (the
+            // categories come from src/config/projects.ts).
+            S.listItem()
+              .title("Projects")
+              .icon(ProjectsIcon)
+              .child(
+                S.list()
+                  .title("Projects")
+                  .items([
+                    S.listItem()
+                      .title("All projects")
+                      .icon(ProjectsIcon)
+                      .child(
+                        S.documentTypeList("project")
+                          .title("All projects")
+                          .defaultOrdering(PROJECT_ORDER),
+                      ),
+                    S.listItem()
+                      .title("Featured")
+                      .icon(StarIcon)
+                      .child(
+                        S.documentList()
+                          .title("Featured projects")
+                          .schemaType("project")
+                          .apiVersion(STRUCTURE_API_VERSION)
+                          .filter('_type == "project" && featured == true')
+                          .defaultOrdering(PROJECT_ORDER),
+                      ),
+                    S.divider(),
+                    ...PROJECT_CATEGORIES.map((category) =>
+                      S.listItem()
+                        .title(category.title)
+                        .id(`project-${category.value}`)
+                        .child(
+                          S.documentList()
+                            .title(category.title)
+                            .schemaType("project")
+                            .apiVersion(STRUCTURE_API_VERSION)
+                            .filter(
+                              '_type == "project" && category == $category',
+                            )
+                            .params({ category: category.value })
+                            .defaultOrdering(PROJECT_ORDER),
+                        ),
+                    ),
+                  ]),
+              ),
+            S.listItem()
+              .title("Gallery photos")
+              .icon(ImageIcon)
+              .child(
+                S.documentTypeList("galleryItem")
+                  .title("Gallery photos")
+                  .defaultOrdering([
+                    { field: "added", direction: "desc" },
+                    { field: "_createdAt", direction: "desc" },
+                  ]),
               ),
             S.divider(),
 
@@ -279,7 +350,10 @@ export default defineConfig({
       if (context.schemaType === "caseStudy") {
         return [...input, FeaturedBadge, ComingSoonBadge];
       }
-      if (context.schemaType === "blogPost") {
+      if (
+        context.schemaType === "blogPost" ||
+        context.schemaType === "project"
+      ) {
         return [...input, FeaturedBadge];
       }
       return input;
