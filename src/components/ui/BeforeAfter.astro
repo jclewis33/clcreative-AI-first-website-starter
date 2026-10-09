@@ -58,6 +58,17 @@ const {
   class: className,
   ...rest
 } = Astro.props;
+
+if (import.meta.env.DEV) {
+  if (!before || !after)
+    console.warn(
+      "[BeforeAfter] Both `before` and `after` images are required; nothing renders without them.",
+    );
+  if (!beforeAlt || !afterAlt)
+    console.warn(
+      "[BeforeAfter] Give both photos real alt text (`beforeAlt`, `afterAlt`).",
+    );
+}
 ---
 
 {

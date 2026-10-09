@@ -30,6 +30,7 @@ import {
 } from "@/lib/projects";
 import type { loadProjectPage } from "@/sanity/lib/page-data";
 import { categoryTitle } from "@/config/projects";
+import { photoAlt } from "@/lib/project-format";
 import { portableTextToHtml } from "@/sanity/lib/portable-text";
 
 type PageData = NonNullable<Awaited<ReturnType<typeof loadProjectPage>>>;
@@ -51,13 +52,14 @@ const service = stegaClean(project.service)?.trim();
 const completed = stegaClean(project.completed);
 const hero = sanityPhoto(
   project.heroImage,
-  project.imageAlt,
+  photoAlt(project.imageAlt, title),
   project.heroImageMeta,
   1600,
 );
 const photos = (project.photos ?? []).flatMap((p) => {
-  const photo = sanityPhoto(p, p.alt, p.meta, 1200);
-  const large = sanityPhoto(p, p.alt, p.meta, 1600);
+  const alt = photoAlt(p.alt, `${title} photo`);
+  const photo = sanityPhoto(p, alt, p.meta, 1200);
+  const large = sanityPhoto(p, alt, p.meta, 1600);
   if (!photo || !large) return [];
   return [{ photo, large, label: stegaClean(p.label) }];
 });

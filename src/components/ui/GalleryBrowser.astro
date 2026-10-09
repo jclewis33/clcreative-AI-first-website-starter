@@ -63,11 +63,19 @@ export interface Props extends HTMLAttributes<"div"> {
 const {
   docs,
   render = true,
-  items,
-  categories,
+  items = [],
+  categories = [],
   class: className,
   ...rest
 } = Astro.props;
+
+if (import.meta.env.DEV) {
+  if (!Astro.props.items) console.warn("[GalleryBrowser] `items` is required.");
+  if (!Astro.props.categories)
+    console.warn(
+      "[GalleryBrowser] `categories` is required (pass PROJECT_CATEGORIES).",
+    );
+}
 
 const used = new Set(items.map((item) => item.category));
 const chips = [
@@ -152,14 +160,25 @@ const captionMeta = (item: GalleryItem) =>
       ];
 
       // ── Filter ──────────────────────────────────────────
-      wrap.addEventListener("change", (event) => {
-        const radio = event.target as HTMLInputElement;
-        if (!radio.matches(".gallery-browser_radio")) return;
+      /* Always filter from whichever chip is checked, not from the event:
+         browsers restore a checked radio on reload / back-forward cache
+         without firing `change`, which would leave the chip and the
+         photos out of step. */
+      const apply = () => {
+        const value =
+          wrap.querySelector<HTMLInputElement>(".gallery-browser_radio:checked")
+            ?.value ?? "";
         for (const item of items) {
-          item.hidden =
-            Boolean(radio.value) && item.dataset.category !== radio.value;
+          item.hidden = Boolean(value) && item.dataset.category !== value;
+        }
+      };
+      wrap.addEventListener("change", (event) => {
+        if ((event.target as HTMLElement).matches(".gallery-browser_radio")) {
+          apply();
         }
       });
+      window.addEventListener("pageshow", apply);
+      apply();
     }
   }
 

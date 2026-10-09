@@ -80,6 +80,15 @@ const {
   class: className,
   ...rest
 } = Astro.props;
+
+if (import.meta.env.DEV) {
+  if (!text)
+    console.warn("[Quote] `text` is required; nothing renders without it.");
+  if (!["band", "large", "regular", "small"].includes(size))
+    console.warn(`[Quote] Unknown size "${size}".`);
+  if (!["icon", "none"].includes(mark))
+    console.warn(`[Quote] Unknown mark "${mark}". Use "icon" or "none".`);
+}
 ---
 
 {

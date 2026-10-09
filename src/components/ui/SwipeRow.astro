@@ -51,6 +51,10 @@ const {
   ...rest
 } = Astro.props;
 
+if (import.meta.env.DEV && ![2, 3, 4].includes(columns)) {
+  console.warn(`[SwipeRow] Unknown columns "${columns}". Use 2, 3 or 4.`);
+}
+
 const content = await slotContent(Astro.slots);
 ---
 

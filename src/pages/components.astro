@@ -72,7 +72,11 @@ import FactPhoto from "@/components/ui/FactPhoto.astro";
 import SwipeRow from "@/components/ui/SwipeRow.astro";
 import Lightbox from "@/components/ui/Lightbox.astro";
 import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
+import type { ImageMetadata } from "astro";
 import ProjectCard from "@/components/ui/ProjectCard.astro";
+import ProjectBrowser from "@/components/ui/ProjectBrowser.astro";
+import GalleryBrowser from "@/components/ui/GalleryBrowser.astro";
+import { PROJECT_CATEGORIES } from "@/config/projects";
 import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
 import demoPhoto2 from "@/assets/placeholder-images/ai-first-starter-2.webp";
 import demoPhoto3 from "@/assets/placeholder-images/ai-first-starter-3.webp";
@@ -178,6 +182,8 @@ const COMPONENT_INDEX = [
   { slug: "lightbox", text: "Lightbox" },
   { slug: "breadcrumbs", text: "Breadcrumbs" },
   { slug: "project-card", text: "ProjectCard" },
+  { slug: "project-browser", text: "ProjectBrowser" },
+  { slug: "gallery-browser", text: "GalleryBrowser" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -211,6 +217,86 @@ import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
   (): TestimonialData[] => [],
 );
+/* Hand-built sample data for the ProjectBrowser / GalleryBrowser demos —
+   real pages map Sanity rows with toProjectCards() / sanityPhoto(). */
+const demoPhotoOf = (img: ImageMetadata, alt: string) => ({
+  src: img,
+  alt,
+  width: img.width,
+  height: img.height,
+  position: "center" as const,
+});
+const demoProjects = [
+  {
+    id: "d1",
+    title: "Kitchen remodel",
+    href: "/projects",
+    category: "remodel",
+    categoryLabel: "Remodel",
+    location: "Springfield, IL",
+    image: demoPhotoOf(demoPhoto1, "A remodeled kitchen with white cabinets"),
+  },
+  {
+    id: "d2",
+    title: "Storefront refresh",
+    href: "/projects",
+    category: "commercial",
+    categoryLabel: "Commercial",
+    location: "Decatur, IL",
+    image: demoPhotoOf(demoPhoto2, "A refreshed storefront with new signage"),
+  },
+  {
+    id: "d3",
+    title: "Porch repair",
+    href: "/projects",
+    category: "repair",
+    categoryLabel: "Repair",
+    location: "",
+    image: demoPhotoOf(demoPhoto3, "A repaired front porch with new railings"),
+  },
+];
+const demoGallery = [
+  {
+    id: "g1",
+    caption: "New island and lighting",
+    category: "remodel",
+    categoryLabel: "Remodel",
+    location: "Springfield, IL",
+    projectTitle: "Kitchen remodel",
+    thumb: demoPhotoOf(demoPhoto1, "A kitchen island under pendant lights"),
+    full: demoPhotoOf(demoPhoto1, "A kitchen island under pendant lights"),
+  },
+  {
+    id: "g2",
+    caption: "Signage install",
+    category: "commercial",
+    categoryLabel: "Commercial",
+    location: "",
+    projectTitle: "",
+    thumb: demoPhotoOf(demoPhoto2, "New signage on a storefront"),
+    full: demoPhotoOf(demoPhoto2, "New signage on a storefront"),
+  },
+  {
+    id: "g3",
+    caption: "Railing detail",
+    category: "repair",
+    categoryLabel: "Repair",
+    location: "Decatur, IL",
+    projectTitle: "",
+    thumb: demoPhotoOf(demoPhoto3, "A close view of new porch railings"),
+    full: demoPhotoOf(demoPhoto3, "A close view of new porch railings"),
+  },
+  {
+    id: "g4",
+    caption: "Finished living room",
+    category: "remodel",
+    categoryLabel: "Remodel",
+    location: "",
+    projectTitle: "Kitchen remodel",
+    thumb: demoPhotoOf(demoPhoto4, "A finished open-plan living room"),
+    full: demoPhotoOf(demoPhoto4, "A finished open-plan living room"),
+  },
+];
 ---
 
 <BaseLayout
@@ -2077,6 +2163,32 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
         }}
       />
     </Grid>
+  </Section>
+
+  <Section theme="light" id="project-browser">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">ProjectBrowser</Heading>
+      <Heading tag="h2">Search and filter projects, as on /projects</Heading>
+      <Text muted
+        >Only categories that at least one project uses appear in the select.
+        Try searching for "Decatur".</Text
+      >
+    </Layout>
+    <ProjectBrowser projects={demoProjects} categories={PROJECT_CATEGORIES} />
+  </Section>
+
+  <Section theme="light" id="gallery-browser">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">GalleryBrowser</Heading>
+      <Heading tag="h2"
+        >Filter chips, square tiles and a lightbox, as on /gallery</Heading
+      >
+      <Text muted
+        >Captions combine the category, location and linked project, leaving out
+        whatever is missing.</Text
+      >
+    </Layout>
+    <GalleryBrowser items={demoGallery} categories={PROJECT_CATEGORIES} />
   </Section>
 
   <!-- ============================================================

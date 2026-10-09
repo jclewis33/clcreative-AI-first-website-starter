@@ -50,11 +50,20 @@ export interface Props extends HTMLAttributes<"ol"> {
 const {
   docs,
   render = true,
-  steps,
+  steps = [],
   variant = "list",
   class: className,
   ...rest
 } = Astro.props;
+
+if (import.meta.env.DEV) {
+  if (!steps?.length)
+    console.warn("[StepList] `steps` is empty or missing; nothing renders.");
+  if (!["list", "cards"].includes(variant))
+    console.warn(
+      `[StepList] Unknown variant "${variant}". Use "list" or "cards".`,
+    );
+}
 ---
 
 {

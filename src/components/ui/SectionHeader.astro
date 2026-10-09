@@ -65,12 +65,24 @@ const {
   ...rest
 } = Astro.props;
 
+if (import.meta.env.DEV) {
+  if (!heading)
+    console.warn(
+      "[SectionHeader] `heading` is required; nothing renders without it.",
+    );
+  if (!["h1", "h2", "h3"].includes(tag))
+    console.warn(`[SectionHeader] Unknown tag "${tag}". Use h1, h2 or h3.`);
+  if (!["display-xl", "display-lg", "h1", "h2", "h3"].includes(size))
+    console.warn(`[SectionHeader] Unknown size "${size}".`);
+}
+
 const hasAction = Astro.slots.has("action");
 const split = Boolean(intro) || hasAction;
 ---
 
 {
   render &&
+    heading &&
     (split ? (
       <Layout
         ratio="7-5"

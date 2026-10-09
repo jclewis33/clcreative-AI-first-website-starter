@@ -17,6 +17,7 @@ import { stegaClean } from "@sanity/client/stega";
 import { SITE } from "@/config/site";
 import { getPage } from "@/data/site-structure";
 import { sanityPhoto } from "@/lib/projects";
+import { photoAlt } from "@/lib/project-format";
 import { loadGallery } from "@/sanity/lib/page-data";
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import { PROJECT_CATEGORIES, categoryTitle } from "@/config/projects";
@@ -24,14 +25,16 @@ import { PROJECT_CATEGORIES, categoryTitle } from "@/config/projects";
 const rows = await loadGallery(getDraftModeProps(Astro));
 
 const items: GalleryItem[] = rows.flatMap((row) => {
-  const thumb = sanityPhoto(row.image, row.imageAlt, row.imageMeta, 640);
-  const full = sanityPhoto(row.image, row.imageAlt, row.imageMeta, 1800);
+  const caption = stegaClean(row.caption) ?? "";
+  const alt = photoAlt(row.imageAlt, caption || "Gallery photo");
+  const thumb = sanityPhoto(row.image, alt, row.imageMeta, 640);
+  const full = sanityPhoto(row.image, alt, row.imageMeta, 1800);
   if (!thumb || !full) return [];
   const category = stegaClean(row.category) ?? "";
   return [
     {
       id: row._id,
-      caption: stegaClean(row.caption) ?? "",
+      caption,
       category,
       categoryLabel: categoryTitle(category),
       location: stegaClean(row.location)?.trim() ?? "",

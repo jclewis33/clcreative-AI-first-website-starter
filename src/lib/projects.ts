@@ -15,6 +15,7 @@ import type { ImageMetadata } from "astro";
 import { stegaClean } from "@sanity/client/stega";
 import { urlFor, hotspotPosition } from "@/sanity/lib/image";
 import { categoryTitle } from "@/config/projects";
+import { photoAlt } from "@/lib/project-format";
 
 /**
  * A sized, positioned image ready for `<Visual>`. `src` is a Sanity CDN URL
@@ -92,14 +93,20 @@ export function toProjectCard(p: ProjectCardSource): ProjectCardData | null {
   const slug = stegaClean(p.slug);
   if (!slug) return null;
   const category = stegaClean(p.category) ?? "";
+  const title = stegaClean(p.title) ?? "Untitled project";
   return {
     id: p._id,
-    title: stegaClean(p.title) ?? "Untitled project",
+    title,
     href: projectPath(slug),
     category,
     categoryLabel: categoryTitle(category),
     location: stegaClean(p.location)?.trim() ?? "",
-    image: sanityPhoto(p.heroImage, p.imageAlt, p.heroImageMeta, 900),
+    image: sanityPhoto(
+      p.heroImage,
+      photoAlt(p.imageAlt, title),
+      p.heroImageMeta,
+      900,
+    ),
   };
 }
 

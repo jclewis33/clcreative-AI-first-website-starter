@@ -45,11 +45,20 @@ export interface Props extends HTMLAttributes<"div"> {
 const {
   docs,
   render = true,
-  projects,
-  categories,
+  projects = [],
+  categories = [],
   class: className,
   ...rest
 } = Astro.props;
+
+if (import.meta.env.DEV) {
+  if (!Astro.props.projects)
+    console.warn("[ProjectBrowser] `projects` is required.");
+  if (!Astro.props.categories)
+    console.warn(
+      "[ProjectBrowser] `categories` is required (pass PROJECT_CATEGORIES).",
+    );
+}
 
 const used = new Set(projects.map((p) => p.category));
 const options = categories.filter((c) => used.has(c.value));
@@ -57,7 +66,7 @@ const countLabel = (n: number) => `${n} project${n === 1 ? "" : "s"}`;
 ---
 
 {
-  render && (
+  render && projects.length > 0 && (
     <div class:list={["project-browser_wrap", className]} {...rest}>
       <div class="project-browser_bar" hidden>
         <label class="project-browser_search">

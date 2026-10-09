@@ -17,3 +17,16 @@ export function galleryCaptionMeta(
     .filter((part): part is string => Boolean(part && part.trim()))
     .join(" · ");
 }
+
+/**
+ * Alt text that is never empty. The editor's alt (per-placement, or the
+ * asset's library alt — already coalesced in GROQ) wins; otherwise a real
+ * fallback such as the gallery caption or "<project title> photo". CLAUDE.md:
+ * every image needs real alt text, never `alt=""`.
+ */
+export function photoAlt(
+  alt: string | null | undefined,
+  fallback: string,
+): string {
+  return alt && alt.trim() ? alt : fallback;
+}

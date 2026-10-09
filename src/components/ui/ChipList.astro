@@ -35,7 +35,17 @@ export interface Props extends HTMLAttributes<"ul"> {
   class?: string;
 }
 
-const { docs, render = true, items, class: className, ...rest } = Astro.props;
+const {
+  docs,
+  render = true,
+  items = [],
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && !items?.length) {
+  console.warn("[ChipList] `items` is empty or missing; nothing renders.");
+}
 ---
 
 {

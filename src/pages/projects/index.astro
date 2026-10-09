@@ -17,6 +17,7 @@ import { PROJECT_CATEGORIES } from "@/config/projects";
 import { SITE } from "@/config/site";
 import { getPage } from "@/data/site-structure";
 import { toProjectCards, sanityPhoto } from "@/lib/projects";
+import { photoAlt } from "@/lib/project-format";
 import { loadProjects, loadGallery } from "@/sanity/lib/page-data";
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 
@@ -28,7 +29,14 @@ const [projectRows, galleryRows] = await Promise.all([
 const projects = toProjectCards(projectRows);
 const thumbs = galleryRows
   .slice(0, 3)
-  .map((item) => sanityPhoto(item.image, item.imageAlt, item.imageMeta, 240))
+  .map((item) =>
+    sanityPhoto(
+      item.image,
+      photoAlt(item.imageAlt, item.caption ?? "Gallery photo"),
+      item.imageMeta,
+      240,
+    ),
+  )
   .filter((p) => p !== undefined);
 ---
 

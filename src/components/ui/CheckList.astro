@@ -48,12 +48,23 @@ export interface Props extends HTMLAttributes<"ul"> {
 const {
   docs,
   render = true,
-  items,
+  items = [],
   variant = "ruled",
   columns = 1,
   class: className,
   ...rest
 } = Astro.props;
+
+if (import.meta.env.DEV) {
+  if (!items?.length)
+    console.warn("[CheckList] `items` is empty or missing; nothing renders.");
+  if (!["ruled", "plain"].includes(variant))
+    console.warn(
+      `[CheckList] Unknown variant "${variant}". Use "ruled" or "plain".`,
+    );
+  if (![1, 2].includes(columns))
+    console.warn(`[CheckList] Unknown columns "${columns}". Use 1 or 2.`);
+}
 ---
 
 {
