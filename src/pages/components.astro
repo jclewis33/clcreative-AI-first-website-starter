@@ -88,6 +88,10 @@ import serviceIcons from "@/data/service-icons.json";
 import Hero from "@/components/sections/Hero.astro";
 import StatsStrip from "@/components/sections/StatsStrip.astro";
 import PhotoBand from "@/components/sections/PhotoBand.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import StorySplit from "@/components/sections/StorySplit.astro";
+import IncludedList from "@/components/sections/IncludedList.astro";
 import demoPhoto5 from "@/assets/placeholder-images/ai-first-starter-5.webp";
 import { PROJECT_CATEGORIES } from "@/config/projects";
 import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
@@ -206,6 +210,10 @@ const COMPONENT_INDEX = [
   { slug: "hero-text", text: "Hero (text)" },
   { slug: "stats-strip", text: "StatsStrip" },
   { slug: "photo-band", text: "PhotoBand" },
+  { slug: "service-cards", text: "ServiceCards" },
+  { slug: "process-steps", text: "ProcessSteps" },
+  { slug: "story-split", text: "StorySplit" },
+  { slug: "included-list", text: "IncludedList" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -2395,6 +2403,145 @@ const demoGallery = [
     <Heading tag="h2">A full-width photo strip</Heading>
   </Section>
   <PhotoBand image={demoPhoto3} alt="A crew at work on a finished exterior" />
+
+  <Section theme="light" padding="small" id="service-cards">
+    <Heading variant="eyebrow">ServiceCards</Heading>
+    <Heading tag="h2"
+      >Services as a grid with icons, or a swipe row with photos</Heading
+    >
+  </Section>
+  <ServiceCards
+    eyebrow="What we do"
+    heading="Every room, one crew"
+    intro="From a single bathroom to a whole-home remodel."
+    items={[
+      {
+        title: "Kitchens",
+        text: "Layouts, cabinets, counters and lighting.",
+        icon: "kitchen",
+        href: "/contact",
+      },
+      {
+        title: "Bathrooms",
+        text: "Tile, showers, vanities and ventilation.",
+        icon: "bath",
+        href: "/contact",
+      },
+      {
+        title: "Additions",
+        text: "More room without moving house.",
+        icon: "addition",
+        href: "/contact",
+      },
+    ]}
+  />
+  <ServiceCards
+    layout="swipe"
+    theme="dark"
+    heading="Related services"
+    moreLabel="View service"
+    items={[
+      {
+        title: "Kitchen remodeling",
+        text: "Plan, build and finish.",
+        image: demoPhoto1,
+        imageAlt: "A remodeled kitchen with an island",
+        href: "/contact",
+      },
+      {
+        title: "Bathroom remodeling",
+        text: "Showers, tile and vanities.",
+        image: demoPhoto2,
+        imageAlt: "A bright bathroom with a walk-in shower",
+        href: "/contact",
+      },
+      {
+        title: "Home additions",
+        text: "New rooms, built to match.",
+        image: demoPhoto3,
+        imageAlt: "A new room added onto a house",
+        href: "/contact",
+      },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="process-steps">
+    <Heading variant="eyebrow">ProcessSteps</Heading>
+    <Heading tag="h2"
+      >How it works, as a list beside a photo or as cards</Heading
+    >
+  </Section>
+  <ProcessSteps
+    eyebrow="How it works"
+    heading="From first call to final walkthrough"
+    text="A clear plan and a fixed price before any work starts."
+    image={demoPhoto4}
+    imageAlt="A project manager walking a homeowner through plans"
+    steps={[
+      { title: "Call or send the form", text: "Tell us about the project." },
+      { title: "On-site visit", text: "We measure, listen and take photos." },
+      { title: "Fixed quote", text: "A written price with no surprises." },
+      { title: "Build", text: "One crew, daily updates, clean site." },
+    ]}
+  />
+  <ProcessSteps
+    variant="cards"
+    theme="dark"
+    heading="What happens next"
+    steps={[
+      { title: "We call you back", text: "Usually the same business day." },
+      { title: "We visit", text: "A free on-site estimate." },
+      { title: "You decide", text: "No pressure and no deposit to talk." },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="story-split">
+    <Heading variant="eyebrow">StorySplit</Heading>
+    <Heading tag="h2"
+      >Meet the owner, or why choose us, with optional reasons</Heading
+    >
+  </Section>
+  <StorySplit
+    eyebrow="Why choose us"
+    heading="A local company that answers the phone"
+    paragraphs={[
+      "We started with one truck and a promise to show up when we said we would.",
+      "Today the same family runs every job, and the crew you meet is the crew that builds.",
+    ]}
+    image={demoPhoto5}
+    imageAlt="The owner standing in front of a finished home"
+    reasons={[
+      { title: "Fixed pricing", text: "The quote is the price." },
+      { title: "One crew", text: "The same faces start to finish." },
+      { title: "Clean sites", text: "Swept and tidy every day." },
+      { title: "Warranty", text: "Two years on workmanship." },
+    ]}
+    cta={{ label: "Get an estimate", modal: "demo-estimate" }}
+  />
+
+  <Section theme="light" padding="small" id="included-list">
+    <Heading variant="eyebrow">IncludedList</Heading>
+    <Heading tag="h2">What's included, beside an offset photo pair</Heading>
+  </Section>
+  <IncludedList
+    eyebrow="What's included"
+    heading="Everything a kitchen remodel needs"
+    text="One price covers the whole job."
+    items={[
+      "Design and layout",
+      "Permits",
+      "Demolition and haul-away",
+      "Cabinets and counters",
+      "Plumbing and electrical",
+      "Tile and flooring",
+      "Lighting",
+      "Final cleanup",
+    ]}
+    images={[
+      { src: demoPhoto1, alt: "Finished cabinets and counters" },
+      { src: demoPhoto2, alt: "New tile backsplash detail" },
+    ]}
+  />
 
   <!-- ============================================================
        9. MODALS

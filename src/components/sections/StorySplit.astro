@@ -1,0 +1,147 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type StoryReason = { title: string; text: string };
+type StorySplitTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **StorySplit** — a portrait photo beside a short story: "meet the
+   * owner", "why choose us". Optional `reasons` adds a 2×2 grid of ruled
+   * proof points under the story.
+   *
+   * - `eyebrow`, `heading`, `paragraphs` — the story
+   * - `image`, `imageAlt` — portrait photo on the left
+   * - `reasons` — `{ title, text }[]` (four reads best)
+   * - `cta` — optional text-style button
+   *
+   * @example
+   * <StorySplit eyebrow="Meet the owner" heading="Jordan Lee" paragraphs={["…", "…"]} image={owner} imageAlt="Jordan Lee on a job site" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. Required. */
+  heading: string;
+
+  /** The story, one string per paragraph. */
+  paragraphs?: string[];
+
+  /** Portrait photo. Required. */
+  image: ImageMetadata | string;
+
+  /** Real alt text for the photo. Required. */
+  imageAlt: string;
+
+  /** Optional 2×2 grid of proof points. */
+  reasons?: StoryReason[];
+
+  /** Optional button under the story. */
+  cta?: SectionCta;
+
+  /** Section theme. */
+  theme?: StorySplitTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  paragraphs = [],
+  image,
+  imageAlt,
+  reasons = [],
+  cta,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!heading)
+    console.warn("[StorySplit] `heading` is required; nothing renders.");
+  if (!image)
+    console.warn("[StorySplit] `image` is required; nothing renders.");
+  if (!imageAlt)
+    console.warn("[StorySplit] Give the photo real alt text (`imageAlt`).");
+}
+---
+
+{
+  render && heading && image && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["story-split_wrap", className]}
+      {...rest}
+    >
+      <Layout ratio="5-7" verticalAlign="center">
+        <Visual src={image} alt={imageAlt || heading} ratio="portrait" />
+        <Fragment slot="column2">
+          {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+          <Heading tag="h2">{heading}</Heading>
+          {paragraphs.map((p) => (
+            <Text muted>{p}</Text>
+          ))}
+          {reasons.length > 0 && (
+            <Grid
+              largeColumns={2}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={5}
+            >
+              {reasons.map((reason) => (
+                <div class="story-split_reason u-margin-trim">
+                  <Heading tag="h3" variant="h6" marginBottom={2}>
+                    {reason.title}
+                  </Heading>
+                  <Text variant="small" muted>
+                    {reason.text}
+                  </Text>
+                </div>
+              ))}
+            </Grid>
+          )}
+          {cta && <CtaButton cta={cta} variant="text" />}
+        </Fragment>
+      </Layout>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .story-split_reason {
+      padding-top: var(--space-4);
+      border-top: var(--border-width-main) solid var(--border);
+    }
+  }
+</style>
