@@ -1,0 +1,124 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { SITE } from "@/config/site";
+
+interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **UtilityBar** — the thin bar above the navbar ("24/7 emergency
+   * service · (555) 555-5555 · Serving Your City"). Content comes from
+   * `SITE.utilityBar` and `SITE.phone`; BaseLayout renders it once. Set
+   * `SITE.utilityBar` to `null` (the starter default) and nothing renders.
+   *
+   * Desktop shows the text and phone on the left and `areaLabel` on the
+   * right. Phones get one full-width tap-to-call bar. It scrolls away with
+   * the page; only the navbar below it is sticky.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Extra classes on the bar. */
+  class?: string;
+}
+
+const { docs, render = true, class: className, ...rest } = Astro.props;
+const bar = SITE.utilityBar;
+const tel = `tel:${SITE.phone.tel}`;
+---
+
+{
+  render && bar?.text && (
+    <div
+      class:list={["utility-bar_wrap", className]}
+      data-theme="dark"
+      {...rest}
+    >
+      <div class="utility-bar_contain">
+        <p class="utility-bar_message">
+          <span class="utility-bar_dot" aria-hidden="true" />
+          <span>{bar.text}</span>
+          <span class="utility-bar_sep" aria-hidden="true">
+            ·
+          </span>
+          <a class="utility-bar_phone" href={tel}>
+            {SITE.phone.display}
+          </a>
+        </p>
+        {bar.areaLabel && <p class="utility-bar_area">{bar.areaLabel}</p>}
+      </div>
+      <a class="utility-bar_mobile" href={tel}>
+        {bar.text} · Call {SITE.phone.display}
+      </a>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .utility-bar_wrap {
+      background-color: var(--background);
+      color: var(--text);
+      font-size: var(--text-small-size);
+      container-type: inline-size;
+    }
+
+    .utility-bar_contain {
+      display: var(--none-small, flex);
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-4);
+      max-width: var(--max-width-main);
+      margin-inline: auto;
+      padding: var(--space-2) var(--site-margin);
+    }
+
+    .utility-bar_message {
+      display: flex;
+      align-items: center;
+      gap: 0.625em;
+      margin: 0;
+    }
+
+    .utility-bar_dot {
+      flex-shrink: 0;
+      width: 0.5em;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-full);
+      background-color: var(--heading-accent);
+    }
+
+    .utility-bar_sep {
+      opacity: 0.5;
+    }
+
+    .utility-bar_phone {
+      color: var(--text);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .utility-bar_area {
+      margin: 0;
+      color: color-mix(in srgb, var(--text) 60%, transparent);
+    }
+
+    /* Phone width: one solid tap-to-call bar. */
+    .utility-bar_mobile {
+      display: var(--flex-small, none);
+      justify-content: center;
+      padding: var(--space-2) var(--site-margin);
+      background-color: var(--button-primary-background);
+      color: var(--button-primary-text);
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    @media (hover: hover) {
+      .utility-bar_phone:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+</style>
