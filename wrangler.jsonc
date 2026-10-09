@@ -23,6 +23,11 @@
   // /api/draft-mode/enable validates Presentation preview URLs with it, and
   // loadQuery uses it to fetch drafts when the cookie is present. Public
   // visitors never have the cookie so drafts never leak.
+  //
+  // GHL lead pipeline: GHL_API_TOKEN and GHL_LOCATION_ID are ENCRYPTED
+  // secrets (dashboard or `wrangler secret put`), never vars. The Client tools
+  // page also needs CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD — set them in the
+  // dashboard, or add them here per fork. See docs/ghl-forms.md.
   "vars": {
     "PUBLIC_SANITY_PROJECT_ID": "your-sanity-project-id",
     "PUBLIC_SANITY_DATASET": "production",

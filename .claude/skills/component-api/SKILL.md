@@ -1,6 +1,6 @@
 ---
 name: component-api
-description: The full component reference for this starter. Load BEFORE building or editing any page or section, or using/modifying any component - BaseLayout, Section, Layout, Grid, Heading, Text, Visual, Overlay, Button, ButtonWrapper, Card, BlogCard, CaseStudyCard, TestimonialCard, Accordion, AccordionItem, Tab, TabButton, TabPanel, Modal, Slider, Carousel, Marquee, ScrollReveal, Dropdown, Icon, Video, SkipLink, FormattedDate, PricingCard, PricingItem, Navbar, Footer, or the form family (Form, FormField, FormSelect, FormCheckbox, FormRadio, FormTextarea, FormRange, FormFieldset). Contains every prop table, slot contract, and the common page patterns (hero, card grid, blog listing, new page). Also the reference for nav items (NAV_MENU), the announcement banner (BANNER), and pill vs full-width nav.
+description: The full component reference for this starter. Load BEFORE building or editing any page or section, or using/modifying any component - BaseLayout, Section, Layout, Grid, Heading, Text, Visual, Overlay, Button, ButtonWrapper, Card, BlogCard, CaseStudyCard, TestimonialCard, Accordion, AccordionItem, Tab, TabButton, TabPanel, Modal, Slider, Carousel, Marquee, ScrollReveal, Dropdown, Icon, Video, SkipLink, FormattedDate, PricingCard, PricingItem, Navbar, Footer, or the form family (Form, LeadForm (GoHighLevel), FormField, FormSelect, FormCheckbox, FormRadio, FormTextarea, FormRange, FormFieldset). Contains every prop table, slot contract, and the common page patterns (hero, card grid, blog listing, new page). Also the reference for nav items (NAV_MENU), the announcement banner (BANNER), and pill vs full-width nav.
 ---
 
 # Component API Reference
@@ -23,7 +23,7 @@ Read a reference **when you work with its components**:
 | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [references/layout-and-content.md](references/layout-and-content.md) | BaseLayout, Section, Layout, Grid, Heading, Text, Visual, Overlay, Button, ButtonWrapper, Card, BlogCard, Icon, Video, FormattedDate, PricingCard                          |
 | [references/interactive.md](references/interactive.md)               | Accordion, Tab, Modal, Slider, Carousel, Marquee, ScrollReveal, Dropdown, SkipLink, Navbar                                                                                 |
-| [references/forms.md](references/forms.md)                           | Form, FormField, FormSelect, FormCheckbox, FormRadio, FormTextarea, FormRange, FormFieldset                                                                                |
+| [references/forms.md](references/forms.md)                           | Form, LeadForm (GoHighLevel + forms registry), FormField, FormSelect, FormCheckbox, FormRadio, FormTextarea, FormRange, FormFieldset                                       |
 | [references/local-service.md](references/local-service.md)           | SectionHeader, CheckList, ChipList, StepList, Quote, Breadcrumbs, BeforeAfter, FactPhoto, SwipeRow, Lightbox, ProjectCard, ProjectBrowser, GalleryBrowser, ProjectTemplate |
 
 **Directory map:** `src/components/ui/` (the primitives above),

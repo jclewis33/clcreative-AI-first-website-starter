@@ -1,0 +1,8 @@
+/* Client tools page (src/pages/tools/index.astro). */
+@layer pages {
+  .tools_actions_list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+}

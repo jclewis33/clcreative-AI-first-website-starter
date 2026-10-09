@@ -1,0 +1,126 @@
+---
+/**
+ * Client tools — the private page where the client starts a GHL automation
+ * for one of their customers (send a review request, start the yearly
+ * follow-up, …).
+ *
+ * - The options are every `access: "staff"` entry in src/config/forms.ts;
+ *   adding an automation there adds an option here.
+ * - It posts to /tools/submit. Cloudflare Access on the `/tools` path gates
+ *   both (email one-time PIN) — see docs/ghl-forms.md. The route refuses to
+ *   run in production without Access configured.
+ * - Kept out of search: `/tools` is in NOINDEX_PATHS (seo.shared.mjs), so it
+ *   gets noindex, a robots.txt Disallow and no sitemap entry. It is not in
+ *   PAGES, the nav or the footer.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Button from "@/components/ui/Button.astro";
+import Form from "@/components/form/Form.astro";
+import FormField from "@/components/form/FormField.astro";
+import FormFieldset from "@/components/form/FormFieldset.astro";
+import FormRadio from "@/components/form/FormRadio.astro";
+import FormCheckbox from "@/components/form/FormCheckbox.astro";
+import { STAFF_FORMS } from "@/config/forms";
+import { SITE } from "@/config/site";
+import "@/styles/pages/tools.css";
+---
+
+<BaseLayout
+  title={`Client tools | ${SITE.name}`}
+  description="Private tools for the team."
+>
+  <Section container="narrow">
+    <Layout variant="stack">
+      <Heading tag="h1" variant="h2">Client tools</Heading>
+      <Text
+        >Add a customer and choose what should happen. They're added to your
+        contacts if they're new, and the automation starts right away.</Text
+      >
+    </Layout>
+
+    <Form
+      name="client-tools"
+      action="/tools/submit"
+      encoding="json"
+      class="tools_form"
+      successMessage="Done — the automation has started. Ready for the next one in a moment."
+      errorMessage="That didn't go through. Check the details and try again — if it keeps failing, reload the page to sign in again."
+    >
+      <FormFieldset legend="What should happen?">
+        <div class="tools_actions_list">
+          {
+            STAFF_FORMS.map(([id, form], index) => (
+              <FormRadio
+                label={form.label}
+                name="formId"
+                value={id}
+                variant="chip"
+                checked={index === 0}
+                required
+              />
+            ))
+          }
+        </div>
+      </FormFieldset>
+
+      <FormFieldset legend="Customer" columns={2}>
+        <FormField
+          label="First name"
+          name="firstName"
+          variant="first-name"
+          autocomplete="off"
+          required
+        />
+        <FormField
+          label="Last name"
+          name="lastName"
+          variant="last-name"
+          autocomplete="off"
+        />
+        <FormField
+          label="Email"
+          name="email"
+          variant="email"
+          autocomplete="off"
+        />
+        <FormField
+          label="Mobile phone"
+          name="phone"
+          variant="phone"
+          autocomplete="off"
+        />
+      </FormFieldset>
+
+      <FormCheckbox
+        name="smsConsent"
+        label="The customer agreed to receive text messages from us"
+      />
+
+      <Button type="submit" ariaLabel="Start automation">Start</Button>
+    </Form>
+  </Section>
+</BaseLayout>
+
+<script>
+  /* Several customers get entered back to back: after a success, show the
+     confirmation briefly, then bring the empty form back. <Form> has already
+     reset the fields; it leaves the submit button disabled, so re-enable it. */
+  const wrap = document.querySelector<HTMLElement>(".tools_form");
+  if (wrap) {
+    new MutationObserver(() => {
+      if (wrap.dataset.state !== "sent") return;
+      window.setTimeout(() => {
+        wrap.dataset.state = "idle";
+        const submit = wrap.querySelector<HTMLButtonElement>(
+          'button[type="submit"]',
+        );
+        if (submit) submit.disabled = false;
+        wrap.querySelector<HTMLInputElement>('[name="firstName"]')?.focus();
+      }, 3000);
+    }).observe(wrap, { attributes: true, attributeFilter: ["data-state"] });
+  }
+</script>

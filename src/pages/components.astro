@@ -62,6 +62,7 @@ import FormSelect from "@/components/form/FormSelect.astro";
 import FormCheckbox from "@/components/form/FormCheckbox.astro";
 import FormRadio from "@/components/form/FormRadio.astro";
 import FormRange from "@/components/form/FormRange.astro";
+import LeadForm from "@/components/form/LeadForm.astro";
 import SectionHeader from "@/components/ui/SectionHeader.astro";
 import CheckList from "@/components/ui/CheckList.astro";
 import ChipList from "@/components/ui/ChipList.astro";
@@ -171,6 +172,7 @@ const COMPONENT_INDEX = [
   { slug: "testimonials-grid", text: "TestimonialsGrid" },
   { slug: "accordion", text: "Accordion" },
   { slug: "forms", text: "Form components" },
+  { slug: "lead-form", text: "LeadForm (GoHighLevel)" },
   { slug: "section-header", text: "SectionHeader" },
   { slug: "check-list", text: "CheckList" },
   { slug: "chip-list", text: "ChipList" },
@@ -1831,6 +1833,31 @@ const demoGallery = [
         maxLines={8}
       />
     </Form>
+  </Section>
+
+  <Section theme="light" id="lead-form">
+    <Layout variant="columns" ratio="5-7">
+      <Heading variant="eyebrow">LeadForm</Heading>
+      <Heading tag="h2">A form wired to GoHighLevel</Heading>
+      <Text variant="regular" muted
+        >Posts to /api/lead. The server creates or updates the contact, saves
+        the message as a note, and adds the tags set for this form in
+        src/config/forms.ts. Staff-only forms live on the private /tools page.</Text
+      >
+      <LeadForm
+        slot="column2"
+        formId="contact"
+        id="demo-lead-quote"
+        fields="quote"
+        projectOptions={[
+          { label: "New build", value: "new-build" },
+          { label: "Remodel", value: "remodel" },
+          { label: "Repair", value: "repair" },
+        ]}
+        messageLabel="Tell us about the project"
+        submitLabel="Request a quote"
+      />
+    </Layout>
   </Section>
 
   {
