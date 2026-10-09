@@ -1,0 +1,198 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Visual from "@/components/ui/Visual.astro";
+
+/**
+ * FactPhoto — a large rounded photo with short fact cards laid over its
+ * bottom edge (the service page hero: "24/7 response · We answer every call").
+ *
+ * Wide containers: the cards sit in an even row along the bottom of the photo.
+ * Below ~928px the photo runs full-bleed (16:9, square corners) with the
+ * cards still on it, one type size smaller. Below ~560px the cards are
+ * hidden and the photo stands alone.
+ *
+ * @example
+ * <FactPhoto src={img} alt="Carpenter framing a wall" facts={[{ title: "24/7 response", text: "We answer every call" }]} priority />
+ */
+
+interface Fact {
+  title: string;
+  text: string;
+}
+
+type FocalPoint = { x: number; y: number };
+
+export interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **FactPhoto** — hero photo with overlaid fact cards. Pass the image
+   * (`src`, `alt`, optional `position` focal point in percent) and `facts`
+   * (`{ title, text }[]`). `priority` for above-the-fold use.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The photo. */
+  src: ImageMetadata;
+
+  /** Real alt text describing the photo. */
+  alt: string;
+
+  /** Focal point in percent, e.g. `{ x: 50, y: 35 }`. @default center */
+  position?: FocalPoint;
+
+  /** The fact cards laid over the photo. */
+  facts?: Fact[];
+
+  /** Load eagerly with high fetch priority (above the fold). @default false */
+  priority?: boolean;
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  src,
+  alt,
+  position,
+  facts = [],
+  priority = false,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && src && (
+    <div class:list={["fact-photo_wrap", className]} {...rest}>
+      <div class="fact-photo_inner">
+        <div class="fact-photo_frame">
+          <Visual
+            variant="background"
+            src={src}
+            alt={alt}
+            position={position}
+            priority={priority}
+            sizes="(min-width: 80rem) 80rem, 100vw"
+          />
+        </div>
+        {facts.length > 0 && (
+          <ul class="fact-photo_list" data-theme="light">
+            {facts.map((fact) => (
+              <li class="fact-photo_card">
+                <span class="fact-photo_title">{fact.title}</span>
+                <span class="fact-photo_text">{fact.text}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .fact-photo_wrap {
+      container-type: inline-size;
+      width: 100%;
+    }
+
+    /* The positioning context for the overlaid cards. Separate from the
+       wrapper so spacing added to the wrapper from outside (a page giving it
+       padding) never moves the cards off the photo. */
+    .fact-photo_inner {
+      position: relative;
+    }
+
+    .fact-photo_frame {
+      position: relative;
+      height: clamp(22rem, 45cqi, 35rem);
+      border-radius: calc(var(--radius-main) + 0.25rem);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    /* Wide: the cards sit in an even row over the photo's bottom edge. */
+    .fact-photo_list {
+      position: absolute;
+      inset: auto var(--space-4) var(--space-4);
+      z-index: 2;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+      gap: var(--space-3);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .fact-photo_card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15em;
+      padding: 1.1rem 1.25rem;
+      border-radius: var(--radius-xlarge);
+      /* The list is pinned to the light theme: white cards on any ground. */
+      background-color: color-mix(in srgb, var(--background) 94%, transparent);
+      color: var(--text);
+    }
+
+    .fact-photo_title {
+      font-weight: 700;
+      font-size: var(--text-regular-size);
+      line-height: 1.3;
+    }
+
+    .fact-photo_text {
+      font-size: var(--text-small-size);
+      line-height: 1.4;
+      color: color-mix(in srgb, var(--text) 70%, transparent);
+    }
+
+    /* Narrow: the full photo shows on its own, and the cards move BELOW it
+       into a swipe row that runs out to the screen edges (the negative
+       inline margin cancels the page gutter; the padding keeps the first
+       card aligned with the content). No scrollbar, arrows or dots. */
+    @container (width < 58em) {
+      /* Full-bleed: the photo runs edge to edge, square corners. */
+      .fact-photo_frame {
+        height: auto;
+        aspect-ratio: 16 / 9;
+        margin-inline: calc(var(--site-margin) * -1);
+        border-radius: 0;
+      }
+
+      /* Cards stay on the photo, aligned with the page content (the list
+         is inset from the full-bleed photo by the page gutter). */
+      .fact-photo_list {
+        inset: auto 0 var(--space-3);
+        gap: var(--space-2);
+      }
+
+      .fact-photo_card {
+        padding: 0.75rem 0.9rem;
+      }
+
+      /* One size down so more cards fit on screen */
+      .fact-photo_title {
+        font-size: var(--text-small-size);
+      }
+
+      .fact-photo_text {
+        font-size: var(--text-tiny-size);
+      }
+    }
+
+    /* Phones: the facts drop out — the photo alone is enough. */
+    @container (width < 35em) {
+      .fact-photo_list {
+        display: none;
+      }
+    }
+  }
+</style>

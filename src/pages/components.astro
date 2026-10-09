@@ -67,6 +67,14 @@ import CheckList from "@/components/ui/CheckList.astro";
 import ChipList from "@/components/ui/ChipList.astro";
 import StepList from "@/components/ui/StepList.astro";
 import Quote from "@/components/ui/Quote.astro";
+import BeforeAfter from "@/components/ui/BeforeAfter.astro";
+import FactPhoto from "@/components/ui/FactPhoto.astro";
+import SwipeRow from "@/components/ui/SwipeRow.astro";
+import Lightbox from "@/components/ui/Lightbox.astro";
+import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
+import demoPhoto2 from "@/assets/placeholder-images/ai-first-starter-2.webp";
+import demoPhoto3 from "@/assets/placeholder-images/ai-first-starter-3.webp";
+import demoPhoto4 from "@/assets/placeholder-images/ai-first-starter-4.webp";
 import Visual from "@/components/ui/Visual.astro";
 import Overlay from "@/components/ui/Overlay.astro";
 import BlogPostGrid from "@/components/sections/BlogPostGrid.astro";
@@ -162,6 +170,10 @@ const COMPONENT_INDEX = [
   { slug: "chip-list", text: "ChipList" },
   { slug: "step-list", text: "StepList" },
   { slug: "quote", text: "Quote" },
+  { slug: "before-after", text: "BeforeAfter" },
+  { slug: "fact-photo", text: "FactPhoto" },
+  { slug: "swipe-row", text: "SwipeRow" },
+  { slug: "lightbox", text: "Lightbox" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -1868,6 +1880,124 @@ const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
       text="The best contractor we've worked with."
       name="Morgan L."
     />
+  </Section>
+
+  <Section theme="light" id="before-after">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">BeforeAfter</Heading>
+      <Heading tag="h2"
+        >Drag, or use the arrow keys, to compare two photos</Heading
+      >
+    </Layout>
+    <BeforeAfter
+      before={demoPhoto1}
+      beforeAlt="The space before the project, with the original layout"
+      after={demoPhoto2}
+      afterAlt="The same space after the project, fully finished"
+    />
+  </Section>
+
+  <Section theme="light" id="fact-photo">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">FactPhoto</Heading>
+      <Heading tag="h2"
+        >A large photo with fact cards over its bottom edge</Heading
+      >
+    </Layout>
+    <FactPhoto
+      src={demoPhoto3}
+      alt="A finished project photographed in daylight"
+      facts={[
+        { title: "15+ years", text: "Serving the area" },
+        { title: "Licensed", text: "And fully insured" },
+        { title: "Warranty", text: "On every job" },
+      ]}
+    />
+  </Section>
+
+  <Section theme="light" id="swipe-row">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">SwipeRow</Heading>
+      <Heading tag="h2"
+        >A grid that becomes a swipe row on smaller screens</Heading
+      >
+    </Layout>
+    <SwipeRow columns={3} label="Example cards">
+      <Card title="Kitchens" href="/contact" ariaLabel="Kitchens">
+        <Visual
+          slot="visual"
+          src={demoPhoto1}
+          alt="A modern kitchen with an island"
+        />
+      </Card>
+      <Card title="Bathrooms" href="/contact" ariaLabel="Bathrooms">
+        <Visual
+          slot="visual"
+          src={demoPhoto2}
+          alt="A bright bathroom with a walk-in shower"
+        />
+      </Card>
+      <Card title="Additions" href="/contact" ariaLabel="Additions">
+        <Visual
+          slot="visual"
+          src={demoPhoto3}
+          alt="A new room added onto a house"
+        />
+      </Card>
+    </SwipeRow>
+  </Section>
+
+  <Section theme="light" id="lightbox">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">Lightbox</Heading>
+      <Heading tag="h2"
+        >Click a photo to view it large and step through the set</Heading
+      >
+      <Text muted
+        >The fourth photo sits inside a hidden wrapper, as a filter would leave
+        it, so the viewer skips it.</Text
+      >
+    </Layout>
+    <Lightbox label="Demo photos">
+      <Grid largeColumns={3} mediumColumns={3} smallColumns={1} rowGap={4}>
+        {
+          [
+            {
+              img: demoPhoto1,
+              alt: "Project photo one, the front of the building",
+            },
+            { img: demoPhoto2, alt: "Project photo two, the main room" },
+            {
+              img: demoPhoto3,
+              alt: "Project photo three, the finished detail work",
+            },
+          ].map((p) => (
+            <button
+              type="button"
+              class="lightbox-demo_item u-button-reset"
+              data-lightbox-src={p.img.src}
+              data-lightbox-alt={p.alt}
+            >
+              <Visual src={p.img} alt={p.alt} ratio="landscape" />
+            </button>
+          ))
+        }
+        <div class="lightbox-demo_hidden" hidden>
+          <button
+            type="button"
+            class="lightbox-demo_item u-button-reset"
+            data-lightbox-src={demoPhoto4.src}
+            data-lightbox-alt="Hidden project photo four"
+          >
+            <Visual
+              src={demoPhoto4}
+              alt="Hidden project photo four"
+              ratio="landscape"
+            />
+          </button>
+        </div>
+      </Grid>
+    </Lightbox>
   </Section>
 
   <!-- ============================================================

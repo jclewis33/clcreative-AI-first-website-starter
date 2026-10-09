@@ -1,0 +1,126 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import { slotContent } from "@/lib/slots";
+
+/**
+ * SwipeRow — an even row of cards that turns into a horizontal swipe row
+ * below the desktop breakpoint (~928px container): scroll-snap, no scrollbar,
+ * no arrows or dots, with the next card peeking in.
+ *
+ * Use it for short sets (2–4 cards) that should stay one row. For a long,
+ * browsable set with arrows and dots, use `<Carousel>` instead.
+ *
+ * Each direct child of the default slot is one card — no wrapper divs.
+ *
+ * @example
+ * <SwipeRow columns={3} label="Related services">
+ *   <Card title="Remodeling" href="/services/remodeling" />
+ * </SwipeRow>
+ */
+
+type SwipeRowColumns = 2 | 3 | 4;
+
+export interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **SwipeRow** — a grid row that becomes a swipe row below the desktop
+   * breakpoint. `columns` is the count on wide containers; once it swipes,
+   * each card takes ~42% of the width on tablets and ~78% on phones. `label` names the region for screen
+   * readers.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. Empty slots render nothing. @default true */
+  render?: boolean;
+
+  /** Cards per row on wide containers (it swipes below desktop). @default 3 */
+  columns?: SwipeRowColumns;
+
+  /** Accessible name for the scrollable region. @default "Cards" */
+  label?: string;
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  columns = 3,
+  label = "Cards",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const content = await slotContent(Astro.slots);
+---
+
+{
+  render && content && (
+    <div class:list={["swipe-row_wrap", className]} {...rest}>
+      <div
+        class="swipe-row_list"
+        data-columns={columns}
+        role="region"
+        aria-label={label}
+        tabindex="0"
+      >
+        <Fragment set:html={content} />
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .swipe-row_wrap {
+      container-type: inline-size;
+      width: 100%;
+    }
+
+    .swipe-row_list {
+      display: grid;
+      grid-template-columns: repeat(var(--_columns, 3), minmax(0, 1fr));
+      gap: var(--site-gutter);
+    }
+
+    .swipe-row_list[data-columns="2"] {
+      --_columns: 2;
+    }
+
+    .swipe-row_list[data-columns="4"] {
+      --_columns: 4;
+    }
+
+    /* Below desktop: a swipe row. The negative inline margin lets cards run
+       to the screen edge while the first one still lines up with the page
+       gutter. Cards are ~42% wide on tablets (two and a bit in view) and
+       ~78% on phones (one plus a peek). */
+    @container (width < 58em) {
+      .swipe-row_list {
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 42%;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        margin-inline: calc(var(--site-margin) * -1);
+        padding-inline: var(--site-margin);
+        scroll-padding-inline: var(--site-margin);
+      }
+
+      .swipe-row_list::-webkit-scrollbar {
+        display: none;
+      }
+
+      .swipe-row_list > * {
+        scroll-snap-align: start;
+      }
+    }
+
+    @container (width < 35em) {
+      .swipe-row_list {
+        grid-auto-columns: 78%;
+      }
+    }
+  }
+</style>
