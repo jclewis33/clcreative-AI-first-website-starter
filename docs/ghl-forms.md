@@ -15,24 +15,31 @@ add a form.
    and which `source` label that form uses.
 3. The site sends the submission to GHL in this order:
    1. **Create or update the contact.** GHL matches an existing contact on
-      email or phone, so repeat submissions don't create duplicates.
-   2. **New contacts only:** set `source` to the form's label. If the SMS box
-      wasn't ticked, also turn on SMS "Do not disturb" so GHL refuses to text
-      them. Existing contacts keep their original source and any consent they
-      gave earlier.
-   3. **Consent:** if the box was ticked, add the `sms-consent` tag. The
-      box only exists while `SITE.smsOptIn` is on (see "Before A2P
-      approval" below).
-   4. **Tags:** add the form's tags. This fires the GHL **"Contact Tag added"**
+      email or phone, so repeat submissions don't create duplicates. The
+      form's `source`, its `contactType` (`customer` for review feedback,
+      discount claims and staff tools) and any mapped custom fields are
+      written here, on every submission.
+   2. **Consent:** ticked → the `sms consent` tag (and `sms did not consent`
+      comes off). Unticked → `sms did not consent`, unless they already have
+      `sms consent` (leaving the box empty later isn't opting out; texting
+      STOP is). No "Do not disturb" is set — workflows check the tags. Only
+      asked on public forms with a phone while `SITE.smsOptIn` is on (see
+      "Before A2P approval" below).
+   3. **Tags:** add the form's tags. This fires the GHL **"Contact Tag added"**
       trigger, for new and existing contacts alike.
-   5. **Note:** save the message and any other answers (project type,
+   4. **Note:** save the message and any other answers (project type,
       timeline, rating, referrer, and so on) as a note on the contact. When
       the form had a phone and texting is on, the note also records the
       consent: `SMS consent: GIVEN <time> on <page>` with the exact wording
       they ticked, or `NOT given`. That's the opt-in record carriers ask for.
 
-The tags are added after the "Do not disturb" setting on purpose. That way a
-tag-triggered workflow can never text someone in the gap between the two.
+The consent tags go on before the form's tags, so a tag-triggered workflow
+already sees them.
+
+**Matches the GHL snapshot.** Every tag name, source, contact type and
+custom-field key in `src/config/forms.ts` mirrors the Way Construction build
+that the CL Creative GHL snapshot is made from. Change them only together
+with the snapshot.
 
 **Re-running an automation for the same person.** GHL fires "Contact Tag
 added" only when the tag is new to the contact. A form marked
@@ -49,20 +56,22 @@ workflow must also have **Allow re-entry** turned on.
 
 ### Forms the starter ships
 
-| Form id            | Access | Where                             | Tags                                              |
-| ------------------ | ------ | --------------------------------- | ------------------------------------------------- |
-| `contact`          | public | any `<LeadForm formId="contact">` | `website lead`                                    |
-| `review-feedback`  | public | `/leave-a-review` (1–3 stars)     | `review feedback 1-star` … `3-star` (`ratingTag`) |
-| `discount-claim`   | public | `/get-your-discount`              | `discount claimed`, plus `referral` for a friend  |
-| `review-request`   | staff  | `/tools`                          | `review request` (retrigger)                      |
-| `yearly-follow-up` | staff  | `/tools`                          | `yearly follow-up` (retrigger)                    |
+| Form id                 | Access | Where                         | Tags                                              | Type                    | Custom fields                    |
+| ----------------------- | ------ | ----------------------------- | ------------------------------------------------- | ----------------------- | -------------------------------- |
+| `contact`               | public | `<LeadForm formId="contact">` | `website lead`                                    | lead                    | `your_message`                   |
+| `review-feedback`       | public | `/leave-a-review` (1–3 stars) | `review feedback 1-star` … `3-star`               | customer                | `review_rating`, `your_feedback` |
+| `discount-claim`        | public | `/get-your-discount`          | `discount claimed`; a friend also gets `referral` | customer (friend: lead) | `your_message`, `referred_by`    |
+| `review-request`        | staff  | `/tools`                      | `review request`                                  | customer                | —                                |
+| `review-request-1-year` | staff  | `/tools`                      | `review request + 1-year followup`                | customer                | —                                |
 
-The usual loop: after a job the client picks **Send a review request** on
-`/tools` → the GHL workflow texts/emails a link to `/leave-a-review` → 4–5
-stars go to Google; 1–3 land privately as `review feedback N-star` (alert
-the owner on those tags). A year later **Start the yearly follow-up** sends a
-link to `/get-your-discount`, where the customer claims the offer or refers a
-friend.
+Every form except `contact` is `retrigger: true`.
+
+The usual loop: after a job the client picks **Ask for a review** (or
+**…and add to the 1-year follow-up**) on `/tools` → the GHL workflow
+texts/emails a link to `/leave-a-review` → 4–5 stars go to Google; 1–3 land
+privately as `review feedback N-star` (alert the owner on those tags). The
+1-year follow-up later sends a link to `/get-your-discount`, where the
+customer claims the offer or refers a friend.
 
 Both customer pages are noindexed and kept out of the sitemap, nav and
 footer. Link-friendly prefill on `/leave-a-review`:
@@ -276,15 +285,16 @@ sitemap. It isn't in `PAGES`, the nav, or the footer.
 3. In GHL, build the workflow on that tag, with **Allow re-entry** on if you
    set `retrigger: true`.
 
-### Custom fields (optional)
+### Custom fields
 
-Messages are saved as a note, so no GHL setup is needed. If a client wants an
-answer in a GHL custom field instead, for example to use it in a workflow or
-an SMS, map it on the form entry. GHL matches custom fields by id, which you
-find under Settings → Custom Fields.
+Every answer is also saved in a note, so nothing is lost without them. The
+snapshot defines four custom fields the starter writes by **key**:
+`your_message`, `your_feedback`, `review_rating`, `referred_by`. To write
+another answer to a field, map form field → key on the form entry (Settings →
+Custom Fields → the field's key, without the `contact.` prefix):
 
 ```ts
-customFields: { message: "7ERgYVAfbhHRmlp2WUYu" },
+customFields: { message: "your_message" },
 ```
 
 ## Chat widget and External Tracking

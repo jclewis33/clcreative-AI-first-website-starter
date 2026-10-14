@@ -77,7 +77,12 @@ export interface ContactInput {
   lastName?: string;
   email?: string;
   phone?: string;
-  customFields?: { id: string; value: string }[];
+  /** Written on every submission (matches the GHL snapshot's behavior). */
+  source?: string;
+  /** Omit to leave GHL's default (new contacts are leads). */
+  type?: "customer";
+  /** By custom-field key (e.g. `your_message`); `""` clears a field. */
+  customFields?: { key: string; field_value: string }[];
 }
 
 export interface UpsertResult {
@@ -116,36 +121,6 @@ export async function upsertContact(
   return { id, isNew: data.new === true, tags: data.contact?.tags ?? [] };
 }
 
-/**
- * One-time setup for a contact this submission CREATED: its `source`, and
- * SMS DND when the visitor didn't consent. Never called for an existing
- * contact — that would overwrite where they originally came from and could
- * opt out someone who consented on an earlier form.
- *
- * Consent is enforced on the record, not in a workflow: a workflow-level
- * check is one forgotten branch away from texting someone who declined,
- * while DND makes GHL refuse the message outright.
- */
-export function setupNewContact(
-  creds: GhlCredentials,
-  contactId: string,
-  { source, blockSms }: { source: string; blockSms: boolean },
-) {
-  return call(creds, "PUT", `/contacts/${contactId}`, {
-    source,
-    ...(blockSms
-      ? {
-          dndSettings: {
-            SMS: {
-              status: "active",
-              message: "No SMS consent given on the web form",
-            },
-          },
-        }
-      : {}),
-  });
-}
-
 export function addTags(
   creds: GhlCredentials,
   contactId: string,
@@ -164,7 +139,7 @@ export function removeTags(
 
 /**
  * Attach a note to the contact. Notes need no per-account setup (unlike
- * custom fields, which must be created and mapped by id), so the message and
+ * custom fields, which must exist in the sub-account), so the message and
  * other free-text answers always land somewhere visible on the record.
  */
 export function addNote(

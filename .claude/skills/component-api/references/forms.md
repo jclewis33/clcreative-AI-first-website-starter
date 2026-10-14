@@ -71,7 +71,7 @@ How it works:
 />
 ```
 
-**Staff forms** (`access: "staff"`, e.g. review request, yearly follow-up)
+**Staff forms** (`access: "staff"`, e.g. review request, review + 1-year follow-up)
 never use LeadForm. They appear automatically on the Client tools page
 (`/tools`), gated by Cloudflare Access or a shared password
 (`src/lib/tools-auth.ts`). To add a form or automation, add one entry to
