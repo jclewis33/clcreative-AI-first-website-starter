@@ -24,10 +24,11 @@ import { uid } from "@/lib/uid";
  *   and "how could we have done better" — that posts to /api/lead as the
  *   `review-feedback` form (src/config/forms.ts), tagged by star count.
  *
- * The low-rating step still links to Google. Steering only happy customers
- * to a public review ("review gating") breaks Google's review policy and
- * the FTC's guidance on reviews — the private form is offered first, never
- * instead.
+ * The low-rating step still links to Google — one small, muted line
+ * ("Prefer a review? Here") that hides once feedback is sent. Steering only
+ * happy customers to a public review ("review gating") breaks Google's
+ * review policy and the FTC's guidance on reviews; keep the link readable
+ * and working.
  *
  * Contact fields follow `SITE.smsOptIn`, like LeadForm: Phone and the
  * optional SMS consent box once texting is approved, Email until then.
@@ -99,6 +100,14 @@ if (import.meta.env.DEV && !reviewUrl) {
 }
 
 const sms = SITE.smsOptIn;
+
+/* One string so formatting can't put spaces inside the link (they'd be
+   underlined). Screen readers hear "Here on Google". reviewUrl comes from
+   config, but escape it anyway. */
+const safeReviewUrl = reviewUrl
+  .replaceAll("&", "&amp;")
+  .replaceAll('"', "&quot;");
+const publicReviewLine = `Prefer a review? <a href="${safeReviewUrl}" class="review_public_link">Here<span class="u-sr-only"> on Google</span></a>`;
 const titleId = uid("review-title");
 const formId = uid("review-form");
 const stars = [1, 2, 3, 4, 5];
@@ -242,12 +251,8 @@ const stars = [1, 2, 3, 4, 5];
             </Button>
           </Form>
           {reviewUrl && (
-            <Text variant="small" muted class="review_public">
-              Prefer to post a public review?{" "}
-              <a href={reviewUrl} class="review_public_link">
-                Leave one on Google
-              </a>
-              .
+            <Text variant="tiny" muted class="review_public">
+              <Fragment set:html={publicReviewLine} />
             </Text>
           )}
         </div>
@@ -440,7 +445,8 @@ const stars = [1, 2, 3, 4, 5];
     }
 
     /* Once sent, the thank-you note stands alone. */
-    .review_feedback:has(.form_wrap[data-state="sent"]) .review_feedback_intro {
+    .review_feedback:has(.form_wrap[data-state="sent"]) .review_feedback_intro,
+    .review_feedback:has(.form_wrap[data-state="sent"]) .review_public {
       display: none;
     }
 
