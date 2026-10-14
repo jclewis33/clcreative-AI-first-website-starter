@@ -1,0 +1,23 @@
+---
+/**
+ * Leave a Review — the link sent to customers by text or email after a job
+ * (the "review request" staff form starts that workflow). One headline and
+ * five stars (ReviewRequest): high ratings go to Google; low ones open a
+ * private feedback form, with Google still linked, that lands in
+ * GoHighLevel tagged by star count.
+ *
+ * Deliberately out of search and the sitemap (NOINDEX_PATHS in
+ * src/config/seo.shared.mjs) and not in the PAGES registry, so it never
+ * shows up in the nav, footer, or llms.txt.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ReviewRequest from "@/components/sections/ReviewRequest.astro";
+import { SITE } from "@/config/site";
+---
+
+<BaseLayout
+  title={`Leave a Review | ${SITE.name}`}
+  description={`Tell ${SITE.name} how we did.`}
+>
+  <ReviewRequest />
+</BaseLayout>

@@ -5,6 +5,8 @@ import {
   type FormAccess,
   type FormConfig,
 } from "@/config/forms";
+import { SITE } from "@/config/site";
+import { SMS_CONSENT_FOOTER, SMS_CONSENT_LABEL } from "@/config/sms-consent";
 import {
   addNote,
   addTags,
@@ -39,6 +41,8 @@ export const NOTE_FIELDS = {
   projectType: "Project type",
   timeline: "Timeline",
   message: "Message",
+  rating: "Rating",
+  referrer: "Referred by",
 } as const;
 
 /* Soft, per-isolate limit — Workers recycle isolates, so this only slows a
@@ -63,6 +67,8 @@ interface Lead {
   email: string;
   phone: string;
   smsConsent: boolean;
+  /** A `referral` form submitted on behalf of a friend (`for: "friend"`). */
+  isReferral: boolean;
   fields: Record<string, string>;
   isBot: boolean;
 }
@@ -99,6 +105,19 @@ function parseLead(input: unknown, access: FormAccess): Lead | null {
     if (value) fields[name] = value;
   }
 
+  /* A rating form needs a whole star count, 1–5. */
+  if (form.ratingTag) {
+    if (!/^[1-5]$/.test(fields.rating ?? "")) return null;
+  } else {
+    delete fields.rating;
+  }
+
+  /* Referral forms: the person in the form is the friend, and the one
+     submitting must say who they are. Everywhere else `referrer` is dropped. */
+  const isReferral = Boolean(form.referral) && o.for === "friend";
+  if (isReferral && !fields.referrer) return null;
+  if (!isReferral) delete fields.referrer;
+
   return {
     form,
     firstName,
@@ -107,11 +126,41 @@ function parseLead(input: unknown, access: FormAccess): Lead | null {
     phone,
     /* The form posts JSON, so a ticked checkbox arrives as its value "on"
        and an unticked one is absent. Anything else counts as declined —
-       consent must be affirmative. */
-    smsConsent: o.smsConsent === "on" || o.smsConsent === true,
+       consent must be affirmative. Never counted while texting is off
+       (`SITE.smsOptIn`), without a phone, or for a referral (nobody can
+       consent for a friend). */
+    smsConsent:
+      SITE.smsOptIn &&
+      Boolean(phone) &&
+      !isReferral &&
+      (o.smsConsent === "on" || o.smsConsent === true),
+    isReferral,
     fields,
     isBot: str(o[HONEYPOT_FIELD], 200) !== "",
   };
+}
+
+/** The tags this submission adds: the form's, plus rating and referral tags. */
+function tagsFor(lead: Lead): string[] {
+  const { form, fields } = lead;
+  return [
+    ...form.tags,
+    ...(form.ratingTag ? [`${form.ratingTag} ${fields.rating}-star`] : []),
+    ...(lead.isReferral && form.referral ? form.referral.tags : []),
+  ];
+}
+
+/**
+ * The consent line saved in the note: what they agreed to, when, and on
+ * which page — the record carriers ask for. Only for a submission with a
+ * phone while texting is on; otherwise the question was never asked.
+ */
+function consentRecord(lead: Lead, page: string | null): string | null {
+  if (!SITE.smsOptIn || !lead.phone || lead.isReferral) return null;
+  const where = page ? ` on ${page}` : "";
+  return lead.smsConsent
+    ? `SMS consent: GIVEN ${new Date().toISOString()}${where}. They ticked the box reading: "${SMS_CONSENT_LABEL} ${SMS_CONSENT_FOOTER}"`
+    : `SMS consent: NOT given${where} (box left unticked).`;
 }
 
 function json(body: Record<string, unknown>, status = 200) {
@@ -154,6 +203,7 @@ export async function handleLead(
   }
 
   const { form } = lead;
+  const tags = tagsFor(lead);
   try {
     const contact = await upsertContact(creds, {
       firstName: lead.firstName,
@@ -184,16 +234,18 @@ export async function handleLead(
        stores tags lowercased — compare the same way. */
     if (form.retrigger) {
       const existing = new Set(contact.tags.map((t) => t.toLowerCase()));
-      const present = form.tags.filter((t) => existing.has(t.toLowerCase()));
+      const present = tags.filter((t) => existing.has(t.toLowerCase()));
       if (present.length) await removeTags(creds, contact.id, present);
     }
-    await addTags(creds, contact.id, form.tags);
+    await addTags(creds, contact.id, tags);
 
     /* Last, and best-effort: the contact and its automations are already
        right, so a failed note shouldn't turn the submission into an error. */
     const note = Object.entries(NOTE_FIELDS)
       .filter(([name]) => lead.fields[name])
       .map(([name, label]) => `${label}: ${lead.fields[name]}`);
+    const consent = consentRecord(lead, request.headers.get("referer"));
+    if (consent) note.push("", consent);
     if (note.length) {
       await addNote(creds, contact.id, [form.source, ...note].join("\n")).catch(
         (error) => console.warn("[lead] note not saved", error?.body ?? error),

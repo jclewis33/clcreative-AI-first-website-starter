@@ -3,6 +3,7 @@
 import { Font } from "astro:assets";
 import { isNoindexRoute } from "@/config/seo.shared.mjs";
 import { SITE } from"@/config/site";
+import { isToolsPath } from "@/lib/tools-auth";
 
 // Destructure props with default values.
 // These can be overridden on a per-page basis.
@@ -187,6 +188,36 @@ const resolvedTwitterImage = resolvedOgImage;
       );
       ml("account", mailerLiteAccount);
     </script>
+  )
+}
+
+<!-- GoHighLevel External Tracking (page views + form fills; rendered only
+     when a tracking id is configured). Skipped on the client tools, where
+     staff type in customers' details, and on draft previews — neither is a
+     visitor. -->
+{
+  SITE.integrations.ghlTrackingId && !isToolsPath(Astro.url.pathname) && !Astro.url.pathname.startsWith("/preview") && (
+    <script
+      is:inline
+      defer
+      src={SITE.integrations.ghlTrackingScript}
+      data-tracking-id={SITE.integrations.ghlTrackingId}
+    />
+  )
+}
+
+<!-- GoHighLevel chat widget (rendered only when a widget id is configured).
+     `defer` keeps the loader off the critical path; the widget mounts itself. -->
+{
+  SITE.integrations.ghlChatWidgetId && (
+    <script
+      is:inline
+      defer
+      src="https://widgets.leadconnectorhq.com/loader.js"
+      data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js"
+      data-widget-id={SITE.integrations.ghlChatWidgetId}
+      data-source="WEB_USER"
+    />
   )
 }
 

@@ -1,0 +1,56 @@
+---
+/**
+ * Client tools sign-in — password mode only (src/lib/tools-auth.ts). The
+ * middleware sends any signed-out visit to a /tools page here, with
+ * `?next=`; the form posts to /tools/session, which sets the session
+ * cookie and sends them on. With Cloudflare Access configured, the
+ * middleware redirects this page to /tools instead.
+ *
+ * A plain form post — works in any browser, including in-app ones that
+ * never show HTTP auth prompts.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Button from "@/components/ui/Button.astro";
+import FormField from "@/components/form/FormField.astro";
+import { SITE } from "@/config/site";
+import { SIGN_IN_ENDPOINT, safeNext } from "@/lib/tools-auth";
+import "@/styles/pages/tools.css";
+
+export const prerender = false;
+
+const next = safeNext(Astro.url.searchParams.get("next"));
+const error = Astro.url.searchParams.get("error");
+const errorText =
+  error === "limited"
+    ? "Too many tries. Wait a few minutes, then try again."
+    : error
+      ? "That password didn't work. Try again."
+      : undefined;
+---
+
+<BaseLayout
+  title={`Sign in | ${SITE.name}`}
+  description="Sign in to the client tools."
+>
+  <Section container="narrow">
+    <Layout variant="stack">
+      <Heading tag="h1" variant="h2">Sign in</Heading>
+      <Text>Enter the team password to use the tools on this device.</Text>
+    </Layout>
+    <form class="tools_signin" method="post" action={SIGN_IN_ENDPOINT}>
+      <input type="hidden" name="next" value={next} />
+      <FormField
+        label="Password"
+        name="password"
+        variant="password"
+        required
+        errorText={errorText}
+      />
+      <Button type="submit" fullWidth>Sign in</Button>
+    </form>
+  </Section>
+</BaseLayout>

@@ -5,7 +5,7 @@ import FormField from "@/components/form/FormField.astro";
 import FormFieldset from "@/components/form/FormFieldset.astro";
 import FormSelect from "@/components/form/FormSelect.astro";
 import FormTextarea from "@/components/form/FormTextarea.astro";
-import FormCheckbox from "@/components/form/FormCheckbox.astro";
+import SmsConsent from "@/components/form/SmsConsent.astro";
 import Button from "@/components/ui/Button.astro";
 import { FORMS, HONEYPOT_FIELD, type FormId } from "@/config/forms";
 import { SITE } from "@/config/site";
@@ -26,17 +26,21 @@ interface Props extends Omit<
    * Posts JSON to `/api/lead`. The server looks `formId` up in
    * `src/config/forms.ts` and creates or updates the contact, saves the
    * message as a note, and adds that form's tags — which start the GHL
-   * automations. Includes a hidden bot trap and the A2P SMS consent box.
+   * automations. Includes a hidden bot trap and, once `SITE.smsOptIn` is
+   * on, the Phone field and the A2P SMS consent box (`<SmsConsent>`) —
+   * until then Email is the only way to reach them.
    * Success and failure states come from `<Form>`. Setup:
    * `docs/ghl-forms.md`.
    *
    * - `formId` — which registry entry (public forms only)
-   * - `fields` — `'contact'` (name, email, phone, message) or `'quote'` (adds
+   * - `fields` — `'contact'` (name, email, phone*, message) or `'quote'` (adds
    *   project type and timeline selects)
    * - `projectOptions` / `timelineOptions` — the quote selects' choices
    * - `messageLabel`, `messagePlaceholder`, `submitLabel`, `successMessage`,
    *   `errorMessage` — copy
    * - `buttonWidth` — `'full'` (default) or `'auto'`
+   *
+   * *Phone only while `SITE.smsOptIn` is true.
    *
    * @example
    * ```astro
@@ -52,7 +56,8 @@ interface Props extends Omit<
   formId: FormId;
 
   /**
-   * Field preset. `contact`: first/last name, email, phone, message. `quote`:
+   * Field preset. `contact`: first/last name, email, phone (only while
+   * `SITE.smsOptIn` is on), message. `quote`:
    * the same plus project-type and timeline selects (saved to the note).
    * @default 'contact'
    */
@@ -158,13 +163,15 @@ if (import.meta.env.DEV) {
           id={`${id}-email`}
           required
         />
-        <FormField
-          label="Phone"
-          name="phone"
-          variant="phone"
-          id={`${id}-phone`}
-          required
-        />
+        {SITE.smsOptIn && (
+          <FormField
+            label="Phone"
+            name="phone"
+            variant="phone"
+            id={`${id}-phone`}
+            required
+          />
+        )}
       </FormFieldset>
 
       {fields === "quote" && (
@@ -206,11 +213,7 @@ if (import.meta.env.DEV) {
         />
       </div>
 
-      <FormCheckbox
-        name="smsConsent"
-        id={`${id}-consent`}
-        label={`I consent to receive SMS notifications, alerts and occasional marketing communication from ${SITE.name}. Message frequency varies. Message & data rates may apply. Text HELP for assistance. Reply STOP to unsubscribe.`}
-      />
+      <SmsConsent id={`${id}-consent`} />
 
       <Button
         type="submit"

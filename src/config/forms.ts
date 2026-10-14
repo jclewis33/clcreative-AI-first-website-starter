@@ -11,9 +11,15 @@
  *
  * - `access: "public"` forms post to /api/lead (any visitor).
  * - `access: "staff"` forms post to /tools/submit and appear automatically as
- *   options on the Client tools page (/tools), which Cloudflare Access gates.
+ *   options on the Client tools page (/tools), gated by src/lib/tools-auth.ts
+ *   (Cloudflare Access or a shared password).
  * - `retrigger: true` removes the tag first when the contact already has it,
  *   so the automation runs again (the GHL workflow needs "Allow re-entry").
+ * - `ratingTag` adds a star-count tag ("review feedback 2-star") from the
+ *   form's 1–5 `rating` field — one workflow per rating if you want them.
+ * - `referral` lets a public form be sent on someone else's behalf
+ *   (`for: "friend"` + `referrer`): the friend is the contact, gets these
+ *   extra tags, and is never recorded as giving SMS consent.
  *
  * Adding a form or a new automation = adding one entry. Full setup:
  * docs/ghl-forms.md.
@@ -34,6 +40,13 @@ export interface FormConfig {
   /** Remove-then-add the tags on a repeat submission so the automation re-runs. */
   retrigger?: boolean;
   /**
+   * Tag prefix for a star-rating form: adds "<prefix> <n>-star" from the
+   * required `rating` field (1–5). Leave off for every other form.
+   */
+  ratingTag?: string;
+  /** Referral mode: extra tags when the form is sent for a friend. */
+  referral?: { tags: string[] };
+  /**
    * Form field name → GHL custom-field id. GHL matches custom fields by id,
    * not name — read them from Settings → Custom Fields (or
    * `GET /locations/{id}/customFields`). Fields not mapped here are dropped.
@@ -47,6 +60,22 @@ export const FORMS = {
     access: "public",
     tags: ["website lead"],
     source: "Website: Contact form",
+  },
+  "review-feedback": {
+    label: "Review feedback",
+    access: "public",
+    tags: [],
+    ratingTag: "review feedback",
+    source: "Website: Review feedback",
+    retrigger: true,
+  },
+  "discount-claim": {
+    label: "Discount claim",
+    access: "public",
+    tags: ["discount claimed"],
+    referral: { tags: ["referral"] },
+    source: "Website: Discount claim",
+    retrigger: true,
   },
   "review-request": {
     label: "Send a review request",

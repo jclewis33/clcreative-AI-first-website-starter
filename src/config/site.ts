@@ -41,6 +41,12 @@ export const SITE = {
   /** Brand / organization name. */
   name: "Your Company",
 
+  /**
+   * Registered legal name — used where the exact entity matters, like the
+   * SMS consent wording (src/config/sms-consent.ts).
+   */
+  legalName: "Your Company, LLC",
+
   /** Absolute origin, no trailing slash. Canonical value: site.shared.mjs. */
   url: SHARED_SITE_URL,
 
@@ -99,6 +105,24 @@ export const SITE = {
   reviewsUrl: "",
 
   /**
+   * Google's "write a review" link (Business Profile → Ask for reviews →
+   * copy the link, e.g. https://g.page/r/…/review). /leave-a-review sends
+   * happy customers here. Blank = falls back to `reviewsUrl`.
+   */
+  googleReviewUrl: "",
+
+  /**
+   * SMS lead capture. Leave `false` until the client's A2P 10DLC texting
+   * registration is approved: while false, public forms render no Phone
+   * field and no SMS consent checkbox (left out of the HTML, not hidden),
+   * Email becomes required, no consent is ever recorded, and any phrases in
+   * `SMS_OFF_COPY_SWAPS` (src/config/sms-consent.ts) are swapped site-wide.
+   * Carriers review the site during A2P — a phone field before approval
+   * undercuts it. Flip to `true` once approved. See docs/ghl-forms.md.
+   */
+  smsOptIn: false,
+
+  /**
    * The thin bar above the nav (UtilityBar). `null` = off. `text` is the
    * message ("24/7 emergency service"); `areaLabel` sits on the right on
    * desktop ("Serving Your City and nearby").
@@ -135,6 +159,16 @@ export const SITE = {
     usercentricsId: "",
     /** Usercentrics custom-translations CDN base URL (optional). */
     usercentricsTranslationsUrl: "",
+    /** GoHighLevel (LeadConnector) chat widget id. Empty = chat widget off. */
+    ghlChatWidgetId: "",
+    /**
+     * GoHighLevel External Tracking (Settings → External Tracking): page
+     * views + form fills. `ghlTrackingId` is the `data-tracking-id`
+     * ("tk_…"); empty = off. The script URL is the agency's white-label
+     * links domain. Never loaded on /tools or /preview.
+     */
+    ghlTrackingId: "",
+    ghlTrackingScript: "https://links.clcreative.co/js/external-tracking.js",
   },
 
   /**

@@ -1,0 +1,34 @@
+---
+/**
+ * Get Your Discount — linked from the yearly follow-up texts and emails.
+ * Customers claim the offer for themselves or refer a friend
+ * (DiscountClaimForm → /api/lead as `discount-claim` → GoHighLevel).
+ * Edit the offer copy here per client.
+ *
+ * Out of search and the sitemap (NOINDEX_PATHS in src/config/seo.shared.mjs)
+ * and not in the PAGES registry, so it never shows in the nav, footer, or
+ * llms.txt.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import DiscountClaimForm from "@/components/form/DiscountClaimForm.astro";
+import { SITE } from "@/config/site";
+---
+
+<BaseLayout
+  title={`Claim Your Discount | ${SITE.name}`}
+  description={`Claim your ${SITE.name} discount or refer a friend.`}
+>
+  <Section container="narrow">
+    <Layout variant="stack">
+      <Heading tag="h1" variant="h2">Claim your discount</Heading>
+      <Text>
+        Claim this season's discount for yourself, or pass it on to a friend.
+      </Text>
+    </Layout>
+    <DiscountClaimForm />
+  </Section>
+</BaseLayout>

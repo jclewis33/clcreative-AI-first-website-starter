@@ -63,6 +63,7 @@ import FormCheckbox from "@/components/form/FormCheckbox.astro";
 import FormRadio from "@/components/form/FormRadio.astro";
 import FormRange from "@/components/form/FormRange.astro";
 import LeadForm from "@/components/form/LeadForm.astro";
+import DiscountClaimForm from "@/components/form/DiscountClaimForm.astro";
 import SectionHeader from "@/components/ui/SectionHeader.astro";
 import CheckList from "@/components/ui/CheckList.astro";
 import ChipList from "@/components/ui/ChipList.astro";
@@ -95,6 +96,7 @@ import IncludedList from "@/components/sections/IncludedList.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import Reviews from "@/components/sections/Reviews.astro";
 import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import ReviewRequest from "@/components/sections/ReviewRequest.astro";
 import CallBand from "@/components/sections/CallBand.astro";
 import { SITE } from "@/config/site";
 import ContactCards from "@/components/ui/ContactCards.astro";
@@ -197,6 +199,8 @@ const COMPONENT_INDEX = [
   { slug: "accordion", text: "Accordion" },
   { slug: "forms", text: "Form components" },
   { slug: "lead-form", text: "LeadForm (GoHighLevel)" },
+  { slug: "discount-claim", text: "DiscountClaimForm" },
+  { slug: "review-request", text: "ReviewRequest" },
   { slug: "section-header", text: "SectionHeader" },
   { slug: "check-list", text: "CheckList" },
   { slug: "chip-list", text: "ChipList" },
@@ -1884,7 +1888,9 @@ const demoGallery = [
       <Text variant="regular" muted
         >Posts to /api/lead. The server creates or updates the contact, saves
         the message as a note, and adds the tags set for this form in
-        src/config/forms.ts. Staff-only forms live on the private /tools page.</Text
+        src/config/forms.ts. Staff-only forms live on the private /tools page.
+        The Phone field and SMS consent box (SmsConsent) appear only once
+        SITE.smsOptIn is true — leave it off until A2P is approved.</Text
       >
       <LeadForm
         slot="column2"
@@ -1901,6 +1907,26 @@ const demoGallery = [
       />
     </Layout>
   </Section>
+
+  <Section theme="light" id="discount-claim">
+    <Layout variant="columns" ratio="5-7">
+      <Heading variant="eyebrow">DiscountClaimForm</Heading>
+      <Heading tag="h2">Claim an offer, or refer a friend</Heading>
+      <Text variant="regular" muted
+        >The form on /get-your-discount. "A friend" asks for the sender's name
+        and relabels the fields, so the friend becomes the contact. Posts to
+        /api/lead as the discount-claim form.</Text
+      >
+      <DiscountClaimForm slot="column2" id="demo-discount" />
+    </Layout>
+  </Section>
+
+  <div id="review-request">
+    <ReviewRequest
+      heading="ReviewRequest: tap a star"
+      intro="The widget on /leave-a-review. 4–5 stars go to Google; 1–3 open a private feedback form that still links to Google."
+    />
+  </div>
 
   {
     /* ================================================================

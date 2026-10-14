@@ -20,11 +20,16 @@ add a form.
       wasn't ticked, also turn on SMS "Do not disturb" so GHL refuses to text
       them. Existing contacts keep their original source and any consent they
       gave earlier.
-   3. **Consent:** if the box was ticked, add the `sms-consent` tag.
+   3. **Consent:** if the box was ticked, add the `sms-consent` tag. The
+      box only exists while `SITE.smsOptIn` is on (see "Before A2P
+      approval" below).
    4. **Tags:** add the form's tags. This fires the GHL **"Contact Tag added"**
       trigger, for new and existing contacts alike.
    5. **Note:** save the message and any other answers (project type,
-      timeline, and so on) as a note on the contact.
+      timeline, rating, referrer, and so on) as a note on the contact. When
+      the form had a phone and texting is on, the note also records the
+      consent: `SMS consent: GIVEN <time> on <page>` with the exact wording
+      they ticked, or `NOT given`. That's the opt-in record carriers ask for.
 
 The tags are added after the "Do not disturb" setting on purpose. That way a
 tag-triggered workflow can never text someone in the gap between the two.
@@ -42,21 +47,71 @@ workflow must also have **Allow re-entry** turned on.
 | `access: "public"` forms | Website visitors             | `/api/lead`     | `<LeadForm formId="…" />` on any page         |
 | `access: "staff"` forms  | The client, on `/tools` only | `/tools/submit` | Listed automatically on the Client tools page |
 
+### Forms the starter ships
+
+| Form id            | Access | Where                             | Tags                                              |
+| ------------------ | ------ | --------------------------------- | ------------------------------------------------- |
+| `contact`          | public | any `<LeadForm formId="contact">` | `website lead`                                    |
+| `review-feedback`  | public | `/leave-a-review` (1–3 stars)     | `review feedback 1-star` … `3-star` (`ratingTag`) |
+| `discount-claim`   | public | `/get-your-discount`              | `discount claimed`, plus `referral` for a friend  |
+| `review-request`   | staff  | `/tools`                          | `review request` (retrigger)                      |
+| `yearly-follow-up` | staff  | `/tools`                          | `yearly follow-up` (retrigger)                    |
+
+The usual loop: after a job the client picks **Send a review request** on
+`/tools` → the GHL workflow texts/emails a link to `/leave-a-review` → 4–5
+stars go to Google; 1–3 land privately as `review feedback N-star` (alert
+the owner on those tags). A year later **Start the yearly follow-up** sends a
+link to `/get-your-discount`, where the customer claims the offer or refers a
+friend.
+
+Both customer pages are noindexed and kept out of the sitemap, nav and
+footer. Link-friendly prefill on `/leave-a-review`:
+`/leave-a-review?first_name={{contact.first_name}}&last_name={{contact.last_name}}&email={{contact.email}}`.
+
+**Keep the Google link on the low-rating step.** Sending only happy
+customers to Google ("review gating") breaks Google's review policy and the
+FTC's guidance. `ReviewRequest` offers the private form first and still
+links to Google; don't remove that link.
+
+## Before A2P approval: `SITE.smsOptIn`
+
+Carriers review the website during A2P 10DLC registration. A form that
+collects phone numbers before texting is approved undercuts it, so
+`SITE.smsOptIn` (src/config/site.ts) ships **false**. While false:
+
+- Public forms render **no Phone field and no SMS consent box** — left out of
+  the HTML, not hidden. Email becomes required.
+- The server ignores any `smsConsent` it's sent, and records no consent.
+- Any phrase in `SMS_OFF_COPY_SWAPS` (src/config/sms-consent.ts) is swapped
+  site-wide at build time — e.g. "Request a call back" → "Send us a
+  message". Source copy stays as written.
+
+When the registration is approved, set `smsOptIn: true` and deploy. That
+restores the Phone field, the consent box and every swapped phrase at once.
+The consent wording lives once in `src/config/sms-consent.ts` and uses
+`SITE.legalName` — keep it in step with the opt-in description on the A2P
+campaign.
+
 Each endpoint rejects the other type's form ids, so a public visitor can't
 start a staff automation.
 
 ## Code map
 
-| File                                 | Role                                                         |
-| ------------------------------------ | ------------------------------------------------------------ |
-| `src/config/forms.ts`                | **The registry: form id → tags, source, access, retrigger.** |
-| `src/components/form/LeadForm.astro` | The ready-made public form (contact or quote preset)         |
-| `src/pages/tools/index.astro`        | The Client tools page for staff forms                        |
-| `src/pages/api/lead.ts`              | Public endpoint                                              |
-| `src/pages/tools/submit.ts`          | Staff endpoint; checks the Cloudflare Access sign-in first   |
-| `src/lib/leads.ts`                   | Validation, bot trap, rate limit, and the GHL call order     |
-| `src/lib/ghl.ts`                     | GHL Contacts API calls (upsert, tags, note)                  |
-| `src/lib/cf-access.ts`               | Verifies the Cloudflare Access sign-in token                 |
+| File                                          | Role                                                         |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| `src/config/forms.ts`                         | **The registry: form id → tags, source, access, retrigger.** |
+| `src/components/form/LeadForm.astro`          | The ready-made public form (contact or quote preset)         |
+| `src/pages/tools/index.astro`                 | The Client tools page for staff forms                        |
+| `src/pages/api/lead.ts`                       | Public endpoint                                              |
+| `src/pages/tools/submit.ts`                   | Staff endpoint (gated by the middleware)                     |
+| `src/lib/leads.ts`                            | Validation, bot trap, rate limit, and the GHL call order     |
+| `src/lib/ghl.ts`                              | GHL Contacts API calls (upsert, tags, note)                  |
+| `src/lib/tools-auth.ts`                       | The `/tools` gate: Access or shared password                 |
+| `src/lib/cf-access.ts`                        | Verifies the Cloudflare Access sign-in token                 |
+| `src/config/sms-consent.ts`                   | SMS consent wording + the pre-A2P copy swaps                 |
+| `src/components/form/SmsConsent.astro`        | The consent checkbox (renders only when `smsOptIn` is on)    |
+| `src/components/sections/ReviewRequest.astro` | `/leave-a-review` stars + private feedback form              |
+| `src/components/form/DiscountClaimForm.astro` | `/get-your-discount` claim / refer-a-friend form             |
 
 ## Setting up a new client
 
@@ -89,9 +144,42 @@ start a staff automation.
 2. Add the WAF rate-limit rule for `/api/lead`
    (`docs/new-project-checklist.md` §2). The in-code limit is a soft backup
    only.
-3. Set up Cloudflare Access for `/tools` (next section).
+3. Gate `/tools` with Cloudflare Access **or** a shared password (next
+   section).
 
-## Cloudflare Access for the Client tools page
+## Gating the Client tools page
+
+`src/middleware.ts` runs `checkToolsAuth` (src/lib/tools-auth.ts) on every
+`/tools` request. It picks the gate from what's configured:
+
+| Configured                                | Gate                                     |
+| ----------------------------------------- | ---------------------------------------- |
+| `CF_ACCESS_TEAM_DOMAIN` + `CF_ACCESS_AUD` | Cloudflare Access (email one-time PIN)   |
+| otherwise `TOOLS_PASSWORD`                | Shared password on `/tools/sign-in`      |
+| neither                                   | Locked — every `/tools` request gets 503 |
+
+**Which one?** Access needs the client's domain on Cloudflare **in our
+account** — it can gate a single path only on a zone it owns. Sites served
+through **Cloudflare for SaaS** (the client's domain stays in their own
+Cloudflare account and CNAMEs to us) can't use it; use the password.
+
+### Shared password
+
+1. Worker → **Settings → Variables and Secrets** (the top section — **not**
+   Settings → Builds, whose variables only exist during the build) → **Add**
+   → type **Secret**, name `TOOLS_PASSWORD`. Or
+   `npx wrangler secret put TOOLS_PASSWORD`.
+2. Deploy. `/tools` now redirects to `/tools/sign-in`; the right password sets
+   an HttpOnly cookie for 90 days (it holds an HMAC of the password, never the
+   password).
+3. Changing the password signs every device out. Sign-in is limited to 10
+   tries per 10 minutes per IP (soft, per isolate) — add a WAF rate-limit rule
+   on `POST /tools/session` for a hard limit.
+
+Writes under `/tools` must come from the site's own pages (Origin /
+Sec-Fetch-Site checked), and every `/tools` response is `private, no-store`.
+
+### Cloudflare Access
 
 Access puts a sign-in screen in front of `/tools`. When someone opens the
 page, Cloudflare asks for their email. If the email is on the allow list,
@@ -100,7 +188,7 @@ Cloudflare emails them a 6-digit code and lets them in.
 There are no passwords and nothing is stored in the site. The allow list
 lives in the Cloudflare dashboard.
 
-### One-time setup per client site
+#### One-time setup per client site
 
 1. Open the Cloudflare dashboard → **Zero Trust**. The first time, pick a team
    name; that gives you `<team>.cloudflareaccess.com`. The Free plan covers up
@@ -120,23 +208,23 @@ lives in the Cloudflare dashboard.
 7. Redeploy, then open `/tools` in a private window. You should be asked for
    an email, and only allowed emails should get a code.
 
-### Day to day
+#### Day to day
 
 - **Give someone access:** add their email to the policy.
 - **Remove someone:** delete their email from the policy.
 - Sign-ins last 24 hours by default. You can change this under the
   application's session duration.
 
-### Fails closed
+#### Fails closed
 
-`/tools/submit` checks the signed sign-in token on every request. In
-production it refuses the request in each of these cases:
+Every `/tools` request has its signed sign-in token checked. In production
+the request is refused in each of these cases:
 
-| Situation                                       | Response |
-| ----------------------------------------------- | -------- |
-| `CF_ACCESS_TEAM_DOMAIN` / `CF_ACCESS_AUD` unset | 503      |
-| No sign-in token on the request                 | 401      |
-| Token is invalid, expired, or for another app   | 403      |
+| Situation                                      | Response |
+| ---------------------------------------------- | -------- |
+| Neither Access nor `TOOLS_PASSWORD` configured | 503      |
+| No sign-in token on the request                | 401      |
+| Token is invalid, expired, or for another app  | 403      |
 
 So a missing or misconfigured Access app never leaves the staff forms open.
 In `npm run dev` the check is skipped.
@@ -148,7 +236,8 @@ wait for the real domain or gate everything temporarily.
 
 ### Keeping `/tools` out of search
 
-`/tools` is listed in `NOINDEX_PATHS` (`src/config/seo.shared.mjs`). That
+`/tools` (and `/leave-a-review`, `/get-your-discount`) are listed in
+`NOINDEX_PATHS` (`src/config/seo.shared.mjs`). That
 gives it a noindex tag and a robots.txt `Disallow`, and keeps it out of the
 sitemap. It isn't in `PAGES`, the nav, or the footer.
 
@@ -198,6 +287,16 @@ find under Settings → Custom Fields.
 customFields: { message: "7ERgYVAfbhHRmlp2WUYu" },
 ```
 
+## Chat widget and External Tracking
+
+Both are `SITE.integrations` settings (src/config/site.ts), blank = off:
+
+- `ghlChatWidgetId` — the chat widget (Sites → Chat Widget → the widget id).
+- `ghlTrackingId` — Settings → **External Tracking** → the `tk_…` value in
+  the snippet. Page views + form fills in GHL attribution. `ghlTrackingScript`
+  is the agency's white-label links domain. Never loaded on `/tools` (staff
+  type customers' details there) or `/preview`.
+
 ## Testing
 
 - `npm run dev` with real credentials in `.env`. Use a test sub-account, or
@@ -210,5 +309,11 @@ customFields: { message: "7ERgYVAfbhHRmlp2WUYu" },
   the workflow twice.
 - Filling the hidden `company_website` field in devtools should return
   success and create nothing in GHL.
+- With `smsOptIn: false`, view-source on every public form page: there should
+  be no `name="phone"` and no `name="smsConsent"` input.
+- `/leave-a-review`: 4–5 stars redirect to Google; 1–3 open the form, and a
+  submission tags the contact `review feedback N-star`.
+- `/get-your-discount` as "A friend": the friend is the contact, tagged
+  `referral`, with "Referred by" in the note.
 - Server logs are prefixed `[lead]`. In production, read them under the
   Worker's **Observability** tab.

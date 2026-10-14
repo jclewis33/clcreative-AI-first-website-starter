@@ -1,7 +1,9 @@
 import { readEnv } from "@/lib/ghl";
 
 /**
- * Cloudflare Access check for the staff endpoint (/tools/submit).
+ * Cloudflare Access check for every /tools request, run by
+ * src/lib/tools-auth.ts when Access is the configured gate (the other
+ * option is a shared password).
  *
  * Access itself is the gate: an Access application on the `/tools` path
  * makes Cloudflare demand an email one-time PIN before any request reaches

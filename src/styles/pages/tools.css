@@ -1,8 +1,14 @@
-/* Client tools page (src/pages/tools/index.astro). */
+/* Client tools pages (src/pages/tools/). */
 @layer pages {
   .tools_actions_list {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
+  }
+
+  .tools_signin {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
   }
 }

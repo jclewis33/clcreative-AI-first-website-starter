@@ -92,6 +92,9 @@
   --color-error-red-dark: #3b0b0b;
   --color-info-grey: #f9f9f9;
 
+  /* Review stars */
+  --color-star: #d69a1e;
+
   /* Focus state — applied site-wide via reset.css */
   --color-focus-state: var(--color-brand-500);
 }
