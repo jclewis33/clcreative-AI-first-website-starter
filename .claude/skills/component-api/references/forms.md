@@ -37,8 +37,11 @@ do with the form components.
 
 ## `<LeadForm>` (GoHighLevel)
 
-A ready-made form wired to GHL: first/last name, email, phone, message, a
-hidden bot trap and the A2P SMS consent box.
+A ready-made form wired to GHL: first/last name, email, message and a
+hidden bot trap — plus the Phone field and the A2P SMS consent box
+(`<SmsConsent>`) **only while `SITE.smsOptIn` is true**. Leave `smsOptIn`
+false until the client's A2P 10DLC registration is approved; carriers
+review the site, and a phone field before approval undercuts it.
 
 How it works:
 
@@ -70,8 +73,54 @@ How it works:
 
 **Staff forms** (`access: "staff"`, e.g. review request, yearly follow-up)
 never use LeadForm. They appear automatically on the Client tools page
-(`/tools`), which Cloudflare Access gates. To add a form or automation, add
-one entry to `src/config/forms.ts`. Full setup: `docs/ghl-forms.md`.
+(`/tools`), gated by Cloudflare Access or a shared password
+(`src/lib/tools-auth.ts`). To add a form or automation, add one entry to
+`src/config/forms.ts`. Full setup: `docs/ghl-forms.md`.
+
+## `<SmsConsent>`
+
+The optional, unticked SMS consent checkbox + the HELP/STOP line. Renders
+**nothing** while `SITE.smsOptIn` is false. Place it after the Phone field in
+any public form that collects one (LeadForm, ReviewRequest and
+DiscountClaimForm already do). Field name `smsConsent`; wording in
+`src/config/sms-consent.ts` (one copy, also saved verbatim in the consent note).
+
+| Prop | Type     | Default | Description                                    |
+| ---- | -------- | ------- | ---------------------------------------------- |
+| `id` | `string` | —       | Checkbox id — needed when a page has two forms |
+
+## `<DiscountClaimForm>`
+
+The "claim your discount or refer a friend" form on `/get-your-discount`.
+Posts to `/api/lead` as `discount-claim`. "A friend" reveals a required "Your
+name" (`referrer`) box and relabels the contact fields as the friend's, so the
+friend becomes the contact; referrals add the `referral` tags and never record
+SMS consent. Phone (required) + consent once `smsOptIn` is on; Email required
+until then.
+
+| Prop                             | Type     | Default                       | Description                       |
+| -------------------------------- | -------- | ----------------------------- | --------------------------------- |
+| `messageLabel`                   | `string` | `'What would you like done?'` | Message box label                 |
+| `submitLabel` / `successMessage` | `string` | sensible defaults             | Copy                              |
+| `id`                             | `string` | `'discount'`                  | Field-id prefix (unique per page) |
+
+## `<ReviewRequest>` (section)
+
+The widget on `/leave-a-review`: headline + five stars. A rating at or above
+`threshold` sends the visitor to `reviewUrl` (default `SITE.googleReviewUrl`,
+then `SITE.reviewsUrl`). Lower ratings open a private feedback form (posts
+`review-feedback`, tagged `review feedback N-star`) **that still links to
+Google** — never remove that link: steering only happy customers to Google
+("review gating") breaks Google's policy and FTC guidance. Prefills from
+`?first_name=`, `?last_name=`, `?email=`, `?phone=` (or `?name=`). Renders its
+own `<Section>` and an `h1`.
+
+| Prop        | Type     | Default                                    | Description                  |
+| ----------- | -------- | ------------------------------------------ | ---------------------------- |
+| `heading`   | `string` | `'Please tell us how we did'`              | The h1                       |
+| `intro`     | `string` | `'Your feedback is very important to us.'` | Subtext; `""` hides it       |
+| `reviewUrl` | `string` | `SITE.googleReviewUrl`                     | Where high ratings go        |
+| `threshold` | `4`\|`5` | `4`                                        | Lowest rating sent to Google |
 
 ## `<FormField>`
 

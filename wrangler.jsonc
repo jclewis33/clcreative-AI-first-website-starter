@@ -26,8 +26,9 @@
   //
   // GHL lead pipeline: GHL_API_TOKEN and GHL_LOCATION_ID are ENCRYPTED
   // secrets (dashboard or `wrangler secret put`), never vars. The Client tools
-  // page also needs CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD — set them in the
-  // dashboard, or add them here per fork. See docs/ghl-forms.md.
+  // gate needs EITHER CF_ACCESS_TEAM_DOMAIN + CF_ACCESS_AUD (Cloudflare Access)
+  // OR the encrypted secret TOOLS_PASSWORD (shared password) — set them in the
+  // dashboard, or add the Access pair here per fork. See docs/ghl-forms.md.
   "vars": {
     "PUBLIC_SANITY_PROJECT_ID": "your-sanity-project-id",
     "PUBLIC_SANITY_DATASET": "production",

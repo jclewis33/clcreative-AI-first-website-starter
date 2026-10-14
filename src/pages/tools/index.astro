@@ -6,9 +6,12 @@
  *
  * - The options are every `access: "staff"` entry in src/config/forms.ts;
  *   adding an automation there adds an option here.
- * - It posts to /tools/submit. Cloudflare Access on the `/tools` path gates
- *   both (email one-time PIN) — see docs/ghl-forms.md. The route refuses to
- *   run in production without Access configured.
+ * - It posts to /tools/submit. src/middleware.ts gates both
+ *   (src/lib/tools-auth.ts): Cloudflare Access when it's configured,
+ *   otherwise the shared TOOLS_PASSWORD via /tools/sign-in. With neither,
+ *   /tools is locked. See docs/ghl-forms.md.
+ * - SSR on purpose: a prerendered page is served as a static file and never
+ *   reaches the gate.
  * - Kept out of search: `/tools` is in NOINDEX_PATHS (seo.shared.mjs), so it
  *   gets noindex, a robots.txt Disallow and no sitemap entry. It is not in
  *   PAGES, the nav or the footer.
@@ -27,6 +30,8 @@ import FormCheckbox from "@/components/form/FormCheckbox.astro";
 import { STAFF_FORMS } from "@/config/forms";
 import { SITE } from "@/config/site";
 import "@/styles/pages/tools.css";
+
+export const prerender = false;
 ---
 
 <BaseLayout

@@ -184,6 +184,11 @@ const currentCssVar = (src, name) => {
 const PROMPTS = [
   // ── Identity ──────────────────────────────────────────────────────────────
   { key: "siteName", q: "Site / brand name", from: [SITE, "name"] },
+  {
+    key: "legalName",
+    q: "Registered legal name (used in the SMS consent wording)",
+    from: [SITE, "legalName"],
+  },
   // A staging https://<worker>.<account>.workers.dev URL is a fine answer here
   // when the real domain isn't ready — SITE_URL is env-overridable at deploy time
   // (see docs/new-project-checklist.md §4a "Staging-first deploy").
@@ -293,6 +298,18 @@ const PROMPTS = [
     key: "usercentricsId",
     q: "Usercentrics CMP id (blank = keep)",
     from: [SITE, "usercentricsId"],
+    optional: true,
+  },
+  {
+    key: "ghlChatWidgetId",
+    q: "GoHighLevel chat widget id (blank = keep)",
+    from: [SITE, "ghlChatWidgetId"],
+    optional: true,
+  },
+  {
+    key: "ghlTrackingId",
+    q: "GoHighLevel External Tracking id, tk_… (blank = keep)",
+    from: [SITE, "ghlTrackingId"],
     optional: true,
   },
 ];
@@ -450,6 +467,7 @@ async function buildChanges(a) {
     const edits = [];
     const map = {
       name: a.siteName,
+      legalName: a.legalName,
       email: a.email,
       founder: a.founder,
       tagline: a.tagline,
@@ -468,6 +486,8 @@ async function buildChanges(a) {
       color: brand500,
       gtmId: a.gtmId,
       mailerLiteAccount: a.mailerLiteAccount,
+      ghlChatWidgetId: a.ghlChatWidgetId,
+      ghlTrackingId: a.ghlTrackingId,
       usercentricsId: a.usercentricsId,
     };
     for (const [key, value] of Object.entries(map)) {

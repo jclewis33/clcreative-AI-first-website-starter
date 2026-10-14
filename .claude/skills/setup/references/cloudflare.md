@@ -120,10 +120,15 @@ Per §6 and `docs/ghl-forms.md`:
 
 - `GHL_API_TOKEN` and `GHL_LOCATION_ID` go in as **encrypted secrets**.
 - Set the tags in `src/config/forms.ts` to match the client's GHL workflows.
-- Gate `/tools` with a Cloudflare Access self-hosted application (path
-  `tools`, email one-time PIN). Then set the plain vars `CF_ACCESS_TEAM_DOMAIN`
-  and `CF_ACCESS_AUD`.
-- Access is dashboard work, so **guide the user through it** rather than
+- Gate `/tools` — ask which applies:
+  - **Domain on Cloudflare in our account:** a Cloudflare Access self-hosted
+    application (path `tools`, email one-time PIN), then the plain vars
+    `CF_ACCESS_TEAM_DOMAIN` and `CF_ACCESS_AUD`.
+  - **Served through Cloudflare for SaaS** (the client's zone lives in their
+    own account): a `TOOLS_PASSWORD` **Secret** under the Worker's Settings →
+    Variables and Secrets (not the Builds section).
+- Leave `SITE.smsOptIn` false until A2P 10DLC is approved.
+- This is dashboard work, so **guide the user through it** rather than
   running anything.
 
 ## Post-launch verification

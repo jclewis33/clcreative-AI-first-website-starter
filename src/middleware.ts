@@ -1,6 +1,9 @@
 import { defineMiddleware } from "astro:middleware";
 import { isNoindexRoute } from "@/config/seo.shared.mjs";
 import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
+import { SITE } from "@/config/site";
+import { SMS_OFF_COPY_SWAPS } from "@/config/sms-consent";
+import { checkToolsAuth, isToolsPath } from "@/lib/tools-auth";
 
 // Security headers for every SSR response. Static assets bypass the worker
 // entirely (no run_worker_first in wrangler.jsonc), so the same set is
@@ -27,8 +30,34 @@ const SECURITY_HEADERS: Record<string, string> = {
 // served as static assets by the assets binding and get their headers from
 // public/_headers instead; Astro still invokes middleware during the
 // prerender build phase — guard against that to avoid touching cookies).
+/* While texting is off, swap call-back promises for message wording. */
+const swapCopy = !SITE.smsOptIn && SMS_OFF_COPY_SWAPS.length > 0;
+
 export const onRequest = defineMiddleware(async (context, next) => {
-  const response = await next();
+  // Client tools (/tools/*) sit behind Cloudflare Access or a shared
+  // password (src/lib/tools-auth.ts). Checked before the route runs at all.
+  const isTools = !context.isPrerendered && isToolsPath(context.url.pathname);
+  if (isTools) {
+    const denied = await checkToolsAuth(context.request);
+    if (denied) return denied;
+  }
+
+  let response = await next();
+
+  // SMS_OFF_COPY_SWAPS (src/config/sms-consent.ts) while SITE.smsOptIn is
+  // false. Before the prerender early-return, so it's baked into the static
+  // HTML at build time.
+  if (swapCopy && response.headers.get("content-type")?.includes("text/html")) {
+    const html = SMS_OFF_COPY_SWAPS.reduce(
+      (out, [from, to]) => out.replaceAll(from, to),
+      await response.text(),
+    );
+    response = new Response(html, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  }
 
   // At build time `context.cookies` exists but reading it would trigger
   // "Astro.request.headers was used" warnings on prerendered routes. Skip
@@ -50,10 +79,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
   //
   // Other SSR responses (i.e. /api/*): cache for 5 minutes at the edge,
   // serve stale for 24h while revalidating in the background.
-  const cacheControl =
-    isDraftMode || isPreviewRoute
+  // The client tools are private — never cached anywhere. Form posts carry
+  // personal data — never cacheable either.
+  const cacheControl = isTools
+    ? "private, no-store"
+    : isDraftMode || isPreviewRoute
       ? "private, no-cache"
-      : "public, s-maxage=300, stale-while-revalidate=86400";
+      : context.request.method !== "GET"
+        ? "no-store"
+        : "public, s-maxage=300, stale-while-revalidate=86400";
 
   // `wrangler dev` occasionally returns responses with sealed Headers objects,
   // which throws "Can't modify immutable headers" on `.set()`. Production CF

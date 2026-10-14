@@ -1,0 +1,252 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Form from "@/components/form/Form.astro";
+import FormFieldset from "@/components/form/FormFieldset.astro";
+import FormField from "@/components/form/FormField.astro";
+import FormRadio from "@/components/form/FormRadio.astro";
+import FormTextarea from "@/components/form/FormTextarea.astro";
+import SmsConsent from "@/components/form/SmsConsent.astro";
+import Button from "@/components/ui/Button.astro";
+import { HONEYPOT_FIELD } from "@/config/forms";
+import { SITE } from "@/config/site";
+
+/**
+ * DiscountClaimForm — the "claim your discount or refer a friend" form on
+ * /get-your-discount, the page the yearly follow-up links to.
+ *
+ * Opens with one question: who's the discount for? "Me" keeps the fields
+ * as they are. "A friend" shows a "Your name" box and relabels the contact
+ * fields as the friend's, so the person in the CRM is always whoever gets
+ * the discount. Posts to /api/lead as the `discount-claim` form
+ * (src/config/forms.ts): a referral adds the `referral` tags and the
+ * referrer's name to the note, and never records SMS consent — a referrer
+ * can't agree to texts for a friend, so the box hides in friend mode.
+ *
+ * Contact fields follow `SITE.smsOptIn`, like LeadForm: Phone (required)
+ * and the optional SMS consent box once texting is approved, Email
+ * (required) until then.
+ *
+ * @example
+ * <DiscountClaimForm />
+ * <DiscountClaimForm submitLabel="Claim 10% off" />
+ */
+export interface Props extends Omit<
+  HTMLAttributes<"form">,
+  "name" | "action" | "method"
+> {
+  /**
+   * **DiscountClaimForm** — discount claim / refer-a-friend form wired to
+   * GoHighLevel. Copy props only: the fields map one-to-one onto what the
+   * `discount-claim` registry entry expects.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Label above the message box. @default "What would you like done?" */
+  messageLabel?: string;
+
+  /** Submit button text. @default "Claim your discount" */
+  submitLabel?: string;
+
+  /** Shown in place of the fields once sent. */
+  successMessage?: string;
+
+  /** Unique prefix for field ids — needed when one page shows the form twice. @default "discount" */
+  id?: string;
+
+  /** Extra classes on the outer `.form_wrap`. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  messageLabel = "What would you like done?",
+  submitLabel = "Claim your discount",
+  successMessage = "You're all set. We got it and we'll be in touch soon.",
+  id = "discount",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const sms = SITE.smsOptIn;
+---
+
+{
+  render && (
+    <Form
+      name="discount-claim"
+      action="/api/lead"
+      encoding="json"
+      id={id}
+      successMessage={successMessage}
+      errorMessage={`Something went wrong. Please call us at ${SITE.phone.display}.`}
+      class={["discount-claim_wrap", className].filter(Boolean).join(" ")}
+      {...rest}
+    >
+      <input type="hidden" name="formId" value="discount-claim" />
+      <FormFieldset legend="Who's this discount for?" columns={2}>
+        <FormRadio label="Me" name="for" value="self" checked />
+        <FormRadio label="A friend I'm referring" name="for" value="friend" />
+      </FormFieldset>
+      <div class="discount-claim_referrer">
+        <FormField
+          label="Your name"
+          name="referrer"
+          placeholder="So we know who sent them"
+          autocomplete="name"
+          id={`${id}-referrer`}
+          required
+          disabled
+        />
+      </div>
+      <FormFieldset columns={2}>
+        <FormField
+          label="First name"
+          name="firstName"
+          variant="first-name"
+          id={`${id}-first`}
+          required
+          data-friend-label="Friend's first name"
+        />
+        <FormField
+          label="Last name"
+          name="lastName"
+          variant="last-name"
+          id={`${id}-last`}
+          data-friend-label="Friend's last name"
+        />
+        {sms && (
+          <FormField
+            label="Phone"
+            name="phone"
+            variant="phone"
+            id={`${id}-phone`}
+            required
+            data-friend-label="Friend's phone"
+          />
+        )}
+        <FormField
+          label="Email"
+          name="email"
+          variant="email"
+          id={`${id}-email`}
+          required={!sms}
+          data-friend-label="Friend's email"
+        />
+      </FormFieldset>
+      <FormTextarea
+        label={messageLabel}
+        name="message"
+        id={`${id}-message`}
+        minLines={3}
+        data-friend-label="What does your friend need done?"
+      />
+      <SmsConsent id={`${id}-consent`} />
+      <div class="discount-claim_trap" aria-hidden="true">
+        <label for={`${id}-trap`}>Company website</label>
+        <input
+          type="text"
+          name={HONEYPOT_FIELD}
+          id={`${id}-trap`}
+          tabindex="-1"
+          autocomplete="off"
+        />
+      </div>
+      <Button type="submit" fullWidth class="discount-claim_submit">
+        {submitLabel}
+      </Button>
+    </Form>
+  )
+}
+
+<script>
+  /* "A friend" reveals the referrer box (enabled, so it validates and
+     submits) and relabels the contact fields; "Me" undoes both. */
+  function initDiscountClaims() {
+    for (const form of document.querySelectorAll<HTMLFormElement>(
+      ".discount-claim_wrap .form_element",
+    )) {
+      if (form.dataset.discountInit) continue;
+      form.dataset.discountInit = "true";
+
+      const consent = form.querySelector<HTMLInputElement>(
+        '[name="smsConsent"]',
+      );
+      const referrer =
+        form.querySelector<HTMLInputElement>('[name="referrer"]');
+      const relabel = [
+        ...form.querySelectorAll<HTMLElement>("[data-friend-label]"),
+      ].flatMap((input) => {
+        const text = form.querySelector(`label[for="${input.id}"]`)?.firstChild;
+        const mine = text?.textContent ?? "";
+        /* Keep the trailing space that separates the required asterisk. */
+        const gap = mine.match(/\s*$/)?.[0] ?? "";
+        return text
+          ? [{ text, mine, friend: `${input.dataset.friendLabel ?? ""}${gap}` }]
+          : [];
+      });
+
+      const sync = () => {
+        const friend =
+          form.querySelector<HTMLInputElement>('[name="for"]:checked')
+            ?.value === "friend";
+        if (referrer) referrer.disabled = !friend;
+        /* Only the person themself can agree to texts — not a referrer. */
+        if (consent) {
+          consent.disabled = friend;
+          if (friend) consent.checked = false;
+        }
+        for (const item of relabel) {
+          item.text.textContent = friend ? item.friend : item.mine;
+        }
+      };
+
+      form.addEventListener("change", (event) => {
+        if ((event.target as HTMLInputElement).name === "for") sync();
+      });
+      /* Form resets after a send — put the labels back with it. */
+      form.addEventListener("reset", () => window.setTimeout(sync));
+      sync();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initDiscountClaims);
+  } else {
+    initDiscountClaims();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .discount-claim_wrap .form_element {
+      gap: var(--space-4);
+    }
+
+    .discount-claim_referrer {
+      display: none;
+    }
+
+    .discount-claim_wrap:has([name="for"][value="friend"]:checked)
+      .sms-consent_wrap {
+      display: none;
+    }
+
+    .discount-claim_wrap:has([name="for"][value="friend"]:checked)
+      .discount-claim_referrer {
+      display: block;
+    }
+
+    /* Off-screen, not display:none — some bots skip hidden inputs. */
+    .discount-claim_trap {
+      position: absolute;
+      inset-inline-start: -100vw;
+      inline-size: 0.0625rem;
+      block-size: 0.0625rem;
+      overflow: hidden;
+    }
+  }
+</style>

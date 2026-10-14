@@ -1,0 +1,95 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import FormCheckbox from "@/components/form/FormCheckbox.astro";
+import Text from "@/components/ui/Text.astro";
+import { SITE } from "@/config/site";
+import { SMS_CONSENT_LABEL, SMS_CONSENT_LINKS } from "@/config/sms-consent";
+
+/**
+ * SmsConsent — the optional SMS (A2P 10DLC) consent checkbox, for any
+ * public form that collects a phone number. Place it after the phone
+ * field, before the submit button.
+ *
+ * Unticked and never required: the form sends either way. The lead
+ * pipeline (src/lib/leads.ts) reads `smsConsent`: ticked adds the
+ * `sms-consent` tag and saves the exact wording with a timestamp in a note;
+ * unticked leaves a new contact on SMS "Do not disturb". The wording lives
+ * in src/config/sms-consent.ts.
+ *
+ * Renders nothing while `SITE.smsOptIn` is false — those forms leave the
+ * Phone field out too.
+ *
+ * @example
+ * <SmsConsent id="contact-consent" />
+ */
+export interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **SmsConsent** — optional SMS consent checkbox + small print. No content
+   * props: the wording is the registered A2P consent text in
+   * src/config/sms-consent.ts (the line under the box mirrors
+   * `SMS_CONSENT_FOOTER` — keep the two in step).
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Id for the checkbox — needed when one page shows two forms. */
+  id?: string;
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const { docs, render = true, id, class: className, ...rest } = Astro.props;
+---
+
+{
+  render && SITE.smsOptIn && (
+    <div class:list={["sms-consent_wrap", className]} {...rest}>
+      <FormCheckbox
+        label={SMS_CONSENT_LABEL}
+        name="smsConsent"
+        id={id}
+        class="sms-consent_check"
+      />
+      <Text variant="tiny" muted maxWidth="none" class="sms-consent_text">
+        See <a href={SMS_CONSENT_LINKS.terms}>terms</a> and{" "}
+        <a href={SMS_CONSENT_LINKS.privacy}>privacy policy</a>. Text HELP for
+        help and STOP to unsubscribe.
+      </Text>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .sms-consent_wrap {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .sms-consent_check .form_ui_text {
+      font-size: var(--text-small-size);
+    }
+
+    /* Long label: the box sits beside the first line, not the middle. */
+    .sms-consent_check .form_ui_label {
+      align-items: flex-start;
+    }
+
+    .sms-consent_check .form_ui_visual_wrap {
+      margin-top: 0.125em;
+    }
+
+    .sms-consent_text {
+      margin-bottom: 0;
+    }
+
+    .sms-consent_text a {
+      color: inherit;
+      text-decoration: underline;
+    }
+  }
+</style>

@@ -1,0 +1,470 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Button from "@/components/ui/Button.astro";
+import Form from "@/components/form/Form.astro";
+import FormFieldset from "@/components/form/FormFieldset.astro";
+import FormField from "@/components/form/FormField.astro";
+import FormTextarea from "@/components/form/FormTextarea.astro";
+import SmsConsent from "@/components/form/SmsConsent.astro";
+import { HONEYPOT_FIELD } from "@/config/forms";
+import { SITE } from "@/config/site";
+import { uid } from "@/lib/uid";
+
+/**
+ * ReviewRequest — the review widget behind /leave-a-review: one headline
+ * and five stars, nothing else, until someone taps a star.
+ *
+ * - A rating of `threshold` or higher sends the visitor straight to the
+ *   Google review link (`reviewUrl`, default `SITE.googleReviewUrl`, falling
+ *   back to `SITE.reviewsUrl`).
+ * - Anything lower opens a short private form — name, a way to reach them,
+ *   and "how could we have done better" — that posts to /api/lead as the
+ *   `review-feedback` form (src/config/forms.ts), tagged by star count.
+ *
+ * The low-rating step still links to Google. Steering only happy customers
+ * to a public review ("review gating") breaks Google's review policy and
+ * the FTC's guidance on reviews — the private form is offered first, never
+ * instead.
+ *
+ * Contact fields follow `SITE.smsOptIn`, like LeadForm: Phone and the
+ * optional SMS consent box once texting is approved, Email until then.
+ *
+ * The form prefills from the link's query string — `?first_name=`,
+ * `?last_name=`, `?email=`, `?phone=` (or `?name=`, split at the first
+ * space) — so a GHL message can send `{{contact.first_name}}` and friends
+ * and the visitor only writes the feedback.
+ *
+ * States live on `data-step` on the card (`rate → redirect | feedback`);
+ * visibility is pure CSS keyed off it.
+ *
+ * @example
+ * <ReviewRequest />
+ * <ReviewRequest heading="How was your project?" threshold={5} />
+ */
+type ReviewThreshold =
+  /** 4 and 5 go to Google (the usual split) */
+  | 4
+  /** Only 5 goes to Google */
+  | 5;
+
+export interface Props extends Omit<HTMLAttributes<"section">, "id"> {
+  /**
+   * **ReviewRequest** — headline + five stars; high ratings go to Google,
+   * low ratings open a private feedback form (with Google still linked)
+   * that lands in GoHighLevel. Renders its own `<Section>`.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The one headline above the stars (the page's h1). @default "Please tell us how we did" */
+  heading?: string;
+
+  /** Subtext under the headline. Empty string hides it. @default "Your feedback is very important to us." */
+  intro?: string;
+
+  /** Where high ratings go. @default SITE.googleReviewUrl, then SITE.reviewsUrl */
+  reviewUrl?: string;
+
+  /** Lowest rating sent to Google; lower ratings get the form. @default 4 */
+  threshold?: ReviewThreshold;
+
+  /** Id on the section (an anchor target). */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  heading = "Please tell us how we did",
+  intro = "Your feedback is very important to us.",
+  reviewUrl = SITE.googleReviewUrl || SITE.reviewsUrl,
+  threshold = 4,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && !reviewUrl) {
+  console.warn(
+    "[ReviewRequest] No review link — set SITE.googleReviewUrl. High ratings will open the feedback form instead.",
+  );
+}
+
+const sms = SITE.smsOptIn;
+const titleId = uid("review-title");
+const formId = uid("review-form");
+const stars = [1, 2, 3, 4, 5];
+---
+
+{
+  render && (
+    <Section id={id} class:list={["review_wrap", className]} {...rest}>
+      <div
+        class="review_card"
+        data-step="rate"
+        data-review-url={reviewUrl}
+        data-threshold={threshold}
+      >
+        <div class="review_header u-margin-trim">
+          <Heading
+            tag="h1"
+            variant="h2"
+            marginBottom={1}
+            id={titleId}
+            class="review_title"
+          >
+            {heading}
+          </Heading>
+          {intro && (
+            <Text variant="large" muted class="review_intro">
+              {intro}
+            </Text>
+          )}
+        </div>
+
+        <div class="review_stars" role="group" aria-labelledby={titleId}>
+          {stars.map((n) => (
+            <button
+              type="button"
+              class="review_star"
+              data-rating={n}
+              aria-pressed="false"
+            >
+              <svg
+                class="review_star_icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  fill="currentColor"
+                  d="M12 2.5l2.94 5.96 6.56.95-4.75 4.63 1.12 6.54L12 17.5l-5.87 3.08 1.12-6.54L2.5 9.41l6.56-.95L12 2.5z"
+                />
+              </svg>
+              <span class="u-sr-only">
+                {n} {n === 1 ? "star" : "stars"}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <div class="review_redirect" role="status">
+          <Text class="review_redirect_text">
+            Thank you! Taking you to Google to share it.{" "}
+            <a href={reviewUrl} class="review_redirect_link">
+              Continue to Google
+            </a>
+          </Text>
+        </div>
+
+        <div class="review_feedback">
+          <div class="review_feedback_intro u-margin-trim">
+            <Heading
+              tag="h2"
+              variant="h4"
+              marginBottom={1}
+              class="review_feedback_title"
+            >
+              We're sorry we missed the mark.
+            </Heading>
+            <Text muted class="review_feedback_text">
+              Tell us what happened and we'll make it right.
+            </Text>
+          </div>
+          <Form
+            name="review-feedback"
+            action="/api/lead"
+            encoding="json"
+            id={formId}
+            successMessage="Thank you. We got your feedback, and we appreciate you taking the time to tell us how we could have done better."
+            errorMessage={`Something went wrong sending your feedback. Please call us at ${SITE.phone.display}.`}
+            class="review_form"
+          >
+            <input type="hidden" name="formId" value="review-feedback" />
+            <input type="hidden" name="rating" value="" class="review_rating" />
+            <FormFieldset columns={2}>
+              <FormField
+                label="First name"
+                name="firstName"
+                variant="first-name"
+                id={`${formId}-first`}
+                required
+              />
+              <FormField
+                label="Last name"
+                name="lastName"
+                variant="last-name"
+                id={`${formId}-last`}
+              />
+              <FormField
+                label="Email"
+                name="email"
+                variant="email"
+                id={`${formId}-email`}
+                required
+              />
+              {sms && (
+                <FormField
+                  label="Phone"
+                  name="phone"
+                  variant="phone"
+                  id={`${formId}-phone`}
+                />
+              )}
+            </FormFieldset>
+            <FormTextarea
+              label="How could we have done better?"
+              name="message"
+              id={`${formId}-message`}
+              minLines={4}
+              required
+            />
+            <SmsConsent id={`${formId}-consent`} />
+            <div class="review_trap" aria-hidden="true">
+              <label for={`${formId}-trap`}>Company website</label>
+              <input
+                type="text"
+                name={HONEYPOT_FIELD}
+                id={`${formId}-trap`}
+                tabindex="-1"
+                autocomplete="off"
+              />
+            </div>
+            <Button type="submit" fullWidth class="review_submit">
+              Send feedback
+            </Button>
+          </Form>
+          {reviewUrl && (
+            <Text variant="small" muted class="review_public">
+              Prefer to post a public review?{" "}
+              <a href={reviewUrl} class="review_public_link">
+                Leave one on Google
+              </a>
+              .
+            </Text>
+          )}
+        </div>
+      </div>
+    </Section>
+  )
+}
+
+<script>
+  /* Tap a star: high → Google, low → reveal the form. Visibility is CSS
+     keyed off data-step on the card. */
+  function initReviews() {
+    for (const card of document.querySelectorAll<HTMLElement>(
+      ".review_card[data-step]",
+    )) {
+      if (card.dataset.reviewInit) continue;
+      card.dataset.reviewInit = "true";
+
+      const url = card.dataset.reviewUrl ?? "";
+      const threshold = Number(card.dataset.threshold) || 4;
+      const stars = card.querySelectorAll<HTMLButtonElement>(".review_star");
+      const ratingInput =
+        card.querySelector<HTMLInputElement>(".review_rating");
+      const form = card.querySelector<HTMLFormElement>(".form_element");
+
+      /* Prefill from the link GHL sent, e.g. ?first_name={{contact.first_name}}. */
+      const params = new URLSearchParams(window.location.search);
+      const [first = "", ...last] = (params.get("name") ?? "").split(" ");
+      const prefill: Record<string, string> = {
+        firstName: params.get("first_name") ?? first,
+        lastName: params.get("last_name") ?? last.join(" "),
+        email: params.get("email") ?? "",
+        phone: params.get("phone") ?? "",
+      };
+      for (const [name, value] of Object.entries(prefill)) {
+        const input = form?.querySelector<HTMLInputElement>(
+          `input[name="${name}"]`,
+        );
+        if (value && input && !input.value) input.value = value.slice(0, 200);
+      }
+
+      for (const star of stars) {
+        star.addEventListener("click", () => {
+          const rating = Number(star.dataset.rating);
+          for (const other of stars) {
+            const active = other === star;
+            other.classList.toggle("is-active", active);
+            other.setAttribute("aria-pressed", String(active));
+          }
+
+          if (rating >= threshold && url) {
+            card.dataset.step = "redirect";
+            /* A beat so the stars register before the page changes. */
+            window.setTimeout(() => window.location.assign(url), 600);
+            return;
+          }
+
+          if (ratingInput) ratingInput.value = String(rating);
+          const opening = card.dataset.step !== "feedback";
+          card.dataset.step = "feedback";
+          if (opening) {
+            const first = form?.querySelector<HTMLElement>(
+              "input:not([type='hidden']):not([tabindex='-1']), textarea",
+            );
+            first?.focus({ preventScroll: true });
+            card
+              .querySelector(".review_feedback")
+              ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }
+        });
+      }
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initReviews);
+  } else {
+    initReviews();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .review_card {
+      --_star-empty: color-mix(in srgb, var(--text) 18%, transparent);
+      --_text-inline-margin: auto;
+      --_buttons-justify: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-6);
+      inline-size: 100%;
+      max-inline-size: 36rem;
+      margin-inline: auto;
+      padding: var(--space-7) var(--space-6);
+      background-color: var(--background);
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-large);
+      color: var(--text);
+      text-align: center;
+    }
+
+    /* No gap between buttons: the pointer never falls between stars, so
+       the hover preview doesn't flicker. Padding gives the spacing. */
+    .review_stars {
+      display: flex;
+      justify-content: center;
+    }
+
+    .review_star {
+      display: grid;
+      place-items: center;
+      padding: 0.25rem;
+      background: none;
+      border: 0;
+      border-radius: var(--radius-small);
+      color: var(--_star-empty);
+      cursor: pointer;
+      transition:
+        color 150ms ease,
+        transform 150ms ease;
+    }
+
+    .review_star_icon {
+      inline-size: 3rem;
+      aspect-ratio: 1;
+      flex-shrink: 0;
+    }
+
+    .review_star:focus-visible {
+      outline: var(--border-width-main) solid var(--text);
+      outline-offset: 0.125rem;
+    }
+
+    /* The chosen star and every star before it. */
+    .review_star.is-active,
+    .review_star:has(~ .review_star.is-active) {
+      color: var(--rating-star);
+    }
+
+    /* Hover previews the rating: the hovered star and those before it. */
+    @media (hover: hover) {
+      .review_stars:hover .review_star {
+        color: var(--_star-empty);
+      }
+
+      .review_stars:hover .review_star:hover,
+      .review_stars:hover .review_star:has(~ .review_star:hover) {
+        color: var(--rating-star);
+      }
+
+      .review_star:hover {
+        transform: scale(1.1);
+      }
+    }
+
+    .review_redirect,
+    .review_feedback {
+      display: none;
+    }
+
+    .review_card[data-step="redirect"] .review_redirect {
+      display: block;
+    }
+
+    .review_card[data-step="feedback"] .review_feedback {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      inline-size: 100%;
+      padding-top: var(--space-6);
+      border-top: var(--border-width-main) solid var(--border);
+      text-align: start;
+    }
+
+    .review_redirect_text,
+    .review_public {
+      margin-bottom: 0;
+    }
+
+    .review_redirect_link,
+    .review_public_link {
+      color: inherit;
+      text-decoration: underline;
+    }
+
+    .review_feedback_intro,
+    .review_public {
+      text-align: center;
+    }
+
+    /* Once sent, the thank-you note stands alone. */
+    .review_feedback:has(.form_wrap[data-state="sent"]) .review_feedback_intro {
+      display: none;
+    }
+
+    .review_form .form_element {
+      gap: var(--space-4);
+    }
+
+    /* Off-screen, not display:none — some bots skip hidden inputs. */
+    .review_trap {
+      position: absolute;
+      inset-inline-start: -100vw;
+      inline-size: 0.0625rem;
+      block-size: 0.0625rem;
+      overflow: hidden;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .review_star {
+        transition: none;
+      }
+
+      .review_star:hover {
+        transform: none;
+      }
+    }
+  }
+</style>
