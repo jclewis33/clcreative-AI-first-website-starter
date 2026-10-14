@@ -25,6 +25,7 @@ export const DEV_ONLY_PATHS = [
   "/style-guide",
   "/components",
   "/demo/local-service",
+  "/demo/local-service-contact",
 ];
 
 /**

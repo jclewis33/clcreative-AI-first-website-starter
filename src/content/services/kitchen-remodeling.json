@@ -1,0 +1,109 @@
+{
+  "title": "Kitchen remodeling",
+  "navLabel": "Kitchens",
+  "order": 10,
+  "seoTitle": "Kitchen Remodeling",
+  "seoDescription": "Kitchen remodeling from layout to final walkthrough: cabinets, counters, lighting and plumbing, built by one local crew at a fixed price.",
+  "cardText": "Layouts, cabinets, counters and lighting, planned and built by one crew.",
+  "cardImage": "./images/sample-1.webp",
+  "cardImageAlt": "A remodeled kitchen with an island and pendant lights",
+  "icon": "kitchen",
+  "hero": {
+    "eyebrow": "Kitchen remodeling",
+    "heading": "A kitchen built around <strong>how you cook</strong>",
+    "text": "We plan the layout with you, then build it: cabinets, counters, lighting and plumbing, with a fixed price before we start.",
+    "image": "./images/sample-1.webp",
+    "imageAlt": "A remodeled kitchen with white cabinets and a large island"
+  },
+  "highlights": [
+    { "value": "300+", "label": "Kitchens finished" },
+    { "value": "6 wk", "label": "Typical build time" },
+    { "value": "Fixed", "label": "Price before we start" },
+    { "value": "2 yr", "label": "Workmanship warranty" }
+  ],
+  "scope": {
+    "heading": "What we work on",
+    "intro": "From a refresh to a full gut-and-rebuild.",
+    "items": [
+      {
+        "title": "Layout changes",
+        "text": "Moving walls, plumbing and the island so the room works.",
+        "icon": "grid"
+      },
+      {
+        "title": "Cabinets and counters",
+        "text": "Custom or semi-custom cabinets with stone or quartz tops.",
+        "icon": "kitchen"
+      },
+      {
+        "title": "Lighting and electrical",
+        "text": "Recessed, under-cabinet and pendant lighting, up to code.",
+        "icon": "bolt"
+      },
+      {
+        "title": "Plumbing and fixtures",
+        "text": "Sinks, faucets, dishwashers and gas lines installed right.",
+        "icon": "water"
+      }
+    ]
+  },
+  "included": {
+    "heading": "What's included",
+    "text": "One price covers the whole job.",
+    "items": [
+      "Design and layout",
+      "Permits",
+      "Demolition and haul-away",
+      "Cabinets and counters",
+      "Plumbing and electrical",
+      "Tile and backsplash",
+      "Lighting",
+      "Final cleanup"
+    ],
+    "images": [
+      {
+        "src": "./images/sample-2.webp",
+        "alt": "New cabinetry and counters in a finished kitchen"
+      },
+      {
+        "src": "./images/sample-3.webp",
+        "alt": "A close view of a tile backsplash and range"
+      }
+    ]
+  },
+  "reviews": [
+    {
+      "text": "They kept us informed every day and finished the week they said they would.",
+      "name": "Jordan P.",
+      "meta": "Kitchen remodel"
+    },
+    {
+      "text": "The layout change made the whole house feel bigger.",
+      "name": "Sam R.",
+      "meta": "Kitchen remodel"
+    },
+    {
+      "text": "Clean, careful and fair on price.",
+      "name": "Alex T.",
+      "meta": "Kitchen refresh"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "How long does a kitchen remodel take?",
+      "answer": "Most kitchens take four to eight weeks of work once materials arrive. We give you a written schedule with the quote."
+    },
+    {
+      "question": "Can we keep using the kitchen during the work?",
+      "answer": "Usually not for the whole job. We set up a temporary sink and counter area when we can, and plan the noisy work in blocks."
+    },
+    {
+      "question": "Do you handle permits?",
+      "answer": "Yes. We pull the permits and schedule the inspections as part of the job."
+    }
+  ],
+  "cta": {
+    "heading": "Ready for a kitchen that <strong>works for you</strong>?",
+    "text": "Call now, or get a free on-site estimate."
+  }
+}

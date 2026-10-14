@@ -1,0 +1,130 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import ChipList from "@/components/ui/ChipList.astro";
+import { SITE } from "@/config/site";
+
+type ContactUrgent = { heading: string; text?: string };
+type ContactCard = { heading: string; body?: string; chips?: string[] };
+
+interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **ContactCards** — a stack of cards for the narrow column of a contact
+   * page: an optional urgent card ("Line down right now?") on the dark
+   * theme with a big `SITE.phone` call link, then plain info cards (hours,
+   * service areas as chips, licence…).
+   *
+   * - `urgent` — `{ heading, text? }`
+   * - `cards` — `{ heading, body?, chips? }[]`
+   *
+   * Renders nothing when there's neither an urgent card nor info cards.
+   *
+   * @example
+   * <ContactCards urgent={{ heading: "Emergency?", text: "Call any time." }} cards={[{ heading: "Hours", body: SITE.hours }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Optional urgent card with the big call link. */
+  urgent?: ContactUrgent;
+
+  /** Info cards under it. */
+  cards?: ContactCard[];
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  urgent,
+  cards = [],
+  class: className,
+  ...rest
+} = Astro.props;
+
+const visibleCards = cards.filter((card) => card.heading);
+const hasContent = Boolean(urgent?.heading) || visibleCards.length > 0;
+
+if (import.meta.env.DEV && render && !hasContent) {
+  console.warn("[ContactCards] Needs `urgent` or `cards`; nothing renders.");
+}
+---
+
+{
+  render && hasContent && (
+    <div class:list={["contact-cards_wrap", className]} {...rest}>
+      {urgent?.heading && (
+        <div
+          class="contact-cards_card is-urgent u-margin-trim"
+          data-theme="dark"
+        >
+          <Heading tag="h2" variant="eyebrow">
+            {urgent.heading}
+          </Heading>
+          {urgent.text && <Text muted>{urgent.text}</Text>}
+          <a class="contact-cards_phone" href={`tel:${SITE.phone.tel}`}>
+            {SITE.phone.display}
+          </a>
+        </div>
+      )}
+      {visibleCards.map((card) => (
+        <div class="contact-cards_card u-margin-trim">
+          <Heading tag="h2" variant="eyebrow">
+            {card.heading}
+          </Heading>
+          {card.body && <Text variant="small">{card.body}</Text>}
+          {card.chips?.length ? (
+            <ChipList items={card.chips.map((label) => ({ label }))} />
+          ) : null}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .contact-cards_wrap {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .contact-cards_card {
+      padding: var(--space-5);
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+      color: var(--text);
+    }
+
+    /* The marker and the colours sit on the card itself (CLAUDE.md), so its
+       text, eyebrow and link all resolve against the dark theme. */
+    .contact-cards_card.is-urgent {
+      border-color: transparent;
+      border-top: 0.25rem solid var(--heading-accent);
+      background-color: var(--background);
+    }
+
+    .contact-cards_phone {
+      display: inline-block;
+      font-family: var(--font-primary);
+      font-size: var(--h3-size);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    @media (hover: hover) {
+      .contact-cards_phone:hover {
+        color: var(--heading-accent);
+      }
+    }
+  }
+</style>

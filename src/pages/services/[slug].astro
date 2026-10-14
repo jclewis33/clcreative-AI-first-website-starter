@@ -1,0 +1,143 @@
+---
+/**
+ * Service page — one per file in src/content/services/ (filename = slug).
+ * Prerendered. Every section comes from the local-service sections; the
+ * copy comes from the service's JSON. Add a service by adding a file — the
+ * nav, footer, sitemap and llms.txt pick it up (src/lib/service-nav.ts).
+ * Field guide: .claude/skills/component-api/references/service-pages.md.
+ */
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import IncludedList from "@/components/sections/IncludedList.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import FAQ from "@/components/sections/FAQ.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import { SITE } from "@/config/site";
+import { DEFAULT_PROCESS } from "@/data/process";
+import { serviceFaqJsonLd } from "@/lib/jsonld";
+import {
+  getServices,
+  relatedServices,
+  servicePath,
+  SERVICES_INDEX_PATH,
+  type Service,
+} from "@/lib/services";
+
+export const getStaticPaths = (async () => {
+  const all = await getServices();
+  return all.map((service) => ({
+    params: { slug: service.id },
+    props: { service, all },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  service: Service;
+  all: Service[];
+}
+
+const { service, all } = Astro.props;
+const s = service.data;
+const path = servicePath(service.id);
+const pageUrl = `${SITE.url}${path}`;
+const related = relatedServices(all, service.id);
+const process = s.process ?? DEFAULT_PROCESS;
+const ESTIMATE = "estimate-modal";
+
+const crumbs = [
+  { label: "Home", href: "/" },
+  { label: "Services", href: SERVICES_INDEX_PATH },
+  { label: s.title },
+];
+const schemaCrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Services", path: SERVICES_INDEX_PATH },
+  { name: s.title, path },
+];
+---
+
+<BaseLayout
+  title={`${s.seoTitle} | ${SITE.name}`}
+  description={s.seoDescription}
+  canonical={pageUrl}
+  breadcrumbs={schemaCrumbs}
+  schema={serviceFaqJsonLd({
+    pageUrl,
+    serviceType: s.title,
+    name: s.title,
+    description: s.seoDescription,
+    areaServed: [...SITE.areaServed],
+    faqs: s.faqs,
+  })}
+>
+  <Hero
+    variant="split"
+    breadcrumbs={crumbs}
+    eyebrow={s.hero.eyebrow}
+    heading={s.hero.heading}
+    text={s.hero.text}
+    image={s.hero.image}
+    imageAlt={s.hero.imageAlt}
+    primaryCta={{ label: "Get a free estimate", modal: ESTIMATE }}
+  />
+
+  <StatsStrip items={s.highlights} />
+
+  <ServiceCards
+    heading={s.scope.heading}
+    intro={s.scope.intro}
+    items={s.scope.items}
+  />
+
+  <IncludedList
+    heading={s.included.heading}
+    text={s.included.text}
+    items={s.included.items}
+    images={s.included.images}
+  />
+
+  <ProcessSteps
+    eyebrow="How it works"
+    heading={process.heading}
+    steps={process.steps}
+  />
+
+  <Reviews render={Boolean(s.reviews?.length)} reviews={s.reviews ?? []} />
+
+  <FAQ eyebrow="Questions" items={s.faqs} />
+
+  <ServiceCards
+    render={related.length > 0}
+    layout="swipe"
+    theme="dark"
+    heading="Related services"
+    moreLabel="View service"
+    items={related.map((r) => ({
+      title: r.data.title,
+      text: r.data.cardText,
+      image: r.data.cardImage,
+      imageAlt: r.data.cardImageAlt,
+      href: servicePath(r.id),
+    }))}
+  />
+
+  <CallBand
+    heading={s.cta.heading}
+    text={s.cta.text}
+    secondaryCta={{ label: "Get a free estimate", modal: ESTIMATE }}
+  />
+
+  <LeadFormModal
+    id={ESTIMATE}
+    formId="contact"
+    heading="Get a free estimate"
+    text="Tell us a little about the project and we'll be in touch."
+    fields="quote"
+    projectOptions={all.map((x) => ({ label: x.data.title, value: x.id }))}
+  />
+</BaseLayout>

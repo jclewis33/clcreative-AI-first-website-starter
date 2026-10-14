@@ -56,6 +56,7 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
    - `serviceAreas`: the ServiceArea chips. Each must match a `data-area` in the client's map exactly.
    - `reviewsUrl`: the Reviews "Read all reviews" link (blank = hidden).
    - `utilityBar`: the bar above the nav (`null` = off).
+9. **Replace the two sample services** in `src/content/services/` (and their photos in `images/`) with the client's real services. Each file becomes a page, a nav item and a footer link. See `.claude/skills/component-api/references/service-pages.md`.
 
 ---
 

@@ -1,0 +1,108 @@
+---
+/**
+ * Local-service sample contact page — DEV ONLY (`/demo/local-service-contact`
+ * is in DEV_ONLY_PATHS, so the build strips it). Copy it as the starting
+ * point for a client's contact page. Deliberately no map or street address:
+ * add them only when the client has confirmed them.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Hero from "@/components/sections/Hero.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import FAQ from "@/components/sections/FAQ.astro";
+import LeadForm from "@/components/form/LeadForm.astro";
+import ContactCards from "@/components/ui/ContactCards.astro";
+import LinkList from "@/components/ui/LinkList.astro";
+import { SITE } from "@/config/site";
+import { getServices, servicePath } from "@/lib/services";
+
+const services = await getServices();
+---
+
+<BaseLayout
+  title="Local-service sample contact page"
+  description="A sample contact page built from the local-service sections."
+>
+  <Hero
+    variant="text"
+    breadcrumbs={[{ label: "Home", href: "/" }, { label: "Contact" }]}
+    eyebrow="Contact"
+    heading="Talk to a <strong>real person</strong> today"
+    text="Send the form and we'll call you back within one business day, or call now."
+    badge={false}
+  />
+
+  <Section>
+    <Layout ratio="7-5" verticalAlign="start">
+      <Heading tag="h2" variant="h3">Tell us about the project</Heading>
+      <LeadForm
+        formId="contact"
+        id="contact-page-form"
+        fields="quote"
+        projectOptions={services.map((s) => ({
+          label: s.data.title,
+          value: s.id,
+        }))}
+      />
+      <ContactCards
+        slot="column2"
+        urgent={{
+          heading: "Need help today?",
+          text: "Call and we'll talk you through it.",
+        }}
+        cards={[
+          { heading: "Service areas", chips: [...SITE.serviceAreas] },
+          { heading: "Hours", body: SITE.hours },
+        ]}
+      />
+    </Layout>
+  </Section>
+
+  <ProcessSteps
+    variant="cards"
+    theme="dark"
+    heading="What happens next"
+    steps={[
+      { title: "We call you back", text: "Usually the same business day." },
+      {
+        title: "We visit",
+        text: "A free on-site estimate at a time that suits you.",
+      },
+      { title: "You decide", text: "A written, fixed quote with no pressure." },
+    ]}
+  />
+
+  <Section>
+    <Layout ratio="5-7" verticalAlign="start">
+      <Heading tag="h2">Not sure what to ask for?</Heading>
+      <Text muted
+        >Start with the closest match. We'll sort out the details together.</Text
+      >
+      <LinkList
+        slot="column2"
+        items={services.map((s) => ({
+          title: s.data.title,
+          text: s.data.cardText,
+          href: servicePath(s.id),
+        }))}
+      />
+    </Layout>
+  </Section>
+
+  <FAQ
+    eyebrow="Before you reach out"
+    items={[
+      {
+        question: "Is the estimate free?",
+        answer: "Yes. We visit, measure and send a written price at no cost.",
+      },
+      {
+        question: "How soon will you call back?",
+        answer: "Usually the same business day, and always within one.",
+      },
+    ]}
+  />
+</BaseLayout>

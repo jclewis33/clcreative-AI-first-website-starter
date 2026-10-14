@@ -96,6 +96,9 @@ import ServiceArea from "@/components/sections/ServiceArea.astro";
 import Reviews from "@/components/sections/Reviews.astro";
 import LeadFormSection from "@/components/sections/LeadFormSection.astro";
 import CallBand from "@/components/sections/CallBand.astro";
+import { SITE } from "@/config/site";
+import ContactCards from "@/components/ui/ContactCards.astro";
+import LinkList from "@/components/ui/LinkList.astro";
 import SampleMap from "@/assets/maps/sample-service-area.svg";
 import demoPhoto5 from "@/assets/placeholder-images/ai-first-starter-5.webp";
 import { PROJECT_CATEGORIES } from "@/config/projects";
@@ -224,6 +227,7 @@ const COMPONENT_INDEX = [
   { slug: "lead-form-section", text: "LeadFormSection" },
   { slug: "call-band", text: "CallBand" },
   { slug: "cta-section-cta", text: "CTASection with SectionCta" },
+  { slug: "contact-cards", text: "ContactCards & LinkList" },
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
@@ -2664,6 +2668,43 @@ const demoGallery = [
     primaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
     secondaryCta={{ label: "See our work", href: "/projects" }}
   />
+
+  <Section theme="light" id="contact-cards">
+    <Layout variant="columns" ratio="7-5">
+      <Heading variant="eyebrow">ContactCards &amp; LinkList</Heading>
+      <Heading tag="h2">Contact-page building blocks</Heading>
+      <Text muted
+        >ContactCards stacks an urgent call card over info cards for a contact
+        page's narrow column. LinkList is a ruled list of links, here the "Not
+        sure what to ask for?" services.</Text
+      >
+      <LinkList
+        items={[
+          {
+            title: "Kitchen remodeling",
+            text: "Layouts, cabinets, counters and lighting",
+            href: "/services/kitchen-remodeling",
+          },
+          {
+            title: "Bathroom remodeling",
+            text: "Showers, tile, vanities and ventilation",
+            href: "/services/bathroom-remodeling",
+          },
+        ]}
+      />
+      <ContactCards
+        slot="column2"
+        urgent={{
+          heading: "Need help today?",
+          text: "Call and we'll get someone out.",
+        }}
+        cards={[
+          { heading: "Hours", body: SITE.hours },
+          { heading: "Service areas", chips: [...SITE.serviceAreas] },
+        ]}
+      />
+    </Layout>
+  </Section>
 
   <!-- ============================================================
        9. MODALS
