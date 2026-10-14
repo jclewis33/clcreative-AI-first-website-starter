@@ -146,7 +146,7 @@ The starter ships a GoHighLevel lead pipeline. `<LeadForm>` posts to `/api/lead`
 - [ ] Gate `/tools` — ONE of: Cloudflare Access on the `/tools` path + `CF_ACCESS_TEAM_DOMAIN` / `CF_ACCESS_AUD` (domain on Cloudflare in our account), **or** a `TOOLS_PASSWORD` **Secret** (Settings → Variables and Secrets — not the Builds section) for sites served through Cloudflare for SaaS. With neither, `/tools` is locked (503).
 - [ ] Leave `SITE.smsOptIn` **false** until the client's A2P 10DLC registration is approved (no Phone field or SMS consent on public forms meanwhile). Put any "we'll call you back" phrases in `SMS_OFF_COPY_SWAPS` (`src/config/sms-consent.ts`). Flip to `true` once approved.
 - [ ] Set `SITE.legalName` (used in the SMS consent wording) and `SITE.googleReviewUrl` (the Google "write a review" link `/leave-a-review` sends happy customers to).
-- [ ] Edit the offer copy on `/get-your-discount`, and point the GHL review-request and yearly follow-up messages at `/leave-a-review` and `/get-your-discount`.
+- [ ] Edit the offer copy on `/get-your-discount`, and point the GHL review-request and 1-year follow-up messages at `/leave-a-review` and `/get-your-discount`.
 - [ ] Optional: `SITE.integrations.ghlChatWidgetId` (chat widget) and `ghlTrackingId` (Settings → External Tracking → the `tk_…` id).
 
 Full walkthrough: [ghl-forms.md](ghl-forms.md).

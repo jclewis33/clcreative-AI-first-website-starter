@@ -19,7 +19,12 @@
  *   form's 1–5 `rating` field — one workflow per rating if you want them.
  * - `referral` lets a public form be sent on someone else's behalf
  *   (`for: "friend"` + `referrer`): the friend is the contact, gets these
- *   extra tags, and is never recorded as giving SMS consent.
+ *   extra tags and its own `source`, and is recorded as NOT giving SMS
+ *   consent (nobody can consent for a friend).
+ *
+ * MATCHES THE GHL SNAPSHOT. Tag names, sources, contact types and custom
+ * field keys mirror the Way Construction build the CL Creative GHL snapshot
+ * is made from — change them only together with the snapshot.
  *
  * Adding a form or a new automation = adding one entry. Full setup:
  * docs/ghl-forms.md.
@@ -35,8 +40,14 @@ export interface FormConfig {
   access: FormAccess;
   /** Tags added to the contact. These start the GHL automations. */
   tags: string[];
-  /** Written to the contact's `source` field in GHL. */
+  /** Written to the contact's `source` field in GHL on every submission. */
   source: string;
+  /**
+   * GHL contact type. `customer` for people who've already hired the client
+   * (review feedback, discount claims, staff tools). Omit for leads — GHL
+   * makes new contacts leads and leaves an existing contact's type alone.
+   */
+  contactType?: "customer";
   /** Remove-then-add the tags on a repeat submission so the automation re-runs. */
   retrigger?: boolean;
   /**
@@ -44,12 +55,17 @@ export interface FormConfig {
    * required `rating` field (1–5). Leave off for every other form.
    */
   ratingTag?: string;
-  /** Referral mode: extra tags when the form is sent for a friend. */
-  referral?: { tags: string[] };
   /**
-   * Form field name → GHL custom-field id. GHL matches custom fields by id,
-   * not name — read them from Settings → Custom Fields (or
-   * `GET /locations/{id}/customFields`). Fields not mapped here are dropped.
+   * Referral mode: when sent for a friend, these extra tags and this source
+   * replace the form's; the friend keeps GHL's default type (a lead).
+   */
+  referral?: { tags: string[]; source: string };
+  /**
+   * Form field name → GHL custom-field KEY (Settings → Custom Fields →
+   * the field's key, without the `contact.` prefix — e.g. `your_message`).
+   * The snapshot's keys: `your_message`, `your_feedback`, `review_rating`,
+   * `referred_by`. A mapped field is written only when it has a value,
+   * except a referral form's `referrer`, which is cleared on a self claim.
    */
   customFields?: Record<string, string>;
 }
@@ -59,36 +75,43 @@ export const FORMS = {
     label: "Contact form",
     access: "public",
     tags: ["website lead"],
-    source: "Website: Contact form",
+    source: "Website: request a call back",
+    customFields: { message: "your_message" },
   },
   "review-feedback": {
     label: "Review feedback",
     access: "public",
     tags: [],
     ratingTag: "review feedback",
-    source: "Website: Review feedback",
+    source: "Website: review feedback",
+    contactType: "customer",
     retrigger: true,
+    customFields: { rating: "review_rating", message: "your_feedback" },
   },
   "discount-claim": {
     label: "Discount claim",
     access: "public",
     tags: ["discount claimed"],
-    referral: { tags: ["referral"] },
-    source: "Website: Discount claim",
+    referral: { tags: ["referral"], source: "Website: referral discount" },
+    source: "Website: discount claim",
+    contactType: "customer",
     retrigger: true,
+    customFields: { message: "your_message", referrer: "referred_by" },
   },
   "review-request": {
-    label: "Send a review request",
+    label: "Ask for a review",
     access: "staff",
     tags: ["review request"],
-    source: "Client tools: Review request",
+    source: "Team tool: review request",
+    contactType: "customer",
     retrigger: true,
   },
-  "yearly-follow-up": {
-    label: "Start the yearly follow-up",
+  "review-request-1-year": {
+    label: "Ask for a review and add to the 1-year follow-up",
     access: "staff",
-    tags: ["yearly follow-up"],
-    source: "Client tools: Yearly follow-up",
+    tags: ["review request + 1-year followup"],
+    source: "Team tool: review request",
+    contactType: "customer",
     retrigger: true,
   },
 } satisfies Record<string, FormConfig>;
@@ -98,8 +121,14 @@ export type FormId = keyof typeof FORMS;
 /** Hidden bot-trap field. People never see it; a filled-in value = a bot. */
 export const HONEYPOT_FIELD = "company_website";
 
-/** Tag added when the visitor ticks the SMS consent box. */
-export const SMS_CONSENT_TAG = "sms-consent";
+/**
+ * SMS consent tags (names from the GHL snapshot). Ticked → `sms consent`
+ * (and `sms did not consent` comes off). Unticked → `sms did not consent`,
+ * unless the contact already has `sms consent`: leaving the box empty later
+ * isn't opting out — texting STOP is.
+ */
+export const SMS_CONSENT_TAG = "sms consent";
+export const SMS_NO_CONSENT_TAG = "sms did not consent";
 
 /** Look a form up by an untrusted id from a request body. */
 export function getForm(id: unknown): FormConfig | undefined {

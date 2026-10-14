@@ -12,9 +12,9 @@ import { SMS_CONSENT_LABEL, SMS_CONSENT_LINKS } from "@/config/sms-consent";
  *
  * Unticked and never required: the form sends either way. The lead
  * pipeline (src/lib/leads.ts) reads `smsConsent`: ticked adds the
- * `sms-consent` tag and saves the exact wording with a timestamp in a note;
- * unticked leaves a new contact on SMS "Do not disturb". The wording lives
- * in src/config/sms-consent.ts.
+ * `sms consent` tag and saves the exact wording with a timestamp in a note;
+ * unticked adds `sms did not consent` (unless they consented before). The
+ * wording lives in src/config/sms-consent.ts.
  *
  * Renders nothing while `SITE.smsOptIn` is false — those forms leave the
  * Phone field out too.

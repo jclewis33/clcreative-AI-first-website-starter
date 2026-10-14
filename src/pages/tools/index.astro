@@ -1,7 +1,7 @@
 ---
 /**
  * Client tools — the private page where the client starts a GHL automation
- * for one of their customers (send a review request, start the yearly
+ * for one of their customers (ask for a review, add them to the 1-year
  * follow-up, …).
  *
  * - The options are every `access: "staff"` entry in src/config/forms.ts;
@@ -26,7 +26,6 @@ import Form from "@/components/form/Form.astro";
 import FormField from "@/components/form/FormField.astro";
 import FormFieldset from "@/components/form/FormFieldset.astro";
 import FormRadio from "@/components/form/FormRadio.astro";
-import FormCheckbox from "@/components/form/FormCheckbox.astro";
 import { STAFF_FORMS } from "@/config/forms";
 import { SITE } from "@/config/site";
 import "@/styles/pages/tools.css";
@@ -99,11 +98,6 @@ export const prerender = false;
           autocomplete="off"
         />
       </FormFieldset>
-
-      <FormCheckbox
-        name="smsConsent"
-        label="The customer agreed to receive text messages from us"
-      />
 
       <Button type="submit" ariaLabel="Start automation">Start</Button>
     </Form>

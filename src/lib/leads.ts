@@ -2,6 +2,7 @@ import {
   getForm,
   HONEYPOT_FIELD,
   SMS_CONSENT_TAG,
+  SMS_NO_CONSENT_TAG,
   type FormAccess,
   type FormConfig,
 } from "@/config/forms";
@@ -13,7 +14,6 @@ import {
   ghlCredentials,
   GhlError,
   removeTags,
-  setupNewContact,
   upsertContact,
 } from "@/lib/ghl";
 
@@ -23,8 +23,9 @@ import {
  *
  * Tags are what start Casey's GHL automations ("Contact Tag added"), and they
  * come only from src/config/forms.ts — the request names a `formId`, never a
- * tag. Order matters: SMS DND is set BEFORE the tags are added, so a
- * tag-triggered workflow can never text someone in the gap between the two.
+ * tag. Consent tags go on before the form's tags, so a tag-triggered
+ * workflow already sees them. Behavior matches the GHL snapshot (the Way
+ * Construction build) — see src/config/forms.ts.
  */
 
 /* Real submissions are well under 1 KB; anything bigger is abuse. */
@@ -66,7 +67,11 @@ interface Lead {
   lastName: string;
   email: string;
   phone: string;
-  smsConsent: boolean;
+  /**
+   * SMS consent from this submission; `undefined` when it wasn't asked —
+   * texting off (`SITE.smsOptIn`), no phone, or a staff form.
+   */
+  smsConsent: boolean | undefined;
   /** A `referral` form submitted on behalf of a friend (`for: "friend"`). */
   isReferral: boolean;
   fields: Record<string, string>;
@@ -124,16 +129,14 @@ function parseLead(input: unknown, access: FormAccess): Lead | null {
     lastName: str(o.lastName, 100),
     email,
     phone,
-    /* The form posts JSON, so a ticked checkbox arrives as its value "on"
-       and an unticked one is absent. Anything else counts as declined —
-       consent must be affirmative. Never counted while texting is off
-       (`SITE.smsOptIn`), without a phone, or for a referral (nobody can
-       consent for a friend). */
+    /* Only asked on public forms with a phone while texting is on. The
+       form posts JSON, so a ticked checkbox arrives as its value "on" and
+       an unticked one is absent; anything else counts as declined. A
+       referral is always "no" — nobody can consent for a friend. */
     smsConsent:
-      SITE.smsOptIn &&
-      Boolean(phone) &&
-      !isReferral &&
-      (o.smsConsent === "on" || o.smsConsent === true),
+      SITE.smsOptIn && phone && access === "public"
+        ? !isReferral && (o.smsConsent === "on" || o.smsConsent === true)
+        : undefined,
     isReferral,
     fields,
     isBot: str(o[HONEYPOT_FIELD], 200) !== "",
@@ -152,11 +155,11 @@ function tagsFor(lead: Lead): string[] {
 
 /**
  * The consent line saved in the note: what they agreed to, when, and on
- * which page — the record carriers ask for. Only for a submission with a
- * phone while texting is on; otherwise the question was never asked.
+ * which page — the record carriers ask for. Only when the question was
+ * asked (see `smsConsent`).
  */
 function consentRecord(lead: Lead, page: string | null): string | null {
-  if (!SITE.smsOptIn || !lead.phone || lead.isReferral) return null;
+  if (lead.smsConsent === undefined) return null;
   const where = page ? ` on ${page}` : "";
   return lead.smsConsent
     ? `SMS consent: GIVEN ${new Date().toISOString()}${where}. They ticked the box reading: "${SMS_CONSENT_LABEL} ${SMS_CONSENT_FOOTER}"`
@@ -204,29 +207,38 @@ export async function handleLead(
 
   const { form } = lead;
   const tags = tagsFor(lead);
+  const source =
+    lead.isReferral && form.referral ? form.referral.source : form.source;
   try {
     const contact = await upsertContact(creds, {
       firstName: lead.firstName,
       lastName: lead.lastName,
       email: lead.email,
       phone: lead.phone,
+      source,
+      /* A referred friend is new business — leave GHL's type alone. */
+      type: lead.isReferral ? undefined : form.contactType,
       customFields: Object.entries(form.customFields ?? {})
-        .filter(([name]) => lead.fields[name])
-        .map(([name, id]) => ({ id, value: lead.fields[name] })),
+        .filter(
+          ([name]) =>
+            lead.fields[name] || (name === "referrer" && form.referral),
+        )
+        /* A self claim clears `referrer`, so last year's referral can't
+           show in this year's message to the owner. */
+        .map(([name, key]) => ({ key, field_value: lead.fields[name] ?? "" })),
     });
 
-    /* A NEW contact gets its source, plus SMS DND if the box was left
-       unticked. An existing contact keeps both — its original source, and
-       any consent it gave on an earlier form. Both happen before the tags,
-       so no tag-triggered workflow can text someone in between. */
-    if (contact.isNew) {
-      await setupNewContact(creds, contact.id, {
-        source: form.source,
-        blockSms: !lead.smsConsent,
-      });
-    }
-    if (lead.smsConsent) {
+    /* Consent tags, by the snapshot's rules: yes → `sms consent` (and off
+       with `sms did not consent`); no → `sms did not consent`, unless
+       they consented before. */
+    const had = new Set(contact.tags.map((t) => t.toLowerCase()));
+    if (lead.smsConsent === true) {
+      if (had.has(SMS_NO_CONSENT_TAG)) {
+        await removeTags(creds, contact.id, [SMS_NO_CONSENT_TAG]);
+      }
       await addTags(creds, contact.id, [SMS_CONSENT_TAG]);
+    } else if (lead.smsConsent === false && !had.has(SMS_CONSENT_TAG)) {
+      await addTags(creds, contact.id, [SMS_NO_CONSENT_TAG]);
     }
 
     /* Re-trigger: "Contact Tag added" only fires when the tag is new to the
@@ -247,7 +259,7 @@ export async function handleLead(
     const consent = consentRecord(lead, request.headers.get("referer"));
     if (consent) note.push("", consent);
     if (note.length) {
-      await addNote(creds, contact.id, [form.source, ...note].join("\n")).catch(
+      await addNote(creds, contact.id, [source, ...note].join("\n")).catch(
         (error) => console.warn("[lead] note not saved", error?.body ?? error),
       );
     }
