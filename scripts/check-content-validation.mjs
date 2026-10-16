@@ -13,7 +13,14 @@
  * whose output contains every `expect` string. The gallery case appends an
  * item to src/content/gallery.json (a single-file collection) and restores
  * the original bytes. Everything is removed or restored after each case, on
- * exit and on Ctrl-C.
+ * exit, on Ctrl-C and on SIGTERM/SIGHUP. A hard kill (SIGKILL, power loss)
+ * cannot run cleanup, so every run starts by sweeping src/content for the
+ * leftovers: `zz-check*` files are deleted, and any file with a
+ * `.zz-check-backup` sidecar is restored from it.
+ *
+ * While it runs, the transient files exist on disk, so a dev server running
+ * at the same time will briefly see them (and may log errors). Stop the dev
+ * server first, or ignore the noise.
  *
  * Usage: npm run check:content
  * Exit 1 when a broken entry syncs, or its error misses the file or field.
@@ -41,6 +48,35 @@ const PNG = Buffer.from(
 const created = new Set();
 /** Files this run overwrote → their original bytes (restored afterwards). */
 const originals = new Map();
+const BACKUP = ".zz-check-backup";
+const CONTENT = path.join(ROOT, "src", "content");
+/** The astro sync currently running, so a signal can stop it. */
+let child = null;
+
+/** Folders that held a leftover file; removed too once empty. */
+const sweptEmpty = new Set();
+
+/** Remove leftovers of a run that was killed before it could clean up. */
+function sweep(dir = CONTENT) {
+  if (!fs.existsSync(dir)) return;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      sweep(abs);
+      if (
+        /^zz[- ]check/i.test(entry.name) ||
+        (sweptEmpty.has(abs) && !fs.readdirSync(abs).length)
+      )
+        fs.rmSync(abs, { recursive: true, force: true });
+    } else if (entry.name.endsWith(BACKUP)) {
+      fs.writeFileSync(abs.slice(0, -BACKUP.length), fs.readFileSync(abs));
+      fs.rmSync(abs);
+    } else if (/^zz[- ]check/i.test(entry.name)) {
+      fs.rmSync(abs);
+      sweptEmpty.add(dir);
+    }
+  }
+}
 
 function write(rel, content) {
   const abs = path.join(ROOT, rel);
@@ -56,8 +92,13 @@ function write(rel, content) {
     created.add(dir);
   }
   if (!fs.existsSync(abs)) created.add(abs);
-  else if (!created.has(abs) && !originals.has(abs))
-    originals.set(abs, fs.readFileSync(abs));
+  else if (!created.has(abs) && !originals.has(abs)) {
+    const bytes = fs.readFileSync(abs);
+    originals.set(abs, bytes);
+    // Sidecar copy, so a hard kill can still be undone by the next run.
+    fs.writeFileSync(abs + BACKUP, bytes);
+    created.add(abs + BACKUP);
+  }
   fs.writeFileSync(abs, content);
 }
 
@@ -71,8 +112,9 @@ function cleanup() {
 }
 
 process.on("exit", cleanup);
-for (const signal of ["SIGINT", "SIGTERM"])
+for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"])
   process.on(signal, () => {
+    child?.kill();
     cleanup();
     process.exit(130);
   });
@@ -214,7 +256,7 @@ const CASES = [
   {
     name: "bad category enum",
     apply: () => write(POST_FILE, post({ categories: ["zz-not-a-category"] })),
-    expect: ["zz-check-post.mdx", "categories"],
+    expect: ["zz-check-post.mdx", "categories.0", "expected one of"],
   },
   {
     name: "unquoted date",
@@ -235,6 +277,11 @@ const CASES = [
     name: "dangling CTA",
     apply: () => write(POST_FILE, post({ cta: "zz-no-cta" })),
     expect: [POST_FILE, "cta", "zz-no-cta"],
+  },
+  {
+    name: "dangling CTA section",
+    apply: () => write(POST_FILE, post({ ctaSection: "zz-no-section" })),
+    expect: [POST_FILE, "ctaSection", "zz-no-section"],
   },
   {
     name: "dangling gallery project",
@@ -297,16 +344,18 @@ const CASES = [
 /** Async (not spawnSync) so SIGINT/SIGTERM handlers run promptly and clean up. */
 function sync() {
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, [ASTRO, "sync"], {
+    child = spawn(process.execPath, [ASTRO, "sync"], {
       cwd: ROOT,
       env: { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" },
     });
     let output = "";
-    child.stdout.on("data", (chunk) => (output += chunk));
-    child.stderr.on("data", (chunk) => (output += chunk));
-    const timer = setTimeout(() => child.kill(), 180_000);
-    child.on("close", (code) => {
+    const run = child;
+    run.stdout.on("data", (chunk) => (output += chunk));
+    run.stderr.on("data", (chunk) => (output += chunk));
+    const timer = setTimeout(() => run.kill(), 180_000);
+    run.on("close", (code) => {
       clearTimeout(timer);
+      child = null;
       resolve({ ok: code === 0, output });
     });
   });
@@ -314,6 +363,7 @@ function sync() {
 
 const tail = (text) => text.trim().split("\n").slice(-15).join("\n");
 
+sweep();
 control();
 const baseline = await sync();
 if (!baseline.ok) {

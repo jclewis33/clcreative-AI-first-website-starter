@@ -32,6 +32,18 @@ deploys, CORS, verification).
 
 ---
 
+## `check-content-validation.mjs` — bad content must fail (`npm run check:content`)
+
+Runs `check-content-text.mjs`, then writes temporary `zz-check-*` entries that
+are valid together, breaks one field per case and expects `astro sync` to fail
+naming the file and the field. It never edits your entries (the gallery case
+backs up `gallery.json` and restores it). Cleanup runs on exit, Ctrl-C,
+SIGTERM and SIGHUP; after a hard kill the next run sweeps the leftovers. Stop
+`npm run dev` first: it would briefly see the transient files. New cases go in
+the `CASES` array.
+
+---
+
 ## `check-config-sync.mjs` — wrangler ↔ shared-config guard (`npm run check:config`)
 
 Fails the build if `wrangler.jsonc` `vars` drift from

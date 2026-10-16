@@ -312,6 +312,7 @@ Before writing any new CSS:
 `npm run check` (astro check) · `npm run check:hover` (prop tooltips) ·
 `npm run check:config` (wrangler/site.shared sync; runs prebuild) ·
 `npm run check:boundary` (no Sanity imports outside src/sanity) ·
+`npm run check:content` (bad content must fail `astro sync` naming file and field) ·
 `npm run check:schema` (JSON-LD, needs dev server) · `npm run build` ·
 `npm run format:check` · `npm run typegen` (after any GROQ/schema change).
 
