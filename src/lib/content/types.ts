@@ -26,7 +26,7 @@ export type ImagePosition = { x: number; y: number } | "center";
 /** Output format a CDN-resized image can be asked for. */
 export type ImageFormat = "jpg" | "png" | "webp";
 
-/** A size request for `imageSrc()` / `imageUrl()`. */
+/** A size request for `imageSrc()` / `resolveImageUrl()`. */
 export interface ImageUrlOptions {
   width?: number;
   height?: number;
@@ -37,7 +37,7 @@ export interface ImageUrlOptions {
  * One image, whichever backend it came from. A local image is
  * `ImageMetadata` (Astro's pipeline sizes it); a CMS image is a URL string
  * plus a `url()` builder that resizes it on the CDN. Never read `src` to get
- * a sized URL — call `imageSrc()` / `imageUrl()` / `sizedImage()`.
+ * a sized URL — call `imageSrc()` / `resolveImageUrl()` / `sizedImage()`.
  */
 export interface ContentImage {
   /** The image: local metadata, or a URL string. */

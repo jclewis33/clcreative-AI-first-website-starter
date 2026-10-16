@@ -3,7 +3,7 @@
  * components use to get content, content types and image helpers.
  *
  * - View models and the ContentSource contract: ./types.ts
- * - Image helpers (imageSrc, imageUrl, sizedImage): ./images.ts
+ * - Image helpers (imageSrc, resolveImageUrl, sizedImage): ./images.ts
  * - The active backend: ./source.ts (one line; today the Sanity
  *   implementation in src/sanity/lib/source.ts)
  *
@@ -15,7 +15,7 @@
 import source from "./source";
 
 export type * from "./types";
-export { imageSrc, imageUrl, sizedImage } from "./images";
+export { imageSrc, resolveImageUrl, sizedImage } from "./images";
 
 /* The backend's functions, re-exported by name so call sites read
    `getCtaDefaults()`. They are plain functions — none uses `this`. */

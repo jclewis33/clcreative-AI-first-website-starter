@@ -22,7 +22,7 @@
 import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
-import { getTestimonials, imageUrl, plainText } from "@/lib/content";
+import { getTestimonials, plainText, resolveImageUrl } from "@/lib/content";
 
 /* Single source for the testimonial shape: TestimonialCard.astro — never
    re-declare it locally, the same rule the padding union follows. */
@@ -87,6 +87,20 @@ const resolved =
   (await getTestimonials({ featured: true }).catch(() => []));
 const testimonials = limit ? resolved.slice(0, limit) : resolved;
 const total = testimonials.length;
+/* Avatar URLs resolve asynchronously (a local image is sized by getImage()),
+   so the slides are prepared before the markup maps over them. */
+const slides = await Promise.all(
+  testimonials.map(async (t) => ({
+    ...t,
+    avatarUrl:
+      typeof t.avatar === "string"
+        ? t.avatar
+        : await resolveImageUrl(t.avatar, { width: 96, height: 96 }),
+    avatarAlt:
+      (t.avatar && typeof t.avatar !== "string" && t.avatar.alt) ||
+      plainText(t.name),
+  })),
+);
 ---
 
 <Section
@@ -120,48 +134,45 @@ const total = testimonials.length;
       <div class="swiper testimonial_showcase_swiper" data-tsc-swiper>
         <div class="swiper-wrapper">
           {
-            testimonials.map(({ quote, name, role, company, avatar }) => {
-              const avatarUrl = avatar
-                ? typeof avatar === "string"
-                  ? avatar
-                  : imageUrl(avatar, { width: 96, height: 96 })
-                : undefined;
-              const subtitle = [role, company].filter(Boolean).join(", ");
-              return (
-                <div class="swiper-slide">
-                  <div class="testimonial_showcase_card">
-                    <p class="testimonial_showcase_quote">{quote}</p>
-                    <div class="testimonial_showcase_author">
-                      {avatarUrl && (
-                        <img
-                          class="testimonial_showcase_avatar"
-                          src={avatarUrl}
-                          alt={plainText(name)}
-                          loading="lazy"
-                          width="48"
-                          height="48"
-                        />
-                      )}
-                      <div class="testimonial_showcase_author_info">
-                        <Text
-                          tag="span"
-                          weight="bold"
-                          variant="regular"
-                          marginBottom={0}
-                        >
-                          {name}
-                        </Text>
-                        {subtitle && (
-                          <Text tag="span" variant="regular" marginBottom={0}>
-                            {subtitle}
-                          </Text>
+            slides.map(
+              ({ quote, name, role, company, avatarUrl, avatarAlt }) => {
+                const subtitle = [role, company].filter(Boolean).join(", ");
+                return (
+                  <div class="swiper-slide">
+                    <div class="testimonial_showcase_card">
+                      <p class="testimonial_showcase_quote">{quote}</p>
+                      <div class="testimonial_showcase_author">
+                        {avatarUrl && (
+                          <img
+                            class="testimonial_showcase_avatar"
+                            src={avatarUrl}
+                            alt={avatarAlt}
+                            loading="lazy"
+                            width="48"
+                            height="48"
+                          />
                         )}
+                        <div class="testimonial_showcase_author_info">
+                          <Text
+                            tag="span"
+                            weight="bold"
+                            variant="regular"
+                            marginBottom={0}
+                          >
+                            {name}
+                          </Text>
+                          {subtitle && (
+                            <Text tag="span" variant="regular" marginBottom={0}>
+                              {subtitle}
+                            </Text>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
+                );
+              },
+            )
           }
         </div>
       </div>

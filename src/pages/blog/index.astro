@@ -22,7 +22,7 @@ import {
   getBlogPosts,
   getCtaDefaults,
   imageSrc,
-  imageUrl,
+  resolveImageUrl,
   plainText,
 } from "@/lib/content";
 import Section from "@/components/ui/Section.astro";
@@ -55,6 +55,12 @@ const featuredPosts = allPosts.filter((p) => p.featured);
 // Fall back to the 4 most recent if none are marked featured
 const sliderPosts =
   featuredPosts.length > 0 ? featuredPosts.slice(0, 6) : allPosts.slice(0, 4);
+
+/* Raw <img> sources for the slider cards (a local image is sized by
+   getImage(), so they resolve up front). */
+const sliderImageSrcs = await Promise.all(
+  sliderPosts.map((post) => resolveImageUrl(post.image, { width: 800 })),
+);
 
 /* ── Latest posts (most recent 5, excluding slider duplicates for variety) ── */
 
@@ -104,13 +110,26 @@ function getPostsForCategory(categoryName: string) {
 // Build category sections with posts — only include categories that have
 // content. The slug (anchor id and "View all" link) comes from the same
 // helper as the /blog/category/<slug> archive paths, so they always match.
-const categorySections = categoryConfig
-  .map((cat) => ({
-    ...cat,
-    slug: categoryToSlug(cat.name),
-    posts: getPostsForCategory(cat.name),
-  }))
-  .filter((cat) => cat.posts.length > 0);
+const categorySections = await Promise.all(
+  categoryConfig
+    .map((cat) => ({
+      ...cat,
+      slug: categoryToSlug(cat.name),
+      posts: getPostsForCategory(cat.name),
+    }))
+    .filter((cat) => cat.posts.length > 0)
+    .map(async (cat) => ({
+      ...cat,
+      /* The two large cards' raw <img> sources, resolved up front. */
+      largeImageSrcs: await Promise.all(
+        cat.posts
+          .slice(0, 2)
+          .map((post, i) =>
+            resolveImageUrl(post.image, { width: i === 0 ? 1000 : 600 }),
+          ),
+      ),
+    })),
+);
 ---
 
 <BaseLayout
@@ -191,7 +210,7 @@ const categorySections = categoryConfig
             showBullets={false}
             speed={500}
           >
-            {sliderPosts.map((post) => (
+            {sliderPosts.map((post, slideIndex) => (
               <a
                 href={`/blog/${post.slug}`}
                 class="blog_slider_card"
@@ -204,7 +223,7 @@ const categorySections = categoryConfig
               >
                 <div class="blog_slider_card_img u-image-wrapper u-radius-main u-overflow-hidden">
                   <img
-                    src={imageUrl(post.image, { width: 800 })}
+                    src={sliderImageSrcs[slideIndex]}
                     alt={post.image?.alt}
                     class="u-image"
                     loading="lazy"
@@ -272,9 +291,7 @@ const categorySections = categoryConfig
                 >
                   <div class="blog_featured_card_img u-image-wrapper u-radius-main u-overflow-hidden">
                     <img
-                      src={imageUrl(post.image, {
-                        width: i === 0 ? 1000 : 600,
-                      })}
+                      src={cat.largeImageSrcs[i]}
                       alt={post.image?.alt}
                       class="u-image"
                       loading="lazy"

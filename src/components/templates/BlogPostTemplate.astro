@@ -35,7 +35,7 @@ import { blogPostJsonLd } from "@/lib/jsonld";
 import JsonLd from "@/components/global/JsonLd.astro";
 import {
   imageSrc,
-  imageUrl,
+  resolveImageUrl,
   plainText,
   type BlogCtaData,
   type BlogPostDetail,
@@ -78,14 +78,18 @@ const metaTitle = seo?.metaTitle || plainText(post.title);
 const metaDescription = seo?.metaDescription || plainText(post.description);
 const ogTitle = seo?.ogTitle || metaTitle;
 const ogDescription = seo?.ogDescription || metaDescription;
-const ogImageUrl = imageUrl(seo?.ogImage ?? post.image, {
+const ogImageUrl = await resolveImageUrl(seo?.ogImage ?? post.image, {
   width: 1200,
   height: 630,
   format: "jpg",
 });
+const authorAvatarSrc = await resolveImageUrl(post.authorAvatar, {
+  width: 64,
+  height: 64,
+});
 
 const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
-const jsonLd = blogPostJsonLd(post, siteOrigin);
+const jsonLd = await blogPostJsonLd(post, siteOrigin);
 ---
 
 <BaseLayout
@@ -138,7 +142,7 @@ const jsonLd = blogPostJsonLd(post, siteOrigin);
           post.authorAvatar && (
             <div class="blog_post_avatar">
               <img
-                src={imageUrl(post.authorAvatar, { width: 64, height: 64 })}
+                src={authorAvatarSrc}
                 alt={post.authorAvatar.alt}
                 width="32"
                 height="32"

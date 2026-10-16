@@ -2,7 +2,7 @@
 import type { HTMLAttributes } from "astro/types";
 import Visual from "@/components/ui/Visual.astro";
 import Lightbox from "@/components/ui/Lightbox.astro";
-import { imageUrl, plainText, type ContentImage } from "@/lib/content";
+import { plainText, resolveImageUrl, type ContentImage } from "@/lib/content";
 import { galleryCaptionMeta } from "@/lib/project-format";
 
 /**
@@ -86,6 +86,11 @@ const captionMeta = (item: GalleryItem) =>
   [item.categoryLabel, galleryCaptionMeta(item.location, item.projectTitle)]
     .filter(Boolean)
     .join(" · ");
+/* Lightbox sources are plain URL strings (a local photo is sized by
+   getImage()), so they resolve once, up front. */
+const lightboxSrcs = await Promise.all(
+  items.map((item) => resolveImageUrl(item.full)),
+);
 ---
 
 {
@@ -109,12 +114,12 @@ const captionMeta = (item: GalleryItem) =>
 
       <Lightbox label="Photo gallery">
         <ul class="gallery-browser_grid">
-          {items.map((item) => (
+          {items.map((item, i) => (
             <li class="gallery-browser_item" data-category={item.category}>
               <button
                 type="button"
                 class="gallery-browser_tile"
-                data-lightbox-src={imageUrl(item.full)}
+                data-lightbox-src={lightboxSrcs[i]}
                 data-lightbox-alt={item.full.alt}
                 data-lightbox-caption={plainText(
                   [item.caption, captionMeta(item)].filter(Boolean).join(" · "),

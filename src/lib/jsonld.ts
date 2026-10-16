@@ -10,7 +10,7 @@
 
 import { SITE } from "@/config/site";
 import {
-  imageUrl,
+  resolveImageUrl,
   plainText,
   type BlogPostDetail,
   type CaseStudyDetail,
@@ -27,12 +27,12 @@ function absoluteUrl(siteUrl: string, path: string): string {
 }
 
 /** Absolute URL of a content image at 1200 wide — CDN URLs pass through,
-    local paths get the site origin. */
-function contentImageUrl(
+    local files get the site origin. */
+async function contentImageUrl(
   image: ContentImage | null,
   siteUrl: string,
-): string | null {
-  const url = imageUrl(image, { width: 1200 });
+): Promise<string | null> {
+  const url = await resolveImageUrl(image, { width: 1200 });
   return url ? absoluteUrl(siteUrl, url) : null;
 }
 
@@ -307,9 +307,12 @@ function youtubeVideoObject(
  * - VideoObject (when post.video is a YouTube URL)
  * - FAQPage (when post.faqs is non-empty)
  */
-export function blogPostJsonLd(post: BlogPostDetail, siteUrl: string): any {
+export async function blogPostJsonLd(
+  post: BlogPostDetail,
+  siteUrl: string,
+): Promise<any> {
   const pageUrl = `${siteUrl}/blog/${post.slug}`;
-  const imageUrl = contentImageUrl(post.image, siteUrl);
+  const imageUrl = await contentImageUrl(post.image, siteUrl);
 
   const blogPosting: any = {
     "@type": "BlogPosting",
@@ -359,9 +362,12 @@ export function blogPostJsonLd(post: BlogPostDetail, siteUrl: string): any {
 /**
  * Build JSON-LD for a case study page. Uses schema.org/Article.
  */
-export function caseStudyJsonLd(cs: CaseStudyDetail, siteUrl: string): any {
+export async function caseStudyJsonLd(
+  cs: CaseStudyDetail,
+  siteUrl: string,
+): Promise<any> {
   const pageUrl = `${siteUrl}/case-studies/${cs.slug}`;
-  const csImageUrl = contentImageUrl(cs.image, siteUrl);
+  const csImageUrl = await contentImageUrl(cs.image, siteUrl);
 
   return {
     "@context": "https://schema.org",

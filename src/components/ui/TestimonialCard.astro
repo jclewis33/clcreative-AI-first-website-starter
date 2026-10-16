@@ -28,7 +28,7 @@ import type { HTMLAttributes } from "astro/types";
  */
 
 import Text from "./Text.astro";
-import { imageUrl, plainText, type ContentImage } from "@/lib/content";
+import { plainText, resolveImageUrl, type ContentImage } from "@/lib/content";
 
 /** An avatar: a URL string or a ContentImage from @/lib/content. */
 type AvatarSource = ContentImage | string;
@@ -101,11 +101,14 @@ const {
   ...rest
 } = Astro.props;
 
-const avatarUrl = avatar
-  ? typeof avatar === "string"
+const avatarUrl =
+  typeof avatar === "string"
     ? avatar
-    : imageUrl(avatar, { width: 80, height: 80 })
-  : undefined;
+    : await resolveImageUrl(avatar, { width: 80, height: 80 });
+/* A content avatar carries its own alt text (the person's name when the
+   source has nothing better); a bare URL string falls back to the name. */
+const avatarAlt =
+  (avatar && typeof avatar !== "string" && avatar.alt) || plainText(name);
 const subtitle = [role, company].filter(Boolean).join(", ");
 ---
 
@@ -145,7 +148,7 @@ const subtitle = [role, company].filter(Boolean).join(", ");
         <img
           class="testimonial_author_avatar"
           src={avatarUrl}
-          alt={plainText(name)}
+          alt={avatarAlt}
           loading="lazy"
           width={avatarSize}
           height={avatarSize}

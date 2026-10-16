@@ -23,7 +23,7 @@ import { caseStudyJsonLd } from "@/lib/jsonld";
 import JsonLd from "@/components/global/JsonLd.astro";
 import {
   imageSrc,
-  imageUrl,
+  resolveImageUrl,
   plainText,
   type CaseStudyDetail,
   type CaseStudySummary,
@@ -52,7 +52,7 @@ interface Props {
 const { docs, study, upNext, ctaSection } = Astro.props;
 
 const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
-const jsonLd = caseStudyJsonLd(study, siteOrigin);
+const jsonLd = await caseStudyJsonLd(study, siteOrigin);
 
 const seo = study.seo;
 /* Head values are plumbing: the title/description fallbacks arrive
@@ -64,7 +64,7 @@ const metaDescription =
   "Preview this case study draft.";
 const ogTitle = seo?.ogTitle || metaTitle;
 const ogDescription = seo?.ogDescription || metaDescription;
-const ogImageUrl = imageUrl(seo?.ogImage ?? study.image, {
+const ogImageUrl = await resolveImageUrl(seo?.ogImage ?? study.image, {
   width: 1200,
   height: 630,
   format: "jpg",

@@ -24,7 +24,7 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
 import { SITE } from "@/config/site";
 import { projectPath } from "@/lib/projects";
 import {
-  imageUrl,
+  resolveImageUrl,
   plainText,
   sizedImage,
   type CtaSectionData,
@@ -58,11 +58,19 @@ const category = project.categoryLabel;
 const plainTitle = plainText(title);
 const path = projectPath(project.slug);
 const hero = project.hero && sizedImage(project.hero, 1600);
-const photos = project.photos.map(({ image, label }) => ({
-  photo: sizedImage(image, 1200),
-  large: sizedImage(image, 1600),
-  label,
-}));
+/* The lightbox needs a URL string; a local photo is sized by getImage(), so
+   the sources resolve up front. */
+const photos = await Promise.all(
+  project.photos.map(async ({ image, label }) => {
+    const large = sizedImage(image, 1600);
+    return {
+      photo: sizedImage(image, 1200),
+      large,
+      largeSrc: await resolveImageUrl(large),
+      label,
+    };
+  }),
+);
 
 /* The write-up (optional). Its plain text doubles as the SEO fallback. */
 const writeUpHtml = project.descriptionHtml;
@@ -180,7 +188,7 @@ const hasStory = Boolean(writeUpHtml) || facts.length > 0 || Boolean(completed);
         data-prevent-flicker="true"
       >
         {
-          photos.map(({ photo, large, label }, i) => (
+          photos.map(({ photo, large, largeSrc, label }, i) => (
             <button
               type="button"
               class:list={[
@@ -190,7 +198,7 @@ const hasStory = Boolean(writeUpHtml) || facts.length > 0 || Boolean(completed);
                   photos.length % 2 === 1 &&
                   "u-span-full",
               ]}
-              data-lightbox-src={imageUrl(large)}
+              data-lightbox-src={largeSrc}
               data-lightbox-alt={large.alt}
               data-lightbox-caption={label}
             >
