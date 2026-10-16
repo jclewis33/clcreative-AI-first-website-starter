@@ -8,12 +8,14 @@
  */
 import type { HTMLAttributes } from "astro/types";
 import { plainText } from "@/lib/content";
+import { videoEmbedUrl } from "@/lib/video";
 
 interface Props extends HTMLAttributes<"figure"> {
   /**
    * **VideoEmbed** — a YouTube (watch, youtu.be, Shorts) or Vimeo page URL
    * as a lazy, responsive iframe. `caption` shows under it and titles the
-   * iframe. Any other URL renders nothing (and warns in dev).
+   * iframe. Any other URL renders nothing (and warns in dev); in an MDX
+   * post, a literal `url="…"` that is not supported fails content sync.
    *
    * @example
    * <VideoEmbed url="https://www.youtube.com/watch?v=aqz-KE-bpKQ" caption="A sample video" />
@@ -42,34 +44,7 @@ const {
   ...rest
 } = Astro.props;
 
-/** The embeddable player URL for a YouTube or Vimeo page, else null. */
-function getEmbedUrl(pageUrl: string): string | null {
-  try {
-    const u = new URL(pageUrl);
-    const host = u.hostname.replace(/^www\./, "");
-
-    if (host === "youtube.com" || host === "m.youtube.com") {
-      const id = u.searchParams.get("v");
-      if (id) return `https://www.youtube.com/embed/${id}`;
-      if (u.pathname.startsWith("/shorts/")) {
-        return `https://www.youtube.com/embed/${u.pathname.split("/")[2]}`;
-      }
-    }
-    if (host === "youtu.be") {
-      return `https://www.youtube.com/embed${u.pathname}`;
-    }
-    if (host === "vimeo.com") {
-      const id = u.pathname.split("/").filter(Boolean)[0];
-      if (id) return `https://player.vimeo.com/video/${id}`;
-    }
-    if (host === "player.vimeo.com") return pageUrl;
-  } catch {
-    return null;
-  }
-  return null;
-}
-
-const embedUrl = url ? getEmbedUrl(url) : null;
+const embedUrl = url ? videoEmbedUrl(url) : null;
 if (import.meta.env.DEV && render && !embedUrl)
   console.warn(
     `[VideoEmbed] "${url}" is not a YouTube or Vimeo URL; nothing renders.`,

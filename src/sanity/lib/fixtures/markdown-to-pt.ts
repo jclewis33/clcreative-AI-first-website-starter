@@ -14,7 +14,7 @@
  * - MDX: <Callout type>…</Callout>, <VideoEmbed url caption />,
  *   <BlogCta id /> — each tag on its own line(s), attributes as literal
  *   "double-quoted" strings only; a self-closing tag may wrap its
- *   attributes over several lines, as Prettier formats it;
+ *   attributes over several lines;
  * - inline: **bold**, *em* / _em_, `code`, [text](href) (marks may nest).
  *
  * Rejected because Markdown/MDX would render them differently from this

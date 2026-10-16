@@ -97,7 +97,7 @@ assert.deepEqual(
 // Every key is unique and deterministic.
 const keys = blocks.map((b) => b._key);
 assert.equal(new Set(keys).size, keys.length);
-// A self-closing tag wrapped over several lines (as Prettier formats it).
+// A self-closing tag wrapped over several lines (as an author may write it).
 assert.deepEqual(
   markdownToPortableText(
     [

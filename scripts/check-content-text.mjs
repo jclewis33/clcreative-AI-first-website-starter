@@ -3,7 +3,9 @@
  * check-content-text — unit checks for the pure text helpers behind the
  * Files content source: build-time Markdown rendering for rich text inside
  * JSON (src/lib/content/markdown.ts), and the MDX body helpers behind read
- * time, llms-full.txt and inline-CTA checks (src/lib/content/files/mdx-text.ts).
+ * time, llms-full.txt and the sync-time body checks
+ * (src/lib/content/files/mdx-text.ts), and the video URL rule
+ * (src/lib/video.ts).
  *
  * Runs under plain Node (22.18+ strips TypeScript types on import):
  *   node scripts/check-content-text.mjs
@@ -16,9 +18,12 @@ import {
 } from "../src/lib/content/markdown.ts";
 import {
   inlineCtaIds,
+  mdxImages,
   mdxToMarkdown,
   mdxWords,
+  videoEmbedUrls,
 } from "../src/lib/content/files/mdx-text.ts";
+import { videoEmbedUrl } from "../src/lib/video.ts";
 
 // Heading ids are removed: rich-text blocks have no table of contents, and
 // the Portable Text serializer emits none.
@@ -124,5 +129,60 @@ assert.deepEqual(
   ),
   ["real-one"],
 );
+
+// Body images: plain, bare (no ./), titled, angle-bracketed, empty alt;
+// fenced code skipped.
+assert.deepEqual(
+  mdxImages(
+    [
+      "![One](./images/a.webp)",
+      "![Two](images/b.webp)",
+      '![Three](./images/c.webp "A title")',
+      "![Four](<./images/d e.webp>)",
+      "![](./images/e.webp)",
+      "```md",
+      "![Code](./images/skipped.webp)",
+      "```",
+    ].join("\n\n"),
+  ),
+  [
+    { alt: "One", src: "./images/a.webp" },
+    { alt: "Two", src: "images/b.webp" },
+    { alt: "Three", src: "./images/c.webp" },
+    { alt: "Four", src: "./images/d e.webp" },
+    { alt: "", src: "./images/e.webp" },
+  ],
+);
+
+// VideoEmbed urls: one-line and wrapped tags; fenced code skipped.
+assert.deepEqual(
+  videoEmbedUrls(
+    [
+      '<VideoEmbed url="https://youtu.be/abc" />',
+      "<VideoEmbed",
+      '  url="https://vimeo.com/123"',
+      '  caption="A video"',
+      "/>",
+      "```mdx",
+      '<VideoEmbed url="https://example.com/skipped" />',
+      "```",
+    ].join("\n"),
+  ),
+  ["https://youtu.be/abc", "https://vimeo.com/123"],
+);
+assert.equal(
+  videoEmbedUrl("https://www.youtube.com/watch?v=abc"),
+  "https://www.youtube.com/embed/abc",
+);
+assert.equal(
+  videoEmbedUrl("https://youtube.com/shorts/xyz"),
+  "https://www.youtube.com/embed/xyz",
+);
+assert.equal(
+  videoEmbedUrl("https://vimeo.com/76979871"),
+  "https://player.vimeo.com/video/76979871",
+);
+assert.equal(videoEmbedUrl("https://example.com/video"), null);
+assert.equal(videoEmbedUrl("not a url"), null);
 
 console.log("check-content-text: ok");

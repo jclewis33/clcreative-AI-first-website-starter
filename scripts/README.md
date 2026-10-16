@@ -36,11 +36,13 @@ deploys, CORS, verification).
 
 Runs `check-content-text.mjs`, then writes temporary `zz-check-*` entries that
 are valid together, breaks one field per case and expects `astro sync` to fail
-naming the file and the field. It never edits your entries (the gallery case
-backs up `gallery.json` and restores it). Cleanup runs on exit, Ctrl-C,
-SIGTERM and SIGHUP; after a hard kill the next run sweeps the leftovers. Stop
-`npm run dev` first: it would briefly see the transient files. New cases go in
-the `CASES` array.
+naming the file and the field. It never edits your entries (the gallery and
+settings cases back up `gallery.json` and `settings.json` and restore them).
+Cleanup runs on exit, Ctrl-C, SIGTERM and SIGHUP; after a hard kill the next
+run sweeps the leftovers. Stop `npm run dev` first: it would briefly see the
+transient files (and log their errors). New cases go in the `CASES` array. It
+is a test harness for the checks themselves; to check your content, run
+`npm run check` or `npm run build`.
 
 ---
 

@@ -37,8 +37,10 @@ import { renderRichText } from "./lib/content/markdown";
  *   content sync (`richText`): entries carry `{ markdown, html, text }`.
  * - `checked()` (src/lib/content/checks.ts) fails the sync when an image
  *   file, a referenced entry or an MDX body's inline `<BlogCta id>` target
- *   is missing, naming the file and the field — Astro itself only logs a
- *   dangling reference.
+ *   is missing, a body image has no alt text, a body `<VideoEmbed url>` is
+ *   not YouTube or Vimeo, or settings.json lacks its "site" key — naming
+ *   the file and the field (Astro itself only logs a dangling reference).
+ *   In `npm run dev` it re-runs after every save and logs instead.
  * - Enums come from src/config/, which the Sanity schema reads too.
  */
 
@@ -93,12 +95,24 @@ const iconNames = Object.keys(ICONS) as [
 const alt = z.string().min(1, "Alt text can't be empty");
 
 /** A calendar date. In MDX frontmatter it must be quoted (YAML would
-    otherwise read it as a Date). */
+    otherwise read it as a Date). A well-formed but impossible date
+    ("2026-02-30") fails too; Astro prefixes each message with the field. */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const isoDate = z
   .string({ error: 'Write the date as quoted text, e.g. "2026-03-01"' })
-  .regex(
-    /^\d{4}-\d{2}-\d{2}$/,
-    'Use the format "YYYY-MM-DD", e.g. "2026-03-01"',
+  .regex(ISO_DATE, 'Use the format "YYYY-MM-DD", e.g. "2026-03-01"')
+  .refine(
+    (d) => {
+      if (!ISO_DATE.test(d)) return true; // the format rule reports it
+      const time = Date.parse(`${d}T00:00:00Z`);
+      return (
+        !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === d
+      );
+    },
+    {
+      error: (issue) =>
+        `"${String(issue.input)}" is not a real date — check the month and day`,
+    },
   );
 
 /** A site path ("/contact") or a full URL. */
@@ -254,35 +268,47 @@ const blog = defineCollection({
     },
   ),
   schema: ({ image }) =>
-    z.object({
-      title: z.string().min(1),
-      /** Card excerpt and meta description. */
-      description: z.string().min(1).max(300),
-      date: isoDate,
-      /** Last meaningful edit (JSON-LD dateModified); defaults to `date`. */
-      updated: isoDate.optional(),
-      categories: z.array(z.enum(BLOG_CATEGORIES)).min(1),
-      /** The /blog section this post appears under (else its first category). */
-      primaryCategory: z.enum(BLOG_SECTION_CATEGORIES).optional(),
-      image: image(),
-      imageAlt: alt,
-      author: reference("authors"),
-      featured: z.boolean().default(false),
-      /** A YouTube watch or youtu.be URL shown instead of the hero image
+    z
+      .object({
+        title: z.string().min(1),
+        /** Card excerpt and meta description. */
+        description: z.string().min(1).max(300),
+        date: isoDate,
+        /** Last meaningful edit (JSON-LD dateModified); defaults to `date`. */
+        updated: isoDate.optional(),
+        categories: z.array(z.enum(BLOG_CATEGORIES)).min(1),
+        /** The /blog section this post appears under (else its first category). */
+        primaryCategory: z.enum(BLOG_SECTION_CATEGORIES).optional(),
+        image: image(),
+        imageAlt: alt,
+        author: reference("authors"),
+        featured: z.boolean().default(false),
+        /** A YouTube watch or youtu.be URL shown instead of the hero image
           (Shorts and Vimeo links do not embed here; use <VideoEmbed> in
           the body). */
-      video: webUrl.optional(),
-      /** Up to three hand-picked related posts. */
-      relatedPosts: z.array(reference("blog")).max(3).default([]),
-      faqs: z
-        .array(z.object({ question: z.string().min(1), answer: richText }))
-        .default([]),
-      /** Overrides the site default end-of-post CTA (settings.json). */
-      cta: reference("blogCtas").optional(),
-      /** Overrides the site default CTA section (settings.json). */
-      ctaSection: reference("ctaSections").optional(),
-      seo: seo(image()),
-    }),
+        video: webUrl.optional(),
+        /** Up to three hand-picked related posts. */
+        relatedPosts: z.array(reference("blog")).max(3).default([]),
+        faqs: z
+          .array(z.object({ question: z.string().min(1), answer: richText }))
+          .default([]),
+        /** Overrides the site default end-of-post CTA (settings.json). */
+        cta: reference("blogCtas").optional(),
+        /** Overrides the site default CTA section (settings.json). */
+        ctaSection: reference("ctaSections").optional(),
+        seo: seo(image()),
+      })
+      .superRefine((post, ctx) => {
+        if (
+          post.primaryCategory &&
+          !(post.categories as readonly string[]).includes(post.primaryCategory)
+        )
+          ctx.addIssue({
+            code: "custom",
+            path: ["primaryCategory"],
+            message: `Also list "${post.primaryCategory}" in categories — the category archive pages are built from categories.`,
+          });
+      }),
 });
 
 const authors = defineCollection({
@@ -361,13 +387,15 @@ const ctaSections = defineCollection({
       }),
 });
 
-/** Site-wide defaults: one object keyed "site". */
+/** Site-wide defaults: one object keyed "site" (checked() requires it). */
+const SETTINGS_FILE = "src/content/settings.json";
 const settings = defineCollection({
-  loader: checked(file("src/content/settings.json"), {
+  loader: checked(file(SETTINGS_FILE), {
     refs: {
       defaultBlogCta: json(DIR.blogCtas),
       defaultCtaSection: json(DIR.ctaSections),
     },
+    required: { file: SETTINGS_FILE, ids: ["site"] },
   }),
   schema: z.object({
     defaultBlogCta: reference("blogCtas").optional(),

@@ -20,9 +20,17 @@ the field reference; keep the two in step.
 ## Preview and publish
 
 - **Preview:** `npm run dev`, then <http://localhost:4321>. Content edits
-  re-sync on save; a bad file prints its error in the terminal.
-- **Check:** `npm run check:content` and `npm run build` (the build fails
-  on any content error, naming the file and the field).
+  re-sync on save; a bad file prints its error in the terminal (schema
+  errors, and the `checked()` checks: missing photos, dangling references,
+  body alt text and `<VideoEmbed>` links), and `Content check passed` once
+  fixed.
+- **Check:** `npm run check` and `npm run build` (both sync content and
+  fail on any content error, naming the file and the field).
+  `npm run check:content` is not a content check: it is the test harness
+  that proves those errors still fire (see "When the build fails").
+- **Formatting:** `src/content/` is in `.prettierignore`, so formatting
+  never fails CI and never blocks a content deploy. Editors need not run
+  `npm run format`.
 - **Publish:** commit and push to `main`. Cloudflare Workers Builds
   rebuilds from `main`; a failed build leaves the live site as it was. A
   push goes live by itself only when the Workers Builds deploy command is
@@ -64,9 +72,9 @@ there.
   the file). Other files refer to an entry by this id: `"author":
 "priya-shah"`. `gallery.json` items carry an `"id"` instead.
 - **Images**: a relative path from the file
-  (`"./images/smith-kitchen.webp"`). WebP or AVIF, about 2000px wide.
-  Astro resizes them. A missing file fails the sync, naming the file and
-  the field.
+  (`"./images/smith-kitchen.webp"`; `"images/…"` without `./` works too,
+  but write `./`). WebP or AVIF, about 2000px wide. Astro resizes them. A
+  missing file fails the sync, naming the file and the field.
 - **Crops are centred.** Wherever a photo is cut to a fixed shape (social
   share images at 1200×630, card and slider ratios, round avatars), the
   middle of the photo is kept; files have no focal point. Keep the subject
@@ -76,7 +84,8 @@ there.
   the face in the middle, at least 512px on each side.
 - **Alt text is required and never empty.** Every image field has a
   partner (`imageAlt`, `alt`, `avatarAlt`). Describe what the photo shows.
-- **Dates** are `"YYYY-MM-DD"`. In MDX frontmatter they must be quoted
+- **Dates** are `"YYYY-MM-DD"` and must exist (`"2026-02-30"` fails the
+  sync: `is not a real date`). In MDX frontmatter they must be quoted
   (`date: "2026-03-01"`). Unquoted, YAML reads a date object and the sync
   fails, asking you to quote it.
 - **Rich text in data fields is Markdown** (case-study block `body`,
@@ -135,9 +144,9 @@ Body text in Markdown.
   `/blog/category/<slug>`. **`primaryCategory`** must be one of
   `BLOG_SECTION_CATEGORIES` (News, Guides, Insights, Tutorials; Resources
   has no `/blog` section) and picks the one `/blog` section the post sits
-  in (default: its first category). The code does not require it to be
-  in `categories`, but the archive pages are built from `categories`
-  only, so list it there too or the post is missing from that archive.
+  in (default: its first category). It must also be listed in
+  `categories` (the archive pages are built from `categories` only); the
+  sync fails otherwise, naming the post and `primaryCategory`.
 - **`featured: true`** puts the post in the `/blog` hero slider (up to
   six; with none featured, the four newest).
 - **`##` headings build the table of contents.** Their ids are the
@@ -148,11 +157,15 @@ Body text in Markdown.
   `<VideoEmbed>`.
 - **Code**: a fenced block with a language (` ```html `), highlighted
   at build time. There is no filename caption.
-- **Images**: `![Alt text](./images/file.webp)` on its own line. There is
-  no caption. A missing file fails the sync, naming the post.
+- **Images**: `![Alt text](./images/file.webp)` on its own line (a
+  Markdown title, `![Alt](./images/file.webp "Title")`, is allowed). There
+  is no caption. A missing file, or empty alt text (`![](…)`), fails the
+  sync, naming the post and `body`.
 - **Components, with no import needed** (BlogBody passes them in). Put
   each tag on its own line (a long self-closing tag may wrap its
-  attributes over several lines):
+  attributes over several lines). A `<Callout>` needs its opening tag, its
+  text and its closing tag on separate lines; the one-line form
+  (`<Callout>Text</Callout>`) is not supported:
 
   ```mdx
   <Callout type="tip">
@@ -166,9 +179,11 @@ Body text in Markdown.
 
   - **`<VideoEmbed url>`** takes a YouTube link (`youtube.com/watch?v=…`,
     `youtu.be/…`, `youtube.com/shorts/…`) or a Vimeo link
-    (`vimeo.com/<number>`, `player.vimeo.com/video/<number>`). Any other
-    URL renders nothing (`npm run dev` prints a warning); the build does
-    not fail. `caption` is optional and also titles the player.
+    (`vimeo.com/<number>`, `player.vimeo.com/video/<number>`), the rule in
+    `src/lib/video.ts`. A literal `url="…"` that is anything else fails
+    the sync, naming the post; a `url={…}` expression is not checked and
+    renders nothing (with a dev warning) if unsupported. `caption` is
+    optional and also titles the player.
   - **`<BlogCta id>`** names a file in `src/content/ctas/blog/`. Write the
     id as a literal in double quotes, `id="free-site-review"`: that is the
     form the sync checks, and an unknown id then fails it, naming the post.
@@ -241,7 +256,8 @@ that have an `image` (every Files study does: it is required).
   `secondaryButtonHref` (set both or neither), and `overlayStrength`
   (0–100, default 80).
 - **settings.json**: `{ "site": { "defaultBlogCta": "<id>",
-"defaultCtaSection": "<id>" } }`.
+"defaultCtaSection": "<id>" } }`. The `"site"` key is required: without it
+  the sync fails (`src/content/settings.json → site: missing`).
 
 ## How to…
 
@@ -291,6 +307,11 @@ The error names the file, then lists each problem as `field: message`.
 | `→ author: no entry "x" (expected src/content/authors/x.json)` | The referenced file is missing or misspelled            |
 | `→ body: <BlogCta id="x"> names no entry`                      | Fix the id, or add `src/content/ctas/blog/x.json`       |
 | `imageAlt: Alt text can't be empty`                            | Describe the photo                                      |
+| `→ body: image "./images/x.webp" has no alt text`              | Write the alt text inside `![…]`                        |
+| `→ body: <VideoEmbed url="…"> is not a supported YouTube …`    | Use a YouTube or Vimeo link                             |
+| `date: "2026-02-30" is not a real date`                        | Fix the month or day                                    |
+| `primaryCategory: Also list "X" in categories`                 | Add it to `categories`, or drop `primaryCategory`       |
+| `settings.json → site: missing`                                | Restore the top-level `"site"` key                      |
 | `title: Required` (any field name)                             | Add the missing required field                          |
 | `date: Write the date as quoted text`                          | Quote it in the MDX frontmatter                         |
 | `categories.0: Invalid option: expected one of …`              | Use a listed value, or add it in `src/config/*.ts`      |
@@ -298,9 +319,10 @@ The error names the file, then lists each problem as `field: message`.
 | `avatarAlt: Add avatarAlt …`                                   | Add the alt text (usually the person's name)            |
 | `must be named in lowercase-kebab-case`                        | Rename the file                                         |
 
-`npm run check:content` proves each of these still fails (it writes and
-removes temporary `zz-check-*` entries), and unit-tests the Markdown and
-MDX text helpers. After a build, `npm run check:content-build` checks the
+`npm run check:content` is the test harness for these checks, not a way to
+check content: it proves each of these still fails (it writes and removes
+temporary `zz-check-*` entries), and unit-tests the Markdown and MDX text
+helpers. After a build, `npm run check:content-build` checks the
 built pages: coming-soon studies stay unpublished, OG and JSON-LD images
 are absolute, local images are served resized, and table-of-contents links
 resolve. CI runs both.
@@ -324,9 +346,14 @@ Everything below is for whoever changes the code, not the content.
 - `src/content.config.ts`: the collections. `richText` renders each
   Markdown field to `{ markdown, html, text }` once, at sync
   (`src/lib/content/markdown.ts`, node-only). `checked()`
-  (`src/lib/content/checks.ts`) fails the sync on missing images, dangling
-  references and unknown inline `<BlogCta id>` targets, which Astro itself
-  only logs or defers.
+  (`src/lib/content/checks.ts`) fails the sync on missing images, body
+  images without alt text, dangling references, unknown inline
+  `<BlogCta id>` targets, unsupported `<VideoEmbed url>` links and a
+  missing `settings.json` `"site"` key, which Astro itself only logs,
+  defers or ignores. In `npm run dev` Astro re-syncs a saved entry without
+  calling the loader's `load()`, so `checked()` also wraps the loader's
+  file watcher: the checks re-run after each change under `src/content/`
+  and log through the content logger instead of throwing.
 - `src/lib/content/files/`: the backend (`satisfies ContentSource`). Each
   module maps one content type. `npm run check:boundary` keeps it behind
   `@/lib/content` (only the MDX body components in

@@ -11,8 +11,9 @@
  * the control set, which must sync cleanly — then, per case, rewrites ONE of
  * them with ONE broken field, runs `astro sync`, and expects a non-zero exit
  * whose output contains every `expect` string. The gallery case appends an
- * item to src/content/gallery.json (a single-file collection) and restores
- * the original bytes. Everything is removed or restored after each case, on
+ * item to src/content/gallery.json, and the settings case rewrites
+ * src/content/settings.json (single-file collections); both restore the
+ * original bytes. Everything is removed or restored after each case, on
  * exit, on Ctrl-C and on SIGTERM/SIGHUP. A hard kill (SIGKILL, power loss)
  * cannot run cleanup, so every run starts by sweeping src/content for the
  * leftovers: `zz-check*` files are deleted, and any file with a
@@ -28,7 +29,10 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { BLOG_CATEGORIES } from "../src/config/blog.ts";
+import {
+  BLOG_CATEGORIES,
+  BLOG_SECTION_CATEGORIES,
+} from "../src/config/blog.ts";
 import {
   CASE_STUDY_CATEGORIES,
   CASE_STUDY_INDUSTRIES,
@@ -245,6 +249,41 @@ const CASES = [
     expect: [POST_FILE, "body", "zz-missing.png"],
   },
   {
+    name: "missing body image (no ./, with a title)",
+    apply: () =>
+      write(
+        POST_FILE,
+        post(
+          {},
+          '## Check\n\n![A missing photo](images/zz-missing-bare.png "A title")\n',
+        ),
+      ),
+    expect: [POST_FILE, "body", "zz-missing-bare.png"],
+  },
+  {
+    name: "missing data image (no ./)",
+    apply: () =>
+      write(
+        "src/content/projects/zz-check-project.json",
+        json({ ...PROJECT, heroImage: "images/zz-missing-bare.png" }),
+      ),
+    expect: [
+      "src/content/projects/zz-check-project.json",
+      "heroImage",
+      "zz-missing-bare.png",
+    ],
+  },
+  {
+    name: "body image without alt",
+    apply: () =>
+      write(POST_FILE, post({}, "## Check\n\n![](./images/zz-check.png)\n")),
+    expect: [
+      POST_FILE,
+      "body",
+      'image "./images/zz-check.png" has no alt text',
+    ],
+  },
+  {
     name: "empty alt",
     apply: () =>
       write(
@@ -262,6 +301,25 @@ const CASES = [
     name: "unquoted date",
     apply: () => write(POST_FILE, post({ date: { raw: "2026-01-01" } })),
     expect: ["zz-check-post.mdx", "date", "quoted"],
+  },
+  {
+    name: "impossible date",
+    apply: () => write(POST_FILE, post({ date: "2026-02-30" })),
+    expect: ["zz-check-post.mdx", "date", "not a real date"],
+  },
+  {
+    name: "primaryCategory not in categories",
+    apply: () =>
+      write(
+        POST_FILE,
+        post({
+          categories: [
+            BLOG_CATEGORIES.find((c) => c !== BLOG_SECTION_CATEGORIES[0]),
+          ],
+          primaryCategory: BLOG_SECTION_CATEGORIES[0],
+        }),
+      ),
+    expect: ["zz-check-post.mdx", "primaryCategory", "Also list"],
   },
   {
     name: "dangling author",
@@ -343,6 +401,34 @@ const CASES = [
       write(POST_FILE, post({}, '## Check\n\n<BlogCta id="zz-no-cta" />\n')),
     expect: [POST_FILE, "body", "zz-no-cta"],
   },
+  {
+    name: "unsupported VideoEmbed url",
+    apply: () =>
+      write(
+        POST_FILE,
+        post(
+          {},
+          '## Check\n\n<VideoEmbed url="https://example.com/zz-video" />\n',
+        ),
+      ),
+    expect: [
+      POST_FILE,
+      "body",
+      '<VideoEmbed url="https://example.com/zz-video"> is not a supported YouTube or Vimeo link',
+    ],
+  },
+  {
+    name: "settings.json without its site key",
+    apply: () => {
+      const file = "src/content/settings.json";
+      const abs = path.join(ROOT, file);
+      const settings = fs.existsSync(abs)
+        ? JSON.parse(fs.readFileSync(abs, "utf8"))
+        : {};
+      write(file, json({ zzCheckSite: settings.site ?? {} }));
+    },
+    expect: ["src/content/settings.json → site"],
+  },
 ];
 
 /* ── Run ───────────────────────────────────────────────────────────────── */
@@ -374,7 +460,7 @@ control();
 const baseline = await sync();
 if (!baseline.ok) {
   console.log(
-    `FAIL  the control entries do not sync, so this script is out of date with the schemas:\n${tail(baseline.output)}`,
+    `FAIL  the current content does not sync, even before any case breaks it. The error below may be in the content itself (fix it, then run \`npm run check\` to confirm), or this script's control entries may be out of date with the schemas:\n${tail(baseline.output)}`,
   );
   process.exit(1);
 }

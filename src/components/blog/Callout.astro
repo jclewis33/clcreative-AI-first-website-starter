@@ -1,9 +1,9 @@
 ---
 /**
  * Callout — a tip, warning or info aside in a blog post body. One component
- * for both content sources: an MDX post writes
- * `<Callout type="warning">…</Callout>` (BlogBody passes it in, so no
- * import), and a Portable Text `callout` node renders through
+ * for both content sources: an MDX post writes `<Callout type="warning">`,
+ * the text, then `</Callout>`, each on its own line (BlogBody passes it in,
+ * so no import), and a Portable Text `callout` node renders through
  * src/components/portabletext/Callout.astro, which slots its body in here.
  * Styles: src/styles/pages/blog-post.css (`callout_*`).
  */
@@ -18,7 +18,9 @@ interface Props extends HTMLAttributes<"aside"> {
    * between them.
    *
    * @example
-   * <Callout type="warning">Measure twice before you order tile.</Callout>
+   * <Callout type="warning">
+   *   Measure twice before you order tile.
+   * </Callout>
    */
   docs?: string;
 

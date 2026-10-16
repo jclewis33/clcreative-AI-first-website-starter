@@ -316,9 +316,11 @@ omitted); `CaseStudyGrid` likewise takes `CaseStudySummary[]` or fetches
 
 Blog-body components in `src/components/blog/`, used by MDX posts by tag
 name (no import) and by the Portable Text renderers. `Callout`: `type`
-(`tip` default · `warning` · `info`), content in the slot. `VideoEmbed`:
-`url` (YouTube watch/youtu.be/Shorts or Vimeo; anything else renders
-nothing), `caption`. `Callout` styles (`callout_*`) live in
+(`tip` default · `warning` · `info`), content in the slot (in MDX, the
+opening and closing tags each on their own line). `VideoEmbed`: `url`
+(YouTube watch/youtu.be/Shorts or Vimeo, parsed by `src/lib/video.ts`;
+anything else renders nothing, and a literal unsupported `url="…"` in an MDX
+body fails content sync), `caption`. `Callout` styles (`callout_*`) live in
 `src/styles/pages/blog-post.css`, with the code-block (`code_block_*`) and
 `<TableOfContents>` (`toc_*`) styles; `BlogPostTemplate` imports it, so a
 page that uses any of these outside the post template must import that

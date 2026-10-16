@@ -21,6 +21,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse } from "node-html-parser";
 import sharp from "sharp";
+// The YAML parser Astro's own frontmatter parsing uses (via
+// @astrojs/internal-helpers); in the tree already, not a direct dependency.
+import { parse as parseYaml } from "yaml";
 
 const DIST = process.argv[2] ?? "dist/client";
 const CONTENT = "src/content";
@@ -98,9 +101,12 @@ for (const file of postFiles) {
     continue;
   }
   const source = fs.readFileSync(path.join(CONTENT, "blog", file), "utf8");
-  const frontmatter = source.split(/^---$/m)[1] ?? "";
-  const hasFaqs = /^faqs:[ \t]*\n[ \t]+- /m.test(frontmatter);
-  const authorId = /^author:\s*"?([a-z0-9-]+)"?/m.exec(frontmatter)?.[1];
+  const frontmatter =
+    parseYaml(/^---\r?\n([\s\S]*?)\r?\n---/.exec(source)?.[1] ?? "") ?? {};
+  const hasFaqs =
+    Array.isArray(frontmatter.faqs) && frontmatter.faqs.length > 0;
+  const authorId =
+    typeof frontmatter.author === "string" ? frontmatter.author : undefined;
   const root = parse(read(page));
 
   const og =

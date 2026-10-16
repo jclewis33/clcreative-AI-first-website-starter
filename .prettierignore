@@ -16,6 +16,11 @@ public/
 # Generated / vendored
 .agents/
 
+# Site content is edited by clients and editors, often outside an editor
+# that formats on save. Formatting must never fail CI (format:check) and
+# block a content deploy, so the content files are not Prettier-formatted.
+src/content/
+
 # Local agent scratch (plans, briefs, reports, review diffs) — not source
 .superpowers/
 

@@ -8,6 +8,10 @@
  * - mdxToMarkdown — the llms-full.txt copy: components converted or dropped.
  * - inlineCtaIds — the ids that `<BlogCta id="…" />` tags name outside
  *   fenced code.
+ * - mdxImages — the Markdown images (`![alt](src "title")`) outside fenced
+ *   code, for the sync-time image checks.
+ * - videoEmbedUrls — the literal `url="…"` of each `<VideoEmbed>` outside
+ *   fenced code, for the sync-time video check.
  *
  * Component tags are matched on their own lines — the way the content guide
  * (.claude/skills/content-files/SKILL.md) tells authors to write them.
@@ -66,5 +70,36 @@ export function mdxToMarkdown(body: string): string {
 export function inlineCtaIds(body: string): string[] {
   return [
     ...body.replace(FENCE, " ").matchAll(/<BlogCta\b[^>]*\bid="([^"]+)"/g),
+  ].map((m) => m[1]);
+}
+
+/** A body image: its alt text and its path or URL (title dropped). */
+export interface MdxImage {
+  alt: string;
+  src: string;
+}
+
+/**
+ * Every inline Markdown image outside fenced code: `![alt](src)`,
+ * `![alt](<src with spaces>)` and `![alt](src "title")`. Reference-style
+ * images (`![alt][ref]`) are not found.
+ */
+export function mdxImages(body: string): MdxImage[] {
+  const image =
+    /!\[([^\]]*)\]\(\s*(?:<([^>]*)>|([^)\s]+))(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\s*\)/g;
+  return [...body.replace(FENCE, " ").matchAll(image)].map((m) => ({
+    alt: m[1],
+    src: m[2] ?? m[3],
+  }));
+}
+
+/**
+ * The `url` of every `<VideoEmbed>` written with a literal, double-quoted
+ * `url="…"` (on one line or wrapped), outside fenced code. Any other form
+ * (`url={…}`) is not found here, so content sync cannot check it.
+ */
+export function videoEmbedUrls(body: string): string[] {
+  return [
+    ...body.replace(FENCE, " ").matchAll(/<VideoEmbed\b[^>]*?\burl="([^"]*)"/g),
   ].map((m) => m[1]);
 }

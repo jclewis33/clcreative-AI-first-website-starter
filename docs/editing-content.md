@@ -13,8 +13,7 @@ This page covers the everyday jobs.
 ## 1. First-time setup
 
 1. Install **Node.js 22.18 or later** (the LTS download from
-   [nodejs.org](https://nodejs.org) is fine). `package.json` asks for 22.12
-   or later, but the content checks below need 22.18.
+   [nodejs.org](https://nodejs.org) is fine).
 2. Install [VS Code](https://code.visualstudio.com) (recommended: it
    autocompletes the content files, see section 7).
 3. Get a copy of the project (`git clone …`), open the folder in a
@@ -33,9 +32,11 @@ npm run dev
 ```
 
 Open <http://localhost:4321> in your browser. Leave the command running:
-when you save a content file, the page updates. If a file has a mistake,
-the terminal prints an error naming the file and the field (section 5).
-Stop the preview with `Ctrl+C`.
+when you save a content file, the page updates. If a file has a mistake
+(a wrong field, a missing photo, a name that points nowhere), the terminal
+prints an error naming the file and the field (section 5), and prints
+`Content check passed` once you have fixed it. Stop the preview with
+`Ctrl+C`.
 
 ## 3. How the content folder is laid out
 
@@ -68,7 +69,8 @@ Rules that apply everywhere:
   the centre, so keep the subject in the middle.
 - **Every photo needs alt text**: a short description of what it shows,
   for people who cannot see it. It can never be empty.
-- **Dates** are written `"2026-04-02"` (year-month-day, in quotes).
+- **Dates** are written `"2026-04-02"` (year-month-day, in quotes), and
+  must be real dates (`"2026-02-30"` is stopped by the check).
 - **Formatted text** inside a JSON file (case-study sections, project
   write-ups) uses Markdown: `**bold**`, `*italic*`,
   `[link text](/contact)`, `- list item`, `### Heading`. Start a new line
@@ -109,9 +111,9 @@ rename the copy and change its contents.**
      Resources. Each one gets an archive page (`/blog/category/guides`).
    - `primaryCategory` (optional): which section of the `/blog` page the
      post sits in: News, Guides, Insights or Tutorials (Resources has no
-     section). Without it, the post sits under its first category. Also
-     list it in `categories`, or the post will be missing from that
-     category's archive page.
+     section). Without it, the post sits under its first category. It must
+     also be listed in `categories` (the check stops the post otherwise, so
+     the post is never missing from that category's archive page).
    - `author`: the name of a file in `src/content/authors/`.
    - `featured: true` puts the post in the slider at the top of `/blog`
      (with none featured, the slider shows the newest four).
@@ -130,6 +132,9 @@ rename the copy and change its contents.**
    ![What the photo shows](./images/kitchen-sketch.webp)
    ```
 
+   The text in the square brackets is the photo's alt text and can never
+   be empty.
+
 6. **A call-to-action box inside the post**: on its own line, with the
    name of a file in `src/content/ctas/blog/` in double quotes:
 
@@ -141,8 +146,10 @@ rename the copy and change its contents.**
    `cta: "free-site-review"` to the top block, or leave it out to use the
    site default (see "Change the default CTAs").
 
-7. **Tips, warnings and videos** inside the post (each tag on its own
-   line):
+7. **Tips, warnings and videos** inside the post. Put each tag on its
+   own line: for a tip, the opening `<Callout …>` line, then the text, then
+   the closing `</Callout>` line. A callout written on one line
+   (`<Callout>Text</Callout>`) is not supported.
 
    ```mdx
    <Callout type="tip">
@@ -156,8 +163,8 @@ rename the copy and change its contents.**
    ```
 
    `VideoEmbed` takes YouTube links (`youtube.com/watch?v=…`, `youtu.be/…`,
-   `youtube.com/shorts/…`) and Vimeo links (`vimeo.com/123456`). Other
-   links show nothing.
+   `youtube.com/shorts/…`) and Vimeo links (`vimeo.com/123456`). Any other
+   link stops the check with an error naming the post.
 
 8. **Questions and answers** under the post (also marked up for search
    engines): add to the top block:
@@ -293,7 +300,8 @@ uses the default.
 ### Change the default CTAs
 
 `src/content/settings.json` names the blog CTA and CTA section a page gets
-when it does not pick its own:
+when it does not pick its own. Keep the `"site"` key exactly as shown (the
+check stops if it is missing or misspelled):
 
 ```json
 {
@@ -314,13 +322,14 @@ check in section 5 names that file and field; fix or remove the pointer.
 Before you publish, run:
 
 ```bash
-npm run check:content
+npm run check
 npm run build
 ```
 
-`npm run build` builds the whole site and stops with an error if any
-content file has a mistake. `npm run check:content` makes sure the site's own error checks
-still work. Both must finish without an error.
+`npm run check` reads every content file (and the site's code) and stops
+with an error if anything is wrong; it takes a few seconds. `npm run build`
+then builds the whole site, the same way the live site is built. Both must
+finish without an error.
 
 A mistake looks like one of these in the terminal (or in the GitHub
 Actions log, if the check runs there):
@@ -345,6 +354,11 @@ The first line names the file; each line after it is `field: problem`.
 | `no entry "x" (expected src/content/authors/x.json)`   | The file it points to is missing or misspelled              |
 | `<BlogCta id="x"> names no entry`                      | Fix the name, or add `src/content/ctas/blog/x.json`         |
 | `Alt text can't be empty`                              | Describe the photo                                          |
+| `body: image "./images/x.webp" has no alt text`        | Describe the photo inside the `![…]` brackets               |
+| `<VideoEmbed url="…"> is not a supported YouTube …`    | Use a YouTube or Vimeo link (see "Add a blog post")         |
+| `is not a real date`                                   | Check the month and day                                     |
+| `primaryCategory: Also list "X" in categories`         | Add it to `categories`, or remove `primaryCategory`         |
+| `settings.json → site: missing`                        | Restore the `"site"` key in `settings.json`                 |
 | `name: Required` (or any other field)                  | Add the missing field                                       |
 | `date: Write the date as quoted text`                  | Put the date in quotes in the post's top block              |
 | `Invalid option: expected one of …`                    | Use one of the listed values                                |
