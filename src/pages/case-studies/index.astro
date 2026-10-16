@@ -14,7 +14,8 @@
  */
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
+import { getCtaDefaults } from "@/lib/content";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
@@ -25,7 +26,7 @@ import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
 // Sanity
 import { loadPageQuery } from "@/sanity/lib/page-data";
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
-import { CASE_STUDIES_QUERY, SITE_SETTINGS_QUERY } from "@/sanity/lib/queries";
+import { CASE_STUDIES_QUERY } from "@/sanity/lib/queries";
 import { urlFor, hotspotPosition } from "@/sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
 
@@ -35,21 +36,16 @@ import "@/styles/pages/case-studies.css";
 /* ── Fetch from Sanity (already sorted by date desc in query) ── */
 
 const draftProps = getDraftModeProps(Astro);
-const [sortedCaseStudies, settings] = await Promise.all([
+const [sortedCaseStudies, ctaDefaults] = await Promise.all([
   loadPageQuery({
     query: CASE_STUDIES_QUERY,
     draftProps,
     fallback: [],
     label: "case studies index",
   }),
-  loadPageQuery({
-    query: SITE_SETTINGS_QUERY,
-    draftProps,
-    fallback: null,
-    label: "case studies settings",
-  }),
+  getCtaDefaults(),
 ]);
-const defaultCtaSection = settings?.defaultCtaSection ?? null;
+const defaultCtaSection = ctaDefaults.ctaSection;
 
 /* ── Derive filter options from actual data ── */
 
@@ -222,7 +218,7 @@ const categoryOptions = [
     </div>
   </Section>
 
-  {defaultCtaSection && <SanityCtaSection cta={defaultCtaSection} />}
+  {defaultCtaSection && <ContentCtaSection cta={defaultCtaSection} />}
 </BaseLayout>
 
 <script>

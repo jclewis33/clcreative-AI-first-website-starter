@@ -2,7 +2,8 @@
 import type { HTMLAttributes } from "astro/types";
 import Visual from "@/components/ui/Visual.astro";
 import Lightbox from "@/components/ui/Lightbox.astro";
-import { photoUrl, type SanityPhoto } from "@/lib/projects";
+import { photoUrl } from "@/lib/projects";
+import type { ContentImage } from "@/lib/content";
 import { galleryCaptionMeta } from "@/lib/project-format";
 
 /**
@@ -29,9 +30,9 @@ export interface GalleryItem {
   /** Title of the linked project; "" when unlinked or the project was deleted. */
   projectTitle: string;
   /** Tile-size photo. */
-  thumb: SanityPhoto;
+  thumb: ContentImage;
   /** Large photo for the lightbox. */
-  full: SanityPhoto;
+  full: ContentImage;
 }
 
 interface Category {

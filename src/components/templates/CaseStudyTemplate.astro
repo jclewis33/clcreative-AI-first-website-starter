@@ -8,7 +8,8 @@
  */
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
+import { toCtaSection } from "@/sanity/lib/map/cta";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
@@ -40,8 +41,9 @@ interface Props {
 }
 
 const { study, allStudies, defaultCtaSection = null } = Astro.props;
-const resolvedCtaSection =
-  study.ctaSectionOverride ?? defaultCtaSection ?? null;
+const resolvedCtaSection = toCtaSection(
+  study.ctaSectionOverride ?? defaultCtaSection ?? null,
+);
 
 const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
 const jsonLd = caseStudyJsonLd(study, siteOrigin);
@@ -295,7 +297,7 @@ const ogImageUrl = seo?.ogImage
 
   {contentBlocks.map((block) => <CaseStudyBlockRenderer block={block} />)}
 
-  {resolvedCtaSection && <SanityCtaSection cta={resolvedCtaSection} />}
+  {resolvedCtaSection && <ContentCtaSection cta={resolvedCtaSection} />}
 
   {
     upNextStudies.length > 0 && (

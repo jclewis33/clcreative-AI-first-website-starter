@@ -9,7 +9,8 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
+import { toBlogCta, toCtaSection } from "@/sanity/lib/map/cta";
 import AdditionalPost from "@/components/sections/BlogPostGrid.astro";
 
 import Heading from "@/components/ui/Heading.astro";
@@ -75,8 +76,10 @@ const {
   defaultCta = null,
   defaultCtaSection = null,
 } = Astro.props;
-const resolvedBlogCta = post.ctaOverride ?? defaultCta ?? null;
-const resolvedCtaSection = post.ctaSectionOverride ?? defaultCtaSection ?? null;
+const resolvedBlogCta = toBlogCta(post.ctaOverride ?? defaultCta ?? null);
+const resolvedCtaSection = toCtaSection(
+  post.ctaSectionOverride ?? defaultCtaSection ?? null,
+);
 const manualRelatedSlugs = manualRelatedPosts.map((p) => p.slug);
 
 const seo = post.seo;
@@ -421,7 +424,7 @@ const portableTextComponents = {
     </Layout>
   </Section>
 
-  {resolvedCtaSection && <SanityCtaSection cta={resolvedCtaSection} />}
+  {resolvedCtaSection && <ContentCtaSection cta={resolvedCtaSection} />}
 
   {
     manualRelatedPosts.length > 0 && (

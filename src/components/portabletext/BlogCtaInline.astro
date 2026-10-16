@@ -2,22 +2,24 @@
 /**
  * Blog CTA Inline — Portable Text custom type component.
  *
- * Node shape: { _type: "blogCtaInline", cta: <dereferenced blogCta> }
- * The reference is dereferenced server-side by the BLOG_POST_QUERY, so the
- * node arrives with the full CTA object already on `node.cta`.
+ * Node shape: { _type: "blogCtaInline", cta: the dereferenced blogCta }.
+ * BLOG_POST_QUERY dereferences it server-side; this maps it to the
+ * BlogCtaData view model BlogCta renders. Sanity-only (Portable Text), so
+ * it imports the Sanity mapper directly.
  */
-
 import type { Props as PortableTextProps } from "astro-portabletext/types";
 import BlogCta from "@/components/blog/BlogCta.astro";
+import { toBlogCta, type RawBlogCta } from "@/sanity/lib/map/cta";
 
 interface BlogCtaInlineNode {
   _type: "blogCtaInline";
-  cta?: any;
+  cta?: RawBlogCta | null;
 }
 
 type Props = PortableTextProps<BlogCtaInlineNode>;
 
 const { node } = Astro.props;
+const cta = toBlogCta(node.cta);
 ---
 
-{node.cta && <BlogCta cta={node.cta} />}
+{cta && <BlogCta cta={cta} />}

@@ -19,7 +19,7 @@ import Quote from "@/components/ui/Quote.astro";
 import SectionHeader from "@/components/ui/SectionHeader.astro";
 import SwipeRow from "@/components/ui/SwipeRow.astro";
 import ProjectCard from "@/components/ui/ProjectCard.astro";
-import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
 import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
 import { SITE } from "@/config/site";
 import {
@@ -32,6 +32,9 @@ import type { loadProjectPage } from "@/sanity/lib/page-data";
 import { categoryTitle } from "@/config/projects";
 import { photoAlt } from "@/lib/project-format";
 import { portableTextToHtml } from "@/sanity/lib/portable-text";
+/* Temporary (Task 6 removes it). Kept last: imported any earlier, it
+   reorders the page's CSS chunks (parity). */
+import { toCtaSection } from "@/sanity/lib/map/cta";
 
 type PageData = NonNullable<Awaited<ReturnType<typeof loadProjectPage>>>;
 
@@ -42,6 +45,7 @@ interface Props {
 }
 
 const { project, relatedProjects, defaultCtaSection } = Astro.props;
+const ctaSection = toCtaSection(defaultCtaSection);
 
 const slug = stegaClean(project.slug) ?? "";
 const title = stegaClean(project.title) ?? "Project";
@@ -264,5 +268,5 @@ const hasStory = Boolean(writeUpHtml) || facts.length > 0 || Boolean(completed);
     </SwipeRow>
   </Section>
 
-  {defaultCtaSection && <SanityCtaSection cta={defaultCtaSection} />}
+  {ctaSection && <ContentCtaSection cta={ctaSection} />}
 </BaseLayout>

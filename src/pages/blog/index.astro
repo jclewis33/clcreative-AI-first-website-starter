@@ -15,7 +15,8 @@
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Layout from "@/components/ui/Layout.astro";
-import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
+import { getCtaDefaults } from "@/lib/content";
 import Section from "@/components/ui/Section.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
@@ -28,7 +29,7 @@ import Slider from "@/components/ui/Slider.astro";
 // Sanity
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import { loadPageQuery } from "@/sanity/lib/page-data";
-import { BLOG_POSTS_QUERY, SITE_SETTINGS_QUERY } from "@/sanity/lib/queries";
+import { BLOG_POSTS_QUERY } from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
 import { stegaClean } from "@sanity/client/stega";
 import { SITE } from "@/config/site";
@@ -39,21 +40,16 @@ import "@/styles/pages/blog.css";
 /* ── Fetch all posts from Sanity ── */
 
 const draftProps = getDraftModeProps(Astro);
-const [allPosts, settings] = await Promise.all([
+const [allPosts, ctaDefaults] = await Promise.all([
   loadPageQuery({
     query: BLOG_POSTS_QUERY,
     draftProps,
     fallback: [],
     label: "blog index posts",
   }),
-  loadPageQuery({
-    query: SITE_SETTINGS_QUERY,
-    draftProps,
-    fallback: null,
-    label: "blog index settings",
-  }),
+  getCtaDefaults(),
 ]);
-const defaultCtaSection = settings?.defaultCtaSection ?? null;
+const defaultCtaSection = ctaDefaults.ctaSection;
 
 /* ── Featured posts for the hero slider ── */
 
@@ -493,7 +489,7 @@ const categorySections = categoryConfig
     </Text>
   </div>
 
-  {defaultCtaSection && <SanityCtaSection cta={defaultCtaSection} />}
+  {defaultCtaSection && <ContentCtaSection cta={defaultCtaSection} />}
 </BaseLayout>
 
 <script>

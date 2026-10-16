@@ -56,16 +56,16 @@ without a git revert.
 **Scope, measured against the current tree — about 73 files deleted and 11
 edited:**
 
-| Delete                                                                                 | Count |
-| -------------------------------------------------------------------------------------- | ----- |
-| `src/sanity/**` (schema, lib, components)                                              | 30    |
-| `src/components/portabletext/**`                                                       | 8     |
-| Content + preview + draft-mode routes                                                  | 12    |
-| Templates (BlogPost, CaseStudy, Project)                                               | 3     |
-| Sections (SanityCtaSection, CaseStudyFeatured, SingleTestimonial, TestimonialShowcase) | 4     |
-| UI (CaseStudyCard, TestimonialCard, ProjectCard, ProjectBrowser, GalleryBrowser)       | 5     |
-| React islands (SanityVisualEditing, DisableDraftMode)                                  | 2     |
-| Root config (`sanity.config.ts`, `sanity.cli.ts`, `sanity-typegen.json`)               | 3     |
+| Delete                                                                                  | Count |
+| --------------------------------------------------------------------------------------- | ----- |
+| `src/sanity/**` (schema, lib, components)                                               | 30    |
+| `src/components/portabletext/**`                                                        | 8     |
+| Content + preview + draft-mode routes                                                   | 12    |
+| Templates (BlogPost, CaseStudy, Project)                                                | 3     |
+| Sections (ContentCtaSection, CaseStudyFeatured, SingleTestimonial, TestimonialShowcase) | 4     |
+| UI (CaseStudyCard, TestimonialCard, ProjectCard, ProjectBrowser, GalleryBrowser)        | 5     |
+| React islands (SanityVisualEditing, DisableDraftMode)                                   | 2     |
+| Root config (`sanity.config.ts`, `sanity.cli.ts`, `sanity-typegen.json`)                | 3     |
 
 **Edit (Sanity is one concern among several — do not delete these):**
 

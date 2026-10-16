@@ -252,6 +252,16 @@ export async function loadPageQuery<const Q extends string, F>({
   }
 }
 
+/** Site Settings (default blog CTA + CTA section). Null on a fresh fork. */
+export function loadSiteSettings(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: SITE_SETTINGS_QUERY,
+    draftProps,
+    fallback: null,
+    label: "site settings",
+  });
+}
+
 export async function getBlogPostStaticPaths() {
   const slugs = await fetchStaticPathList<string>(
     BLOG_SLUGS_QUERY,

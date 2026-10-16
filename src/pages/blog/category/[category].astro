@@ -12,7 +12,8 @@
  */
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
+import { getCtaDefaults } from "@/lib/content";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
@@ -26,7 +27,6 @@ import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 import {
   BLOG_POSTS_QUERY,
   BLOG_POSTS_BY_CATEGORY_QUERY,
-  SITE_SETTINGS_QUERY,
 } from "@/sanity/lib/queries";
 import { getBlogCategoryStaticPaths } from "@/sanity/lib/page-data";
 import { urlFor } from "@/sanity/lib/image";
@@ -52,7 +52,7 @@ const categoryLabel = category === "All" ? "All" : category;
 
 /* ── Fetch posts — all posts for "All", filtered for specific category ── */
 
-const [posts, settings] = await Promise.all([
+const [posts, ctaDefaults] = await Promise.all([
   loadPageQuery({
     query: category === "All" ? BLOG_POSTS_QUERY : BLOG_POSTS_BY_CATEGORY_QUERY,
     params: category === "All" ? undefined : { category },
@@ -60,14 +60,9 @@ const [posts, settings] = await Promise.all([
     fallback: [],
     label: `blog category "${categorySlug}"`,
   }),
-  loadPageQuery({
-    query: SITE_SETTINGS_QUERY,
-    draftProps,
-    fallback: null,
-    label: "blog category settings",
-  }),
+  getCtaDefaults(),
 ]);
-const defaultCtaSection = settings?.defaultCtaSection ?? null;
+const defaultCtaSection = ctaDefaults.ctaSection;
 ---
 
 <BaseLayout
@@ -203,7 +198,7 @@ const defaultCtaSection = settings?.defaultCtaSection ?? null;
     )
   }
 
-  {defaultCtaSection && <SanityCtaSection cta={defaultCtaSection} />}
+  {defaultCtaSection && <ContentCtaSection cta={defaultCtaSection} />}
 </BaseLayout>
 
 <script>

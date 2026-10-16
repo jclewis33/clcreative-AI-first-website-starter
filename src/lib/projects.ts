@@ -6,29 +6,17 @@
  * plain props instead, so this file is the one place that turns a Sanity
  * document into what a card or tile renders — image URL + size + focal point,
  * category label, and the location line (shown exactly as the editor wrote
- * it — no region is appended, so the file works for any client).
+ * it — no region is appended, so the file works for any client). Images use
+ * ContentImage (src/lib/content/types.ts).
  *
  * Every string is stegaClean'd: in Presentation draft mode Sanity embeds
  * invisible characters in strings, which break URLs, filters and comparisons.
  */
-import type { ImageMetadata } from "astro";
 import { stegaClean } from "@sanity/client/stega";
 import { urlFor, hotspotPosition } from "@/sanity/lib/image";
 import { categoryTitle } from "@/config/projects";
 import { photoAlt } from "@/lib/project-format";
-
-/**
- * A sized, positioned image ready for `<Visual>`. `src` is a Sanity CDN URL
- * from `sanityPhoto()`, or an imported local image — so the same cards and
- * tiles work for a site without the CMS (and for the /components demos).
- */
-export interface SanityPhoto {
-  src: string | ImageMetadata;
-  alt: string;
-  width: number;
-  height: number;
-  position: { x: number; y: number } | "center";
-}
+import type { ContentImage } from "@/lib/content/types";
 
 /** Any image object a query returns (asset reference + optional hotspot/crop). */
 type ImageSource = { asset?: unknown; hotspot?: unknown } | null | undefined;
@@ -45,7 +33,7 @@ export function sanityPhoto(
   alt: string | null | undefined,
   meta: ImageMeta | undefined,
   width = 1200,
-): SanityPhoto | undefined {
+): ContentImage | undefined {
   const clean = stegaClean(image);
   if (!clean?.asset) return undefined;
   const w = meta?.dimensions?.width ?? 0;
@@ -81,7 +69,7 @@ export interface ProjectCardData {
   categoryLabel: string;
   /** As the editor wrote it, e.g. "Springfield, IL"; "" when not set. */
   location: string;
-  image: SanityPhoto | undefined;
+  image: ContentImage | undefined;
 }
 
 export function projectPath(slug: string): string {
@@ -118,6 +106,6 @@ export function toProjectCards(rows: ProjectCardSource[]): ProjectCardData[] {
 }
 
 /** The URL string of a photo, whichever kind of `src` it carries. */
-export function photoUrl(photo: SanityPhoto): string {
+export function photoUrl(photo: ContentImage): string {
   return typeof photo.src === "string" ? photo.src : photo.src.src;
 }
