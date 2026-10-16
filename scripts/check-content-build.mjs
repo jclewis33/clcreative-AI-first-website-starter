@@ -35,8 +35,25 @@ const filesIn = (dir, ext) =>
         .filter((f) => f.endsWith(ext))
         .sort()
     : [];
-const widthOf = async (src) =>
-  (await sharp(path.join(DIST, decodeURIComponent(src))).metadata()).width;
+/**
+ * The pixel width of a built image, by its src. An image it can't read (a
+ * remote URL, a path not in DIST, a file sharp can't decode) records a
+ * named failure for `what` and returns null, so the caller skips its own
+ * size check instead of crashing the run.
+ */
+const widthOf = async (src, what) => {
+  if (/^[a-z][a-z\d+.-]*:/i.test(src)) {
+    fail(`${what}: "${src}" is not a local built file, so it is not resized`);
+    return null;
+  }
+  try {
+    const file = path.join(DIST, decodeURIComponent(src));
+    return (await sharp(file).metadata()).width ?? null;
+  } catch (error) {
+    fail(`${what}: can't read "${src}" in ${DIST} (${error.message})`);
+    return null;
+  }
+};
 const ABSOLUTE = /^https?:\/\//;
 
 /* ── Case studies ── */
@@ -60,7 +77,9 @@ for (const file of studyFiles) {
     if (!exists(page)) fail(`case study ${slug}: no page was built`);
     continue;
   }
-  const url = new RegExp(`/case-studies/${slug}(?=[<\\s]|$)`);
+  /* The slug as a whole path segment: "/case-studies/x" or "/case-studies/x/",
+     never the start of "/case-studies/x-two". */
+  const url = new RegExp(`/case-studies/${slug}(?![\\w-])`);
   if (exists(page)) fail(`coming-soon case study ${slug}: a page was built`);
   if (url.test(sitemap)) fail(`coming-soon case study ${slug}: in the sitemap`);
   if (url.test(llmsFull))
@@ -119,11 +138,13 @@ for (const file of postFiles) {
       const src = root
         .querySelector(".blog_post_avatar img")
         ?.getAttribute("src");
-      const width = src ? await widthOf(src) : undefined;
-      if (!width || width > 128)
-        fail(
-          `blog post ${slug}: the author photo is ${width ?? "missing"}px wide, not resized`,
-        );
+      const what = `blog post ${slug}: the author photo`;
+      if (!src) fail(`${what} is missing`);
+      else {
+        const width = await widthOf(src, what);
+        if (width !== null && width > 128)
+          fail(`${what} is ${width}px wide, not resized`);
+      }
     }
   }
 }
@@ -140,9 +161,10 @@ for (const file of projectFiles) {
   for (const tile of parse(read(page)).querySelectorAll(
     "[data-lightbox-src]",
   )) {
-    const width = await widthOf(tile.getAttribute("data-lightbox-src"));
-    if (!width || width > 1600)
-      fail(`project ${slug}: a lightbox photo is ${width}px wide, not resized`);
+    const what = `project ${slug}: a lightbox photo`;
+    const width = await widthOf(tile.getAttribute("data-lightbox-src"), what);
+    if (width !== null && width > 1600)
+      fail(`${what} is ${width}px wide, not resized`);
   }
 }
 
