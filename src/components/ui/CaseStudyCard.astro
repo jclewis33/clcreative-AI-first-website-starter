@@ -37,7 +37,7 @@ import { plainText } from "@/lib/content";
  *
  * **Props:**
  * - `title` — project title (clamped at 2 lines) (**required**)
- * - `description` — short project excerpt (clamped at 3 lines) (**required**)
+ * - `description` — short project excerpt (clamped at 3 lines) (**required**, may be null)
  * - `categories` — array of category labels (hidden, for CMS filtering) (**required**)
  * - `href` — link to the case study detail page (**required**)
  * - `image` — featured image: imported `ImageMetadata` or URL string (**required**)
@@ -51,7 +51,7 @@ interface Props extends HTMLAttributes<"div"> {
   /**
    * **CaseStudyCard props:**
    * - `title` — project title, clamped at 2 lines (required)
-   * - `description` — project excerpt, clamped at 3 lines (required)
+   * - `description` — project excerpt, clamped at 3 lines (required, may be null)
    * - `categories` — category labels array, hidden (required)
    * - `href` — link to case study (required)
    * - `image` — featured image source (required)

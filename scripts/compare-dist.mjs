@@ -19,6 +19,19 @@
  * dropped. Use it where the same markup legitimately arrives through a
  * different serializer (an Astro component versus an HTML string).
  *
+ * `--layers` compares each HTML file's inlined `<style>` CSS layer by layer
+ * instead of byte for byte. The style text is split into top-level rules;
+ * each `@layer <name> {…}` block is filed under its layer (unlayered rules
+ * under "(unlayered)"), and per layer the ORDERED sequence of blocks must
+ * match. Everything outside `<style>` must still be byte-identical. Use it
+ * when re-baselining after Astro reorders inlined CSS chunks (it sums import
+ * positions, so removing an import can move one layer's block ahead of
+ * another's): reordering across layers is harmless because the cascade layer
+ * order decides precedence, while a swap within one layer is not. Non-HTML
+ * files are still compared exactly.
+ *
+ *   node scripts/compare-dist.mjs --layers <old-dist> <new-dist>
+ *
  * Exits 1 on any difference and prints a window around the first
  * difference in each file. Zero dependencies beyond node-html-parser, which
  * check-schema.mjs already uses.
@@ -27,14 +40,63 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse } from "node-html-parser";
 
-const [baseDir, candDir, ...flags] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const flags = args.filter((a) => a.startsWith("--"));
+const [baseDir, candDir] = args.filter((a) => !a.startsWith("--"));
 if (!baseDir || !candDir) {
   console.error(
-    "Usage: node scripts/compare-dist.mjs <baseline-dir> <candidate-dir> [--canonical]",
+    "Usage: node scripts/compare-dist.mjs [--canonical | --layers] <baseline-dir> <candidate-dir>",
   );
   process.exit(2);
 }
 const canonical = flags.includes("--canonical");
+const layers = flags.includes("--layers");
+
+const STYLE_RE = /<style[^>]*>([\s\S]*?)<\/style>/g;
+
+/** Split CSS into top-level rules and file each under its @layer name. */
+function layerSequences(css) {
+  const seqs = new Map();
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < css.length; i++) {
+    const c = css[i];
+    if (c === "{") depth++;
+    else if (c === "}") {
+      depth--;
+      if (depth === 0) {
+        const rule = css.slice(start, i + 1);
+        const m = /^\s*@layer\s+([^{,;\s]+)\s*\{/.exec(rule);
+        const name = m ? m[1] : "(unlayered)";
+        if (!seqs.has(name)) seqs.set(name, []);
+        seqs.get(name).push(rule.trim());
+        start = i + 1;
+      }
+    } else if (c === ";" && depth === 0) {
+      // Statement at-rule such as `@layer a, b;` — keep it in the sequence.
+      const rule = css.slice(start, i + 1).trim();
+      if (!seqs.has("(statements)")) seqs.set("(statements)", []);
+      seqs.get("(statements)").push(rule);
+      start = i + 1;
+    }
+  }
+  return seqs;
+}
+
+/** Why two HTML files differ under --layers, or null when they pass. */
+function layerDiff(a, b) {
+  const styles = (t) => [...t.matchAll(STYLE_RE)].map((m) => m[1]).join("");
+  const rest = (t) => t.replace(STYLE_RE, "<style></style>");
+  if (rest(a) !== rest(b)) return "non-style HTML differs";
+  const sa = layerSequences(styles(a));
+  const sb = layerSequences(styles(b));
+  for (const name of new Set([...sa.keys(), ...sb.keys()])) {
+    const x = JSON.stringify(sa.get(name) ?? []);
+    const y = JSON.stringify(sb.get(name) ?? []);
+    if (x !== y) return `layer "${name}" blocks differ or are reordered`;
+  }
+  return null;
+}
 
 const TEXT_EXT = new Set([".html", ".xml", ".txt"]);
 const TEXT_NAMES = new Set(["_headers", "_redirects"]);
@@ -104,6 +166,18 @@ for (const file of base.filter((f) => candSet.has(f))) {
   if (canonical && file.endsWith(".html")) {
     a = canon(parse(a, PARSE_OPTIONS));
     b = canon(parse(b, PARSE_OPTIONS));
+  }
+  if (layers && file.endsWith(".html")) {
+    const why = layerDiff(a, b);
+    if (why) {
+      failures++;
+      console.log(`LAYERS   ${file}: ${why}`);
+    } else if (a !== b) {
+      console.log(
+        `ok       ${file} (inlined CSS reordered across layers only)`,
+      );
+    }
+    continue;
   }
   if (a === b) continue;
   failures++;
