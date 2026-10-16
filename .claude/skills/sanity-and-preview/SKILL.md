@@ -1,6 +1,6 @@
 ---
 name: sanity-and-preview
-description: The Sanity CMS + Cloudflare deployment architecture reference for this starter. Load BEFORE touching anything involving Sanity, GROQ queries, TypeGen, sanity.types.ts, schema types, the Studio (sanity.config.ts, desk structure, Presentation, Vision), draft mode / preview routes (src/pages/preview/**), loadQuery/getDraftModeProps/page-data.ts loaders, adding a new content type or detail route, the sitemap, trailing slashes, wrangler.jsonc, env vars (SANITY_API_READ_TOKEN, PUBLIC_SANITY_*), rebuild webhooks, or the rendering model (prerender vs SSR). Also load when a build fails at prerender with a CSS-extension error, when Presentation shows "Unable to connect", or when content pages 503.
+description: The Sanity CMS + Cloudflare deployment architecture reference for this starter. Load BEFORE touching anything involving Sanity, GROQ queries, TypeGen, sanity.types.ts, schema types, the Studio (sanity.config.ts, desk structure, Presentation, Vision), draft mode / preview routes (src/pages/preview/**), the Sanity content source behind @/lib/content (src/sanity/lib/source.ts, page-data.ts loaders, map/ mappers), loadQuery/getDraftModeProps, the stega policy, the parity fixtures and preview-safety checks, adding a new content type or detail route, the sitemap, trailing slashes, wrangler.jsonc, env vars (SANITY_API_READ_TOKEN, PUBLIC_SANITY_*), rebuild webhooks, or the rendering model (prerender vs SSR). Also load when a build fails at prerender with a CSS-extension error, when Presentation shows "Unable to connect", or when content pages 503.
 ---
 
 # Sanity, Deployment & Preview
@@ -28,16 +28,14 @@ const { data } = await loadQuery({ query: BLOG_POST_QUERY });
 // with the wrong shape, because you never name the shape.
 ```
 
-**Templates take their prop types from the loader that feeds them**, so the two
-cannot drift:
-
-```ts
-type PageData = NonNullable<Awaited<ReturnType<typeof loadBlogPostPage>>>;
-interface Props {
-  post: PageData["post"];
-  relatedPosts: PageData["relatedPosts"];
-}
-```
+**Templates and components never see Sanity types.** They take the named view
+models from `@/lib/content` (`BlogPostPage`, `CaseStudyDetail`,
+`ProjectCardData`, …, defined in `src/lib/content/types.ts`). TypeGen types stay
+inside `src/sanity/`: each mapper in `src/sanity/lib/map/` takes a
+`*_QUERY_RESULT` and returns a view model, and `src/sanity/lib/source.ts` is
+declared `satisfies ContentSource`. After editing a query and running
+`npm run typegen`, any drift surfaces in the one mapper that reads it, not in
+the templates.
 
 **Sanity fields are nullable.** A document exists the moment an editor creates
 it, before any field is filled in, so the generated types say `string | null`
@@ -60,7 +58,7 @@ project). `www.example.com` is the only public URL. The public CMS content
 routes (`/blog/**`, `/case-studies/**`, `/projects/**`) are **prerendered
 static HTML** served by the Worker's assets binding at zero CPU; draft preview
 happens on a parallel **SSR `/preview/*` tree** (`/preview/blog/[slug]`, etc.)
-that renders the identical templates through the identical loaders — only the
+that renders the identical templates through the identical content functions — only the
 perspective differs. A second, tiny Worker (`workers/rebuild-debounce/`)
 collapses Sanity publish webhooks into a single rebuild so published content
 ships on the next build. The Studio is **hosted by Sanity** (deployed with
@@ -121,15 +119,19 @@ Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.s
    (`perspectiveCookieName` from `@sanity/preview-url-secret/constants`) with
    the editor's chosen perspective (default `"drafts"`) and redirects to the
    target path.
-4. The Presentation iframe loads the `/preview/*` path. The preview route calls
-   the same shared loader as its public twin
-   ([src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)),
-   passing `getDraftModeProps(Astro)`
-   ([src/sanity/lib/draft-mode.ts](../../../src/sanity/lib/draft-mode.ts))
-   which reads the cookie and spreads `{ perspectiveCookie }` into `loadQuery`
+4. The Presentation iframe loads the `/preview/*` path. The preview route
+   calls the same content function as its public twin (`getBlogPost()`,
+   `getCaseStudy()` or `getProject()` from `@/lib/content`), passing
+   `getDraftModeProps(Astro)`
+   ([src/sanity/lib/draft-mode.ts](../../../src/sanity/lib/draft-mode.ts)),
+   which reads the cookie. The Sanity source forwards `{ perspectiveCookie }`
+   through its loaders
+   ([src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)) into
+   `loadQuery`
    ([src/sanity/lib/load-query.ts](../../../src/sanity/lib/load-query.ts)).
    When present, `loadQuery` fetches drafts with stega encoding and
-   authenticates using `SANITY_API_READ_TOKEN`.
+   authenticates using `SANITY_API_READ_TOKEN`. Only the three preview twins
+   pass the cookie; public routes and sections call without it.
 5. [src/layouts/BaseLayout.astro](../../../src/layouts/BaseLayout.astro) checks
    `Astro.cookies.has(perspectiveCookieName)` (guarded by `Astro.isPrerendered`)
    and conditionally mounts
@@ -169,7 +171,8 @@ Publish-to-live lands ~5–20 minutes depending on the debounce window.
 `astro.config.mjs` uses `output: "static"` with `@astrojs/cloudflare`. **All
 public routes are prerendered**, including the CMS content routes — each
 dynamic route exports a `getStaticPaths` fed by a minimal slug-only query
-(helpers in [src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)).
+(helpers exported from `@/lib/content`, implemented in
+[src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)).
 Only two kinds of routes opt into SSR with `export const prerender = false;`:
 
 - `src/pages/preview/**` — the draft-preview twins that Presentation iframes
@@ -184,7 +187,8 @@ Rules that keep this model healthy:
   redirect to /404. Those documents remain previewable under `/preview`.
 - **`getStaticPaths` is extracted into its own module at build time.** Only
   _imports_ are in scope inside it — sibling consts in the same frontmatter are
-  **not**. Keep its helpers in an imported module (`page-data.ts`). Symptom of
+  **not**. Keep its helpers in an imported module — routes import them from
+  `@/lib/content`. Symptom of
   getting this wrong: `<helper> is not defined` at build, pointing into an
   Astro-generated chunk.
 - **Fresh forks build green:** the `page-data.ts` static-path helpers return
@@ -366,9 +370,9 @@ Editors set **Alt text** once per asset in the Media tab
 every image alt as `"imageAlt": coalesce(imageAlt, <image>.asset->altText, "")`
 (galleries also fold in their per-block default). Precedence: per-placement
 field → asset alt → empty string; the trailing `""` guarantees a **string** so
-`<Image>`/`Visual` never receives `null`. The same projection is duplicated in
-the one inline query in `CaseStudyFeatured.astro` — update both when adding an
-image query. Per-field `imageAlt` inputs stay **optional** (they override the
+`<Image>`/`Visual` never receives `null`. Every image query lives in
+`queries.ts` (including `FEATURED_CASE_STUDIES_QUERY`, which CaseStudyFeatured
+uses through `getFeaturedCaseStudies()`). Per-field `imageAlt` inputs stay **optional** (they override the
 asset alt); body inline-image alt stays `required` (contextual, per insertion).
 
 **When adding a new image field + query:** mirror the
@@ -405,55 +409,143 @@ The Sanity project needs `https://www.example.com` (and
 
 ## Data fetching pattern
 
-Every page and Sanity-fetching component goes through `loadQuery` and forwards
-the perspective via `getDraftModeProps(Astro)` — pass the **whole `Astro`
-global**, not `Astro.cookies`. The helper checks `isPrerendered` and
-short-circuits, so the _same call_ is safe on prerendered public routes (build
-time → `published`) and SSR preview routes (request time → cookie perspective).
+**Consumers get content from `@/lib/content` — never from `src/sanity`.**
+Pages, templates, sections and components import the functions, view-model
+types and image helpers from there; `npm run check:boundary` fails when
+anything outside `src/sanity` and the Sanity-only allow list (preview twins,
+`/api/draft-mode`, Portable Text renderers, `BlogBody`, the visual-editing
+islands, `BaseLayout`, `middleware.ts`, `env.d.ts`, and the one-line backend
+selector `src/lib/content/source.ts`) imports Sanity code. The allow list
+lives in `scripts/check-content-boundary.mjs`.
 
 ```astro
 ---
-import { loadQuery } from "../sanity/lib/load-query";
-import { getDraftModeProps } from "../sanity/lib/draft-mode";
-import { BLOG_POSTS_QUERY } from "../sanity/lib/queries";
+import { getBlogPosts, imageSrc, plainText } from "@/lib/content";
 
-const { data: posts } = await loadQuery({
-  query: BLOG_POSTS_QUERY,
-  ...getDraftModeProps(Astro),
-});
+const posts = await getBlogPosts(); // BlogPostSummary[], newest first
 ---
+
+{
+  posts.map((post) => (
+    <BlogCard
+      title={post.title}
+      image={imageSrc(post.image, { width: 600 }) ?? null}
+      imageAlt={post.image?.alt ?? null}
+      data-title={plainText(post.title)}
+      href={`/blog/${post.slug}`}
+    />
+  ))
+}
 ```
 
-Helpers that fetch Sanity data (e.g. `src/sanity/lib/testimonials.ts`) accept
-`perspectiveCookie` as an option so the calling page can forward it.
+- **Images** are `ContentImage`. Size them with `imageSrc(image, { width })`
+  (for `<Visual>` and cards), `imageUrl(image, { width, height, format })`
+  (raw tags, OG, JSON-LD, lightboxes) or `sizedImage(image, width)` (tiles
+  that need width + height). The Sanity mapper attaches a `url()` builder
+  around `urlFor`, so each placement gets exactly the CDN size it always
+  did.
+- **Rich text** arrives pre-rendered: HTML strings for FAQ answers, project
+  write-ups and case-study blocks; the blog body is a
+  `{ kind: "portable-text" | "mdx" }` union rendered by `<BlogBody>`.
+- **Draft perspective.** Every content function takes a trailing
+  `opts?: { perspectiveCookie }`. Only the `/preview/*` twins pass
+  `getDraftModeProps(Astro)` (pass the **whole `Astro` global**, not
+  `Astro.cookies` — the helper checks `isPrerendered`); everything else is
+  prerendered and calls without it.
 
-**Detail pages use the shared loaders in `src/sanity/lib/page-data.ts`** — one
-function per content type, called by both the public prerendered route and its
-`/preview` twin so the two can never drift. Loader rules:
+**Inside `src/sanity/`** the layers run one way:
+`page-data.ts` (GROQ loaders, `loadQuery`, placeholder-safe listings and
+`getStaticPaths` helpers) → `map/*.ts` (query results → view models; the
+only users of `urlFor`, `hotspotPosition`, `stegaClean` and Portable Text
+serialisation) → `source.ts` (the `ContentSource` functions).
 
-- Fetch the single document **first** (related-content queries depend on its
-  categories/slug), then `Promise.all` everything independent — never stack
-  sequential awaits.
+**Stega policy** (header of `src/sanity/lib/source.ts`). In draft mode
+`loadQuery` stega-encodes strings so Presentation can overlay them. The
+mappers clean values used as logic — slugs, URLs, enums and categories,
+dates, numbers, booleans, image sources and alt text, CSS-ish values, SEO
+fields, derived text, anything they trim — and leave display strings
+(titles, descriptions, names, captions, quotes, labels, rich text) encoded.
+A CTA section is cleaned in full (deliberate; see `map/cta.ts`). Consumers
+that need a display string as data call `plainText()`.
+
+**Loader rules** (`page-data.ts`):
+
+- Fetch the single document **first** (related-content queries depend on
+  its categories/slug), then `Promise.all` everything independent — never
+  stack sequential awaits.
 - **Related content is filtered in GROQ, never in JS over the whole
   collection.** Fetching all posts to render 3 related cards is the pattern
   that caused production `exceededCpu` 503s. Query the few cards you need,
-  with a small buffer over the card slot (`[0...4]` for a 2-card slot) when
-  the template applies its own final filter.
+  with a small buffer over the card slot (`[0...4]` for a 2-card slot).
+- Clean any GROQ param built from fetched values (`stegaClean`) — an
+  encoded category never matches in preview.
 - Return `null` for "not found" / "not publicly visible" and let the route
   decide the response.
 
-**Adding a new content type with a detail route needs four pieces:**
+**Adding a new content type with a detail route needs six pieces:**
 
-1. **Public prerendered route** — `src/pages/<type>/[slug].astro` with
-   `export const getStaticPaths = get<Type>StaticPaths;` (helper in
-   `page-data.ts`; slug-only query, "not published" flags excluded).
-2. **`/preview` SSR twin** — `src/pages/preview/<type>/[slug].astro` with
-   `prerender = false`, same template, same loader.
-3. **Shared loader** — `load<Type>Page()` in `page-data.ts`.
-4. **Presentation location** — a `defineLocations` entry in `resolve.ts`
+1. **View models + contract** — named types in `src/lib/content/types.ts`
+   and the new functions on `ContentSource` (`getThing`, `getThings`,
+   `getThingStaticPaths`).
+2. **Loader** — GROQ in `queries.ts` (`defineQuery`, then
+   `npm run typegen`), a raw loader and a `get<Type>StaticPaths` helper in
+   `page-data.ts` (slug-only query, "not published" flags excluded).
+3. **Mapper + source** — `src/sanity/lib/map/<type>.ts` (apply the stega
+   policy) and the functions in `source.ts`; re-export them from
+   `src/lib/content/index.ts`.
+4. **Public prerendered route** — `src/pages/<type>/[slug].astro` with
+   `export const getStaticPaths = get<Type>StaticPaths;` imported from
+   `@/lib/content`.
+5. **`/preview` SSR twin** — `src/pages/preview/<type>/[slug].astro` with
+   `prerender = false`, same template, same function plus
+   `getDraftModeProps(Astro)`.
+6. **Presentation location** — a `defineLocations` entry in `resolve.ts`
    pointing at `/preview/<type>/<slug>`, followed by a Studio deploy.
 
-The sitemap picks the new route up automatically. **llms.txt / llms-full.txt do not** — each content type needs an explicit section there (see the case-studies and projects blocks in `src/pages/llms*.txt.ts`), using `.catch(() => [])` so a fresh fork still builds.
+Then add the query to the parity fixtures (`src/sanity/lib/fixtures/` —
+an unknown query throws there) and run the checks below. The sitemap picks
+the new route up automatically. **llms.txt / llms-full.txt do not** — each
+content type needs an explicit section there (see the case-studies and
+projects blocks in `src/pages/llms*.txt.ts`), calling the content functions
+with `.catch(() => [])` so a fresh fork still builds.
+
+### Parity and preview-safety checks
+
+A refactor that must not change rendered output is verified by building
+before and after and diffing `dist/client`.
+
+- **Fixtures.** `PARITY_FIXTURES=1` answers every query from GROQ-shaped
+  fixtures (`src/sanity/lib/fixtures/`), so a populated site builds with no
+  Sanity project. `KEEP_DEV_PAGES=1` keeps `/components` in the build
+  (normally stripped).
+- **Capture a baseline** before the change (copy `dist/client` aside; the
+  `.parity/` folder is git-ignored and prettier-ignored), rebuild after it,
+  then `node scripts/compare-dist.mjs <before> dist/client`. The
+  comparison covers every `.html`/`.xml`/`.txt` file plus `_headers` and
+  `_redirects`, normalising hashed asset names and `data-astro-cid-*`. It
+  prints `Identical: N files.` or a window around the first difference in
+  each file, and exits 1 on any difference. Do it twice: once with
+  `KEEP_DEV_PAGES=1` (no fixtures, the empty-site case), once with
+  `KEEP_DEV_PAGES=1 PARITY_FIXTURES=1` (the populated case).
+- **`--canonical`** compares HTML as a DOM (attributes sorted, entities
+  decoded, whitespace collapsed). Use it where the same markup legitimately
+  arrives through a different serializer (an Astro component versus an HTML
+  string).
+- **`--layers`** compares the inlined `<style>` CSS layer by layer: per
+  `@layer`, the ordered sequence of blocks must match, and everything outside
+  `<style>` must be byte-identical. Use it when Astro reorders inlined CSS
+  chunks after an import moves (reordering _across_ layers is harmless; a
+  swap _within_ a layer is not). Limitation: a `<style>` block that Astro
+  splits around a `<link>` makes the non-style comparison fail, so
+  `--layers` cannot judge such pages.
+- **Preview safety.** `PARITY_FIXTURES=preview npm run build && node
+scripts/check-stega-leaks.mjs` builds draft-like data (stega-encoded
+  strings plus half-filled documents) and fails if stega reaches any
+  attribute, the `<title>` or JSON-LD on the pages the preview twins render
+  (and, defensively, on the listing pages). Only visible element text may stay
+  encoded. It is a script, not an npm script.
+- **Boundary.** `npm run check:boundary` (see above) keeps Sanity imports
+  inside `src/sanity` and the allow list.
 
 ## Projects + gallery (photo portfolio)
 
@@ -469,13 +561,13 @@ either, or both.
   value, so a renamed category never breaks a page.
 - **Location** is one free-text field shown exactly as written — no region
   suffix is appended anywhere.
-- **Loaders** (`page-data.ts`): `loadProjectPage` (project + related, same
-  category first, filtered in GROQ + the default CTA section),
-  `getProjectStaticPaths`, `loadProjects`, `loadFeaturedProjects`,
-  `loadGallery` — all placeholder-safe.
-- **View models** (`src/lib/projects.ts`): `toProjectCards()`,
-  `sanityPhoto()`, `photoUrl()`. Pure formatters live in
-  `src/lib/project-format.ts` and are covered by
-  `node scripts/check-projects.mjs`.
+- **Content functions** (`@/lib/content`): `getProject` (the project, up to
+  three related cards — same category first, filtered in GROQ — and the
+  default CTA section), `getProjects`, `getFeaturedProjects`, `getGallery`,
+  `getProjectStaticPaths` — all placeholder-safe.
+- **Mapping** (`src/sanity/lib/map/projects.ts`): `toProjectCard`,
+  `toProjectDetail`, `toGalleryEntry`. Pages size photos with
+  `sizedImage()`. Pure formatters live in `src/lib/project-format.ts` and are
+  covered by `node scripts/check-projects.mjs`.
 - `/projects` and `/gallery` are prerendered with no preview twin (like the
   case-studies index); gallery edits appear after the publish rebuild.

@@ -30,9 +30,9 @@ All commands are run from the root of the project, from a terminal:
 
 ## 🏗️ Rendering model — everything public is prerendered
 
-**Every public route prerenders to static HTML at build time — including the CMS content routes.** `/blog/[slug]`, `/case-studies/[slug]`, and `/projects/[slug]` enumerate their slugs with `getStaticPaths` (slug-only GROQ queries; helpers in `src/sanity/lib/page-data.ts`) and are served by the Cloudflare assets binding at zero Worker CPU. Only two kinds of routes are server-rendered (`export const prerender = false;`):
+**Every public route prerenders to static HTML at build time — including the CMS content routes.** `/blog/[slug]`, `/case-studies/[slug]`, and `/projects/[slug]` enumerate their slugs with `getStaticPaths` (slug-only GROQ queries; helpers exported from `src/lib/content`, Sanity implementation in `src/sanity/lib/page-data.ts`) and are served by the Cloudflare assets binding at zero Worker CPU. Only two kinds of routes are server-rendered (`export const prerender = false;`):
 
-- `src/pages/preview/**` — the SSR **draft-preview twins** that Sanity's Presentation tool iframes (same templates, same loaders as the public routes; only the perspective differs)
+- `src/pages/preview/**` — the SSR **draft-preview twins** that Sanity's Presentation tool iframes (same templates, same content functions as the public routes; only the perspective differs)
 - `src/pages/api/**` — the draft-mode cookie set/clear routes
 
 `astro.config.mjs` is `output: "static"` with the Cloudflare adapter; new pages default to static automatically.
@@ -81,7 +81,7 @@ The chain is: **publish → debounce Worker (waits ~5 min) → Cloudflare deploy
 
 ### Draft preview (Presentation)
 
-Editors open the hosted Studio, click **Presentation**, and the iframe loads the **`/preview/<type>/<slug>`** SSR twin of the page — same template and data loader as the public route, but fetched per-request so the `sanity-preview-mode` cookie (set by `/api/draft-mode/enable`) can switch it to the drafts perspective. Public visitors get the prerendered pages and never have the cookie on an SSR route, so drafts can't leak; `/preview` is robots-disallowed, noindexed, and never edge-cached. Full flow is documented in [`CLAUDE.md`](CLAUDE.md) under "Deployment, Sanity Studio & Preview".
+Editors open the hosted Studio, click **Presentation**, and the iframe loads the **`/preview/<type>/<slug>`** SSR twin of the page — same template and content function as the public route, but fetched per-request so the `sanity-preview-mode` cookie (set by `/api/draft-mode/enable`) can switch it to the drafts perspective. Public visitors get the prerendered pages and never have the cookie on an SSR route, so drafts can't leak; `/preview` is robots-disallowed, noindexed, and never edge-cached. Full flow is documented in [`CLAUDE.md`](CLAUDE.md) under "Deployment, Sanity Studio & Preview".
 
 > Changing preview URLs or adding a previewable type touches `src/sanity/lib/resolve.ts`, which ships inside the **Studio** bundle — deploy the site first, then run `npx sanity deploy`, or Presentation keeps loading the old URLs.
 

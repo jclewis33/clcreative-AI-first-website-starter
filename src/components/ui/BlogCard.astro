@@ -45,6 +45,8 @@ import Card from "./Card.astro";
 import Visual from "./Visual.astro";
 import Heading from "./Heading.astro";
 import Text from "./Text.astro";
+// Deliberately last: moving this import first reorders the inlined CSS chunks
+// in the built pages (build-output parity, see compare-dist --layers).
 import { plainText } from "@/lib/content";
 
 /**

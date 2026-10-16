@@ -29,16 +29,16 @@ live demo on `/components`, a `docs` prop (hover it), and a `render` prop.
 
 ## Projects and gallery (Sanity)
 
-| Piece             | Role                                                                                       |
-| ----------------- | ------------------------------------------------------------------------------------------ |
-| `ProjectCard`     | Card from `toProjectCards()` — photo, category badge, location, "View project"             |
-| `ProjectBrowser`  | `/projects` grid with search, category select (only used categories), live count           |
-| `GalleryBrowser`  | `/gallery` chips + square tiles + Lightbox; caption meta never leaves a stray "·"          |
-| `ProjectTemplate` | `/projects/[slug]` and its preview twin — every optional section renders only with content |
+| Piece             | Role                                                                                                                  |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `ProjectCard`     | Card for a `ProjectCardData` from `getProjects()` (`@/lib/content`) — photo, category badge, location, "View project" |
+| `ProjectBrowser`  | `/projects` grid with search, category select (only used categories), live count                                      |
+| `GalleryBrowser`  | `/gallery` chips + square tiles + Lightbox; caption meta never leaves a stray "·"                                     |
+| `ProjectTemplate` | `/projects/[slug]` and its preview twin — every optional section renders only with content                            |
 
 Routes: `/projects`, `/projects/[slug]`, `/preview/projects/[slug]`,
 `/gallery`. Categories are set per client in `src/config/projects.ts`. The
-content model and loaders are documented in the `sanity-and-preview` skill.
+content functions and the Sanity mapping are documented in the `sanity-and-preview` skill.
 
 ## Sections (`src/components/sections/`)
 

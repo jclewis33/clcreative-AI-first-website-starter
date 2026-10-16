@@ -84,7 +84,7 @@ src/
 ├── config/           # site.ts (SITE), site.shared.mjs, logo-paths.ts — import, never hardcode
 ├── data/             # site-structure.ts (PAGES/NAV_MENU/FOOTER_GROUPS/BANNER), faqs.ts
 ├── layouts/          # BaseLayout.astro
-├── lib/              # slots.ts (slotContent), uid.ts, jsonld.ts, toc.ts, …
+├── lib/              # content/ (THE content interface — all CMS content comes from @/lib/content), slots.ts, uid.ts, jsonld.ts, toc.ts, …
 ├── pages/            # Routes; preview/** and api/** are the only SSR routes
 ├── sanity/           # Queries, loaders, generated types, Studio components
 ├── scripts/          # animation.js, scroll-refresh.js, social-share.js
@@ -311,11 +311,13 @@ Before writing any new CSS:
 
 `npm run check` (astro check) · `npm run check:hover` (prop tooltips) ·
 `npm run check:config` (wrangler/site.shared sync; runs prebuild) ·
+`npm run check:boundary` (no Sanity imports outside src/sanity) ·
 `npm run check:schema` (JSON-LD, needs dev server) · `npm run build` ·
 `npm run format:check` · `npm run typegen` (after any GROQ/schema change).
 
 ## Anti-patterns
 
+- Importing Sanity (`@/sanity/*`, `@sanity/*`, `urlFor`, `stegaClean`, `astro-portabletext`) outside `src/sanity` and the allow list in `scripts/check-content-boundary.mjs` — content, types and image helpers come from `@/lib/content`.
 - Unlayered CSS anywhere; third-party CSS imported from a script.
 - `display: grid` on `u-container`; bare `1fr` grid columns.
 - Rendering `<slot />` after `Astro.slots.render()` — dead client JS.

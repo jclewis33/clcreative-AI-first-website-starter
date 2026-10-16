@@ -73,6 +73,7 @@ const backgroundSrc = imageSrc(cta.backgroundImage, { width: 1920 });
 /* No background yet (a half-filled draft) skips the Visual through its
    `render` prop rather than a conditional block: same markup, and a
    conditional there changes the column's whitespace. */
+const hasBackground = backgroundSrc !== undefined;
 const imagePosition = cta.backgroundImage?.position;
 const imageAlt = cta.backgroundImage?.alt ?? "";
 const overlayStrength = cta.overlayStrength ?? 80;
@@ -115,7 +116,7 @@ const hasSecondary = Boolean(secondaryLabel && secondaryHref);
     </div>
     <Fragment slot="column2">
       <Visual
-        render={backgroundSrc !== undefined}
+        render={hasBackground}
         src={backgroundSrc ?? ""}
         alt={imageAlt}
         variant="background"

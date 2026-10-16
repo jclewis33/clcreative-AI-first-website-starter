@@ -33,7 +33,8 @@ TestimonialsSlider, TestimonialsGrid, TestimonialShowcase, FAQ, HowItWorks,
 StackingPanels, Services, SplitSection, …), `src/components/case-study/`
 (block renderer + blocks), `src/components/global/` (Navbar, Footer, Head,
 Logo, JsonLd), `src/components/templates/` (BlogPost/CaseStudy/Project
-templates), `src/components/portabletext/` (Sanity rich-text renderers).
+templates), `src/components/portabletext/` (Sanity rich-text renderers, used by `src/components/blog/BlogBody.astro`).
+Content-driven components take view models and `ContentImage`s from `@/lib/content` — never Sanity data.
 
 Live demos of every component: `/components` and `/style-guide`. Both are
 **dev-only** — `DEV_ONLY_PATHS` (src/config/seo.shared.mjs) strips them from

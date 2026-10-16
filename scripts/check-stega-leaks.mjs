@@ -5,8 +5,9 @@
  * The preview fixtures stand in for Presentation draft mode: every display
  * string carries invisible stega characters, and one half-filled document
  * per detail type is added. This scans the pages a /preview twin renders
- * (the detail templates) plus the homepage's self-fetching sections, and
- * fails when stega reaches an attribute that carries logic — an encoded
+ * (the detail templates) plus the homepage's self-fetching sections. The listing pages (blog,
+ * case-studies, projects, gallery) have no /preview twin, but they are
+ * scanned defensively: their cards carry search/filter data attributes. Fails when stega reaches an attribute that carries logic — an encoded
  * slug, class, style, URL or search value breaks only inside Presentation,
  * where nothing else would notice. EVERY attribute is checked, plus <title>
  * and the JSON-LD blocks: only visible text (element content) may stay
@@ -35,8 +36,11 @@ const PAGES = [
   "projects",
   "gallery",
 ];
-const STEGA = /[\u200b\u200c\u200d\ufeff]/;
-const STEGA_ALL = /[\u200b\u200c\u200d\ufeff]/g;
+/* The alphabet @vercel/stega encodes with (its VERCEL_STEGA_REGEX matches runs
+   of 4+; a single character is enough to flag here). @vercel/stega is only a
+   transitive dependency, so the class is spelled out. */
+const STEGA = /[\u200b-\u200d\u2060-\u2063\ufeff\u{1d173}-\u{1d17a}]/u;
+const STEGA_ALL = /[\u200b-\u200d\u2060-\u2063\ufeff\u{1d173}-\u{1d17a}]/gu;
 
 let leaks = 0;
 let encodedPages = 0;
@@ -85,7 +89,7 @@ if (
 }
 console.log(
   leaks
-    ? `\n${leaks} stega leak(s) in logic attributes.`
-    : `No stega in logic attributes across ${PAGES.length} pages.`,
+    ? `\n${leaks} stega leak(s) in attributes, <title> or JSON-LD.`
+    : `No stega in attributes, <title> or JSON-LD across ${PAGES.length} pages.`,
 );
 process.exit(leaks ? 1 : 0);

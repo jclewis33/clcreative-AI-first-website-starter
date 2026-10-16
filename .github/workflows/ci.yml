@@ -1,6 +1,7 @@
 # Checks-only CI — deploys are handled by Cloudflare Workers Builds, not
 # Actions. The build step fetches Sanity slugs over the network (the
-# getStaticPaths queries in src/sanity/lib/page-data.ts), which works on
+# getStaticPaths helpers behind @/lib/content, in
+# src/sanity/lib/page-data.ts), which works on
 # GitHub runners.
 name: CI
 
