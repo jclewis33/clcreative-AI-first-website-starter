@@ -32,6 +32,21 @@
  *
  *   node scripts/compare-dist.mjs --layers <old-dist> <new-dist>
  *
+ * `--equivalent` compares two builds of the SAME content from DIFFERENT
+ * sources (Sanity fixtures derived from src/content against the Files
+ * build). On top of `--canonical` it normalises only the differences
+ * listed in docs/superpowers/plans/2026-10-16-pr3-files-backend.md
+ * ("Expected Files-vs-Sanity differences"): image URLs and <img> sizing
+ * attributes, syntax-highlighting markup (a code block compares by
+ * language and text), whitespace beside block elements, a body image's
+ * <p>/<figure> wrapper, ids on h3–h6, inline <style> split across chunks
+ * (compared layer by layer), and llms-full.txt bodies (only its outline —
+ * headings, URL:, Client: and index lines — is compared). It ends by
+ * counting how often each normalisation fired, so a rule that no longer
+ * does anything is visible.
+ *
+ *   node scripts/compare-dist.mjs --equivalent .parity/sample .parity/files
+ *
  * Exits 1 on any difference and prints a window around the first
  * difference in each file. Zero dependencies beyond node-html-parser, which
  * check-schema.mjs already uses.
@@ -45,12 +60,13 @@ const flags = args.filter((a) => a.startsWith("--"));
 const [baseDir, candDir] = args.filter((a) => !a.startsWith("--"));
 if (!baseDir || !candDir) {
   console.error(
-    "Usage: node scripts/compare-dist.mjs [--canonical | --layers] <baseline-dir> <candidate-dir>",
+    "Usage: node scripts/compare-dist.mjs [--canonical | --layers | --equivalent] <baseline-dir> <candidate-dir>",
   );
   process.exit(2);
 }
 const canonical = flags.includes("--canonical");
 const layers = flags.includes("--layers");
+const equivalent = flags.includes("--equivalent");
 
 const STYLE_RE = /<style[^>]*>([\s\S]*?)<\/style>/g;
 
@@ -146,6 +162,194 @@ function canon(node) {
   return `<${tag}${attrs}>\n${inner}</${tag}>\n`;
 }
 
+/* ── --equivalent ──────────────────────────────────────────────────────── */
+
+/** How often each --equivalent normalisation fired (both builds summed). */
+const fired = {
+  "image URLs → IMAGE": 0,
+  "<img> sizing attributes dropped": 0,
+  "highlighted <pre> → language + text": 0,
+  "text trimmed beside a block element": 0,
+  "lone-image <p>/<figure> → <img>": 0,
+  "id dropped on h3–h6": 0,
+  "style attribute spacing": 0,
+  "inline <style> compared by layer": 0,
+  "llms-full.txt → outline": 0,
+};
+
+/** Image URLs from either source: local build files and Sanity CDN URLs.
+    A Sanity URL's query may hold commas (`rect=0,32,1672,878`); a comma
+    followed by whitespace still ends it, as between srcset candidates. */
+const IMAGE_URL =
+  /(?:https?:\/\/[^"'\s/<>]+)?\/_astro\/ASSET|https:\/\/cdn\.sanity\.io\/images\/(?:[^"'\s)<>,]|,(?!\s))+/g;
+/** <img> attributes about sizing and loading, not content. The
+    data-astro-image* trio is Astro's layout marker on a processed (local)
+    image; a remote Sanity URL renders a bare <img> without it, and with
+    `image.responsiveStyles: false` no CSS reads any of the three. */
+const IMG_SIZING = new Set([
+  "src",
+  "srcset",
+  "sizes",
+  "width",
+  "height",
+  "loading",
+  "decoding",
+  "fetchpriority",
+  "data-astro-image",
+  "data-astro-image-fit",
+  "data-astro-image-pos",
+]);
+const BLOCK_TAGS = new Set([
+  "address",
+  "article",
+  "aside",
+  "blockquote",
+  "body",
+  "dd",
+  "details",
+  "div",
+  "dl",
+  "dt",
+  "fieldset",
+  "figcaption",
+  "figure",
+  "footer",
+  "form",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "head",
+  "header",
+  "hr",
+  "html",
+  "li",
+  "main",
+  "nav",
+  "ol",
+  "p",
+  "pre",
+  "section",
+  "summary",
+  "table",
+  "tbody",
+  "td",
+  "tfoot",
+  "th",
+  "thead",
+  "tr",
+  "ul",
+]);
+
+const tagOf = (node) => node.rawTagName?.toLowerCase() ?? "";
+const isElement = (node) => node.nodeType === 1 && Boolean(node.rawTagName);
+const isBlock = (node) => isElement(node) && BLOCK_TAGS.has(tagOf(node));
+const normStyle = (value) => {
+  const out = value
+    .split(";")
+    .map((decl) => decl.trim())
+    .filter(Boolean)
+    .map((decl) => decl.replace(/\s*:\s*/, ": "))
+    .join("; ");
+  if (out !== value) fired["style attribute spacing"]++;
+  return out;
+};
+
+/** A <p>, or an attribute-less <figure>, holding one <img> and nothing else. */
+function loneImage(node) {
+  const tag = tagOf(node);
+  if (
+    tag !== "p" &&
+    !(tag === "figure" && !Object.keys(node.attributes).length)
+  )
+    return null;
+  const elements = node.childNodes.filter(isElement);
+  const textless = node.childNodes.every((c) => isElement(c) || !c.text.trim());
+  return elements.length === 1 && tagOf(elements[0]) === "img" && textless
+    ? elements[0]
+    : null;
+}
+
+/** Canonical DOM string with the equivalence normalisations applied. */
+function canonEq(node) {
+  const tag = tagOf(node);
+  if (tag) {
+    const img = loneImage(node);
+    if (img) {
+      fired["lone-image <p>/<figure> → <img>"]++;
+      return canonEq(img);
+    }
+    if (
+      tag === "pre" &&
+      /\bastro-code\b/.test(node.getAttribute("class") ?? "")
+    ) {
+      fired["highlighted <pre> → language + text"]++;
+      /* Tags stripped, then entities decoded: highlighters escape the
+         same text differently (`&#x3C;` against `&lt;`). */
+      const text = parse(node.rawText.replace(/<[^>]+>/g, "")).text;
+      return `<pre data-language="${node.getAttribute("data-language") ?? ""}">\n${text}</pre>\n`;
+    }
+  }
+  const kids = node.childNodes;
+  const blockEdge = !tag || BLOCK_TAGS.has(tag);
+  const inner = kids
+    .map((kid, i) => {
+      if (isElement(kid)) return canonEq(kid);
+      if (kid.nodeType !== 3) return "";
+      const collapsed = kid.text.replace(/\s+/g, " ");
+      let text = collapsed;
+      if (i > 0 ? isBlock(kids[i - 1]) : blockEdge) text = text.trimStart();
+      if (i < kids.length - 1 ? isBlock(kids[i + 1]) : blockEdge)
+        text = text.trimEnd();
+      if (text !== collapsed && text)
+        fired["text trimmed beside a block element"]++;
+      return text;
+    })
+    .join("");
+  if (!tag) return inner;
+  const attrs = Object.entries(node.attributes)
+    .filter(([name]) => {
+      if (tag === "img" && IMG_SIZING.has(name)) {
+        fired["<img> sizing attributes dropped"]++;
+        return false;
+      }
+      if (name === "id" && /^h[3-6]$/.test(tag)) {
+        fired["id dropped on h3–h6"]++;
+        return false;
+      }
+      return true;
+    })
+    .map(([name, value]) => [name, name === "style" ? normStyle(value) : value])
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, value]) => ` ${name}="${value}"`)
+    .join("");
+  return `<${tag}${attrs}>\n${inner}</${tag}>\n`;
+}
+
+/** Why two pages' inlined CSS differ layer by layer, or null. */
+function styleLayerDiff(a, b) {
+  const styles = (t) => [...t.matchAll(STYLE_RE)].map((m) => m[1]).join("");
+  const sa = layerSequences(styles(a));
+  const sb = layerSequences(styles(b));
+  for (const name of new Set([...sa.keys(), ...sb.keys()])) {
+    if (
+      JSON.stringify(sa.get(name) ?? []) !== JSON.stringify(sb.get(name) ?? [])
+    )
+      return `layer "${name}" blocks differ or are reordered`;
+  }
+  if (styles(a) !== styles(b)) fired["inline <style> compared by layer"]++;
+  return null;
+}
+
+/** llms-full.txt's outline: headings, URL:/Client: lines, index entries. */
+const outline = (text) =>
+  text
+    .split("\n")
+    .filter((line) => /^(#|URL: |Client: |- \[)/.test(line))
+    .join("\n");
+
 const base = list(baseDir);
 const cand = list(candDir);
 const candSet = new Set(cand);
@@ -163,11 +367,32 @@ for (const file of cand.filter((f) => !baseSet.has(f))) {
 for (const file of base.filter((f) => candSet.has(f))) {
   let a = normalize(fs.readFileSync(path.join(baseDir, file), "utf8"));
   let b = normalize(fs.readFileSync(path.join(candDir, file), "utf8"));
-  if (canonical && file.endsWith(".html")) {
+  if (equivalent) {
+    const urls = (t) => t.match(IMAGE_URL)?.length ?? 0;
+    fired["image URLs → IMAGE"] += urls(a) + urls(b);
+    a = a.replace(IMAGE_URL, "IMAGE");
+    b = b.replace(IMAGE_URL, "IMAGE");
+    if (file.endsWith(".html")) {
+      const why = styleLayerDiff(a, b);
+      if (why) {
+        failures++;
+        console.log(`STYLES   ${file}: ${why}`);
+        continue;
+      }
+      const noStyles = (t) => t.replace(STYLE_RE, "<style></style>");
+      a = canonEq(parse(noStyles(a), PARSE_OPTIONS));
+      b = canonEq(parse(noStyles(b), PARSE_OPTIONS));
+    } else if (path.basename(file) === "llms-full.txt") {
+      if (a !== b) fired["llms-full.txt → outline"]++;
+      a = outline(a);
+      b = outline(b);
+    }
+  }
+  if (!equivalent && canonical && file.endsWith(".html")) {
     a = canon(parse(a, PARSE_OPTIONS));
     b = canon(parse(b, PARSE_OPTIONS));
   }
-  if (layers && file.endsWith(".html")) {
+  if (!equivalent && layers && file.endsWith(".html")) {
     const why = layerDiff(a, b);
     if (why) {
       failures++;
@@ -192,6 +417,13 @@ for (const file of base.filter((f) => candSet.has(f))) {
 console.log(
   failures
     ? `\n${failures} difference(s) across ${base.length} baseline files.`
-    : `Identical: ${base.length} files.`,
+    : equivalent
+      ? `Equivalent: ${base.length} files.`
+      : `Identical: ${base.length} files.`,
 );
+if (equivalent) {
+  console.log("Normalisations fired (both builds):");
+  for (const [rule, count] of Object.entries(fired))
+    console.log(`  ${String(count).padStart(6)}  ${rule}`);
+}
 process.exit(failures ? 1 : 0);

@@ -2,11 +2,12 @@ import type { ClientPerspective, QueryParams } from "@sanity/client";
 import { sanityClient } from "sanity:client";
 import { getSecret } from "astro:env/server";
 
-/* Parity fixtures (dev-only): `PARITY_FIXTURES=1 npm run build` answers
-   every query from ./fixtures instead of the network, so a refactor can be
-   diffed against a populated site with no Sanity project (see
-   scripts/compare-dist.mjs). `__PARITY_FIXTURES__` is a build-time constant
-   (`vite.define` in astro.config.mjs, from process.env.PARITY_FIXTURES):
+/* Parity fixtures (dev-only): `PARITY_FIXTURES=1|preview|sample npm run
+   build` answers every query from ./fixtures instead of the network, so a
+   refactor can be diffed against a populated site with no Sanity project
+   (see scripts/compare-dist.mjs; the modes are listed on fixtureFetch).
+   `__PARITY_FIXTURES__` is a build-time constant (`vite.define` in
+   astro.config.mjs, from process.env.PARITY_FIXTURES):
    in a normal build it is the empty string, so the fixture import below is
    dead code and the fixtures never reach the server bundle. Nothing reads
    the flag at runtime, so a stray Worker variable cannot switch it on.

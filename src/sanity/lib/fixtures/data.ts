@@ -11,6 +11,16 @@
 /** Fixtures mirror projections, so they are typed loosely on purpose. */
 export type Doc = Record<string, any>;
 
+/** One complete fixture dataset. */
+export interface FixtureDocs {
+  posts: Doc[];
+  caseStudies: Doc[];
+  projects: Doc[];
+  gallery: Doc[];
+  testimonials: Doc[];
+  settings: Doc;
+}
+
 let assetCount = 0;
 /** A projected Sanity image. The asset ref encodes the intrinsic size, as real refs do. */
 function img(

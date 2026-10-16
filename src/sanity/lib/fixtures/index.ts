@@ -5,7 +5,8 @@
  * with scripts/compare-dist.mjs). The filtering mirrors each query's GROQ
  * closely enough for a handful of documents; it is not a GROQ engine.
  * An unknown query throws, so a new query cannot silently render empty in a
- * parity build — add its case here.
+ * parity build — add its case here. `PARITY_FIXTURES=sample` answers the
+ * same queries from documents derived from src/content instead (./sample.ts).
  */
 import {
   BLOG_POSTS_QUERY,
@@ -40,19 +41,10 @@ import {
   SETTINGS,
   TESTIMONIALS,
   type Doc,
+  type FixtureDocs,
 } from "./data";
 
 type Params = Record<string, unknown>;
-
-/** One complete fixture dataset. */
-interface FixtureDocs {
-  posts: Doc[];
-  caseStudies: Doc[];
-  projects: Doc[];
-  gallery: Doc[];
-  testimonials: Doc[];
-  settings: Doc;
-}
 
 const PARITY_DOCS: FixtureDocs = {
   posts: POSTS,
@@ -318,9 +310,14 @@ function draftEncode(value: unknown, key = ""): unknown {
   return value;
 }
 
+/** The sample dataset, derived once per build from src/content. */
+let sampleDocs: Promise<FixtureDocs> | undefined;
+
 /** Drop-in for `sanityClient.fetch(query, params, { filterResponse: false })`.
     Modes: "1" — the parity dataset; "preview" — draft-like data (stega-
-    encoded strings + half-filled documents) for scripts/check-stega-leaks.mjs. */
+    encoded strings + half-filled documents) for scripts/check-stega-leaks.mjs;
+    "sample" — the Files sample content re-shaped as GROQ results
+    (./sample.ts), for the Files-vs-Sanity equivalence check. */
 export async function fixtureFetch(
   query: string,
   params: Params | undefined,
@@ -335,6 +332,18 @@ export async function fixtureFetch(
     const result = resolveFixture(query, params ?? {}, PREVIEW_DOCS);
     return {
       result: BUILD_TIME_QUERIES.has(query) ? result : draftEncode(result),
+      resultSourceMap: undefined,
+    };
+  }
+  /* Gated on the build-time constant too, so every other mode's bundle
+     folds this branch away and never links ./sample (and astro:content)
+     into its module graph. Linking it measurably changed mode 1's output:
+     a component's hoisted <script> landed beside a different instance on
+     /components. */
+  if (__PARITY_FIXTURES__ === "sample" && mode === "sample") {
+    sampleDocs ??= import("./sample").then((m) => m.loadSampleDocs());
+    return {
+      result: resolveFixture(query, params ?? {}, await sampleDocs),
       resultSourceMap: undefined,
     };
   }
