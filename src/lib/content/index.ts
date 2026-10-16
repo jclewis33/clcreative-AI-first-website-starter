@@ -24,4 +24,9 @@ export const {
   getCtaDefaults,
   getTestimonials,
   getTestimonialByName,
+  getProjects,
+  getFeaturedProjects,
+  getProject,
+  getGallery,
+  getProjectStaticPaths,
 } = source;

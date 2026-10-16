@@ -1,26 +1,22 @@
 ---
 /**
  * SSR PREVIEW twin of /projects/[slug] — iframed by Sanity Presentation for
- * draft preview. Same template, same loader as the public route; only the
- * perspective differs.
+ * draft preview. Same getProject() and template as the public route; only
+ * the perspective differs (getDraftModeProps reads the Presentation cookie).
  *
  * Editor-only surface: robots-disallowed, noindexed, never edge-cached.
  * Keep this file in sync with src/pages/projects/[slug].astro.
  */
 export const prerender = false;
 import ProjectTemplate from "@/components/templates/ProjectTemplate.astro";
+import { getProject } from "@/lib/content";
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
-import { loadProjectPage } from "@/sanity/lib/page-data";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
-const data = await loadProjectPage(slug, getDraftModeProps(Astro));
+const data = await getProject(slug, getDraftModeProps(Astro));
 if (!data) return Astro.redirect("/404");
 ---
 
-<ProjectTemplate
-  project={data.project}
-  relatedProjects={data.relatedProjects}
-  defaultCtaSection={data.defaultCtaSection}
-/>
+<ProjectTemplate {...data} />

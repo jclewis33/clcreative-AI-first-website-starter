@@ -261,7 +261,7 @@ const COMPONENT_INDEX = [
 import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 const testimonials = await getTestimonials().catch((): TestimonialData[] => []);
 /* Hand-built sample data for the ProjectBrowser / GalleryBrowser demos —
-   real pages map Sanity rows with toProjectCards() / sanityPhoto(). */
+   real pages get theirs from getProjects() / getGallery() in @/lib/content. */
 const demoPhotoOf = (img: ImageMetadata, alt: string) => ({
   src: img,
   alt,
@@ -2213,7 +2213,7 @@ const demoGallery = [
         >A project card for /projects and featured strips</Heading
       >
       <Text muted
-        >Real cards are built from Sanity with toProjectCards(). The second card
+        >Real cards come from getProjects() in @/lib/content. The second card
         has no location, so its meta line is left out.</Text
       >
     </Layout>

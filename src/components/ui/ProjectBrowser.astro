@@ -3,7 +3,7 @@ import type { HTMLAttributes } from "astro/types";
 import Grid from "@/components/ui/Grid.astro";
 import Button from "@/components/ui/Button.astro";
 import ProjectCard from "@/components/ui/ProjectCard.astro";
-import type { ProjectCardData } from "@/lib/projects";
+import type { ProjectCardData } from "@/lib/content";
 
 /**
  * ProjectBrowser — the /projects grid with a search box ("Search projects or
@@ -15,7 +15,7 @@ import type { ProjectCardData } from "@/lib/projects";
  * (the filter bar is hidden until the script runs).
  *
  * @example
- * <ProjectBrowser projects={toProjectCards(rows)} />
+ * <ProjectBrowser projects={projects} categories={PROJECT_CATEGORIES} />
  */
 /** One filter option — usually an entry of PROJECT_CATEGORIES. */
 type ProjectBrowserCategory = { title: string; value: string };
@@ -23,7 +23,7 @@ type ProjectBrowserCategory = { title: string; value: string };
 export interface Props extends HTMLAttributes<"div"> {
   /**
    * **ProjectBrowser** — searchable, filterable project grid. `projects` is
-   * the array from `toProjectCards()`; `categories` is the filter list
+   * the cards from `getProjects()`; `categories` is the filter list
    * (pass `PROJECT_CATEGORIES` from `@/config/projects`). Only categories
    * that at least one project uses appear in the select.
    */
@@ -32,7 +32,7 @@ export interface Props extends HTMLAttributes<"div"> {
   /** Set to `false` to skip rendering. @default true */
   render?: boolean;
 
-  /** The projects, already mapped with `toProjectCards()`. */
+  /** The project cards, from `getProjects()`. */
   projects: ProjectCardData[];
 
   /** Filter options; only the ones in use are shown. */

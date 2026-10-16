@@ -23,6 +23,7 @@
  * the same frontmatter are not (symptom: "<helper> is not defined" pointing
  * into an Astro-generated chunk).
  */
+import { stegaClean } from "@sanity/client/stega";
 import { loadQuery } from "./load-query";
 import { urlFor } from "./image";
 import {
@@ -158,7 +159,7 @@ export async function loadProjectPage(
   const [{ data: related }, { data: settings }] = await Promise.all([
     loadQuery({
       query: RELATED_PROJECTS_QUERY,
-      params: { slug, category: project.category ?? "" },
+      params: { slug, category: stegaClean(project.category) ?? "" },
       ...draftProps,
     }),
     loadQuery({ query: SITE_SETTINGS_QUERY, ...draftProps }),

@@ -125,6 +125,74 @@ export interface TestimonialFilter {
   limit?: number;
 }
 
+/* ── Projects + gallery ────────────────────────────────────────────────── */
+
+/** A project as a card renders it. */
+export interface ProjectCardData {
+  id: string;
+  title: string;
+  /** The detail page, e.g. "/projects/smith-kitchen". */
+  href: string;
+  /** Category value (see src/config/projects.ts); "" when unset. */
+  category: string;
+  categoryLabel: string;
+  /** As the editor wrote it, e.g. "Springfield, IL"; "" when not set. */
+  location: string;
+  /** Card-size hero photo. */
+  image: ContentImage | undefined;
+}
+
+/** One project photo and its optional stage label. */
+export interface ProjectPhoto {
+  image: ContentImage;
+  label: string | null;
+}
+
+/** The customer quote on a project. */
+export interface ProjectQuote {
+  text: string;
+  name: string | null;
+}
+
+/** Everything the project detail page renders. */
+export interface ProjectDetail {
+  slug: string;
+  title: string;
+  category: string;
+  categoryLabel: string;
+  location: string;
+  service: string;
+  /** ISO date; null when not set. */
+  completed: string | null;
+  hero: ContentImage | null;
+  photos: ProjectPhoto[];
+  /** The write-up as HTML ("" when there is none). */
+  descriptionHtml: string;
+  /** The write-up as plain text — the SEO description fallback. */
+  descriptionText: string;
+  quote: ProjectQuote | null;
+  seoDescription: string | null;
+}
+
+/** `getProject()`: the project, related cards and the CTA section. */
+export interface ProjectPage {
+  project: ProjectDetail;
+  relatedProjects: ProjectCardData[];
+  ctaSection: CtaSectionData | null;
+}
+
+/** One gallery photo. */
+export interface GalleryEntry {
+  id: string;
+  image: ContentImage;
+  caption: string;
+  category: string;
+  categoryLabel: string;
+  location: string;
+  /** "" when unlinked, or when the linked project was deleted. */
+  projectTitle: string;
+}
+
 /* ── The contract ──────────────────────────────────────────────────────── */
 
 /**
@@ -151,4 +219,14 @@ export interface ContentSource {
     name: string,
     opts?: ContentOptions,
   ): Promise<TestimonialData | undefined>;
+  /** Every project as a card, newest first. */
+  getProjects(opts?: ContentOptions): Promise<ProjectCardData[]>;
+  /** Up to three featured projects. */
+  getFeaturedProjects(opts?: ContentOptions): Promise<ProjectCardData[]>;
+  /** One project with up to three related cards; null when not found. */
+  getProject(slug: string, opts?: ContentOptions): Promise<ProjectPage | null>;
+  /** Every gallery photo, newest first. */
+  getGallery(opts?: ContentOptions): Promise<GalleryEntry[]>;
+  /** getStaticPaths for /projects/[slug]. */
+  getProjectStaticPaths(): Promise<SlugPath[]>;
 }

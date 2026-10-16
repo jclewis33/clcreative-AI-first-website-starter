@@ -34,14 +34,31 @@ import type {
   ContentOptions,
   ContentSource,
   CtaDefaults,
+  GalleryEntry,
+  ProjectCardData,
+  ProjectPage,
   TestimonialData,
   TestimonialFilter,
 } from "@/lib/content/types";
-import { loadSiteSettings, loadTestimonials } from "./page-data";
+import {
+  getProjectStaticPaths,
+  loadFeaturedProjects,
+  loadGallery,
+  loadProjectPage,
+  loadProjects,
+  loadSiteSettings,
+  loadTestimonials,
+} from "./page-data";
 import { toBlogCta, toCtaSection } from "./map/cta";
+import { toGalleryEntry, toProjectCard, toProjectDetail } from "./map/projects";
 import { toTestimonial } from "./map/testimonials";
 
 /* ── Shared ────────────────────────────────────────────────────────────── */
+
+/** Type guard for dropping the nulls a mapper returns for unlinkable rows. */
+export function isPresent<T>(value: T | null): value is T {
+  return value !== null;
+}
 
 function plainText<T extends string | null | undefined>(value: T): T {
   return stegaClean(value) as T;
@@ -79,6 +96,37 @@ async function getTestimonialByName(
   );
 }
 
+/* ── Projects + gallery ────────────────────────────────────────────────── */
+
+async function getProjects(opts?: ContentOptions): Promise<ProjectCardData[]> {
+  return (await loadProjects(opts)).map(toProjectCard).filter(isPresent);
+}
+
+async function getFeaturedProjects(
+  opts?: ContentOptions,
+): Promise<ProjectCardData[]> {
+  return (await loadFeaturedProjects(opts))
+    .map(toProjectCard)
+    .filter(isPresent);
+}
+
+async function getProject(
+  slug: string,
+  opts?: ContentOptions,
+): Promise<ProjectPage | null> {
+  const raw = await loadProjectPage(slug, opts);
+  if (!raw) return null;
+  return {
+    project: toProjectDetail(raw.project),
+    relatedProjects: raw.relatedProjects.map(toProjectCard).filter(isPresent),
+    ctaSection: toCtaSection(raw.defaultCtaSection),
+  };
+}
+
+async function getGallery(opts?: ContentOptions): Promise<GalleryEntry[]> {
+  return (await loadGallery(opts)).map(toGalleryEntry).filter(isPresent);
+}
+
 /* `satisfies` fails `npm run check` when a ContentSource function is
    missing here or its signature drifts. */
 const sanitySource = {
@@ -86,6 +134,11 @@ const sanitySource = {
   getCtaDefaults,
   getTestimonials,
   getTestimonialByName,
+  getProjects,
+  getFeaturedProjects,
+  getProject,
+  getGallery,
+  getProjectStaticPaths,
 } satisfies ContentSource;
 
 export default sanitySource;

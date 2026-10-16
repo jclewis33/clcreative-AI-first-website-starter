@@ -1,11 +1,11 @@
 ---
 /**
- * ProjectTemplate — the /projects/[slug] page body, shared by the prerendered
- * public route and its SSR /preview twin so the two never drift. Props are
- * typed from the loader that feeds them (loadProjectPage in page-data.ts).
+ * ProjectTemplate — the /projects/[slug] page body, shared by the
+ * prerendered public route and its SSR /preview twin so the two never
+ * drift. Renders the ProjectPage view model from getProject() in
+ * @/lib/content.
  */
 import "@/styles/pages/projects.css";
-import { stegaClean } from "@sanity/client/stega";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
@@ -22,65 +22,51 @@ import ProjectCard from "@/components/ui/ProjectCard.astro";
 import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
 import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
 import { SITE } from "@/config/site";
+import { projectPath } from "@/lib/projects";
 import {
-  photoUrl,
-  projectPath,
-  sanityPhoto,
-  toProjectCards,
-} from "@/lib/projects";
-import type { loadProjectPage } from "@/sanity/lib/page-data";
-import { categoryTitle } from "@/config/projects";
-import { photoAlt } from "@/lib/project-format";
-import { portableTextToHtml } from "@/sanity/lib/portable-text";
-/* Temporary (Task 6 removes it). Kept last: imported any earlier, it
-   reorders the page's CSS chunks (parity). */
-import { toCtaSection } from "@/sanity/lib/map/cta";
-
-type PageData = NonNullable<Awaited<ReturnType<typeof loadProjectPage>>>;
+  imageUrl,
+  sizedImage,
+  type CtaSectionData,
+  type ProjectCardData,
+  type ProjectDetail,
+} from "@/lib/content";
 
 interface Props {
-  project: PageData["project"];
-  relatedProjects: PageData["relatedProjects"];
-  defaultCtaSection: PageData["defaultCtaSection"];
+  /**
+   * **ProjectTemplate** — the project detail page. Pass the fields of
+   * `getProject()`'s ProjectPage: `project`, `relatedProjects`, `ctaSection`.
+   */
+  docs?: string;
+
+  /** The project to render. */
+  project: ProjectDetail;
+
+  /** Up to three "More projects" cards (same category first). */
+  relatedProjects: ProjectCardData[];
+
+  /** Bottom CTA section (the site default), or null for none. */
+  ctaSection: CtaSectionData | null;
 }
 
-const { project, relatedProjects, defaultCtaSection } = Astro.props;
-const ctaSection = toCtaSection(defaultCtaSection);
+const { docs, project, relatedProjects, ctaSection } = Astro.props;
 
-const slug = stegaClean(project.slug) ?? "";
-const title = stegaClean(project.title) ?? "Project";
-const path = projectPath(slug);
-const category = categoryTitle(stegaClean(project.category));
-const location = stegaClean(project.location)?.trim();
-const service = stegaClean(project.service)?.trim();
-const completed = stegaClean(project.completed);
-const hero = sanityPhoto(
-  project.heroImage,
-  photoAlt(project.imageAlt, title),
-  project.heroImageMeta,
-  1600,
-);
-const photos = (project.photos ?? []).flatMap((p) => {
-  const alt = photoAlt(p.alt, `${title} photo`);
-  const photo = sanityPhoto(p, alt, p.meta, 1200);
-  const large = sanityPhoto(p, alt, p.meta, 1600);
-  if (!photo || !large) return [];
-  return [{ photo, large, label: stegaClean(p.label) }];
-});
+const { title, location, service, completed } = project;
+const category = project.categoryLabel;
+const path = projectPath(project.slug);
+const hero = project.hero && sizedImage(project.hero, 1600);
+const photos = project.photos.map(({ image, label }) => ({
+  photo: sizedImage(image, 1200),
+  large: sizedImage(image, 1600),
+  label,
+}));
 
 /* The write-up (optional). Its plain text doubles as the SEO fallback. */
-const writeUpHtml = portableTextToHtml(project.description);
-const writeUpText = (project.description ?? [])
-  .flatMap((block) => block.children ?? [])
-  .map((span) => span.text ?? "")
-  .join("")
-  .trim();
-const related = toProjectCards(relatedProjects);
-const quoteText = stegaClean(project.quote?.text);
+const writeUpHtml = project.descriptionHtml;
+const quoteText = project.quote?.text;
 
 const description =
-  stegaClean(project.seoDescription) ||
-  stegaClean(writeUpText)?.slice(0, 155) ||
+  project.seoDescription ||
+  project.descriptionText.slice(0, 155) ||
   `${title}${category ? `: a ${category.toLowerCase()} project` : ""} by ${SITE.name}.`;
 
 const facts = [
@@ -200,7 +186,7 @@ const hasStory = Boolean(writeUpHtml) || facts.length > 0 || Boolean(completed);
                   photos.length % 2 === 1 &&
                   "u-span-full",
               ]}
-              data-lightbox-src={photoUrl(large)}
+              data-lightbox-src={imageUrl(large)}
               data-lightbox-alt={large.alt}
               data-lightbox-caption={label}
             >
@@ -238,7 +224,7 @@ const hasStory = Boolean(writeUpHtml) || facts.length > 0 || Boolean(completed);
         quoteText && (
           <Quote
             text={quoteText}
-            name={stegaClean(project.quote?.name) ?? undefined}
+            name={project.quote?.name ?? undefined}
             size="band"
           />
         )
@@ -247,7 +233,7 @@ const hasStory = Boolean(writeUpHtml) || facts.length > 0 || Boolean(completed);
   </Section>
 
   <!-- More projects -->
-  <Section render={related.length > 0}>
+  <Section render={relatedProjects.length > 0}>
     <SectionHeader
       heading="More projects"
       size="h2"
@@ -264,7 +250,7 @@ const hasStory = Boolean(writeUpHtml) || facts.length > 0 || Boolean(completed);
       data-fade-up
       data-prevent-flicker="true"
     >
-      {related.map((card) => <ProjectCard project={card} />)}
+      {relatedProjects.map((card) => <ProjectCard project={card} />)}
     </SwipeRow>
   </Section>
 
