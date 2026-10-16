@@ -1,6 +1,8 @@
 /**
- * Selects the active content backend. Kept to ONE re-export on purpose: a
- * different backend (files, or the Sanity add-on) swaps the target here and
- * nowhere else. Never import a backend from any other file.
+ * Selects the active content backend: the Files backend (content
+ * collections in src/content). Kept to ONE re-export on purpose: the Sanity
+ * add-on swaps the target here and nowhere else. Test builds can pick
+ * either backend with CONTENT_SOURCE=files|sanity (astro.config.mjs;
+ * removed in PR 4). Never import a backend from any other file.
  */
-export { default } from "@/sanity/lib/source";
+export { default } from "./files";

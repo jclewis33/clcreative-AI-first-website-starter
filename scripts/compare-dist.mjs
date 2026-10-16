@@ -41,7 +41,11 @@
  * declaration spacing of a highlighted <pre>'s own style attribute (token
  * markup is still compared), whitespace beside block elements, a body
  * image's <p>/<figure> wrapper, ids on h3–h6, inline <style> split across
- * chunks (compared layer by layer), and llms-full.txt bodies (only its
+ * chunks (compared layer by layer), the position of an inline module
+ * <script> (Astro emits a hoisted script with whichever instance of its
+ * component finishes rendering first, and image processing differs between
+ * the sources; the scripts' text is still compared, and this applies only
+ * when nothing else in the page differs), and llms-full.txt bodies (only its
  * outline — headings, URL:, Client: and index lines — is compared). It
  * ends by counting how often each normalisation fired, so a rule that no
  * longer does anything is visible.
@@ -174,6 +178,7 @@ const fired = {
   "lone-image <p>/<figure> → <img>": 0,
   "id dropped on h3–h6": 0,
   "inline <style> compared by layer": 0,
+  "inline module <script> position ignored": 0,
   "llms-full.txt → outline": 0,
 };
 
@@ -324,6 +329,24 @@ function canonEq(node) {
   return `<${tag}${attrs}>\n${inner}</${tag}>\n`;
 }
 
+/** canonEq with every inline module <script> lifted out of its place and
+    appended, sorted, at the end. Astro emits a component's hoisted script
+    with whichever instance finishes rendering first, and a local image's
+    getImage() is slower than a CDN URL string, so with two instances on a
+    page (Lightbox, alone and inside GalleryBrowser on /components) the
+    script can land at a different instance per source. Module scripts are
+    deferred, so the position changes nothing; the scripts' text still
+    has to match. */
+function canonEqScriptsLifted(html) {
+  const root = parse(html, PARSE_OPTIONS);
+  const scripts = root
+    .querySelectorAll('script[type="module"]')
+    .filter((el) => !el.getAttribute("src"));
+  for (const el of scripts) el.remove();
+  const lifted = scripts.map((el) => el.text).sort();
+  return `${canonEq(root)}\n<lifted-module-scripts>\n${lifted.join("\n")}`;
+}
+
 /** Why two pages' inlined CSS differ layer by layer, or null. */
 function styleLayerDiff(a, b) {
   const styles = (t) => [...t.matchAll(STYLE_RE)].map((m) => m[1]).join("");
@@ -383,8 +406,23 @@ for (const file of base.filter((f) => candSet.has(f))) {
         continue;
       }
       const noStyles = (t) => t.replace(STYLE_RE, "<style></style>");
-      a = canonEq(parse(noStyles(a), PARSE_OPTIONS));
-      b = canonEq(parse(noStyles(b), PARSE_OPTIONS));
+      const rawA = noStyles(a);
+      const rawB = noStyles(b);
+      a = canonEq(parse(rawA, PARSE_OPTIONS));
+      b = canonEq(parse(rawB, PARSE_OPTIONS));
+      if (a !== b) {
+        // The second pass re-fires every other normalisation; keep the
+        // counts to one pass.
+        const counts = { ...fired };
+        const liftedA = canonEqScriptsLifted(rawA);
+        const liftedB = canonEqScriptsLifted(rawB);
+        Object.assign(fired, counts);
+        if (liftedA === liftedB) {
+          fired["inline module <script> position ignored"]++;
+          a = liftedA;
+          b = liftedB;
+        }
+      }
     } else if (path.basename(file) === "llms-full.txt") {
       if (a !== b) fired["llms-full.txt → outline"]++;
       a = outline(a);

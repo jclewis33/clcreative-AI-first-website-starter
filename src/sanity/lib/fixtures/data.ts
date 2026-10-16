@@ -766,6 +766,18 @@ export const TESTIMONIALS: Doc[] = [
     featured: false,
     sortOrder: 3,
   },
+  {
+    _id: "testimonial-marcus",
+    name: "Marcus Bell",
+    role: "Homeowner",
+    company: null,
+    quote: "They measured twice and finished on schedule.",
+    avatar: null,
+    website: null,
+    stars: 5,
+    featured: false,
+    sortOrder: 4,
+  },
 ];
 
 /* ── Incomplete documents (PARITY_FIXTURES=preview only) ───────────────── */

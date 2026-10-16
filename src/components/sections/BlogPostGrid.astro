@@ -15,7 +15,7 @@
  * If no posts match the filter, the entire section is hidden.
  *
  * Takes `BlogPostSummary[]` from the content interface (`@/lib/content`) as
- * the `posts` prop; with no `posts` it previews built-in sample data.
+ * the `posts` prop; with no `posts` it fetches them with `getBlogPosts()`.
  *
  * @example Related posts on a blog post page
  * ```astro
@@ -60,15 +60,8 @@ import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import BlogCard from "@/components/ui/BlogCard.astro";
 
-// Sample-data images (used only when no `posts` prop is passed)
-import heroImage from "@/assets/placeholder-images/ai-first-starter-7.webp";
-import featuredImage from "@/assets/placeholder-images/ai-first-starter-8.webp";
-import avatarPlaceholder from "@/assets/placeholder-images/ai-first-starter-14.webp";
-import blogImage1 from "@/assets/placeholder-images/ai-first-starter-9.webp";
-import blogImage2 from "@/assets/placeholder-images/ai-first-starter-10.webp";
-import blogImage3 from "@/assets/placeholder-images/ai-first-starter-1.webp";
 import Layout from "@/components/ui/Layout.astro";
-import { imageSrc, type BlogPostSummary } from "@/lib/content";
+import { getBlogPosts, imageSrc, type BlogPostSummary } from "@/lib/content";
 
 /* ── Variant & shared types ── */
 
@@ -87,7 +80,7 @@ type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
  * in a responsive grid with filtering variants.
  *
  * **Props:**
- * - `posts` — all available blog posts to filter from (**required**)
+ * - `posts` — all available blog posts to filter from (fetched with getBlogPosts() if omitted)
  * - `variant` — filtering mode: related, recent, category (default: `'recent'`)
  * - `currentSlug` — slug of the current post to exclude (required for `related`, optional for `recent`/`category`)
  * - `currentCategory` — category of the current post (required for `related`)
@@ -108,7 +101,7 @@ type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 interface Props {
   /**
    * **BlogPostGrid props:**
-   * - `posts` — BlogPostSummary[] to filter from (sample data if omitted)
+   * - `posts` — BlogPostSummary[] to filter from (fetched with getBlogPosts() if omitted)
    * - `variant` — related, recent, category (default 'recent')
    * - `currentSlug` — current post slug to exclude
    * - `currentCategory` — current post category (for related)
@@ -130,7 +123,7 @@ interface Props {
   /**
    * All available blog posts to filter from.
    * Pass your full posts array — the component handles filtering and sorting.
-   * If omitted, uses built-in sample data for previewing.
+   * If omitted, the section fetches every post itself.
    *
    * Pass posts from the content interface:
    * ```astro
@@ -354,126 +347,13 @@ const invertCards =
   theme === "dark" || theme === "brand" ? ("invert" as const) : undefined;
 
 /* ═══════════════════════════════════════════════════
-   Sample data — used for previewing when no `posts` prop is passed.
-   Real pages pass `posts` from the content interface (@/lib/content).
-   ═══════════════════════════════════════════════════ */
-
-const samplePosts: BlogPostSummary[] = [
-  {
-    title: "How to Get Started in Five Simple Steps",
-    slug: "getting-started-guide",
-    description:
-      "A practical walkthrough to help you get up and running quickly — from first setup to your first results.",
-    categories: ["Guides"],
-    primaryCategory: null,
-    image: { src: featuredImage, alt: "Getting started checklist on a desk" },
-    author: "Jane Doe",
-    authorAvatar: { src: avatarPlaceholder, alt: "Jane Doe" },
-    date: "2026-03-01",
-    featured: true,
-  },
-  {
-    title: "What's New: Our Latest Updates",
-    slug: "latest-updates",
-    description:
-      "A roundup of the improvements and features we've shipped recently, and what they mean for you.",
-    categories: ["News"],
-    primaryCategory: null,
-    image: { src: blogImage1, alt: "Team reviewing recent product updates" },
-    author: "Jane Doe",
-    authorAvatar: null,
-    date: "2026-02-20",
-    featured: false,
-  },
-  {
-    title: "Five Trends Shaping Our Industry This Year",
-    slug: "industry-trends",
-    description:
-      "The shifts we're watching closely, and how forward-thinking teams are responding to them.",
-    categories: ["Insights"],
-    primaryCategory: null,
-    image: { src: blogImage2, alt: "Charts illustrating industry trends" },
-    author: "Jane Doe",
-    authorAvatar: null,
-    date: "2026-02-15",
-    featured: false,
-  },
-  {
-    title: "The Power of Clear, Customer-Focused Messaging",
-    slug: "customer-focused-messaging",
-    description:
-      "How sharper messaging turns a website from a digital brochure into a tool that actually converts.",
-    categories: ["Insights"],
-    primaryCategory: null,
-    image: { src: blogImage3, alt: "Whiteboard messaging workshop" },
-    author: "Jane Doe",
-    authorAvatar: null,
-    date: "2026-02-10",
-    featured: false,
-  },
-  {
-    title: "Designing for Everyone: A Practical Accessibility Guide",
-    slug: "accessibility-guide",
-    description:
-      "Practical techniques for building experiences that work for everyone, including keyboard navigation and screen reader support.",
-    categories: ["Guides"],
-    primaryCategory: null,
-    image: { src: heroImage, alt: "Accessible interface components" },
-    author: "Jane Doe",
-    authorAvatar: null,
-    date: "2026-02-05",
-    featured: false,
-  },
-  {
-    title: "A Step-by-Step Walkthrough of Your First Project",
-    slug: "first-project-walkthrough",
-    description:
-      "Follow along as we set up a project from scratch and explain each decision along the way.",
-    categories: ["Tutorials"],
-    primaryCategory: null,
-    image: {
-      src: blogImage1,
-      alt: "Step-by-step project walkthrough on screen",
-    },
-    author: "Jane Doe",
-    authorAvatar: null,
-    date: "2026-01-28",
-    featured: false,
-  },
-  {
-    title: "The Tools and Resources We Rely On",
-    slug: "tools-and-resources",
-    description:
-      "A curated list of the software, templates, and references our team reaches for every day.",
-    categories: ["Resources"],
-    primaryCategory: null,
-    image: { src: blogImage2, alt: "Collection of tools and resources" },
-    author: "Jane Doe",
-    authorAvatar: null,
-    date: "2026-01-20",
-    featured: false,
-  },
-  {
-    title: "Building a Design System from Scratch",
-    slug: "design-system-from-scratch",
-    description:
-      "How we build scalable, consistent systems that accelerate work and improve quality.",
-    categories: ["Guides"],
-    primaryCategory: null,
-    image: { src: featuredImage, alt: "Design system component library" },
-    author: "Jane Doe",
-    authorAvatar: null,
-    date: "2026-01-08",
-    featured: false,
-  },
-];
-
-/* ═══════════════════════════════════════════════════
    Filter & sort posts
-   Use `posts` prop if provided, otherwise fall back to sample data.
    ═══════════════════════════════════════════════════ */
 
-const allPosts = posts ?? samplePosts;
+/* Use `posts` when given, else fetch every post (an empty or unreachable
+   dataset renders nothing). */
+const allPosts =
+  posts ?? (await getBlogPosts().catch((): BlogPostSummary[] => []));
 const excludeSet = new Set<string | null>(excludeSlugs ?? []);
 let filtered: BlogPostSummary[] = [];
 

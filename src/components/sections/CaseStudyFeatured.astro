@@ -10,9 +10,10 @@
  * When the container collapses further, all cards stack at equal width.
  *
  * Designed to be placed once and updated in one place — pass studies
- * via prop or let it pull the first 3 featured case studies from data.
+ * via prop or let it look up the slugs in FEATURED_CASE_STUDIES_SLUGS (or a
+ * `slugs` prop) from the content source.
  *
- * @example Default usage (pulls first 3 featured case studies)
+ * @example Default usage (looks up FEATURED_CASE_STUDIES_SLUGS)
  * ```astro
  * <CaseStudyFeatured />
  * ```
@@ -53,7 +54,7 @@ type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
  * CaseStudyFeatured — interactive 3-card showcase with hover expand animation.
  *
  * **Props:**
- * - `slugs` — 3 case study slugs in display order (falls back to placeholder slugs)
+ * - `slugs` — 3 case study slugs in display order (defaults to FEATURED_CASE_STUDIES_SLUGS)
  * - `eyebrow` — eyebrow text above heading (default `'Proven Results'`)
  * - `headingVariant` — visual style for card title headings (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
  * - `theme` — light, dark, brand
@@ -68,7 +69,7 @@ interface Props {
   /**
    * **CaseStudyFeatured props:**
    * - `studies` — pre-fetched case study data array (skips the internal lookup when provided)
-   * - `slugs` — 3 case study slugs in display order (falls back to placeholder slugs)
+   * - `slugs` — 3 case study slugs in display order (defaults to FEATURED_CASE_STUDIES_SLUGS)
    * - `eyebrow` — eyebrow text (default `'Proven Results'`)
    * - `headingVariant` — card title heading variant (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
    * - `theme` — light, dark, brand
@@ -83,9 +84,9 @@ interface Props {
 
   /**
    * Case study slugs to display, in display order. Exactly 3 required.
-   * Falls back to placeholder slugs.
+   * Falls back to FEATURED_CASE_STUDIES_SLUGS (three sample case studies).
    *
-   * @default ["case-study-one", "case-study-two", "case-study-three"]
+   * @default ["acme-corp-rebrand", "summit-outdoor-migration", "greenleaf-organics-seo"]
    * @example slugs={["slug-a", "slug-b", "slug-c"]}
    */
   slugs?: [string, string, string];
@@ -162,9 +163,9 @@ interface Props {
 /* ── Exported constants for page-level fetching ───────────────────────── */
 
 export const FEATURED_CASE_STUDIES_SLUGS: [string, string, string] = [
-  "case-study-one",
-  "case-study-two",
-  "case-study-three",
+  "acme-corp-rebrand",
+  "summit-outdoor-migration",
+  "greenleaf-organics-seo",
 ];
 
 const {

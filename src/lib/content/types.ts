@@ -1,7 +1,8 @@
 /**
  * The content interface's types — the view models every page, template,
  * section and component renders from, and the ContentSource contract each
- * backend implements (src/sanity/lib/source.ts, src/lib/content/files/).
+ * backend implements (./files/ by default; src/sanity/lib/source.ts with the
+ * Sanity add-on).
  *
  * Nothing in here knows which backend is active. Consumers import these
  * through `@/lib/content`; backend code imports this file directly.
@@ -58,8 +59,8 @@ export interface ContentImage {
 
 /**
  * Per-call options. `perspectiveCookie` switches a CMS backend to its draft
- * perspective; only the /preview/* twins pass it (getDraftModeProps(Astro)).
- * Backends without drafts ignore it.
+ * perspective; only the /preview/* twins pass it (getDraftModeProps(Astro)),
+ * calling the Sanity source directly. Backends without drafts ignore it.
  */
 export interface ContentOptions {
   perspectiveCookie?: string | undefined;

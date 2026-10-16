@@ -52,7 +52,21 @@ import TabPanel from "@/components/ui/TabPanel.astro";
 import Button from "@/components/ui/Button.astro";
 import TestimonialsSlider from "@/components/sections/TestimonialsSlider.astro";
 import TestimonialsGrid from "@/components/sections/TestimonialsGrid.astro";
-import { getTestimonials, type TestimonialData } from "@/lib/content";
+import {
+  getBlogPosts,
+  getGallery,
+  getProjects,
+  getTestimonials,
+  sizedImage,
+  type BlogPostSummary,
+  type GalleryEntry,
+  type ProjectCardData,
+  type TestimonialData,
+} from "@/lib/content";
+import Callout from "@/components/blog/Callout.astro";
+import VideoEmbed from "@/components/blog/VideoEmbed.astro";
+import reviewerPhoto from "@/assets/placeholder-images/ai-first-starter-19.webp";
+import "@/styles/pages/blog-post.css";
 import Form from "@/components/form/Form.astro";
 import FormField from "@/components/form/FormField.astro";
 import FormFieldset from "@/components/form/FormFieldset.astro";
@@ -73,7 +87,6 @@ import FactPhoto from "@/components/ui/FactPhoto.astro";
 import SwipeRow from "@/components/ui/SwipeRow.astro";
 import Lightbox from "@/components/ui/Lightbox.astro";
 import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
-import type { ImageMetadata } from "astro";
 import ProjectCard from "@/components/ui/ProjectCard.astro";
 import ProjectBrowser from "@/components/ui/ProjectBrowser.astro";
 import GalleryBrowser from "@/components/ui/GalleryBrowser.astro";
@@ -128,7 +141,7 @@ import TestimonialCard from "@/components/ui/TestimonialCard.astro";
 
 /* ── Section components (each renders its own <Section>) ──
    Not demoed here on purpose:
-   • ContentCtaSection — renders a CtaSectionData that only a content source produces (its background is a ContentImage with a CDN url, not a local import); <CTASection /> below is its static twin. */
+   • ContentCtaSection — renders a CtaSectionData that only a content source produces (getCtaDefaults() or a page's override, as on the templates and listing pages); <CTASection /> below is its static twin. */
 import CTASection from "@/components/sections/CTASection.astro";
 import SecondaryCtaPrompt from "@/components/sections/SecondaryCtaPrompt.astro";
 import SignUpForm from "@/components/sections/SignUpForm.astro";
@@ -233,6 +246,7 @@ const COMPONENT_INDEX = [
   { slug: "modals", text: "Modal" },
   { slug: "cta", text: "CTA pattern" },
   { slug: "blogpostgrid", text: "BlogPostGrid" },
+  { slug: "blog-body", text: "Callout & VideoEmbed" },
   { slug: "pricing-cards", text: "PricingCard & PricingItem" },
   { slug: "utility-components", text: "Video, FormattedDate, TOC & SkipLink" },
   { slug: "single-testimonial", text: "SingleTestimonial" },
@@ -260,86 +274,23 @@ const COMPONENT_INDEX = [
 /* ── Testimonials from the content source (tolerate an empty/unreachable dataset) ── */
 import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 const testimonials = await getTestimonials().catch((): TestimonialData[] => []);
-/* Hand-built sample data for the ProjectBrowser / GalleryBrowser demos —
-   real pages get theirs from getProjects() / getGallery() in @/lib/content. */
-const demoPhotoOf = (img: ImageMetadata, alt: string) => ({
-  src: img,
-  alt,
-  width: img.width,
-  height: img.height,
-  position: "center" as const,
-});
-const demoProjects = [
-  {
-    id: "d1",
-    title: "Kitchen remodel",
-    href: "/projects",
-    category: "remodel",
-    categoryLabel: "Remodel",
-    location: "Springfield, IL",
-    image: demoPhotoOf(demoPhoto1, "A remodeled kitchen with white cabinets"),
-  },
-  {
-    id: "d2",
-    title: "Storefront refresh",
-    href: "/projects",
-    category: "commercial",
-    categoryLabel: "Commercial",
-    location: "Decatur, IL",
-    image: demoPhotoOf(demoPhoto2, "A refreshed storefront with new signage"),
-  },
-  {
-    id: "d3",
-    title: "Porch repair",
-    href: "/projects",
-    category: "repair",
-    categoryLabel: "Repair",
-    location: "",
-    image: demoPhotoOf(demoPhoto3, "A repaired front porch with new railings"),
-  },
-];
-const demoGallery = [
-  {
-    id: "g1",
-    caption: "New island and lighting",
-    category: "remodel",
-    categoryLabel: "Remodel",
-    location: "Springfield, IL",
-    projectTitle: "Kitchen remodel",
-    thumb: demoPhotoOf(demoPhoto1, "A kitchen island under pendant lights"),
-    full: demoPhotoOf(demoPhoto1, "A kitchen island under pendant lights"),
-  },
-  {
-    id: "g2",
-    caption: "Signage install",
-    category: "commercial",
-    categoryLabel: "Commercial",
-    location: "",
-    projectTitle: "",
-    thumb: demoPhotoOf(demoPhoto2, "New signage on a storefront"),
-    full: demoPhotoOf(demoPhoto2, "New signage on a storefront"),
-  },
-  {
-    id: "g3",
-    caption: "Railing detail",
-    category: "repair",
-    categoryLabel: "Repair",
-    location: "Decatur, IL",
-    projectTitle: "",
-    thumb: demoPhotoOf(demoPhoto3, "A close view of new porch railings"),
-    full: demoPhotoOf(demoPhoto3, "A close view of new porch railings"),
-  },
-  {
-    id: "g4",
-    caption: "Finished living room",
-    category: "remodel",
-    categoryLabel: "Remodel",
-    location: "",
-    projectTitle: "Kitchen remodel",
-    thumb: demoPhotoOf(demoPhoto4, "A finished open-plan living room"),
-    full: demoPhotoOf(demoPhoto4, "A finished open-plan living room"),
-  },
-];
+/* The content-backed demos render the real content — the same calls
+   /projects, /gallery and /blog make (tolerating an empty dataset). */
+const [demoProjects, galleryEntries, demoPosts] = await Promise.all([
+  getProjects().catch((): ProjectCardData[] => []),
+  getGallery().catch((): GalleryEntry[] => []),
+  getBlogPosts().catch((): BlogPostSummary[] => []),
+]);
+const demoGallery = galleryEntries.map((entry) => ({
+  id: entry.id,
+  caption: entry.caption,
+  category: entry.category,
+  categoryLabel: entry.categoryLabel,
+  location: entry.location,
+  projectTitle: entry.projectTitle,
+  thumb: sizedImage(entry.image, 640),
+  full: sizedImage(entry.image, 1800),
+}));
 ---
 
 <BaseLayout
@@ -921,8 +872,8 @@ const demoGallery = [
       <Text variant="regular" muted maxWidth="48rem">
         Each wraps &lt;Card&gt; with the fields one content type needs, so a
         grid of them stays consistent. The listing sections (BlogPostGrid,
-        CaseStudyGrid, TestimonialsGrid) render these for you from Sanity —
-        shown here standalone with literal props.
+        CaseStudyGrid, TestimonialsGrid) render these for you from the content
+        source (@/lib/content) — shown here standalone with literal props.
       </Text>
     </Layout>
 
@@ -1033,7 +984,7 @@ const demoGallery = [
     id="case-study-grid"
     limit={6}
     eyebrow="CaseStudyGrid"
-    heading="Case studies pulled from Sanity"
+    heading="Case studies from the content source"
   />
 
   <!-- ============================================================
@@ -2261,7 +2212,7 @@ const demoGallery = [
       <Heading tag="h2">Search and filter projects, as on /projects</Heading>
       <Text muted
         >Only categories that at least one project uses appear in the select.
-        Try searching for "Decatur".</Text
+        Try searching for "Chatham".</Text
       >
     </Layout>
     <ProjectBrowser projects={demoProjects} categories={PROJECT_CATEGORIES} />
@@ -2615,6 +2566,8 @@ const demoGallery = [
         text: "They kept us informed every single day and finished the week they said they would. The kitchen is exactly what we drew on a napkin.",
         name: "Jordan P.",
         meta: "Kitchen remodel",
+        avatar: reviewerPhoto,
+        avatarAlt: "Jordan P.",
       },
       {
         text: "Clean, careful and fair on price.",
@@ -2830,18 +2783,49 @@ const demoGallery = [
         section, so their own padding stacks on the parent's. The
         container's gap separates them. */
     }
-    <BlogPostGrid paddingTop="none" paddingBottom="none" variant="recent" />
+    <BlogPostGrid
+      posts={demoPosts}
+      paddingTop="none"
+      paddingBottom="none"
+      variant="recent"
+    />
 
     <!-- ============================================================
        Blog Post Grid - Category
        ============================================================ -->
 
     <BlogPostGrid
+      posts={demoPosts}
       paddingTop="none"
       paddingBottom="none"
       variant="category"
-      category="Development"
+      category="Guides"
     />
+  </Section>
+
+  <Section theme="light" id="blog-body">
+    <Layout variant="stack">
+      <Heading variant="eyebrow" class="u-margin-bottom-2"
+        >Callout &amp; VideoEmbed</Heading
+      >
+      <Heading tag="h2" balance>Blog body components</Heading>
+      <Text variant="regular" muted maxWidth="48rem">
+        MDX posts use these by tag name with no import (BlogBody passes them
+        in), and Sanity posts render the same markup.
+      </Text>
+    </Layout>
+    <div class="blog_post_prose u-rich-text">
+      <Callout type="tip"><p>Put the skip link first in the page.</p></Callout>
+      <Callout type="warning"
+        ><p>Avoid stacking three calls to action in one section.</p></Callout
+      >
+      <Callout type="info"><p>We review these trends every January.</p></Callout
+      >
+      <VideoEmbed
+        url="https://www.youtube.com/watch?v=aqz-KE-bpKQ"
+        caption="A sample video embed"
+      />
+    </div>
   </Section>
 
   <!-- ============================================================
@@ -3159,20 +3143,13 @@ const demoGallery = [
       >
       <Heading tag="h2" balance>One quote, centered</Heading>
       <Text variant="regular" muted maxWidth="48rem">
-        Looks a testimonial up by name from Sanity, or takes one directly as
-        shown here. Renders nothing at all if neither resolves.
+        Looks a testimonial up by name (any letter case, as here) from the
+        content source, or takes one directly as the testimonial prop. Renders
+        nothing at all if neither resolves.
       </Text>
     </Layout>
   </Section>
-  <SingleTestimonial
-    testimonial={{
-      quote:
-        "They shipped in half the time we budgeted, and the handoff was genuinely clean.",
-      name: "Jane Doe",
-      role: "CEO",
-      company: "Acme",
-    }}
-  />
+  <SingleTestimonial name="marcus bell" />
 
   <Section id="testimonial-showcase" padding="small">
     <Layout variant="stack">
@@ -3182,34 +3159,12 @@ const demoGallery = [
       <Heading tag="h2" balance>A single-slide quote carousel</Heading>
       <Text variant="regular" muted maxWidth="48rem">
         Heading on the left, one quote at a time on the right with a counter and
-        arrows. Self-fetches featured testimonials; given literal data here so
-        it always has something to show.
+        arrows. Self-fetches the featured testimonials from the content source,
+        as it does here.
       </Text>
     </Layout>
   </Section>
-  <TestimonialShowcase
-    heading="What our clients say about the work"
-    testimonials={[
-      {
-        quote: "They shipped in half the time we budgeted.",
-        name: "Jane Doe",
-        role: "CEO",
-        company: "Acme",
-      },
-      {
-        quote: "The design system paid for itself on the second page.",
-        name: "John Roe",
-        role: "CTO",
-        company: "Globex",
-      },
-      {
-        quote: "Clear communication the whole way through.",
-        name: "Ada Chen",
-        role: "Head of Marketing",
-        company: "Initech",
-      },
-    ]}
-  />
+  <TestimonialShowcase heading="What our clients say about the work" />
 
   <Section id="case-study-featured" padding="small">
     <Layout variant="stack">
@@ -3218,33 +3173,13 @@ const demoGallery = [
       >
       <Heading tag="h2" balance>An interactive featured-work strip</Heading>
       <Text variant="regular" muted maxWidth="48rem">
-        Needs at least three studies or it renders nothing. Each image is a
-        ContentImage: a URL string or an imported asset as src, plus alt.
+        Looks up the three slugs in FEATURED_CASE_STUDIES_SLUGS (or a slugs
+        prop) from the content source, as it does here. Needs all three to
+        resolve or it renders nothing.
       </Text>
     </Layout>
   </Section>
-  <CaseStudyFeatured
-    studies={[
-      {
-        slug: "northwind",
-        client: "Northwind",
-        description: "Identity and site rebuild for a logistics company.",
-        image: { src: "/images/og-image.png", alt: "Placeholder — case study" },
-      },
-      {
-        slug: "harbor-health",
-        client: "Harbor Health",
-        description: "A patient portal rebuilt for speed and accessibility.",
-        image: { src: "/images/og-image.png", alt: "Placeholder — case study" },
-      },
-      {
-        slug: "fieldnote",
-        client: "Fieldnote",
-        description: "Marketing site and design system for a data startup.",
-        image: { src: "/images/og-image.png", alt: "Placeholder — case study" },
-      },
-    ]}
-  />
+  <CaseStudyFeatured />
 
   <Section id="cta-section" padding="small">
     <Layout variant="stack">

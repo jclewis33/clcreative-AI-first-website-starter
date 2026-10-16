@@ -1,23 +1,30 @@
 ---
 /**
  * SSR PREVIEW twin of /case-studies/[slug] — iframed by Sanity Presentation
- * for draft preview. Same getCaseStudy() and template as the public route;
- * only the perspective differs. Coming-soon studies ARE viewable here
+ * for draft preview. Same template as the public route, fed by the Sanity
+ * source's getCaseStudy() in the request's perspective. Coming-soon studies ARE viewable here
  * (they're excluded from the public build on purpose) so editors can
  * preview them.
  *
  * Editor-only surface: robots-disallowed, noindexed, never edge-cached.
  * Keep this file in sync with src/pages/case-studies/[slug].astro.
+ *
+ * Draft preview is a Sanity feature, so this twin reads the Sanity source
+ * directly, whichever source @/lib/content selects (Files by default). The
+ * shared template still cleans text with @/lib/content's plainText, which
+ * strips stega only when the Sanity source is the active one
+ * (CONTENT_SOURCE=sanity builds, and the add-on). PR 4 moves this file into
+ * the Sanity add-on.
  */
 export const prerender = false;
 import CaseStudyTemplate from "@/components/templates/CaseStudyTemplate.astro";
-import { getCaseStudy } from "@/lib/content";
+import sanity from "@/sanity/lib/source";
 import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
-const data = await getCaseStudy(slug, getDraftModeProps(Astro));
+const data = await sanity.getCaseStudy(slug, getDraftModeProps(Astro));
 if (!data) return Astro.redirect("/404");
 ---
 

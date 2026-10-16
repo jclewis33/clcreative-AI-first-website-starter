@@ -1,8 +1,7 @@
 # Checks-only CI — deploys are handled by Cloudflare Workers Builds, not
-# Actions. The build step fetches Sanity slugs over the network (the
-# getStaticPaths helpers behind @/lib/content, in
-# src/sanity/lib/page-data.ts), which works on
-# GitHub runners.
+# Actions. The build reads content from src/content (the Files source). A
+# second, test-only build compiles the Sanity source until PR 4 moves it
+# into the add-on, whose own CI job replaces that step.
 name: CI
 
 on:
@@ -30,6 +29,10 @@ jobs:
       - run: npm run check:content
       - run: npm run check
       - run: npm run build
+      - run: npm run check:content-build
+      # TEST-ONLY until PR 4 (the Sanity add-on's CI job replaces it): the
+      # Sanity source must keep compiling while it still lives in src/.
+      - run: CONTENT_SOURCE=sanity npm run build
 
   # Fails on any critical advisory in production dependencies.
   #

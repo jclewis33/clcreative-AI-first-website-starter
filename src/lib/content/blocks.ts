@@ -1,9 +1,9 @@
 /**
  * Case study content blocks — the flexible body a case study renders, one
  * block per layout. A discriminated union on `type`: each backend maps its
- * own block shapes onto these (Sanity's "array of objects" field today, the
- * local samples in src/data/case-studies.ts), and the block components in
- * src/components/case-study/ render them.
+ * own block shapes onto these (the JSON `content` array in
+ * src/content/case-studies/, or Sanity's array of block objects), and the
+ * block components in src/components/case-study/ render them.
  *
  * Lives in the content interface, not the component folder, so the
  * interface never depends on a component file.

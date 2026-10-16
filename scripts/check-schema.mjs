@@ -22,12 +22,8 @@
  */
 
 import { parse } from "node-html-parser";
-import { createClient } from "@sanity/client";
-import {
-  SANITY_PROJECT_ID,
-  SANITY_DATASET,
-  SANITY_API_VERSION,
-} from "../src/config/site.shared.mjs";
+import fs from "node:fs";
+import path from "node:path";
 
 const args = process.argv.slice(2);
 const baseIdx = args.indexOf("--base");
@@ -38,41 +34,30 @@ const BASE = baseIdx >= 0 ? args[baseIdx + 1] : "http://localhost:4321";
 // (via serviceFaqJsonLd) as the starter grows.
 const STATIC_PAGES = ["/", "/contact"];
 
-// Pull one sample slug from each Sanity content type so we also validate
-// the JsonLd helper output on blog / case-study templates.
-async function getSampleSanityPaths() {
-  const client = createClient({
-    projectId: SANITY_PROJECT_ID,
-    dataset: SANITY_DATASET,
-    apiVersion: SANITY_API_VERSION,
-    useCdn: true,
-  });
-
-  const [post, caseStudy] = await Promise.all([
-    client.fetch(
-      `*[_type == "blogPost" && defined(slug.current)][0]{ "slug": slug.current }`,
-    ),
-    client.fetch(
-      `*[_type == "caseStudy" && defined(slug.current)][0]{ "slug": slug.current }`,
-    ),
-  ]);
-
-  const paths = [];
-  if (post?.slug) paths.push(`/blog/${post.slug}`);
-  if (caseStudy?.slug) paths.push(`/case-studies/${caseStudy.slug}`);
-  return paths;
-}
-
-let sanityPaths = [];
-try {
-  sanityPaths = await getSampleSanityPaths();
-} catch (err) {
-  console.error(
-    `\x1b[33mwarn: could not fetch sample Sanity slugs (${err.message}); skipping CMS pages\x1b[0m`,
+// One sample page per content type, taken from src/content, so the JsonLd
+// helper output on the blog and case-study templates is validated too.
+function getSampleContentPaths() {
+  const first = (dir, ext, keep = () => true) =>
+    fs.existsSync(dir)
+      ? fs
+          .readdirSync(dir)
+          .filter((f) => f.endsWith(ext))
+          .sort()
+          .find((f) => keep(path.join(dir, f)))
+      : undefined;
+  const post = first("src/content/blog", ".mdx");
+  const study = first(
+    "src/content/case-studies",
+    ".json",
+    (file) => !JSON.parse(fs.readFileSync(file, "utf8")).comingSoon,
   );
+  return [
+    post && `/blog/${post.slice(0, -".mdx".length)}`,
+    study && `/case-studies/${study.slice(0, -".json".length)}`,
+  ].filter(Boolean);
 }
 
-const PAGES = [...STATIC_PAGES, ...sanityPaths];
+const PAGES = [...STATIC_PAGES, ...getSampleContentPaths()];
 
 const COLORS = {
   red: "\x1b[31m",
@@ -87,8 +72,8 @@ const c = (color, s) => `${COLORS[color]}${s}${COLORS.reset}`;
 
 let pageFailures = 0;
 
-for (const path of PAGES) {
-  const url = `${BASE}${path}`;
+for (const pagePath of PAGES) {
+  const url = `${BASE}${pagePath}`;
   console.log(`\n${c("bold", c("cyan", `→ ${url}`))}`);
 
   let html;

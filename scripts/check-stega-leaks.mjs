@@ -83,7 +83,7 @@ if (
     .includes("single_testimonial")
 ) {
   console.error(
-    'SingleTestimonial did not render on / — getTestimonialByName("Jane Doe") failed against an encoded name.',
+    'SingleTestimonial did not render on / — getTestimonialByName("Marcus Bell") failed against an encoded name.',
   );
   process.exit(1);
 }
