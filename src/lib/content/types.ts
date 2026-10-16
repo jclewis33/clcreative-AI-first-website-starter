@@ -11,6 +11,8 @@
  * `string | null`. Listings drop entries that cannot be linked to.
  */
 import type { ImageMetadata } from "astro";
+import type { ContentBlock } from "@/components/case-study/types";
+export type { ContentBlock };
 
 /* ── Images ────────────────────────────────────────────────────────────── */
 
@@ -193,6 +195,73 @@ export interface GalleryEntry {
   projectTitle: string;
 }
 
+/* ── SEO ───────────────────────────────────────────────────────────────── */
+
+/** Per-document SEO overrides; every field optional. */
+export interface SeoFields {
+  metaTitle: string | null;
+  metaDescription: string | null;
+  ogTitle: string | null;
+  ogDescription: string | null;
+  ogImage: ContentImage | null;
+}
+
+/* ── Case studies ──────────────────────────────────────────────────────── */
+
+/** A case study as a listing card renders it. */
+export interface CaseStudySummary {
+  slug: string;
+  title: string;
+  description: string | null;
+  client: string | null;
+  categories: string[];
+  industries: string[];
+  image: ContentImage | null;
+  date: string | null;
+  featured: boolean;
+  /** Not published yet: the card links to `liveUrl` instead. */
+  comingSoon: boolean;
+  liveUrl: string | null;
+}
+
+/** Everything the case study detail page renders. */
+export interface CaseStudyDetail {
+  slug: string;
+  /** Null only in an unfinished draft (the page shows a fallback). */
+  title: string | null;
+  description: string | null;
+  client: string | null;
+  categories: string[];
+  industries: string[];
+  image: ContentImage | null;
+  date: string | null;
+  updatedAt: string | null;
+  featured: boolean;
+  comingSoon: boolean;
+  timeline: string | null;
+  liveUrl: string | null;
+  /** The hero slider. */
+  gallery: ContentImage[];
+  /** The flexible body, ready for CaseStudyBlockRenderer. */
+  blocks: ContentBlock[];
+  seo: SeoFields | null;
+}
+
+/** `getCaseStudy()`: the study, up to two "Up next" cards, the CTA section. */
+export interface CaseStudyPage {
+  study: CaseStudyDetail;
+  upNext: CaseStudySummary[];
+  ctaSection: CtaSectionData | null;
+}
+
+/** A card in the CaseStudyFeatured strip. */
+export interface FeaturedCaseStudy {
+  slug: string;
+  client: string | null;
+  description: string | null;
+  image: ContentImage | null;
+}
+
 /* ── The contract ──────────────────────────────────────────────────────── */
 
 /**
@@ -229,4 +298,18 @@ export interface ContentSource {
   getGallery(opts?: ContentOptions): Promise<GalleryEntry[]>;
   /** getStaticPaths for /projects/[slug]. */
   getProjectStaticPaths(): Promise<SlugPath[]>;
+  /** Every case study as a card, newest first (coming-soon included). */
+  getCaseStudies(opts?: ContentOptions): Promise<CaseStudySummary[]>;
+  /** One case study with "Up next" and its CTA section; null when not found. */
+  getCaseStudy(
+    slug: string,
+    opts?: ContentOptions,
+  ): Promise<CaseStudyPage | null>;
+  /** The studies with these slugs, in this order (missing ones dropped). */
+  getFeaturedCaseStudies(
+    slugs: readonly string[],
+    opts?: ContentOptions,
+  ): Promise<FeaturedCaseStudy[]>;
+  /** getStaticPaths for /case-studies/[slug] (coming-soon excluded). */
+  getCaseStudyStaticPaths(): Promise<SlugPath[]>;
 }

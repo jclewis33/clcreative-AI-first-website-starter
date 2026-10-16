@@ -36,10 +36,11 @@ import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
 import Button from "@/components/ui/Button.astro";
 
-import { loadQuery } from "@/sanity/lib/load-query";
-import { FEATURED_CASE_STUDIES_QUERY } from "@/sanity/lib/queries";
-import { getDraftModeProps } from "@/sanity/lib/draft-mode";
-import { urlFor } from "@/sanity/lib/image";
+import {
+  getFeaturedCaseStudies,
+  imageSrc,
+  type FeaturedCaseStudy,
+} from "@/lib/content";
 import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
 type SectionTheme = "light" | "dark" | "brand";
@@ -65,7 +66,7 @@ type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 interface Props {
   /**
    * **CaseStudyFeatured props:**
-   * - `studies` — pre-fetched case study data array (skips internal Sanity fetch when provided)
+   * - `studies` — pre-fetched case study data array (skips the internal lookup when provided)
    * - `slugs` — 3 case study slugs in display order (falls back to placeholder slugs)
    * - `eyebrow` — eyebrow text (default `'Proven Results'`)
    * - `headingVariant` — card title heading variant (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
@@ -89,16 +90,15 @@ interface Props {
   slugs?: [string, string, string];
 
   /**
-   * Pre-fetched case study data from Sanity. When provided, the component
-   * skips its internal Sanity fetch — use this to parallelize fetches at
-   * the page level with `Promise.all`.
-   *
-   * Each object needs: `slug`, `client`, `description`, `image`, `imageAlt`.
-   * Must be in display order (first item renders as the expanded card).
+   * Pre-fetched featured studies (`getFeaturedCaseStudies()` from
+   * `@/lib/content`). With three or more, the component skips its own
+   * lookup — use this to parallelize fetches at the page level. Each needs
+   * `slug`, `client`, `description` and `image` (a ContentImage). Must be in
+   * display order (the first renders as the expanded card).
    *
    * @example studies={prefetchedStudies}
    */
-  studies?: any[];
+  studies?: FeaturedCaseStudy[];
 
   /**
    * Eyebrow text rendered above the heading.
@@ -180,27 +180,14 @@ const {
   class: className,
 } = Astro.props;
 
-/* ── Resolve studies — use prop or fetch from Sanity ──────────────────── */
+/* ── Resolve studies — the prop, or look the slugs up ─────────────────── */
 
-let displayStudies: any[];
-
-if (studies && studies.length >= 3) {
-  // Pre-fetched data provided — skip internal fetch
-  displayStudies = studies;
-} else {
-  // Fetch from Sanity (standalone usage). Tolerate an empty/unreachable
-  // dataset — the section simply doesn't render when fewer than 3 resolve.
-  const results = await loadQuery({
-    query: FEATURED_CASE_STUDIES_QUERY,
-    params: { slugs },
-    ...getDraftModeProps(Astro),
-  })
-    .then((r) => r.data)
-    .catch(() => []);
-  displayStudies = slugs
-    .map((slug: string) => (results ?? []).find((s: any) => s.slug === slug))
-    .filter(Boolean);
-}
+const displayStudies: FeaturedCaseStudy[] =
+  studies && studies.length >= 3
+    ? studies
+    : // Standalone usage. Tolerate an empty/unreachable dataset — the
+      // section simply doesn't render when fewer than 3 resolve.
+      await getFeaturedCaseStudies(slugs).catch(() => []);
 
 /* ── Heading slot ─────────────────────────────────────────────────────── */
 
@@ -252,7 +239,7 @@ const hasHeadingSlot = Astro.slots.has("heading");
 
         {/* Cards */}
         <div class="case-study-featured_cards">
-          {displayStudies.map((study: any, i: number) => (
+          {displayStudies.map((study, i) => (
             <a
               href={`/case-studies/${study.slug}`}
               class:list={[
@@ -262,17 +249,15 @@ const hasHeadingSlot = Astro.slots.has("heading");
               aria-label={`View ${study.client} case study`}
             >
               <div class="case-study-featured_card_visual">
-                <Visual
-                  src={
-                    typeof study.image === "string"
-                      ? study.image
-                      : urlFor(study.image).width(1200).url()
-                  }
-                  alt={study.imageAlt}
-                  width={1200}
-                  height={800}
-                  radius="large"
-                />
+                {study.image && (
+                  <Visual
+                    src={imageSrc(study.image, { width: 1200 })}
+                    alt={study.image.alt}
+                    width={1200}
+                    height={800}
+                    radius="large"
+                  />
+                )}
               </div>
               <div class="case-study-featured_card_content">
                 <Heading

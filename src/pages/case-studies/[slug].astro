@@ -1,16 +1,12 @@
 ---
 /**
- * Public case study page — PRERENDERED. `getCaseStudyStaticPaths()` already
- * excludes coming-soon studies, so they simply never build here (no page that
+ * Public case study page — PRERENDERED. getCaseStudyStaticPaths() already
+ * excludes coming-soon studies, so they never build here (no page that
  * redirects to /404). Editors preview them via the SSR twin at
- * /preview/case-studies/[slug], which calls the exact same loader.
+ * /preview/case-studies/[slug], which calls the same getCaseStudy().
  */
 import CaseStudyTemplate from "@/components/templates/CaseStudyTemplate.astro";
-import { getDraftModeProps } from "@/sanity/lib/draft-mode";
-import {
-  loadCaseStudyPage,
-  getCaseStudyStaticPaths,
-} from "@/sanity/lib/page-data";
+import { getCaseStudy, getCaseStudyStaticPaths } from "@/lib/content";
 
 // Must be an imported helper: Astro extracts getStaticPaths into its own
 // module at build time, so frontmatter siblings are not in scope here.
@@ -19,12 +15,8 @@ export const getStaticPaths = getCaseStudyStaticPaths;
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
-const data = await loadCaseStudyPage(slug, getDraftModeProps(Astro));
+const data = await getCaseStudy(slug);
 if (!data || data.study.comingSoon) return Astro.redirect("/404");
 ---
 
-<CaseStudyTemplate
-  study={data.study}
-  allStudies={data.allStudies}
-  defaultCtaSection={data.defaultCtaSection}
-/>
+<CaseStudyTemplate {...data} />

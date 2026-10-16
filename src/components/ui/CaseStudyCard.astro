@@ -29,7 +29,7 @@ import Card from "./Card.astro";
 import Visual from "./Visual.astro";
 import Heading from "./Heading.astro";
 import Text from "./Text.astro";
-import { stegaClean } from "@sanity/client/stega";
+import { plainText } from "@/lib/content";
 
 /**
  * CaseStudyCard — portfolio card with image, title+arrow row, description,
@@ -68,8 +68,8 @@ interface Props extends HTMLAttributes<"div"> {
   /** Project title — clamped at 2 lines. */
   title: string;
 
-  /** Short project excerpt — clamped at 3 lines. */
-  description: string;
+  /** Short project excerpt — clamped at 3 lines. Null renders no text. */
+  description: string | null;
 
   /** Category labels — stored as data attribute for CMS filtering. Supports multiple. */
   categories: string[];
@@ -173,9 +173,9 @@ interface Props extends HTMLAttributes<"div"> {
   imageHeight?: number;
 
   /**
-   * Focal point for the cover-cropped image. Pass the Sanity hotspot via
-   * `hotspotPosition(study.image)` so the crop follows the editor's hotspot
-   * instead of defaulting to center.
+   * Focal point for the cover-cropped image. Pass the content image's
+   * `position` (`study.image.position`) so the crop follows the editor's
+   * hotspot instead of defaulting to center.
    */
   imagePosition?: { x: number; y: number } | "center";
 
@@ -227,11 +227,11 @@ const resolvedAriaLabel = isComingSoon
   newTab={isComingSoon}
   ariaLabel={resolvedAriaLabel}
   class:list={["case-study_card_wrap", className]}
-  data-categories={categories.map((c) => stegaClean(c)).join(",")}
-  data-industries={(industries ?? []).map((i) => stegaClean(i)).join(",")}
-  data-title={stegaClean(title)}
-  data-description={stegaClean(description)}
-  data-client={client ? stegaClean(client) : undefined}
+  data-categories={categories.map((c) => plainText(c)).join(",")}
+  data-industries={(industries ?? []).map((i) => plainText(i)).join(",")}
+  data-title={plainText(title)}
+  data-description={plainText(description)}
+  data-client={client ? plainText(client) : undefined}
   data-date={date}
   data-featured={featured ? "true" : undefined}
   data-coming-soon={isComingSoon ? "true" : undefined}

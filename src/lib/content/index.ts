@@ -29,4 +29,8 @@ export const {
   getProject,
   getGallery,
   getProjectStaticPaths,
+  getCaseStudies,
+  getCaseStudy,
+  getFeaturedCaseStudies,
+  getCaseStudyStaticPaths,
 } = source;

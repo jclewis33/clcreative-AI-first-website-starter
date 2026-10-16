@@ -8,14 +8,14 @@
  *   2. Filter bar — Industry + Category dropdowns + search input
  *   3. Case study grid — 2-column responsive grid of CaseStudyCard components
  *
- * Content is fetched from Sanity CMS. Filter dropdown options are derived
+ * Content comes from getCaseStudies() in @/lib/content. Filter dropdown options are derived
  * from the actual case study data — only values used by at least one case
  * study appear in the dropdowns.
  */
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
-import { getCtaDefaults } from "@/lib/content";
+import { getCaseStudies, getCtaDefaults, imageSrc } from "@/lib/content";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
@@ -23,26 +23,13 @@ import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
 
-// Sanity
-import { loadPageQuery } from "@/sanity/lib/page-data";
-import { getDraftModeProps } from "@/sanity/lib/draft-mode";
-import { CASE_STUDIES_QUERY } from "@/sanity/lib/queries";
-import { urlFor, hotspotPosition } from "@/sanity/lib/image";
-import { stegaClean } from "@sanity/client/stega";
-
 // Styles
 import "@/styles/pages/case-studies.css";
 
-/* ── Fetch from Sanity (already sorted by date desc in query) ── */
+/* ── Content (newest first, as the source returns it) ── */
 
-const draftProps = getDraftModeProps(Astro);
 const [sortedCaseStudies, ctaDefaults] = await Promise.all([
-  loadPageQuery({
-    query: CASE_STUDIES_QUERY,
-    draftProps,
-    fallback: [],
-    label: "case studies index",
-  }),
+  getCaseStudies(),
   getCtaDefaults(),
 ]);
 const defaultCtaSection = ctaDefaults.ctaSection;
@@ -50,19 +37,11 @@ const defaultCtaSection = ctaDefaults.ctaSection;
 /* ── Derive filter options from actual data ── */
 
 const industryOptions = [
-  ...new Set(
-    sortedCaseStudies.flatMap((s: any) =>
-      (s.industries ?? []).map((v: string) => stegaClean(v)),
-    ),
-  ),
+  ...new Set(sortedCaseStudies.flatMap((s) => s.industries)),
 ].sort((a, b) => a.localeCompare(b));
 
 const categoryOptions = [
-  ...new Set(
-    sortedCaseStudies.flatMap((s: any) =>
-      (s.categories ?? []).map((v: string) => stegaClean(v)),
-    ),
-  ),
+  ...new Set(sortedCaseStudies.flatMap((s) => s.categories)),
 ].sort((a, b) => a.localeCompare(b));
 ---
 
@@ -187,25 +166,28 @@ const categoryOptions = [
 
     <Grid largeColumns={2} mediumColumns={2} smallColumns={1} rowGap={6}>
       {
-        sortedCaseStudies.map((study: any) => (
-          <CaseStudyCard
-            data-prevent-flicker="true"
-            data-fade-in
-            title={study.title}
-            description={study.description}
-            categories={study.categories}
-            industries={study.industries}
-            client={study.client}
-            href={`/case-studies/${study.slug}`}
-            image={urlFor(study.image).width(1200).url()}
-            imageAlt={study.imageAlt}
-            imagePosition={hotspotPosition(study.image)}
-            date={study.date}
-            featured={study.featured}
-            comingSoon={study.comingSoon}
-            externalUrl={study.liveUrl}
-          />
-        ))
+        sortedCaseStudies.map(
+          (study) =>
+            study.image && (
+              <CaseStudyCard
+                data-prevent-flicker="true"
+                data-fade-in
+                title={study.title}
+                description={study.description}
+                categories={study.categories}
+                industries={study.industries}
+                client={study.client ?? undefined}
+                href={`/case-studies/${study.slug}`}
+                image={imageSrc(study.image, { width: 1200 })}
+                imageAlt={study.image.alt}
+                imagePosition={study.image.position}
+                date={study.date ?? undefined}
+                featured={study.featured}
+                comingSoon={study.comingSoon}
+                externalUrl={study.liveUrl ?? undefined}
+              />
+            ),
+        )
       }
     </Grid>
 

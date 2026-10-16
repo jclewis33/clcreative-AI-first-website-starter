@@ -3218,8 +3218,8 @@ const demoGallery = [
       >
       <Heading tag="h2" balance>An interactive featured-work strip</Heading>
       <Text variant="regular" muted maxWidth="48rem">
-        Needs at least three studies or it renders nothing. Pass image as a
-        string URL — an imported asset would be handed to urlFor() and throw.
+        Needs at least three studies or it renders nothing. Each image is a
+        ContentImage: a URL string or an imported asset as src, plus alt.
       </Text>
     </Layout>
   </Section>
@@ -3229,22 +3229,19 @@ const demoGallery = [
         slug: "northwind",
         client: "Northwind",
         description: "Identity and site rebuild for a logistics company.",
-        image: "/images/og-image.png",
-        imageAlt: "Placeholder — case study",
+        image: { src: "/images/og-image.png", alt: "Placeholder — case study" },
       },
       {
         slug: "harbor-health",
         client: "Harbor Health",
         description: "A patient portal rebuilt for speed and accessibility.",
-        image: "/images/og-image.png",
-        imageAlt: "Placeholder — case study",
+        image: { src: "/images/og-image.png", alt: "Placeholder — case study" },
       },
       {
         slug: "fieldnote",
         client: "Fieldnote",
         description: "Marketing site and design system for a data startup.",
-        image: "/images/og-image.png",
-        imageAlt: "Placeholder — case study",
+        image: { src: "/images/og-image.png", alt: "Placeholder — case study" },
       },
     ]}
   />

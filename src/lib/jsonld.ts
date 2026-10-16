@@ -10,6 +10,11 @@
 
 import { urlFor } from "@/sanity/lib/image";
 import { SITE } from "@/config/site";
+import {
+  imageUrl,
+  type CaseStudyDetail,
+  type ContentImage,
+} from "@/lib/content";
 import { portableTextToPlainText } from "@/sanity/lib/portable-text";
 
 const ORG_NAME = SITE.name;
@@ -29,6 +34,16 @@ function toImageUrl(image: any, siteUrl: string): string | null {
     if (typeof image === "string") return absoluteUrl(siteUrl, image);
     return null;
   }
+}
+
+/** Absolute URL of a content image at 1200 wide — CDN URLs pass through,
+    local paths get the site origin. */
+function contentImageUrl(
+  image: ContentImage | null,
+  siteUrl: string,
+): string | null {
+  const url = imageUrl(image, { width: 1200 });
+  return url ? absoluteUrl(siteUrl, url) : null;
 }
 
 /**
@@ -354,9 +369,9 @@ export function blogPostJsonLd(post: any, siteUrl: string): any {
 /**
  * Build JSON-LD for a case study page. Uses schema.org/Article.
  */
-export function caseStudyJsonLd(cs: any, siteUrl: string): any {
+export function caseStudyJsonLd(cs: CaseStudyDetail, siteUrl: string): any {
   const pageUrl = `${siteUrl}/case-studies/${cs.slug}`;
-  const imageUrl = toImageUrl(cs.image, siteUrl);
+  const csImageUrl = contentImageUrl(cs.image, siteUrl);
 
   return {
     "@context": "https://schema.org",
@@ -364,9 +379,9 @@ export function caseStudyJsonLd(cs: any, siteUrl: string): any {
     "@id": pageUrl,
     headline: cs.title,
     description: cs.description,
-    ...(imageUrl && { image: imageUrl }),
+    ...(csImageUrl && { image: csImageUrl }),
     datePublished: toIsoDateTime(cs.date),
-    dateModified: toIsoDateTime(cs._updatedAt) || toIsoDateTime(cs.date),
+    dateModified: toIsoDateTime(cs.updatedAt) || toIsoDateTime(cs.date),
     articleSection: "Case Study",
     author: publisher(siteUrl),
     publisher: publisher(siteUrl),

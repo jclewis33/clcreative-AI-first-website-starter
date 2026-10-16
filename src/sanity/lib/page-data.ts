@@ -31,6 +31,8 @@ import {
   RELATED_BLOG_POSTS_QUERY,
   BLOG_SLUGS_QUERY,
   BLOG_CATEGORIES_QUERY,
+  CASE_STUDIES_QUERY,
+  FEATURED_CASE_STUDIES_QUERY,
   CASE_STUDY_QUERY,
   RELATED_CASE_STUDIES_QUERY,
   CASE_STUDY_SLUGS_QUERY,
@@ -363,5 +365,31 @@ export function loadGallery(draftProps: DraftProps = {}) {
     draftProps,
     fallback: [],
     label: "gallery",
+  });
+}
+
+/* ── Case study listings ───────────────────────────────────────────────────── */
+
+/** Every case study (card fields), newest first. Empty on a fresh fork. */
+export function loadCaseStudies(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: CASE_STUDIES_QUERY,
+    draftProps,
+    fallback: [],
+    label: "case studies",
+  });
+}
+
+/** The case studies with these slugs, in document order. */
+export function loadFeaturedCaseStudies(
+  slugs: readonly string[],
+  draftProps: DraftProps = {},
+) {
+  return loadPageQuery({
+    query: FEATURED_CASE_STUDIES_QUERY,
+    params: { slugs: [...slugs] },
+    draftProps,
+    fallback: [],
+    label: "featured case studies",
   });
 }

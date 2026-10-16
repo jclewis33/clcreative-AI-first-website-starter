@@ -33,7 +33,10 @@ import { stegaClean } from "@sanity/client/stega";
 import type {
   ContentOptions,
   ContentSource,
+  CaseStudyPage,
+  CaseStudySummary,
   CtaDefaults,
+  FeaturedCaseStudy,
   GalleryEntry,
   ProjectCardData,
   ProjectPage,
@@ -41,7 +44,11 @@ import type {
   TestimonialFilter,
 } from "@/lib/content/types";
 import {
+  getCaseStudyStaticPaths,
   getProjectStaticPaths,
+  loadCaseStudies,
+  loadCaseStudyPage,
+  loadFeaturedCaseStudies,
   loadFeaturedProjects,
   loadGallery,
   loadProjectPage,
@@ -49,6 +56,11 @@ import {
   loadSiteSettings,
   loadTestimonials,
 } from "./page-data";
+import {
+  toCaseStudyDetail,
+  toCaseStudySummary,
+  toFeaturedCaseStudy,
+} from "./map/case-studies";
 import { toBlogCta, toCtaSection } from "./map/cta";
 import { toGalleryEntry, toProjectCard, toProjectDetail } from "./map/projects";
 import { toTestimonial } from "./map/testimonials";
@@ -127,6 +139,50 @@ async function getGallery(opts?: ContentOptions): Promise<GalleryEntry[]> {
   return (await loadGallery(opts)).map(toGalleryEntry).filter(isPresent);
 }
 
+/* ── Case studies ──────────────────────────────────────────────────────── */
+
+async function getCaseStudies(
+  opts?: ContentOptions,
+): Promise<CaseStudySummary[]> {
+  return (await loadCaseStudies(opts))
+    .map(toCaseStudySummary)
+    .filter(isPresent);
+}
+
+async function getCaseStudy(
+  slug: string,
+  opts?: ContentOptions,
+): Promise<CaseStudyPage | null> {
+  const raw = await loadCaseStudyPage(slug, opts);
+  if (!raw) return null;
+  const study = toCaseStudyDetail(raw.study);
+  const upNext = raw.allStudies
+    .map(toCaseStudySummary)
+    .filter(isPresent)
+    .filter((entry) => entry.slug !== study.slug && entry.image)
+    .slice(0, 2);
+  return {
+    study,
+    upNext,
+    ctaSection: toCtaSection(
+      raw.study.ctaSectionOverride ?? raw.defaultCtaSection,
+    ),
+  };
+}
+
+async function getFeaturedCaseStudies(
+  slugs: readonly string[],
+  opts?: ContentOptions,
+): Promise<FeaturedCaseStudy[]> {
+  const found = (await loadFeaturedCaseStudies(slugs, opts))
+    .map(toFeaturedCaseStudy)
+    .filter(isPresent);
+  // GROQ returns document order; the caller asked for this order.
+  return slugs
+    .map((slug) => found.find((s) => s.slug === slug))
+    .filter((s): s is FeaturedCaseStudy => s !== undefined);
+}
+
 /* `satisfies` fails `npm run check` when a ContentSource function is
    missing here or its signature drifts. */
 const sanitySource = {
@@ -139,6 +195,10 @@ const sanitySource = {
   getProject,
   getGallery,
   getProjectStaticPaths,
+  getCaseStudies,
+  getCaseStudy,
+  getFeaturedCaseStudies,
+  getCaseStudyStaticPaths,
 } satisfies ContentSource;
 
 export default sanitySource;
