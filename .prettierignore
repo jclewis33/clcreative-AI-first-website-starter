@@ -4,6 +4,7 @@ dist/
 node_modules/
 .vercel/
 .netlify/
+.parity/
 .wrangler/
 
 # Lockfiles — owned by the package manager

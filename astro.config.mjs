@@ -50,6 +50,12 @@ function excludeDevOnlyPages() {
     hooks: {
       /** @param {{ dir: URL, logger: { info: (msg: string) => void } }} ctx */
       "astro:build:done": async ({ dir, logger }) => {
+        // Parity builds (scripts/compare-dist.mjs) keep the dev-only demo
+        // pages so /components is compared too. Never set in production.
+        if (process.env.KEEP_DEV_PAGES === "1") {
+          logger.info("KEEP_DEV_PAGES=1 — dev-only pages left in the build.");
+          return;
+        }
         const root = fileURLToPath(dir);
         for (const p of DEV_ONLY_PATHS) {
           await rm(`${root}${p}`, { recursive: true, force: true });

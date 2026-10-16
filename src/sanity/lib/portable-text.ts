@@ -424,3 +424,22 @@ export function portableTextToMarkdown(
 
   return parts.join("\n\n");
 }
+
+/**
+ * Plain text of Portable Text blocks: each text block's spans joined, blocks
+ * separated by a space. Non-text nodes are skipped. Used for FAQ answers in
+ * JSON-LD (and, from the content source, wherever rich text must become a
+ * plain string).
+ */
+export function portableTextToPlainText(
+  blocks: readonly unknown[] | null | undefined,
+): string {
+  return (blocks ?? [])
+    .map((node) => {
+      const block = node as PortableTextBlock | null;
+      if (block?._type !== "block") return "";
+      return (block.children ?? []).map((s) => s.text ?? "").join("");
+    })
+    .filter(Boolean)
+    .join(" ");
+}

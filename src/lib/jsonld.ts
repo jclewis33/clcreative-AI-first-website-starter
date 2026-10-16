@@ -10,6 +10,7 @@
 
 import { urlFor } from "@/sanity/lib/image";
 import { SITE } from "@/config/site";
+import { portableTextToPlainText } from "@/sanity/lib/portable-text";
 
 const ORG_NAME = SITE.name;
 const ORG_LOGO_PATH = SITE.logoPath;
@@ -285,6 +286,15 @@ function youtubeVideoObject(
   };
 }
 
+/** FAQ answer as plain text. Sanity answers are Portable Text arrays —
+    String() on one produced "[object Object]". */
+function faqAnswerText(answer: unknown): string {
+  const text = Array.isArray(answer)
+    ? portableTextToPlainText(answer)
+    : String(answer).replace(/<[^>]+>/g, " ");
+  return text.replace(/\s+/g, " ").trim();
+}
+
 /**
  * Build JSON-LD for a blog post. Returns an @graph array containing:
  * - BlogPosting (always)
@@ -329,10 +339,7 @@ export function blogPostJsonLd(post: any, siteUrl: string): any {
           name: f.question,
           acceptedAnswer: {
             "@type": "Answer",
-            text: String(f.answer)
-              .replace(/<[^>]+>/g, " ")
-              .replace(/\s+/g, " ")
-              .trim(),
+            text: faqAnswerText(f.answer),
           },
         })),
     });

@@ -2,6 +2,15 @@ import type { ClientPerspective, QueryParams } from "@sanity/client";
 import { sanityClient } from "sanity:client";
 import { getSecret } from "astro:env/server";
 
+/* Parity fixtures (dev-only): `PARITY_FIXTURES=1 npm run build` answers
+   every query from ./fixtures instead of the network, so a refactor can be
+   diffed against a populated site with no Sanity project (see
+   scripts/compare-dist.mjs). Read at build time; never set in production. */
+const PARITY_FIXTURES: string | undefined =
+  import.meta.env.PARITY_FIXTURES ??
+  (globalThis as { process?: { env?: Record<string, string | undefined> } })
+    .process?.env?.PARITY_FIXTURES;
+
 function parsePerspective(
   raw: string | undefined,
 ): ClientPerspective | undefined {
@@ -53,17 +62,20 @@ export async function loadQuery<const Q extends string>({
     ? (parsePerspective(perspectiveCookie) ?? "drafts")
     : "published";
 
-  const { result, resultSourceMap } = await sanityClient.fetch(
-    query,
-    params ?? {},
-    {
+  const run = () =>
+    sanityClient.fetch(query, params ?? {}, {
       filterResponse: false,
       perspective,
       resultSourceMap: draftMode ? "withKeyArraySelector" : false,
       stega: draftMode,
       ...(draftMode ? { token } : {}),
-    },
-  );
+    });
+  type Fetched = Awaited<ReturnType<typeof run>>;
+  const { result, resultSourceMap } = PARITY_FIXTURES
+    ? ((await (
+        await import("./fixtures")
+      ).fixtureFetch(query, params, PARITY_FIXTURES)) as unknown as Fetched)
+    : await run();
 
   return {
     data: result,

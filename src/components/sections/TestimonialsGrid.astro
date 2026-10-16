@@ -184,7 +184,15 @@ const showHeading = Astro.slots.has("heading") || heading;
   >
     {
       testimonials.map((testimonial) => (
-        <TestimonialCard {...testimonial} theme={invertCards} />
+        <TestimonialCard
+          quote={testimonial.quote}
+          name={testimonial.name}
+          role={testimonial.role}
+          company={testimonial.company}
+          avatar={testimonial.avatar}
+          stars={testimonial.stars}
+          theme={invertCards}
+        />
       ))
     }
   </Grid>

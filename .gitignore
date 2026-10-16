@@ -60,3 +60,6 @@ preview/.env
 
 # ShipStudio metadata
 .shipstudio/
+
+# Local parity baselines (scripts/compare-dist.mjs) — never commit
+.parity/
