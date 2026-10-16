@@ -21,7 +21,9 @@
  * RESTRICTED lists modules only some files may import: the node-only
  * content-sync helpers (src/lib/content/markdown.ts, checks.ts — importing
  * them from a page would ship them to the Worker), and the Files backend
- * (src/lib/content/files/), reached only through @/lib/content. A restricted
+ * (src/lib/content/files/), reached only through @/lib/content — except by
+ * the MDX body components (src/components/blog/mdx/, e.g. `<BlogCta id>`
+ * looks its CTA up by id). A restricted
  * rule applies to every file, allow-listed or not.
  *
  * Usage: npm run check:boundary   (exit 1 on any violation)
@@ -65,8 +67,8 @@ const RESTRICTED = [
   },
   {
     target: "src/lib/content/files",
-    allow: ["src/lib/content/"],
-    why: "the Files backend is reached through @/lib/content (source.ts selects it)",
+    allow: ["src/lib/content/", "src/components/blog/mdx/"],
+    why: "the Files backend is reached through @/lib/content; only the MDX body components (src/components/blog/mdx/) read it directly",
   },
 ];
 

@@ -337,6 +337,12 @@ const CASES = [
       ),
     expect: ["zz Check Bad.json", "lowercase-kebab-case"],
   },
+  {
+    name: "dangling inline CTA",
+    apply: () =>
+      write(POST_FILE, post({}, '## Check\n\n<BlogCta id="zz-no-cta" />\n')),
+    expect: [POST_FILE, "body", "zz-no-cta"],
+  },
 ];
 
 /* ── Run ───────────────────────────────────────────────────────────────── */

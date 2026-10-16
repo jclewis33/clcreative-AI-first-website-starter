@@ -1,0 +1,94 @@
+---
+/**
+ * VideoEmbed — a responsive YouTube or Vimeo iframe with an optional
+ * caption, in a blog post body. One component for both content sources: an
+ * MDX post writes `<VideoEmbed url="…" caption="…" />` (BlogBody passes it
+ * in), and a Portable Text `videoEmbed` node renders through
+ * src/components/portabletext/VideoEmbed.astro. Styles: `video-embed_*`.
+ */
+import type { HTMLAttributes } from "astro/types";
+import { plainText } from "@/lib/content";
+
+interface Props extends HTMLAttributes<"figure"> {
+  /**
+   * **VideoEmbed** — a YouTube (watch, youtu.be, Shorts) or Vimeo page URL
+   * as a lazy, responsive iframe. `caption` shows under it and titles the
+   * iframe. Any other URL renders nothing (and warns in dev).
+   *
+   * @example
+   * <VideoEmbed url="https://www.youtube.com/watch?v=aqz-KE-bpKQ" caption="A sample video" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The video's page URL. @example url="https://vimeo.com/76979871" */
+  url: string;
+
+  /** Shown under the video; also the iframe's title. @example caption="How we plan a remodel" */
+  caption?: string | null;
+
+  /** Extra classes on the figure. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  url,
+  caption,
+  class: className,
+  ...rest
+} = Astro.props;
+
+/** The embeddable player URL for a YouTube or Vimeo page, else null. */
+function getEmbedUrl(pageUrl: string): string | null {
+  try {
+    const u = new URL(pageUrl);
+    const host = u.hostname.replace(/^www\./, "");
+
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      const id = u.searchParams.get("v");
+      if (id) return `https://www.youtube.com/embed/${id}`;
+      if (u.pathname.startsWith("/shorts/")) {
+        return `https://www.youtube.com/embed/${u.pathname.split("/")[2]}`;
+      }
+    }
+    if (host === "youtu.be") {
+      return `https://www.youtube.com/embed${u.pathname}`;
+    }
+    if (host === "vimeo.com") {
+      const id = u.pathname.split("/").filter(Boolean)[0];
+      if (id) return `https://player.vimeo.com/video/${id}`;
+    }
+    if (host === "player.vimeo.com") return pageUrl;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+const embedUrl = url ? getEmbedUrl(url) : null;
+if (import.meta.env.DEV && render && !embedUrl)
+  console.warn(
+    `[VideoEmbed] "${url}" is not a YouTube or Vimeo URL; nothing renders.`,
+  );
+---
+
+{
+  render && embedUrl && (
+    <figure class:list={["video-embed_wrap", className]} {...rest}>
+      <div class="video-embed_frame">
+        <iframe
+          src={embedUrl}
+          title={plainText(caption) || "Video"}
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        />
+      </div>
+      {caption && <figcaption>{caption}</figcaption>}
+    </figure>
+  )
+}

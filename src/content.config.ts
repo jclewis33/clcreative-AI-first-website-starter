@@ -36,8 +36,9 @@ import { renderRichText } from "./lib/content/markdown";
  * - Rich text inside JSON is a Markdown string, rendered here once, at
  *   content sync (`richText`): entries carry `{ markdown, html, text }`.
  * - `checked()` (src/lib/content/checks.ts) fails the sync when an image
- *   file or a referenced entry is missing, naming the file and the field —
- *   Astro itself only logs a dangling reference.
+ *   file, a referenced entry or an MDX body's inline `<BlogCta id>` target
+ *   is missing, naming the file and the field — Astro itself only logs a
+ *   dangling reference.
  * - Enums come from src/config/, which the Sanity schema reads too.
  */
 
@@ -249,6 +250,7 @@ const blog = defineCollection({
         cta: json(DIR.blogCtas),
         ctaSection: json(DIR.ctaSections),
       },
+      bodyCtas: json(DIR.blogCtas),
     },
   ),
   schema: ({ image }) =>

@@ -11,6 +11,7 @@
  *   build pass, so a typo'd author or CTA would ship a broken page. Targets
  *   are checked against the files on disk (an entry's id is its filename),
  *   so the check does not depend on collection load order.
+ * - Inline CTAs. An MDX body's <BlogCta id="…" /> must name a file in src/content/ctas/blog/.
  *
  * Every problem is collected, then thrown as one error, one line each:
  *   src/content/projects/x.json → heroImage: image file not found: "./images/y.webp"
@@ -19,6 +20,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Loader } from "astro/loaders";
+import { inlineCtaIds } from "./files/mdx-text";
 
 /** Where a referenced collection's entries live: `<dir>/<id>.<ext>`. */
 export interface RefTarget {
@@ -33,6 +35,8 @@ export interface CheckOptions {
    * them) → where their targets live.
    */
   refs?: Record<string, RefTarget>;
+  /** Check `<BlogCta id="…" />` tags in an MDX body against this folder. */
+  bodyCtas?: RefTarget;
 }
 
 /** A relative path to an image file — what an `image()` field holds at sync. */
@@ -67,6 +71,14 @@ export function checked(loader: Loader, options: CheckOptions = {}): Loader {
             if (!targetExists(root, target, id))
               problems.push(
                 `${file} → ${field}: no entry "${id}" (expected ${target.dir}/${id}.${target.ext})`,
+              );
+          }
+        }
+        if (options.bodyCtas) {
+          for (const id of inlineCtaIds(entry.body ?? "")) {
+            if (!targetExists(root, options.bodyCtas, id))
+              problems.push(
+                `${file} → body: <BlogCta id="${id}"> names no entry (expected ${options.bodyCtas.dir}/${id}.${options.bodyCtas.ext})`,
               );
           }
         }
