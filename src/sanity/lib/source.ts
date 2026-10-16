@@ -35,6 +35,7 @@ import type {
   ContentOptions,
   ContentSource,
   CaseStudyPage,
+  BlogPostSummary,
   CaseStudySummary,
   CtaDefaults,
   FeaturedCaseStudy,
@@ -45,10 +46,14 @@ import type {
   TestimonialFilter,
 } from "@/lib/content/types";
 import {
+  getBlogCategoryStaticPaths,
   getBlogPostStaticPaths,
   getCaseStudyStaticPaths,
   getProjectStaticPaths,
+  loadBlogCategories,
   loadBlogPostPage,
+  loadBlogPosts,
+  loadBlogPostsByCategory,
   loadCaseStudies,
   loadCaseStudyPage,
   loadFeaturedCaseStudies,
@@ -210,6 +215,28 @@ async function getBlogPost(
 
 /* `satisfies` fails `npm run check` when a ContentSource function is
    missing here or its signature drifts. */
+/* ── Blog listings ─────────────────────────────────────────────────────── */
+
+async function getBlogPosts(opts?: ContentOptions): Promise<BlogPostSummary[]> {
+  return (await loadBlogPosts(opts)).map(toBlogPostSummary).filter(isPresent);
+}
+
+async function getBlogPostsByCategory(
+  category: string,
+  opts?: ContentOptions,
+): Promise<BlogPostSummary[]> {
+  return (await loadBlogPostsByCategory(category, opts))
+    .map(toBlogPostSummary)
+    .filter(isPresent);
+}
+
+async function getBlogCategories(opts?: ContentOptions): Promise<string[]> {
+  const names = (await loadBlogCategories(opts))
+    .map((c) => stegaClean(c))
+    .filter((c): c is string => Boolean(c));
+  return [...new Set(names)];
+}
+
 const sanitySource = {
   plainText,
   getCtaDefaults,
@@ -226,6 +253,10 @@ const sanitySource = {
   getCaseStudyStaticPaths,
   getBlogPost,
   getBlogPostStaticPaths,
+  getBlogPosts,
+  getBlogPostsByCategory,
+  getBlogCategories,
+  getBlogCategoryStaticPaths,
 } satisfies ContentSource;
 
 export default sanitySource;

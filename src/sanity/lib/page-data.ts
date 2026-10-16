@@ -30,6 +30,8 @@ import {
   RELATED_BLOG_POSTS_QUERY,
   BLOG_SLUGS_QUERY,
   BLOG_CATEGORIES_QUERY,
+  BLOG_POSTS_QUERY,
+  BLOG_POSTS_BY_CATEGORY_QUERY,
   CASE_STUDIES_QUERY,
   FEATURED_CASE_STUDIES_QUERY,
   CASE_STUDY_QUERY,
@@ -380,5 +382,41 @@ export function loadFeaturedCaseStudies(
     draftProps,
     fallback: [],
     label: "featured case studies",
+  });
+}
+
+/* ── Blog listings ─────────────────────────────────────────────────────────── */
+
+/** Every post (card fields + primaryCategory), newest first. Empty on a fresh fork. */
+export function loadBlogPosts(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: BLOG_POSTS_QUERY,
+    draftProps,
+    fallback: [],
+    label: "blog posts",
+  });
+}
+
+/** Posts in one category (display name), newest first. */
+export function loadBlogPostsByCategory(
+  category: string,
+  draftProps: DraftProps = {},
+) {
+  return loadPageQuery({
+    query: BLOG_POSTS_BY_CATEGORY_QUERY,
+    params: { category },
+    draftProps,
+    fallback: [],
+    label: `blog category "${category}"`,
+  });
+}
+
+/** Every category name across posts. */
+export function loadBlogCategories(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: BLOG_CATEGORIES_QUERY,
+    draftProps,
+    fallback: [],
+    label: "blog categories",
   });
 }

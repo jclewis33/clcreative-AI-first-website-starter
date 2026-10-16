@@ -11,12 +11,20 @@
  * Categories shown: News, Guides, Insights, Tutorials
  * Any category without a matching section here (e.g. Resources) still gets its
  * own archive page at /blog/category/<slug>, just no section on this index.
+ *
+ * Posts come from getBlogPosts() in @/lib/content.
  */
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Layout from "@/components/ui/Layout.astro";
 import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
-import { getCtaDefaults } from "@/lib/content";
+import {
+  getBlogPosts,
+  getCtaDefaults,
+  imageSrc,
+  imageUrl,
+  plainText,
+} from "@/lib/content";
 import Section from "@/components/ui/Section.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
@@ -26,34 +34,22 @@ import BlogCard from "@/components/ui/BlogCard.astro";
 import FormattedDate from "@/components/ui/FormattedDate.astro";
 import Slider from "@/components/ui/Slider.astro";
 
-// Sanity
-import { getDraftModeProps } from "@/sanity/lib/draft-mode";
-import { loadPageQuery } from "@/sanity/lib/page-data";
-import { BLOG_POSTS_QUERY } from "@/sanity/lib/queries";
-import { urlFor } from "@/sanity/lib/image";
-import { stegaClean } from "@sanity/client/stega";
 import { SITE } from "@/config/site";
 
 // Styles
 import "@/styles/pages/blog.css";
 
-/* ── Fetch all posts from Sanity ── */
+/* ── Posts (newest first) and the CTA defaults ── */
 
-const draftProps = getDraftModeProps(Astro);
 const [allPosts, ctaDefaults] = await Promise.all([
-  loadPageQuery({
-    query: BLOG_POSTS_QUERY,
-    draftProps,
-    fallback: [],
-    label: "blog index posts",
-  }),
+  getBlogPosts(),
   getCtaDefaults(),
 ]);
 const defaultCtaSection = ctaDefaults.ctaSection;
 
 /* ── Featured posts for the hero slider ── */
 
-const featuredPosts = allPosts.filter((p: any) => p.featured);
+const featuredPosts = allPosts.filter((p) => p.featured);
 // Fall back to the 4 most recent if none are marked featured
 const sliderPosts =
   featuredPosts.length > 0 ? featuredPosts.slice(0, 6) : allPosts.slice(0, 4);
@@ -100,14 +96,12 @@ const categoryConfig: {
 ];
 
 // Group posts by primary category (each post appears in one section only).
-// stegaClean strips invisible stega metadata so === comparison still works in
-// draft mode — otherwise every post's category fails to match the hardcoded
-// section names and all category sections render empty.
+// Categories arrive cleaned from the content source, so === matches in
+// Presentation draft mode too.
 function getPostsForCategory(categoryName: string) {
-  return allPosts.filter((p: any) => {
-    const primary = p.primaryCategory || (p.categories && p.categories[0]);
-    return stegaClean(primary) === categoryName;
-  });
+  return allPosts.filter(
+    (p) => (p.primaryCategory || p.categories[0]) === categoryName,
+  );
 }
 
 // Build category sections with posts — only include categories that have content
@@ -197,23 +191,21 @@ const categorySections = categoryConfig
             showBullets={false}
             speed={500}
           >
-            {sliderPosts.map((post: any) => (
+            {sliderPosts.map((post) => (
               <a
                 href={`/blog/${post.slug}`}
                 class="blog_slider_card"
                 data-trigger="hover focus"
                 aria-label={`Read ${post.title}`}
                 data-search-card
-                data-title={stegaClean(post.title)}
-                data-description={stegaClean(post.description)}
-                data-categories={(post.categories ?? [])
-                  .map((c: string) => stegaClean(c))
-                  .join(",")}
+                data-title={plainText(post.title)}
+                data-description={plainText(post.description)}
+                data-categories={post.categories.join(",")}
               >
                 <div class="blog_slider_card_img u-image-wrapper u-radius-main u-overflow-hidden">
                   <img
-                    src={urlFor(post.image).width(800).url()}
-                    alt={post.imageAlt}
+                    src={imageUrl(post.image, { width: 800 })}
+                    alt={post.image?.alt}
                     class="u-image"
                     loading="lazy"
                     width="800"
@@ -222,7 +214,7 @@ const categorySections = categoryConfig
                   <div class="blog_slider_card_overlay" />
                 </div>
                 <div class="blog_slider_card_content">
-                  {post.categories?.[0] && (
+                  {post.categories[0] && (
                     <span class="blog_slider_card_category">
                       {post.categories[0]}
                     </span>
@@ -268,24 +260,22 @@ const categorySections = categoryConfig
           {/* Featured cards — large left, small right */}
           {largePosts.length > 0 && (
             <div data-fade-in class="blog_featured_grid">
-              {largePosts.map((post: any, i: number) => (
+              {largePosts.map((post, i) => (
                 <a
                   href={`/blog/${post.slug}`}
                   class:list={["blog_featured_card", i === 0 && "is-large"]}
                   data-trigger="hover focus"
                   data-search-card
-                  data-title={stegaClean(post.title)}
-                  data-description={stegaClean(post.description)}
-                  data-categories={(post.categories ?? [])
-                    .map((c: string) => stegaClean(c))
-                    .join(",")}
+                  data-title={plainText(post.title)}
+                  data-description={plainText(post.description)}
+                  data-categories={post.categories.join(",")}
                 >
                   <div class="blog_featured_card_img u-image-wrapper u-radius-main u-overflow-hidden">
                     <img
-                      src={urlFor(post.image)
-                        .width(i === 0 ? 1000 : 600)
-                        .url()}
-                      alt={post.imageAlt}
+                      src={imageUrl(post.image, {
+                        width: i === 0 ? 1000 : 600,
+                      })}
+                      alt={post.image?.alt}
                       class="u-image"
                       loading="lazy"
                       width={i === 0 ? 1000 : 600}
@@ -313,7 +303,7 @@ const categorySections = categoryConfig
               smallColumns={1}
               rowGap={6}
             >
-              {smallPosts.map((post: any) => (
+              {smallPosts.map((post) => (
                 <BlogCard
                   theme={
                     cat.theme === "dark" || cat.theme === "brand"
@@ -322,23 +312,20 @@ const categorySections = categoryConfig
                   }
                   data-fade-in
                   data-search-card
-                  data-title={stegaClean(post.title)}
-                  data-description={stegaClean(post.description)}
-                  data-categories={(post.categories ?? [])
-                    .map((c: string) => stegaClean(c))
-                    .join(",")}
+                  data-title={plainText(post.title)}
+                  data-description={plainText(post.description)}
+                  data-categories={post.categories.join(",")}
                   title={post.title}
                   description={post.description}
                   categories={post.categories}
                   href={`/blog/${post.slug}`}
-                  image={urlFor(post.image).width(600).url()}
-                  imageAlt={post.imageAlt}
+                  image={imageSrc(post.image, { width: 600 }) ?? null}
+                  imageAlt={post.image?.alt ?? null}
                   author={post.author}
-                  authorAvatar={
-                    post.authorAvatar
-                      ? urlFor(post.authorAvatar).width(80).height(80).url()
-                      : undefined
-                  }
+                  authorAvatar={imageSrc(post.authorAvatar, {
+                    width: 80,
+                    height: 80,
+                  })}
                   date={post.date}
                 />
               ))}
@@ -395,28 +382,25 @@ const categorySections = categoryConfig
             rowGap={6}
             class="blog_large_grid"
           >
-            {latestLarge.map((post: any) => (
+            {latestLarge.map((post) => (
               <BlogCard
                 data-prevent-flicker="true"
                 data-fade-in
                 data-search-card
-                data-title={stegaClean(post.title)}
-                data-description={stegaClean(post.description)}
-                data-categories={(post.categories ?? [])
-                  .map((c: string) => stegaClean(c))
-                  .join(",")}
+                data-title={plainText(post.title)}
+                data-description={plainText(post.description)}
+                data-categories={post.categories.join(",")}
                 title={post.title}
                 description={post.description}
                 categories={post.categories}
                 href={`/blog/${post.slug}`}
-                image={urlFor(post.image).width(800).url()}
-                imageAlt={post.imageAlt}
+                image={imageSrc(post.image, { width: 800 }) ?? null}
+                imageAlt={post.image?.alt ?? null}
                 author={post.author}
-                authorAvatar={
-                  post.authorAvatar
-                    ? urlFor(post.authorAvatar).width(80).height(80).url()
-                    : undefined
-                }
+                authorAvatar={imageSrc(post.authorAvatar, {
+                  width: 80,
+                  height: 80,
+                })}
                 date={post.date}
               />
             ))}
@@ -426,28 +410,25 @@ const categorySections = categoryConfig
         {/* 3 smaller cards */}
         {latestSmall.length > 0 && (
           <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
-            {latestSmall.map((post: any) => (
+            {latestSmall.map((post) => (
               <BlogCard
                 data-prevent-flicker="true"
                 data-fade-in
                 data-search-card
-                data-title={stegaClean(post.title)}
-                data-description={stegaClean(post.description)}
-                data-categories={(post.categories ?? [])
-                  .map((c: string) => stegaClean(c))
-                  .join(",")}
+                data-title={plainText(post.title)}
+                data-description={plainText(post.description)}
+                data-categories={post.categories.join(",")}
                 title={post.title}
                 description={post.description}
                 categories={post.categories}
                 href={`/blog/${post.slug}`}
-                image={urlFor(post.image).width(600).url()}
-                imageAlt={post.imageAlt}
+                image={imageSrc(post.image, { width: 600 }) ?? null}
+                imageAlt={post.image?.alt ?? null}
                 author={post.author}
-                authorAvatar={
-                  post.authorAvatar
-                    ? urlFor(post.authorAvatar).width(80).height(80).url()
-                    : undefined
-                }
+                authorAvatar={imageSrc(post.authorAvatar, {
+                  width: 80,
+                  height: 80,
+                })}
                 date={post.date}
               />
             ))}

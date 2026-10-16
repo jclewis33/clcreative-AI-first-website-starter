@@ -70,6 +70,12 @@ export interface SlugPath {
   params: { slug: string };
 }
 
+/** One `getStaticPaths` entry for /blog/category/[category]. */
+export interface CategoryPath {
+  params: { category: string };
+  props: { categoryName: string };
+}
+
 /* ── CTAs ──────────────────────────────────────────────────────────────── */
 
 /** The image shape a blog CTA uses. */
@@ -394,4 +400,15 @@ export interface ContentSource {
   ): Promise<BlogPostPage | null>;
   /** getStaticPaths for /blog/[slug]. */
   getBlogPostStaticPaths(): Promise<SlugPath[]>;
+  /** Every post as a card, newest first. */
+  getBlogPosts(opts?: ContentOptions): Promise<BlogPostSummary[]>;
+  /** Posts carrying this category (display name, exact match), newest first. */
+  getBlogPostsByCategory(
+    category: string,
+    opts?: ContentOptions,
+  ): Promise<BlogPostSummary[]>;
+  /** Every category name in use, de-duplicated. */
+  getBlogCategories(opts?: ContentOptions): Promise<string[]>;
+  /** getStaticPaths for /blog/category/[category] (one per category, plus "all"). */
+  getBlogCategoryStaticPaths(): Promise<CategoryPath[]>;
 }

@@ -35,4 +35,8 @@ export const {
   getCaseStudyStaticPaths,
   getBlogPost,
   getBlogPostStaticPaths,
+  getBlogPosts,
+  getBlogPostsByCategory,
+  getBlogCategories,
+  getBlogCategoryStaticPaths,
 } = source;

@@ -8,28 +8,25 @@
  *   1. Hero section — background image + overlay, category name + description
  *   2. Blog grid — 3-column responsive grid of BlogCard components
  *
- * Content is fetched from Sanity CMS, filtered by category.
+ * Posts come from getBlogPosts() /
+ * getBlogPostsByCategory() in @/lib/content.
  */
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
-import { getCtaDefaults } from "@/lib/content";
+import {
+  getBlogCategoryStaticPaths,
+  getBlogPosts,
+  getBlogPostsByCategory,
+  getCtaDefaults,
+  imageSrc,
+} from "@/lib/content";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import BlogCard from "@/components/ui/BlogCard.astro";
-
-// Sanity
-import { loadPageQuery } from "@/sanity/lib/page-data";
-import { getDraftModeProps } from "@/sanity/lib/draft-mode";
-import {
-  BLOG_POSTS_QUERY,
-  BLOG_POSTS_BY_CATEGORY_QUERY,
-} from "@/sanity/lib/queries";
-import { getBlogCategoryStaticPaths } from "@/sanity/lib/page-data";
-import { urlFor } from "@/sanity/lib/image";
 
 // Styles
 import "@/styles/pages/blog.css";
@@ -43,23 +40,15 @@ export const getStaticPaths = getBlogCategoryStaticPaths;
 const { category: categorySlug } = Astro.params;
 if (!categorySlug) return Astro.redirect("/404");
 
-const draftProps = getDraftModeProps(Astro);
-
 const category: string =
   (Astro.props as { categoryName?: string }).categoryName ?? "All";
 
 const categoryLabel = category === "All" ? "All" : category;
 
-/* ── Fetch posts — all posts for "All", filtered for specific category ── */
+/* ── Posts — all for "All", else those in the category ── */
 
 const [posts, ctaDefaults] = await Promise.all([
-  loadPageQuery({
-    query: category === "All" ? BLOG_POSTS_QUERY : BLOG_POSTS_BY_CATEGORY_QUERY,
-    params: category === "All" ? undefined : { category },
-    draftProps,
-    fallback: [],
-    label: `blog category "${categorySlug}"`,
-  }),
+  category === "All" ? getBlogPosts() : getBlogPostsByCategory(category),
   getCtaDefaults(),
 ]);
 const defaultCtaSection = ctaDefaults.ctaSection;
@@ -155,20 +144,19 @@ const defaultCtaSection = ctaDefaults.ctaSection;
         </div>
 
         <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
-          {posts.map((post: any) => (
+          {posts.map((post) => (
             <BlogCard
               title={post.title}
               description={post.description}
               categories={post.categories}
               href={`/blog/${post.slug}`}
-              image={urlFor(post.image).width(600).url()}
-              imageAlt={post.imageAlt}
+              image={imageSrc(post.image, { width: 600 }) ?? null}
+              imageAlt={post.image?.alt ?? null}
               author={post.author}
-              authorAvatar={
-                post.authorAvatar
-                  ? urlFor(post.authorAvatar).width(80).height(80).url()
-                  : undefined
-              }
+              authorAvatar={imageSrc(post.authorAvatar, {
+                width: 80,
+                height: 80,
+              })}
               date={post.date}
               data-title={post.title}
               data-description={post.description}
