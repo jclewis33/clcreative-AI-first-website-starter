@@ -360,8 +360,8 @@ it intact.
 
 **When adding a new document type, do all four:** (1) an `S.listItem()` in the
 right desk group, (2) an `icon`, (3) field `groups` if field-heavy, (4) a
-Presentation location if previewable. A detail route also needs the **four
-route pieces** below.
+Presentation location if previewable. A detail route also needs the steps in the
+"Adding a new content type" recipe under _Data fetching pattern_ below.
 
 ## Image alt text (asset-level fallback)
 
