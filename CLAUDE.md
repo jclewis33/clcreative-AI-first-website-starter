@@ -15,7 +15,9 @@ lives in **skills** — load them, don't guess:
 
 Other docs: [docs/new-project-checklist.md](docs/new-project-checklist.md)
 (per-fork dashboard setup), [docs/brand-color-guide.md](docs/brand-color-guide.md),
-[docs/responsive-columns.md](docs/responsive-columns.md).
+[docs/responsive-columns.md](docs/responsive-columns.md),
+[docs/editing-content.md](docs/editing-content.md) (the client-facing
+content-editing guide; keep it in step with the `content-files` skill).
 
 > **Forking this repo for a new project?** Start with the checklist above —
 > most of a rebrand is config (`src/config/site.ts`, `site.shared.mjs`,
@@ -82,7 +84,7 @@ dashes between words, applied on top of a custom class and **always scoped**:
 src/
 ├── assets/           # Images (.avif/.webp preferred), icons/*.svg for <Icon>
 ├── content/          # Site content as files (one per entry) — see the content-files skill
-├── components/       # ui/ · sections/ · form/ · global/ · templates/ · case-study/ · portabletext/
+├── components/       # ui/ · sections/ · form/ · global/ · templates/ · case-study/ · blog/ (+ blog/mdx/) · portabletext/
 ├── config/           # site.ts (SITE), site.shared.mjs, logo-paths.ts — import, never hardcode
 ├── data/             # site-structure.ts (PAGES/NAV_MENU/FOOTER_GROUPS/BANNER), faqs.ts
 ├── layouts/          # BaseLayout.astro

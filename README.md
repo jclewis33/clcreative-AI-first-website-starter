@@ -38,7 +38,9 @@ for posts, JSON for everything else, with photos in each folder's
 `images/`. Every file is validated when the site builds. A missing photo,
 empty alt text or a reference to an entry that does not exist fails the
 build, naming the file and the field. Edit a file, rebuild, done; no CMS
-account or API token involved. The field guide and how-tos are in
+account or API token involved. Editors start with the step-by-step
+guide, [`docs/editing-content.md`](docs/editing-content.md) (setup,
+recipes, reading errors, publishing). The full field reference is
 [`.claude/skills/content-files/SKILL.md`](.claude/skills/content-files/SKILL.md),
 and VS Code autocompletes the JSON fields (`.vscode/settings.json`).
 

@@ -12,6 +12,25 @@ whose default backend (`src/lib/content/files/`) maps the entries to view
 models. Service pages are content collections too. Their guide is
 `component-api` → `references/service-pages.md`.
 
+The plain, step-by-step guide for a client or editor (setup, recipes,
+reading errors, publishing) is
+[`docs/editing-content.md`](../../../docs/editing-content.md). This skill is
+the field reference; keep the two in step.
+
+## Preview and publish
+
+- **Preview:** `npm run dev`, then <http://localhost:4321>. Content edits
+  re-sync on save; a bad file prints its error in the terminal.
+- **Check:** `npm run check:content` and `npm run build` (the build fails
+  on any content error, naming the file and the field).
+- **Publish:** commit and push to `main`. Cloudflare Workers Builds
+  rebuilds from `main`; a failed build leaves the live site as it was. A
+  push goes live by itself only when the Workers Builds deploy command is
+  `npx wrangler deploy`; the default (`wrangler versions upload`) only
+  stages a version to promote in the dashboard
+  (`docs/new-project-checklist.md` §4a). CI (`.github/workflows/ci.yml`)
+  runs the same checks on pull requests and pushes to `main`.
+
 ## Where everything lives
 
 | Content        | File(s)                                | Becomes                                                            |
@@ -26,8 +45,12 @@ models. Service pages are content collections too. Their guide is
 | Gallery photos | `src/content/gallery.json` (one array) | `/gallery`, the /projects strip                                    |
 | Testimonial    | `src/content/testimonials/<id>.json`   | Testimonial sliders, grids, `<SingleTestimonial name>`             |
 
-Photos go in an `images/` folder beside the entries (`src/content/blog/images/`,
-`src/content/projects/images/`, …). Gallery photos go in
+Photos go in an `images/` folder beside the entries, referenced as
+`"./images/<file>"`: `src/content/blog/images/`,
+`src/content/authors/images/`, `src/content/case-studies/images/`,
+`src/content/projects/images/`, `src/content/testimonials/images/`,
+`src/content/ctas/blog/images/`, `src/content/ctas/section/images/` (and
+`src/content/services/images/`). Gallery photos go in
 `src/content/gallery/images/`, referenced as `"./gallery/images/<file>"`
 from `gallery.json`. The schemas are in `src/content.config.ts`. Enums
 (categories, industries, photo labels) come from `src/config/blog.ts`,
@@ -107,6 +130,16 @@ Opening paragraph.
 Body text in Markdown.
 ```
 
+- **`categories`** are any of `BLOG_CATEGORIES` (News, Guides, Insights,
+  Tutorials, Resources); each category in use gets an archive at
+  `/blog/category/<slug>`. **`primaryCategory`** must be one of
+  `BLOG_SECTION_CATEGORIES` (News, Guides, Insights, Tutorials; Resources
+  has no `/blog` section) and picks the one `/blog` section the post sits
+  in (default: its first category). The code does not require it to be
+  in `categories`, but the archive pages are built from `categories`
+  only, so list it there too or the post is missing from that archive.
+- **`featured: true`** puts the post in the `/blog` hero slider (up to
+  six; with none featured, the four newest).
 - **`##` headings build the table of contents.** Their ids are the
   heading text in lowercase-kebab form. Keep them plain words and unique
   within the post, and use `###` for sub-steps.
@@ -168,11 +201,16 @@ Every block also takes `sectionSpacing`, `sectionSpacingTop` and
 `maxWidth` is one of `20ch`, `30ch`, `40ch`, `48ch`, `60ch`, `48rem`,
 `60rem`, `100%`. `aspectRatio` is `auto` (uncropped), `wide`,
 `widescreen`, `landscape`, `square`, `portrait` or `tall`.
-`customAspectRatio` is `"4 / 3"`. The homepage strip shows the three slugs
-in `FEATURED_CASE_STUDIES_SLUGS`
-(`src/components/sections/CaseStudyFeatured.astro`). Case-study grids show
-only studies that have an `image` (every Files study does: it is
-required).
+`customAspectRatio` is `"4 / 3"`.
+
+**Which studies are "featured".** The homepage strip (`<CaseStudyFeatured>`)
+shows the three slugs in `FEATURED_CASE_STUDIES_SLUGS`
+(`src/components/sections/CaseStudyFeatured.astro`), whatever their
+`featured` flag. The flag is read only by `<CaseStudyGrid featured>` (which
+then shows only flagged studies; no public page uses that today, only the
+`/components` demo) and is stamped as `data-featured` on the card; it
+changes nothing visible on its own. Case-study grids show only studies
+that have an `image` (every Files study does: it is required).
 
 ## Projects, gallery, testimonials, authors and CTAs
 
@@ -181,7 +219,8 @@ required).
   `imageAlt` (required). Optional: `location`, `service`, `description`
   (Markdown), `quote` (`{ "text", "name"? }`), `photos`
   (`[{ "src", "alt", "label"? }]`, label `Before`/`During`/`After`),
-  `completed`, `featured` (the featured strip shows three), and
+  `completed`, `featured` (read only by `getFeaturedProjects()`, which
+  returns up to three; no page calls it yet), and
   `seoDescription`. Set `seoDescription` when the write-up has several
   paragraphs.
 - **Gallery item** (in `gallery.json`): `id`, `image`, `alt`, `caption`
@@ -225,6 +264,17 @@ required).
   photos into `src/content/case-studies/images/`, and edit it.
 - **Add a gallery photo:** put the photo in `src/content/gallery/images/`
   and add an object to `gallery.json` with a new `id`.
+- **Add an author:** optionally put a square headshot in
+  `src/content/authors/images/`, then create
+  `src/content/authors/<id>.json` with `name` (and `avatar`). Posts name
+  it as `author: "<id>"`.
+- **Add a blog CTA:** copy a file in `src/content/ctas/blog/`, rename it,
+  put its photo in `ctas/blog/images/`, and edit it. Posts use it with
+  `cta: "<id>"` (end of post) or `<BlogCta id="<id>" />` (inline).
+- **Add a CTA section:** copy a file in `src/content/ctas/section/`,
+  rename it, put its background photo in `ctas/section/images/`, and edit
+  it. Blog posts and case studies pick it with `ctaSection: "<id>"`;
+  projects always get the default.
 - **Change the default CTAs:** point `settings.json` at another file in
   `ctas/blog/` or `ctas/section/`.
 - **Remove an entry:** delete its file and its photos. If another file
@@ -265,7 +315,11 @@ refresh on every sync. The editor checks the shape only: missing photos
 and broken references are caught at sync. MDX frontmatter is YAML, so it
 is checked at sync only.
 
-## Under the hood
+## For developers
+
+Everything below is for whoever changes the code, not the content.
+
+### Under the hood
 
 - `src/content.config.ts`: the collections. `richText` renders each
   Markdown field to `{ markdown, html, text }` once, at sync
@@ -284,14 +338,20 @@ is checked at sync only.
   that uses those components outside the post template must import that
   stylesheet too (as `src/pages/components.astro` does). Moving them into
   their components is deliberately deferred.
-- **Adding a content type:** define the collection (with `filesIn()` and
-  `checked()`), add view models and functions to `ContentSource`
-  (`src/lib/content/types.ts`), implement them in a new
-  `src/lib/content/files/<type>.ts` wired into `files/index.ts` and
-  `src/lib/content/index.ts`, map the JSON Schema in
-  `.vscode/settings.json`, and add a case to
-  `scripts/check-content-validation.mjs`. The Sanity source needs the same
-  functions (`sanity-and-preview` → "Data fetching pattern").
+
+### Adding a content type
+
+Define the collection (with `filesIn()` and
+`checked()`), add view models and functions to `ContentSource`
+(`src/lib/content/types.ts`), implement them in a new
+`src/lib/content/files/<type>.ts` wired into `files/index.ts` and
+`src/lib/content/index.ts`, map the JSON Schema in
+`.vscode/settings.json`, and add a case to
+`scripts/check-content-validation.mjs`. The Sanity source needs the same
+functions (`sanity-and-preview` → "Data fetching pattern").
+
+### The Sanity source and `CONTENT_SOURCE`
+
 - **The Sanity source** (`src/sanity/lib/source.ts`) is the alternative
   backend. Test builds select it with `CONTENT_SOURCE=sanity` (a build-time
   switch in `astro.config.mjs`, removed when PR 4 turns Sanity into an

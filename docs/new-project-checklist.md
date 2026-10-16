@@ -62,8 +62,9 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
     studies, projects, gallery, testimonials, authors and CTAs, with their
     photos in each folder's `images/`. Update `settings.json` and
     `FEATURED_CASE_STUDIES_SLUGS` (`src/components/sections/CaseStudyFeatured.astro`)
-    and the `<SingleTestimonial name>` on the homepage to match. Field guide:
-    `.claude/skills/content-files/SKILL.md`. `npm run check:content`
+    and the `<SingleTestimonial name>` on the homepage to match. Hand the client
+    [`docs/editing-content.md`](editing-content.md) (the plain editing
+    guide); the field reference is `.claude/skills/content-files/SKILL.md`. `npm run check:content`
     keeps working with your own content.
 
 ---
