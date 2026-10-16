@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import { defaultMarks } from "./portableTextConfig";
+import { CALLOUT_TYPE_OPTIONS } from "../../config/blog";
 
 export const callout = defineType({
   name: "callout",
@@ -11,11 +12,7 @@ export const callout = defineType({
       type: "string",
       title: "Type",
       options: {
-        list: [
-          { title: "Tip", value: "tip" },
-          { title: "Warning", value: "warning" },
-          { title: "Info", value: "info" },
-        ],
+        list: [...CALLOUT_TYPE_OPTIONS],
         layout: "radio",
       },
       initialValue: "tip",

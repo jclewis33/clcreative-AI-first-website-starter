@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import { BellIcon } from "@sanity/icons";
+import { BLOG_CTA_ASPECT_RATIO_OPTIONS } from "../../config/blog";
 
 export const blogCta = defineType({
   name: "blogCta",
@@ -49,11 +50,7 @@ export const blogCta = defineType({
       title: "Image Aspect Ratio",
       type: "string",
       options: {
-        list: [
-          { title: "Square (1:1)", value: "square" },
-          { title: "Landscape (3:2)", value: "landscape" },
-          { title: "Portrait (3:4)", value: "portrait" },
-        ],
+        list: [...BLOG_CTA_ASPECT_RATIO_OPTIONS],
         layout: "radio",
       },
       initialValue: "portrait",

@@ -35,6 +35,7 @@ import FormattedDate from "@/components/ui/FormattedDate.astro";
 import Slider from "@/components/ui/Slider.astro";
 
 import { SITE } from "@/config/site";
+import type { BlogSectionCategory } from "@/config/blog";
 import { categoryToSlug } from "@/lib/blog-categories";
 
 // Styles
@@ -64,7 +65,7 @@ const latestSmall = latestPosts.slice(2, 5);
 /* ── Category sections ── */
 
 const categoryConfig: {
-  name: string;
+  name: BlogSectionCategory;
   description: string;
   theme?: "light" | "dark" | "brand";
 }[] = [

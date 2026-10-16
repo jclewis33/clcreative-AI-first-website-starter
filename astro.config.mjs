@@ -4,7 +4,7 @@ import sitemap from "@astrojs/sitemap";
 import sanity from "@sanity/astro";
 import react from "@astrojs/react";
 import cloudflare from "@astrojs/cloudflare";
-import { loadEnv } from "vite";
+import { loadEnv, normalizePath } from "vite";
 import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import {
@@ -78,6 +78,45 @@ function excludeDevOnlyPages() {
  * @type {Record<string, string>}
  */
 const redirects = {};
+
+/**
+ * TEST-ONLY content-source switch (PR 3 of the files-first plan; removed in
+ * PR 4, when the Sanity add-on's own CI job builds Sanity mode).
+ * `CONTENT_SOURCE=files` or `CONTENT_SOURCE=sanity` replaces the module that
+ * src/lib/content/source.ts re-exports, so one checkout can build either
+ * backend for the parity checks (scripts/compare-dist.mjs). Unset in every
+ * real build. Like __PARITY_FIXTURES__ below it is decided at build time —
+ * nothing at runtime can switch it.
+ */
+const CONTENT_SOURCES = {
+  files: "./src/lib/content/files/index.ts",
+  sanity: "./src/sanity/lib/source.ts",
+};
+
+/** @returns {import("vite").Plugin | false} */
+function contentSourceSwitch() {
+  const choice = process.env.CONTENT_SOURCE;
+  if (!choice) return false;
+  if (!Object.hasOwn(CONTENT_SOURCES, choice)) {
+    throw new Error(
+      `[content-source-switch] Unknown CONTENT_SOURCE "${choice}". Use "files" or "sanity".`,
+    );
+  }
+  const toId = (/** @type {string} */ rel) =>
+    normalizePath(fileURLToPath(new URL(rel, import.meta.url)));
+  const selector = toId("./src/lib/content/source.ts");
+  const target = toId(
+    CONTENT_SOURCES[/** @type {keyof typeof CONTENT_SOURCES} */ (choice)],
+  );
+  return {
+    name: "content-source-switch",
+    enforce: "pre",
+    load(id) {
+      if (id.split("?")[0] === selector)
+        return `export { default } from ${JSON.stringify(target)};`;
+    },
+  };
+}
 
 // https://astro.build/config
 export default defineConfig({
@@ -258,6 +297,7 @@ export default defineConfig({
   ],
 
   vite: {
+    plugins: [contentSourceSwitch()],
     define: {
       // Parity fixtures switch (src/sanity/lib/load-query.ts). Baked in at
       // build time so a normal build dead-code-eliminates the fixture import

@@ -19,3 +19,9 @@ export function categoryTitle(value: string | null | undefined): string {
   if (!value) return "";
   return PROJECT_CATEGORIES.find((c) => c.value === value)?.title ?? value;
 }
+
+/** The category values alone — the enum src/content.config.ts validates. */
+export const PROJECT_CATEGORY_VALUES = PROJECT_CATEGORIES.map((c) => c.value);
+
+/** Stage labels a project photo may carry. */
+export const PROJECT_PHOTO_LABELS = ["Before", "During", "After"] as const;

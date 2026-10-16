@@ -1,6 +1,10 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 import { ProjectsIcon } from "@sanity/icons";
-import { PROJECT_CATEGORIES, categoryTitle } from "../../config/projects";
+import {
+  PROJECT_CATEGORIES,
+  PROJECT_PHOTO_LABELS,
+  categoryTitle,
+} from "../../config/projects";
 import { externalLinkAnnotation } from "./portableTextConfig";
 
 /**
@@ -132,7 +136,7 @@ export const project = defineType({
               type: "string",
               description: "Optional. Shown on the photo.",
               options: {
-                list: ["Before", "During", "After"],
+                list: [...PROJECT_PHOTO_LABELS],
                 layout: "radio",
                 direction: "horizontal",
               },

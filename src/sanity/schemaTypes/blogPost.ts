@@ -1,6 +1,7 @@
 import { defineField, defineType } from "sanity";
 import { DocumentTextIcon } from "@sanity/icons";
 import { defaultMarks } from "./portableTextConfig";
+import { BLOG_CATEGORIES, BLOG_SECTION_CATEGORIES } from "../../config/blog";
 
 export const blogPost = defineType({
   name: "blogPost",
@@ -52,13 +53,7 @@ export const blogPost = defineType({
       group: "meta",
       of: [{ type: "string" }],
       options: {
-        list: [
-          { title: "News", value: "News" },
-          { title: "Guides", value: "Guides" },
-          { title: "Insights", value: "Insights" },
-          { title: "Tutorials", value: "Tutorials" },
-          { title: "Resources", value: "Resources" },
-        ],
+        list: BLOG_CATEGORIES.map((c) => ({ title: c, value: c })),
       },
       validation: (rule) => rule.required().min(1),
     }),
@@ -70,12 +65,7 @@ export const blogPost = defineType({
       type: "string",
       group: "meta",
       options: {
-        list: [
-          { title: "News", value: "News" },
-          { title: "Guides", value: "Guides" },
-          { title: "Insights", value: "Insights" },
-          { title: "Tutorials", value: "Tutorials" },
-        ],
+        list: BLOG_SECTION_CATEGORIES.map((c) => ({ title: c, value: c })),
       },
     }),
     defineField({

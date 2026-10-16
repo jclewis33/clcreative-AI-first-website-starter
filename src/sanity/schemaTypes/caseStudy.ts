@@ -1,17 +1,18 @@
 import { defineField, defineType, defineArrayMember } from "sanity";
 import { CaseIcon } from "@sanity/icons";
 import { defaultMarks } from "./portableTextConfig";
+import {
+  CASE_STUDY_ASPECT_RATIO_OPTIONS,
+  CASE_STUDY_CATEGORIES,
+  CASE_STUDY_INDUSTRIES,
+  CASE_STUDY_MAX_WIDTHS,
+  SECTION_SPACING_OPTIONS,
+} from "../../config/case-studies";
 
 /**
  * Spacing options shared by all three spacing fields.
  */
-const spacingOptions = [
-  { title: "None", value: "none" },
-  { title: "Extra Small", value: "xsmall" },
-  { title: "Small", value: "small" },
-  { title: "Main", value: "main" },
-  { title: "Large", value: "large" },
-];
+const spacingOptions = [...SECTION_SPACING_OPTIONS];
 
 /**
  * Reusable section spacing fields — added to every content block so editors
@@ -26,14 +27,7 @@ const spacingOptions = [
  */
 const maxWidthOptions = [
   { title: "Default", value: "" },
-  { title: "20ch", value: "20ch" },
-  { title: "30ch", value: "30ch" },
-  { title: "40ch", value: "40ch" },
-  { title: "48ch", value: "48ch" },
-  { title: "60ch", value: "60ch" },
-  { title: "48rem", value: "48rem" },
-  { title: "60rem", value: "60rem" },
-  { title: "100%", value: "100%" },
+  ...CASE_STUDY_MAX_WIDTHS.map((width) => ({ title: width, value: width })),
 ];
 
 /**
@@ -42,13 +36,7 @@ const maxWidthOptions = [
  */
 const aspectRatioOptions = [
   { title: "Default", value: "" },
-  { title: "Auto (no crop)", value: "auto" },
-  { title: "Wide (21:9)", value: "wide" },
-  { title: "Widescreen (16:9)", value: "widescreen" },
-  { title: "Landscape (3:2)", value: "landscape" },
-  { title: "Square (1:1)", value: "square" },
-  { title: "Portrait (2:3)", value: "portrait" },
-  { title: "Tall (3:4)", value: "tall" },
+  ...CASE_STUDY_ASPECT_RATIO_OPTIONS,
 ];
 
 /**
@@ -219,14 +207,7 @@ export const caseStudy = defineType({
       group: "meta",
       of: [{ type: "string" }],
       options: {
-        list: [
-          { title: "Design", value: "Design" },
-          { title: "Development", value: "Development" },
-          { title: "Strategy", value: "Strategy" },
-          { title: "Branding", value: "Branding" },
-          { title: "Marketing", value: "Marketing" },
-          { title: "Consulting", value: "Consulting" },
-        ],
+        list: CASE_STUDY_CATEGORIES.map((c) => ({ title: c, value: c })),
       },
       validation: (rule) => rule.required().min(1),
     }),
@@ -239,24 +220,7 @@ export const caseStudy = defineType({
       group: "meta",
       of: [{ type: "string" }],
       options: {
-        list: [
-          { title: "Agencies", value: "Agencies" },
-          { title: "AI Companies", value: "AI Companies" },
-          { title: "Consultants", value: "Consultants" },
-          { title: "Financial Services", value: "Financial Services" },
-          { title: "Food & Beverage", value: "Food & Beverage" },
-          { title: "Home Services", value: "Home Services" },
-          {
-            title: "Manufacturing / Industrial",
-            value: "Manufacturing / Industrial",
-          },
-          { title: "Non-Profits", value: "Non-Profits" },
-          { title: "Real Estate", value: "Real Estate" },
-          { title: "Recruiting", value: "Recruiting" },
-          { title: "Retail / E-commerce", value: "Retail / E-commerce" },
-          { title: "SaaS", value: "SaaS" },
-          { title: "Wellness", value: "Wellness" },
-        ],
+        list: CASE_STUDY_INDUSTRIES.map((i) => ({ title: i, value: i })),
       },
       validation: (rule) => rule.required().min(1),
     }),
