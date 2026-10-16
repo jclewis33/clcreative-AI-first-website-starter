@@ -19,7 +19,7 @@ description: Per-page SEO, structured data, and LLM discoverability reference fo
   `LocalBusiness + WebPage + BreadcrumbList`. Image/logo paths come from
   `SITE.ogImagePath` and `SITE.logoPath`;
   [src/lib/jsonld.ts](../../../src/lib/jsonld.ts) reuses the same `SITE.*`
-  values for the blog/case-study/glossary templates.
+  values for the blog/case-study templates.
 
 Most pages need nothing here. Reach for the per-page graph only when a page
 should advertise a specific **Service** (and optionally an **FAQ**) — a
@@ -112,10 +112,10 @@ The site serves two LLM-facing files at the root, following the
 [llmstxt.org](https://llmstxt.org) convention:
 
 - **`/llms.txt`** — a concise, curated index: site summary + links (with
-  one-line descriptions) to the important pages and every blog post, case
-  study, and glossary term.
-- **`/llms-full.txt`** — the full body text of every blog post, case study,
-  and glossary term, rendered to Markdown for whole-site ingestion.
+  one-line descriptions) to the important pages and every blog post and case
+  study.
+- **`/llms-full.txt`** — the full body text of every blog post and case study,
+  rendered to Markdown for whole-site ingestion.
 
 ### How they stay current (no manual work for CMS content)
 

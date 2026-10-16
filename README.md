@@ -30,7 +30,7 @@ All commands are run from the root of the project, from a terminal:
 
 ## 🏗️ Rendering model — everything public is prerendered
 
-**Every public route prerenders to static HTML at build time — including the CMS content routes.** `/blog/[slug]`, `/case-studies/[slug]`, and `/glossary/[slug]` enumerate their slugs with `getStaticPaths` (slug-only GROQ queries; helpers in `src/sanity/lib/page-data.ts`) and are served by the Cloudflare assets binding at zero Worker CPU. Only two kinds of routes are server-rendered (`export const prerender = false;`):
+**Every public route prerenders to static HTML at build time — including the CMS content routes.** `/blog/[slug]`, `/case-studies/[slug]`, and `/projects/[slug]` enumerate their slugs with `getStaticPaths` (slug-only GROQ queries; helpers in `src/sanity/lib/page-data.ts`) and are served by the Cloudflare assets binding at zero Worker CPU. Only two kinds of routes are server-rendered (`export const prerender = false;`):
 
 - `src/pages/preview/**` — the SSR **draft-preview twins** that Sanity's Presentation tool iframes (same templates, same loaders as the public routes; only the perspective differs)
 - `src/pages/api/**` — the draft-mode cookie set/clear routes

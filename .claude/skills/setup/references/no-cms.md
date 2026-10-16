@@ -10,7 +10,7 @@ clean in that state**. This is engineered, not accidental — the helpers in
 [page-data.ts](../../../../src/sanity/lib/page-data.ts) detect the placeholder
 project id and return `null`/fallback instead of throwing, so:
 
-- `getStaticPaths` enumerates **zero slugs** → no blog/case-study/glossary detail
+- `getStaticPaths` enumerates **zero slugs** → no blog/case-study detail
   pages are emitted.
 - The listing pages render their **empty states**.
 - The Sanity-fed homepage sections (`SingleTestimonial`, `TestimonialShowcase`,
@@ -38,7 +38,7 @@ What to do:
 - Skip the whole Sanity branch.
 - **Hide the empty content routes from navigation** so visitors don't land on empty
   listings. In [site-structure.ts](../../../../src/data/site-structure.ts), remove
-  or comment the `/blog`, `/case-studies`, `/projects`, `/gallery` and `/glossary` entries from the nav
+  or comment the `/blog`, `/case-studies`, `/projects` and `/gallery` entries from the nav
   `PAGES` and from the footer `links` array. The routes still build; they're just
   not linked.
 - Tell the user the on-ramp: when they want the CMS later, run `/setup` again and
@@ -53,15 +53,15 @@ dependency gone** — for bundle size, for supply-chain surface, or because the
 project is a pure brochure site. Confirm before starting; it is not reversible
 without a git revert.
 
-**Scope, measured against the current tree — about 78 files deleted and 11
+**Scope, measured against the current tree — about 73 files deleted and 11
 edited:**
 
 | Delete                                                                                 | Count |
 | -------------------------------------------------------------------------------------- | ----- |
-| `src/sanity/**` (schema, lib, components)                                              | 31    |
+| `src/sanity/**` (schema, lib, components)                                              | 30    |
 | `src/components/portabletext/**`                                                       | 8     |
-| Content + preview + draft-mode routes                                                  | 15    |
-| Templates (BlogPost, CaseStudy, GlossaryTerm, Project)                                 | 4     |
+| Content + preview + draft-mode routes                                                  | 12    |
+| Templates (BlogPost, CaseStudy, Project)                                               | 3     |
 | Sections (SanityCtaSection, CaseStudyFeatured, SingleTestimonial, TestimonialShowcase) | 4     |
 | UI (CaseStudyCard, TestimonialCard, ProjectCard, ProjectBrowser, GalleryBrowser)       | 5     |
 | React islands (SanityVisualEditing, DisableDraftMode)                                  | 2     |
@@ -81,7 +81,7 @@ edited:**
 - `src/lib/jsonld.ts`, `src/lib/read-time.ts`, `src/pages/llms.txt.ts`,
   `src/pages/llms-full.txt.ts`, `src/pages/components.astro`, `src/env.d.ts`.
 - [site-structure.ts](../../../../src/data/site-structure.ts) — remove the
-  `/blog`, `/case-studies`, `/projects`, `/gallery`, `/glossary` nav and footer
+  `/blog`, `/case-studies`, `/projects`, `/gallery` nav and footer
   entries (as in Option A).
 - Projects + gallery also delete `src/config/projects.ts`, `src/lib/projects.ts`,
   `src/lib/project-format.ts`, `scripts/check-projects.mjs`,

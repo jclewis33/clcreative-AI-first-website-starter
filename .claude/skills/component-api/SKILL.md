@@ -32,7 +32,7 @@ Read a reference **when you work with its components**:
 TestimonialsSlider, TestimonialsGrid, TestimonialShowcase, FAQ, HowItWorks,
 StackingPanels, Services, SplitSection, …), `src/components/case-study/`
 (block renderer + blocks), `src/components/global/` (Navbar, Footer, Head,
-Logo, JsonLd), `src/components/templates/` (BlogPost/CaseStudy/GlossaryTerm
+Logo, JsonLd), `src/components/templates/` (BlogPost/CaseStudy/Project
 templates), `src/components/portabletext/` (Sanity rich-text renderers).
 
 Live demos of every component: `/components` and `/style-guide`. Both are

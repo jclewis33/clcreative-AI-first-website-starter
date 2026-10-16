@@ -72,11 +72,11 @@ that owns the project (`npx sanity login` if needed).
 
 Don't skip — this is the whole point of S3.
 
-- Sanity MCP `get_schema` on the new project should list **all 13 types**:
+- Sanity MCP `get_schema` on the new project should list **all 12 types**:
   `author, blogCta, blogCtaInline, blogFaq, blogPost, callout, caseStudy,
-ctaSection, glossaryTerm, seo, siteSettings, testimonial, videoEmbed`.
+ctaSection, seo, siteSettings, testimonial, videoEmbed`.
 - Open `https://<studioHost>.sanity.studio` → the desk shows **Site Settings**
-  (pinned singleton) on top, then **Blog Posts / Case Studies / Glossary Terms**,
+  (pinned singleton) on top, then **Blog Posts / Case Studies**,
   then the **Reusable Content** and **People & Social** folders. If a type is
   missing from the desk, it's not in the `structureTool` resolver in
   [sanity.config.ts](../../../../sanity.config.ts) — but for an unmodified fork it's

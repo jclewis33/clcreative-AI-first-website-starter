@@ -82,23 +82,3 @@ SANITY_TOKEN=<token> node scripts/migrate-webflow-blog.mjs <path-to.csv> [--auth
 > `blogPost` schema's category strings — adjust it for your taxonomy. The
 > expected CSV columns (`Slug`, `Title`, `Post Body`, `Main Image`,
 > `Categories`, `Featured?`, …) match Webflow's default blog export.
-
----
-
-## `migrate-webflow-glossary.mjs` — Webflow CSV → Sanity glossary terms
-
-One-time importer (kept as a **template**). Reads a Webflow glossary CSV export
-and creates `glossaryTerm` documents, skipping draft/archived rows and
-converting the Expanded Definition HTML to Portable Text. Uses `createOrReplace`
-(id = `glossaryTerm-<slug>`), so it is safe to re-run. Supports a no-write
-preview.
-
-```bash
-SANITY_TOKEN=<token> node scripts/migrate-webflow-glossary.mjs <path-to.csv>
-node scripts/migrate-webflow-glossary.mjs <path-to.csv> --dry-run   # preview, no token needed
-```
-
-> Fork note: `CATEGORY_RULES` classify terms into this project's `glossaryTerm`
-> category enum (Development | SEO | CSS | Design | Business | Performance) via
-> keyword heuristics — replace them to match your schema. Expected CSV columns:
-> `Term`, `Slug`, `Short Definition`, `Expanded Definition`, `Draft`, `Archived`.

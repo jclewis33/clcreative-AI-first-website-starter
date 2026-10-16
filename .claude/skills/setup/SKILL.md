@@ -117,7 +117,7 @@ fork can ship a real site without ever creating one.
 
 Present it plainly:
 
-> **Yes — set up Sanity.** You get the blog, case studies, and glossary as
+> **Yes — set up Sanity.** You get the blog, case studies, projects and gallery as
 > editable content, plus draft preview. Adds a Sanity project, a hosted Studio, a
 > Viewer token, CORS setup, and a publish→rebuild webhook.
 >

@@ -57,7 +57,7 @@ and re-run typegen.
 
 The site runs on a **single** Cloudflare Worker (the `your-worker-name`
 project). `www.example.com` is the only public URL. The public CMS content
-routes (`/blog/**`, `/case-studies/**`, `/glossary/**`) are **prerendered
+routes (`/blog/**`, `/case-studies/**`, `/projects/**`) are **prerendered
 static HTML** served by the Worker's assets binding at zero CPU; draft preview
 happens on a parallel **SSR `/preview/*` tree** (`/preview/blog/[slug]`, etc.)
 that renders the identical templates through the identical loaders — only the
@@ -319,21 +319,21 @@ zero Studio imports) are **separate modules**. Keep them separate.
 **Desk structure** (the `structureTool({ structure })` resolver). An explicit
 `S.list()` — **every new document type must be added here by hand** or it will
 not appear in the desk. Layout: Site Settings (pinned singleton) · Blog Posts /
-Case Studies / Glossary / Projects (All, Featured, one list per category from
+Case Studies / Projects (All, Featured, one list per category from
 `src/config/projects.ts`) / Gallery photos at top level, with curated sub-views
 (Featured, Drafts, Coming Soon — plain GROQ filters on `S.documentList()`) ·
 Reusable Content and
 People & Social folders. The `SINGLETON_TYPES` / `SINGLETON_ACTIONS` logic
 keeps `siteSettings` a singleton — leave it intact.
 
-**Field groups.** `blogPost`, `caseStudy`, `glossaryTerm` split fields into
+**Field groups.** `blogPost` and `caseStudy` split fields into
 tabs via `groups:` on the type + `group:` per field. Convention: `content`
 (default), then `media`, `meta`, `seo`. Editor-UI only — no data migration, so
 always safe. Object/array-member sub-fields do not take groups.
 
 **Icons.** Every document type sets `icon:` on its `defineType` (from
 `@sanity/icons`). Current mapping: blogPost→`DocumentTextIcon`,
-caseStudy→`CaseIcon`, glossaryTerm→`BookIcon`, project→`ProjectsIcon`,
+caseStudy→`CaseIcon`, project→`ProjectsIcon`,
 galleryItem→`ImageIcon`, author→`UserIcon`,
 testimonial→`CommentIcon`, blogCta→`BellIcon`, ctaSection→`BlockElementIcon`,
 siteSettings→`CogIcon`.
@@ -383,10 +383,10 @@ SSR twins.
 
 ⚠️ **Two URL maps exist — separate modules on purpose:**
 
-| Module              | Used by                                         | Returns                                           |
-| ------------------- | ----------------------------------------------- | ------------------------------------------------- |
-| `resolve.ts`        | the Studio only (imports `sanity/presentation`) | `/preview/<type>/<slug>` — draft-preview targets  |
-| `internal-links.ts` | site code only (zero Studio imports)            | `/blog/…`, `/case-studies/…`, `/glossary/…` links |
+| Module              | Used by                                         | Returns                                          |
+| ------------------- | ----------------------------------------------- | ------------------------------------------------ |
+| `resolve.ts`        | the Studio only (imports `sanity/presentation`) | `/preview/<type>/<slug>` — draft-preview targets |
+| `internal-links.ts` | site code only (zero Studio imports)            | `/blog/…`, `/case-studies/…` links               |
 
 `resolve.ts` is compiled into the **hosted Studio bundle**, so location changes
 require `npx sanity deploy`. Deploy order: **site first** (so the `/preview`
