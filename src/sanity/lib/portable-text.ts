@@ -127,56 +127,133 @@ function renderInternalLinkWithPreview(
   return parts.join("");
 }
 
-/**
- * Convert a Portable Text span's marks to HTML.
- */
-function renderSpan(
-  span: PortableTextSpan,
-  markDefs: PortableTextBlock["markDefs"],
-): string {
-  let html = escapeHtml(span.text ?? "");
+/* ── Mark grouping ─────────────────────────────────────────────────────── */
 
-  if (!span.marks?.length) return html;
+/* Adjacent spans that share a mark render inside ONE element for it — a link
+   whose text has a bold word is one <a> with a <strong> inside, not three
+   anchors. This ports @portabletext/toolkit's buildMarksTree (what
+   astro-portabletext renders the blog body with), so both paths nest marks
+   the same way. */
 
-  for (const mark of span.marks) {
-    switch (mark) {
-      case "strong":
-        html = `<strong>${html}</strong>`;
-        break;
-      case "em":
-        html = `<em>${html}</em>`;
-        break;
-      case "code":
-        html = `<code>${html}</code>`;
-        break;
-      case "underline":
-        html = `<u>${html}</u>`;
-        break;
-      case "strike-through":
-        html = `<s>${html}</s>`;
-        break;
-      default: {
-        // Annotation mark — look up in markDefs
-        const def = markDefs?.find((d) => d._key === mark);
-        if (def?._type === "link" && def.href) {
-          const attrs = def.newTab
-            ? ` target="_blank" rel="noopener noreferrer"`
-            : "";
-          html = `<a href="${escapeAttr(def.href)}"${attrs}>${html}</a>`;
-        } else if (def?._type === "internalLink") {
-          const href = resolveInternalLinkHref(def.target);
-          if (href) {
-            const attrs = def.newTab
-              ? ` target="_blank" rel="noopener noreferrer"`
-              : "";
-            html = renderInternalLinkWithPreview(html, href, attrs, def.target);
-          }
-        }
-      }
+const KNOWN_DECORATORS = [
+  "strong",
+  "em",
+  "code",
+  "underline",
+  "strike-through",
+];
+
+/** A mark wrapping its children, or a run of text. */
+type MarkNode =
+  | { kind: "mark"; markKey: string; children: MarkNode[] }
+  | { kind: "text"; text: string };
+
+/** A span's marks, outermost first: the mark that runs over the most
+    following spans wraps the others; ties go to decorator order, then name. */
+function sortMarks(spans: PortableTextSpan[], index: number): string[] {
+  const marks = spans[index]?.marks ?? [];
+  if (!marks.length) return [];
+  const runs: Record<string, number> = {};
+  for (const mark of marks) {
+    runs[mark] = 1;
+    for (let next = index + 1; next < spans.length; next++) {
+      if (spans[next]?.marks?.includes(mark)) runs[mark]++;
+      else break;
     }
   }
+  return [...marks].sort((a, b) => {
+    if (runs[a] !== runs[b]) return runs[b] - runs[a];
+    const aPos = KNOWN_DECORATORS.indexOf(a);
+    const bPos = KNOWN_DECORATORS.indexOf(b);
+    return aPos === bPos ? a.localeCompare(b) : aPos - bPos;
+  });
+}
 
+/** Group a block's spans into a tree of shared marks. */
+function buildMarksTree(spans: PortableTextSpan[]): MarkNode[] {
+  const root: MarkNode[] = [];
+  /* The open marks, outermost first, each with the child list new nodes
+     append to. */
+  let stack: Array<{ markKey: string; children: MarkNode[] }> = [];
+  spans.forEach((span, i) => {
+    const needed = sortMarks(spans, i);
+    // Keep the open marks this span still has, in order; close the rest.
+    let keep = 0;
+    while (keep < stack.length) {
+      const at = needed.indexOf(stack[keep].markKey);
+      if (at === -1) break;
+      needed.splice(at, 1);
+      keep++;
+    }
+    stack = stack.slice(0, keep);
+    let target = stack.length ? stack[stack.length - 1].children : root;
+    for (const markKey of needed) {
+      const node: MarkNode = { kind: "mark", markKey, children: [] };
+      target.push(node);
+      stack.push(node);
+      target = node.children;
+    }
+    target.push({ kind: "text", text: span.text ?? "" });
+  });
+  return root;
+}
+
+/** Wrap rendered children in one mark's element (unknown marks add none). */
+function wrapMark(
+  markKey: string,
+  html: string,
+  markDefs: PortableTextBlock["markDefs"],
+): string {
+  switch (markKey) {
+    case "strong":
+      return `<strong>${html}</strong>`;
+    case "em":
+      return `<em>${html}</em>`;
+    case "code":
+      return `<code>${html}</code>`;
+    case "underline":
+      return `<u>${html}</u>`;
+    case "strike-through":
+      return `<s>${html}</s>`;
+  }
+  // Annotation mark — look up in markDefs
+  const def = markDefs?.find((d) => d._key === markKey);
+  const attrs = def?.newTab ? ` target="_blank" rel="noopener noreferrer"` : "";
+  if (def?._type === "link" && def.href) {
+    return `<a href="${escapeAttr(def.href)}"${attrs}>${html}</a>`;
+  }
+  if (def?._type === "internalLink") {
+    const href = resolveInternalLinkHref(def.target);
+    if (href) {
+      return renderInternalLinkWithPreview(html, href, attrs, def.target);
+    }
+  }
   return html;
+}
+
+function renderMarkNodes(
+  nodes: MarkNode[],
+  markDefs: PortableTextBlock["markDefs"],
+): string {
+  return nodes
+    .map((node) =>
+      node.kind === "text"
+        ? escapeHtml(node.text)
+        : wrapMark(
+            node.markKey,
+            renderMarkNodes(node.children, markDefs),
+            markDefs,
+          ),
+    )
+    .join("");
+}
+
+/** A text block's children as inline HTML, with marks grouped. */
+function renderInline(block: PortableTextBlock): string {
+  const spans = (block.children ?? []).filter(
+    (child) => child?._type === "span",
+  );
+  return renderMarkNodes(buildMarksTree(spans), block.markDefs);
 }
 
 function escapeHtml(str: string): string {
@@ -187,15 +264,17 @@ function escapeHtml(str: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/** `&` first, so the entities added after it are not escaped again. */
 function escapeAttr(str: string): string {
-  return str.replace(/"/g, "&quot;").replace(/&/g, "&amp;");
+  return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
 
 /**
  * Convert an array of Portable Text blocks to an HTML string.
  *
- * Supports: paragraphs, headings (h2-h4), blockquotes, bullet/numbered lists,
- * bold, italic, code, links, and inline images.
+ * Supports: paragraphs, headings (h2-h4), blockquotes, bullet/numbered lists
+ * (nested by `level`), bold, italic, code, links (adjacent spans sharing a
+ * mark grouped into one element), and inline images.
  *
  * The output is designed to be rendered inside a `.u-rich-text` wrapper.
  */
@@ -206,17 +285,32 @@ export function portableTextToHtml(
   if (!blocks?.length) return "";
 
   const parts: string[] = [];
-  let currentListType: string | null = null;
+  /* Open lists, outermost first. Each list's newest <li> stays open until
+     the next item at its level (or a shallower one) arrives, so a deeper
+     item's list nests inside it — the HTML shape @portabletext/toolkit's
+     nestLists gives astro-portabletext. */
+  const openLists: Array<{ listItem: string; level: number }> = [];
+  const listTag = (listItem: string) => (listItem === "number" ? "ol" : "ul");
+  // Close the newest open <li> by appending to the part that holds it.
+  const closeItem = () => {
+    parts[parts.length - 1] += "</li>";
+  };
+  const closeList = () => {
+    const list = openLists.pop();
+    if (!list) return;
+    closeItem();
+    parts.push(`</${listTag(list.listItem)}>`);
+  };
+  const closeAllLists = () => {
+    while (openLists.length) closeList();
+  };
 
   for (let i = 0; i < blocks.length; i++) {
     const node = blocks[i];
 
     // Handle video embeds
     if (node._type === "videoEmbed") {
-      if (currentListType) {
-        parts.push(currentListType === "bullet" ? "</ul>" : "</ol>");
-        currentListType = null;
-      }
+      closeAllLists();
 
       const video = node as PortableTextVideoEmbed;
       const embedUrl = video.url ? resolveVideoEmbedUrl(video.url) : null;
@@ -238,11 +332,7 @@ export function portableTextToHtml(
 
     // Handle images
     if (node._type === "image") {
-      // Close any open list
-      if (currentListType) {
-        parts.push(currentListType === "bullet" ? "</ul>" : "</ol>");
-        currentListType = null;
-      }
+      closeAllLists();
 
       const img = node as PortableTextImage;
       if (imageUrlFn && img.asset?._ref) {
@@ -261,30 +351,33 @@ export function portableTextToHtml(
     const block = node as PortableTextBlock;
     if (block._type !== "block") continue;
 
-    const children = block.children ?? [];
-    const innerHtml = children
-      .map((child) => renderSpan(child, block.markDefs))
-      .join("");
+    const innerHtml = renderInline(block);
 
-    // Handle list items
+    // Handle list items, nesting by level
     if (block.listItem) {
-      const listTag = block.listItem === "bullet" ? "ul" : "ol";
-      if (currentListType !== block.listItem) {
-        if (currentListType) {
-          parts.push(currentListType === "bullet" ? "</ul>" : "</ol>");
-        }
-        parts.push(`<${listTag}>`);
-        currentListType = block.listItem;
+      const level = block.level ?? 1;
+      // Close lists deeper than this item.
+      while (openLists.length && openLists[openLists.length - 1].level > level)
+        closeList();
+      const top = openLists[openLists.length - 1];
+      if (top && top.level === level && top.listItem === block.listItem) {
+        closeItem(); // A sibling item in the same list.
+      } else {
+        // Same level but the other list type: end that list first.
+        if (top && top.level === level) closeList();
+        // A new list. Nested inside the open <li> when one is open, and
+        // joined to its part so no whitespace trails the item's text.
+        const open = `<${listTag(block.listItem)}>`;
+        if (openLists.length) parts[parts.length - 1] += open;
+        else parts.push(open);
+        openLists.push({ listItem: block.listItem, level });
       }
-      parts.push(`<li>${innerHtml}</li>`);
+      parts.push(`<li>${innerHtml}`);
       continue;
     }
 
     // Close any open list before non-list content
-    if (currentListType) {
-      parts.push(currentListType === "bullet" ? "</ul>" : "</ol>");
-      currentListType = null;
-    }
+    closeAllLists();
 
     // Render block by style
     switch (block.style) {
@@ -307,10 +400,8 @@ export function portableTextToHtml(
     }
   }
 
-  // Close trailing list
-  if (currentListType) {
-    parts.push(currentListType === "bullet" ? "</ul>" : "</ol>");
-  }
+  // Close trailing lists
+  closeAllLists();
 
   return parts.join("\n");
 }

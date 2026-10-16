@@ -136,7 +136,7 @@ const jsonLd = blogPostJsonLd(post, siteOrigin);
             <div class="blog_post_avatar">
               <img
                 src={imageUrl(post.authorAvatar, { width: 64, height: 64 })}
-                alt={post.author}
+                alt={post.authorAvatar.alt}
                 width="32"
                 height="32"
                 loading="lazy"

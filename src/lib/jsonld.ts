@@ -328,19 +328,18 @@ export function blogPostJsonLd(post: BlogPostDetail, siteUrl: string): any {
     if (video) nodes.push(video);
   }
 
-  if (post.faqs.length > 0) {
+  const faqs = post.faqs.filter((f) => f.question && f.answerText);
+  if (faqs.length > 0) {
     nodes.push({
       "@type": "FAQPage",
-      mainEntity: post.faqs
-        .filter((f) => f.question && f.answerText)
-        .map((f) => ({
-          "@type": "Question",
-          name: f.question,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: f.answerText.replace(/\s+/g, " ").trim(),
-          },
-        })),
+      mainEntity: faqs.map((f) => ({
+        "@type": "Question",
+        name: f.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: f.answerText.replace(/\s+/g, " ").trim(),
+        },
+      })),
     });
   }
 

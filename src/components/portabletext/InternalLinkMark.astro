@@ -33,14 +33,23 @@ const imageUrl = target?.image
 const linkAttrs = newTab
   ? { target: "_blank", rel: "noopener noreferrer" }
   : {};
+
+/* The link text is rendered once and set flush inside the anchor with
+   set:html. A slot element written inside the anchor let the formatter's
+   line breaks render as padding spaces around the link text. Not
+   slotContent(): that trims, and a span's own edge spaces are real text. */
+const text = await Astro.slots.render("default");
 ---
 
 {
   href ? (
     <span class="internal-link_wrap">
-      <a href={href} {...linkAttrs} class="internal-link_anchor">
-        <slot />
-      </a>
+      <a
+        href={href}
+        {...linkAttrs}
+        class="internal-link_anchor"
+        set:html={text}
+      />
       {(title || description || imageUrl) && (
         <span class="internal-link_preview" aria-hidden="true">
           {imageUrl && (
@@ -58,6 +67,6 @@ const linkAttrs = newTab
       )}
     </span>
   ) : (
-    <slot />
+    <Fragment set:html={text} />
   )
 }

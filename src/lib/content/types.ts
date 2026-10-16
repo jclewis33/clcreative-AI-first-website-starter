@@ -10,15 +10,13 @@
  * are incomplete until an editor fills them in, so most display fields are
  * `string | null`. Listings drop entries that cannot be linked to.
  */
-import type { ImageMetadata } from "astro";
-import type { MDXInstance } from "astro";
+import type { ImageMetadata, MDXInstance } from "astro";
+import type { ContentBlock } from "@/components/case-study/types";
 import type { TocItem } from "@/lib/toc";
-export type { TocItem };
+export type { ContentBlock, TocItem };
 
 /** A compiled MDX body's `Content` component. */
 type MdxContent = MDXInstance<Record<string, never>>["Content"];
-import type { ContentBlock } from "@/components/case-study/types";
-export type { ContentBlock };
 
 /* ── Images ────────────────────────────────────────────────────────────── */
 

@@ -53,6 +53,29 @@ function block(children: Doc[], extra: Doc = {}): Doc {
   };
 }
 const para = (text: string) => block([span(text)]);
+
+/* Explicit-key variants for fixtures added after the baseline was first
+   captured: they leave the key() counter — and so every earlier fixture's
+   keys — untouched. */
+function kspan(k: string, text: string, marks: string[] = []): Doc {
+  return { _type: "span", _key: k, text, marks };
+}
+function kblock(k: string, children: Doc[], extra: Doc = {}): Doc {
+  return {
+    _type: "block",
+    _key: k,
+    style: "normal",
+    markDefs: [],
+    children,
+    ...extra,
+  };
+}
+const kitem = (
+  k: string,
+  text: string,
+  listItem: "bullet" | "number",
+  level: number,
+) => kblock(k, [kspan(`${k}s`, text)], { listItem, level });
 const heading = (style: "h2" | "h3" | "h4", text: string) =>
   block([span(text)], { style });
 
@@ -230,6 +253,37 @@ export const POSTS: Doc[] = [
         question: "Does an answer keep two paragraphs?",
         answer: [para("Yes, the first one."), para("And the second one.")],
       },
+      {
+        question: "Do nested lists and bold links survive?",
+        answer: [
+          kitem("fxq1", "Top item one", "bullet", 1),
+          kitem("fxq2", "Nested item one", "bullet", 2),
+          kitem("fxq3", "Nested item two", "bullet", 2),
+          kitem("fxq4", "Top item two", "bullet", 1),
+          kitem("fxq5", "First step", "number", 1),
+          kitem("fxq6", "A bullet under the step", "bullet", 2),
+          kitem("fxq7", "Second step", "number", 1),
+          kblock(
+            "fxq8",
+            [
+              kspan("fxq8a", "Read "),
+              kspan("fxq8b", "the ", ["fxqlink"]),
+              kspan("fxq8c", "bold", ["fxqlink", "strong"]),
+              kspan("fxq8d", " guide", ["fxqlink"]),
+              kspan("fxq8e", "."),
+            ],
+            {
+              markDefs: [
+                {
+                  _type: "link",
+                  _key: "fxqlink",
+                  href: "https://example.com/guide",
+                },
+              ],
+            },
+          ),
+        ],
+      },
     ],
     relatedSlugs: ["fixture-post-three"],
     seo: {
@@ -348,6 +402,27 @@ const CASE_STUDY_ONE_BLOCKS: Doc[] = [
           },
         ],
       }),
+      kblock(
+        "fxcs1",
+        [
+          kspan("fxcs1a", "Read the "),
+          kspan("fxcs1b", "very ", ["fxcslink"]),
+          kspan("fxcs1c", "bold", ["fxcslink", "strong"]),
+          kspan("fxcs1d", " write-up", ["fxcslink"]),
+          kspan("fxcs1e", "."),
+        ],
+        {
+          markDefs: [
+            {
+              _type: "link",
+              _key: "fxcslink",
+              href: "https://example.com/write-up",
+            },
+          ],
+        },
+      ),
+      kitem("fxcs2", "Case list top", "bullet", 1),
+      kitem("fxcs3", "Case list nested", "bullet", 2),
     ],
   },
   {
