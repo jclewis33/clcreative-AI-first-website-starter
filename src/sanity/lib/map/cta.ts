@@ -10,7 +10,7 @@ type Settings = NonNullable<SITE_SETTINGS_QUERY_RESULT>;
 /** A dereferenced blogCta (BLOG_CTA_PROJECTION in ../queries.ts). */
 export type RawBlogCta = NonNullable<Settings["defaultBlogCta"]>;
 /** A dereferenced ctaSection (CTA_SECTION_PROJECTION in ../queries.ts). */
-export type RawCtaSection = NonNullable<Settings["defaultCtaSection"]>;
+type RawCtaSection = NonNullable<Settings["defaultCtaSection"]>;
 
 export function toBlogCta(
   cta: RawBlogCta | null | undefined,

@@ -258,6 +258,12 @@ export default defineConfig({
   ],
 
   vite: {
+    define: {
+      // Parity fixtures switch (src/sanity/lib/load-query.ts). Baked in at
+      // build time so a normal build dead-code-eliminates the fixture import
+      // and no runtime variable can turn it on. Never set in production.
+      __PARITY_FIXTURES__: JSON.stringify(process.env.PARITY_FIXTURES ?? ""),
+    },
     optimizeDeps: {
       // Astro 6 + @sanity/visual-editing compat workaround:
       // Several transitive deps are CJS modules that Vite doesn't pre-bundle

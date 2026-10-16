@@ -35,6 +35,7 @@ import FormattedDate from "@/components/ui/FormattedDate.astro";
 import Slider from "@/components/ui/Slider.astro";
 
 import { SITE } from "@/config/site";
+import { categoryToSlug } from "@/lib/blog-categories";
 
 // Styles
 import "@/styles/pages/blog.css";
@@ -64,31 +65,26 @@ const latestSmall = latestPosts.slice(2, 5);
 
 const categoryConfig: {
   name: string;
-  slug: string;
   description: string;
   theme?: "light" | "dark" | "brand";
 }[] = [
   {
     name: "News",
-    slug: "news",
     description: "Announcements, updates, and the latest from our team.",
     theme: "brand",
   },
   {
     name: "Guides",
-    slug: "guides",
     description: "In-depth guides and how-tos to help you get more done.",
     theme: "dark",
   },
   {
     name: "Insights",
-    slug: "insights",
     description: "Perspectives, trends, and ideas worth sharing.",
     theme: "brand",
   },
   {
     name: "Tutorials",
-    slug: "tutorials",
     description:
       "Step-by-step walkthroughs to help you put ideas into practice.",
     theme: "dark",
@@ -104,10 +100,13 @@ function getPostsForCategory(categoryName: string) {
   );
 }
 
-// Build category sections with posts — only include categories that have content
+// Build category sections with posts — only include categories that have
+// content. The slug (anchor id and "View all" link) comes from the same
+// helper as the /blog/category/<slug> archive paths, so they always match.
 const categorySections = categoryConfig
   .map((cat) => ({
     ...cat,
+    slug: categoryToSlug(cat.name),
     posts: getPostsForCategory(cat.name),
   }))
   .filter((cat) => cat.posts.length > 0);

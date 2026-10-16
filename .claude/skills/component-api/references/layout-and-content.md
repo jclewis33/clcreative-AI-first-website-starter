@@ -302,8 +302,9 @@ variant), default (body), `footer`.
 ## `<BlogCard>`
 
 Blog card built on Card: image top, title + description clamped at 2 lines,
-category label, whole surface clickable. Required props: `title`,
-`description`, `category`, `href`, `image`, `imageAlt`; optional `author`,
+category labels, whole surface clickable. Required props: `title`,
+`description`, `categories` (a string array; `null` or empty hides the
+labels), `href`, `image`, `imageAlt`; optional `author`,
 `authorAvatar`, `date`. `...rest` passes through to Card. Listings pass
 `BlogPostSummary`s from `@/lib/content`, sizing the image with
 `imageSrc(post.image, { width: 600 })`; `BlogPostGrid` takes

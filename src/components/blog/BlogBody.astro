@@ -15,6 +15,16 @@
 import { PortableText } from "astro-portabletext";
 import type { BlogBodyContent } from "@/lib/content";
 
+/* Why dynamic imports and not static ones: this pattern came over verbatim
+   from BlogPostTemplate (it dates from the initial commit, with no recorded
+   reason), so it was measured rather than assumed. Swapping all eight for
+   static imports leaves dist/client byte-identical in both parity builds
+   (empty and PARITY_FIXTURES=1, HTML and CSS/JS assets alike). The only
+   difference is in dist/server: here each Portable Text component gets its
+   own small chunk that the Worker loads only when a /preview/blog body
+   actually renders, instead of most of them being folded into the blog
+   route's chunk and loaded with it. Kept for that lazy loading; static
+   imports would be a safe swap. */
 const { default: CodeBlock } =
   await import("@/components/portabletext/CodeBlock.astro");
 const { default: SanityImage } =

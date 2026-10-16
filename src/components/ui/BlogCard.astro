@@ -15,7 +15,7 @@ import type { HTMLAttributes } from "astro/types";
  * <BlogCard
  *   title="How to Build a Design System"
  *   description="Learn how to create a scalable design system for your team."
- *   category="Design"
+ *   categories={["Design"]}
  *   href="/blog/design-system"
  *   image={blogImage}
  *   imageAlt="Design system components"
@@ -29,7 +29,7 @@ import type { HTMLAttributes } from "astro/types";
  * <BlogCard
  *   title="How to Get Started in Five Simple Steps"
  *   description="A practical walkthrough to help you get up and running quickly."
- *   category="Guides"
+ *   categories={["Guides"]}
  *   href="/blog/getting-started-guide"
  *   image={postImage}
  *   imageAlt="Getting started checklist on a desk"
@@ -56,7 +56,7 @@ import { plainText } from "@/lib/content";
  * **Props:**
  * - `title` — post title (clamped at 2 lines) (**required**)
  * - `description` — post excerpt/description (clamped at 2 lines) (**required**)
- * - `category` — category label displayed at the bottom (**required**)
+ * - `categories` — category labels displayed at the bottom (**required**; `null` or empty hides them)
  * - `href` — link to the full blog post (**required**)
  * - `image` — post featured image: imported `ImageMetadata` or URL string (**required**)
  * - `imageAlt` — alt text for the featured image (**required**)
@@ -72,7 +72,7 @@ interface Props extends HTMLAttributes<"div"> {
    * **BlogCard props:**
    * - `title` — post title, clamped at 2 lines (required)
    * - `description` — post excerpt, clamped at 2 lines (required)
-   * - `category` — category label at bottom (required)
+   * - `categories` — category labels at bottom (required; `null` or empty hides them)
    * - `href` — link to full post (required)
    * - `image` — featured image source (required)
    * - `imageAlt` — image alt text (required)

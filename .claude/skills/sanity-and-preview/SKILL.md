@@ -30,7 +30,8 @@ const { data } = await loadQuery({ query: BLOG_POST_QUERY });
 
 **Templates and components never see Sanity types.** They take the named view
 models from `@/lib/content` (`BlogPostPage`, `CaseStudyDetail`,
-`ProjectCardData`, …, defined in `src/lib/content/types.ts`). TypeGen types stay
+`ProjectCardData`, …, defined in `src/lib/content/types.ts`; the case-study
+`ContentBlock` union in `src/lib/content/blocks.ts`). TypeGen types stay
 inside `src/sanity/`: each mapper in `src/sanity/lib/map/` takes a
 `*_QUERY_RESULT` and returns a view model, and `src/sanity/lib/source.ts` is
 declared `satisfies ContentSource`. After editing a query and running
@@ -429,6 +430,8 @@ const posts = await getBlogPosts(); // BlogPostSummary[], newest first
   posts.map((post) => (
     <BlogCard
       title={post.title}
+      description={post.description}
+      categories={post.categories}
       image={imageSrc(post.image, { width: 600 }) ?? null}
       imageAlt={post.image?.alt ?? null}
       data-title={plainText(post.title)}
@@ -517,7 +520,12 @@ before and after and diffing `dist/client`.
 - **Fixtures.** `PARITY_FIXTURES=1` answers every query from GROQ-shaped
   fixtures (`src/sanity/lib/fixtures/`), so a populated site builds with no
   Sanity project. `KEEP_DEV_PAGES=1` keeps `/components` in the build
-  (normally stripped).
+  (normally stripped). The flag is read **at build time only**:
+  `astro.config.mjs` bakes it into the `__PARITY_FIXTURES__` constant
+  (`vite.define`), which `loadQuery` reads. A normal build gets `""`, so the
+  fixture import is dead code and no fixture chunk reaches `dist/server`
+  (`ls dist/server/chunks | grep -i fixture` prints nothing); a Worker
+  variable named `PARITY_FIXTURES` has no effect.
 - **Capture a baseline** before the change (copy `dist/client` aside; the
   `.parity/` folder is git-ignored and prettier-ignored), rebuild after it,
   then `node scripts/compare-dist.mjs <before> dist/client`. The

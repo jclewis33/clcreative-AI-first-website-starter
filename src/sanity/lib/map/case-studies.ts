@@ -153,9 +153,7 @@ function toBlock(block: RawBlock): ContentBlock | null {
 }
 
 /** Render a case study's flexible `content[]` blocks to Markdown. */
-export function caseStudyMarkdown(
-  blocks: RawBlock[] | null | undefined,
-): string {
+function caseStudyMarkdown(blocks: RawBlock[] | null | undefined): string {
   if (!blocks?.length) return "";
   const parts: string[] = [];
   for (const b of blocks) {

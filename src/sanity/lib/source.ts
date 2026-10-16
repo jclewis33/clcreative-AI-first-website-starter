@@ -81,7 +81,7 @@ import { toTestimonial } from "./map/testimonials";
 /* ── Shared ────────────────────────────────────────────────────────────── */
 
 /** Type guard for dropping the nulls a mapper returns for unlinkable rows. */
-export function isPresent<T>(value: T | null): value is T {
+function isPresent<T>(value: T | null): value is T {
   return value !== null;
 }
 

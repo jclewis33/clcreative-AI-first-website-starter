@@ -11,7 +11,7 @@
  * `string | null`. Listings drop entries that cannot be linked to.
  */
 import type { ImageMetadata, MDXInstance } from "astro";
-import type { ContentBlock } from "@/components/case-study/types";
+import type { ContentBlock } from "./blocks";
 import type { TocItem } from "@/lib/toc";
 export type { ContentBlock, TocItem };
 
@@ -151,7 +151,7 @@ export interface ProjectCardData {
   /** As the editor wrote it, e.g. "Springfield, IL"; "" when not set. */
   location: string;
   /** Card-size hero photo. */
-  image: ContentImage | undefined;
+  image: ContentImage | null;
 }
 
 /** One project photo and its optional stage label. */

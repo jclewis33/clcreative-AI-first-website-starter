@@ -48,6 +48,7 @@ import {
   GALLERY_QUERY,
 } from "./queries";
 import { SANITY_PROJECT_ID } from "@/config/site.shared.mjs";
+import { categoryToSlug } from "@/lib/blog-categories";
 
 /** Perspective forwarding — the return shape of `getDraftModeProps(Astro)`. */
 type DraftProps = { perspectiveCookie?: string | undefined };
@@ -175,12 +176,6 @@ export async function loadProjectPage(
 }
 
 /* ── getStaticPaths helpers ────────────────────────────────────────────────── */
-
-/** URL slug for a category display name — keep in sync with the category
- *  links emitted by the blog index/templates. */
-function categoryToSlug(category: string): string {
-  return String(category).toLowerCase().replace(/\s+/g, "-");
-}
 
 /**
  * A fresh fork still carries the placeholder project id from

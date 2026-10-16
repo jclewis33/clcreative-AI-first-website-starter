@@ -16,6 +16,9 @@ public/
 # Generated / vendored
 .agents/
 
+# Local agent scratch (plans, briefs, reports, review diffs) — not source
+.superpowers/
+
 # prettier-plugin-astro (0.14.1, latest as of writing) throws a SyntaxError
 # parsing the `is:inline` scripts in these two files - the GTM snippet and the
 # pre-paint banner check. Prettier fails the whole run on them, so they are

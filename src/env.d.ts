@@ -15,6 +15,11 @@ interface ImportMetaEnv {
   readonly CF_ACCESS_AUD?: string;
 }
 
+// Build-time constant, replaced by `vite.define` in astro.config.mjs from
+// process.env.PARITY_FIXTURES ("" in a normal build). Read only by
+// src/sanity/lib/load-query.ts to switch on the parity fixtures.
+declare const __PARITY_FIXTURES__: string;
+
 // GSAP and Swiper are imported directly by the components that use them —
 // there are no library globals on window anymore. The one deliberate global
 // is the escape hatch animation.js assigns for CMS-injected content.

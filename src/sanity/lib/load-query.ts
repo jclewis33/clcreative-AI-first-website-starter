@@ -5,11 +5,13 @@ import { getSecret } from "astro:env/server";
 /* Parity fixtures (dev-only): `PARITY_FIXTURES=1 npm run build` answers
    every query from ./fixtures instead of the network, so a refactor can be
    diffed against a populated site with no Sanity project (see
-   scripts/compare-dist.mjs). Read at build time; never set in production. */
-const PARITY_FIXTURES: string | undefined =
-  import.meta.env.PARITY_FIXTURES ??
-  (globalThis as { process?: { env?: Record<string, string | undefined> } })
-    .process?.env?.PARITY_FIXTURES;
+   scripts/compare-dist.mjs). `__PARITY_FIXTURES__` is a build-time constant
+   (`vite.define` in astro.config.mjs, from process.env.PARITY_FIXTURES):
+   in a normal build it is the empty string, so the fixture import below is
+   dead code and the fixtures never reach the server bundle. Nothing reads
+   the flag at runtime, so a stray Worker variable cannot switch it on.
+   The constant is read inline (not via a local) so the condition is a
+   literal the bundler folds. */
 
 function parsePerspective(
   raw: string | undefined,
@@ -71,10 +73,10 @@ export async function loadQuery<const Q extends string>({
       ...(draftMode ? { token } : {}),
     });
   type Fetched = Awaited<ReturnType<typeof run>>;
-  const { result, resultSourceMap } = PARITY_FIXTURES
+  const { result, resultSourceMap } = __PARITY_FIXTURES__
     ? ((await (
         await import("./fixtures")
-      ).fixtureFetch(query, params, PARITY_FIXTURES)) as unknown as Fetched)
+      ).fixtureFetch(query, params, __PARITY_FIXTURES__)) as unknown as Fetched)
     : await run();
 
   return {

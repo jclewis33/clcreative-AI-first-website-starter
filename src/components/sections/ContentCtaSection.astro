@@ -45,6 +45,12 @@ interface Props extends HTMLAttributes<"section"> {
    */
   docs?: string;
 
+  /**
+   * Set to `false` to skip rendering. Forwarded to Section, which then
+   * emits nothing. @default true
+   */
+  render?: boolean;
+
   /** The CTA section to render: a page's override, else the site default. */
   cta: CtaSectionData;
 
@@ -60,6 +66,7 @@ interface Props extends HTMLAttributes<"section"> {
 
 const {
   docs,
+  render = true,
   cta,
   padding = "small",
   paddingTop,
@@ -88,6 +95,7 @@ const hasSecondary = Boolean(secondaryLabel && secondaryHref);
 ---
 
 <Section
+  render={render}
   padding={padding}
   paddingTop={paddingTop}
   paddingBottom={paddingBottom}

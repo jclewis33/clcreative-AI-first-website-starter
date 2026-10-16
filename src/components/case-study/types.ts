@@ -1,64 +1,22 @@
 /**
- * Case study content block types.
- *
- * Discriminated union that maps directly to Sanity's "array of objects"
- * field type. Each case study's body is an ordered array of these blocks,
- * allowing unique layouts per case study.
+ * Case study content block types — re-exported from the content interface
+ * (src/lib/content/blocks.ts), which owns them so the interface never
+ * depends on this component folder. The block components import from here.
  */
-import type { ImageMetadata } from "astro";
+import type { PaddingSize } from "@/components/ui/Section.astro";
+import type { SectionSpacing } from "@/lib/content/blocks";
 
-export interface ImageEntry {
-  src: ImageMetadata | string;
-  alt: string;
-  transparent?: boolean;
-  position?: { x: number; y: number } | "center";
-}
+export type {
+  ContentBlock,
+  ImageEntry,
+  SectionSpacing,
+} from "@/lib/content/blocks";
 
-/** Section spacing for content blocks — derived from the Section padding
- * contract (single source) minus 'page-top', which is nav plumbing, not
- * block spacing. */
-export type SectionSpacing = Exclude<
-  import("@/components/ui/Section.astro").PaddingSize,
-  "page-top"
->;
-
-/** Shared spacing props present on every content block. */
-interface BlockSpacing {
-  sectionSpacing?: SectionSpacing;
-  sectionSpacingTop?: SectionSpacing;
-  sectionSpacingBottom?: SectionSpacing;
-}
-
-export type ContentBlock =
-  | ({
-      type: "fullWidthImage";
-      image: ImageMetadata | string;
-      imageAlt: string;
-      aspectRatio?: string;
-      transparent?: boolean;
-      position?: { x: number; y: number } | "center";
-    } & BlockSpacing)
-  | ({
-      type: "imageGrid";
-      images: ImageEntry[];
-      aspectRatio?: string;
-    } & BlockSpacing)
-  | ({ type: "richText"; html: string; maxWidth?: string } & BlockSpacing)
-  | ({ type: "richTextLeft"; html: string; maxWidth?: string } & BlockSpacing)
-  | ({ type: "richTextColumns"; html: string } & BlockSpacing)
-  | ({
-      type: "richTextWithImage";
-      html: string;
-      image: ImageMetadata | string;
-      imageAlt: string;
-      aspectRatio?: string;
-      transparent?: boolean;
-      objectFit?: "cover" | "contain";
-      position?: { x: number; y: number } | "center";
-    } & BlockSpacing)
-  | ({
-      type: "stats";
-      /* Nullable: a stat row exists in Sanity as soon as an editor adds it,
-         before either field is filled in. */
-      items: { value: string | null; label: string | null }[];
-    } & BlockSpacing);
+/* Compile-time drift check: SectionSpacing is spelled out in
+   src/lib/content/blocks.ts (no component import there), and must stay
+   equal to Section's PaddingSize minus "page-top". `npm run check` fails
+   on this line if either side changes without the other. */
+type Expected = Exclude<PaddingSize, "page-top">;
+type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+type AssertTrue<T extends true> = T;
+type SectionSpacingInSync = AssertTrue<Same<SectionSpacing, Expected>>;

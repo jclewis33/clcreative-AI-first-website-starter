@@ -46,14 +46,17 @@ export function imageUrl(
 
 /**
  * The image re-sized to `width`, with the height that keeps its intrinsic
- * ratio (two-thirds of the width when the ratio is unknown) — the shape
- * cards, tiles and lightboxes pass straight to `<Visual>`.
+ * ratio — the shape cards, tiles and lightboxes pass straight to `<Visual>`.
+ * The ratio comes from the image's own `width`/`height`, else (for a local
+ * image) from its ImageMetadata dimensions; when neither is known the height
+ * is two-thirds of the width.
  */
 export function sizedImage(image: ContentImage, width: number): ContentImage {
+  const local = typeof image.src === "string" ? undefined : image.src;
+  const w = image.width ?? local?.width;
+  const h = image.height ?? local?.height;
   const height =
-    image.width && image.height
-      ? Math.round((width * image.height) / image.width)
-      : Math.round(width * 0.66);
+    w && h ? Math.round((width * h) / w) : Math.round(width * 0.66);
   return {
     ...image,
     src: image.url ? image.url({ width }) : image.src,

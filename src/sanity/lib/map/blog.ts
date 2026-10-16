@@ -30,10 +30,10 @@ import { toSeo } from "./seo";
  * BLOG_POST_QUERY's relatedPosts[] and (with primaryCategory)
  * BLOG_POSTS_QUERY all project these fields.
  */
-export type RawPostCard = RELATED_BLOG_POSTS_QUERY_RESULT[number] & {
+type RawPostCard = RELATED_BLOG_POSTS_QUERY_RESULT[number] & {
   primaryCategory?: string | null;
 };
-export type RawPost = NonNullable<BLOG_POST_QUERY_RESULT>;
+type RawPost = NonNullable<BLOG_POST_QUERY_RESULT>;
 
 /** A card, or null when it has no slug or title (nothing to list). */
 export function toBlogPostSummary(p: RawPostCard): BlogPostSummary | null {

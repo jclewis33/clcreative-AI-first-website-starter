@@ -1,5 +1,4 @@
 ---
-import type { HTMLAttributes } from "astro/types";
 /**
  * Blog CTA — clickable image + text + link block.
  *
@@ -12,6 +11,7 @@ import type { HTMLAttributes } from "astro/types";
  * default (`getBlogPost().cta`), or an inline CTA from a Portable Text body
  * (BlogCtaInline maps it).
  */
+import type { HTMLAttributes } from "astro/types";
 import Visual from "@/components/ui/Visual.astro";
 import { imageSrc, plainText, type BlogCtaData } from "@/lib/content";
 
@@ -19,15 +19,13 @@ interface Props extends HTMLAttributes<"a"> {
   /**
    * **BlogCta** — a linked image + heading + text panel. Pass `cta` (a
    * `BlogCtaData`). Its `aspectRatio` picks the image shape (portrait when
-   * unset) and `linkLabel` defaults to "Learn more".
+   * unset) and `linkLabel` defaults to "Learn more". `class` and any other
+   * anchor attribute land on the link wrapper (`blog-cta_wrap`).
    */
   docs?: string;
 
   /** The CTA to render. */
   cta: BlogCtaData;
-
-  /** Extra classes on the link wrapper. */
-  class?: string;
 }
 
 const { docs, cta, class: className, ...rest } = Astro.props;
