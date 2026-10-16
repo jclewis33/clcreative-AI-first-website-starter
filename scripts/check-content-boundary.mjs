@@ -20,9 +20,9 @@
  *
  * RESTRICTED lists modules only some files may import: the node-only
  * content-sync helpers (src/lib/content/markdown.ts, checks.ts — importing
- * them from a page would ship them to the Worker), and later the Files
- * backend itself. A restricted rule applies to every file, allow-listed or
- * not.
+ * them from a page would ship them to the Worker), and the Files backend
+ * (src/lib/content/files/), reached only through @/lib/content. A restricted
+ * rule applies to every file, allow-listed or not.
  *
  * Usage: npm run check:boundary   (exit 1 on any violation)
  */
@@ -62,6 +62,11 @@ const RESTRICTED = [
     target: "src/lib/content/checks",
     allow: ["src/content.config.ts"],
     why: "node-only: content-sync checks that read the filesystem",
+  },
+  {
+    target: "src/lib/content/files",
+    allow: ["src/lib/content/"],
+    why: "the Files backend is reached through @/lib/content (source.ts selects it)",
   },
 ];
 

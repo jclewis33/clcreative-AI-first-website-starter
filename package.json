@@ -24,7 +24,8 @@
     "css-data": "node scripts/generate-css-custom-data.mjs",
     "check:hover": "node scripts/check-hover.mjs",
     "check:boundary": "node scripts/check-content-boundary.mjs",
-    "check:content": "node scripts/check-content-text.mjs && node scripts/check-content-validation.mjs"
+    "check:content": "node scripts/check-content-text.mjs && node scripts/check-content-validation.mjs",
+    "check:content-build": "node scripts/check-content-build.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.1",

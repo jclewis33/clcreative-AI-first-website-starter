@@ -1,7 +1,7 @@
 /**
  * The content interface's types — the view models every page, template,
  * section and component renders from, and the ContentSource contract each
- * backend implements (src/sanity/lib/source.ts today).
+ * backend implements (src/sanity/lib/source.ts, src/lib/content/files/).
  *
  * Nothing in here knows which backend is active. Consumers import these
  * through `@/lib/content`; backend code imports this file directly.

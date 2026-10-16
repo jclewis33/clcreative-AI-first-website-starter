@@ -2,8 +2,8 @@
 /**
  * check-content-text — unit checks for the pure text helpers behind the
  * Files content source: build-time Markdown rendering for rich text inside
- * JSON (src/lib/content/markdown.ts). Task 5 adds the MDX body helpers
- * (src/lib/content/files/mdx-text.ts).
+ * JSON (src/lib/content/markdown.ts), and the MDX body helpers behind read
+ * time, llms-full.txt and inline-CTA checks (src/lib/content/files/mdx-text.ts).
  *
  * Runs under plain Node (22.18+ strips TypeScript types on import):
  *   node scripts/check-content-text.mjs
@@ -14,6 +14,11 @@ import {
   markdownToHtml,
   renderRichText,
 } from "../src/lib/content/markdown.ts";
+import {
+  inlineCtaIds,
+  mdxToMarkdown,
+  mdxWords,
+} from "../src/lib/content/files/mdx-text.ts";
 
 // Heading ids are removed: rich-text blocks have no table of contents, and
 // the Portable Text serializer emits none.
@@ -42,5 +47,69 @@ assert.deepEqual(await renderRichText("Start with **one** step."), {
   html: "<p>Start with <strong>one</strong> step.</p>",
   text: "Start with one step.",
 });
+
+const BODY = [
+  "Intro with a [link](/x) and **bold**.",
+  "",
+  "## A heading",
+  "",
+  "- one item",
+  "1. two item",
+  "",
+  "```js",
+  "const skipped = true;",
+  "```",
+  "",
+  '<Callout type="tip">',
+  "Skipped callout text.",
+  "</Callout>",
+  "",
+  '<VideoEmbed url="https://youtu.be/abc" caption="A demo" />',
+  "",
+  '<BlogCta id="free-site-review" />',
+  "",
+  "![An image](./images/x.webp)",
+].join("\n");
+
+// Read time counts what the Portable Text source counts: prose blocks only,
+// no code, callouts, embeds or image alt text.
+assert.deepEqual(mdxWords(BODY).trim().split(/\s+/), [
+  "Intro",
+  "with",
+  "a",
+  "link",
+  "and",
+  "**bold**.",
+  "A",
+  "heading",
+  "one",
+  "item",
+  "two",
+  "item",
+]);
+// llms-full.txt: videos become links, CTA and callout tags drop out, local
+// image paths are hidden (the Portable Text exporter's `![alt]`).
+assert.equal(
+  mdxToMarkdown(BODY),
+  [
+    "Intro with a [link](/x) and **bold**.",
+    "",
+    "## A heading",
+    "",
+    "- one item",
+    "1. two item",
+    "",
+    "```js",
+    "const skipped = true;",
+    "```",
+    "",
+    "Skipped callout text.",
+    "",
+    "[Video: A demo](https://youtu.be/abc)",
+    "",
+    "![An image]",
+  ].join("\n"),
+);
+assert.deepEqual(inlineCtaIds(BODY), ["free-site-review"]);
 
 console.log("check-content-text: ok");
