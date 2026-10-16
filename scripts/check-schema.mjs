@@ -39,7 +39,7 @@ const BASE = baseIdx >= 0 ? args[baseIdx + 1] : "http://localhost:4321";
 const STATIC_PAGES = ["/", "/contact"];
 
 // Pull one sample slug from each Sanity content type so we also validate
-// the JsonLd helper output on blog / case-study / glossary templates.
+// the JsonLd helper output on blog / case-study templates.
 async function getSampleSanityPaths() {
   const client = createClient({
     projectId: SANITY_PROJECT_ID,
@@ -48,22 +48,18 @@ async function getSampleSanityPaths() {
     useCdn: true,
   });
 
-  const [post, caseStudy, glossary] = await Promise.all([
+  const [post, caseStudy] = await Promise.all([
     client.fetch(
       `*[_type == "blogPost" && defined(slug.current)][0]{ "slug": slug.current }`,
     ),
     client.fetch(
       `*[_type == "caseStudy" && defined(slug.current)][0]{ "slug": slug.current }`,
     ),
-    client.fetch(
-      `*[_type == "glossaryTerm" && defined(slug.current)][0]{ "slug": slug.current }`,
-    ),
   ]);
 
   const paths = [];
   if (post?.slug) paths.push(`/blog/${post.slug}`);
   if (caseStudy?.slug) paths.push(`/case-studies/${caseStudy.slug}`);
-  if (glossary?.slug) paths.push(`/glossary/${glossary.slug}`);
   return paths;
 }
 

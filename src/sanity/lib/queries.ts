@@ -89,12 +89,12 @@ export const BLOG_POST_QUERY =
         "target": reference->{
           _type,
           "slug": slug.current,
-          "title": coalesce(title, term),
+          "title": title,
           // A project's description is rich text — use its SEO line and
           // hero photo so the link card stays a plain string + image.
           "description": select(
             _type == "project" => seoDescription,
-            coalesce(description, shortDefinition)
+            description
           ),
           "image": select(_type == "project" => heroImage, image)
         }
@@ -319,62 +319,6 @@ export const RELATED_CASE_STUDIES_QUERY = defineQuery(`*[
   comingSoon,
   liveUrl
 }`);
-
-/* ── Glossary Terms ────────────────────────────────────────────────────────── */
-
-/** All glossary terms for listing page (no body content needed) */
-export const GLOSSARY_TERMS_QUERY =
-  defineQuery(`*[_type == "glossaryTerm"] | order(term asc) {
-  term,
-  "slug": slug.current,
-  shortDefinition,
-  category,
-  "relatedTerms": relatedTerms[]->slug.current
-}`);
-
-/** Single glossary term by slug (includes body for detail page) */
-export const GLOSSARY_TERM_QUERY =
-  defineQuery(`*[_type == "glossaryTerm" && slug.current == $slug][0] {
-  term,
-  "slug": slug.current,
-  shortDefinition,
-  category,
-  _createdAt,
-  _updatedAt,
-  "relatedTerms": relatedTerms[]->{
-    term,
-    "slug": slug.current,
-    shortDefinition,
-    category
-  },
-  body[] {
-    ...,
-    markDefs[] {
-      ...,
-      _type == "internalLink" => {
-        ...,
-        "target": reference->{
-          _type,
-          "slug": slug.current,
-          "title": coalesce(title, term),
-          // A project's description is rich text — use its SEO line and
-          // hero photo so the link card stays a plain string + image.
-          "description": select(
-            _type == "project" => seoDescription,
-            coalesce(description, shortDefinition)
-          ),
-          "image": select(_type == "project" => heroImage, image)
-        }
-      }
-    }
-  },
-  "ctaSectionOverride": ctaSectionOverride->${CTA_SECTION_PROJECTION}
-}`);
-
-/** All glossary term slugs for getStaticPaths */
-export const GLOSSARY_SLUGS_QUERY = defineQuery(
-  `*[_type == "glossaryTerm" && defined(slug.current)].slug.current`,
-);
 
 /* ── Testimonials ─────────────────────────────────────────────────────────── */
 

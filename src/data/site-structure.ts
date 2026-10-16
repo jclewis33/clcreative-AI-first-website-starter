@@ -146,12 +146,6 @@ export const PAGES: SitePage[] = [
     desc: "Photos from recent work.",
     group: "index",
   },
-  {
-    path: "/glossary",
-    title: "Glossary",
-    desc: "A glossary of terms.",
-    group: "index",
-  },
 
   // ── Legal / policy (llms "Optional" + footer bottom bar) ─────────────────
   {
@@ -257,7 +251,6 @@ export const NAV_MENU: NavMenuItem[] = [
     : []),
   { path: "/blog" },
   { path: "/case-studies" },
-  { path: "/glossary" },
   ...DEV_NAV_LINKS,
 ];
 
@@ -301,7 +294,6 @@ export const FOOTER_GROUPS: FooterGroup[] = [
       "/case-studies",
       "/projects",
       "/gallery",
-      "/glossary",
       ...DEV_FOOTER_LINKS,
     ],
   },

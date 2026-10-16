@@ -1,6 +1,5 @@
 /**
- * JSON-LD structured data builders for blog posts, case studies, and
- * glossary terms. Each function returns a plain object (or @graph array)
+ * JSON-LD structured data builders for blog posts and case studies. Each function returns a plain object (or @graph array)
  * that a `<script type="application/ld+json">` tag can stringify.
  *
  * All functions expect `siteUrl` to be an absolute origin (e.g.
@@ -13,7 +12,6 @@ import { SITE } from "@/config/site";
 
 const ORG_NAME = SITE.name;
 const ORG_LOGO_PATH = SITE.logoPath;
-const DEFAULT_OG_IMAGE_PATH = SITE.ogImagePath;
 
 function absoluteUrl(siteUrl: string, path: string): string {
   if (!path) return siteUrl;
@@ -368,50 +366,5 @@ export function caseStudyJsonLd(cs: any, siteUrl: string): any {
     ...(cs.client && {
       about: { "@type": "Organization", name: cs.client },
     }),
-  };
-}
-
-/**
- * Build JSON-LD for a glossary term page. Returns an @graph containing:
- * - Article (primary — needed for Google rich-result eligibility)
- * - DefinedTerm (semantic type, supplementary)
- *
- * Google doesn't surface DefinedTerm on its own, so we lead with Article
- * and keep DefinedTerm alongside for schema.org consumers.
- */
-export function glossaryTermJsonLd(term: any, siteUrl: string): any {
-  const pageUrl = `${siteUrl}/glossary/${term.slug}`;
-  const description = term.shortDefinition || term.term;
-
-  const article = {
-    "@type": "Article",
-    "@id": pageUrl,
-    headline: term.term,
-    description,
-    image: absoluteUrl(siteUrl, DEFAULT_OG_IMAGE_PATH),
-    articleSection: "Glossary",
-    datePublished: toIsoDateTime(term._createdAt),
-    dateModified:
-      toIsoDateTime(term._updatedAt) || toIsoDateTime(term._createdAt),
-    author: publisher(siteUrl),
-    publisher: publisher(siteUrl),
-    mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
-  };
-
-  const definedTerm = {
-    "@type": "DefinedTerm",
-    name: term.term,
-    description,
-    url: pageUrl,
-    inDefinedTermSet: {
-      "@type": "DefinedTermSet",
-      name: "Astro Starter Glossary",
-      url: `${siteUrl}/glossary`,
-    },
-  };
-
-  return {
-    "@context": "https://schema.org",
-    "@graph": [article, definedTerm],
   };
 }

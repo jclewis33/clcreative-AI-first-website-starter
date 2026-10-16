@@ -3,7 +3,7 @@
  *
  * Prerendered to `dist/llms.txt` at build time. Static marketing pages come
  * from the `PAGES` registry in `src/data/site-structure.ts`; blog posts, case
- * studies, and glossary terms are pulled fresh from Sanity on every build — so
+ * studies, and projects are pulled fresh from Sanity on every build — so
  * this file stays in sync with published content automatically, like the sitemap.
  */
 
@@ -13,7 +13,6 @@ import {
   BLOG_POSTS_QUERY,
   CASE_STUDIES_QUERY,
   PROJECTS_QUERY,
-  GLOSSARY_TERMS_QUERY,
 } from "@/sanity/lib/queries";
 import { SITE_URL, SITE_NAME, SITE_SUMMARY } from "@/config/site";
 import { categoryTitle } from "@/config/projects";
@@ -31,7 +30,6 @@ import type {
   BLOG_POSTS_QUERY_RESULT,
   CASE_STUDIES_QUERY_RESULT,
   PROJECTS_QUERY_RESULT,
-  GLOSSARY_TERMS_QUERY_RESULT,
 } from "@/sanity/sanity.types";
 
 export const prerender = true;
@@ -76,16 +74,13 @@ function dynamicLine(
 export const GET: APIRoute = async () => {
   // Tolerate an empty or unreachable dataset (e.g. a fresh fork before
   // `/setup`) — the file still renders the static page index.
-  const [posts, caseStudies, glossary, projects] = await Promise.all([
+  const [posts, caseStudies, projects] = await Promise.all([
     loadQuery({ query: BLOG_POSTS_QUERY })
       .then((r) => r.data)
       .catch((): BLOG_POSTS_QUERY_RESULT => []),
     loadQuery({ query: CASE_STUDIES_QUERY })
       .then((r) => r.data)
       .catch((): CASE_STUDIES_QUERY_RESULT => []),
-    loadQuery({ query: GLOSSARY_TERMS_QUERY })
-      .then((r) => r.data)
-      .catch((): GLOSSARY_TERMS_QUERY_RESULT => []),
     loadQuery({ query: PROJECTS_QUERY })
       .then((r) => r.data)
       .catch((): PROJECTS_QUERY_RESULT => []),
@@ -147,19 +142,6 @@ export const GET: APIRoute = async () => {
     sections.push(
       `## Blog\n${listablePosts
         .map((p) => dynamicLine(p.title, `/blog/${p.slug}`, p.description))
-        .join("\n")}`,
-    );
-  }
-
-  const listableTerms = (glossary ?? []).filter(
-    (g): g is typeof g & { term: string; slug: string } => !!g.term && !!g.slug,
-  );
-  if (listableTerms.length) {
-    sections.push(
-      `## Glossary\n${listableTerms
-        .map((g) =>
-          dynamicLine(g.term, `/glossary/${g.slug}`, g.shortDefinition),
-        )
         .join("\n")}`,
     );
   }

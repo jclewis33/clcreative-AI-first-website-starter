@@ -10,7 +10,6 @@ import {
   StarIcon,
   EditIcon,
   CaseIcon,
-  BookIcon,
   ClockIcon,
   PackageIcon,
   BellIcon,
@@ -41,12 +40,7 @@ import {
 const SINGLETON_TYPES = new Set(["siteSettings"]);
 const SINGLETON_ACTIONS = new Set(["publish", "discardChanges", "restore"]);
 // Types with a public detail page — get the "View on site" document action.
-const PREVIEWABLE_TYPES = new Set([
-  "blogPost",
-  "caseStudy",
-  "glossaryTerm",
-  "project",
-]);
+const PREVIEWABLE_TYPES = new Set(["blogPost", "caseStudy", "project"]);
 
 // Sort newest-first — mirrors the `dateDesc` ordering defined on the schemas.
 const DATE_DESC = [{ field: "date", direction: "desc" as const }];
@@ -108,14 +102,6 @@ export default defineConfig({
                 S.documentTypeList("caseStudy")
                   .title("Case Studies")
                   .defaultOrdering(DATE_DESC),
-              ),
-            S.listItem()
-              .title("Glossary Terms")
-              .icon(BookIcon)
-              .child(
-                S.documentTypeList("glossaryTerm")
-                  .title("Glossary Terms")
-                  .defaultOrdering([{ field: "term", direction: "asc" }]),
               ),
             // Projects: all, featured, then one list per category (the
             // categories come from src/config/projects.ts).

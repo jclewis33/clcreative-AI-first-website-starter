@@ -7,7 +7,6 @@ import { callout } from "./callout";
 import { caseStudy } from "./caseStudy";
 import { galleryItem } from "./galleryItem";
 import { ctaSection } from "./ctaSection";
-import { glossaryTerm } from "./glossaryTerm";
 import { project } from "./project";
 import { seo } from "./seo";
 import { siteSettings } from "./siteSettings";
@@ -26,7 +25,6 @@ export const schema = {
     project,
     galleryItem,
     ctaSection,
-    glossaryTerm,
     seo,
     siteSettings,
     testimonial,

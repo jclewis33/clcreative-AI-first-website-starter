@@ -43,17 +43,6 @@ export const resolve: PresentationPluginOptions["resolve"] = {
         ],
       }),
     }),
-    glossaryTerm: defineLocations({
-      select: { title: "title", slug: "slug.current" },
-      resolve: (doc) => ({
-        locations: [
-          {
-            title: doc?.title || "Untitled",
-            href: `/preview/glossary/${doc?.slug}`,
-          },
-        ],
-      }),
-    }),
     project: defineLocations({
       select: { title: "title", slug: "slug.current" },
       resolve: (doc) => ({

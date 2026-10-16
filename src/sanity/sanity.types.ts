@@ -148,13 +148,6 @@ export type CaseStudyReference = {
   [internalGroqTypeReferenceTo]?: "caseStudy";
 };
 
-export type GlossaryTermReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "glossaryTerm";
-};
-
 export type Callout = {
   _type: "callout";
   type?: "tip" | "warning" | "info";
@@ -175,11 +168,7 @@ export type Callout = {
           _key: string;
         }
       | {
-          reference?:
-            | BlogPostReference
-            | CaseStudyReference
-            | GlossaryTermReference
-            | ProjectReference;
+          reference?: BlogPostReference | CaseStudyReference | ProjectReference;
           newTab?: boolean;
           _type: "internalLink";
           _key: string;
@@ -245,10 +234,7 @@ export type BlogPost = {
             }
           | {
               reference?:
-                | BlogPostReference
-                | CaseStudyReference
-                | GlossaryTermReference
-                | ProjectReference;
+                BlogPostReference | CaseStudyReference | ProjectReference;
               newTab?: boolean;
               _type: "internalLink";
               _key: string;
@@ -347,10 +333,7 @@ export type CaseStudy = {
                   }
                 | {
                     reference?:
-                      | BlogPostReference
-                      | CaseStudyReference
-                      | GlossaryTermReference
-                      | ProjectReference;
+                      BlogPostReference | CaseStudyReference | ProjectReference;
                     newTab?: boolean;
                     _type: "internalLink";
                     _key: string;
@@ -400,10 +383,7 @@ export type CaseStudy = {
                   }
                 | {
                     reference?:
-                      | BlogPostReference
-                      | CaseStudyReference
-                      | GlossaryTermReference
-                      | ProjectReference;
+                      BlogPostReference | CaseStudyReference | ProjectReference;
                     newTab?: boolean;
                     _type: "internalLink";
                     _key: string;
@@ -453,10 +433,7 @@ export type CaseStudy = {
                   }
                 | {
                     reference?:
-                      | BlogPostReference
-                      | CaseStudyReference
-                      | GlossaryTermReference
-                      | ProjectReference;
+                      BlogPostReference | CaseStudyReference | ProjectReference;
                     newTab?: boolean;
                     _type: "internalLink";
                     _key: string;
@@ -496,10 +473,7 @@ export type CaseStudy = {
                   }
                 | {
                     reference?:
-                      | BlogPostReference
-                      | CaseStudyReference
-                      | GlossaryTermReference
-                      | ProjectReference;
+                      BlogPostReference | CaseStudyReference | ProjectReference;
                     newTab?: boolean;
                     _type: "internalLink";
                     _key: string;
@@ -608,69 +582,6 @@ export type CaseStudy = {
   >;
   ctaSectionOverride?: CtaSectionReference;
   seo?: Seo;
-};
-
-export type GlossaryTerm = {
-  _id: string;
-  _type: "glossaryTerm";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  term?: string;
-  slug?: Slug;
-  shortDefinition?: string;
-  category?: "General" | "Technical" | "Business" | "Design";
-  relatedTerms?: Array<
-    {
-      _key: string;
-    } & GlossaryTermReference
-  >;
-  body?: Array<
-    | {
-        children?: Array<{
-          marks?: Array<string>;
-          text?: string;
-          _type: "span";
-          _key: string;
-        }>;
-        style?: "normal" | "h2" | "h3" | "h4";
-        listItem?: "bullet" | "number";
-        markDefs?: Array<
-          | {
-              href?: string;
-              newTab?: boolean;
-              _type: "link";
-              _key: string;
-            }
-          | {
-              reference?:
-                | BlogPostReference
-                | CaseStudyReference
-                | GlossaryTermReference
-                | ProjectReference;
-              newTab?: boolean;
-              _type: "internalLink";
-              _key: string;
-            }
-        >;
-        level?: number;
-        _type: "block";
-        _key: string;
-      }
-    | {
-        asset?: SanityImageAssetReference;
-        media?: unknown;
-        hotspot?: SanityImageHotspot;
-        crop?: SanityImageCrop;
-        alt?: string;
-        _type: "image";
-        _key: string;
-      }
-    | ({
-        _key: string;
-      } & VideoEmbed)
-  >;
-  ctaSectionOverride?: CtaSectionReference;
 };
 
 export type CtaSection = {
@@ -955,12 +866,10 @@ export type AllSanitySchemaTypes =
   | GalleryItem
   | BlogPostReference
   | CaseStudyReference
-  | GlossaryTermReference
   | Callout
   | AuthorReference
   | BlogPost
   | CaseStudy
-  | GlossaryTerm
   | CtaSection
   | Project
   | Slug
@@ -1010,7 +919,7 @@ export type BLOG_POSTS_QUERY_RESULT = Array<{
 
 // Source: src/sanity/lib/queries.ts
 // Variable: BLOG_POST_QUERY
-// Query: *[_type == "blogPost" && slug.current == $slug][0] {  title,  "slug": slug.current,  description,  categories,  image,  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),  "author": author->name,  "authorAvatar": author->avatar,  video,  date,  _updatedAt,  featured,  body[] {    ...,    _type == "blogCtaInline" => {      ...,      "cta": cta->{  _id,  heading,  body,  image,  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),  aspectRatio,  linkUrl,  linkLabel}    },    markDefs[] {      ...,      _type == "internalLink" => {        ...,        "target": reference->{          _type,          "slug": slug.current,          "title": coalesce(title, term),          // A project's description is rich text — use its SEO line and          // hero photo so the link card stays a plain string + image.          "description": select(            _type == "project" => seoDescription,            coalesce(description, shortDefinition)          ),          "image": select(_type == "project" => heroImage, image)        }      }    }  },  "ctaOverride": ctaOverride->{  _id,  heading,  body,  image,  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),  aspectRatio,  linkUrl,  linkLabel},  "ctaSectionOverride": ctaSectionOverride->{  _id,  heading,  text,  primaryButtonLabel,  primaryButtonHref,  secondaryButtonLabel,  secondaryButtonHref,  backgroundImage,  "imageAlt": coalesce(imageAlt, backgroundImage.asset->altText, ""),  overlayStrength},  faqs[] {    question,    answer  },  "relatedPosts": relatedPosts[]->{    title,    "slug": slug.current,    description,    categories,    image,    "imageAlt": coalesce(imageAlt, image.asset->altText, ""),    "author": author->name,    "authorAvatar": author->avatar,    date,    featured  },  seo {    metaTitle,    metaDescription,    ogTitle,    ogDescription,    ogImage  }}
+// Query: *[_type == "blogPost" && slug.current == $slug][0] {  title,  "slug": slug.current,  description,  categories,  image,  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),  "author": author->name,  "authorAvatar": author->avatar,  video,  date,  _updatedAt,  featured,  body[] {    ...,    _type == "blogCtaInline" => {      ...,      "cta": cta->{  _id,  heading,  body,  image,  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),  aspectRatio,  linkUrl,  linkLabel}    },    markDefs[] {      ...,      _type == "internalLink" => {        ...,        "target": reference->{          _type,          "slug": slug.current,          "title": title,          // A project's description is rich text — use its SEO line and          // hero photo so the link card stays a plain string + image.          "description": select(            _type == "project" => seoDescription,            description          ),          "image": select(_type == "project" => heroImage, image)        }      }    }  },  "ctaOverride": ctaOverride->{  _id,  heading,  body,  image,  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),  aspectRatio,  linkUrl,  linkLabel},  "ctaSectionOverride": ctaSectionOverride->{  _id,  heading,  text,  primaryButtonLabel,  primaryButtonHref,  secondaryButtonLabel,  secondaryButtonHref,  backgroundImage,  "imageAlt": coalesce(imageAlt, backgroundImage.asset->altText, ""),  overlayStrength},  faqs[] {    question,    answer  },  "relatedPosts": relatedPosts[]->{    title,    "slug": slug.current,    description,    categories,    image,    "imageAlt": coalesce(imageAlt, image.asset->altText, ""),    "author": author->name,    "authorAvatar": author->avatar,    date,    featured  },  seo {    metaTitle,    metaDescription,    ogTitle,    ogDescription,    ogImage  }}
 export type BLOG_POST_QUERY_RESULT = {
   title: string | null;
   slug: string | null;
@@ -1049,10 +958,7 @@ export type BLOG_POST_QUERY_RESULT = {
         markDefs: Array<
           | {
               reference?:
-                | BlogPostReference
-                | CaseStudyReference
-                | GlossaryTermReference
-                | ProjectReference;
+                BlogPostReference | CaseStudyReference | ProjectReference;
               newTab?: boolean;
               _type: "internalLink";
               _key: string;
@@ -1082,13 +988,6 @@ export type BLOG_POST_QUERY_RESULT = {
                       crop?: SanityImageCrop;
                       _type: "image";
                     } | null;
-                  }
-                | {
-                    _type: "glossaryTerm";
-                    slug: string | null;
-                    title: string | null;
-                    description: string | null;
-                    image: null;
                   }
                 | {
                     _type: "project";
@@ -1153,10 +1052,7 @@ export type BLOG_POST_QUERY_RESULT = {
           markDefs?: Array<
             | {
                 reference?:
-                  | BlogPostReference
-                  | CaseStudyReference
-                  | GlossaryTermReference
-                  | ProjectReference;
+                  BlogPostReference | CaseStudyReference | ProjectReference;
                 newTab?: boolean;
                 _type: "internalLink";
                 _key: string;
@@ -1561,10 +1457,7 @@ export type CASE_STUDY_QUERY_RESULT = {
               markDefs: Array<
                 | {
                     reference?:
-                      | BlogPostReference
-                      | CaseStudyReference
-                      | GlossaryTermReference
-                      | ProjectReference;
+                      BlogPostReference | CaseStudyReference | ProjectReference;
                     newTab?: boolean;
                     _type: "internalLink";
                     _key: string;
@@ -1575,10 +1468,6 @@ export type CASE_STUDY_QUERY_RESULT = {
                         }
                       | {
                           _type: "caseStudy";
-                          slug: string | null;
-                        }
-                      | {
-                          _type: "glossaryTerm";
                           slug: string | null;
                         }
                       | {
@@ -1638,10 +1527,7 @@ export type CASE_STUDY_QUERY_RESULT = {
               markDefs: Array<
                 | {
                     reference?:
-                      | BlogPostReference
-                      | CaseStudyReference
-                      | GlossaryTermReference
-                      | ProjectReference;
+                      BlogPostReference | CaseStudyReference | ProjectReference;
                     newTab?: boolean;
                     _type: "internalLink";
                     _key: string;
@@ -1652,10 +1538,6 @@ export type CASE_STUDY_QUERY_RESULT = {
                         }
                       | {
                           _type: "caseStudy";
-                          slug: string | null;
-                        }
-                      | {
-                          _type: "glossaryTerm";
                           slug: string | null;
                         }
                       | {
@@ -1725,10 +1607,7 @@ export type CASE_STUDY_QUERY_RESULT = {
               markDefs: Array<
                 | {
                     reference?:
-                      | BlogPostReference
-                      | CaseStudyReference
-                      | GlossaryTermReference
-                      | ProjectReference;
+                      BlogPostReference | CaseStudyReference | ProjectReference;
                     newTab?: boolean;
                     _type: "internalLink";
                     _key: string;
@@ -1739,10 +1618,6 @@ export type CASE_STUDY_QUERY_RESULT = {
                         }
                       | {
                           _type: "caseStudy";
-                          slug: string | null;
-                        }
-                      | {
-                          _type: "glossaryTerm";
                           slug: string | null;
                         }
                       | {
@@ -1802,10 +1677,7 @@ export type CASE_STUDY_QUERY_RESULT = {
               markDefs: Array<
                 | {
                     reference?:
-                      | BlogPostReference
-                      | CaseStudyReference
-                      | GlossaryTermReference
-                      | ProjectReference;
+                      BlogPostReference | CaseStudyReference | ProjectReference;
                     newTab?: boolean;
                     _type: "internalLink";
                     _key: string;
@@ -1816,10 +1688,6 @@ export type CASE_STUDY_QUERY_RESULT = {
                         }
                       | {
                           _type: "caseStudy";
-                          slug: string | null;
-                        }
-                      | {
-                          _type: "glossaryTerm";
                           slug: string | null;
                         }
                       | {
@@ -1957,156 +1825,6 @@ export type RELATED_CASE_STUDIES_QUERY_RESULT = Array<{
   comingSoon: boolean | null;
   liveUrl: string | null;
 }>;
-
-// Source: src/sanity/lib/queries.ts
-// Variable: GLOSSARY_TERMS_QUERY
-// Query: *[_type == "glossaryTerm"] | order(term asc) {  term,  "slug": slug.current,  shortDefinition,  category,  "relatedTerms": relatedTerms[]->slug.current}
-export type GLOSSARY_TERMS_QUERY_RESULT = Array<{
-  term: string | null;
-  slug: string | null;
-  shortDefinition: string | null;
-  category: "Business" | "Design" | "General" | "Technical" | null;
-  relatedTerms: Array<string | null> | null;
-}>;
-
-// Source: src/sanity/lib/queries.ts
-// Variable: GLOSSARY_TERM_QUERY
-// Query: *[_type == "glossaryTerm" && slug.current == $slug][0] {  term,  "slug": slug.current,  shortDefinition,  category,  _createdAt,  _updatedAt,  "relatedTerms": relatedTerms[]->{    term,    "slug": slug.current,    shortDefinition,    category  },  body[] {    ...,    markDefs[] {      ...,      _type == "internalLink" => {        ...,        "target": reference->{          _type,          "slug": slug.current,          "title": coalesce(title, term),          // A project's description is rich text — use its SEO line and          // hero photo so the link card stays a plain string + image.          "description": select(            _type == "project" => seoDescription,            coalesce(description, shortDefinition)          ),          "image": select(_type == "project" => heroImage, image)        }      }    }  },  "ctaSectionOverride": ctaSectionOverride->{  _id,  heading,  text,  primaryButtonLabel,  primaryButtonHref,  secondaryButtonLabel,  secondaryButtonHref,  backgroundImage,  "imageAlt": coalesce(imageAlt, backgroundImage.asset->altText, ""),  overlayStrength}}
-export type GLOSSARY_TERM_QUERY_RESULT = {
-  term: string | null;
-  slug: string | null;
-  shortDefinition: string | null;
-  category: "Business" | "Design" | "General" | "Technical" | null;
-  _createdAt: string;
-  _updatedAt: string;
-  relatedTerms: Array<{
-    term: string | null;
-    slug: string | null;
-    shortDefinition: string | null;
-    category: "Business" | "Design" | "General" | "Technical" | null;
-  }> | null;
-  body: Array<
-    | {
-        children?: Array<{
-          marks?: Array<string>;
-          text?: string;
-          _type: "span";
-          _key: string;
-        }>;
-        style?: "h2" | "h3" | "h4" | "normal";
-        listItem?: "bullet" | "number";
-        markDefs: Array<
-          | {
-              reference?:
-                | BlogPostReference
-                | CaseStudyReference
-                | GlossaryTermReference
-                | ProjectReference;
-              newTab?: boolean;
-              _type: "internalLink";
-              _key: string;
-              target:
-                | {
-                    _type: "blogPost";
-                    slug: string | null;
-                    title: string | null;
-                    description: string | null;
-                    image: {
-                      asset?: SanityImageAssetReference;
-                      media?: unknown;
-                      hotspot?: SanityImageHotspot;
-                      crop?: SanityImageCrop;
-                      _type: "image";
-                    } | null;
-                  }
-                | {
-                    _type: "caseStudy";
-                    slug: string | null;
-                    title: string | null;
-                    description: string | null;
-                    image: {
-                      asset?: SanityImageAssetReference;
-                      media?: unknown;
-                      hotspot?: SanityImageHotspot;
-                      crop?: SanityImageCrop;
-                      _type: "image";
-                    } | null;
-                  }
-                | {
-                    _type: "glossaryTerm";
-                    slug: string | null;
-                    title: string | null;
-                    description: string | null;
-                    image: null;
-                  }
-                | {
-                    _type: "project";
-                    slug: string | null;
-                    title: string | null;
-                    description: string | null;
-                    image: {
-                      asset?: SanityImageAssetReference;
-                      media?: unknown;
-                      hotspot?: SanityImageHotspot;
-                      crop?: SanityImageCrop;
-                      _type: "image";
-                    } | null;
-                  }
-                | null;
-            }
-          | {
-              href?: string;
-              newTab?: boolean;
-              _type: "link";
-              _key: string;
-            }
-        > | null;
-        level?: number;
-        _type: "block";
-        _key: string;
-      }
-    | {
-        asset?: SanityImageAssetReference;
-        media?: unknown;
-        hotspot?: SanityImageHotspot;
-        crop?: SanityImageCrop;
-        alt?: string;
-        _type: "image";
-        _key: string;
-        markDefs: null;
-      }
-    | {
-        _key: string;
-        _type: "videoEmbed";
-        url?: string;
-        caption?: string;
-        markDefs: null;
-      }
-  > | null;
-  ctaSectionOverride: {
-    _id: string;
-    heading: string | null;
-    text: string | null;
-    primaryButtonLabel: string | null;
-    primaryButtonHref: string | null;
-    secondaryButtonLabel: string | null;
-    secondaryButtonHref: string | null;
-    backgroundImage: {
-      asset?: SanityImageAssetReference;
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      _type: "image";
-    } | null;
-    imageAlt: string | "";
-    overlayStrength: number | null;
-  } | null;
-} | null;
-
-// Source: src/sanity/lib/queries.ts
-// Variable: GLOSSARY_SLUGS_QUERY
-// Query: *[_type == "glossaryTerm" && defined(slug.current)].slug.current
-export type GLOSSARY_SLUGS_QUERY_RESULT = Array<string | null>;
 
 // Source: src/sanity/lib/queries.ts
 // Variable: TESTIMONIALS_QUERY
@@ -2344,7 +2062,7 @@ import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
     '*[_type == "blogPost"] | order(date desc) {\n  title,\n  "slug": slug.current,\n  description,\n  categories,\n  primaryCategory,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  "author": author->name,\n  "authorAvatar": author->avatar,\n  date,\n  featured\n}': BLOG_POSTS_QUERY_RESULT;
-    '*[_type == "blogPost" && slug.current == $slug][0] {\n  title,\n  "slug": slug.current,\n  description,\n  categories,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  "author": author->name,\n  "authorAvatar": author->avatar,\n  video,\n  date,\n  _updatedAt,\n  featured,\n  body[] {\n    ...,\n    _type == "blogCtaInline" => {\n      ...,\n      "cta": cta->{\n  _id,\n  heading,\n  body,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  aspectRatio,\n  linkUrl,\n  linkLabel\n}\n    },\n    markDefs[] {\n      ...,\n      _type == "internalLink" => {\n        ...,\n        "target": reference->{\n          _type,\n          "slug": slug.current,\n          "title": coalesce(title, term),\n          // A project\'s description is rich text \u2014 use its SEO line and\n          // hero photo so the link card stays a plain string + image.\n          "description": select(\n            _type == "project" => seoDescription,\n            coalesce(description, shortDefinition)\n          ),\n          "image": select(_type == "project" => heroImage, image)\n        }\n      }\n    }\n  },\n  "ctaOverride": ctaOverride->{\n  _id,\n  heading,\n  body,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  aspectRatio,\n  linkUrl,\n  linkLabel\n},\n  "ctaSectionOverride": ctaSectionOverride->{\n  _id,\n  heading,\n  text,\n  primaryButtonLabel,\n  primaryButtonHref,\n  secondaryButtonLabel,\n  secondaryButtonHref,\n  backgroundImage,\n  "imageAlt": coalesce(imageAlt, backgroundImage.asset->altText, ""),\n  overlayStrength\n},\n  faqs[] {\n    question,\n    answer\n  },\n  "relatedPosts": relatedPosts[]->{\n    title,\n    "slug": slug.current,\n    description,\n    categories,\n    image,\n    "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n    "author": author->name,\n    "authorAvatar": author->avatar,\n    date,\n    featured\n  },\n  seo {\n    metaTitle,\n    metaDescription,\n    ogTitle,\n    ogDescription,\n    ogImage\n  }\n}': BLOG_POST_QUERY_RESULT;
+    '*[_type == "blogPost" && slug.current == $slug][0] {\n  title,\n  "slug": slug.current,\n  description,\n  categories,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  "author": author->name,\n  "authorAvatar": author->avatar,\n  video,\n  date,\n  _updatedAt,\n  featured,\n  body[] {\n    ...,\n    _type == "blogCtaInline" => {\n      ...,\n      "cta": cta->{\n  _id,\n  heading,\n  body,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  aspectRatio,\n  linkUrl,\n  linkLabel\n}\n    },\n    markDefs[] {\n      ...,\n      _type == "internalLink" => {\n        ...,\n        "target": reference->{\n          _type,\n          "slug": slug.current,\n          "title": title,\n          // A project\'s description is rich text \u2014 use its SEO line and\n          // hero photo so the link card stays a plain string + image.\n          "description": select(\n            _type == "project" => seoDescription,\n            description\n          ),\n          "image": select(_type == "project" => heroImage, image)\n        }\n      }\n    }\n  },\n  "ctaOverride": ctaOverride->{\n  _id,\n  heading,\n  body,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  aspectRatio,\n  linkUrl,\n  linkLabel\n},\n  "ctaSectionOverride": ctaSectionOverride->{\n  _id,\n  heading,\n  text,\n  primaryButtonLabel,\n  primaryButtonHref,\n  secondaryButtonLabel,\n  secondaryButtonHref,\n  backgroundImage,\n  "imageAlt": coalesce(imageAlt, backgroundImage.asset->altText, ""),\n  overlayStrength\n},\n  faqs[] {\n    question,\n    answer\n  },\n  "relatedPosts": relatedPosts[]->{\n    title,\n    "slug": slug.current,\n    description,\n    categories,\n    image,\n    "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n    "author": author->name,\n    "authorAvatar": author->avatar,\n    date,\n    featured\n  },\n  seo {\n    metaTitle,\n    metaDescription,\n    ogTitle,\n    ogDescription,\n    ogImage\n  }\n}': BLOG_POST_QUERY_RESULT;
     '*[_type == "blogPost" && defined(slug.current)].slug.current': BLOG_SLUGS_QUERY_RESULT;
     '*[\n  _type == "blogPost"\n  && slug.current != $slug\n  && !(slug.current in $excludeSlugs)\n  && count(categories[string::lower(@) in $categories]) > 0\n] | order(date desc) [0...6] {\n  title,\n  "slug": slug.current,\n  description,\n  categories,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  "author": author->name,\n  "authorAvatar": author->avatar,\n  date,\n  featured\n}': RELATED_BLOG_POSTS_QUERY_RESULT;
     '*[_type == "blogPost" && $category in categories] | order(date desc) {\n  title,\n  "slug": slug.current,\n  description,\n  categories,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  "author": author->name,\n  "authorAvatar": author->avatar,\n  date,\n  featured\n}': BLOG_POSTS_BY_CATEGORY_QUERY_RESULT;
@@ -2354,9 +2072,6 @@ declare module "@sanity/client" {
     '*[_type == "caseStudy" && slug.current == $slug][0] {\n  title,\n  "slug": slug.current,\n  description,\n  client,\n  categories,\n  industries,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  date,\n  _updatedAt,\n  featured,\n  comingSoon,\n  timeline,\n  liveUrl,\n  galleryImagesAlt,\n  galleryImages[] {\n    asset,\n    hotspot,\n    crop,\n    "alt": coalesce(alt, ^.galleryImagesAlt, asset->altText, "")\n  },\n  content[] {\n    _type,\n    _key,\n    // per-block vertical spacing (drives Section paddingTop/paddingBottom)\n    sectionSpacing,\n    sectionSpacingTop,\n    sectionSpacingBottom,\n    // richText, richTextLeft \u2014 editor-set content width\n    maxWidth,\n    // richText, richTextColumns\n    body[] {\n      ...,\n      markDefs[] {\n        ...,\n        _type == "internalLink" => {\n          ...,\n          "target": reference->{ _type, "slug": slug.current }\n        }\n      }\n    },\n    // fullWidthImage, richTextWithImage\n    image,\n    "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n    // image display options (fullWidthImage, richTextWithImage, imageGrid)\n    aspectRatio,\n    customAspectRatio,\n    transparent,\n    objectFit,\n    // imageGrid\n    defaultAlt,\n    images[] {\n      asset,\n      hotspot,\n      crop,\n      "alt": coalesce(alt, ^.defaultAlt, asset->altText, ""),\n      transparent\n    },\n    // stats\n    items[] {\n      value,\n      label\n    }\n  },\n  "ctaSectionOverride": ctaSectionOverride->{\n  _id,\n  heading,\n  text,\n  primaryButtonLabel,\n  primaryButtonHref,\n  secondaryButtonLabel,\n  secondaryButtonHref,\n  backgroundImage,\n  "imageAlt": coalesce(imageAlt, backgroundImage.asset->altText, ""),\n  overlayStrength\n},\n  seo {\n    metaTitle,\n    metaDescription,\n    ogTitle,\n    ogDescription,\n    ogImage\n  }\n}': CASE_STUDY_QUERY_RESULT;
     '*[_type == "caseStudy" && defined(slug.current) && comingSoon != true].slug.current': CASE_STUDY_SLUGS_QUERY_RESULT;
     '*[\n  _type == "caseStudy"\n  && slug.current != $slug\n  && defined(image.asset)\n] | order(date desc) [0...4] {\n  title,\n  "slug": slug.current,\n  description,\n  client,\n  categories,\n  industries,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  date,\n  featured,\n  comingSoon,\n  liveUrl\n}': RELATED_CASE_STUDIES_QUERY_RESULT;
-    '*[_type == "glossaryTerm"] | order(term asc) {\n  term,\n  "slug": slug.current,\n  shortDefinition,\n  category,\n  "relatedTerms": relatedTerms[]->slug.current\n}': GLOSSARY_TERMS_QUERY_RESULT;
-    '*[_type == "glossaryTerm" && slug.current == $slug][0] {\n  term,\n  "slug": slug.current,\n  shortDefinition,\n  category,\n  _createdAt,\n  _updatedAt,\n  "relatedTerms": relatedTerms[]->{\n    term,\n    "slug": slug.current,\n    shortDefinition,\n    category\n  },\n  body[] {\n    ...,\n    markDefs[] {\n      ...,\n      _type == "internalLink" => {\n        ...,\n        "target": reference->{\n          _type,\n          "slug": slug.current,\n          "title": coalesce(title, term),\n          // A project\'s description is rich text \u2014 use its SEO line and\n          // hero photo so the link card stays a plain string + image.\n          "description": select(\n            _type == "project" => seoDescription,\n            coalesce(description, shortDefinition)\n          ),\n          "image": select(_type == "project" => heroImage, image)\n        }\n      }\n    }\n  },\n  "ctaSectionOverride": ctaSectionOverride->{\n  _id,\n  heading,\n  text,\n  primaryButtonLabel,\n  primaryButtonHref,\n  secondaryButtonLabel,\n  secondaryButtonHref,\n  backgroundImage,\n  "imageAlt": coalesce(imageAlt, backgroundImage.asset->altText, ""),\n  overlayStrength\n}\n}': GLOSSARY_TERM_QUERY_RESULT;
-    '*[_type == "glossaryTerm" && defined(slug.current)].slug.current': GLOSSARY_SLUGS_QUERY_RESULT;
     '*[_type == "testimonial"] | order(sortOrder asc) {\n  _id,\n  name,\n  role,\n  company,\n  quote,\n  avatar,\n  website,\n  stars,\n  featured,\n  sortOrder\n}': TESTIMONIALS_QUERY_RESULT;
     '*[_type == "testimonial" && featured == true] | order(sortOrder asc) {\n  _id,\n  name,\n  role,\n  company,\n  quote,\n  avatar,\n  website,\n  stars,\n  featured,\n  sortOrder\n}': FEATURED_TESTIMONIALS_QUERY_RESULT;
     '*[_type == "caseStudy" && slug.current in $slugs] {\n  "slug": slug.current,\n  client,\n  description,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, "")\n}': FEATURED_CASE_STUDIES_QUERY_RESULT;

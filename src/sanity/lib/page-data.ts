@@ -33,9 +33,6 @@ import {
   CASE_STUDY_QUERY,
   RELATED_CASE_STUDIES_QUERY,
   CASE_STUDY_SLUGS_QUERY,
-  GLOSSARY_TERM_QUERY,
-  GLOSSARY_TERMS_QUERY,
-  GLOSSARY_SLUGS_QUERY,
   SITE_SETTINGS_QUERY,
   PROJECT_QUERY,
   PROJECT_SLUGS_QUERY,
@@ -138,34 +135,6 @@ export async function loadCaseStudyPage(
   };
 }
 
-/* ── Glossary term ─────────────────────────────────────────────────────────── */
-
-export async function loadGlossaryTermPage(
-  slug: string,
-  draftProps: DraftProps = {},
-) {
-  const { data: term } = await loadQuery({
-    query: GLOSSARY_TERM_QUERY,
-    params: { slug },
-    ...draftProps,
-  });
-  if (!term) return null;
-
-  // The full (thin, slug+term-only projection) list is genuinely needed here:
-  // the template builds alphabetical prev/next navigation across the whole
-  // glossary. This is the one intentional whole-collection fetch.
-  const [{ data: allTerms }, { data: settings }] = await Promise.all([
-    loadQuery({ query: GLOSSARY_TERMS_QUERY, ...draftProps }),
-    loadQuery({ query: SITE_SETTINGS_QUERY, ...draftProps }),
-  ]);
-
-  return {
-    term,
-    allTerms: allTerms ?? [],
-    defaultCtaSection: settings?.defaultCtaSection ?? null,
-  };
-}
-
 /* ── Project ───────────────────────────────────────────────────────────────── */
 
 /**
@@ -225,7 +194,7 @@ function isPlaceholderSanityProject(): boolean {
  * as "emit no pages at all" (distinct from an empty-but-reachable dataset).
  *
  * Real project: RETHROW. Swallowing a network error here would silently ship
- * a deploy with every blog/case-study/glossary page missing — previously
+ * a deploy with every blog/case-study page missing — previously
  * live URLs would 404. A loud build failure is the correct outcome.
  */
 async function fetchStaticPathList<const Q extends string>(
@@ -250,7 +219,7 @@ async function fetchStaticPathList<const Q extends string>(
 }
 
 /**
- * Build-safe query for PRERENDERED listing pages (blog/case-studies/glossary
+ * Build-safe query for PRERENDERED listing pages (blog/case-studies
  * indexes). Same policy as the static-path helpers: on a fresh fork
  * (placeholder project id) it warns and returns `fallback` so the page
  * renders its empty state and the build stays green; on a real project a
@@ -303,14 +272,6 @@ export async function getCaseStudyStaticPaths() {
   const slugs = await fetchStaticPathList<string>(
     CASE_STUDY_SLUGS_QUERY,
     "case study",
-  );
-  return (slugs ?? []).map((slug) => ({ params: { slug } }));
-}
-
-export async function getGlossaryTermStaticPaths() {
-  const slugs = await fetchStaticPathList<string>(
-    GLOSSARY_SLUGS_QUERY,
-    "glossary term",
   );
   return (slugs ?? []).map((slug) => ({ params: { slug } }));
 }

@@ -3,7 +3,7 @@
  *
  * Prerendered to `dist/llms-full.txt` at build time. Static marketing pages are
  * listed as a link index (their content lives in `.astro` templates); every
- * blog post, case study, and glossary term has its full body rendered inline as
+ * blog post and case study has its full body rendered inline as
  * Markdown via `portableTextToMarkdown`. Rebuilt from Sanity on every deploy.
  */
 
@@ -15,8 +15,6 @@ import {
   CASE_STUDIES_QUERY,
   PROJECTS_QUERY,
   CASE_STUDY_QUERY,
-  GLOSSARY_TERMS_QUERY,
-  GLOSSARY_TERM_QUERY,
 } from "@/sanity/lib/queries";
 import { portableTextToMarkdown } from "@/sanity/lib/portable-text";
 import { SITE_URL, SITE_NAME, SITE_SUMMARY } from "@/config/site";
@@ -34,7 +32,6 @@ import type {
   BLOG_POSTS_QUERY_RESULT,
   CASE_STUDIES_QUERY_RESULT,
   PROJECTS_QUERY_RESULT,
-  GLOSSARY_TERMS_QUERY_RESULT,
   CASE_STUDY_QUERY_RESULT,
 } from "@/sanity/sanity.types";
 
@@ -100,16 +97,13 @@ export const GET: APIRoute = async () => {
   // 1. Fetch the listings to know what exists (and order). Tolerate an empty
   //    or unreachable dataset (e.g. a fresh fork before `/setup`) — the file
   //    still renders the static page index.
-  const [posts, caseStudies, glossary, projects] = await Promise.all([
+  const [posts, caseStudies, projects] = await Promise.all([
     loadQuery({ query: BLOG_POSTS_QUERY })
       .then((r) => r.data)
       .catch((): BLOG_POSTS_QUERY_RESULT => []),
     loadQuery({ query: CASE_STUDIES_QUERY })
       .then((r) => r.data)
       .catch((): CASE_STUDIES_QUERY_RESULT => []),
-    loadQuery({ query: GLOSSARY_TERMS_QUERY })
-      .then((r) => r.data)
-      .catch((): GLOSSARY_TERMS_QUERY_RESULT => []),
     loadQuery({ query: PROJECTS_QUERY })
       .then((r) => r.data)
       .catch((): PROJECTS_QUERY_RESULT => []),
@@ -119,10 +113,9 @@ export const GET: APIRoute = async () => {
   const caseStudySlugs = (caseStudies ?? [])
     .filter((c) => c.comingSoon !== true)
     .map((c) => c.slug);
-  const glossarySlugs = (glossary ?? []).map((g) => g.slug);
 
   // 2. Fetch full bodies for each document in parallel.
-  const [fullPosts, fullCaseStudies, fullGlossary] = await Promise.all([
+  const [fullPosts, fullCaseStudies] = await Promise.all([
     Promise.all(
       postSlugs.map((slug) =>
         loadQuery({
@@ -135,14 +128,6 @@ export const GET: APIRoute = async () => {
       caseStudySlugs.map((slug) =>
         loadQuery({
           query: CASE_STUDY_QUERY,
-          params: { slug },
-        }).then((r) => r.data),
-      ),
-    ),
-    Promise.all(
-      glossarySlugs.map((slug) =>
-        loadQuery({
-          query: GLOSSARY_TERM_QUERY,
           params: { slug },
         }).then((r) => r.data),
       ),
@@ -198,18 +183,6 @@ export const GET: APIRoute = async () => {
       out.push(`URL: ${SITE_URL}/blog/${post.slug}`);
       if (post.description) out.push(post.description);
       const md = portableTextToMarkdown(post.body as never);
-      if (md) out.push(md);
-    }
-  }
-
-  if (fullGlossary.length) {
-    out.push("---", "# Glossary");
-    for (const term of fullGlossary) {
-      if (!term) continue;
-      out.push(`## ${term.term}`);
-      out.push(`URL: ${SITE_URL}/glossary/${term.slug}`);
-      if (term.shortDefinition) out.push(term.shortDefinition);
-      const md = portableTextToMarkdown(term.body as never);
       if (md) out.push(md);
     }
   }

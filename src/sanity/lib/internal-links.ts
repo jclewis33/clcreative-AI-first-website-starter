@@ -33,8 +33,6 @@ export function resolveInternalLinkHref(
       return `/blog/${target.slug}`;
     case "caseStudy":
       return `/case-studies/${target.slug}`;
-    case "glossaryTerm":
-      return `/glossary/${target.slug}`;
     case "project":
       return `/projects/${target.slug}`;
     default:

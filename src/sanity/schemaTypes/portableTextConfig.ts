@@ -1,9 +1,9 @@
 /**
  * Shared Portable Text marks config — decorators and annotations
- * reused across blogPost.ts, glossaryTerm.ts, and caseStudy.ts.
+ * reused across blogPost.ts and caseStudy.ts.
  *
  * The `internalLink` annotation lets editors pick another document
- * (blog post, case study, or glossary term) from a search dialog
+ * (blog post or case study) from a search dialog
  * instead of pasting a URL.
  */
 
@@ -16,12 +16,7 @@ export const internalLinkAnnotation = {
       name: "reference",
       type: "reference" as const,
       title: "Reference",
-      to: [
-        { type: "blogPost" },
-        { type: "caseStudy" },
-        { type: "glossaryTerm" },
-        { type: "project" },
-      ],
+      to: [{ type: "blogPost" }, { type: "caseStudy" }, { type: "project" }],
       validation: (rule: any) => rule.required(),
     },
     {
