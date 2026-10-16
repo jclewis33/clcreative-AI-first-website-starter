@@ -34,9 +34,12 @@ import type {
   ContentOptions,
   ContentSource,
   CtaDefaults,
+  TestimonialData,
+  TestimonialFilter,
 } from "@/lib/content/types";
-import { loadSiteSettings } from "./page-data";
+import { loadSiteSettings, loadTestimonials } from "./page-data";
 import { toBlogCta, toCtaSection } from "./map/cta";
+import { toTestimonial } from "./map/testimonials";
 
 /* ── Shared ────────────────────────────────────────────────────────────── */
 
@@ -54,11 +57,35 @@ async function getCtaDefaults(opts?: ContentOptions): Promise<CtaDefaults> {
   };
 }
 
+/* ── Testimonials ──────────────────────────────────────────────────────── */
+
+async function getTestimonials(
+  filter: TestimonialFilter = {},
+  opts?: ContentOptions,
+): Promise<TestimonialData[]> {
+  const rows = await loadTestimonials(filter.featured ?? false, opts);
+  const all = rows.map(toTestimonial);
+  return filter.limit ? all.slice(0, filter.limit) : all;
+}
+
+async function getTestimonialByName(
+  name: string,
+  opts?: ContentOptions,
+): Promise<TestimonialData | undefined> {
+  const wanted = name.toLowerCase();
+  // Names stay stega-encoded for display; compare the cleaned text.
+  return (await getTestimonials({}, opts)).find(
+    (t) => stegaClean(t.name)?.toLowerCase() === wanted,
+  );
+}
+
 /* `satisfies` fails `npm run check` when a ContentSource function is
    missing here or its signature drifts. */
 const sanitySource = {
   plainText,
   getCtaDefaults,
+  getTestimonials,
+  getTestimonialByName,
 } satisfies ContentSource;
 
 export default sanitySource;

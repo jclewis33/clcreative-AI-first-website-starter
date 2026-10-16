@@ -52,8 +52,7 @@ import TabPanel from "@/components/ui/TabPanel.astro";
 import Button from "@/components/ui/Button.astro";
 import TestimonialsSlider from "@/components/sections/TestimonialsSlider.astro";
 import TestimonialsGrid from "@/components/sections/TestimonialsGrid.astro";
-import { getTestimonials } from "@/sanity/lib/testimonials";
-import type { TestimonialData } from "@/sanity/lib/testimonials";
+import { getTestimonials, type TestimonialData } from "@/lib/content";
 import Form from "@/components/form/Form.astro";
 import FormField from "@/components/form/FormField.astro";
 import FormFieldset from "@/components/form/FormFieldset.astro";
@@ -258,12 +257,9 @@ const COMPONENT_INDEX = [
   { slug: "stacking-panels", text: "StackingPanels & StackingPanel" },
 ];
 
-/* ── Fetch testimonials from Sanity (tolerate an empty/unreachable dataset) ── */
-import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+/* ── Testimonials from the content source (tolerate an empty/unreachable dataset) ── */
 import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
-const testimonials = await getTestimonials(getDraftModeProps(Astro)).catch(
-  (): TestimonialData[] => [],
-);
+const testimonials = await getTestimonials().catch((): TestimonialData[] => []);
 /* Hand-built sample data for the ProjectBrowser / GalleryBrowser demos —
    real pages map Sanity rows with toProjectCards() / sanityPhoto(). */
 const demoPhotoOf = (img: ImageMetadata, alt: string) => ({

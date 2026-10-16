@@ -19,4 +19,9 @@ export { imageSrc, imageUrl, sizedImage } from "./images";
 
 /* The backend's functions, re-exported by name so call sites read
    `getCtaDefaults()`. They are plain functions — none uses `this`. */
-export const { plainText, getCtaDefaults } = source;
+export const {
+  plainText,
+  getCtaDefaults,
+  getTestimonials,
+  getTestimonialByName,
+} = source;

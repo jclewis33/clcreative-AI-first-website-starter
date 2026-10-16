@@ -324,8 +324,8 @@ export const RELATED_CASE_STUDIES_QUERY = defineQuery(`*[
 
 /**
  * All testimonials ordered by sortOrder.
- * Prefer using `getTestimonials()` from `src/sanity/lib/testimonials.ts`
- * instead of this query directly — it handles featured filtering and limiting.
+ * Consumers call `getTestimonials()` from `@/lib/content`, which wraps this
+ * query and the featured variant below.
  */
 export const TESTIMONIALS_QUERY =
   defineQuery(`*[_type == "testimonial"] | order(sortOrder asc) {

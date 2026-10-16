@@ -34,6 +34,8 @@ import {
   RELATED_CASE_STUDIES_QUERY,
   CASE_STUDY_SLUGS_QUERY,
   SITE_SETTINGS_QUERY,
+  TESTIMONIALS_QUERY,
+  FEATURED_TESTIMONIALS_QUERY,
   PROJECT_QUERY,
   PROJECT_SLUGS_QUERY,
   RELATED_PROJECTS_QUERY,
@@ -259,6 +261,19 @@ export function loadSiteSettings(draftProps: DraftProps = {}) {
     draftProps,
     fallback: null,
     label: "site settings",
+  });
+}
+
+/** All testimonials, or only featured ones, in sortOrder. Empty on a fresh fork. */
+export function loadTestimonials(
+  featured: boolean,
+  draftProps: DraftProps = {},
+) {
+  return loadPageQuery({
+    query: featured ? FEATURED_TESTIMONIALS_QUERY : TESTIMONIALS_QUERY,
+    draftProps,
+    fallback: [],
+    label: featured ? "featured testimonials" : "testimonials",
   });
 }
 

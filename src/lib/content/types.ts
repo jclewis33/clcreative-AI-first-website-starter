@@ -100,6 +100,31 @@ export interface CtaDefaults {
   ctaSection: CtaSectionData | null;
 }
 
+/* ── Testimonials ──────────────────────────────────────────────────────── */
+
+/** One testimonial. */
+export interface TestimonialData {
+  id: string;
+  name: string | null;
+  role: string | null;
+  company: string | null;
+  quote: string | null;
+  avatar: ContentImage | null;
+  website: string | null;
+  /** 1–5; null hides the stars. */
+  stars: number | null;
+  featured: boolean;
+  order: number | null;
+}
+
+/** Which testimonials `getTestimonials()` returns. */
+export interface TestimonialFilter {
+  /** Only those marked featured. */
+  featured?: boolean;
+  /** At most this many, after the source's ordering. */
+  limit?: number;
+}
+
 /* ── The contract ──────────────────────────────────────────────────────── */
 
 /**
@@ -116,4 +141,14 @@ export interface ContentSource {
   plainText<T extends string | null | undefined>(value: T): T;
   /** The site-wide CTA defaults (Site Settings in Sanity). */
   getCtaDefaults(opts?: ContentOptions): Promise<CtaDefaults>;
+  /** Testimonials in their editor-set order; filter by `featured`, cap with `limit`. */
+  getTestimonials(
+    filter?: TestimonialFilter,
+    opts?: ContentOptions,
+  ): Promise<TestimonialData[]>;
+  /** The testimonial whose name matches (case-insensitive), if any. */
+  getTestimonialByName(
+    name: string,
+    opts?: ContentOptions,
+  ): Promise<TestimonialData | undefined>;
 }
