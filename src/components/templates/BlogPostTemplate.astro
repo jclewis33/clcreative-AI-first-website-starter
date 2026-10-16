@@ -2,15 +2,16 @@
 /**
  * Blog Post Template
  *
- * Renders a single blog post given the post document and a list of related
- * posts. Used by the production route (`src/pages/blog/[slug].astro`).
+ * Renders a single blog post from the BlogPostPage view model
+ * (getBlogPost() in @/lib/content): the post, its related posts and the
+ * resolved CTA + CTA section. Shared by the prerendered route
+ * (src/pages/blog/[slug].astro) and its /preview twin.
  */
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
-import { toBlogCta, toCtaSection } from "@/sanity/lib/map/cta";
 import AdditionalPost from "@/components/sections/BlogPostGrid.astro";
 
 import Heading from "@/components/ui/Heading.astro";
@@ -24,62 +25,49 @@ import Accordion from "@/components/ui/Accordion.astro";
 import AccordionItem from "@/components/ui/AccordionItem.astro";
 import TableOfContents from "@/components/ui/TableOfContents.astro";
 import BlogCta from "@/components/blog/BlogCta.astro";
+import BlogBody from "@/components/blog/BlogBody.astro";
 
 import "@/styles/pages/blog-post.css";
 
 import ctaImage from "@/assets/placeholder-images/ai-first-starter-17.webp";
 
-import { urlFor } from "@/sanity/lib/image";
-import { buildToc } from "@/lib/toc";
-import { estimateReadTime } from "@/lib/read-time";
 import { blogPostJsonLd } from "@/lib/jsonld";
-import type { loadBlogPostPage } from "@/sanity/lib/page-data";
 import JsonLd from "@/components/global/JsonLd.astro";
-
-import { PortableText } from "astro-portabletext";
-
-const { default: CodeBlock } =
-  await import("@/components/portabletext/CodeBlock.astro");
-const { default: SanityImage } =
-  await import("@/components/portabletext/SanityImage.astro");
-const { default: LinkMark } =
-  await import("@/components/portabletext/LinkMark.astro");
-const { default: InternalLinkMark } =
-  await import("@/components/portabletext/InternalLinkMark.astro");
-const { default: BlockHeading2 } =
-  await import("@/components/portabletext/BlockHeading2.astro");
-const { default: VideoEmbed } =
-  await import("@/components/portabletext/VideoEmbed.astro");
-const { default: Callout } =
-  await import("@/components/portabletext/Callout.astro");
-const { default: BlogCtaInline } =
-  await import("@/components/portabletext/BlogCtaInline.astro");
-
-/* Every prop is a slice of what loadBlogPostPage() returns, so the template
-   cannot drift from the loader feeding it. Edit BLOG_POST_QUERY and re-run
-   `npm run typegen`; anything this file reads that the query stopped
-   projecting turns into a type error here. */
-type PageData = NonNullable<Awaited<ReturnType<typeof loadBlogPostPage>>>;
+import {
+  imageSrc,
+  imageUrl,
+  type BlogCtaData,
+  type BlogPostDetail,
+  type BlogPostSummary,
+  type CtaSectionData,
+} from "@/lib/content";
 
 interface Props {
-  post: PageData["post"];
-  relatedPosts: PageData["relatedPosts"];
-  manualRelatedPosts?: PageData["manualRelatedPosts"];
-  defaultCta?: PageData["defaultCta"];
-  defaultCtaSection?: PageData["defaultCtaSection"];
+  /**
+   * **BlogPostTemplate** — the blog post page. Pass the fields of
+   * `getBlogPost()`'s BlogPostPage: `post`, `relatedPosts`,
+   * `manualRelatedPosts`, `cta`, `ctaSection`.
+   */
+  docs?: string;
+
+  /** The post to render. */
+  post: BlogPostDetail;
+
+  /** Same-category posts for "Other posts in this category". */
+  relatedPosts: BlogPostSummary[];
+
+  /** Editor-picked posts for "Related Posts". */
+  manualRelatedPosts: BlogPostSummary[];
+
+  /** End-of-post CTA (the post's override, else the site default), or null. */
+  cta: BlogCtaData | null;
+
+  /** Bottom CTA section (the post's override, else the site default), or null. */
+  ctaSection: CtaSectionData | null;
 }
 
-const {
-  post,
-  relatedPosts,
-  manualRelatedPosts = [],
-  defaultCta = null,
-  defaultCtaSection = null,
-} = Astro.props;
-const resolvedBlogCta = toBlogCta(post.ctaOverride ?? defaultCta ?? null);
-const resolvedCtaSection = toCtaSection(
-  post.ctaSectionOverride ?? defaultCtaSection ?? null,
-);
+const { docs, post, relatedPosts, manualRelatedPosts, cta, ctaSection } =
+  Astro.props;
 const manualRelatedSlugs = manualRelatedPosts.map((p) => p.slug);
 
 const seo = post.seo;
@@ -87,32 +75,14 @@ const metaTitle = seo?.metaTitle || post.title;
 const metaDescription = seo?.metaDescription || post.description;
 const ogTitle = seo?.ogTitle || metaTitle;
 const ogDescription = seo?.ogDescription || metaDescription;
-const ogImageUrl = seo?.ogImage
-  ? urlFor(seo?.ogImage).width(1200).height(630).format("jpg").quality(90).url()
-  : urlFor(post.image).width(1200).height(630).format("jpg").quality(90).url();
-
-const { body: processedBody, items: tocItems } = buildToc(post.body ?? []);
-const readTime = estimateReadTime(post.body);
+const ogImageUrl = imageUrl(seo?.ogImage ?? post.image, {
+  width: 1200,
+  height: 630,
+  format: "jpg",
+});
 
 const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
 const jsonLd = blogPostJsonLd(post, siteOrigin);
-
-const portableTextComponents = {
-  type: {
-    code: CodeBlock,
-    image: SanityImage,
-    videoEmbed: VideoEmbed,
-    callout: Callout,
-    blogCtaInline: BlogCtaInline,
-  },
-  mark: {
-    link: LinkMark,
-    internalLink: InternalLinkMark,
-  },
-  block: {
-    h2: BlockHeading2,
-  },
-};
 ---
 
 <BaseLayout
@@ -157,7 +127,7 @@ const portableTextComponents = {
       <Heading tag="h1" variant="h1" balance>{post.title}</Heading>
 
       <p class="blog_post_read_time u-text-style-small u-margin-bottom-2">
-        {readTime} min read
+        {post.readTime} min read
       </p>
 
       <div class="blog_post_author_wrap u-margin-bottom-4">
@@ -165,7 +135,7 @@ const portableTextComponents = {
           post.authorAvatar && (
             <div class="blog_post_avatar">
               <img
-                src={urlFor(post.authorAvatar).width(64).height(64).url()}
+                src={imageUrl(post.authorAvatar, { width: 64, height: 64 })}
                 alt={post.author}
                 width="32"
                 height="32"
@@ -318,12 +288,14 @@ const portableTextComponents = {
             />
           </div>
         ) : (
-          <Visual
-            slot="column2"
-            src={urlFor(post.image).width(1200).url()}
-            alt={post.imageAlt}
-            ratio="wide"
-          />
+          post.image && (
+            <Visual
+              slot="column2"
+              src={imageSrc(post.image, { width: 1200 })}
+              alt={post.image.alt}
+              ratio="wide"
+            />
+          )
         )
       }
     </Layout>
@@ -339,7 +311,7 @@ const portableTextComponents = {
       verticalAlign="start"
     >
       <div class="blog_post_sidebar">
-        <TableOfContents items={tocItems} />
+        <TableOfContents items={post.headings} />
         <Card
           class="blog_post_sidebar_card"
           variant="cover"
@@ -383,14 +355,11 @@ const portableTextComponents = {
 
       <div slot="column2">
         <div class="blog_post_prose u-rich-text">
-          <PortableText
-            value={processedBody}
-            components={portableTextComponents}
-          />
+          <BlogBody body={post.body} />
         </div>
-        {resolvedBlogCta && <BlogCta cta={resolvedBlogCta} />}
+        {cta && <BlogCta cta={cta} />}
         {
-          (post.faqs?.length ?? 0) > 0 && (
+          post.faqs.length > 0 && (
             <div class="blog_post_faq_wrap" id="faq">
               <Heading
                 tag="h2"
@@ -401,18 +370,10 @@ const portableTextComponents = {
                 Questions You Might Be Asking
               </Heading>
               <Accordion closePrevious>
-                {(post.faqs ?? []).map((faq) => (
+                {post.faqs.map((faq) => (
                   <AccordionItem question={faq.question ?? undefined}>
                     <Text>
-                      <PortableText
-                        value={faq.answer ?? []}
-                        components={{
-                          mark: {
-                            link: LinkMark,
-                            internalLink: InternalLinkMark,
-                          },
-                        }}
-                      />
+                      <Fragment set:html={faq.answerHtml} />
                     </Text>
                   </AccordionItem>
                 ))}
@@ -424,7 +385,7 @@ const portableTextComponents = {
     </Layout>
   </Section>
 
-  {resolvedCtaSection && <ContentCtaSection cta={resolvedCtaSection} />}
+  {ctaSection && <ContentCtaSection cta={ctaSection} />}
 
   {
     manualRelatedPosts.length > 0 && (
@@ -434,7 +395,7 @@ const portableTextComponents = {
         variant="manual"
         heading="Related Posts"
         posts={manualRelatedPosts}
-        currentSlug={post.slug ?? undefined}
+        currentSlug={post.slug}
       />
     )
   }
@@ -444,9 +405,9 @@ const portableTextComponents = {
     variant="related"
     heading="Other posts in this category"
     posts={relatedPosts}
-    currentSlug={post.slug ?? undefined}
-    currentCategories={post.categories ?? undefined}
-    excludeSlugs={manualRelatedSlugs.filter((s): s is string => !!s)}
+    currentSlug={post.slug}
+    currentCategories={post.categories}
+    excludeSlugs={manualRelatedSlugs}
   />
 </BaseLayout>
 

@@ -1,0 +1,80 @@
+---
+/**
+ * BlogBody — renders a blog post's body, whichever form the content source
+ * hands over (`post.body` from `getBlogPost()` in `@/lib/content`):
+ *
+ * - `portable-text` — Sanity Portable Text, rendered by astro-portabletext
+ *   with the components in src/components/portabletext/ (code, images,
+ *   video, callouts, inline blog CTAs, links, and h2 anchors for the table
+ *   of contents).
+ * - `mdx` — a compiled MDX `Content` component (files-backed content).
+ *
+ * It emits only the body markup. The caller owns the wrapping prose element
+ * (`blog_post_prose u-rich-text` in BlogPostTemplate).
+ */
+import { PortableText } from "astro-portabletext";
+import type { BlogBodyContent } from "@/lib/content";
+
+const { default: CodeBlock } =
+  await import("@/components/portabletext/CodeBlock.astro");
+const { default: SanityImage } =
+  await import("@/components/portabletext/SanityImage.astro");
+const { default: LinkMark } =
+  await import("@/components/portabletext/LinkMark.astro");
+const { default: InternalLinkMark } =
+  await import("@/components/portabletext/InternalLinkMark.astro");
+const { default: BlockHeading2 } =
+  await import("@/components/portabletext/BlockHeading2.astro");
+const { default: VideoEmbed } =
+  await import("@/components/portabletext/VideoEmbed.astro");
+const { default: Callout } =
+  await import("@/components/portabletext/Callout.astro");
+const { default: BlogCtaInline } =
+  await import("@/components/portabletext/BlogCtaInline.astro");
+
+interface Props {
+  /**
+   * **BlogBody** — renders `post.body` (Portable Text or MDX) from
+   * `getBlogPost()`. It emits no wrapper element; put it inside the prose
+   * container.
+   */
+  docs?: string;
+
+  /** The post body from `@/lib/content` (`post.body`). */
+  body: BlogBodyContent;
+}
+
+const { docs, body } = Astro.props;
+
+const portableTextComponents = {
+  type: {
+    code: CodeBlock,
+    image: SanityImage,
+    videoEmbed: VideoEmbed,
+    callout: Callout,
+    blogCtaInline: BlogCtaInline,
+  },
+  mark: {
+    link: LinkMark,
+    internalLink: InternalLinkMark,
+  },
+  block: {
+    h2: BlockHeading2,
+  },
+};
+
+/* A component reference for the MDX branch. It must be a capitalised
+   identifier: Astro treats a lowercase tag such as `body.Content` as an
+   HTML element. The markup below is ONE expression, not two siblings:
+   the line break between two expressions renders as a stray whitespace
+   text node inside the caller's prose element. */
+const Content = body.kind === "mdx" ? body.Content : null;
+---
+
+{
+  body.kind === "portable-text" ? (
+    <PortableText value={body.blocks} components={portableTextComponents} />
+  ) : (
+    Content && <Content />
+  )
+}

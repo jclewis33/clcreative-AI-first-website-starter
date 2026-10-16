@@ -25,7 +25,6 @@
  */
 import { stegaClean } from "@sanity/client/stega";
 import { loadQuery } from "./load-query";
-import { urlFor } from "./image";
 import {
   BLOG_POST_QUERY,
   RELATED_BLOG_POSTS_QUERY,
@@ -47,51 +46,41 @@ import {
   GALLERY_QUERY,
 } from "./queries";
 import { SANITY_PROJECT_ID } from "@/config/site.shared.mjs";
-import type { RELATED_BLOG_POSTS_QUERY_RESULT } from "@/sanity/sanity.types";
 
 /** Perspective forwarding — the return shape of `getDraftModeProps(Astro)`. */
 export type DraftProps = { perspectiveCookie?: string | undefined };
 
-/**
- * A post in card shape, as the related-posts query projects it. The manual
- * `relatedPosts` inside BLOG_POST_QUERY projects the same fields, so both
- * lists flow through `mapPostCard`.
- */
-type PostCard = RELATED_BLOG_POSTS_QUERY_RESULT[number];
-
-/** Card-shape a post for BlogCard/BlogPostGrid (image URLs pre-built). */
-function mapPostCard(p: PostCard) {
-  return {
-    ...p,
-    image: p.image ? urlFor(p.image).width(600).url() : p.image,
-    authorAvatar: p.authorAvatar
-      ? urlFor(p.authorAvatar).width(80).height(80).url()
-      : undefined,
-  };
-}
-
 /* ── Blog post ─────────────────────────────────────────────────────────────── */
+
+/** One blog post document by slug (BLOG_POST_QUERY), or null. */
+export async function loadBlogPostDocument(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
+  const { data } = await loadQuery({
+    query: BLOG_POST_QUERY,
+    params: { slug },
+    ...draftProps,
+  });
+  return data;
+}
 
 export async function loadBlogPostPage(
   slug: string,
   draftProps: DraftProps = {},
 ) {
-  const { data: post } = await loadQuery({
-    query: BLOG_POST_QUERY,
-    params: { slug },
-    ...draftProps,
-  });
+  const post = await loadBlogPostDocument(slug, draftProps);
   if (!post) return null;
 
-  const manualRelatedPosts = ((post.relatedPosts ?? []) as any[])
-    .filter((p) => p?.slug)
-    .map(mapPostCard);
+  // Editor-picked related posts; dangling references dropped.
+  const manualRelatedPosts = (post.relatedPosts ?? []).filter((p) => p?.slug);
 
-  // Pre-lowercased for the case-insensitive GROQ category match.
-  const categories = ((post.categories ?? []) as string[]).map((c) =>
-    c.toLowerCase(),
+  // Cleaned + lowercased for the case-insensitive GROQ category match
+  // (stega characters would break the match in preview).
+  const categories = (post.categories ?? []).map((c) =>
+    stegaClean(c).toLowerCase(),
   );
-  const excludeSlugs = manualRelatedPosts.map((p) => p.slug);
+  const excludeSlugs = manualRelatedPosts.map((p) => stegaClean(p.slug));
 
   const [{ data: related }, { data: settings }] = await Promise.all([
     loadQuery({
@@ -104,7 +93,7 @@ export async function loadBlogPostPage(
 
   return {
     post,
-    relatedPosts: (related ?? []).map(mapPostCard),
+    relatedPosts: related ?? [],
     manualRelatedPosts,
     defaultCta: settings?.defaultBlogCta ?? null,
     defaultCtaSection: settings?.defaultCtaSection ?? null,

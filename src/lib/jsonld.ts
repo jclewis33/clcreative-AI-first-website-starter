@@ -8,14 +8,13 @@
  * from calling templates.
  */
 
-import { urlFor } from "@/sanity/lib/image";
 import { SITE } from "@/config/site";
 import {
   imageUrl,
+  type BlogPostDetail,
   type CaseStudyDetail,
   type ContentImage,
 } from "@/lib/content";
-import { portableTextToPlainText } from "@/sanity/lib/portable-text";
 
 const ORG_NAME = SITE.name;
 const ORG_LOGO_PATH = SITE.logoPath;
@@ -24,16 +23,6 @@ function absoluteUrl(siteUrl: string, path: string): string {
   if (!path) return siteUrl;
   if (/^https?:\/\//.test(path)) return path;
   return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
-}
-
-function toImageUrl(image: any, siteUrl: string): string | null {
-  if (!image) return null;
-  try {
-    return urlFor(image).width(1200).url();
-  } catch {
-    if (typeof image === "string") return absoluteUrl(siteUrl, image);
-    return null;
-  }
 }
 
 /** Absolute URL of a content image at 1200 wide — CDN URLs pass through,
@@ -282,7 +271,11 @@ function youtubeVideoId(url: string | null | undefined): string | null {
  */
 function youtubeVideoObject(
   videoUrl: string,
-  post: { title?: string; description?: string; date?: string },
+  post: {
+    title?: string | null;
+    description?: string | null;
+    date?: string | null;
+  },
 ): any {
   const id = youtubeVideoId(videoUrl);
   if (!id) return null;
@@ -301,24 +294,15 @@ function youtubeVideoObject(
   };
 }
 
-/** FAQ answer as plain text. Sanity answers are Portable Text arrays —
-    String() on one produced "[object Object]". */
-function faqAnswerText(answer: unknown): string {
-  const text = Array.isArray(answer)
-    ? portableTextToPlainText(answer)
-    : String(answer).replace(/<[^>]+>/g, " ");
-  return text.replace(/\s+/g, " ").trim();
-}
-
 /**
  * Build JSON-LD for a blog post. Returns an @graph array containing:
  * - BlogPosting (always)
  * - VideoObject (when post.video is a YouTube URL)
  * - FAQPage (when post.faqs is non-empty)
  */
-export function blogPostJsonLd(post: any, siteUrl: string): any {
+export function blogPostJsonLd(post: BlogPostDetail, siteUrl: string): any {
   const pageUrl = `${siteUrl}/blog/${post.slug}`;
-  const imageUrl = toImageUrl(post.image, siteUrl);
+  const imageUrl = contentImageUrl(post.image, siteUrl);
 
   const blogPosting: any = {
     "@type": "BlogPosting",
@@ -327,7 +311,7 @@ export function blogPostJsonLd(post: any, siteUrl: string): any {
     description: post.description,
     ...(imageUrl && { image: imageUrl }),
     datePublished: toIsoDateTime(post.date),
-    dateModified: toIsoDateTime(post._updatedAt) || toIsoDateTime(post.date),
+    dateModified: toIsoDateTime(post.updatedAt) || toIsoDateTime(post.date),
     author: {
       "@type": "Person",
       name: post.author || ORG_NAME,
@@ -344,17 +328,17 @@ export function blogPostJsonLd(post: any, siteUrl: string): any {
     if (video) nodes.push(video);
   }
 
-  if (Array.isArray(post.faqs) && post.faqs.length > 0) {
+  if (post.faqs.length > 0) {
     nodes.push({
       "@type": "FAQPage",
       mainEntity: post.faqs
-        .filter((f: any) => f?.question && f?.answer)
-        .map((f: any) => ({
+        .filter((f) => f.question && f.answerText)
+        .map((f) => ({
           "@type": "Question",
           name: f.question,
           acceptedAnswer: {
             "@type": "Answer",
-            text: faqAnswerText(f.answer),
+            text: f.answerText.replace(/\s+/g, " ").trim(),
           },
         })),
     });

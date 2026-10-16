@@ -2,8 +2,9 @@
  * Portable Text to HTML serializer for Sanity content.
  *
  * Converts Sanity's Portable Text blocks into HTML strings that work
- * with the existing u-rich-text CSS styling. Used by the case study
- * and project detail pages and by llms-full.txt (Markdown).
+ * with the existing u-rich-text CSS styling. Used by the Sanity mappers
+ * (case study blocks, project write-ups, blog FAQ answers and their plain
+ * text, read-time words) and by llms-full.txt (Markdown).
  */
 
 import {
@@ -442,4 +443,25 @@ export function portableTextToPlainText(
     })
     .filter(Boolean)
     .join(" ");
+}
+
+/**
+ * Every span's text in text blocks, each preceded by a space — the word
+ * source for read time (estimateReadTime in src/lib/read-time.ts). Joining
+ * spans with a space (not "") is deliberate: it is how read time has
+ * always been counted.
+ */
+export function portableTextWords(
+  blocks: readonly unknown[] | null | undefined,
+): string {
+  let text = "";
+  for (const node of blocks ?? []) {
+    const block = node as PortableTextBlock | null;
+    if (block?._type !== "block" || !Array.isArray(block.children)) continue;
+    for (const child of block.children) {
+      if (child?._type === "span" && typeof child.text === "string")
+        text += " " + child.text;
+    }
+  }
+  return text;
 }

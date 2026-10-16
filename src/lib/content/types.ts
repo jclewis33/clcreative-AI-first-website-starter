@@ -11,6 +11,12 @@
  * `string | null`. Listings drop entries that cannot be linked to.
  */
 import type { ImageMetadata } from "astro";
+import type { MDXInstance } from "astro";
+import type { TocItem } from "@/lib/toc";
+export type { TocItem };
+
+/** A compiled MDX body's `Content` component. */
+type MdxContent = MDXInstance<Record<string, never>>["Content"];
 import type { ContentBlock } from "@/components/case-study/types";
 export type { ContentBlock };
 
@@ -262,6 +268,77 @@ export interface FeaturedCaseStudy {
   image: ContentImage | null;
 }
 
+/* ── Blog ──────────────────────────────────────────────────────────────── */
+
+/** A post as a card or listing renders it. */
+export interface BlogPostSummary {
+  slug: string;
+  title: string;
+  description: string | null;
+  categories: string[];
+  /** The listing section a post belongs to; else its first category. */
+  primaryCategory: string | null;
+  image: ContentImage | null;
+  author: string | null;
+  authorAvatar: ContentImage | null;
+  date: string | null;
+  featured: boolean;
+}
+
+/**
+ * A post body in whatever form its backend keeps it; `<BlogBody>` renders
+ * either. Portable Text blocks arrive with each h2 carrying `_slug`.
+ */
+export type BlogBodyContent =
+  | { kind: "portable-text"; blocks: Array<{ _type: string; _key?: string }> }
+  | { kind: "mdx"; Content: MdxContent };
+
+/** One FAQ under a post. */
+export interface FaqItem {
+  question: string | null;
+  /** The answer, rendered to HTML. */
+  answerHtml: string;
+  /** The answer as plain text (JSON-LD). */
+  answerText: string;
+}
+
+/** Everything the blog post page renders. */
+export interface BlogPostDetail {
+  slug: string;
+  /** Null only in an unfinished draft. */
+  title: string | null;
+  description: string | null;
+  categories: string[];
+  image: ContentImage | null;
+  author: string | null;
+  authorAvatar: ContentImage | null;
+  date: string | null;
+  updatedAt: string | null;
+  featured: boolean;
+  /** A YouTube or Vimeo URL shown instead of the hero image. */
+  video: string | null;
+  body: BlogBodyContent;
+  /** The h2s, for the table of contents. */
+  headings: TocItem[];
+  /** Minutes, at least 1. */
+  readTime: number;
+  faqs: FaqItem[];
+  seo: SeoFields | null;
+}
+
+/** `getBlogPost()`: the post, related posts and the resolved CTAs. */
+export interface BlogPostPage {
+  post: BlogPostDetail;
+  /** Same-category posts, newest first (the template takes three). */
+  relatedPosts: BlogPostSummary[];
+  /** Editor-picked related posts. */
+  manualRelatedPosts: BlogPostSummary[];
+  /** The post's CTA override, else the site default. */
+  cta: BlogCtaData | null;
+  /** The post's CTA-section override, else the site default. */
+  ctaSection: CtaSectionData | null;
+}
+
 /* ── The contract ──────────────────────────────────────────────────────── */
 
 /**
@@ -312,4 +389,11 @@ export interface ContentSource {
   ): Promise<FeaturedCaseStudy[]>;
   /** getStaticPaths for /case-studies/[slug] (coming-soon excluded). */
   getCaseStudyStaticPaths(): Promise<SlugPath[]>;
+  /** One post with related posts and resolved CTAs; null when not found. */
+  getBlogPost(
+    slug: string,
+    opts?: ContentOptions,
+  ): Promise<BlogPostPage | null>;
+  /** getStaticPaths for /blog/[slug]. */
+  getBlogPostStaticPaths(): Promise<SlugPath[]>;
 }

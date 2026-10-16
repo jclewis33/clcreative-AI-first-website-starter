@@ -33,4 +33,6 @@ export const {
   getCaseStudy,
   getFeaturedCaseStudies,
   getCaseStudyStaticPaths,
+  getBlogPost,
+  getBlogPostStaticPaths,
 } = source;

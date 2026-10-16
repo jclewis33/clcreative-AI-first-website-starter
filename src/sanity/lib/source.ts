@@ -31,6 +31,7 @@
  */
 import { stegaClean } from "@sanity/client/stega";
 import type {
+  BlogPostPage,
   ContentOptions,
   ContentSource,
   CaseStudyPage,
@@ -44,8 +45,10 @@ import type {
   TestimonialFilter,
 } from "@/lib/content/types";
 import {
+  getBlogPostStaticPaths,
   getCaseStudyStaticPaths,
   getProjectStaticPaths,
+  loadBlogPostPage,
   loadCaseStudies,
   loadCaseStudyPage,
   loadFeaturedCaseStudies,
@@ -56,6 +59,7 @@ import {
   loadSiteSettings,
   loadTestimonials,
 } from "./page-data";
+import { toBlogPostDetail, toBlogPostSummary } from "./map/blog";
 import {
   toCaseStudyDetail,
   toCaseStudySummary,
@@ -183,6 +187,27 @@ async function getFeaturedCaseStudies(
     .filter((s): s is FeaturedCaseStudy => s !== undefined);
 }
 
+/* ── Blog ──────────────────────────────────────────────────────────────── */
+
+async function getBlogPost(
+  slug: string,
+  opts?: ContentOptions,
+): Promise<BlogPostPage | null> {
+  const raw = await loadBlogPostPage(slug, opts);
+  if (!raw) return null;
+  return {
+    post: toBlogPostDetail(raw.post),
+    relatedPosts: raw.relatedPosts.map(toBlogPostSummary).filter(isPresent),
+    manualRelatedPosts: raw.manualRelatedPosts
+      .map(toBlogPostSummary)
+      .filter(isPresent),
+    cta: toBlogCta(raw.post.ctaOverride ?? raw.defaultCta),
+    ctaSection: toCtaSection(
+      raw.post.ctaSectionOverride ?? raw.defaultCtaSection,
+    ),
+  };
+}
+
 /* `satisfies` fails `npm run check` when a ContentSource function is
    missing here or its signature drifts. */
 const sanitySource = {
@@ -199,6 +224,8 @@ const sanitySource = {
   getCaseStudy,
   getFeaturedCaseStudies,
   getCaseStudyStaticPaths,
+  getBlogPost,
+  getBlogPostStaticPaths,
 } satisfies ContentSource;
 
 export default sanitySource;

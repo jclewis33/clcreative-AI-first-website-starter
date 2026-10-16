@@ -1,3 +1,8 @@
+/**
+ * Table-of-contents helpers. `slugifyHeading` and `TocItem` are
+ * format-agnostic; `buildToc` walks Portable Text (the Sanity content
+ * source calls it to id each h2 and collect the headings).
+ */
 export function slugifyHeading(text: string): string {
   return text
     .toLowerCase()
