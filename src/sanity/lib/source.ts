@@ -213,8 +213,6 @@ async function getBlogPost(
   };
 }
 
-/* `satisfies` fails `npm run check` when a ContentSource function is
-   missing here or its signature drifts. */
 /* ── Blog listings ─────────────────────────────────────────────────────── */
 
 async function getBlogPosts(opts?: ContentOptions): Promise<BlogPostSummary[]> {
@@ -237,6 +235,8 @@ async function getBlogCategories(opts?: ContentOptions): Promise<string[]> {
   return [...new Set(names)];
 }
 
+/* `satisfies` fails `npm run check` when a ContentSource function is
+   missing here or its signature drifts. */
 const sanitySource = {
   plainText,
   getCtaDefaults,
