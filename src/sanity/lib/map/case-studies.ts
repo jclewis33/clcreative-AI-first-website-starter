@@ -23,7 +23,7 @@ import type {
   FeaturedCaseStudy,
 } from "@/lib/content/types";
 import { urlFor, hotspotPosition } from "../image";
-import { portableTextToHtml } from "../portable-text";
+import { portableTextToHtml, portableTextToMarkdown } from "../portable-text";
 import { sanityImage } from "./image";
 import { toSeo } from "./seo";
 
@@ -152,6 +152,47 @@ function toBlock(block: RawBlock): ContentBlock | null {
   }
 }
 
+/** Render a case study's flexible `content[]` blocks to Markdown. */
+export function caseStudyMarkdown(
+  blocks: RawBlock[] | null | undefined,
+): string {
+  if (!blocks?.length) return "";
+  const parts: string[] = [];
+  for (const b of blocks) {
+    // Each block shape carries a different subset of these fields; the
+    // union only exposes one after `_type` narrowing, and this walker
+    // deliberately probes them instead.
+    const block = b as {
+      _type: string;
+      body?: unknown[] | null;
+      items?: Array<{ value?: string | null; label?: string | null }> | null;
+      imageAlt?: string | null;
+      images?: Array<{ alt?: string | null }> | null;
+    };
+    if (block.body?.length) {
+      const md = portableTextToMarkdown(block.body as never);
+      if (md) parts.push(md);
+      continue;
+    }
+    if (block._type === "stats" && block.items?.length) {
+      parts.push(
+        block.items
+          .map((s) => `- **${s.value ?? ""}** — ${s.label ?? ""}`)
+          .join("\n"),
+      );
+      continue;
+    }
+    if (block.imageAlt) {
+      parts.push(`![${block.imageAlt}]`);
+      continue;
+    }
+    if (block.images?.length) {
+      parts.push(block.images.map((i) => `![${i.alt ?? "image"}]`).join("\n"));
+    }
+  }
+  return parts.join("\n\n");
+}
+
 export function toCaseStudyDetail(s: RawCaseStudy): CaseStudyDetail {
   return {
     slug: stegaClean(s.slug) ?? "",
@@ -178,6 +219,7 @@ export function toCaseStudyDetail(s: RawCaseStudy): CaseStudyDetail {
           block !== null &&
           (block.type !== "imageGrid" || block.images.length > 0),
       ),
+    markdown: stegaClean(caseStudyMarkdown(s.content)),
     seo: toSeo(s.seo),
   };
 }

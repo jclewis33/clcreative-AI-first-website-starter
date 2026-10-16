@@ -18,6 +18,7 @@ import { buildToc } from "@/lib/toc";
 import { estimateReadTime } from "@/lib/read-time";
 import {
   portableTextToHtml,
+  portableTextToMarkdown,
   portableTextToPlainText,
   portableTextWords,
 } from "../portable-text";
@@ -74,6 +75,9 @@ export function toBlogPostDetail(post: RawPost): BlogPostDetail {
       answerHtml: portableTextToHtml(faq.answer),
       answerText: stegaClean(portableTextToPlainText(faq.answer)),
     })),
+    // `as never`: the body includes custom node types (code, callout, …)
+    // the Markdown walker skips but its input type does not list.
+    markdown: stegaClean(portableTextToMarkdown(post.body as never)),
     seo: toSeo(post.seo),
   };
 }

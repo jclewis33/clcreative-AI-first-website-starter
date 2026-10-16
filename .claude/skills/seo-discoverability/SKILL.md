@@ -122,12 +122,14 @@ The site serves two LLM-facing files at the root, following the
 Both are **Astro endpoint routes that prerender to static files at build time**
 ([src/pages/llms.txt.ts](../../../src/pages/llms.txt.ts),
 [src/pages/llms-full.txt.ts](../../../src/pages/llms-full.txt.ts)). They
-re-run their Sanity queries on every build — the same lifecycle as the
-sitemap — so new/edited/deleted content flows through automatically on the
-next deploy. They reuse the queries in `src/sanity/lib/queries.ts` and mirror
-the `comingSoon != true` rule used by the case-study `getStaticPaths` slug
-query, so unpublished case studies stay hidden. The full file uses
-`portableTextToMarkdown()` in
+read the content interface (`@/lib/content`: `getBlogPosts`,
+`getCaseStudies`, `getProjects`, and for the full file
+`getFullBlogPosts` / `getFullCaseStudies`) on every build — the same
+lifecycle as the sitemap — so new, edited and deleted content flows
+through automatically on the next deploy. Coming-soon case studies stay
+hidden, matching the case-study `getStaticPaths` rule. Bodies arrive as
+Markdown on the view models (`markdown`). The Sanity source converts
+Portable Text with `portableTextToMarkdown()` in
 [src/sanity/lib/portable-text.ts](../../../src/sanity/lib/portable-text.ts).
 
 The built files land in `dist/client/` alongside `sitemap-index.xml`. They are

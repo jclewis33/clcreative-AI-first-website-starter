@@ -254,6 +254,8 @@ export interface CaseStudyDetail {
   gallery: ContentImage[];
   /** The flexible body, ready for CaseStudyBlockRenderer. */
   blocks: ContentBlock[];
+  /** The full body as Markdown (llms-full.txt). */
+  markdown: string;
   seo: SeoFields | null;
 }
 
@@ -327,6 +329,8 @@ export interface BlogPostDetail {
   /** Minutes, at least 1. */
   readTime: number;
   faqs: FaqItem[];
+  /** The full body as Markdown (llms-full.txt). */
+  markdown: string;
   seo: SeoFields | null;
 }
 
@@ -411,4 +415,8 @@ export interface ContentSource {
   getBlogCategories(opts?: ContentOptions): Promise<string[]>;
   /** getStaticPaths for /blog/category/[category] (one per category, plus "all"). */
   getBlogCategoryStaticPaths(): Promise<CategoryPath[]>;
+  /** Every post with its full body, newest first (llms-full.txt). */
+  getFullBlogPosts(opts?: ContentOptions): Promise<BlogPostDetail[]>;
+  /** Every published (not coming-soon) case study in full, newest first. */
+  getFullCaseStudies(opts?: ContentOptions): Promise<CaseStudyDetail[]>;
 }

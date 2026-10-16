@@ -104,15 +104,24 @@ export async function loadBlogPostPage(
 
 /* ── Case study ────────────────────────────────────────────────────────────── */
 
-export async function loadCaseStudyPage(
+/** One case study document by slug (CASE_STUDY_QUERY), or null. */
+export async function loadCaseStudyDocument(
   slug: string,
   draftProps: DraftProps = {},
 ) {
-  const { data: study } = await loadQuery({
+  const { data } = await loadQuery({
     query: CASE_STUDY_QUERY,
     params: { slug },
     ...draftProps,
   });
+  return data;
+}
+
+export async function loadCaseStudyPage(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
+  const study = await loadCaseStudyDocument(slug, draftProps);
   if (!study) return null;
 
   const [{ data: siblings }, { data: settings }] = await Promise.all([

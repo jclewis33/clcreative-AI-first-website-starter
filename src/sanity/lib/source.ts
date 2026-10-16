@@ -31,9 +31,11 @@
  */
 import { stegaClean } from "@sanity/client/stega";
 import type {
+  BlogPostDetail,
   BlogPostPage,
   ContentOptions,
   ContentSource,
+  CaseStudyDetail,
   CaseStudyPage,
   BlogPostSummary,
   CaseStudySummary,
@@ -51,10 +53,12 @@ import {
   getCaseStudyStaticPaths,
   getProjectStaticPaths,
   loadBlogCategories,
+  loadBlogPostDocument,
   loadBlogPostPage,
   loadBlogPosts,
   loadBlogPostsByCategory,
   loadCaseStudies,
+  loadCaseStudyDocument,
   loadCaseStudyPage,
   loadFeaturedCaseStudies,
   loadFeaturedProjects,
@@ -235,6 +239,30 @@ async function getBlogCategories(opts?: ContentOptions): Promise<string[]> {
   return [...new Set(names)];
 }
 
+/* ── Full documents (llms-full.txt) ────────────────────────────────────── */
+
+async function getFullBlogPosts(
+  opts?: ContentOptions,
+): Promise<BlogPostDetail[]> {
+  const slugs = (await getBlogPosts(opts)).map((p) => p.slug);
+  const posts = await Promise.all(
+    slugs.map((slug) => loadBlogPostDocument(slug, opts)),
+  );
+  return posts.filter(isPresent).map(toBlogPostDetail);
+}
+
+async function getFullCaseStudies(
+  opts?: ContentOptions,
+): Promise<CaseStudyDetail[]> {
+  const slugs = (await getCaseStudies(opts))
+    .filter((c) => !c.comingSoon)
+    .map((c) => c.slug);
+  const studies = await Promise.all(
+    slugs.map((slug) => loadCaseStudyDocument(slug, opts)),
+  );
+  return studies.filter(isPresent).map(toCaseStudyDetail);
+}
+
 /* `satisfies` fails `npm run check` when a ContentSource function is
    missing here or its signature drifts. */
 const sanitySource = {
@@ -257,6 +285,8 @@ const sanitySource = {
   getBlogPostsByCategory,
   getBlogCategories,
   getBlogCategoryStaticPaths,
+  getFullBlogPosts,
+  getFullCaseStudies,
 } satisfies ContentSource;
 
 export default sanitySource;
