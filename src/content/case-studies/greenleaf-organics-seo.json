@@ -1,0 +1,26 @@
+{
+  "title": "Organic Growth for GreenLeaf Organics",
+  "description": "A growth plan spanning technical fixes, content and outreach that grew organic traffic by 520% in six months.",
+  "client": "GreenLeaf Organics",
+  "image": "./images/greenleaf-hero.webp",
+  "imageAlt": "Floating analytics panels above a desk with a vase and a notebook",
+  "date": "2026-01-20",
+  "comingSoon": true,
+  "liveUrl": "https://example.com",
+  "categories": ["Marketing", "Design"],
+  "industries": ["Food & Beverage"],
+  "timeline": "6 months",
+  "content": [
+    {
+      "type": "richText",
+      "body": "### Introduction\n\nGreenLeaf Organics was hard to find online despite great products. The full story is on its way."
+    },
+    {
+      "type": "stats",
+      "items": [
+        { "value": "520%", "label": "Organic traffic growth" },
+        { "value": "45%", "label": "More online orders" }
+      ]
+    }
+  ]
+}

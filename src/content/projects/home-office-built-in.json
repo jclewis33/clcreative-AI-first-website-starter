@@ -1,0 +1,27 @@
+{
+  "title": "Home office built-in",
+  "category": "remodel",
+  "location": "Springfield, IL",
+  "service": "Custom carpentry",
+  "description": "We turned an unused corner into a full-width oak desk with storage above and below, wired for two monitors.\n\nThe owners asked for **no visible cables**, so we ran power and data inside the cabinetry.",
+  "quote": {
+    "text": "The new desk changed how I work from home.",
+    "name": "Marcus B."
+  },
+  "heroImage": "./images/office-hero.webp",
+  "imageAlt": "The finished built-in desk, with a large monitor and a lamp beside the window",
+  "photos": [
+    {
+      "src": "./images/office-desk.webp",
+      "alt": "The homeowner working at the new desk beside the window",
+      "label": "After"
+    },
+    {
+      "src": "./images/office-laptop.webp",
+      "alt": "A laptop and a mug on the finished oak desktop"
+    }
+  ],
+  "completed": "2026-04-18",
+  "featured": true,
+  "seoDescription": "A built-in oak desk with hidden wiring turns an unused corner of a Springfield home into a full office."
+}

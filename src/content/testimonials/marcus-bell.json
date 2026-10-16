@@ -1,0 +1,10 @@
+{
+  "name": "Marcus Bell",
+  "role": "Homeowner",
+  "quote": "The built-in desk changed how I work from home. They measured twice, finished on schedule and left the room cleaner than they found it.",
+  "avatar": "./images/marcus-bell.webp",
+  "avatarAlt": "Marcus Bell",
+  "stars": 5,
+  "featured": true,
+  "order": 1
+}

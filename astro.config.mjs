@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
+import mdx from "@astrojs/mdx";
 import sanity from "@sanity/astro";
 import react from "@astrojs/react";
 import cloudflare from "@astrojs/cloudflare";
@@ -151,6 +152,7 @@ export default defineConfig({
     sitemap({
       filter: (page) => !isNoindexRoute(new URL(page).pathname),
     }),
+    mdx(),
     // React must be registered BEFORE Sanity — the visual-editing islands
     // (SanityVisualEditing / DisableDraftMode) are React components that need
     // the React renderer available when draft mode mounts them.
@@ -239,6 +241,14 @@ export default defineConfig({
         hostname: "cdn.sanity.io",
       },
     ],
+  },
+
+  /* Fenced code in MDX blog bodies is highlighted at build time with these
+     settings — the same theme and wrapping the Portable Text CodeBlock
+     passes to <Code> (src/components/portabletext/CodeBlock.astro), so a
+     code block looks the same from either content source. */
+  markdown: {
+    shikiConfig: { theme: "github-dark", wrap: true },
   },
 
   fonts: [

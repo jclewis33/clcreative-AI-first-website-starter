@@ -1,0 +1,11 @@
+{
+  "heading": "Ready to start your project?",
+  "text": "Tell us what you’re planning and we’ll reply within one business day with next steps.",
+  "primaryButtonLabel": "Get a quote",
+  "primaryButtonHref": "/contact",
+  "secondaryButtonLabel": "See our work",
+  "secondaryButtonHref": "/projects",
+  "backgroundImage": "./images/arched-room.webp",
+  "imageAlt": "A sunlit room with an arched window and a round pedestal table",
+  "overlayStrength": 70
+}

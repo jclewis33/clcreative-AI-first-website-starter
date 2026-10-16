@@ -1,0 +1,28 @@
+{
+  "title": "Breakfast nook and plaster arch",
+  "category": "residential",
+  "location": "Chatham, IL",
+  "service": "Interior remodeling",
+  "description": "A dark dining corner became a bright breakfast nook: a new arched window, a curved plaster arch and a built-in stone shelf.",
+  "heroImage": "./images/nook-hero.webp",
+  "imageAlt": "The breakfast nook: a round pedestal table beside a curved plaster arch",
+  "photos": [
+    {
+      "src": "./images/nook-window.webp",
+      "alt": "Morning light through the arched window onto the round table",
+      "label": "After"
+    },
+    {
+      "src": "./images/nook-shelf.webp",
+      "alt": "The new plaster arch and stone shelf, with a vase and a mug",
+      "label": "After"
+    },
+    {
+      "src": "./images/nook-reading.webp",
+      "alt": "Books, a mug and a laptop on the stone tabletop beside the arched opening"
+    }
+  ],
+  "completed": "2026-03-02",
+  "featured": true,
+  "seoDescription": "An arched window, a curved plaster arch and a stone shelf turn a dark dining corner into a bright breakfast nook."
+}

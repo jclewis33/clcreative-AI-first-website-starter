@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { resolveImageUrl, type ContentImage } from "@/lib/content";
 
 /**
  * Quote — a customer review: a quote mark, the review text, and who said it.
@@ -31,6 +32,9 @@ type QuoteMark =
   /** No mark */
   | "none";
 
+/** A reviewer photo: an imported image or a URL, with its alt text. */
+type QuoteAvatar = ContentImage;
+
 export interface Props extends HTMLAttributes<"figure"> {
   /**
    * **Quote** — a customer review. `text` without the curly quotes (they're
@@ -51,6 +55,14 @@ export interface Props extends HTMLAttributes<"figure"> {
 
   /** Context line under the name, e.g. "Kitchen remodel · Springfield". */
   meta?: string;
+
+  /**
+   * A small round photo beside the name — `{ src, alt }` with `src` an
+   * imported image or a URL (resized to 96px). Alt is usually the name.
+   *
+   * @example avatar={{ src: reviewerPhoto, alt: "Sandra D." }}
+   */
+  avatar?: QuoteAvatar;
 
   /** Large headline or regular card text. @default "large" */
   size?: QuoteSize;
@@ -74,12 +86,15 @@ const {
   text,
   name,
   meta,
+  avatar,
   size = "large",
   mark = "icon",
   spread = false,
   class: className,
   ...rest
 } = Astro.props;
+
+const avatarSrc = await resolveImageUrl(avatar, { width: 96, height: 96 });
 
 if (import.meta.env.DEV) {
   if (!text)
@@ -114,7 +129,21 @@ if (import.meta.env.DEV) {
       </blockquote>
       {(name || meta) && (
         <figcaption class="quote_caption">
-          {name && <span class="quote_name">{name}</span>}
+          {avatarSrc && avatar ? (
+            <span class="quote_person">
+              <img
+                class="quote_avatar"
+                src={avatarSrc}
+                alt={avatar.alt}
+                width="48"
+                height="48"
+                loading="lazy"
+              />
+              <span class="quote_name">{name}</span>
+            </span>
+          ) : (
+            name && <span class="quote_name">{name}</span>
+          )}
           {meta && <span class="quote_meta">{meta}</span>}
         </figcaption>
       )}
@@ -243,6 +272,26 @@ if (import.meta.env.DEV) {
     .quote_wrap[data-size="regular"] .quote_meta::before,
     .quote_wrap[data-size="small"] .quote_meta::before {
       content: "· ";
+    }
+
+    /* With a photo: the avatar sits beside the name; meta stays below. */
+    .quote_person {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .quote_avatar {
+      width: 2.5em;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      border-radius: var(--radius-full, 100vmax);
+      object-fit: cover;
+    }
+
+    .quote_person .quote_name {
+      min-width: 0;
     }
   }
 </style>

@@ -1,0 +1,79 @@
+{
+  "title": "Revitalizing Acme Corp’s Digital Presence",
+  "description": "A complete brand refresh and website redesign that increased lead generation by 340% and gave Acme one visual identity across every channel.",
+  "client": "Acme Corp",
+  "image": "./images/acme-hero.webp",
+  "imageAlt": "Acme Corp’s new homepage on a laptop in a bright room with a plaster arch",
+  "date": "2026-02-28",
+  "updated": "2026-03-05",
+  "featured": true,
+  "categories": ["Branding", "Design", "Development"],
+  "industries": ["Manufacturing / Industrial"],
+  "timeline": "8 weeks",
+  "liveUrl": "https://example.com",
+  "galleryImages": [
+    {
+      "src": "./images/acme-hero.webp",
+      "alt": "Acme Corp’s homepage on a laptop"
+    },
+    {
+      "src": "./images/acme-pages.webp",
+      "alt": "A designer reviewing Acme Corp’s interior pages on a laptop"
+    },
+    {
+      "src": "./images/acme-devices.webp",
+      "alt": "Acme Corp’s site on a desktop, laptop, tablet and phone"
+    }
+  ],
+  "content": [
+    {
+      "type": "richText",
+      "body": "### Introduction\n\nAcme Corp had outgrown its website. The brand no longer reflected the premium service the team delivers, and new inquiries had stalled. They needed a refresh that would position them as the leader in their region and drive measurable results.",
+      "sectionSpacing": "small"
+    },
+    {
+      "type": "richTextWithImage",
+      "body": "### The challenge\n\nThe old site was dated, with inconsistent branding, slow pages and a confusing path to the contact form. Traffic was steady, but conversions had plateaued: the problem was the destination, not the demand.\n\nWe needed to rebuild the site from the ground up **without losing the search visibility** Acme had earned over the years.",
+      "image": "./images/acme-pages.webp",
+      "imageAlt": "A designer reviewing Acme Corp’s interior pages on a laptop",
+      "aspectRatio": "square"
+    },
+    {
+      "type": "fullWidthImage",
+      "image": "./images/acme-devices.webp",
+      "imageAlt": "Acme Corp’s new site on a desktop, laptop, tablet and phone",
+      "customAspectRatio": "21 / 9"
+    },
+    {
+      "type": "imageGrid",
+      "images": [
+        {
+          "image": "./images/acme-palette.webp",
+          "alt": "Palette cards beside a tablet showing the new homepage"
+        },
+        {
+          "image": "./images/acme-swatches.webp",
+          "alt": "The new homepage on a tablet surrounded by material samples"
+        }
+      ]
+    },
+    {
+      "type": "richTextColumns",
+      "body": "### The approach\n\nWe started with a brand workshop to find out what Acme values and what sets it apart. From there we built a visual identity and turned it into a fast site with a simple editor.\n\nThe design went through three rounds, with feedback from the team at every stage. Mobile layouts, accessibility and page speed were priorities from day one.\n\nWe wrote the copy alongside the design, so every page had a clear message and one obvious next step:\n\n- a headline that names the problem\n- proof from real projects\n  - numbers first\n  - then photos\n- one call to action"
+    },
+    {
+      "type": "stats",
+      "items": [
+        { "value": "340%", "label": "Increase in leads" },
+        { "value": "60%", "label": "Faster page loads" },
+        { "value": "2.5x", "label": "More pages per visit" }
+      ]
+    },
+    {
+      "type": "richText",
+      "body": "### The results\n\n> The new site paid for itself in the first quarter.\n\nLeads rose by 340%, pages load 60% faster and visitors read more of the site. Acme now has a web presence that matches the quality of its work. Read how we approach this in [our accessibility guide](/blog/accessibility-guide).",
+      "maxWidth": "60ch"
+    }
+  ],
+  "seo": { "metaTitle": "Acme Corp rebrand and website redesign" }
+}
