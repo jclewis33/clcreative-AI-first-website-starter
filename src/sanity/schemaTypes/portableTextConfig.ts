@@ -1,9 +1,9 @@
 /**
  * Shared Portable Text marks config — decorators and annotations
- * reused across blogPost.ts and caseStudy.ts.
+ * reused across blogPost.ts, caseStudy.ts, project.ts and callout.ts.
  *
  * The `internalLink` annotation lets editors pick another document
- * (blog post or case study) from a search dialog
+ * (blog post, case study, or project) from a search dialog
  * instead of pasting a URL.
  */
 

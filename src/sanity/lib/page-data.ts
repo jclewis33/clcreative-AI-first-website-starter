@@ -194,7 +194,7 @@ function isPlaceholderSanityProject(): boolean {
  * as "emit no pages at all" (distinct from an empty-but-reachable dataset).
  *
  * Real project: RETHROW. Swallowing a network error here would silently ship
- * a deploy with every blog/case-study page missing — previously
+ * a deploy with every blog/case-study/project page missing — previously
  * live URLs would 404. A loud build failure is the correct outcome.
  */
 async function fetchStaticPathList<const Q extends string>(

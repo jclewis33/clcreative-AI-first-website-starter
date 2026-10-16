@@ -2,7 +2,7 @@
  * Document-level Studio customizations wired up in sanity.config.ts:
  *
  *  - ViewOnSiteAction — a document action that opens the live published page
- *    in a new tab (blog/case-study by slug). For coming-soon case
+ *    in a new tab (blog/case-study/project by slug). For coming-soon case
  *    studies (whose detail page is hidden) it opens the external Live URL.
  *  - FeaturedBadge / ComingSoonBadge — status labels shown in the document
  *    header so editors can see at a glance what's promoted or still teased.

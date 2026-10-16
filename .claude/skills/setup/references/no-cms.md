@@ -10,7 +10,7 @@ clean in that state**. This is engineered, not accidental — the helpers in
 [page-data.ts](../../../../src/sanity/lib/page-data.ts) detect the placeholder
 project id and return `null`/fallback instead of throwing, so:
 
-- `getStaticPaths` enumerates **zero slugs** → no blog/case-study detail
+- `getStaticPaths` enumerates **zero slugs** → no blog/case-study/project detail
   pages are emitted.
 - The listing pages render their **empty states**.
 - The Sanity-fed homepage sections (`SingleTestimonial`, `TestimonialShowcase`,

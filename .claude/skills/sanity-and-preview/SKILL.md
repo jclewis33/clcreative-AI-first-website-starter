@@ -326,7 +326,7 @@ Reusable Content and
 People & Social folders. The `SINGLETON_TYPES` / `SINGLETON_ACTIONS` logic
 keeps `siteSettings` a singleton — leave it intact.
 
-**Field groups.** `blogPost` and `caseStudy` split fields into
+**Field groups.** `blogPost`, `caseStudy` and `project` split fields into
 tabs via `groups:` on the type + `group:` per field. Convention: `content`
 (default), then `media`, `meta`, `seo`. Editor-UI only — no data migration, so
 always safe. Object/array-member sub-fields do not take groups.
@@ -383,10 +383,10 @@ SSR twins.
 
 ⚠️ **Two URL maps exist — separate modules on purpose:**
 
-| Module              | Used by                                         | Returns                                          |
-| ------------------- | ----------------------------------------------- | ------------------------------------------------ |
-| `resolve.ts`        | the Studio only (imports `sanity/presentation`) | `/preview/<type>/<slug>` — draft-preview targets |
-| `internal-links.ts` | site code only (zero Studio imports)            | `/blog/…`, `/case-studies/…` links               |
+| Module              | Used by                                         | Returns                                           |
+| ------------------- | ----------------------------------------------- | ------------------------------------------------- |
+| `resolve.ts`        | the Studio only (imports `sanity/presentation`) | `/preview/<type>/<slug>` — draft-preview targets  |
+| `internal-links.ts` | site code only (zero Studio imports)            | `/blog/…`, `/case-studies/…`, `/projects/…` links |
 
 `resolve.ts` is compiled into the **hosted Studio bundle**, so location changes
 require `npx sanity deploy`. Deploy order: **site first** (so the `/preview`

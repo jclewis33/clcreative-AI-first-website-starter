@@ -112,9 +112,9 @@ The site serves two LLM-facing files at the root, following the
 [llmstxt.org](https://llmstxt.org) convention:
 
 - **`/llms.txt`** — a concise, curated index: site summary + links (with
-  one-line descriptions) to the important pages and every blog post and case
-  study.
-- **`/llms-full.txt`** — the full body text of every blog post and case study,
+  one-line descriptions) to the important pages and every blog post, case
+  study and project.
+- **`/llms-full.txt`** — the full body text of every blog post, case study and project,
   rendered to Markdown for whole-site ingestion.
 
 ### How they stay current (no manual work for CMS content)

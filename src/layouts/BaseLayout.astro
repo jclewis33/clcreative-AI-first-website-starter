@@ -75,8 +75,8 @@ import {
 
 // Prerendered pages are baked at build time with no request, so cookies
 // aren't available. Short-circuit to avoid "Astro.request.headers was used"
-// build warnings. Draft mode only ever applies to SSR pages (blog,
-// case-studies, API routes).
+// build warnings. Draft mode only ever applies to SSR routes (the
+// /preview/* twins and API routes); public content routes are prerendered.
 const draftMode = Astro.isPrerendered
   ? false
   : Astro.cookies.has(perspectiveCookieName);
