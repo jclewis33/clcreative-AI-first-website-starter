@@ -120,4 +120,86 @@ assert.throws(
   /Unsupported/,
 );
 
+// Consecutive quote lines join into ONE blockquote, as Markdown renders them.
+{
+  const quote = markdownToPortableText("> One line\n> and its wrap.", {
+    keyPrefix: "q-",
+  });
+  assert.equal(quote.length, 1);
+  assert.equal(quote[0].style, "blockquote");
+  assert.equal(quote[0].children[0].text, "One line and its wrap.");
+}
+// A nested item under "1. " indents three spaces (its parent's text column).
+assert.deepEqual(
+  markdownToPortableText("1. step\n   - detail\n2. next", {
+    keyPrefix: "n-",
+  }).map((b) => [b.listItem, b.level]),
+  [
+    ["number", 1],
+    ["bullet", 2],
+    ["number", 1],
+  ],
+);
+
+/** Each construct Markdown/MDX would render differently must throw, naming
+    the source and the line. */
+const rejects = (markdown, what, line = 1) =>
+  assert.throws(
+    () =>
+      markdownToPortableText(markdown, {
+        keyPrefix: "x-",
+        source: "test.mdx",
+        cta: (id) => ({ _id: id }),
+      }),
+    (err) =>
+      /Unsupported/.test(err.message) &&
+      err.message.includes(`test.mdx, line ${line}:`),
+    what,
+  );
+rejects("- item\n  continued", "indented list continuation", 2);
+rejects("- item\ncontinued", "lazy list continuation", 2);
+rejects("> quote\ncontinued", "lazy quote continuation", 2);
+rejects("- a\n\n- b", "loose list", 3);
+rejects(
+  "1. a\n  - not nested under the text column",
+  "2-space nest under 1.",
+  2,
+);
+rejects("3. starts at three", "numbered list not starting at 1");
+rejects("Text\n\n---\n\nMore", "thematic break ---", 3);
+rejects("***", "thematic break ***");
+rejects("Title\n---", "setext heading", 2);
+rejects("~~~js\nx\n~~~", "~~~ fence");
+rejects("  ```js\n  x\n  ```", "indented code fence");
+rejects("    indented code", "indented code block");
+rejects("<div>raw</div>", "lowercase raw HTML");
+rejects("<!-- comment -->", "HTML comment");
+rejects("Line one<br>line two", "<br>");
+rejects("A snake_case_word here", "intraword _");
+rejects("Not \\*emphasis\\*", "backslash escape");
+rejects("Some ~~struck~~ text", "strikethrough");
+rejects("See [the docs][docs].", "reference link");
+rejects("[docs]: https://example.com", "reference definition");
+rejects("Visit https://example.com today", "bare URL");
+rejects("Fish &amp; chips", "HTML entity");
+rejects("Hard break  \nnext", "trailing double space");
+rejects("Look ![x](./a.webp) inline", "inline image");
+rejects("# Title", "h1");
+rejects("## Title ##", "closing # sequence");
+rejects("<VideoEmbed url={video} />", "JSX expression url");
+rejects("<VideoEmbed url='https://youtu.be/x' />", "single-quoted url");
+rejects('<VideoEmbed caption="No url" />', "missing url");
+rejects(
+  '<VideoEmbed url="https://youtu.be/x" autoplay="1" />',
+  "unknown attribute",
+);
+rejects("<Callout type={kind}>\nText\n</Callout>", "JSX expression type");
+rejects("<BlogCta id={ctaId} />", "JSX expression id");
+// Errors inside a Callout keep the outer file's line numbers.
+rejects(
+  'Intro.\n\n<Callout type="tip">\nA ~~struck~~ word.\n</Callout>',
+  "nested line",
+  4,
+);
+
 console.log("check-fixture-markdown: ok");

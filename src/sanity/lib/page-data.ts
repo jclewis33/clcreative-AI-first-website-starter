@@ -181,9 +181,14 @@ export async function loadProjectPage(
  * A fresh fork still carries the placeholder project id from
  * src/config/site.shared.mjs (real Sanity project ids are strictly
  * lowercase-alphanumeric), so its builds can't reach a dataset yet.
+ *
+ * Never true in a parity-fixtures build (`PARITY_FIXTURES` set, see
+ * ./load-query.ts): there no query touches the network, so an error is a
+ * fixture bug (an unknown query, unsupported sample Markdown) and must
+ * fail the build instead of silently emitting the empty-state pages.
  */
 function isPlaceholderSanityProject(): boolean {
-  return !/^[a-z0-9]+$/.test(SANITY_PROJECT_ID);
+  return !__PARITY_FIXTURES__ && !/^[a-z0-9]+$/.test(SANITY_PROJECT_ID);
 }
 
 /**

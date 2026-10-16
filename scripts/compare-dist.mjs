@@ -37,13 +37,14 @@
  * build). On top of `--canonical` it normalises only the differences
  * listed in docs/superpowers/plans/2026-10-16-pr3-files-backend.md
  * ("Expected Files-vs-Sanity differences"): image URLs and <img> sizing
- * attributes, syntax-highlighting markup (a code block compares by
- * language and text), whitespace beside block elements, a body image's
- * <p>/<figure> wrapper, ids on h3–h6, inline <style> split across chunks
- * (compared layer by layer), and llms-full.txt bodies (only its outline —
- * headings, URL:, Client: and index lines — is compared). It ends by
- * counting how often each normalisation fired, so a rule that no longer
- * does anything is visible.
+ * attributes (alt is then the only guard against a swapped image), the
+ * declaration spacing of a highlighted <pre>'s own style attribute (token
+ * markup is still compared), whitespace beside block elements, a body
+ * image's <p>/<figure> wrapper, ids on h3–h6, inline <style> split across
+ * chunks (compared layer by layer), and llms-full.txt bodies (only its
+ * outline — headings, URL:, Client: and index lines — is compared). It
+ * ends by counting how often each normalisation fired, so a rule that no
+ * longer does anything is visible.
  *
  *   node scripts/compare-dist.mjs --equivalent .parity/sample .parity/files
  *
@@ -168,20 +169,22 @@ function canon(node) {
 const fired = {
   "image URLs → IMAGE": 0,
   "<img> sizing attributes dropped": 0,
-  "highlighted <pre> → language + text": 0,
+  "<pre> style attribute spacing": 0,
   "text trimmed beside a block element": 0,
   "lone-image <p>/<figure> → <img>": 0,
   "id dropped on h3–h6": 0,
-  "style attribute spacing": 0,
   "inline <style> compared by layer": 0,
   "llms-full.txt → outline": 0,
 };
 
-/** Image URLs from either source: local build files and Sanity CDN URLs.
-    A Sanity URL's query may hold commas (`rect=0,32,1672,878`); a comma
-    followed by whitespace still ends it, as between srcset candidates. */
+/** Image URLs from either source, matched on the raw file (before
+    `normalize()` erases the extension, so scripts, styles and fonts in
+    _astro/ are left alone): local image files, optionally absolute, and
+    Sanity CDN URLs. A Sanity URL's query may hold commas
+    (`rect=0,32,1672,878`); a comma followed by whitespace still ends it,
+    as between srcset candidates. */
 const IMAGE_URL =
-  /(?:https?:\/\/[^"'\s/<>]+)?\/_astro\/ASSET|https:\/\/cdn\.sanity\.io\/images\/(?:[^"'\s)<>,]|,(?!\s))+/g;
+  /(?:https?:\/\/[^"'\s/<>]+)?\/_astro\/[^"'\s)&?#,<>]+\.(?:avif|gif|jpe?g|png|svg|webp)\b|https:\/\/cdn\.sanity\.io\/images\/(?:[^"'\s)<>,]|,(?!\s))+/g;
 /** <img> attributes about sizing and loading, not content. The
     data-astro-image* trio is Astro's layout marker on a processed (local)
     image; a remote Sanity URL renders a bare <img> without it, and with
@@ -253,7 +256,7 @@ const normStyle = (value) => {
     .filter(Boolean)
     .map((decl) => decl.replace(/\s*:\s*/, ": "))
     .join("; ");
-  if (out !== value) fired["style attribute spacing"]++;
+  if (out !== value) fired["<pre> style attribute spacing"]++;
   return out;
 };
 
@@ -280,16 +283,6 @@ function canonEq(node) {
     if (img) {
       fired["lone-image <p>/<figure> → <img>"]++;
       return canonEq(img);
-    }
-    if (
-      tag === "pre" &&
-      /\bastro-code\b/.test(node.getAttribute("class") ?? "")
-    ) {
-      fired["highlighted <pre> → language + text"]++;
-      /* Tags stripped, then entities decoded: highlighters escape the
-         same text differently (`&#x3C;` against `&lt;`). */
-      const text = parse(node.rawText.replace(/<[^>]+>/g, "")).text;
-      return `<pre data-language="${node.getAttribute("data-language") ?? ""}">\n${text}</pre>\n`;
     }
   }
   const kids = node.childNodes;
@@ -321,7 +314,10 @@ function canonEq(node) {
       }
       return true;
     })
-    .map(([name, value]) => [name, name === "style" ? normStyle(value) : value])
+    .map(([name, value]) => [
+      name,
+      name === "style" && tag === "pre" ? normStyle(value) : value,
+    ])
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([name, value]) => ` ${name}="${value}"`)
     .join("");
@@ -364,14 +360,21 @@ for (const file of cand.filter((f) => !baseSet.has(f))) {
   console.log(`EXTRA    ${file}`);
   failures++;
 }
+/** Read a build file; under --equivalent, image URLs become IMAGE first. */
+function read(dir, file) {
+  let text = fs.readFileSync(path.join(dir, file), "utf8");
+  if (equivalent)
+    text = text.replace(IMAGE_URL, () => {
+      fired["image URLs → IMAGE"]++;
+      return "IMAGE";
+    });
+  return normalize(text);
+}
+
 for (const file of base.filter((f) => candSet.has(f))) {
-  let a = normalize(fs.readFileSync(path.join(baseDir, file), "utf8"));
-  let b = normalize(fs.readFileSync(path.join(candDir, file), "utf8"));
+  let a = read(baseDir, file);
+  let b = read(candDir, file);
   if (equivalent) {
-    const urls = (t) => t.match(IMAGE_URL)?.length ?? 0;
-    fired["image URLs → IMAGE"] += urls(a) + urls(b);
-    a = a.replace(IMAGE_URL, "IMAGE");
-    b = b.replace(IMAGE_URL, "IMAGE");
     if (file.endsWith(".html")) {
       const why = styleLayerDiff(a, b);
       if (why) {

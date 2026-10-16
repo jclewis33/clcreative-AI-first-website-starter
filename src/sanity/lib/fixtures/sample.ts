@@ -27,6 +27,20 @@ const BODY_IMAGES = import.meta.glob<ImageMetadata>(
   { eager: true, import: "default" },
 );
 
+/** Every post's raw source, to turn a body line into a file line. */
+const POST_SOURCES = import.meta.glob<string>("/src/content/blog/*.mdx", {
+  eager: true,
+  query: "?raw",
+  import: "default",
+});
+
+/** The file line an MDX body starts on (after the frontmatter). */
+function bodyLine(id: string, body: string): number {
+  const raw = POST_SOURCES[`/src/content/blog/${id}.mdx`] ?? "";
+  const at = body ? raw.indexOf(body) : -1;
+  return at === -1 ? 1 : raw.slice(0, at).split("\n").length;
+}
+
 /** A stable alphanumeric asset id (FNV-1a of the image's build path). */
 function assetId(src: string): string {
   let hash = 0x811c9dc5;
@@ -143,9 +157,16 @@ export async function loadSampleDocs(): Promise<FixtureDocs> {
           ogImage: s.ogImage ? img(s.ogImage) : null,
         }
       : null;
-  const portableText = (markdown: string, keyPrefix: string) =>
+  const portableText = (
+    markdown: string,
+    keyPrefix: string,
+    source: string,
+    line = 1,
+  ) =>
     markdownToPortableText(markdown, {
       keyPrefix,
+      source,
+      line,
       image: (src) => {
         const meta =
           BODY_IMAGES[`/src/content/blog/${src.replace(/^\.\//, "")}`];
@@ -174,12 +195,21 @@ export async function loadSampleDocs(): Promise<FixtureDocs> {
       date: d.date,
       _updatedAt: stamp(d.date, d.updated),
       featured: d.featured,
-      body: portableText(p.body ?? "", `${p.id}-`),
+      body: portableText(
+        p.body ?? "",
+        `${p.id}-`,
+        `src/content/blog/${p.id}.mdx`,
+        bodyLine(p.id, p.body ?? ""),
+      ),
       ctaOverride: d.cta ? blogCta(d.cta.id) : null,
       ctaSectionOverride: d.ctaSection ? ctaSection(d.ctaSection.id) : null,
       faqs: d.faqs.map((faq, i) => ({
         question: faq.question,
-        answer: portableText(faq.answer.markdown, `${p.id}-faq${i}-`),
+        answer: portableText(
+          faq.answer.markdown,
+          `${p.id}-faq${i}-`,
+          `src/content/blog/${p.id}.mdx → faqs[${i}].answer`,
+        ),
       })),
       relatedSlugs: d.relatedPosts.map((ref) => ref.id),
       seo: seo(d.seo),
@@ -221,7 +251,11 @@ export async function loadSampleDocs(): Promise<FixtureDocs> {
           const body =
             "body" in block
               ? {
-                  body: portableText(block.body.markdown, `${s.id}-block${i}-`),
+                  body: portableText(
+                    block.body.markdown,
+                    `${s.id}-block${i}-`,
+                    `src/content/case-studies/${s.id}.json → content[${i}].body`,
+                  ),
                 }
               : {};
           const ratio =
@@ -284,6 +318,9 @@ export async function loadSampleDocs(): Promise<FixtureDocs> {
       const d = p.data;
       return {
         _id: p.id,
+        /* PROJECT_QUERY projects _updatedAt, but no mapper reads it (the
+           Project view model has no updatedAt; the Files source has no
+           equivalent), so any fixed value is fine for a missing date. */
         _updatedAt: stamp(d.completed ?? "2026-01-01"),
         title: d.title,
         slug: p.id,
@@ -303,7 +340,11 @@ export async function loadSampleDocs(): Promise<FixtureDocs> {
           meta: dims(photo.src),
         })),
         description: d.description
-          ? portableText(d.description.markdown, `${p.id}-`)
+          ? portableText(
+              d.description.markdown,
+              `${p.id}-`,
+              `src/content/projects/${p.id}.json → description`,
+            )
           : null,
         quote: d.quote
           ? { text: d.quote.text, name: d.quote.name ?? null }
