@@ -11,7 +11,9 @@
  *   build pass, so a typo'd author or CTA would ship a broken page. Targets
  *   are checked against the files on disk (an entry's id is its filename),
  *   so the check does not depend on collection load order.
- * - Inline CTAs. An MDX body's <BlogCta id="…" /> must name a file in src/content/ctas/blog/.
+ * - Inline CTAs. Every `<BlogCta id="…" />` in an MDX body (a literal,
+ *   double-quoted id, outside fenced code; see inlineCtaIds) must name a
+ *   file in src/content/ctas/blog/.
  *
  * Every problem is collected, then thrown as one error, one line each:
  *   src/content/projects/x.json → heroImage: image file not found: "./images/y.webp"

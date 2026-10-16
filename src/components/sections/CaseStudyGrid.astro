@@ -13,8 +13,9 @@
  * - `limit`      — cap the number of displayed cards
  * - `excludeSlug` — hide a specific study (useful on detail pages)
  *
- * All results sort by date descending (newest first). If no studies match
- * the filters, the entire section is hidden.
+ * All results sort by date descending (newest first). Studies without an
+ * image are skipped before the limit applies (a card needs its image). If
+ * no studies match the filters, the entire section is hidden.
  *
  * Data: pass `studies` (CaseStudySummary[] from `getCaseStudies()` in
  * `@/lib/content`), or omit it and the section fetches every case study
@@ -382,7 +383,12 @@ const invertCards =
 const allStudies =
   studies ?? (await getCaseStudies().catch((): CaseStudySummary[] => []));
 
-let filtered = [...allStudies];
+/* A card needs its image: skip image-less studies first, so they never
+   take a slot under the limit. */
+type StudyWithImage = CaseStudySummary & {
+  image: NonNullable<CaseStudySummary["image"]>;
+};
+let filtered = allStudies.filter((s): s is StudyWithImage => Boolean(s.image));
 
 // 1. Exclude current slug (for detail pages)
 if (excludeSlug) {
@@ -465,29 +471,26 @@ const gridProps =
 
         {/* Case study card grid */}
         <Grid slot="column2" {...gridProps} rowGap={6}>
-          {filtered.map(
-            (study) =>
-              study.image && (
-                <CaseStudyCard
-                  theme={invertCards}
-                  title={study.title}
-                  description={study.description}
-                  categories={study.categories}
-                  industries={study.industries}
-                  client={study.client ?? undefined}
-                  href={`/case-studies/${study.slug}`}
-                  image={imageSrc(study.image, { width: 1200 })}
-                  imageAlt={study.image.alt}
-                  imagePosition={study.image.position}
-                  date={study.date ?? undefined}
-                  featured={study.featured}
-                  comingSoon={study.comingSoon}
-                  externalUrl={study.liveUrl ?? undefined}
-                  headingVariant={cardHeadingVariant}
-                  textVariant={cardTextVariant}
-                />
-              ),
-          )}
+          {filtered.map((study) => (
+            <CaseStudyCard
+              theme={invertCards}
+              title={study.title}
+              description={study.description}
+              categories={study.categories}
+              industries={study.industries}
+              client={study.client ?? undefined}
+              href={`/case-studies/${study.slug}`}
+              image={imageSrc(study.image, { width: 1200 })}
+              imageAlt={study.image.alt}
+              imagePosition={study.image.position}
+              date={study.date ?? undefined}
+              featured={study.featured}
+              comingSoon={study.comingSoon}
+              externalUrl={study.liveUrl ?? undefined}
+              headingVariant={cardHeadingVariant}
+              textVariant={cardTextVariant}
+            />
+          ))}
         </Grid>
       </Layout>
     </Section>

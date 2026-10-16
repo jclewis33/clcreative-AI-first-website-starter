@@ -41,14 +41,19 @@
  * declaration spacing of a highlighted <pre>'s own style attribute (token
  * markup is still compared), whitespace beside block elements, a body
  * image's <p>/<figure> wrapper, ids on h3–h6, inline <style> split across
- * chunks (compared layer by layer), the position of an inline module
- * <script> (Astro emits a hoisted script with whichever instance of its
- * component finishes rendering first, and image processing differs between
- * the sources; the scripts' text is still compared, and this applies only
- * when nothing else in the page differs), and llms-full.txt bodies (only its
- * outline — headings, URL:, Client: and index lines — is compared). It
- * ends by counting how often each normalisation fired, so a rule that no
- * longer does anything is visible.
+ * chunks (compared layer by layer), llms-full.txt bodies (only its outline
+ * — headings, URL:, Client: and index lines — is compared), and (row 15)
+ * the position of an inline module <script>. Astro emits a component's
+ * hoisted script once, at whichever instance finishes rendering first;
+ * local getImage() is slower than a CDN string, so with two instances on a
+ * page (Lightbox alone and inside GalleryBrowser on /components) the
+ * script lands at a different instance per source. Module scripts are
+ * deferred, so behaviour is unchanged. That rule runs only when the page
+ * still differs after every other one: inline <script type="module">
+ * elements are lifted out and compared (text sorted) at the end of the
+ * page; the script text must match exactly, and external scripts and all
+ * other markup keep their positions. It ends by counting how often each
+ * normalisation fired, so a rule that no longer does anything is visible.
  *
  *   node scripts/compare-dist.mjs --equivalent .parity/sample .parity/files
  *

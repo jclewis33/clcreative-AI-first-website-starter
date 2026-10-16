@@ -68,7 +68,9 @@ export async function loadContent(): Promise<Content> {
   };
 }
 
-/** An entry by id, or a named error (the sync checks make it unreachable). */
+/** An entry by id, or a named error. The sync checks make the error
+    unreachable for references and for inline CTAs written as a literal
+    `id="…"`; any other id form is first checked here, at render. */
 export function need<C extends CollectionKey>(
   entries: Map<string, Entry<C>>,
   collection: C,

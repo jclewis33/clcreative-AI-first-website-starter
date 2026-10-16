@@ -6,7 +6,8 @@
  *
  * - mdxWords — the prose a reader reads: no code, callouts, embeds or images.
  * - mdxToMarkdown — the llms-full.txt copy: components converted or dropped.
- * - inlineCtaIds — the ids that `<BlogCta id="…" />` tags name.
+ * - inlineCtaIds — the ids that `<BlogCta id="…" />` tags name outside
+ *   fenced code.
  *
  * Component tags are matched on their own lines — the way the content guide
  * (.claude/skills/content-files/SKILL.md) tells authors to write them.
@@ -56,7 +57,14 @@ export function mdxToMarkdown(body: string): string {
     .trim();
 }
 
-/** Every id an inline `<BlogCta id="…" />` names. */
+/**
+ * Every id an inline `<BlogCta />` names with a literal `id="…"` (double
+ * quotes). Fenced code is skipped, so a post that shows the tag as a code
+ * sample is not checked as a real CTA. Any other form (`id='…'`,
+ * `id={…}`) is not found here, so content sync cannot check it.
+ */
 export function inlineCtaIds(body: string): string[] {
-  return [...body.matchAll(/<BlogCta\b[^>]*\bid="([^"]+)"/g)].map((m) => m[1]);
+  return [
+    ...body.replace(FENCE, " ").matchAll(/<BlogCta\b[^>]*\bid="([^"]+)"/g),
+  ].map((m) => m[1]);
 }

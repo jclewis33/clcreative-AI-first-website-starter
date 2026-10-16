@@ -83,13 +83,12 @@ edited:**
 - [site-structure.ts](../../../../src/data/site-structure.ts) — remove the
   `/blog`, `/case-studies`, `/projects`, `/gallery` nav and footer
   entries (as in Option A).
-- `src/lib/content/` and `scripts/check-content-boundary.mjs` (plus the
-  `check:boundary` script) — `src/lib/content/source.ts` imports the Sanity
-  source, so it cannot outlive `src/sanity`. The surviving consumers of
-  `@/lib/content` (BlogCard, BlogPostGrid, TestimonialsGrid, TestimonialsSlider,
-  `src/lib/jsonld.ts`, `components.astro`) use its types, `plainText` and image
-  helpers; point them at local types, or delete them with the blog and
-  testimonial features. These are not in the counts above.
+- **Keep** `src/lib/content/` and `scripts/check-content-boundary.mjs`:
+  the content interface now defaults to the Files backend
+  (`src/lib/content/files/`, reading `src/content/`), so it outlives
+  `src/sanity`. Point `src/lib/content/source.ts` at `./files` if it is
+  not already, and drop the Sanity entries from the boundary allow list.
+  PR 5 rewrites this file as the Files setup branch.
 - Projects + gallery also delete `src/config/projects.ts`, `src/lib/projects.ts`,
   `src/lib/project-format.ts`, `scripts/check-projects.mjs`,
   `src/styles/pages/projects.css`, and `src/pages/gallery.astro` (the project

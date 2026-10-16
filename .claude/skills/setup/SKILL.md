@@ -243,12 +243,12 @@ used **55 times across 15 files** — hero, services grid, pricing, case studies
 blog cards, CTA sections. A fork that skips this ships a branded shell full of
 someone else's photography. The CLI does **not** touch `src/assets/`.
 
-| Where                      | Files                                                                                                                                  |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Home page + hero           | `src/pages/index.astro`                                                                                                                |
-| Section components         | `Services`, `Pricing`, `WhyWorkWithUs`, `HowItWorks`, `CTASection`, `ImagePromo`, `PostLaunchSupport`, `ProjectImages`, `BlogPostGrid` |
-| Case-study + blog fixtures | `src/data/case-studies.ts`, `src/components/templates/BlogPostTemplate.astro`                                                          |
-| Other pages                | `contact.astro`, `components.astro`                                                                                                    |
+| Where              | Files                                                                                                                                  |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Home page + hero   | `src/pages/index.astro`                                                                                                                |
+| Section components | `Services`, `Pricing`, `WhyWorkWithUs`, `HowItWorks`, `CTASection`, `ImagePromo`, `PostLaunchSupport`, `ProjectImages`, `BlogPostGrid` |
+| Sample content     | `src/content/**` (see the content-files skill), `src/components/templates/BlogPostTemplate.astro`                                      |
+| Other pages        | `contact.astro`, `components.astro`                                                                                                    |
 
 **Two ways to do it — offer both:**
 

@@ -308,7 +308,25 @@ labels), `href`, `image`, `imageAlt`; optional `author`,
 `authorAvatar`, `date`. `...rest` passes through to Card. Listings pass
 `BlogPostSummary`s from `@/lib/content`, sizing the image with
 `imageSrc(post.image, { width: 600 })`; `BlogPostGrid` takes
-`BlogPostSummary[]`.
+`BlogPostSummary[]` (fetched with `getBlogPosts()` when `posts` is
+omitted); `CaseStudyGrid` likewise takes `CaseStudySummary[]` or fetches
+`getCaseStudies()`.
+
+## `<Callout>` and `<VideoEmbed>`
+
+Blog-body components in `src/components/blog/`, used by MDX posts by tag
+name (no import) and by the Portable Text renderers. `Callout`: `type`
+(`tip` default · `warning` · `info`), content in the slot. `VideoEmbed`:
+`url` (YouTube watch/youtu.be/Shorts or Vimeo; anything else renders
+nothing), `caption`. `Callout` styles (`callout_*`) live in
+`src/styles/pages/blog-post.css`, with the code-block (`code_block_*`) and
+`<TableOfContents>` (`toc_*`) styles; `BlogPostTemplate` imports it, so a
+page that uses any of these outside the post template must import that
+stylesheet itself (as `/components` does). Co-locating them is
+deliberately deferred. VideoEmbed's frame (`video-embed_frame`) is global,
+in `src/styles/utilities/typography.css`. `Quote` and `Reviews` also take
+an optional `avatar` (`{ src, alt }` on Quote; `avatar` + `avatarAlt` on
+each review), cropped square from the centre.
 
 ## `<Icon>`
 

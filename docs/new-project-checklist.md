@@ -19,6 +19,7 @@ Work top to bottom. Items marked **🔁 per-fork** must be done for every new pr
 
 Every fork lands on the same proven shape — chosen to lean into what Sanity is actively investing in (Core apps, the hosted Dashboard, an auto-updating hosted Studio) and to keep client builds low-maintenance:
 
+- **Content in local files** (`src/content/`, MDX and JSON) by default, validated at build. Sanity is the optional CMS alternative; the Sanity bullets below (and §3) apply only to a fork that uses it.
 - **Astro static-first site** on one Cloudflare Worker — every public page (marketing AND CMS content) prerendered; SSR only for `/api/*` and the editor-only `/preview/*` draft-preview twins that Sanity Presentation iframes (cookie-based drafts perspective). Publishing content triggers a rebuild via the rebuild-debounce Worker (§4.6).
 - **Sanity Studio hosted by Sanity** — a Core app at `<studioHost>.sanity.studio`, deployed with `npx sanity deploy`. **Not embedded** at `/studio` (that's the legacy alternative). Hosting decouples Studio updates from site deploys, removes the React-bundle fragility, and auto-updates.
 - **Cross-origin Presentation** — the hosted Studio iframes the live site for draft preview; the site allows the Sanity app origins via CSP `frame-ancestors` (§3.5).
@@ -57,10 +58,21 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
    - `reviewsUrl`: the Reviews "Read all reviews" link (blank = hidden).
    - `utilityBar`: the bar above the nav (`null` = off).
 9. **Replace the two sample services** in `src/content/services/` (and their photos in `images/`) with the client's real services. Each file becomes a page, a nav item and a footer link. See `.claude/skills/component-api/references/service-pages.md`.
+10. **Replace the sample content** in `src/content/`: blog posts, case
+    studies, projects, gallery, testimonials, authors and CTAs, with their
+    photos in each folder's `images/`. Update `settings.json` and
+    `FEATURED_CASE_STUDIES_SLUGS` (`src/components/sections/CaseStudyFeatured.astro`)
+    and the `<SingleTestimonial name>` on the homepage to match. Field guide:
+    `.claude/skills/content-files/SKILL.md`. `npm run check:content`
+    keeps working with your own content.
 
 ---
 
 ## 3. Sanity (🔁 per-fork)
+
+> Only when the site uses Sanity. Content lives in files in `src/content/`
+> by default, and a files-only site skips this section and the Sanity
+> webhook in §4.
 
 1. Create the Sanity project + `production` dataset (`sanity.io/manage`).
 2. Generate a **Viewer token** → local `.env` (`SANITY_API_READ_TOKEN`) and later as a Cloudflare **encrypted secret** (§4). Never a plain wrangler var.
@@ -84,7 +96,7 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
    - 5 requests / 10 seconds per IP → **Block**, 10 s duration
    - Every public POST endpoint should sit behind a rule like this.
 5. Optional: **Security.txt** (Security → Settings) — publishes `/.well-known/security.txt` with your contact for vulnerability reports.
-6. **Rebuild-debounce Worker + Sanity publish webhook — REQUIRED, not optional.** The content routes are **prerendered**, so a Sanity publish reaches the live site only via a rebuild: until this webhook chain is wired, publishing changes **nothing** on production (draft preview in the Studio still works — `/preview/*` fetches live). A standalone Worker in [`workers/rebuild-debounce/`](../workers/rebuild-debounce/) debounces a burst of publishes into one build (~5 min quiet window, so publish-to-live is typically ~5–20 min). Deploy it and wire the webhook per its own [README](../workers/rebuild-debounce/README.md):
+6. **Rebuild-debounce Worker + Sanity publish webhook — REQUIRED when Sanity is the content source.** The content routes are **prerendered**, so a Sanity publish reaches the live site only via a rebuild: until this webhook chain is wired, publishing changes **nothing** on production (draft preview in the Studio still works — `/preview/*` fetches live). A standalone Worker in [`workers/rebuild-debounce/`](../workers/rebuild-debounce/) debounces a burst of publishes into one build (~5 min quiet window, so publish-to-live is typically ~5–20 min). Deploy it and wire the webhook per its own [README](../workers/rebuild-debounce/README.md):
    - `cd workers/rebuild-debounce && npm install && npx wrangler deploy` (rename `name` in its `wrangler.jsonc` to match this fork's worker first).
      - ⚠️ If `wrangler deploy` errors with `redirected configuration path … does not exist`, delete the root `.wrangler/deploy/config.json` (a gitignored `@astrojs/cloudflare` artifact) and retry.
    - `wrangler secret put DEPLOY_HOOK_URL` (the site worker's deploy hook: Settings → Builds → Deploy hooks, targeting `main`) and `wrangler secret put WEBHOOK_TOKEN` (random, e.g. `openssl rand -hex 32`).

@@ -1,6 +1,6 @@
 # Your Company
 
-Marketing site for Your Company, built with [Astro](https://astro.build), [Sanity](https://www.sanity.io) (CMS), and deployed to a single [Cloudflare Worker](https://developers.cloudflare.com/workers/). The front-end follows a structured class system — see [`CLAUDE.md`](CLAUDE.md) for the full conventions, component reference, and architecture notes.
+Marketing site for Your Company, built with [Astro](https://astro.build), with its content in local files (Markdown/MDX and JSON; [Sanity](https://www.sanity.io) is the optional CMS alternative), and deployed to a single [Cloudflare Worker](https://developers.cloudflare.com/workers/). The front-end follows a structured class system — see [`CLAUDE.md`](CLAUDE.md) for the full conventions, component reference, and architecture notes.
 
 ## 🍴 Forking this as a starter
 
@@ -15,24 +15,38 @@ Both leave the content scaffolding (service areas, socials, location pages, FAQs
 
 All commands are run from the root of the project, from a terminal:
 
-| Command                | Action                                                                                                                                 |
-| :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm install`          | Installs dependencies                                                                                                                  |
-| `npm run setup`        | Interactive fork setup — rewrites per-fork identity/config files (see [Forking](#-forking-this-as-a-starter))                          |
-| `npm run dev`          | Starts local dev server at `localhost:4321`                                                                                            |
-| `npm run build`        | Build your production site to `./dist/`                                                                                                |
-| `npm run preview`      | Preview your build locally, before deploying (Astro's local server — unrelated to the `/preview` draft-preview routes)                 |
-| `npm run studio`       | Run Sanity Studio locally at `localhost:3333` (Presentation iframes **production**)                                                    |
-| `npm run studio:local` | Studio at `localhost:3333` with Presentation iframing the **local** site (`localhost:4321`) — use this while developing routes/preview |
-| `npm run check:schema` | Validate JSON-LD on key pages (dev server must be running)                                                                             |
-| `npm run check:config` | Verify `wrangler.jsonc` matches `src/config/site.shared.mjs` (also runs automatically before `build`)                                  |
-| `npm run astro ...`    | Run CLI commands like `astro add`, `astro check`                                                                                       |
+| Command                       | Action                                                                                                                                 |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm install`                 | Installs dependencies                                                                                                                  |
+| `npm run setup`               | Interactive fork setup — rewrites per-fork identity/config files (see [Forking](#-forking-this-as-a-starter))                          |
+| `npm run dev`                 | Starts local dev server at `localhost:4321`                                                                                            |
+| `npm run build`               | Build your production site to `./dist/`                                                                                                |
+| `npm run preview`             | Preview your build locally, before deploying (Astro's local server — unrelated to the `/preview` draft-preview routes)                 |
+| `npm run studio`              | Run Sanity Studio locally at `localhost:3333` (Presentation iframes **production**)                                                    |
+| `npm run studio:local`        | Studio at `localhost:3333` with Presentation iframing the **local** site (`localhost:4321`) — use this while developing routes/preview |
+| `npm run check:schema`        | Validate JSON-LD on key pages (dev server must be running)                                                                             |
+| `npm run check:config`        | Verify `wrangler.jsonc` matches `src/config/site.shared.mjs` (also runs automatically before `build`)                                  |
+| `npm run check:content`       | Prove bad content fails the build, naming the file and field                                                                           |
+| `npm run check:content-build` | After a build: check coming-soon studies, OG/JSON-LD image URLs, resized local images and TOC anchors                                  |
+| `npm run astro ...`           | Run CLI commands like `astro add`, `astro check`                                                                                       |
+
+## 📝 Content
+
+Blog posts, case studies, projects, gallery photos, testimonials, authors
+and CTAs are files in [`src/content/`](src/content/), one per entry: MDX
+for posts, JSON for everything else, with photos in each folder's
+`images/`. Every file is validated when the site builds. A missing photo,
+empty alt text or a reference to an entry that does not exist fails the
+build, naming the file and the field. Edit a file, rebuild, done; no CMS
+account or API token involved. The field guide and how-tos are in
+[`.claude/skills/content-files/SKILL.md`](.claude/skills/content-files/SKILL.md),
+and VS Code autocompletes the JSON fields (`.vscode/settings.json`).
 
 ## 🏗️ Rendering model — everything public is prerendered
 
-**Every public route prerenders to static HTML at build time — including the CMS content routes.** `/blog/[slug]`, `/case-studies/[slug]`, and `/projects/[slug]` enumerate their slugs with `getStaticPaths` (slug-only GROQ queries; helpers exported from `src/lib/content`, Sanity implementation in `src/sanity/lib/page-data.ts`) and are served by the Cloudflare assets binding at zero Worker CPU. Only two kinds of routes are server-rendered (`export const prerender = false;`):
+**Every public route prerenders to static HTML at build time — including the content routes.** `/blog/[slug]`, `/case-studies/[slug]`, and `/projects/[slug]` enumerate their slugs with `getStaticPaths` (helpers exported from `src/lib/content`, read from the files in `src/content/`) and are served by the Cloudflare assets binding at zero Worker CPU. Only two kinds of routes are server-rendered (`export const prerender = false;`):
 
-- `src/pages/preview/**` — the SSR **draft-preview twins** that Sanity's Presentation tool iframes (same templates, same content functions as the public routes; only the perspective differs)
+- `src/pages/preview/**` — the SSR **draft-preview twins** that Sanity's Presentation tool iframes (same templates as the public routes, reading the Sanity source directly in the draft perspective; they matter only when Sanity is the content source)
 - `src/pages/api/**` — the draft-mode cookie set/clear routes
 
 `astro.config.mjs` is `output: "static"` with the Cloudflare adapter; new pages default to static automatically.
@@ -46,9 +60,9 @@ All commands are run from the root of the project, from a terminal:
 **Two things trigger a production rebuild (`astro build`, ~60–90s):**
 
 1. **Git push to `main`** — Cloudflare watches the repo and auto-builds on commit.
-2. **Sanity publish** — a webhook POSTs to a Cloudflare deploy hook whenever a published (non-draft) document of a watched type is created, updated, or deleted.
+2. **Sanity publish** (only when Sanity is the content source) — a webhook POSTs to a Cloudflare deploy hook whenever a published (non-draft) document of a watched type is created, updated, or deleted.
 
-Because the build re-queries Sanity on every run, a rebuild regenerates the content pages themselves plus the sitemap and `llms.txt` / `llms-full.txt` — with prerendered content routes, **the publish→webhook→rebuild chain is how published content reaches the live site** (typically ~5–20 minutes end-to-end with the debounce window). Draft preview in the Studio is unaffected — `/preview/*` always fetches fresh.
+With Sanity as the source, the build re-queries it on every run, so a rebuild regenerates the content pages themselves plus the sitemap and `llms.txt` / `llms-full.txt` — with prerendered content routes, **the publish→webhook→rebuild chain is how published content reaches the live site** (typically ~5–20 minutes end-to-end with the debounce window). Draft preview in the Studio is unaffected — `/preview/*` always fetches fresh.
 
 **Need a manual rebuild?** Either click **Retry deployment** in the Cloudflare dashboard (Workers & Pages → `your-worker-name` → Deployments), or `POST` the deploy-hook URL (handy from a script or an iOS Shortcut). No new infrastructure required.
 
@@ -81,7 +95,7 @@ The chain is: **publish → debounce Worker (waits ~5 min) → Cloudflare deploy
 
 ### Draft preview (Presentation)
 
-Editors open the hosted Studio, click **Presentation**, and the iframe loads the **`/preview/<type>/<slug>`** SSR twin of the page — same template and content function as the public route, but fetched per-request so the `sanity-preview-mode` cookie (set by `/api/draft-mode/enable`) can switch it to the drafts perspective. Public visitors get the prerendered pages and never have the cookie on an SSR route, so drafts can't leak; `/preview` is robots-disallowed, noindexed, and never edge-cached. Full flow is documented in [`CLAUDE.md`](CLAUDE.md) under "Deployment, Sanity Studio & Preview".
+Editors open the hosted Studio, click **Presentation**, and the iframe loads the **`/preview/<type>/<slug>`** SSR twin of the page — same template as the public route, fed by the Sanity source's content function, but fetched per-request so the `sanity-preview-mode` cookie (set by `/api/draft-mode/enable`) can switch it to the drafts perspective. Public visitors get the prerendered pages and never have the cookie on an SSR route, so drafts can't leak; `/preview` is robots-disallowed, noindexed, and never edge-cached. Full flow is documented in the [`sanity-and-preview` skill](.claude/skills/sanity-and-preview/SKILL.md) ("How draft mode works").
 
 > Changing preview URLs or adding a previewable type touches `src/sanity/lib/resolve.ts`, which ships inside the **Studio** bundle — deploy the site first, then run `npx sanity deploy`, or Presentation keeps loading the old URLs.
 
@@ -191,7 +205,7 @@ Content / images / colors source: [URL or CMS]
 MCP connector traffic (Figma/Sanity/Webflow tools) is proxied through Anthropic,
 so **reading** via those tools works with no setup. But when the agent's _shell_
 needs to reach the internet directly — downloading image **bytes**, running
-`npm run build` (which fetches the CMS at build time), or running a
+`npm run build` with Sanity as the content source (it fetches the CMS at build time), or running a
 data-migration script — that's governed by the **environment's network access**
 in Claude Code on the web, which defaults to **Trusted** (package registries +
 GitHub only).
@@ -213,7 +227,7 @@ cdn.prod.website-files.com
 (Drop or swap any line that doesn't match your sources — e.g. remove the Webflow
 CDN if you're not pulling from a Webflow site.) Without this, the agent can still
 _read_ designs/content over MCP and commit code, but can't pull image files into
-the repo or complete a local `npm run build` (it'll 403 on the CMS). Full
+the repo or complete a local Sanity-backed `npm run build` (it'll 403 on the CMS). Full
 reference: Anthropic's
 [Claude Code on the web — Network access](https://code.claude.com/docs/en/claude-code-on-the-web#network-access)
 docs. (GitHub goes through a separate proxy and always works.)

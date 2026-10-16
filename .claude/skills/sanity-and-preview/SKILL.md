@@ -5,6 +5,13 @@ description: The Sanity CMS + Cloudflare deployment architecture reference for t
 
 # Sanity, Deployment & Preview
 
+> **Files is the default content source.** `@/lib/content` reads
+> `src/content/` (the `content-files` skill). This skill covers the Sanity
+> source, `src/sanity/lib/source.ts`, which test builds select with
+> `CONTENT_SOURCE=sanity` (a build-time switch in `astro.config.mjs`) and
+> which the preview twins import directly. PR 4 moves all of it into an
+> opt-in add-on.
+
 ## Sanity types — generated, never hand-written
 
 Sanity data is typed from the schema and the queries, by TypeGen. There are no
@@ -170,9 +177,10 @@ Publish-to-live lands ~5–20 minutes depending on the debounce window.
 ## Rendering model — prerender public, SSR only /preview and /api
 
 `astro.config.mjs` uses `output: "static"` with `@astrojs/cloudflare`. **All
-public routes are prerendered**, including the CMS content routes — each
-dynamic route exports a `getStaticPaths` fed by a minimal slug-only query
-(helpers exported from `@/lib/content`, implemented in
+public routes are prerendered**, including the content routes — each
+dynamic route exports a `getStaticPaths` helper from `@/lib/content` (the
+Files source lists `src/content/`; the Sanity source runs a minimal
+slug-only query in
 [src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)).
 Only two kinds of routes opt into SSR with `export const prerender = false;`:
 
@@ -416,8 +424,9 @@ types and image helpers from there; `npm run check:boundary` fails when
 anything outside `src/sanity` and the Sanity-only allow list (preview twins,
 `/api/draft-mode`, Portable Text renderers, `BlogBody`, the visual-editing
 islands, `BaseLayout`, `middleware.ts`, `env.d.ts`, and the one-line backend
-selector `src/lib/content/source.ts`) imports Sanity code. The allow list
-lives in `scripts/check-content-boundary.mjs`.
+selector `src/lib/content/source.ts`) imports Sanity code; the Files
+backend in `src/lib/content/files/` never does. The allow list lives in
+`scripts/check-content-boundary.mjs`.
 
 ```astro
 ---
@@ -442,11 +451,12 @@ const posts = await getBlogPosts(); // BlogPostSummary[], newest first
 ```
 
 - **Images** are `ContentImage`. Size them with `imageSrc(image, { width })`
-  (for `<Visual>` and cards), `imageUrl(image, { width, height, format })`
-  (raw tags, OG, JSON-LD, lightboxes) or `sizedImage(image, width)` (tiles
-  that need width + height). The Sanity mapper attaches a `url()` builder
-  around `urlFor`, so each placement gets exactly the CDN size it always
-  did.
+  (for `<Visual>` and cards), `await resolveImageUrl(image, { width,
+height, format })` (a plain URL string for raw tags, OG, JSON-LD and
+  lightboxes; a local image gets a resized file from getImage(), a Sanity
+  image its CDN URL) or `sizedImage(image, width)` (tiles that need width +
+  height). The Sanity mapper attaches a `url()` builder around `urlFor`, so
+  each placement gets exactly the CDN size it always did.
 - **Rich text** arrives pre-rendered: HTML strings for FAQ answers, project
   write-ups and case-study blocks; the blog body is a
   `{ kind: "portable-text" | "mdx" }` union rendered by `<BlogBody>`.
@@ -486,6 +496,10 @@ that need a display string as data call `plainText()`.
   decide the response.
 
 **Adding a new content type with a detail route needs six pieces:**
+
+Both sources implement every `ContentSource` function. The Files side is
+in the `content-files` skill ("Adding a content type"); the pieces below
+are the Sanity side.
 
 1. **View models + contract** — named types in `src/lib/content/types.ts`
    and the new functions on `ContentSource` (`getThing`, `getThings`,
@@ -532,9 +546,10 @@ before and after and diffing `dist/client`.
   comparison covers every `.html`/`.xml`/`.txt` file plus `_headers` and
   `_redirects`, normalising hashed asset names and `data-astro-cid-*`. It
   prints `Identical: N files.` or a window around the first difference in
-  each file, and exits 1 on any difference. Do it twice: once with
-  `KEEP_DEV_PAGES=1` (no fixtures, the empty-site case), once with
-  `KEEP_DEV_PAGES=1 PARITY_FIXTURES=1` (the populated case).
+  each file, and exits 1 on any difference. Sanity builds need
+  `CONTENT_SOURCE=sanity` now that Files is the default. Do it twice: once
+  with `KEEP_DEV_PAGES=1 CONTENT_SOURCE=sanity` (no fixtures, the
+  empty-site case), once adding `PARITY_FIXTURES=1` (the populated case).
 - **`--canonical`** compares HTML as a DOM (attributes sorted, entities
   decoded, whitespace collapsed). Use it where the same markup legitimately
   arrives through a different serializer (an Astro component versus an HTML
@@ -546,8 +561,18 @@ before and after and diffing `dist/client`.
   swap _within_ a layer is not). Limitation: a `<style>` block that Astro
   splits around a `<link>` makes the non-style comparison fail, so
   `--layers` cannot judge such pages.
-- **Preview safety.** `PARITY_FIXTURES=preview npm run build && node
-scripts/check-stega-leaks.mjs` builds draft-like data (stega-encoded
+- **Files ≡ Sanity.** `PARITY_FIXTURES=sample` derives GROQ-shaped
+  documents from `src/content` at build time (`fixtures/sample.ts`; rich
+  text through the strict converter in `fixtures/markdown-to-pt.ts`, which
+  throws on any Markdown outside the subset it supports), so the Sanity
+  build renders exactly the Files sample content.
+  `node scripts/compare-dist.mjs --equivalent <sanity-build> <files-build>`
+  diffs the two, normalising only the documented renderer differences
+  (listed in its header; the full table is "Expected Files-vs-Sanity
+  differences" in `docs/superpowers/plans/2026-10-16-pr3-files-backend.md`).
+  Unit checks for the converter: `node scripts/check-fixture-markdown.mjs`.
+- **Preview safety.** `KEEP_DEV_PAGES=1 CONTENT_SOURCE=sanity
+PARITY_FIXTURES=preview npm run build && node scripts/check-stega-leaks.mjs` builds draft-like data (stega-encoded
   strings plus half-filled documents) and fails if stega reaches any
   attribute, the `<title>` or JSON-LD on the pages the preview twins render
   (and, defensively, on the listing pages). Only visible element text may stay

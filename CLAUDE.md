@@ -7,8 +7,9 @@ lives in **skills** — load them, don't guess:
 | Load this skill       | Before                                                                                                                                                                                                |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `component-api`       | Building or editing any page/section, or using any component (Section, Layout, Card, Slider, Carousel, Tab, Accordion, forms, …) — every prop table and page pattern is there                         |
+| `content-files`       | Adding or editing any content under `src/content/` (blog posts, case studies, projects, gallery, testimonials, authors, CTAs), a content build error, or wiring a content type into the Files source  |
 | `styling-reference`   | Styling beyond applying existing utilities: tokens/variables, theming and `data-theme-invert`, the responsive flag system, the full utility list, text rhythm/margin-trim mechanisms, image/SVG rules |
-| `sanity-and-preview`  | Anything Sanity (queries, TypeGen, schema, Studio, Presentation), draft mode / `/preview`, deployment, rendering model, sitemap, env vars, adding a content type                                      |
+| `sanity-and-preview`  | Anything Sanity — the alternative content source (queries, TypeGen, schema, Studio, Presentation), draft mode / `/preview`, deployment, rendering model, sitemap, env vars, adding a content type     |
 | `seo-discoverability` | JSON-LD / structured data, per-page SEO, llms.txt — and ALWAYS when adding a new static page (manual `PAGES` registry step)                                                                           |
 | `setup`               | Setting up a fork as a new project                                                                                                                                                                    |
 
@@ -80,11 +81,12 @@ dashes between words, applied on top of a custom class and **always scoped**:
 ```
 src/
 ├── assets/           # Images (.avif/.webp preferred), icons/*.svg for <Icon>
+├── content/          # Site content as files (one per entry) — see the content-files skill
 ├── components/       # ui/ · sections/ · form/ · global/ · templates/ · case-study/ · portabletext/
 ├── config/           # site.ts (SITE), site.shared.mjs, logo-paths.ts — import, never hardcode
 ├── data/             # site-structure.ts (PAGES/NAV_MENU/FOOTER_GROUPS/BANNER), faqs.ts
 ├── layouts/          # BaseLayout.astro
-├── lib/              # content/ (THE content interface — all CMS content comes from @/lib/content), slots.ts, uid.ts, jsonld.ts, toc.ts, …
+├── lib/              # content/ (THE content interface — all content comes from @/lib/content; files/ is the default backend), slots.ts, uid.ts, jsonld.ts, toc.ts, …
 ├── pages/            # Routes; preview/** and api/** are the only SSR routes
 ├── sanity/           # Queries, loaders, generated types, Studio components
 ├── scripts/          # animation.js, scroll-refresh.js, social-share.js
@@ -311,14 +313,18 @@ Before writing any new CSS:
 
 `npm run check` (astro check) · `npm run check:hover` (prop tooltips) ·
 `npm run check:config` (wrangler/site.shared sync; runs prebuild) ·
-`npm run check:boundary` (no Sanity imports outside src/sanity) ·
+`npm run check:boundary` (no Sanity imports outside src/sanity; content
+files read only through `@/lib/content`) ·
 `npm run check:content` (bad content must fail `astro sync` naming file and field) ·
+`npm run check:content-build` (after a build: coming-soon studies, OG/JSON-LD
+image URLs, resized local images, TOC anchors) ·
 `npm run check:schema` (JSON-LD, needs dev server) · `npm run build` ·
 `npm run format:check` · `npm run typegen` (after any GROQ/schema change).
 
 ## Anti-patterns
 
 - Importing Sanity (`@/sanity/*`, `@sanity/*`, `urlFor`, `stegaClean`, `astro-portabletext`) outside `src/sanity` and the allow list in `scripts/check-content-boundary.mjs` — content, types and image helpers come from `@/lib/content`.
+- Reading `src/content` with `getCollection()` in a page or component — content comes from `@/lib/content`; the Files backend in `src/lib/content/files/` is the only reader (`check:boundary` enforces it).
 - Unlayered CSS anywhere; third-party CSS imported from a script.
 - `display: grid` on `u-container`; bare `1fr` grid columns.
 - Rendering `<slot />` after `Astro.slots.render()` — dead client JS.

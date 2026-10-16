@@ -111,5 +111,18 @@ assert.equal(
   ].join("\n"),
 );
 assert.deepEqual(inlineCtaIds(BODY), ["free-site-review"]);
+// A tag shown as a code sample inside fenced code is not a real CTA.
+assert.deepEqual(
+  inlineCtaIds(
+    [
+      "```mdx",
+      '<BlogCta id="demo" />',
+      "```",
+      "",
+      '<BlogCta id="real-one" />',
+    ].join("\n"),
+  ),
+  ["real-one"],
+);
 
 console.log("check-content-text: ok");

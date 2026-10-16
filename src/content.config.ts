@@ -268,7 +268,9 @@ const blog = defineCollection({
       imageAlt: alt,
       author: reference("authors"),
       featured: z.boolean().default(false),
-      /** A YouTube or Vimeo URL shown instead of the hero image. */
+      /** A YouTube watch or youtu.be URL shown instead of the hero image
+          (Shorts and Vimeo links do not embed here; use <VideoEmbed> in
+          the body). */
       video: webUrl.optional(),
       /** Up to three hand-picked related posts. */
       relatedPosts: z.array(reference("blog")).max(3).default([]),

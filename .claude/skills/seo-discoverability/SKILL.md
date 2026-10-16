@@ -86,7 +86,8 @@ npm run check:schema      # in another
 
 [scripts/check-schema.mjs](../../../scripts/check-schema.mjs) validates the
 JSON-LD on the pages in its `STATIC_PAGES` array (currently `/` and
-`/contact`) plus one live sample of each CMS content type. **Add any page that
+`/contact`) plus one sample of each content type (the first blog post and the first
+published case study in `src/content/`). **Add any page that
 ships a custom `schema`** to `STATIC_PAGES`. It catches: JSON parse errors,
 missing `@context`/`@type`/required fields, duplicate or malformed `@id`
 values, dangling `provider.@id` references (the load-bearing failure mode for
@@ -117,7 +118,7 @@ The site serves two LLM-facing files at the root, following the
 - **`/llms-full.txt`** — the full body text of every blog post, case study and project,
   rendered to Markdown for whole-site ingestion.
 
-### How they stay current (no manual work for CMS content)
+### How they stay current (no manual work for content)
 
 Both are **Astro endpoint routes that prerender to static files at build time**
 ([src/pages/llms.txt.ts](../../../src/pages/llms.txt.ts),
@@ -128,7 +129,10 @@ read the content interface (`@/lib/content`: `getBlogPosts`,
 lifecycle as the sitemap — so new, edited and deleted content flows
 through automatically on the next deploy. Coming-soon case studies stay
 hidden, matching the case-study `getStaticPaths` rule. Bodies arrive as
-Markdown on the view models (`markdown`). The Sanity source converts
+Markdown on the view models (`markdown`). The Files source exports an MDX
+post's own Markdown, with components converted or dropped
+([src/lib/content/files/mdx-text.ts](../../../src/lib/content/files/mdx-text.ts)),
+and a case study's block Markdown as written. The Sanity source converts
 Portable Text with `portableTextToMarkdown()` in
 [src/sanity/lib/portable-text.ts](../../../src/sanity/lib/portable-text.ts).
 
@@ -137,7 +141,7 @@ intentionally **not** in the XML sitemap.
 
 ### ⚠️ The one manual step — adding a new static page
 
-Dynamic content is automatic; **static (non-Sanity) marketing pages are
+Dynamic content is automatic; **static marketing pages are
 hand-curated** in the `PAGES` registry in
 [src/data/site-structure.ts](../../../src/data/site-structure.ts) — the single
 source of truth that also drives the nav and footer. **Whenever you add a new
