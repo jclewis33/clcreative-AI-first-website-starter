@@ -103,6 +103,10 @@ if (import.meta.env.DEV) {
     console.warn(`[Quote] Unknown size "${size}".`);
   if (!["icon", "none"].includes(mark))
     console.warn(`[Quote] Unknown mark "${mark}". Use "icon" or "none".`);
+  if (avatar && !name)
+    console.warn(
+      "[Quote] `avatar` is set without `name`; the photo only renders beside a name, so it is skipped.",
+    );
 }
 ---
 
@@ -129,7 +133,7 @@ if (import.meta.env.DEV) {
       </blockquote>
       {(name || meta) && (
         <figcaption class="quote_caption">
-          {avatarSrc && avatar ? (
+          {avatarSrc && avatar && name ? (
             <span class="quote_person">
               <img
                 class="quote_avatar"
@@ -274,7 +278,19 @@ if (import.meta.env.DEV) {
       content: "· ";
     }
 
-    /* With a photo: the avatar sits beside the name; meta stays below. */
+    /* With a photo: the avatar sits beside the name, and meta goes on its
+       own line below that row at every size — the regular and small
+       captions are otherwise one wrapping row, which would set "· meta"
+       beside the photo. The bullet only separates items in that row. */
+    .quote_wrap .quote_caption:has(.quote_person) {
+      flex-direction: column;
+      flex-wrap: nowrap;
+    }
+
+    .quote_wrap .quote_caption:has(.quote_person) .quote_meta::before {
+      content: none;
+    }
+
     .quote_person {
       display: flex;
       align-items: center;
@@ -286,7 +302,7 @@ if (import.meta.env.DEV) {
       height: auto;
       aspect-ratio: 1 / 1;
       flex-shrink: 0;
-      border-radius: var(--radius-full, 100vmax);
+      border-radius: var(--radius-full);
       object-fit: cover;
     }
 
