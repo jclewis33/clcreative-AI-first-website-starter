@@ -25,6 +25,7 @@ jobs:
       - run: npm ci
       - run: npm run format:check
       - run: npm run check:config
+      - run: npm run check:boundary
       - run: npm run check
       - run: npm run build
 

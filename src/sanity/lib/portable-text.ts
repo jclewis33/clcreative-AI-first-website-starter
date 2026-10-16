@@ -2,9 +2,9 @@
  * Portable Text to HTML serializer for Sanity content.
  *
  * Converts Sanity's Portable Text blocks into HTML strings that work
- * with the existing u-rich-text CSS styling. Used by the Sanity mappers
- * (case study blocks, project write-ups, blog FAQ answers and their plain
- * text, read-time words) and by llms-full.txt (Markdown).
+ * with the existing u-rich-text CSS styling. Used by the Sanity mappers in
+ * ./map/ — case-study blocks, project write-ups and FAQ answers (HTML),
+ * llms-full.txt bodies (Markdown), plain text and read-time words.
  */
 
 import {

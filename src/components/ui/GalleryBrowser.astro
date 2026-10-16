@@ -2,7 +2,7 @@
 import type { HTMLAttributes } from "astro/types";
 import Visual from "@/components/ui/Visual.astro";
 import Lightbox from "@/components/ui/Lightbox.astro";
-import { imageUrl, type ContentImage } from "@/lib/content";
+import { imageUrl, plainText, type ContentImage } from "@/lib/content";
 import { galleryCaptionMeta } from "@/lib/project-format";
 
 /**
@@ -116,9 +116,9 @@ const captionMeta = (item: GalleryItem) =>
                 class="gallery-browser_tile"
                 data-lightbox-src={imageUrl(item.full)}
                 data-lightbox-alt={item.full.alt}
-                data-lightbox-caption={[item.caption, captionMeta(item)]
-                  .filter(Boolean)
-                  .join(" · ")}
+                data-lightbox-caption={plainText(
+                  [item.caption, captionMeta(item)].filter(Boolean).join(" · "),
+                )}
               >
                 <Visual
                   src={item.thumb.src}

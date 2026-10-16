@@ -31,6 +31,9 @@ import {
 } from "../queries";
 import {
   CASE_STUDIES,
+  INCOMPLETE_CASE_STUDY,
+  INCOMPLETE_POST,
+  INCOMPLETE_PROJECT,
   GALLERY,
   POSTS,
   PROJECTS,
@@ -266,19 +269,74 @@ export function resolveFixture(
   }
 }
 
-/** Drop-in for `sanityClient.fetch(query, params, { filterResponse: false })`. */
+/** The parity dataset plus one half-filled draft per detail type. */
+const PREVIEW_DOCS: FixtureDocs = {
+  ...PARITY_DOCS,
+  posts: [...POSTS, INCOMPLETE_POST],
+  caseStudies: [...CASE_STUDIES, INCOMPLETE_CASE_STUDY],
+  projects: [...PROJECTS, INCOMPLETE_PROJECT],
+};
+
+/* Draft-mode stand-in: Sanity's stega appends invisible characters to
+   strings when a perspective cookie is present. stegaClean strips runs of
+   these characters, exactly as it strips a real payload. */
+const STEGA = "​‌‍﻿".repeat(3);
+/** Keys real stega never encodes (its default filter) plus Portable Text internals. */
+const NEVER_ENCODED = new Set([
+  "slug",
+  "href",
+  "url",
+  "website",
+  "language",
+  "style",
+  "listItem",
+  "marks",
+  "type",
+]);
+/** getStaticPaths queries run at build time — never with a perspective. */
+const BUILD_TIME_QUERIES = new Set<string>([
+  BLOG_SLUGS_QUERY,
+  CASE_STUDY_SLUGS_QUERY,
+  PROJECT_SLUGS_QUERY,
+  BLOG_CATEGORIES_QUERY,
+]);
+
+function draftEncode(value: unknown, key = ""): unknown {
+  if (typeof value === "string") {
+    const skip =
+      key.startsWith("_") ||
+      NEVER_ENCODED.has(key) ||
+      /^(https?:\/\/|\/)/.test(value) ||
+      /^\d{4}-\d{2}-\d{2}/.test(value);
+    return skip ? value : value + STEGA;
+  }
+  if (Array.isArray(value)) return value.map((v) => draftEncode(v, key));
+  if (value && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, draftEncode(v, k)]),
+    );
+  return value;
+}
+
+/** Drop-in for `sanityClient.fetch(query, params, { filterResponse: false })`.
+    Modes: "1" — the parity dataset; "preview" — draft-like data (stega-
+    encoded strings + half-filled documents) for scripts/check-stega-leaks.mjs. */
 export async function fixtureFetch(
   query: string,
   params: Params | undefined,
   mode: string,
 ) {
-  if (mode !== "1") {
-    throw new Error(
-      `[parity fixtures] Unknown PARITY_FIXTURES mode "${mode}".`,
-    );
+  if (mode === "1")
+    return {
+      result: resolveFixture(query, params ?? {}),
+      resultSourceMap: undefined,
+    };
+  if (mode === "preview") {
+    const result = resolveFixture(query, params ?? {}, PREVIEW_DOCS);
+    return {
+      result: BUILD_TIME_QUERIES.has(query) ? result : draftEncode(result),
+      resultSourceMap: undefined,
+    };
   }
-  return {
-    result: resolveFixture(query, params ?? {}),
-    resultSourceMap: undefined,
-  };
+  throw new Error(`[parity fixtures] Unknown PARITY_FIXTURES mode "${mode}".`);
 }

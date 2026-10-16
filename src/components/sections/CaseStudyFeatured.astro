@@ -39,6 +39,7 @@ import Button from "@/components/ui/Button.astro";
 import {
   getFeaturedCaseStudies,
   imageSrc,
+  plainText,
   type FeaturedCaseStudy,
 } from "@/lib/content";
 import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
@@ -246,7 +247,7 @@ const hasHeadingSlot = Astro.slots.has("heading");
                 "case-study-featured_card",
                 i === 0 && "is-expanded",
               ]}
-              aria-label={`View ${study.client} case study`}
+              aria-label={`View ${plainText(study.client)} case study`}
             >
               <div class="case-study-featured_card_visual">
                 {study.image && (

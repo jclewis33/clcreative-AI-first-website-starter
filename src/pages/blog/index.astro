@@ -196,7 +196,7 @@ const categorySections = categoryConfig
                 href={`/blog/${post.slug}`}
                 class="blog_slider_card"
                 data-trigger="hover focus"
-                aria-label={`Read ${post.title}`}
+                aria-label={`Read ${plainText(post.title)}`}
                 data-search-card
                 data-title={plainText(post.title)}
                 data-description={plainText(post.description)}

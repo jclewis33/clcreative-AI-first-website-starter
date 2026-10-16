@@ -3,7 +3,7 @@ import type { HTMLAttributes } from "astro/types";
 import Grid from "@/components/ui/Grid.astro";
 import Button from "@/components/ui/Button.astro";
 import ProjectCard from "@/components/ui/ProjectCard.astro";
-import type { ProjectCardData } from "@/lib/content";
+import { plainText, type ProjectCardData } from "@/lib/content";
 
 /**
  * ProjectBrowser — the /projects grid with a search box ("Search projects or
@@ -105,7 +105,9 @@ const countLabel = (n: number) => `${n} project${n === 1 ? "" : "s"}`;
         {projects.map((project) => (
           <ProjectCard
             project={project}
-            data-search={`${project.title} ${project.location} ${project.categoryLabel}`.toLowerCase()}
+            data-search={plainText(
+              `${project.title} ${project.location} ${project.categoryLabel}`,
+            ).toLowerCase()}
           />
         ))}
       </Grid>

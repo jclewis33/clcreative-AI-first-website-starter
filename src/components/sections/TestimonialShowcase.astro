@@ -22,7 +22,7 @@
 import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
-import { getTestimonials, imageUrl } from "@/lib/content";
+import { getTestimonials, imageUrl, plainText } from "@/lib/content";
 
 /* Single source for the testimonial shape: TestimonialCard.astro — never
    re-declare it locally, the same rule the padding union follows. */
@@ -136,7 +136,7 @@ const total = testimonials.length;
                         <img
                           class="testimonial_showcase_avatar"
                           src={avatarUrl}
-                          alt={name}
+                          alt={plainText(name)}
                           loading="lazy"
                           width="48"
                           height="48"

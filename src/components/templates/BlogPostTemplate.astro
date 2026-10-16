@@ -36,6 +36,7 @@ import JsonLd from "@/components/global/JsonLd.astro";
 import {
   imageSrc,
   imageUrl,
+  plainText,
   type BlogCtaData,
   type BlogPostDetail,
   type BlogPostSummary,
@@ -71,8 +72,10 @@ const { docs, post, relatedPosts, manualRelatedPosts, cta, ctaSection } =
 const manualRelatedSlugs = manualRelatedPosts.map((p) => p.slug);
 
 const seo = post.seo;
-const metaTitle = seo?.metaTitle || post.title;
-const metaDescription = seo?.metaDescription || post.description;
+/* Head values are plumbing: the title/description fallbacks arrive
+   stega-encoded in draft mode, so clean them (seo.* is already clean). */
+const metaTitle = seo?.metaTitle || plainText(post.title);
+const metaDescription = seo?.metaDescription || plainText(post.description);
 const ogTitle = seo?.ogTitle || metaTitle;
 const ogDescription = seo?.ogDescription || metaDescription;
 const ogImageUrl = imageUrl(seo?.ogImage ?? post.image, {
@@ -280,7 +283,7 @@ const jsonLd = blogPostJsonLd(post, siteOrigin);
                 .replace("youtu.be/", "www.youtube.com/embed/")
                 .replace("watch?v=", "embed/")
                 .replace("&", "?")}
-              title={post.title}
+              title={plainText(post.title)}
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen

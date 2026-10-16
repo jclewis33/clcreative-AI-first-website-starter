@@ -45,6 +45,7 @@ import Card from "./Card.astro";
 import Visual from "./Visual.astro";
 import Heading from "./Heading.astro";
 import Text from "./Text.astro";
+import { plainText } from "@/lib/content";
 
 /**
  * BlogCard — blog post card with image, title, description, category,
@@ -139,9 +140,9 @@ const {
 <Card
   theme={theme}
   href={href}
-  ariaLabel={`Read ${title}`}
+  ariaLabel={`Read ${plainText(title)}`}
   class:list={["blog_card_wrap", className]}
-  data-author={author}
+  data-author={plainText(author)}
   data-date={date}
   {...rest}
 >

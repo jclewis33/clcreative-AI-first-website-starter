@@ -1,27 +1,27 @@
 /**
- * Shared per-page data loaders — ONE loader per content type, called by BOTH
- * the prerendered public route (build time, `published` perspective) and its
- * `/preview` SSR twin (request time, `drafts` perspective when the
- * Presentation cookie is present). Because the two trees share these loaders,
- * they can never drift apart.
+ * GROQ fetching layer of the Sanity content source (src/sanity/lib/
+ * source.ts). Consumers never import this file — they call @/lib/content,
+ * whose Sanity implementation composes these loaders with the mappers in
+ * ./map/.
  *
  * Loader contract:
  * - Fetch the single document FIRST (the related-content query depends on its
  *   categories/slug), then `Promise.all` everything independent.
  * - Related content is filtered in GROQ with a small buffer over the card
  *   slot — never by fetching the whole collection and filtering in JS.
- * - Return `null` for "not found"; the route decides how to respond
- *   (public routes never hit this for enumerated slugs; preview twins
- *   redirect to /404).
- * - `draftProps` comes from `getDraftModeProps(Astro)` — safe in both trees
- *   because it short-circuits on prerendered pages.
+ * - GROQ params built from fetched values are stegaClean'd (an encoded
+ *   category never matches in preview).
+ * - Return `null` for "not found"; the route decides how to respond.
+ * - Listing loaders go through loadPageQuery: empty on a fresh fork
+ *   (placeholder project id), a loud failure on a real project.
+ * - `draftProps` is the `opts` a content function received — set only on
+ *   the /preview twins.
  *
- * This module also exports the `getStaticPaths` helpers for the public
- * routes. They MUST live here (an imported module) rather than in the route
- * frontmatter: Astro extracts `getStaticPaths` into its own module at build
- * time, so only imports are in scope inside it — sibling consts declared in
- * the same frontmatter are not (symptom: "<helper> is not defined" pointing
- * into an Astro-generated chunk).
+ * This module also holds the `getStaticPaths` helpers the source re-exports.
+ * Routes import them from @/lib/content (an imported module): Astro extracts
+ * `getStaticPaths` into its own module at build time, so only imports are in
+ * scope inside it — sibling consts declared in the same frontmatter are not
+ * (symptom: "<helper> is not defined" pointing into an Astro-generated chunk).
  */
 import { stegaClean } from "@sanity/client/stega";
 import { loadQuery } from "./load-query";
@@ -50,7 +50,7 @@ import {
 import { SANITY_PROJECT_ID } from "@/config/site.shared.mjs";
 
 /** Perspective forwarding — the return shape of `getDraftModeProps(Astro)`. */
-export type DraftProps = { perspectiveCookie?: string | undefined };
+type DraftProps = { perspectiveCookie?: string | undefined };
 
 /* ── Blog post ─────────────────────────────────────────────────────────────── */
 
@@ -178,7 +178,7 @@ export async function loadProjectPage(
 
 /** URL slug for a category display name — keep in sync with the category
  *  links emitted by the blog index/templates. */
-export function categoryToSlug(category: string): string {
+function categoryToSlug(category: string): string {
   return String(category).toLowerCase().replace(/\s+/g, "-");
 }
 
@@ -230,7 +230,7 @@ async function fetchStaticPathList<const Q extends string>(
  * renders its empty state and the build stays green; on a real project a
  * failed fetch rethrows and fails the build loudly.
  */
-export async function loadPageQuery<const Q extends string, F>({
+async function loadPageQuery<const Q extends string, F>({
   query,
   params,
   draftProps = {},

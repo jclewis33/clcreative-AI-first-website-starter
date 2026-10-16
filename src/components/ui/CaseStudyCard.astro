@@ -217,8 +217,8 @@ const {
 const isComingSoon = comingSoon && Boolean(externalUrl);
 const resolvedHref = isComingSoon ? externalUrl! : href;
 const resolvedAriaLabel = isComingSoon
-  ? `Visit ${title} website (case study coming soon)`
-  : `View ${title} case study`;
+  ? `Visit ${plainText(title)} website (case study coming soon)`
+  : `View ${plainText(title)} case study`;
 ---
 
 <Card

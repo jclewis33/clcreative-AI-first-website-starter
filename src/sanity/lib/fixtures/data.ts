@@ -757,3 +757,78 @@ export const TESTIMONIALS: Doc[] = [
     sortOrder: 3,
   },
 ];
+
+/* ── Incomplete documents (PARITY_FIXTURES=preview only) ───────────────── */
+
+export const INCOMPLETE_POST: Doc = {
+  title: null,
+  slug: "fixture-post-incomplete",
+  description: null,
+  categories: null,
+  primaryCategory: null,
+  image: null,
+  imageAlt: "",
+  author: { name: null, avatar: null },
+  video: null,
+  date: "2026-06-01",
+  _updatedAt: "2026-06-01T00:00:00Z",
+  featured: null,
+  body: null,
+  ctaOverride: { ...BLOG_CTA_PORTRAIT, image: null },
+  ctaSectionOverride: { ...CTA_SECTION_DEFAULT, backgroundImage: null },
+  faqs: null,
+  relatedSlugs: [],
+  seo: null,
+};
+
+export const INCOMPLETE_CASE_STUDY: Doc = {
+  title: null,
+  slug: "case-study-incomplete",
+  description: null,
+  client: null,
+  categories: null,
+  industries: null,
+  image: null,
+  imageAlt: "",
+  date: "2026-06-01",
+  _updatedAt: "2026-06-01T00:00:00Z",
+  featured: null,
+  comingSoon: null,
+  timeline: null,
+  liveUrl: null,
+  galleryImagesAlt: null,
+  galleryImages: [{ alt: "No asset yet" }],
+  content: [
+    {
+      _type: "richTextWithImage",
+      _key: "incomplete-1",
+      body: [para("Body without its image.")],
+      image: null,
+      imageAlt: "",
+    },
+    { _type: "stats", _key: "incomplete-2", items: null },
+  ],
+  ctaSectionOverride: null,
+  seo: null,
+};
+
+export const INCOMPLETE_PROJECT: Doc = {
+  _id: "project-incomplete",
+  _updatedAt: "2026-06-01T00:00:00Z",
+  title: null,
+  slug: "fixture-incomplete",
+  category: null,
+  location: null,
+  service: null,
+  completed: null,
+  featured: null,
+  heroImage: null,
+  imageAlt: "",
+  heroImageMeta: null,
+  photos: [
+    { _key: "incomplete-photo", label: "Before", alt: null, meta: null },
+  ],
+  description: null,
+  quote: { text: null, name: null },
+  seoDescription: null,
+};

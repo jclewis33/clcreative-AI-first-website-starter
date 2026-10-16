@@ -25,6 +25,7 @@ import { SITE } from "@/config/site";
 import { projectPath } from "@/lib/projects";
 import {
   imageUrl,
+  plainText,
   sizedImage,
   type CtaSectionData,
   type ProjectCardData,
@@ -52,6 +53,9 @@ const { docs, project, relatedProjects, ctaSection } = Astro.props;
 
 const { title, location, service, completed } = project;
 const category = project.categoryLabel;
+/* SEO, breadcrumb and aria values are plumbing: clean the stega-encoded
+   draft title (the visible heading keeps `title`). */
+const plainTitle = plainText(title);
 const path = projectPath(project.slug);
 const hero = project.hero && sizedImage(project.hero, 1600);
 const photos = project.photos.map(({ image, label }) => ({
@@ -67,7 +71,7 @@ const quoteText = project.quote?.text;
 const description =
   project.seoDescription ||
   project.descriptionText.slice(0, 155) ||
-  `${title}${category ? `: a ${category.toLowerCase()} project` : ""} by ${SITE.name}.`;
+  `${plainTitle}${category ? `: a ${category.toLowerCase()} project` : ""} by ${SITE.name}.`;
 
 const facts = [
   location && { label: "Location", value: location },
@@ -78,13 +82,13 @@ const hasStory = Boolean(writeUpHtml) || facts.length > 0 || Boolean(completed);
 ---
 
 <BaseLayout
-  title={`${title} | ${SITE.name}`}
+  title={`${plainTitle} | ${SITE.name}`}
   description={description}
   canonical={`${SITE.url}${path}`}
   breadcrumbs={[
     { name: "Home", path: "/" },
     { name: "Projects", path: "/projects" },
-    { name: title, path },
+    { name: plainTitle, path },
   ]}
 >
   <!-- Hero -->
@@ -166,7 +170,7 @@ const hasStory = Boolean(writeUpHtml) || facts.length > 0 || Boolean(completed);
     <Heading tag="h2" variant="h3" data-fade-up data-prevent-flicker="true"
       >Project photos</Heading
     >
-    <Lightbox label={`${title} photos`}>
+    <Lightbox label={`${plainTitle} photos`}>
       <Grid
         largeColumns={2}
         mediumColumns={2}

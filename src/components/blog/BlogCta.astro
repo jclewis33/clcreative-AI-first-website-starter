@@ -13,7 +13,7 @@ import type { HTMLAttributes } from "astro/types";
  * (BlogCtaInline maps it).
  */
 import Visual from "@/components/ui/Visual.astro";
-import { imageSrc, type BlogCtaData } from "@/lib/content";
+import { imageSrc, plainText, type BlogCtaData } from "@/lib/content";
 
 interface Props extends HTMLAttributes<"a"> {
   /**
@@ -49,7 +49,7 @@ const imageSource = imageSrc(cta.image, {
   class:list={["blog-cta_wrap", className]}
   data-aspect={ratio}
   href={cta.linkUrl}
-  aria-label={linkLabel}
+  aria-label={plainText(linkLabel)}
   {...rest}
 >
   <div class="blog-cta_visual_wrap">

@@ -11,6 +11,7 @@
 import { SITE } from "@/config/site";
 import {
   imageUrl,
+  plainText,
   type BlogPostDetail,
   type CaseStudyDetail,
   type ContentImage,
@@ -265,6 +266,12 @@ function youtubeVideoId(url: string | null | undefined): string | null {
   return null;
 }
 
+/*
+ * Draft-mode values arrive stega-encoded (see the policy in
+ * src/sanity/lib/source.ts). Structured data is plumbing, not an editing
+ * surface, so the builders below clean every content string they emit.
+ */
+
 /**
  * Build a VideoObject node for a YouTube URL. Returns null if the URL
  * isn't a recognizable YouTube link.
@@ -282,8 +289,8 @@ function youtubeVideoObject(
 
   return {
     "@type": "VideoObject",
-    name: post.title || "Video",
-    description: post.description || post.title || "",
+    name: plainText(post.title) || "Video",
+    description: plainText(post.description || post.title) || "",
     thumbnailUrl: [
       `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
       `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
@@ -307,14 +314,14 @@ export function blogPostJsonLd(post: BlogPostDetail, siteUrl: string): any {
   const blogPosting: any = {
     "@type": "BlogPosting",
     "@id": pageUrl,
-    headline: post.title,
-    description: post.description,
+    headline: plainText(post.title),
+    description: plainText(post.description),
     ...(imageUrl && { image: imageUrl }),
     datePublished: toIsoDateTime(post.date),
     dateModified: toIsoDateTime(post.updatedAt) || toIsoDateTime(post.date),
     author: {
       "@type": "Person",
-      name: post.author || ORG_NAME,
+      name: plainText(post.author) || ORG_NAME,
       url: siteUrl,
     },
     publisher: publisher(siteUrl),
@@ -334,7 +341,7 @@ export function blogPostJsonLd(post: BlogPostDetail, siteUrl: string): any {
       "@type": "FAQPage",
       mainEntity: faqs.map((f) => ({
         "@type": "Question",
-        name: f.question,
+        name: plainText(f.question),
         acceptedAnswer: {
           "@type": "Answer",
           text: f.answerText.replace(/\s+/g, " ").trim(),
@@ -360,8 +367,8 @@ export function caseStudyJsonLd(cs: CaseStudyDetail, siteUrl: string): any {
     "@context": "https://schema.org",
     "@type": "Article",
     "@id": pageUrl,
-    headline: cs.title,
-    description: cs.description,
+    headline: plainText(cs.title),
+    description: plainText(cs.description),
     ...(csImageUrl && { image: csImageUrl }),
     datePublished: toIsoDateTime(cs.date),
     dateModified: toIsoDateTime(cs.updatedAt) || toIsoDateTime(cs.date),
@@ -370,7 +377,7 @@ export function caseStudyJsonLd(cs: CaseStudyDetail, siteUrl: string): any {
     publisher: publisher(siteUrl),
     mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
     ...(cs.client && {
-      about: { "@type": "Organization", name: cs.client },
+      about: { "@type": "Organization", name: plainText(cs.client) },
     }),
   };
 }

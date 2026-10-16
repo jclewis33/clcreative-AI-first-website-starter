@@ -10,6 +10,7 @@
 
 import type { Props as PortableTextProps } from "astro-portabletext/types";
 import { urlFor } from "@/sanity/lib/image";
+import { plainText } from "@/lib/content";
 
 interface SanityImageNode {
   _type: "image";
@@ -22,7 +23,7 @@ type Props = PortableTextProps<SanityImageNode>;
 
 const { node } = Astro.props;
 const src = urlFor(node).width(960).url();
-const alt = node.alt || "";
+const alt = plainText(node.alt) || "";
 ---
 
 <figure>

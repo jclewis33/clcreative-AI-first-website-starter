@@ -24,6 +24,7 @@ import JsonLd from "@/components/global/JsonLd.astro";
 import {
   imageSrc,
   imageUrl,
+  plainText,
   type CaseStudyDetail,
   type CaseStudySummary,
   type CtaSectionData,
@@ -54,9 +55,13 @@ const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
 const jsonLd = caseStudyJsonLd(study, siteOrigin);
 
 const seo = study.seo;
-const metaTitle = seo?.metaTitle || study.title || "Case Study";
+/* Head values are plumbing: the title/description fallbacks arrive
+   stega-encoded in draft mode, so clean them (seo.* is already clean). */
+const metaTitle = seo?.metaTitle || plainText(study.title) || "Case Study";
 const metaDescription =
-  seo?.metaDescription || study.description || "Preview this case study draft.";
+  seo?.metaDescription ||
+  plainText(study.description) ||
+  "Preview this case study draft.";
 const ogTitle = seo?.ogTitle || metaTitle;
 const ogDescription = seo?.ogDescription || metaDescription;
 const ogImageUrl = imageUrl(seo?.ogImage ?? study.image, {
@@ -136,7 +141,7 @@ const ogImageUrl = imageUrl(seo?.ogImage ?? study.image, {
                 variant="text"
                 href={study.liveUrl}
                 newTab
-                ariaLabel={`Visit ${study.client} website`}
+                ariaLabel={`Visit ${plainText(study.client)} website`}
               >
                 Visit Website
                 <svg
