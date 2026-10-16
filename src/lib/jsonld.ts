@@ -1,6 +1,7 @@
 /**
- * JSON-LD structured data builders for blog posts and case studies. Each function returns a plain object (or @graph array)
- * that a `<script type="application/ld+json">` tag can stringify.
+ * JSON-LD structured data builders for blog posts and case studies. Each
+ * function returns a plain object (or @graph array) that a
+ * `<script type="application/ld+json">` tag can stringify.
  *
  * All functions expect `siteUrl` to be an absolute origin (e.g.
  * "https://www.example.com") — pass `Astro.site!.toString().replace(/\/$/, "")`

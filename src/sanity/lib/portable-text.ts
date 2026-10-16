@@ -3,7 +3,7 @@
  *
  * Converts Sanity's Portable Text blocks into HTML strings that work
  * with the existing u-rich-text CSS styling. Used by blog posts,
- * case studies, and glossary term detail pages.
+ * case study and project detail pages.
  */
 
 import {

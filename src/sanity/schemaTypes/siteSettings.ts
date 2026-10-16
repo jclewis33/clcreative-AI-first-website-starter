@@ -19,7 +19,7 @@ export const siteSettings = defineType({
       name: "defaultCtaSection",
       title: "Default CTA Section",
       description:
-        "The full-width CTA shown at the bottom of every blog post, case study, and glossary term, unless that document has its own CTA Section Override set.",
+        "The full-width CTA shown at the bottom of every blog post, case study, and project, unless that document has its own CTA Section Override set.",
       type: "reference",
       to: [{ type: "ctaSection" }],
     }),

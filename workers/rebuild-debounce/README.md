@@ -5,7 +5,7 @@ rebuild.
 
 ## Why it exists — this Worker is the publish→live path
 
-The blog / case-study / glossary routes are **prerendered** at build time, so a
+The blog / case-study / project routes are **prerendered** at build time, so a
 Sanity **publish reaches the live site only through a rebuild** — along with
 the sitemap and `llms.txt` / `llms-full.txt`. Until this Worker and its webhook
 are wired up, clicking Publish in the Studio changes **nothing** on production

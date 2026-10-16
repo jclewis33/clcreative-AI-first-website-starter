@@ -7,7 +7,7 @@ export const ctaSection = defineType({
   type: "document",
   icon: BlockElementIcon,
   description:
-    "Full-width call-to-action section rendered at the bottom of blog posts, case studies, and glossary terms.",
+    "Full-width call-to-action section rendered at the bottom of blog posts, case studies, and projects.",
   fields: [
     defineField({
       name: "title",

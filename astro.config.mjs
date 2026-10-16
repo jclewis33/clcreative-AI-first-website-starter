@@ -76,7 +76,7 @@ const redirects = {};
 // https://astro.build/config
 export default defineConfig({
   // Static by default — INCLUDING the CMS content routes (blog, case
-  // studies, glossary), which enumerate their slugs with `getStaticPaths`
+  // studies, projects), which enumerate their slugs with `getStaticPaths`
   // (helpers in src/sanity/lib/page-data.ts) and ship as prerendered HTML at
   // zero Worker CPU. Only two kinds of routes opt into SSR with
   // `export const prerender = false;`:

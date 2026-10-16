@@ -3,7 +3,7 @@
  * ───────────────────────
  * Sits between the Sanity publish webhook and the Cloudflare deploy hook.
  *
- * WHY THIS EXISTS: on this stack the blog / case-study / glossary routes are
+ * WHY THIS EXISTS: on this stack the blog / case-study / project routes are
  * PRERENDERED at build time, so a Sanity publish reaches the live site only
  * through a rebuild (same for the sitemap and `llms.txt` / `llms-full.txt`).
  * This Worker IS the publish→live path — without it, publishing changes
