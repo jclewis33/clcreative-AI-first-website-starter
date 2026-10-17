@@ -307,7 +307,10 @@ that have an `image` (every Files study does: it is required).
   built). Astro's own glob loader would keep the old entries when a folder
   has no files; `checked()` prunes any entry whose file is gone, so no
   cache needs clearing. Fix references to the removed entries as above
-  (e.g. `project` links in `gallery.json`).
+  (e.g. `project` links in `gallery.json`). In `npm run dev`, a folder
+  that was completely empty at startup isn't watched (Astro's glob loader
+  returns before adding its watcher), so a file added to it later isn't
+  picked up until `npm run dev` restarts. Builds are unaffected.
 
 ## When the build fails
 

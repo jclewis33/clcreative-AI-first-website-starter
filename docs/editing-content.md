@@ -321,7 +321,10 @@ check in section 5 names that file and field; fix or remove the pointer.
 Emptying a whole folder is fine too: a site with no testimonials or no
 projects can delete every file in that folder. The pages for that type
 simply build empty (listings show no cards and no detail pages are
-built), and nothing needs clearing first.
+built), and nothing needs clearing first. One catch while previewing: if a
+folder was completely empty when `npm run dev` started, a file you add to
+it later isn't picked up until you stop and restart `npm run dev` (Astro
+stops watching a folder that was empty at startup). Builds are unaffected.
 
 ## 5. Check your work
 
