@@ -44,8 +44,9 @@ const ALLOW = [
   "src/components/blog/BlogBody.astro", // renders Portable Text bodies
   "src/components/SanityVisualEditing.tsx", // visual-editing island
   "src/components/DisableDraftMode.tsx", // visual-editing island
-  "src/layouts/BaseLayout.astro", // mounts visual editing (perspective cookie)
-  "src/middleware.ts", // Studio frame-ancestors on /preview
+  "src/config/cms.mjs", // CMS seam: the Sanity integrations
+  "src/config/cms.shared.mjs", // CMS seam: Studio origins, preview cookie
+  "src/components/global/CmsEditing.astro", // CMS seam: visual editing
   "src/env.d.ts", // @sanity/astro module types
 ];
 

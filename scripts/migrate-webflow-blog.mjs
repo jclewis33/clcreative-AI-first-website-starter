@@ -32,7 +32,7 @@ import { readFileSync } from "fs";
 import { parse as parseHtml } from "node-html-parser";
 import https from "https";
 import http from "http";
-import { SANITY_DATASET } from "../src/config/site.shared.mjs";
+import { SANITY_DATASET } from "../src/config/sanity.shared.mjs";
 
 /* ── Config (resolved from CLI args + env / .env) ── */
 

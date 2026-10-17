@@ -2,28 +2,13 @@
 import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
-import sanity from "@sanity/astro";
-import react from "@astrojs/react";
 import cloudflare from "@astrojs/cloudflare";
-import { loadEnv, normalizePath } from "vite";
+import { normalizePath } from "vite";
 import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import {
-  SANITY_PROJECT_ID,
-  SANITY_DATASET,
-  SANITY_API_VERSION,
-  SITE_URL,
-} from "./src/config/site.shared.mjs";
+import * as cms from "./src/config/cms.mjs";
+import { SITE_URL } from "./src/config/site.shared.mjs";
 import { DEV_ONLY_PATHS, isNoindexRoute } from "./src/config/seo.shared.mjs";
-
-const env = loadEnv(process.env.NODE_ENV ?? "", process.cwd(), "");
-// Fallbacks come from the shared leaf module (src/config/site.shared.mjs) —
-// CI (Cloudflare Workers Builds) has no root .env, so env-only lookup silently
-// bakes empty strings into the sanity:client module. The shared module is the
-// single source for these values (site.ts imports it too); no hand-syncing.
-const PUBLIC_SANITY_PROJECT_ID =
-  env.PUBLIC_SANITY_PROJECT_ID || SANITY_PROJECT_ID;
-const PUBLIC_SANITY_DATASET = env.PUBLIC_SANITY_DATASET || SANITY_DATASET;
 
 /**
  * NOTE: the sitemap deliberately has NO `customPages` option and no
@@ -86,8 +71,8 @@ const redirects = {};
  * `CONTENT_SOURCE=files` or `CONTENT_SOURCE=sanity` replaces the module that
  * src/lib/content/source.ts re-exports, so one checkout can build either
  * backend for the parity checks (scripts/compare-dist.mjs). Unset in every
- * real build. Like __PARITY_FIXTURES__ below it is decided at build time —
- * nothing at runtime can switch it.
+ * real build. Like __PARITY_FIXTURES__ (src/config/cms.mjs) it is decided at
+ * build time — nothing at runtime can switch it.
  */
 const CONTENT_SOURCES = {
   files: "./src/lib/content/files/index.ts",
@@ -153,28 +138,9 @@ export default defineConfig({
       filter: (page) => !isNoindexRoute(new URL(page).pathname),
     }),
     mdx(),
-    // React must be registered BEFORE Sanity — the visual-editing islands
-    // (SanityVisualEditing / DisableDraftMode) are React components that need
-    // the React renderer available when draft mode mounts them.
-    react(),
-    sanity({
-      projectId: PUBLIC_SANITY_PROJECT_ID,
-      dataset: PUBLIC_SANITY_DATASET,
-      useCdn: true,
-      apiVersion: SANITY_API_VERSION,
-      // No `studioBasePath` — the Studio is hosted by Sanity at
-      // <studioHost>.sanity.studio (deployed via `npx sanity deploy`), not
-      // embedded in this app. The integration still provides the
-      // `sanity:client` virtual module used by src/sanity/lib/load-query.ts.
-      stega: {
-        // Required for Visual Editing overlays — when stega encoding is on,
-        // text fields rendered from Sanity contain hidden source links that
-        // the overlay reads to map clicks back to the corresponding Studio
-        // field. The studioUrl tells the overlay which Studio to deep-link —
-        // the hosted Studio origin (cross-origin from the site).
-        studioUrl: "https://your-studio.sanity.studio",
-      },
-    }),
+    // The content source's integrations (src/config/cms.mjs): none for
+    // content in local files; a CMS add-on supplies its own.
+    ...cms.integrations,
   ],
   // This is the URL of your live site. Astro uses this for generating canonical URLs and your sitemap.
   site: SITE_URL,
@@ -234,13 +200,8 @@ export default defineConfig({
       },
     },
 
-    // Allow Sanity CDN images without requiring width/height
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "cdn.sanity.io",
-      },
-    ],
+    // Remote image hosts the content source serves from (src/config/cms.mjs).
+    remotePatterns: cms.remotePatterns,
   },
 
   /* Fenced code in MDX blog bodies is highlighted at build time with these
@@ -308,29 +269,10 @@ export default defineConfig({
 
   vite: {
     plugins: [contentSourceSwitch()],
-    define: {
-      // Parity fixtures switch (src/sanity/lib/load-query.ts). Baked in at
-      // build time so a normal build dead-code-eliminates the fixture import
-      // and no runtime variable can turn it on. Never set in production.
-      __PARITY_FIXTURES__: JSON.stringify(process.env.PARITY_FIXTURES ?? ""),
-    },
-    optimizeDeps: {
-      // Astro 6 + @sanity/visual-editing compat workaround:
-      // Several transitive deps are CJS modules that Vite doesn't pre-bundle
-      // automatically. Without this, the VisualEditing component fails to
-      // hydrate. Per the official Sanity + Astro guide.
-      // (Production builds use Rollup which handles this; the issue is
-      // primarily dev-server, but harmless to include for both.)
-      include: [
-        "react/compiler-runtime",
-        "lodash/isObject.js",
-        "lodash/groupBy.js",
-        "lodash/keyBy.js",
-        "lodash/partition.js",
-        "lodash/sortedIndex.js",
-      ],
-      exclude: ["@sanity/astro"],
-    },
+    // Build-time constants and dependency pre-bundling hints the content
+    // source needs (src/config/cms.mjs).
+    define: cms.viteDefine,
+    optimizeDeps: cms.optimizeDeps,
   },
 
   // Optional: If your site is hosted in a subdirectory, specify the base path.

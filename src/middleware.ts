@@ -1,29 +1,16 @@
 import { defineMiddleware } from "astro:middleware";
 import { isNoindexRoute } from "@/config/seo.shared.mjs";
-import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
+import { PREVIEW_COOKIE } from "@/config/cms.shared.mjs";
+import { SECURITY_HEADERS } from "@/config/headers.shared.mjs";
 import { SITE } from "@/config/site";
 import { SMS_OFF_COPY_SWAPS } from "@/config/sms-consent";
 import { checkToolsAuth, isToolsPath } from "@/lib/tools-auth";
 
-// Security headers for every SSR response. Static assets bypass the worker
-// entirely (no run_worker_first in wrangler.jsonc), so the same set is
-// duplicated in public/_headers for the assets binding — keep both in sync.
-const SECURITY_HEADERS: Record<string, string> = {
-  "X-Content-Type-Options": "nosniff",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  // The Studio is hosted by Sanity. Its Presentation tool iframes site pages
-  // for draft preview, but in the Core-app/dashboard model the Studio app is
-  // sandboxed under *.sanity.studio (nested inside the www.sanity.io shell), so
-  // BOTH families must be allowed — *.sanity.io (dashboard) + *.sanity.studio
-  // (the sandboxed Studio app, the actual immediate framing origin), plus
-  // localhost:3333 for local `sanity dev`. This is Sanity's documented set.
-  // CSP frame-ancestors (not X-Frame-Options) blocks every other origin.
-  // Keep in sync with public/_headers.
-  "Content-Security-Policy":
-    "frame-ancestors https://*.sanity.io https://*.sanity.studio http://localhost:3333",
-};
+// Security headers for every SSR response come from
+// src/config/headers.shared.mjs. Static assets bypass the worker entirely
+// (no run_worker_first in wrangler.jsonc), so public/_headers repeats the
+// same list for the assets binding; `npm run check:config` fails when the
+// two drift.
 
 // Runs for every SSR route — with the content routes prerendered, that means
 // only /api/* and the /preview/* draft-preview tree (prerendered pages are
@@ -64,7 +51,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // those — Cache-Control has no effect on prerendered static assets anyway.
   if (context.isPrerendered) return response;
 
-  const isDraftMode = context.cookies.has(perspectiveCookieName);
+  // A draft-preview session, when the content source has one (the CMS
+  // seam's PREVIEW_COOKIE; null for content in files).
+  const isDraftMode =
+    PREVIEW_COOKIE !== null && context.cookies.has(PREVIEW_COOKIE);
   const isPreviewRoute = context.url.pathname.startsWith("/preview");
   /* Same list the sitemap, robots.txt and the noindex meta read. */
   const isNoindex = isNoindexRoute(context.url.pathname);
@@ -73,8 +63,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // present. Cloudflare's edge cache does not vary on cookies: if a
   // cookie-less request ever populated the cache with a published render of
   // /preview/blog/x, that stale non-draft HTML would be served back to an
-  // editor who DOES have the cookie — Presentation silently shows stale
-  // content and "preview looks broken" with nothing in the logs. Forcing
+  // editor who DOES have the cookie — the CMS preview silently shows stale
+  // content with nothing in the logs. Forcing
   // private,no-cache on the whole tree closes that hole.
   //
   // Other SSR responses (i.e. /api/*): cache for 5 minutes at the edge,

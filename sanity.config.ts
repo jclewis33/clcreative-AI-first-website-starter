@@ -25,8 +25,8 @@ import { PROJECT_CATEGORIES } from "./src/config/projects";
 import {
   SANITY_PROJECT_ID,
   SANITY_DATASET,
-  SITE_URL,
-} from "./src/config/site.shared.mjs";
+} from "./src/config/sanity.shared.mjs";
+import { SITE_URL } from "./src/config/site.shared.mjs";
 import { schema } from "./src/sanity/schemaTypes";
 import { resolve } from "./src/sanity/lib/resolve";
 import { StudioLogo } from "./src/sanity/components/StudioLogo";
@@ -67,7 +67,7 @@ export default defineConfig({
       logo: StudioLogo,
     },
   },
-  // From the shared leaf module (src/config/site.shared.mjs) so this file works
+  // From the shared leaf module (src/config/sanity.shared.mjs) so this file works
   // both in the embedded `@sanity/astro` runtime AND when loaded directly by the
   // Sanity CLI for `sanity deploy` (Node, no `import.meta.env`). Project id and
   // dataset are public values that appear in every Sanity API URL anyway.

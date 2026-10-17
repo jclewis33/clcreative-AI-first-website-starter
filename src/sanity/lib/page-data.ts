@@ -47,7 +47,7 @@ import {
   FEATURED_PROJECTS_QUERY,
   GALLERY_QUERY,
 } from "./queries";
-import { SANITY_PROJECT_ID } from "@/config/site.shared.mjs";
+import { SANITY_PROJECT_ID } from "@/config/sanity.shared.mjs";
 import { categoryToSlug } from "@/lib/blog-categories";
 import type { ContentOptions } from "@/lib/content/types";
 
@@ -180,7 +180,7 @@ export async function loadProjectPage(
 
 /**
  * A fresh fork still carries the placeholder project id from
- * src/config/site.shared.mjs (real Sanity project ids are strictly
+ * src/config/sanity.shared.mjs (real Sanity project ids are strictly
  * lowercase-alphanumeric), so its builds can't reach a dataset yet.
  *
  * Never true in a parity-fixtures build (`PARITY_FIXTURES` set, see

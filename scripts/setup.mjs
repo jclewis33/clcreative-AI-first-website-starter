@@ -18,7 +18,8 @@
  * no-CMS fork is a supported path, not a broken one.
  *
  * Files this touches:
- *   • src/config/site.shared.mjs       — Sanity projectId/dataset/apiVersion + URL (regenerated)
+ *   • src/config/site.shared.mjs       — the site URL
+ *   • src/config/sanity.shared.mjs     — Sanity projectId/dataset/apiVersion
  *   • src/config/site.ts               — scalar identity fields (keyed replace)
  *   • wrangler.jsonc                   — worker `name` + the two PUBLIC_SANITY_* vars
  *   • workers/rebuild-debounce/wrangler.jsonc — debounce worker `name` (kept "<worker>-rebuild-debounce")
@@ -78,6 +79,7 @@ const CONFIG_PATH = getFlagValue("--config");
 // Each prompt maps an answer key to where it gets written. `extract` pulls the
 // current value from a source file so we can show it as the default.
 const SHARED = "src/config/site.shared.mjs";
+const SANITY_SHARED = "src/config/sanity.shared.mjs";
 const SITE = "src/config/site.ts";
 const WRANGLER = "wrangler.jsonc";
 const WRANGLER_DEBOUNCE = "workers/rebuild-debounce/wrangler.jsonc";
@@ -258,17 +260,17 @@ const PROMPTS = [
   {
     key: "sanityProjectId",
     q: "Sanity project id",
-    from: [SHARED, "SANITY_PROJECT_ID"],
+    from: [SANITY_SHARED, "SANITY_PROJECT_ID"],
   },
   {
     key: "sanityDataset",
     q: "Sanity dataset",
-    from: [SHARED, "SANITY_DATASET"],
+    from: [SANITY_SHARED, "SANITY_DATASET"],
   },
   {
     key: "sanityApiVersion",
     q: "Sanity API version (date)",
-    from: [SHARED, "SANITY_API_VERSION"],
+    from: [SANITY_SHARED, "SANITY_API_VERSION"],
   },
   {
     key: "studioHost",
@@ -441,16 +443,27 @@ async function buildChanges(a) {
   const cssColors = a._cssColors || {};
   const brand500 = cssColors["--color-brand-500"] || a.brandColor;
 
-  // 1. site.shared.mjs — replace the four exported constants in place.
+  // 1. site.shared.mjs — the site URL.
   {
     const before = await readSrc(SHARED);
+    const r = replaceAssignedString(before, "SITE_URL", a.siteUrl);
+    changes.push({
+      rel: SHARED,
+      before,
+      after: r.src,
+      edits: r.changed && r.src !== before ? ["SITE_URL"] : [],
+    });
+  }
+
+  // 1b. sanity.shared.mjs — the Sanity project's ids.
+  {
+    const before = await readSrc(SANITY_SHARED);
     let src = before;
     const edits = [];
     for (const [name, value] of [
       ["SANITY_PROJECT_ID", a.sanityProjectId],
       ["SANITY_DATASET", a.sanityDataset],
       ["SANITY_API_VERSION", a.sanityApiVersion],
-      ["SITE_URL", a.siteUrl],
     ]) {
       const r = replaceAssignedString(src, name, value);
       if (r.changed && r.src !== src) {
@@ -458,7 +471,7 @@ async function buildChanges(a) {
         edits.push(name);
       }
     }
-    changes.push({ rel: SHARED, before, after: src, edits });
+    changes.push({ rel: SANITY_SHARED, before, after: src, edits });
   }
 
   // 2. site.ts — keyed scalar replacements
@@ -719,7 +732,7 @@ ${c.bold}Fork setup${c.reset} — rewrite per-fork identity/config files.
   node scripts/setup.mjs --config a.json --yes   non-interactive (used by /setup skill)
   node scripts/setup.mjs --dry-run     preview changes, write nothing
 
-Writes: ${SHARED}, ${SITE}, ${WRANGLER}, ${WRANGLER_DEBOUNCE}, ${COLORS}, ${THEMES}, ${CLI}, .env
+Writes: ${SHARED}, ${SANITY_SHARED}, ${SITE}, ${WRANGLER}, ${WRANGLER_DEBOUNCE}, ${COLORS}, ${THEMES}, ${CLI}, .env
 Leaves content scaffolding (areaServed, social, FAQs, site-structure) intact.
 
 Color maps (--config only; e.g. pulled from Figma by the /setup skill):
@@ -782,7 +795,7 @@ and the placeholder photography (src/assets/placeholder-images/).
 
   heading("Next steps");
   console.log(`  1. ${c.bold}npm run format${c.reset}         re-format the files just written
-  2. ${c.bold}npm run check:config${c.reset}   verify wrangler ↔ site.shared.mjs agree
+  2. ${c.bold}npm run check:config${c.reset}   verify wrangler.jsonc and public/_headers match src/config
   3. ${c.bold}npm run check${c.reset}          type-check (astro check)
   4. ${c.bold}npm run build${c.reset}          confirm the site still builds
      ${c.dim}Steps 1–4 are what CI gates on — see .github/workflows/ci.yml.${c.reset}

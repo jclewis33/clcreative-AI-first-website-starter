@@ -2,7 +2,7 @@ import { defineCliConfig } from "sanity/cli";
 import {
   SANITY_PROJECT_ID,
   SANITY_DATASET,
-} from "./src/config/site.shared.mjs";
+} from "./src/config/sanity.shared.mjs";
 
 export default defineCliConfig({
   api: {
