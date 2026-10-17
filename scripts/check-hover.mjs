@@ -28,10 +28,10 @@
  * Usage: npm run check:hover
  * Exits 1 if any prop documented in source shows no description on hover.
  * Exits 3 if the language server itself fails (crashes, hangs, never gets
- * ready) — `scripts/run-check-hover.mjs`, which `npm run check:hover` calls,
- * retries once on exit 3, because the server's bundled Astro compiler (a Go
- * WebAssembly program) occasionally dies on CI with "Go program has already
- * exited" for reasons unrelated to the code under test.
+ * ready). `npm run check:hover` runs this through scripts/run-check-hover.mjs,
+ * which probes the props in batches (`--batch=I/N`, a fresh server each — one
+ * page of every prop ran the server's Go/WASM Astro compiler out of memory on
+ * CI) and retries a batch once on exit 3.
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -146,11 +146,36 @@ for (const file of walk("src/components").filter((f) => f.endsWith(".astro"))) {
   if (props.length) components.push({ file, props });
 }
 
+/* ── Pick this run's batch ────────────────────────────────────────────────── */
+
+/* `--batch=I/N` probes every Nth component starting at I (run-check-hover.mjs
+   runs all N batches, each in its own process with a fresh language server).
+   One page holding every documented prop made the server's bundled Astro
+   compiler (Go WebAssembly, ~2 GB memory ceiling) run out of memory on CI:
+   "runtime: out of memory … fatal error: out of memory". */
+const batchArg = process.argv.find((a) => a.startsWith("--batch="));
+const [BATCH, BATCHES] = batchArg
+  ? batchArg.slice("--batch=".length).split("/").map(Number)
+  : [0, 1];
+if (
+  !Number.isInteger(BATCH) ||
+  !Number.isInteger(BATCHES) ||
+  BATCHES < 1 ||
+  BATCH < 0 ||
+  BATCH >= BATCHES
+) {
+  console.error(
+    `check-hover: bad --batch value "${batchArg}" (want I/N, 0 ≤ I < N)`,
+  );
+  process.exit(2);
+}
+const batch = components.filter((_, i) => i % BATCHES === BATCH);
+
 /* ── Generate a probe page ────────────────────────────────────────────────── */
 
 let imports = "---\n";
 const body = [];
-components.forEach((c, i) => {
+batch.forEach((c, i) => {
   const tag = `C${i}`;
   imports += `import ${tag} from "@/${c.file.replace(/^src\//, "")}";\n`;
   for (const p of c.props) {
@@ -369,7 +394,10 @@ try {
   server.kill();
   fs.unlinkSync(PROBE_PAGE);
 
-  console.log(`check-hover: ${probes.length} documented props probed`);
+  console.log(
+    `check-hover: ${probes.length} documented props probed` +
+      (BATCHES > 1 ? ` (batch ${BATCH + 1} of ${BATCHES})` : ""),
+  );
   if (failures.length) {
     console.error(
       `\n✗ ${failures.length} prop(s) lost their editor tooltip:\n`,
