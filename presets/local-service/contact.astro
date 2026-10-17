@@ -1,0 +1,13 @@
+---
+/**
+ * Contact page — the local-service preset (presets/local-service), installed
+ * by `npm run demo`. Everything on it comes from SITE and the services.
+ */
+import LocalServiceContact from "@/components/templates/LocalServiceContact.astro";
+import { SITE } from "@/config/site";
+
+const title = `Contact | ${SITE.name}`;
+const description = `Get a free estimate from ${SITE.name}. Call ${SITE.phone.display} or send the form and we'll call you back.`;
+---
+
+<LocalServiceContact title={title} description={description} />

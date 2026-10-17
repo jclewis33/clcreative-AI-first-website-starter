@@ -26,7 +26,9 @@
     "addon:sanity": "node scripts/addon-sanity.mjs",
     "check:addon-installer": "node scripts/check-addon-installer.mjs",
     "check:addon": "node scripts/check-addon-sanity.mjs",
-    "check:setup": "node scripts/check-setup.mjs"
+    "check:setup": "node scripts/check-setup.mjs",
+    "demo": "node scripts/demo.mjs",
+    "check:demo": "node scripts/check-demo.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.1",
@@ -44,6 +46,7 @@
     "prettier-plugin-astro": "^0.14.1",
     "sharp": "^0.35.4",
     "typescript": "^5.9.3",
+    "wrangler": "^4.151.1",
     "yaml": "^2.9.1"
   },
   "overrides": {

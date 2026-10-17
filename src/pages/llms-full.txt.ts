@@ -27,6 +27,7 @@ import {
   OPTIONAL_PAGES,
   type StaticPage,
 } from "@/data/site-structure";
+import { SITE_NOINDEX } from "@/config/seo.shared.mjs";
 
 export const prerender = true;
 
@@ -41,6 +42,14 @@ function pageIndex(heading: string, pages: StaticPage[]): string {
 }
 
 export const GET: APIRoute = async () => {
+  // A site kept wholly out of search (a prospect demo, a staging site)
+  // publishes nothing for LLM crawlers either.
+  if (SITE_NOINDEX) {
+    return new Response("# Private preview — not for indexing.\n", {
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
+
   // Tolerate an empty or unreachable dataset (e.g. a fresh fork before
   // `/setup`) — the file still renders the static page index.
   const [caseStudies, projects, posts] = await Promise.all([

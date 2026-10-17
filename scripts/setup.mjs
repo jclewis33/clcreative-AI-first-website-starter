@@ -25,16 +25,20 @@
  *   • src/config/site.ts               — scalar identity fields (keyed replace)
  *   • wrangler.jsonc                   — worker `name` (+ the two PUBLIC_SANITY_* vars, Sanity)
  *   • src/styles/variables/colors.css  — --color-brand-500 (the canonical brand hue)
- *   • src/config/logo-paths.ts         — LOGO_LABEL
+ *   • src/config/logo-paths.ts         — LOGO_LABEL (+ LOGO_IMAGE, --config only)
  *   • .env                             — created from .env.example (secrets left blank)
  *   Sanity only (after installing the add-on):
  *   • src/config/sanity.shared.mjs     — projectId/dataset/apiVersion
  *   • sanity.cli.ts                    — studioHost (+ clears appId for the new project)
  *   • workers/rebuild-debounce/wrangler.jsonc — debounce worker `name`
  *
- * It intentionally does NOT touch the content scaffolding (areaServed, social,
+ * Interactively it does NOT touch the content scaffolding (areaServed, social,
  * sameAs, FAQs, site-structure) — those stay as a working skeleton for the new
- * site to edit, per the starter design.
+ * site to edit, per the starter design. A `--config` file MAY set the
+ * structured site.ts fields (serviceAreas, areaServed, founded, utilityBar,
+ * sameAs, reviewsUrl, googleReviewUrl, social hrefs) and an image logo
+ * (logoImage) — `npm run demo` and the /setup skill use them. Each still
+ * replaces an existing value; none adds a field.
  *
  * Usage:
  *   node scripts/setup.mjs                      # interactive prompts
@@ -124,7 +128,7 @@ const FLUID_TIERS = new Set([
 function replaceCssDecl(src, varName, value) {
   const re = new RegExp(`(${varName.replace(/[-]/g, "\\$&")}\\s*:\\s*)[^;]+;`);
   if (!re.test(src)) return { src, changed: false };
-  const next = src.replace(re, `$1${value};`);
+  const next = src.replace(re, (_, lead) => `${lead}${value};`);
   return { src: next, changed: next !== src };
 }
 
@@ -137,7 +141,10 @@ function replaceAssignedString(src, name, value) {
     `(\\b${name}\\s*=\\s*(?:process\\.env\\.${name}\\s*\\|\\|\\s*)?)(["'])(?:\\\\.|(?!\\2).)*\\2`,
   );
   if (!re.test(src)) return { src, changed: false };
-  return { src: src.replace(re, `$1${JSON.stringify(value)}`), changed: true };
+  return {
+    src: src.replace(re, (_, lead) => `${lead}${JSON.stringify(value)}`),
+    changed: true,
+  };
 }
 
 // Maps a `themeColors` key to the selector that opens that theme's block in
@@ -159,7 +166,7 @@ function replaceInThemeBlock(src, marker, varName, value) {
   const re = new RegExp(`(${varName.replace(/[-]/g, "\\$&")}\\s*:\\s*)[^;]+;`);
   const block = src.slice(braceIdx, closeIdx);
   if (!re.test(block)) return { src, changed: false };
-  const next = block.replace(re, `$1${value};`);
+  const next = block.replace(re, (_, lead) => `${lead}${value};`);
   return {
     src: src.slice(0, braceIdx) + next + src.slice(closeIdx),
     changed: true,
@@ -170,15 +177,111 @@ function replaceInThemeBlock(src, marker, varName, value) {
 function replaceKeyedString(src, key, value) {
   const re = new RegExp(`(\\b${key}\\s*:\\s*)(["'])(?:\\\\.|(?!\\2).)*\\2`);
   if (!re.test(src)) return { src, changed: false };
-  return { src: src.replace(re, `$1${JSON.stringify(value)}`), changed: true };
+  return {
+    src: src.replace(re, (_, lead) => `${lead}${JSON.stringify(value)}`),
+    changed: true,
+  };
 }
 
 /** Replace a JSON `"key": "..."` value (wrangler.jsonc). */
 function replaceJsonString(src, key, value) {
   const re = new RegExp(`("${key}"\\s*:\\s*)"(?:\\\\.|[^"])*"`);
   if (!re.test(src)) return { src, changed: false };
-  return { src: src.replace(re, `$1${JSON.stringify(value)}`), changed: true };
+  return {
+    src: src.replace(re, (_, lead) => `${lead}${JSON.stringify(value)}`),
+    changed: true,
+  };
 }
+
+/**
+ * The span of the JS literal starting at `start` — a string, template
+ * literal, array or object (brackets balanced, strings skipped), or a bare
+ * token (`null`, a number). Trailing type syntax (`as …`, `satisfies …`) is
+ * not part of the span, so it survives a replacement.
+ */
+function literalEnd(src, start) {
+  const open = src[start];
+  if (open === '"' || open === "'" || open === "`") {
+    let i = start + 1;
+    while (i < src.length && src[i] !== open) i += src[i] === "\\" ? 2 : 1;
+    return i + 1;
+  }
+  if (open === "[" || open === "{") {
+    let depth = 0;
+    for (let i = start; i < src.length; i++) {
+      const ch = src[i];
+      if (ch === '"' || ch === "'" || ch === "`") {
+        i = literalEnd(src, i) - 1;
+      } else if (ch === "[" || ch === "{") depth++;
+      else if (ch === "]" || ch === "}") {
+        depth--;
+        if (depth === 0) return i + 1;
+      }
+    }
+    return -1;
+  }
+  const m = /^[\w.-]+/.exec(src.slice(start));
+  return m ? start + m[0].length : -1;
+}
+
+/**
+ * Replace the FIRST `key: <literal>` (or `NAME … = <literal>` with
+ * `assign`) with `value` written as JSON — for the array/object/number
+ * fields a keyed string replace can't reach. Prettier tidies the layout.
+ */
+function replaceKeyedLiteral(src, key, value, assign = false) {
+  const re = assign
+    ? new RegExp(`\\b${key}\\b[^=]*=\\s*`)
+    : new RegExp(`\\b${key}\\s*:\\s*`);
+  const m = re.exec(src);
+  if (!m) return { src, changed: false };
+  const start = m.index + m[0].length;
+  const end = literalEnd(src, start);
+  if (end === -1) return { src, changed: false };
+  const next =
+    src.slice(0, start) + JSON.stringify(value, null, 2) + src.slice(end);
+  return { src: next, changed: next !== src };
+}
+
+/**
+ * Point each `social` entry's `href` at the profile in `links` (keyed by
+ * label, e.g. { Facebook: "https://…" }). Entries not in `links` become
+ * "#", which the footer filters out. The entries themselves (their icons)
+ * stay — a label with no entry is reported, never invented.
+ */
+function replaceSocialHrefs(src, links) {
+  const m = /\bsocial\s*:\s*/.exec(src);
+  if (!m) return { src, changed: false, missing: Object.keys(links) };
+  const start = m.index + m[0].length;
+  const end = literalEnd(src, start);
+  let block = src.slice(start, end);
+  const seen = new Set();
+  block = block.replace(
+    /(label:\s*"((?:\\.|[^"])*)",\s*href:\s*)"(?:\\.|[^"])*"/g,
+    (_, lead, label) => {
+      seen.add(label);
+      return `${lead}${JSON.stringify(links[label] || "#")}`;
+    },
+  );
+  const next = src.slice(0, start) + block + src.slice(end);
+  return {
+    src: next,
+    changed: next !== src,
+    missing: Object.keys(links).filter((label) => !seen.has(label)),
+  };
+}
+
+/**
+ * Structured `--config`-only keys (no interactive prompt): the local-service
+ * fields `npm run demo` and the /setup skill fill. Each is written whole.
+ */
+const STRUCTURED_SITE_KEYS = [
+  "serviceAreas",
+  "areaServed",
+  "founded",
+  "utilityBar",
+  "sameAs",
+];
 
 const currentString = (src, key) => {
   // `key: "…"` (site.ts, cli) or `export const KEY = "…"` / the env-overridable
@@ -523,6 +626,22 @@ async function gatherFromConfig(path) {
   //   { "h1": { "min": 2.5, "max": 4 }, "text-regular": { "min": 1, "max": 1.2 } }
   answers._fluidType =
     json.fluidType && typeof json.fluidType === "object" ? json.fluidType : {};
+  // Optional structured site.ts fields, written whole (see
+  // STRUCTURED_SITE_KEYS), plus the review links, social profiles
+  // ({ "Facebook": "https://…" }) and an image-file logo
+  // ({ "src": "/images/logo.png", "width": 320, "height": 96, "plate": true }).
+  answers._structured = Object.fromEntries(
+    STRUCTURED_SITE_KEYS.filter((key) => json[key] !== undefined).map((key) => [
+      key,
+      json[key],
+    ]),
+  );
+  for (const key of ["reviewsUrl", "googleReviewUrl"])
+    if (typeof json[key] === "string") answers[key] = json[key];
+  answers._social =
+    json.social && typeof json.social === "object" ? json.social : null;
+  answers._logoImage =
+    json.logoImage === undefined ? undefined : json.logoImage;
   return answers;
 }
 
@@ -622,6 +741,8 @@ async function buildChanges(a) {
       ghlChatWidgetId: a.ghlChatWidgetId,
       ghlTrackingId: a.ghlTrackingId,
       usercentricsId: a.usercentricsId,
+      reviewsUrl: a.reviewsUrl,
+      googleReviewUrl: a.googleReviewUrl,
     };
     for (const [key, value] of Object.entries(map)) {
       if (value === undefined) continue;
@@ -630,6 +751,24 @@ async function buildChanges(a) {
         src = r.src;
         edits.push(key);
       }
+    }
+    for (const [key, value] of Object.entries(a._structured || {})) {
+      const r = replaceKeyedLiteral(src, key, value);
+      if (r.changed) {
+        src = r.src;
+        edits.push(key);
+      } else if (!new RegExp(`\\b${key}\\s*:`).test(src)) {
+        warn(`site.ts has no ${key} field — skipped`);
+      }
+    }
+    if (a._social) {
+      const r = replaceSocialHrefs(src, a._social);
+      if (r.changed) {
+        src = r.src;
+        edits.push("social");
+      }
+      for (const label of r.missing)
+        warn(`site.ts social has no "${label}" entry (add its icon) — skipped`);
     }
     changes.push({ rel: SITE, before: await readSrc(SITE), after: src, edits });
   }
@@ -694,7 +833,7 @@ async function buildChanges(a) {
       if (!value) continue;
       const re = new RegExp(`(${name.replace(/[-]/g, "\\$&")}\\s*:\\s*)[^;]+;`);
       if (re.test(after)) {
-        const next = after.replace(re, `$1${value};`);
+        const next = after.replace(re, (_, lead) => `${lead}${value};`);
         if (next !== after) {
           after = next;
           edits.push(name);
@@ -782,15 +921,23 @@ async function buildChanges(a) {
   // 4d. logo-paths.ts — keep the logo's accessible label in sync with the name.
   {
     const before = await readSrc(LOGO_PATHS);
-    const r = replaceAssignedString(before, "LOGO_LABEL", a.siteName);
-    if (r.changed && r.src !== before) {
-      changes.push({
-        rel: LOGO_PATHS,
-        before,
-        after: r.src,
-        edits: ["LOGO_LABEL"],
-      });
+    let after = before;
+    const edits = [];
+    const label = replaceAssignedString(after, "LOGO_LABEL", a.siteName);
+    if (label.changed && label.src !== after) {
+      after = label.src;
+      edits.push("LOGO_LABEL");
     }
+    // An image-file logo (or `null` to go back to the SVG paths).
+    if (a._logoImage !== undefined) {
+      const r = replaceKeyedLiteral(after, "LOGO_IMAGE", a._logoImage, true);
+      if (r.changed) {
+        after = r.src;
+        edits.push("LOGO_IMAGE");
+      }
+    }
+    if (after !== before)
+      changes.push({ rel: LOGO_PATHS, before, after, edits });
   }
 
   // 5. sanity.cli.ts — studioHost (+ clear appId; the new project issues its own on first deploy). Sanity only.

@@ -30,11 +30,13 @@ const roots = [];
 /**
  * A fixture project: the real headers.shared.mjs, a stand-in CMS seam and
  * a stand-in add-on module that exports WRANGLER_VARS.
- * @param {{ frameAncestors?: string[], vars?: Record<string, string>, headers?: Record<string, string> }} [options]
+ * `previews` (when given) is the Worker Previews block's `vars`.
+ * @param {{ frameAncestors?: string[], vars?: Record<string, string>, previews?: Record<string, string>, headers?: Record<string, string> }} [options]
  */
 function project({
   frameAncestors = ["https://editor.example"],
   vars = { PUBLIC_DEMO_ID: "demo" },
+  previews,
   headers = HEADERS,
 } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "config-sync-"));
@@ -53,12 +55,14 @@ function project({
     `export const FRAME_ANCESTORS = ${JSON.stringify(frameAncestors)};\nexport const PREVIEW_COOKIE = null;\n`,
   );
   write(
-    "src/config/demo.shared.mjs",
+    "src/config/addon.shared.mjs",
     `export const WRANGLER_VARS = { PUBLIC_DEMO_ID: "demo" };\n`,
   );
   write(
     "wrangler.jsonc",
-    `{\n  // Fixture.\n  "name": "fixture",\n  "vars": ${JSON.stringify(vars)},\n}\n`,
+    `{\n  // Fixture.\n  "name": "fixture",\n  "vars": ${JSON.stringify(vars)},\n${
+      previews ? `  "previews": { "vars": ${JSON.stringify(previews)} },\n` : ""
+    }}\n`,
   );
   write(
     "public/_headers",
@@ -96,9 +100,15 @@ passes(
 // A var that drifted, and one that is missing.
 fails(
   project({ vars: { PUBLIC_DEMO_ID: "other" } }),
-  /vars\.PUBLIC_DEMO_ID: "other", expected "demo" \(from src\/config\/demo\.shared\.mjs\)/,
+  /vars\.PUBLIC_DEMO_ID: "other", expected "demo" \(from src\/config\/addon\.shared\.mjs\)/,
 );
 fails(project({ vars: {} }), /vars\.PUBLIC_DEMO_ID: "\(unset\)"/);
+// Worker Previews inherit nothing: with a previews block, its vars must match too.
+passes(project({ previews: { PUBLIC_DEMO_ID: "demo" } }));
+fails(
+  project({ previews: {} }),
+  /previews\.vars\.PUBLIC_DEMO_ID: "\(unset\)", expected "demo"/,
+);
 // public/_headers drifting from the code: another source's CSP, a dropped header.
 fails(
   project({

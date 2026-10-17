@@ -8,7 +8,9 @@
  *   wrangler.jsonc `vars` — every `WRANGLER_VARS` export of a
  *     src/config/*.shared.mjs module (a content add-on's project ids, for
  *     one) must be there with the same value. Other vars are the fork's
- *     own and are left alone.
+ *     own and are left alone. When the file has a `previews` block (Worker
+ *     Previews, which inherit nothing from the top level), the same vars
+ *     must be in `previews.vars` too.
  *   public/_headers — its `/*` block must send every header in
  *     SECURITY_HEADERS (src/config/headers.shared.mjs) with the same
  *     value, so prerendered pages (served straight from the assets
@@ -68,22 +70,26 @@ for (const file of sharedModules) {
       from: `src/config/${file}`,
     });
 }
-/** @type {Record<string, unknown>} */
-let vars = {};
+/** @type {Array<[string, Record<string, unknown>]>} */
+const varBlocks = [];
 try {
-  vars =
-    parseJsonc(fs.readFileSync(path.join(ROOT, "wrangler.jsonc"), "utf8"))
-      .vars ?? {};
+  const wrangler = parseJsonc(
+    fs.readFileSync(path.join(ROOT, "wrangler.jsonc"), "utf8"),
+  );
+  varBlocks.push(["vars", wrangler.vars ?? {}]);
+  if (wrangler.previews)
+    varBlocks.push(["previews.vars", wrangler.previews.vars ?? {}]);
 } catch (err) {
   problems.push(
     `wrangler.jsonc could not be parsed: ${/** @type {Error} */ (err).message}`,
   );
 }
-for (const [name, { value, from }] of expectedVars)
-  if (vars[name] !== value)
-    problems.push(
-      `wrangler.jsonc vars.${name}: "${vars[name] ?? "(unset)"}", expected "${value}" (from ${from})`,
-    );
+for (const [label, vars] of varBlocks)
+  for (const [name, { value, from }] of expectedVars)
+    if (vars[name] !== value)
+      problems.push(
+        `wrangler.jsonc ${label}.${name}: "${vars[name] ?? "(unset)"}", expected "${value}" (from ${from})`,
+      );
 
 /* 2. public/_headers against SECURITY_HEADERS. */
 const { SECURITY_HEADERS } = await import(

@@ -3,11 +3,15 @@ import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
 import cloudflare from "@astrojs/cloudflare";
-import { rm } from "node:fs/promises";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import * as cms from "./src/config/cms.mjs";
 import { SITE_URL } from "./src/config/site.shared.mjs";
-import { DEV_ONLY_PATHS, isNoindexRoute } from "./src/config/seo.shared.mjs";
+import {
+  DEV_ONLY_PATHS,
+  SITE_NOINDEX,
+  isNoindexRoute,
+} from "./src/config/seo.shared.mjs";
 
 /**
  * NOTE: the sitemap deliberately has NO `customPages` option. A
@@ -53,6 +57,36 @@ function excludeDevOnlyPages() {
 }
 
 /**
+ * SITE_NOINDEX builds (prospect demos, staging) also send
+ * `X-Robots-Tag: noindex, nofollow` on every static asset. Prerendered pages
+ * and images are served straight from the assets binding, so the middleware
+ * never sees them — only `_headers` reaches them. The line is added to the
+ * BUILT copy, never public/_headers: that file must match SECURITY_HEADERS
+ * (`npm run check:config`) on every site, noindex or not.
+ */
+function noindexHeaders() {
+  return {
+    name: "noindex-headers",
+    hooks: {
+      /** @param {{ dir: URL, logger: { info: (msg: string) => void } }} ctx */
+      "astro:build:done": async ({ dir, logger }) => {
+        if (!SITE_NOINDEX) return;
+        const file = new URL("_headers", dir);
+        const headers = await readFile(file, "utf8");
+        if (!/^\/\*$/m.test(headers)) {
+          throw new Error("[noindex-headers] _headers has no `/*` block.");
+        }
+        await writeFile(
+          file,
+          headers.replace(/^\/\*$/m, "/*\n  X-Robots-Tag: noindex, nofollow"),
+        );
+        logger.info("SITE_NOINDEX — X-Robots-Tag added to the built _headers.");
+      },
+    },
+  };
+}
+
+/**
  * Static one-to-one 301 redirects. Empty by default — a new project starts with
  * no redirects. Add `"old-path": "/new-path"` pairs here as you rename or remove
  * routes so existing index entries and external backlinks don't 404, e.g.:
@@ -84,9 +118,15 @@ export default defineConfig({
   redirects,
   integrations: [
     excludeDevOnlyPages(),
-    sitemap({
-      filter: (page) => !isNoindexRoute(new URL(page).pathname),
-    }),
+    noindexHeaders(),
+    // A SITE_NOINDEX build has nothing to list, so it ships no sitemap.
+    ...(SITE_NOINDEX
+      ? []
+      : [
+          sitemap({
+            filter: (page) => !isNoindexRoute(new URL(page).pathname),
+          }),
+        ]),
     mdx(),
     // The content source's integrations (src/config/cms.mjs): none for
     // content in local files; a CMS add-on supplies its own.
@@ -220,7 +260,14 @@ export default defineConfig({
   vite: {
     // Build-time constants and dependency pre-bundling hints the content
     // source needs (src/config/cms.mjs).
-    define: cms.viteDefine,
+    // SITE_NOINDEX's env half is baked in here: the Worker's own
+    // `process.env` has no build variables (src/config/seo.shared.mjs).
+    define: {
+      ...cms.viteDefine,
+      "process.env.SITE_NOINDEX": JSON.stringify(
+        process.env.SITE_NOINDEX ?? "",
+      ),
+    },
     optimizeDeps: cms.optimizeDeps,
   },
 

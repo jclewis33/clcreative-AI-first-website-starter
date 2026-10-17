@@ -1,5 +1,10 @@
 ---
-import { LOGO_VIEWBOX, LOGO_LABEL, LOGO_ALL_PATHS } from "@/config/logo-paths";
+import {
+  LOGO_VIEWBOX,
+  LOGO_LABEL,
+  LOGO_ALL_PATHS,
+  LOGO_IMAGE,
+} from "@/config/logo-paths";
 
 interface Props {
   /** Choose which logo to render. Both variants share the same artwork —
@@ -27,19 +32,76 @@ const {
 
 <a href={href} aria-label={ariaLabel} class={className}>
   {
+    /* An image-file logo (LOGO_IMAGE): its alt text is the link's text.
+      A plain <img>, not <Image> — the image service darkens the edges of
+      transparent logo art. The light plate sits behind dark-on-white logos
+      on the dark navbar. */
+  }
+  {
+    LOGO_IMAGE && (
+      <span
+        class:list={["logo_img_wrap", { "is-plate": LOGO_IMAGE.plate }]}
+        data-theme={LOGO_IMAGE.plate ? "light" : undefined}
+      >
+        <img
+          class="logo_img"
+          src={LOGO_IMAGE.src}
+          width={LOGO_IMAGE.width}
+          height={LOGO_IMAGE.height}
+          alt={ariaLabel}
+          decoding="async"
+        />
+      </span>
+    )
+  }
+  {
     /* An SVG is not anchor text — the sr-only span gives crawlers real text
       for this link, which sits in the nav/footer of every page. The svg is
       aria-hidden so screen readers don't announce the label twice. */
   }
-  <span class="u-sr-only">{ariaLabel}</span>
-  <svg
-    width={width}
-    height={height}
-    viewBox={LOGO_VIEWBOX}
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-  >
-    {LOGO_ALL_PATHS.map((d) => <path d={d} fill="currentColor" />)}
-  </svg>
+  {!LOGO_IMAGE && <span class="u-sr-only">{ariaLabel}</span>}
+  {
+    !LOGO_IMAGE && (
+      <svg
+        width={width}
+        height={height}
+        viewBox={LOGO_VIEWBOX}
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        {LOGO_ALL_PATHS.map((d) => (
+          <path d={d} fill="currentColor" />
+        ))}
+      </svg>
+    )
+  }
 </a>
+
+<style is:global>
+  @layer components {
+    /* Image-file logos (LOGO_IMAGE): a fixed height, taller than the SVG
+       wordmark because logo files carry their own padding; the width follows
+       the file's aspect ratio, capped by the placement (the footer's
+       max-width). */
+    .logo_img_wrap {
+      display: block;
+      height: 2.5rem;
+    }
+
+    .logo_img {
+      display: block;
+      height: 100%;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+    }
+
+    .logo_img_wrap.is-plate {
+      box-sizing: content-box;
+      padding: 0.25em 0.5em;
+      border-radius: var(--radius-small);
+      background-color: var(--background);
+    }
+  }
+</style>

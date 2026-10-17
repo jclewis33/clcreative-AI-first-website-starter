@@ -58,38 +58,45 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
         <Logo variant="footer" class="footer_logo_wrap" />
 
         <div class="footer_contact_wrap">
-          <a href={`mailto:${SITE.email}`} class="footer_contact_link">
-            <div class="footer_contact_item">
-              <div class="footer_contact_icon u-icon-24">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="100%"
-                  height="100%"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <rect
-                    x="2"
-                    y="4"
-                    width="20"
-                    height="16"
-                    rx="2"
-                    stroke="currentColor"
-                    stroke-width="var(--border-width-main)"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"></rect>
-                  <path
-                    d="M2 7L10.165 12.593C10.6834 12.9515 11.3343 13.1436 12 13.1436C12.6657 13.1436 13.3166 12.9515 13.835 12.593L22 7"
-                    stroke="currentColor"
-                    stroke-width="var(--border-width-main)"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"></path>
-                </svg>
-              </div>
-              <span class="footer_contact_text">{SITE.email}</span>
-            </div>
-          </a>
+          {/* No published email (common for trades) = no email row. */}
+          {
+            SITE.email && (
+              <a href={`mailto:${SITE.email}`} class="footer_contact_link">
+                <div class="footer_contact_item">
+                  <div class="footer_contact_icon u-icon-24">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="100%"
+                      height="100%"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <rect
+                        x="2"
+                        y="4"
+                        width="20"
+                        height="16"
+                        rx="2"
+                        stroke="currentColor"
+                        stroke-width="var(--border-width-main)"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M2 7L10.165 12.593C10.6834 12.9515 11.3343 13.1436 12 13.1436C12.6657 13.1436 13.3166 12.9515 13.835 12.593L22 7"
+                        stroke="currentColor"
+                        stroke-width="var(--border-width-main)"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </div>
+                  <span class="footer_contact_text">{SITE.email}</span>
+                </div>
+              </a>
+            )
+          }
 
           <a href={`tel:${SITE.phone.tel}`} class="footer_contact_link">
             <div class="footer_contact_item">

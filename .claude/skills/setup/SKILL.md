@@ -239,6 +239,17 @@ placeholder logo behind.**
 from the new logo's SVG; [Logo.astro](../../../src/components/global/Logo.astro)
 renders from this file. The CLI already updates `LOGO_LABEL`.
 
+**No vector logo?** When the client only has a PNG (or an SVG that isn't clean
+paths), put the file in `public/images/` and pass `logoImage` in the
+`--config` answers: `{ "src": "/images/logo.png", "width": 320, "height": 96,
+"plate": true }` — width/height are the file's pixel size; `plate` adds a light
+backing for a dark-on-white logo on the dark navbar. It sets `LOGO_IMAGE` in
+logo-paths.ts and Logo.astro renders the image instead of the paths (it then
+no longer follows the theme colour). The same `--config` file can also set
+the structured site.ts fields: `serviceAreas`, `areaServed`, `founded`,
+`utilityBar`, `sameAs`, `reviewsUrl`, `googleReviewUrl`, and `social` as
+`{ "Facebook": "https://…" }` (profiles left out are hidden).
+
 **Sanity forks:** the Studio navbar logo and dashboard rail icon are a separate job
 — `references/studio-branding.md` (installed by the add-on), applied before
 the Studio deploy.

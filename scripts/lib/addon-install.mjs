@@ -18,7 +18,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { setMembers } from "./jsonc.mjs";
+import { setMembers, setNestedMembers } from "./jsonc.mjs";
 
 /** A refusal or bad input: the CLI prints the message and exits 1. */
 export class AddonError extends Error {}
@@ -30,7 +30,7 @@ export class AddonError extends Error {}
  * @property {Record<string, string>} [dependencies]
  * @property {Record<string, string>} [devDependencies]
  * @property {Record<string, string>} [scripts]  npm scripts.
- * @property {{ vars: Record<string, string>, comment?: string }} [wrangler]  Set in wrangler.jsonc `vars`.
+ * @property {{ vars: Record<string, string>, comment?: string }} [wrangler]  Set in wrangler.jsonc `vars` (and `previews.vars`, when there is a previews block).
  * @property {Record<string, unknown>} [tsconfig]  Set in tsconfig.json `compilerOptions`.
  * @property {string[]} [env]  Appended to .env.example unless its first `NAME=` line is already there.
  * @property {string[]} [gitignore]  Appended to .gitignore: each missing rule, with the block's comments.
@@ -350,6 +350,24 @@ export function planInstall({ root, addonDir, force = false }) {
     let result;
     try {
       result = setMembers(read(file), key, entries, options);
+      // Worker Previews inherit no vars from the top level: a project with
+      // a `previews` block gets the same vars there.
+      if (file === "wrangler.jsonc") {
+        const previews = setNestedMembers(
+          result.text,
+          "previews",
+          "vars",
+          entries,
+          { trailingCommas: true },
+        );
+        result = {
+          text: previews.text,
+          changed: [
+            ...result.changed,
+            ...previews.changed.map((c) => `previews ${c}`),
+          ],
+        };
+      }
     } catch (err) {
       if (err instanceof AddonError) throw err;
       throw new AddonError(

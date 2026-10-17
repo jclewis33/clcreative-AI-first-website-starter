@@ -1,0 +1,220 @@
+{
+  "preset": "local-service",
+  "prospect": {
+    "name": "Brightline Electric",
+    "legalName": "Brightline Electric LLC",
+    "slug": "brightline-electric",
+    "website": "https://www.example.com"
+  },
+  "contact": {
+    "phone": "(512) 555-0142",
+    "hours": "Mon–Fri 7 AM–6 PM, emergencies 24/7",
+    "locality": "Austin",
+    "region": "TX"
+  },
+  "serviceAreas": ["Austin", "Round Rock", "Cedar Park", "Pflugerville"],
+  "founded": 2009,
+  "social": { "Facebook": "https://www.facebook.com/example" },
+  "brand": {
+    "color": "#1a4fd8",
+    "logo": { "file": "./assets/logo.svg", "plate": true }
+  },
+  "seo": {
+    "tagline": "Licensed electricians in Austin",
+    "description": "Licensed Austin electricians for panel upgrades, EV chargers, lighting and repairs. Upfront pricing and same-week appointments."
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Licensed electricians in Austin",
+      "heading": "Electrical work done <strong>safely, on schedule</strong>",
+      "text": "Panel upgrades, EV chargers, lighting and repairs, with an upfront price before any work starts.",
+      "image": "../../../src/assets/placeholder-images/ai-first-starter-5.webp",
+      "imageAlt": "An electrician working on a residential panel"
+    },
+    "services": {
+      "eyebrow": "What we do",
+      "heading": "Every electrical job, one crew",
+      "intro": "From a single outlet to a full panel upgrade."
+    },
+    "serviceArea": {
+      "heading": "Serving Austin and nearby",
+      "text": "Same-week appointments across the metro."
+    },
+    "process": {
+      "eyebrow": "How it works",
+      "heading": "From first call to final inspection",
+      "steps": [
+        {
+          "title": "Call or send the form",
+          "text": "Tell us what's going on."
+        },
+        {
+          "title": "Upfront price",
+          "text": "A written quote before we start."
+        },
+        { "title": "Done right", "text": "Clean work, up to code, inspected." }
+      ],
+      "image": "../../../src/assets/placeholder-images/ai-first-starter-4.webp",
+      "imageAlt": "An electrician explaining a quote to a homeowner"
+    },
+    "story": {
+      "eyebrow": "Why choose us",
+      "heading": "A local shop that answers the phone",
+      "paragraphs": [
+        "Brightline started as one truck and a promise to show up when we said we would."
+      ],
+      "image": "../../../src/assets/placeholder-images/ai-first-starter-7.webp",
+      "imageAlt": "The Brightline team in front of their van",
+      "reasons": [
+        { "title": "Upfront pricing", "text": "The quote is the price." },
+        { "title": "Licensed", "text": "Every job, every electrician." }
+      ]
+    },
+    "leadForm": {
+      "eyebrow": "Free estimate",
+      "heading": "Tell us about the <strong>job</strong>",
+      "text": "We'll call you back within one business day."
+    },
+    "faqs": {
+      "items": [
+        {
+          "question": "Are you licensed and insured?",
+          "answer": "Yes. Every electrician on our team is licensed, and we're fully insured."
+        },
+        {
+          "question": "Do you handle emergencies?",
+          "answer": "Yes. Call any time and we'll get someone out as fast as we can."
+        }
+      ]
+    },
+    "callBand": {
+      "heading": "Need an <strong>electrician</strong>?",
+      "text": "Call now, or get a free estimate online."
+    }
+  },
+  "services": [
+    {
+      "slug": "panel-upgrades",
+      "title": "Panel upgrades",
+      "navLabel": "Panels",
+      "seoTitle": "Electrical Panel Upgrades in Austin",
+      "seoDescription": "Electrical panel upgrades in Austin: 200-amp service, permits and inspection, done by licensed electricians at an upfront price.",
+      "cardText": "200-amp service, permits and inspection, start to finish.",
+      "cardImage": "../../../src/assets/placeholder-images/ai-first-starter-1.webp",
+      "cardImageAlt": "A new electrical panel with labelled breakers",
+      "icon": "bolt",
+      "hero": {
+        "eyebrow": "Panel upgrades",
+        "heading": "A panel that keeps up with <strong>your home</strong>",
+        "text": "We size it, pull the permit, install it and get it inspected, at a price you see first.",
+        "image": "../../../src/assets/placeholder-images/ai-first-starter-1.webp",
+        "imageAlt": "An electrician installing a breaker panel"
+      },
+      "highlights": [
+        { "value": "200A", "label": "Standard upgrade" },
+        { "value": "1 day", "label": "Typical install" },
+        { "value": "Upfront", "label": "Price before we start" },
+        { "value": "Permitted", "label": "And inspected" }
+      ],
+      "scope": {
+        "heading": "What we work on",
+        "items": [
+          {
+            "title": "Service upgrades",
+            "text": "100 to 200 amps, done right.",
+            "icon": "bolt"
+          },
+          {
+            "title": "Subpanels",
+            "text": "For garages, shops and additions.",
+            "icon": "grid"
+          }
+        ]
+      },
+      "included": {
+        "heading": "What's included",
+        "items": ["Load calculation", "Permit", "Installation", "Inspection"],
+        "images": [
+          {
+            "src": "../../../src/assets/placeholder-images/ai-first-starter-2.webp",
+            "alt": "A labelled breaker panel"
+          },
+          {
+            "src": "../../../src/assets/placeholder-images/ai-first-starter-3.webp",
+            "alt": "An electrician testing a circuit"
+          }
+        ]
+      },
+      "faqs": [
+        {
+          "question": "How long does an upgrade take?",
+          "answer": "Most are done in a day, plus the inspection."
+        },
+        { "question": "Do you pull the permit?", "answer": "Yes, every time." }
+      ],
+      "cta": { "heading": "Ready for a <strong>new panel</strong>?" }
+    },
+    {
+      "slug": "ev-chargers",
+      "title": "EV charger installation",
+      "navLabel": "EV chargers",
+      "seoTitle": "EV Charger Installation in Austin",
+      "seoDescription": "Level 2 EV charger installation in Austin: a dedicated circuit, permit and inspection, by licensed electricians.",
+      "cardText": "Level 2 chargers on a dedicated circuit, permitted and inspected.",
+      "cardImage": "../../../src/assets/placeholder-images/ai-first-starter-6.webp",
+      "cardImageAlt": "An EV charging in a home garage",
+      "icon": "car",
+      "hero": {
+        "eyebrow": "EV chargers",
+        "heading": "Charge at home, <strong>overnight</strong>",
+        "text": "A Level 2 charger on its own circuit, installed and inspected.",
+        "image": "../../../src/assets/placeholder-images/ai-first-starter-6.webp",
+        "imageAlt": "A wall-mounted EV charger in a garage"
+      },
+      "highlights": [
+        { "value": "Level 2", "label": "Home charging" },
+        { "value": "Half day", "label": "Typical install" },
+        { "value": "Upfront", "label": "Price before we start" },
+        { "value": "Permitted", "label": "And inspected" }
+      ],
+      "scope": {
+        "heading": "What we work on",
+        "items": [
+          {
+            "title": "Charger install",
+            "text": "Any brand, mounted and wired.",
+            "icon": "car"
+          }
+        ]
+      },
+      "included": {
+        "heading": "What's included",
+        "items": ["Dedicated circuit", "Permit", "Installation", "Inspection"],
+        "images": [
+          {
+            "src": "../../../src/assets/placeholder-images/ai-first-starter-8.webp",
+            "alt": "A charger mounted beside a garage door"
+          },
+          {
+            "src": "../../../src/assets/placeholder-images/ai-first-starter-9.webp",
+            "alt": "An electrician wiring a new circuit"
+          }
+        ]
+      },
+      "faqs": [
+        {
+          "question": "Will my panel handle a charger?",
+          "answer": "We check the load first and tell you."
+        },
+        {
+          "question": "Which chargers do you install?",
+          "answer": "Any Level 2 charger you choose."
+        }
+      ],
+      "cta": { "heading": "Ready to <strong>charge at home</strong>?" }
+    }
+  ],
+  "notes": {
+    "confirmOrCut": ["Fictional fixture — nothing to confirm."]
+  }
+}

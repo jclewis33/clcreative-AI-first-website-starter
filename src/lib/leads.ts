@@ -6,6 +6,7 @@ import {
   type FormAccess,
   type FormConfig,
 } from "@/config/forms";
+import { DEMO } from "@/config/demo.shared.mjs";
 import { SITE } from "@/config/site";
 import { SMS_CONSENT_FOOTER, SMS_CONSENT_LABEL } from "@/config/sms-consent";
 import {
@@ -201,14 +202,19 @@ export async function handleLead(
 
   const creds = ghlCredentials();
   if (!creds) {
+    /* A prospect demo never shows its visitor an error — see demoSuccess. */
+    if (DEMO) return demoSuccess("GHL not configured");
     console.error("[lead] GHL_API_TOKEN / GHL_LOCATION_ID not configured");
     return json({ error: "Not configured" }, 502);
   }
 
   const { form } = lead;
   const tags = tagsFor(lead);
-  const source =
+  const formSource =
     lead.isReferral && form.referral ? form.referral.source : form.source;
+  /* Demo leads land in a shared demo sub-account: name the prospect so
+     they can be told apart there. */
+  const source = DEMO ? `Demo: ${DEMO.prospect} — ${formSource}` : formSource;
   try {
     const contact = await upsertContact(creds, {
       firstName: lead.firstName,
@@ -268,6 +274,19 @@ export async function handleLead(
   } catch (error) {
     const detail = error instanceof GhlError ? error.body : String(error);
     console.error("[lead] GHL request failed", detail);
+    if (DEMO) return demoSuccess("GHL request failed");
     return json({ error: "Could not save the submission" }, 502);
   }
+}
+
+/**
+ * A prospect demo (src/config/demo.shared.mjs) answers every valid
+ * submission with success, even when the lead could not be saved: the person
+ * trying the form is judging the site, and an error would be the one thing
+ * they remember. The warning is the only trace — so after deploying a demo,
+ * send one test lead and confirm it arrived.
+ */
+function demoSuccess(reason: string): Response {
+  console.warn(`[lead] demo: ${reason} — answered success anyway`);
+  return json({ success: true });
 }

@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { SITE } from "@/config/site";
-import { robotsDisallowPaths } from "@/config/seo.shared.mjs";
+import { robotsDisallowPaths, SITE_NOINDEX } from "@/config/seo.shared.mjs";
 
 /**
  * robots.txt, generated from the same list the sitemap filter and the noindex
@@ -16,6 +16,18 @@ import { robotsDisallowPaths } from "@/config/seo.shared.mjs";
 export const prerender = true;
 
 export const GET: APIRoute = () => {
+  // A site kept wholly out of search (a prospect demo, a staging site): one
+  // blanket Disallow and no sitemap to advertise — the build ships none.
+  if (SITE_NOINDEX) {
+    return new Response(
+      `# Generated from src/config/seo.shared.mjs (SITE_NOINDEX) — not for search.
+User-agent: *
+Disallow: /
+`,
+      { headers: { "Content-Type": "text/plain; charset=utf-8" } },
+    );
+  }
+
   const disallow = robotsDisallowPaths()
     .map((path) => `Disallow: ${path}`)
     .join("\n");

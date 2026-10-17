@@ -17,6 +17,22 @@
  * that appeared when the navbar and footer logos both rendered on one page.
  */
 
+/**
+ * Use an image file as the logo instead of the SVG paths below — for a
+ * prospect demo, or any client whose logo only exists as a PNG/SVG file.
+ * `src` is a path under public/ (e.g. "/images/logo.png"); width and height
+ * are the file's intrinsic size, so the browser reserves the right box.
+ * `plate` puts a light rounded backing behind it, for a dark-on-white logo
+ * that would vanish on the dark navbar. `null` draws the paths (the default).
+ * An image logo is fixed artwork — it does not follow the theme colour.
+ */
+export const LOGO_IMAGE: {
+  src: string;
+  width: number;
+  height: number;
+  plate?: boolean;
+} | null = null;
+
 /** SVG viewBox shared by every logo placement. */
 export const LOGO_VIEWBOX = "0 0 138 22";
 

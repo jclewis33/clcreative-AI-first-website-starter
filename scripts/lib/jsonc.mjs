@@ -12,6 +12,9 @@
  *                     sets entries inside the top-level object member
  *                     `key` (creating it), editing only the text it must:
  *                     comments and formatting elsewhere are untouched
+ *   setNestedMembers(text, outer, key, entries, options)
+ *                     the same, one level down (wrangler.jsonc
+ *                     `previews.vars`), when `outer` exists
  *
  * Output follows Prettier (measured on 3.6, printWidth 80): a .jsonc file
  * ends every member with a comma (`trailingCommas: true`); a .json file
@@ -502,4 +505,38 @@ export function setMembers(text, key, entries, options) {
       `setMembers produced output that does not match the intended merge of "${key}" (a bug); nothing was written`,
     );
   return { text: crlf ? out.replace(/\n/g, "\r\n") : out, changed };
+}
+
+/**
+ * `setMembers` one level down: sets `entries` inside `outer.key` (e.g.
+ * wrangler.jsonc `previews.vars`). Does nothing when the top-level `outer`
+ * object is absent — a file that doesn't use it isn't given one. The edit
+ * is made on `outer`'s own text, so everything around it is untouched.
+ * @param {string} text
+ * @param {string} outer
+ * @param {string} key
+ * @param {Record<string, unknown>} entries
+ * @param {SetOptions} options
+ * @returns {{ text: string, changed: string[] }}
+ */
+export function setNestedMembers(text, outer, key, entries, options) {
+  const crlf = text.includes("\r\n");
+  const src = crlf ? text.replace(/\r\n/g, "\n") : text;
+  const tokens = tokenize(src);
+  if (tokens[0]?.type !== "{")
+    throw new Error("The top level must be an object");
+  const at = members(tokens, 0).get(outer);
+  if (at === undefined) return { text, changed: [] };
+  if (tokens[at].type !== "{") throw new Error(`"${outer}" is not an object`);
+  const start = tokens[at].start;
+  const end = tokens[closing(tokens, at)].end;
+  if (!src.slice(start, end).includes("\n"))
+    throw new Error(`Can't edit the one-line "${outer}" object`);
+  const inner = setMembers(src.slice(start, end), key, entries, options);
+  if (!inner.changed.length) return { text, changed: [] };
+  const next = src.slice(0, start) + inner.text + src.slice(end);
+  return {
+    text: crlf ? next.replace(/\n/g, "\r\n") : next,
+    changed: inner.changed,
+  };
 }

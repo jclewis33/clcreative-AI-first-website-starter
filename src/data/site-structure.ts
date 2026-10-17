@@ -69,6 +69,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
+import { DEMO } from "@/config/demo.shared.mjs";
 import { SERVICE_NAV } from "@/lib/service-nav";
 
 /** llms.txt section a page belongs to (also its broad category). */
@@ -235,6 +236,36 @@ export type NavMenuItem = NavMenuLink | NavMenuDropdown;
    feeds the llms endpoints, and llms-full.txt does not filter noindex paths,
    so registering them there would publish a dev gallery to a production
    artifact. Add `/style-guide` here the same way if you want it linked too. */
+/* ── Demo pruning ───────────────────────────────────────────────────────────
+   A prospect demo (src/config/demo.shared.mjs) drops the links in
+   `DEMO.hiddenPaths` — the sample blog, case studies and so on — from the nav
+   and footer. The pages still build (noindex, like the rest of a demo); they
+   just aren't linked. A dropdown or footer group left empty disappears. On a
+   real site DEMO is null and both helpers return their input untouched. */
+const HIDDEN_PATHS = new Set<string>(DEMO?.hiddenPaths ?? []);
+const isShown = (path: string) => !HIDDEN_PATHS.has(path);
+
+function pruneNav(items: NavMenuItem[]): NavMenuItem[] {
+  if (!HIDDEN_PATHS.size) return items;
+  return items.flatMap((item): NavMenuItem[] => {
+    if ("children" in item) {
+      const children = item.children.filter(isShown);
+      return children.length ? [{ ...item, children }] : [];
+    }
+    return isShown(item.path) ? [item] : [];
+  });
+}
+
+function pruneFooter(groups: FooterGroup[]): FooterGroup[] {
+  if (!HIDDEN_PATHS.size) return groups;
+  return groups.flatMap((group): FooterGroup[] => {
+    const links = group.links.filter((link) =>
+      isShown(typeof link === "string" ? link : link.path),
+    );
+    return links.length ? [{ ...group, links }] : [];
+  });
+}
+
 const DEV_NAV_LINKS: NavMenuItem[] = import.meta.env.DEV
   ? [{ path: "/components", label: "Components" }]
   : [];
@@ -245,14 +276,14 @@ const DEV_NAV_LINKS: NavMenuItem[] = import.meta.env.DEV
  * `children` reference pages by path; labels resolve from each page's navLabel.
  * See "Add a link to the NAVBAR" in the header for the recipe.
  */
-export const NAV_MENU: NavMenuItem[] = [
+export const NAV_MENU: NavMenuItem[] = pruneNav([
   ...(SERVICE_NAV.length
     ? [{ label: "Services", children: SERVICE_NAV.map((s) => s.path) }]
     : []),
   { path: "/blog" },
   { path: "/case-studies" },
   ...DEV_NAV_LINKS,
-];
+]);
 
 // ── Footer link groups ──────────────────────────────────────────────────────
 /**
@@ -283,7 +314,7 @@ const DEV_FOOTER_LINKS: FooterLink[] = import.meta.env.DEV
  * The Company group's `locations` renders the "Locations Served" dropdown.
  * See "Add a link to the FOOTER" in the header for the recipe.
  */
-export const FOOTER_GROUPS: FooterGroup[] = [
+export const FOOTER_GROUPS: FooterGroup[] = pruneFooter([
   ...(SERVICE_NAV.length
     ? [{ title: "Services", links: SERVICE_NAV.map((s) => s.path) }]
     : []),
@@ -301,7 +332,7 @@ export const FOOTER_GROUPS: FooterGroup[] = [
     title: "Company",
     links: ["/contact"],
   },
-];
+]);
 
 /** Resolve a FooterLink to a concrete { label, href } pair. */
 export function resolveFooterLink(link: FooterLink): {
@@ -342,8 +373,15 @@ export const BANNER: {
   },
 };
 
-/** Resolve the banner for a given pathname (override → default). */
+/**
+ * Resolve the banner for a given pathname (override → default). A prospect
+ * demo's banner wins over both, on every page — it is how the demo says who
+ * built it and where to go next (src/config/demo.shared.mjs).
+ */
 export function resolveBanner(pathname: string): BannerContent | null {
+  if (DEMO) {
+    return { text: DEMO.bannerText, href: DEMO.bannerHref };
+  }
   const p = pathname.replace(/\/+$/, "") || "/";
   return p in BANNER.overrides ? BANNER.overrides[p] : BANNER.default;
 }

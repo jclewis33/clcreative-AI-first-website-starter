@@ -1,7 +1,7 @@
 ---
 // src/components/Head.astro
 import { Font } from "astro:assets";
-import { isNoindexRoute } from "@/config/seo.shared.mjs";
+import { isNoindexRoute, SITE_NOINDEX } from "@/config/seo.shared.mjs";
 import { SITE } from"@/config/site";
 import { isToolsPath } from "@/lib/tools-auth";
 
@@ -70,8 +70,8 @@ const resolvedTwitterImage = resolvedOgImage;
 <link rel="icon" href={SITE.logoPath} type="image/x-icon" />
 <link rel="apple-touch-icon" href={SITE.appleTouchIconPath} />
 
-<!-- Sitemap discovery for crawlers -->
-<link rel="sitemap" href="/sitemap-index.xml" />
+<!-- Sitemap discovery for crawlers (a SITE_NOINDEX build ships no sitemap) -->
+{!SITE_NOINDEX && <link rel="sitemap" href="/sitemap-index.xml" />}
 
 <!-- Canonical URL: auto-derived from Astro.url + Astro.site, overridable via prop -->
 {/* Kept out of search results — same predicate the sitemap filter and
