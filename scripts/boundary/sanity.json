@@ -1,0 +1,25 @@
+{
+  "why": "Sanity code stays in the Sanity add-on's own files; everything else gets content from @/lib/content",
+  "packages": [
+    "sanity",
+    "sanity-plugin-*",
+    "@sanity/*",
+    "sanity:*",
+    "astro-portabletext"
+  ],
+  "paths": ["src/sanity"],
+  "allow": [
+    "src/sanity/",
+    "src/lib/content/source.ts",
+    "src/config/cms.mjs",
+    "src/config/cms.shared.mjs",
+    "src/components/global/CmsEditing.astro",
+    "src/components/blog/BlogBody.astro",
+    "src/components/portabletext/",
+    "src/components/SanityVisualEditing.tsx",
+    "src/components/DisableDraftMode.tsx",
+    "src/pages/preview/",
+    "src/pages/api/draft-mode/",
+    "src/env.d.ts"
+  ]
+}
