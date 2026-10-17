@@ -80,18 +80,18 @@ The one component that arranges a section's content. Two-column CSS grid with
 wrapper itself. A second column takes `slot="column2"`. Two-column variants
 collapse to a stack via container query.
 
-| Prop            | Type                                                            | Default                  | Description                                                                  |
-| --------------- | --------------------------------------------------------------- | ------------------------ | ---------------------------------------------------------------------------- |
-| `variant`       | table below                                                     | `'columns'`              | Column proportion and behavior                                               |
-| `verticalAlign` | `'start'`\|`'center'`\|`'end'`\|`'stretch'`                     | `'start'`                | Vertical alignment of columns                                                |
-| `collapseAt`    | `'medium'`\|`'small'`                                           | `'medium'`               | Collapse breakpoint (~928px / ~560px container width)                        |
-| `contentSpan`   | `1`–`11`                                                        | breakout: `7`, full: `6` | Content-side span for breakout/full — must pair with `bleedSpan` to total 13 |
-| `bleedSpan`     | `1`–`11`                                                        | breakout: `6`, full: `7` | Bleed-side span (includes the gutter track to the viewport edge)             |
-| `ratio`         | `string`                                                        | —                        | `"N-M"` custom column ratio (`"60-40"`, `"5-7"`) for columns/sticky/contain  |
-| `rowGap`        | `0`–`8`                                                         | —                        | Row gap inside a column                                                      |
-| `align`         | `'inherit'`\|`'center'`\|`'left'`\|`'right'`\|`'center-mobile'` | `'inherit'`              | Alignment for stack variants                                                 |
-| `cardPadding`   | `string`                                                        | `--section-space-main`   | Vertical padding for the `card` variant                                      |
-| `class`         | `string`                                                        | —                        | Extra classes                                                                |
+| Prop            | Type                                                            | Default                  | Description                                                                                                       |
+| --------------- | --------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `variant`       | table below                                                     | `'columns'`              | Column proportion and behavior                                                                                    |
+| `verticalAlign` | `'start'`\|`'center'`\|`'end'`\|`'stretch'`                     | centered (when omitted)  | Vertical alignment of columns — pass `start` when a short column sits beside a tall one (e.g. text beside a form) |
+| `collapseAt`    | `'medium'`\|`'small'`                                           | `'medium'`               | Collapse breakpoint (~928px / ~560px container width)                                                             |
+| `contentSpan`   | `1`–`11`                                                        | breakout: `7`, full: `6` | Content-side span for breakout/full — must pair with `bleedSpan` to total 13                                      |
+| `bleedSpan`     | `1`–`11`                                                        | breakout: `6`, full: `7` | Bleed-side span (includes the gutter track to the viewport edge)                                                  |
+| `ratio`         | `string`                                                        | —                        | `"N-M"` custom column ratio (`"60-40"`, `"5-7"`) for columns/sticky/contain                                       |
+| `rowGap`        | `0`–`8`                                                         | —                        | Row gap inside a column                                                                                           |
+| `align`         | `'inherit'`\|`'center'`\|`'left'`\|`'right'`\|`'center-mobile'` | `'inherit'`              | Alignment for stack variants                                                                                      |
+| `cardPadding`   | `string`                                                        | `--section-space-main`   | Vertical padding for the `card` variant                                                                           |
+| `class`         | `string`                                                        | —                        | Extra classes                                                                                                     |
 
 Variants: `columns` (50/50) · `columns-reversed` · `stack` (single column,
 plain block, **no gap** — text margins provide rhythm) · `stack-centered` ·

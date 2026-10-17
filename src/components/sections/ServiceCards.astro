@@ -138,7 +138,11 @@ if (import.meta.env.DEV && render) {
       )}
       <Wrapper {...wrapperProps}>
         {items.map((item) => (
-          <Card {...cardLink(item)} class="service-cards_card">
+          <Card
+            {...cardLink(item)}
+            variant={item.image ? "default" : "stacked"}
+            class="service-cards_card"
+          >
             {item.image ? (
               <Visual
                 slot="visual"
@@ -147,10 +151,14 @@ if (import.meta.env.DEV && render) {
                 ratio="landscape"
               />
             ) : null}
-            {!item.image && item.icon ? <ServiceIcon name={item.icon} /> : null}
-            <Heading slot="title" tag="h3" variant="h5">
-              {item.title}
-            </Heading>
+            <Fragment slot="title">
+              {!item.image && item.icon ? (
+                <ServiceIcon name={item.icon} />
+              ) : null}
+              <Heading tag="h3" variant="h5">
+                {item.title}
+              </Heading>
+            </Fragment>
             {item.text && <Text variant="small">{item.text}</Text>}
             {item.href && (
               <span slot="footer" class="service-cards_more">
@@ -166,6 +174,13 @@ if (import.meta.env.DEV && render) {
 
 <style is:global>
   @layer components {
+    /* Image-less cards use Card's "stacked" variant (no empty 16:9 visual
+       box) and carry the icon in the title slot, so it sits above the
+       heading rather than under it. */
+    .service-cards_card .service-icon_wrap {
+      margin-bottom: var(--space-4);
+    }
+
     .service-cards_more {
       font-size: var(--text-small-size);
       font-weight: 600;

@@ -195,6 +195,13 @@ if (import.meta.env.DEV && render) {
       stroke-opacity: 1;
     }
 
+    /* The chip list carries no text-rhythm margin of its own, so the CTA
+       button would sit flush under the chips. Space them only when
+       something (the button) follows. */
+    .service-area_chips:not(:last-child) {
+      margin-bottom: var(--space-5);
+    }
+
     .service-area_wrap .chip-list_chip {
       transition:
         background-color 0.2s ease,

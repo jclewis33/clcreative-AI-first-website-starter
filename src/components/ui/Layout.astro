@@ -182,7 +182,7 @@ type BreakoutColumns = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
  *
  * **Props:**
  * - `variant` — column layout style: columns, columns-reversed, stack, stack-centered, sticky-left, contain, contain-reversed, breakout, breakout-reversed, full, full-reversed, card, auto-width (default: `'columns'`)
- * - `verticalAlign` — vertical alignment of columns: start, center, end, stretch (default: `'start'`)
+ * - `verticalAlign` — vertical alignment of columns: start, center, end, stretch (default: columns are centered)
  * - `collapseAt` — breakpoint to stack columns: `'medium'` (928px) or `'small'` (560px) (default: `'medium'`)
  * - `contentSpan` — content-side column span 1–11 for breakout/full variants (default: breakout `7`, full `6`)
  * - `bleedSpan` — bleed-side column span 1–11 for breakout/full variants (default: breakout `6`, full `7`)
@@ -198,7 +198,7 @@ interface BaseProps extends HTMLAttributes<"div"> {
   /**
    * **Layout props:**
    * - `variant` — columns, columns-reversed, stack, stack-centered, sticky-left, contain, contain-reversed, breakout, breakout-reversed, full, full-reversed, card, auto-width
-   * - `verticalAlign` — start, center, end, stretch (default 'start')
+   * - `verticalAlign` — start, center, end, stretch (default: centered)
    * - `collapseAt` — breakpoint at which two columns stack: medium (800px) or small (560px) (default 'medium')
    * - `contentSpan` — 1-11 content-side span for breakout/full
    * - `bleedSpan` — 1-11 bleed-side span for breakout/full
@@ -268,13 +268,13 @@ interface BaseProps extends HTMLAttributes<"div"> {
 
   /**
    * Vertical alignment of columns relative to each other.
-   * - `start`   — top-align (default)
-   * - `center`  — vertically center
+   * - `start`   — top-align
+   * - `center`  — vertically center (what columns do when the prop is omitted)
    * - `end`     — bottom-align
    * - `stretch` — equal height columns
    *
-   * @default 'start'
-   * @example verticalAlign="center"
+   * @default centered (columns use align-self: center when unset)
+   * @example verticalAlign="start"
    */
   verticalAlign?: VerticalAlign;
 

@@ -115,8 +115,12 @@ const imageSource = imageSrc(cta.image, {
       padding-left: calc(
         var(--bcta-image-width) + var(--space-5) + var(--bcta-gap)
       );
-      /* Min height ensures the bottom half of the image is fully inside the panel. */
-      min-height: calc(var(--bcta-bleed) + var(--space-5) * 2);
+      /* Min height keeps the part of the image below the panel's top edge
+         (image height minus the bleed) inside the panel, plus bottom
+         breathing room — so tall portrait images never hang out the bottom. */
+      min-height: calc(
+        var(--bcta-image-height) - var(--bcta-bleed) + var(--space-5)
+      );
       /* Clearance above for the bleeding upper half of the image. */
       margin-top: calc(var(--bcta-bleed) + var(--space-5));
       margin-bottom: var(--space-6);
