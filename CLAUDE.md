@@ -234,7 +234,9 @@ const content = await slotContent(Astro.slots);
   same-directory `./` is fine.
 - **Formatting:** Prettier owns it — `npm run format` before committing;
   `format:check` gates CI. `Head.astro` and `BaseLayout.astro` are
-  `.prettierignore`d (format by hand).
+  `.prettierignore`d (format by hand). So is `src/content/`: clients edit
+  content outside a formatting editor, and formatting must never block a
+  content deploy.
 - **Whitespace:** `compressHTML: true` is pinned in `astro.config.mjs` —
   don't switch to Astro 7's `"jsx"` default. Under JSX rules a Prettier line
   break between an inline element and its neighbour renders as no space

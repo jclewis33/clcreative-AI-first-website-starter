@@ -185,4 +185,24 @@ assert.equal(
 assert.equal(videoEmbedUrl("https://example.com/video"), null);
 assert.equal(videoEmbedUrl("not a url"), null);
 
+// Inline code spans are code samples too: a tag or an image written inside
+// backticks in prose is not a real CTA, image or video. A lone backtick is
+// not a span, so the real tags after it still count.
+const PROSE_WITH_CODE_SPANS = [
+  'Write `<BlogCta id="demo" />` on its own line.',
+  "Images look like ``![Alt](./images/skipped.webp)`` in Markdown.",
+  'Embed one with `<VideoEmbed url="https://example.com/skipped" />`.',
+  "A lone ` backtick opens nothing, so these still count:",
+  '<BlogCta id="real-one" />',
+  "![Real](./images/real.webp)",
+  '<VideoEmbed url="https://youtu.be/real" />',
+].join("\n\n");
+assert.deepEqual(inlineCtaIds(PROSE_WITH_CODE_SPANS), ["real-one"]);
+assert.deepEqual(mdxImages(PROSE_WITH_CODE_SPANS), [
+  { alt: "Real", src: "./images/real.webp" },
+]);
+assert.deepEqual(videoEmbedUrls(PROSE_WITH_CODE_SPANS), [
+  "https://youtu.be/real",
+]);
+
 console.log("check-content-text: ok");
