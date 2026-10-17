@@ -11,13 +11,13 @@ decide what work exists, runs the common path, and hands off to a reference file
 whenever a step needs depth. Read a reference **only when you reach its step** —
 they are long on purpose so this file can stay short.
 
-| Reference                                                      | Read it when                                            |
-| -------------------------------------------------------------- | ------------------------------------------------------- |
-| [references/brand-and-type.md](references/brand-and-type.md)   | Mapping a real palette, Figma tokens, fonts, type scale |
-| [references/sanity.md](references/sanity.md)                   | The fork **is** using Sanity                            |
-| [references/no-cms.md](references/no-cms.md)                   | The fork is **not** (or not yet) using Sanity           |
-| [references/studio-branding.md](references/studio-branding.md) | Branding the Sanity Studio (Sanity forks only)          |
-| [references/cloudflare.md](references/cloudflare.md)           | Deploying — every fork ends here                        |
+| Reference                                                    | Read it when                                            |
+| ------------------------------------------------------------ | ------------------------------------------------------- |
+| [references/brand-and-type.md](references/brand-and-type.md) | Mapping a real palette, Figma tokens, fonts, type scale |
+| [references/no-cms.md](references/no-cms.md)                 | The fork keeps content in files (the default)           |
+| [references/sanity.md](references/sanity.md)                 | The fork chooses Sanity                                 |
+| `references/studio-branding.md`                              | Branding the Sanity Studio (installed by the add-on)    |
+| [references/cloudflare.md](references/cloudflare.md)         | Deploying — every fork ends here                        |
 
 ## When to use this skill
 
@@ -29,8 +29,8 @@ structure stay — only identity, config, assets, and the CMS change.
 **Run this on your own fork/duplicate, not the canonical starter-template repo.**
 Confirm this is a fresh, not-yet-configured copy: check `git remote -v` (it should
 be the user's own repo) and that `src/config/site.shared.mjs` still holds the
-placeholders (`SANITY_PROJECT_ID = "your-sanity-project-id"`,
-`SITE_URL = "https://www.example.com"`). If the remote points at the upstream
+placeholder `SITE_URL = "https://www.example.com"` and `addons/sanity/` is
+present (setup deletes it). If the remote points at the upstream
 starter template and the user hasn't said they're testing, stop and ask.
 
 ## Scope — re-value and swap content; never touch the system
@@ -109,33 +109,37 @@ make by copying the existing pattern.
 **Ask these before doing any work.** They decide which branches exist, so asking
 them later means throwing work away.
 
-### 1.1 — Are you using Sanity as your CMS?
+### 1.1 — Content source: Files (default) or Sanity?
 
-This is the big fork in the road. The starter ships Sanity wired up, but **it is
-optional**: the repo builds and deploys clean with the placeholder project id, so a
-fork can ship a real site without ever creating one.
+This is the big fork in the road. Content lives in local files by
+default: Markdown/MDX and JSON in `src/content/`, validated at build, and
+edited in the repo (the `content-files` skill; `docs/editing-content.md`
+for clients). Sanity is an opt-in add-on (`addons/sanity/`) that
+`npm run setup` installs when chosen.
 
 Present it plainly:
 
-> **Yes — set up Sanity.** You get the blog, case studies, projects and gallery as
-> editable content, plus draft preview. Adds a Sanity project, a hosted Studio, a
-> Viewer token, CORS setup, and a publish→rebuild webhook.
+> **Files (default).** The blog, case studies, projects, gallery and
+> testimonials are files in the repo. Handing the site over is handing
+> over the repo: no CMS account, tokens or webhooks. Edits go through git
+> (or a client editing the files and pushing).
 >
-> **Not yet.** Everything else gets set up and deployed; the content routes stay in
-> the codebase but build empty and stay unlinked. You can run `/setup` again later
-> and answer yes — the CMS is a self-contained add-on.
->
-> **No, never.** Same as "not yet", plus the option to strip Sanity out of the
-> codebase entirely (~64 files deleted, 11 edited).
+> **Sanity.** A hosted Studio for editors, draft preview inside it, and a
+> publish → rebuild webhook. Adds a Sanity project, the Studio, a Viewer
+> token, CORS setup and the rebuild-debounce Worker.
 
 Then branch:
 
-- **Yes** → the Sanity work runs at **Step 5**, per
-  [references/sanity.md](references/sanity.md). Note now that you'll need the
-  projectId **before** Step 4, so Sanity's project-creation step happens early —
-  read that file's S1 when you get to Step 4.
-- **Not yet / No** → read [references/no-cms.md](references/no-cms.md), skip Step 5
-  entirely, and skip the rebuild-debounce Worker at Step 6.
+- **Files** → read [references/no-cms.md](references/no-cms.md). Pass
+  `"contentSource": "files"` at Step 4; skip Step 5's Sanity work and the
+  rebuild-debounce Worker at Step 7.
+- **Sanity** → pass `"contentSource": "sanity"` at Step 4: the CLI
+  installs the add-on before it writes anything. Then Step 5 runs
+  [references/sanity.md](references/sanity.md). You need the projectId at
+  Step 4, so create the project first (sanity.md §S1).
+
+Adopting Sanity later stays possible: copy `addons/sanity/` from the
+starter repo and run `npm run addon:sanity` (the add-on's README).
 
 ### 1.2 — Is the real domain ready?
 
@@ -151,7 +155,7 @@ Collect the values the CLI needs. **You may draft copy** and propose it — don'
 force the user to write everything. Smart defaults: derive `studioHost` and the
 Cloudflare worker `name` from a slug of the site name; build `phone.e164`/`tel`
 from the display number; default `dataset` to `production` and `apiVersion` to the
-value already in `site.shared.mjs`.
+value in `addons/sanity/files/src/config/sanity.shared.mjs` (Sanity forks).
 
 **Required:** site name, site URL, email, founder, brand hex.
 **Optional** (keep current if blank): tagline, descriptions, X handle, phone,
@@ -221,9 +225,10 @@ placeholder logo behind.**
 > webclip, and the Sanity Studio badge all render in square tiles. If the user only
 > has a wide logo, **generate a square asset yourself** — take the symbol/monogram
 > alone (drop the wordmark) and center it on a tight transparent square. The Pillow
-> trim/center script in
-> [references/studio-branding.md](references/studio-branding.md) produces exactly
-> this; reuse it for the favicon/webclip too.
+> trim/center script in `references/studio-branding.md` (installed by the
+> Sanity add-on; until setup deletes `addons/`, it is at
+> `addons/sanity/files/.claude/skills/setup/references/studio-branding.md`)
+> produces exactly this; reuse it for the favicon/webclip too.
 
 **Inline logo (the nav/footer wordmark)** is vector path data in
 [logo-paths.ts](../../../src/config/logo-paths.ts) — `LOGO_MARK_PATHS`,
@@ -232,7 +237,7 @@ from the new logo's SVG; [Logo.astro](../../../src/components/global/Logo.astro)
 renders from this file. The CLI already updates `LOGO_LABEL`.
 
 **Sanity forks:** the Studio navbar logo and dashboard rail icon are a separate job
-— [references/studio-branding.md](references/studio-branding.md), applied before
+— `references/studio-branding.md` (installed by the add-on), applied before
 the Studio deploy.
 
 ### 3.2 Placeholder photography (REQUIRED ASK)
@@ -280,8 +285,9 @@ Write the gathered answers to a temp JSON and run the CLI non-interactively:
 node scripts/setup.mjs --config /tmp/setup-answers.json --yes
 ```
 
-Answer keys (all optional — omitted keys keep the current file value):
-`siteName, siteUrl, email, founder, tagline, defaultDescription, summary,`
+Answer keys (all optional — omitted keys keep the current file value;
+`contentSource` defaults to `files`, or `sanity` once the add-on is installed):
+`contentSource, siteName, siteUrl, email, founder, tagline, defaultDescription, summary,`
 `localBusinessDescription, xHandle, phoneDisplay, phoneE164, phoneTel, hours,`
 `addressLocality, addressRegion, addressCountry, priceRange, brandColor,`
 `sanityProjectId, sanityDataset, sanityApiVersion, studioHost, workerName,`
@@ -298,9 +304,17 @@ Plus three optional maps:
 - `fluidType` — type min/max knobs, e.g. `{ "h1": { "min": 2.5, "max": 4 } }`.
 
 The CLI rewrites `site.shared.mjs`, `site.ts`, `wrangler.jsonc`, `colors.css`,
-`themes.css` (if `themeColors`), `typography.css` (if `fluidType`), `logo-paths.ts`
-(the `LOGO_LABEL`), `sanity.cli.ts` (clearing `appId`), and creates `.env` (token
-left blank). It warns and skips any var it can't find rather than failing. Delete
+`themes.css` (if `themeColors`), `typography.css` (if `fluidType`) and
+`logo-paths.ts` (the `LOGO_LABEL`), and creates `.env`. With
+`contentSource: "sanity"` it first installs the add-on, then also writes
+`sanity.shared.mjs`, `sanity.cli.ts` (clearing `appId`) and the
+rebuild-debounce Worker's `name`; `.env` gets the ids, with the token left
+blank. Either way it deletes `addons/` at the end. The add-on installer
+refuses a dirty tree: commit before running the CLI on the Sanity branch
+(`--force` overrides). On that branch, **commit right after the CLI**: the
+install and setup's writes are one change, so the add-on can't be removed
+later by reverting an install-only commit (removal steps: the
+`sanity-and-preview` skill → "Removing the add-on"). It warns and skips any var it can't find rather than failing. Delete
 the temp JSON after.
 
 **Then re-format.** The CLI writes values in place and does not run Prettier, but
@@ -316,34 +330,43 @@ npm run format
 
 ## Step 5 — CMS branch
 
-- **Sanity fork** → work through [references/sanity.md](references/sanity.md) end
-  to end (schema deploy, Studio deploy, CORS, Viewer token, typegen, publish
+- **Sanity fork** → run `npm install` (the add-on's packages), then work
+  through [references/sanity.md](references/sanity.md) end to end (schema deploy, Studio deploy, CORS, Viewer token, typegen, publish
   webhook), then come back here.
-- **No CMS** → work through [references/no-cms.md](references/no-cms.md) (unlink
-  the empty content routes; decide defer-vs-remove), then come back here.
+- **Files** → work through [references/no-cms.md](references/no-cms.md) (the
+  content handoff), then come back here.
 
 ## Step 6 — Verify: run exactly what CI runs
 
 **Run the full gate, not a subset.**
-[.github/workflows/ci.yml](../../../.github/workflows/ci.yml) runs four checks on
-every push; verifying with fewer leaves the fork's first build red on something
-setup caused.
+[.github/workflows/ci.yml](../../../.github/workflows/ci.yml) is what every
+push must pass; verifying with less leaves the fork's first build red on
+something setup caused. On a Files fork its `checks` job runs:
 
 ```bash
-npm run format:check   # CI gate 1 — Prettier
-npm run check:config   # CI gate 2 — wrangler ↔ site.shared.mjs agree
-npm run check          # CI gate 3 — astro check (types)
-npm run build          # CI gate 4 — full build
+npm run format:check
+npm run check:config   # wrangler.jsonc and public/_headers ↔ src/config
+npm run check:boundary
+npm run check:addon-installer
+npm run check:setup
+npm run check:content
+npm run check          # astro check (types)
+npm run check:hover
+npm run build
+npm run check:content-build
+npm run check:schema -- --dist dist/client
 ```
 
-Sanity forks: run `npm run typegen` **before** `npm run check` (see
-[references/sanity.md](references/sanity.md) §S7) so the generated types match the
-newly deployed schema. No-CMS forks skip typegen entirely.
+CI also runs an `audit` job (`npm audit --omit=dev --audit-level=critical`)
+and the `addon-sanity` job, which passes with nothing to check once
+`addons/` is deleted.
 
-Two more checks exist and are worth running when relevant, though CI doesn't gate
-on them: `npm run check:schema` (schema/desk consistency, Sanity forks) and
-`npm run check:hover` (hover states resolve in every theme — useful after a brand
-color swap).
+Sanity forks: the add-on replaced `ci.yml` with its own workflow (it drops
+`check:addon-installer`, `check:setup`, `check:content-build` and
+`check:schema`, and adds `check:fixtures` and a draft-preview stega
+check) — run that list. Run `npm run typegen` **before** `npm run check`
+once the schema is deployed ([references/sanity.md](references/sanity.md)
+§S7).
 
 Fix anything that fails before handing off. A brand-new empty Sanity project builds
 clean — `getStaticPaths` enumerates zero slugs, so no detail pages are emitted and
@@ -381,9 +404,10 @@ Then run the **§7 post-launch verification** curl block from the checklist.
 
 ## Done criteria
 
-- **The CMS question was asked and answered explicitly** (Step 1.1), and the
-  matching branch was completed or explicitly deferred.
-- Config files carry the new identity, and **all four CI gates pass** (Step 6).
+- **The content-source question (Files or Sanity) was asked and answered
+  explicitly** (Step 1.1), and the matching branch was completed or explicitly
+  deferred.
+- Config files carry the new identity, and **every CI check passes** (Step 6).
 - **Fonts and font sizes were explicitly discussed** — the user either confirmed
   the defaults or supplied new typefaces / a new type scale, and those were applied.
 - **`--color-brand-text` was decided** — the user confirmed whether the brand color

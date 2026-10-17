@@ -64,9 +64,13 @@ Content already in `src/content/` is not migrated into Sanity.
 ## Remove it
 
 Commit the install as its own commit; `git revert <that commit>` then
-`npm install` removes it. The installed `sanity-and-preview` skill
-("Removing the add-on") lists the files by hand for a project that
-didn't keep that commit.
+`npm install` removes it. That doesn't work after `npm run setup` chose
+Sanity (the install and setup's writes are one commit) or when the
+install commit wasn't kept: then follow the step-by-step removal in the
+`sanity-and-preview` skill, "Removing the add-on"
+(`.claude/skills/sanity-and-preview/SKILL.md` once installed;
+[`files/.claude/skills/sanity-and-preview/SKILL.md`](files/.claude/skills/sanity-and-preview/SKILL.md)
+here). Content in Sanity is not exported back to `src/content/`.
 
 ## Maintaining it (in the starter repo)
 
@@ -77,3 +81,65 @@ runs the checks and builds there; `--keep` leaves the copy for working
 in. Edit there, run
 `npm run typegen` there after a schema or query change, and copy the
 changed files back under `files/`. CI runs the same script on every PR.
+
+## Operating it
+
+### Sanity webhook
+
+Configured at [manage.sanity.io](https://www.sanity.io/manage) → project `your-sanity-project-id` → API → Webhooks.
+
+| Field       | Value                                                                                                                                                                                                                                  |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| URL         | The rebuild-debounce Worker's `*.workers.dev` URL (see [Rebuild-debounce Worker](#rebuild-debounce-worker) below) — **not** the deploy hook directly. The Worker holds the real deploy hook as a secret and calls it after debouncing. |
+| HTTP header | `Authorization: Bearer <WEBHOOK_TOKEN>` (must match the Worker's `WEBHOOK_TOKEN` secret) — leave Sanity's "Secret" field blank (that's a different HMAC feature we don't use)                                                          |
+| Dataset     | `production`                                                                                                                                                                                                                           |
+| Trigger on  | Create, Update, Delete                                                                                                                                                                                                                 |
+| HTTP method | `POST`                                                                                                                                                                                                                                 |
+| Filter      | `!(_id in path("drafts.**"))`                                                                                                                                                                                                          |
+
+The filter is intentionally **broad**: it matches any published document of **any type**. The single clause only excludes autosaved drafts so typing in Studio doesn't thrash the build. Clicking **Publish** (or a release going live) writes to the non-draft ID and passes the filter; unpublishing fires it too, so removed content clears on the next build.
+
+**Why broad rather than a `_type` allowlist?** On this stack nearly every content type surfaces on a built page (sitemap, `llms.txt`, static cards, the navbar), so a per-type allowlist would just be a list you have to remember to update. With the broad filter, **a new content type triggers rebuilds automatically** — nothing to keep in sync. The occasional extra trigger is harmless: the debounce Worker (below) collapses a burst of publishes into a single build.
+
+Update is kept on (not just Create/Delete) because **every content page is static** — an edit to any published document needs a rebuild to show up anywhere on the site.
+
+### Rebuild-debounce Worker
+
+The Sanity webhook fires **once per published document**, so publishing several docs in a row would kick off several builds. A tiny standalone Cloudflare Worker in `workers/rebuild-debounce/` (installed by the add-on) sits between Sanity and the deploy hook and **collapses a burst of publishes into one build** (Durable Object alarm; ~5 min debounce, 15 min max wait).
+
+The chain is: **publish → debounce Worker (waits ~5 min) → Cloudflare deploy hook → one build.** The deploy hook still lives on the site worker; the debounce Worker only calls it. Point the Sanity webhook **URL** at the debounce Worker's `*.workers.dev` URL (not directly at the deploy hook) and add an `Authorization: Bearer <token>` header — see the Worker's own README (`workers/rebuild-debounce/README.md`, installed) for the per-fork deploy + secret + webhook steps. It's a separate Worker, deployed manually with `wrangler deploy`; it is **not** part of the site's CI build.
+
+> ⚠️ With prerendered content routes this Worker is **load-bearing**: until it (or some other rebuild trigger) is wired up, publishing in Sanity changes nothing on the live site. Don't defer it past launch.
+
+### Draft preview (Presentation)
+
+Editors open the hosted Studio, click **Presentation**, and the iframe loads the **`/preview/<type>/<slug>`** SSR twin of the page — same template as the public route, fed by the Sanity source's content function, but fetched per-request so the `sanity-preview-perspective` cookie (set by `/api/draft-mode/enable`) can switch it to the drafts perspective. Public visitors get the prerendered pages and never have the cookie on an SSR route, so drafts can't leak; `/preview` is robots-disallowed, noindexed, and never edge-cached. Full flow is documented in the `sanity-and-preview` skill (`.claude/skills/sanity-and-preview/SKILL.md` once installed; [here](files/.claude/skills/sanity-and-preview/SKILL.md) in the starter repo), "How draft mode works".
+
+> Changing preview URLs or adding a previewable type touches `src/sanity/lib/resolve.ts`, which ships inside the **Studio** bundle — deploy the site first, then run `npx sanity deploy`, or Presentation keeps loading the old URLs.
+
+**No domain yet?** A fork can deploy to the Worker's free `*.workers.dev` URL with working Presentation **before** any custom domain exists — `SITE_URL` is env-overridable and the Studio trusts `https://*.workers.dev` automatically, so the staging→production switch is a no-code env change. Per-client runbook: **§4a "Staging-first deploy"** in [docs/new-project-checklist.md](../../docs/new-project-checklist.md).
+
+### `migrate-webflow-blog.mjs` — Webflow CSV → Sanity blog posts
+
+One-time importer (kept as a **template**). Reads a Webflow blog CSV export and
+creates an author document plus `blogPost` documents — uploading the featured
+and inline images to Sanity and converting the Post Body HTML to Portable Text.
+Existing posts (matched by slug) and draft rows are skipped, so it is safe to
+re-run. It reads the project from `PUBLIC_SANITY_PROJECT_ID` /
+`PUBLIC_SANITY_DATASET` (exported, or in `.env`; the dataset falls back to
+`src/config/sanity.shared.mjs`), and writes need a `SANITY_TOKEN` (Editor or
+above; create one at <https://www.sanity.io/manage> → API → Tokens). Its
+packages (`csv-parse`, `node-html-parser`, `@sanity/client`) are in
+`package.json` once the add-on is installed.
+
+```bash
+SANITY_TOKEN=<token> node scripts/migrate-webflow-blog.mjs <path-to.csv> [--author "Author Name"]
+```
+
+- `<path-to.csv>` — required; the Webflow CSV export (any `*.csv` arg).
+- `--author "Name"` (or `AUTHOR_NAME` env) — author doc name; defaults to `"Author"`.
+
+> Fork note: `CATEGORY_MAP` maps this project's Webflow category slugs to the
+> `blogPost` schema's category strings — adjust it for your taxonomy. The
+> expected CSV columns (`Slug`, `Title`, `Post Body`, `Main Image`,
+> `Categories`, `Featured?`, …) match Webflow's default blog export.

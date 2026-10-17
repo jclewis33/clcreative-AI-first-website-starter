@@ -58,7 +58,9 @@ export function scratchCopy(from) {
       .filter(Boolean);
     for (const rel of files) {
       const source = path.join(from, rel);
-      if (!fs.existsSync(source) || !fs.lstatSync(source).isFile()) continue; // deleted in the working tree
+      // Skip what isn't a regular file here: deleted in the working tree, or
+      // a symlink (lstat does not follow it).
+      if (!fs.existsSync(source) || !fs.lstatSync(source).isFile()) continue;
       const target = path.join(dir, rel);
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.copyFileSync(source, target);

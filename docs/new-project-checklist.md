@@ -8,8 +8,8 @@ Work top to bottom. Items marked **🔁 per-fork** must be done for every new pr
 >
 > Two helpers automate most of this list so you rarely hand-edit config:
 >
-> - **`/setup` (Claude Code skill)** — _recommended._ In a Claude Code session on the fork, run `/setup`. Claude gathers your identity info, **creates the new Sanity project + dataset, deploys the schema, and adds the CORS origins** via the Sanity MCP, runs the CLI below for the file edits, verifies with a build, then hands you the short list of dashboard items only a human can finish. It also **pulls brand colors from a Figma file** (when a Figma MCP is connected), asks about your **fluid type scale**, and walks you through swapping **fonts, the OG image, favicon, and logos**. This is the only path that automates standing up the Sanity backend. See [.claude/skills/setup/SKILL.md](../.claude/skills/setup/SKILL.md).
-> - **`npm run setup` (CLI)** — the deterministic engine. Prompts for each identity value and rewrites `site.shared.mjs`, `site.ts`, `wrangler.jsonc`, `colors.css`, `themes.css`, `typography.css`, `logo-paths.ts`, `sanity.cli.ts`, and `.env`. Also accepts `cssColors` / `themeColors` / `fluidType` maps (via `--config`) so a Figma palette and type scale land deterministically. No AI, no network — works for anyone forking. (`/setup` calls this under the hood.) It does **not** create the Sanity project, swap fonts/images, or touch any dashboard.
+> - **`/setup` (Claude Code skill)** — _recommended._ In a Claude Code session on the fork, run `/setup`. Claude asks whether content stays in files (the default) or uses the Sanity add-on, gathers your identity info, and — for Sanity — **creates the new Sanity project + dataset, deploys the schema, and adds the CORS origins** via the Sanity MCP. It runs the CLI below for the file edits, verifies with a build, then hands you the short list of dashboard items only a human can finish. It also **pulls brand colors from a Figma file** (when a Figma MCP is connected), asks about your **fluid type scale**, and walks you through swapping **fonts, the OG image, favicon, and logos**. This is the only path that automates standing up the Sanity backend. See [.claude/skills/setup/SKILL.md](../.claude/skills/setup/SKILL.md).
+> - **`npm run setup` (CLI)** — the deterministic engine. Prompts for each identity value and rewrites `site.shared.mjs`, `site.ts`, `wrangler.jsonc`, `colors.css`, `themes.css`, `typography.css`, `logo-paths.ts` and `.env` (plus, for Sanity, `sanity.shared.mjs` and `sanity.cli.ts`, after installing the add-on). It asks Files or Sanity first; Sanity runs `npm run addon:sanity`, and either way it deletes `addons/` at the end. Also accepts `cssColors` / `themeColors` / `fluidType` maps (via `--config`) so a Figma palette and type scale land deterministically. No AI, no network — works for anyone forking. (`/setup` calls this under the hood.) It does **not** create the Sanity project, swap fonts/images, or touch any dashboard.
 >
 > Both deliberately **leave the content scaffolding** (`areaServed`, `social`, `sameAs`, `faqs.ts`, `site-structure.ts`) in place as a working skeleton — review and replace that copy for your business after setup. The sections below remain the source of truth for the **dashboard work neither tool can perform** (Cloudflare secrets/WAF/domain, GitHub Dependabot, the Sanity Viewer token).
 
@@ -20,7 +20,7 @@ Work top to bottom. Items marked **🔁 per-fork** must be done for every new pr
 Every fork lands on the same proven shape — chosen to lean into what Sanity is actively investing in (Core apps, the hosted Dashboard, an auto-updating hosted Studio) and to keep client builds low-maintenance:
 
 - **Content in local files** (`src/content/`, MDX and JSON) by default, validated at build. Sanity is the optional CMS alternative; the Sanity bullets below (and §3) apply only to a fork that uses it.
-- **Astro static-first site** on one Cloudflare Worker — every public page (marketing AND CMS content) prerendered; SSR only for `/api/*` and the editor-only `/preview/*` draft-preview twins that Sanity Presentation iframes (cookie-based drafts perspective). Publishing content triggers a rebuild via the rebuild-debounce Worker (§4.6).
+- **Astro static-first site** on one Cloudflare Worker — every public page (marketing AND CMS content) prerendered; SSR only for `/api/*` (and, with the Sanity add-on, the editor-only `/preview/*` draft-preview twins that Sanity Presentation iframes, cookie-based drafts perspective). Files content ships on a git push; a Sanity publish triggers a rebuild via the rebuild-debounce Worker (§4.6).
 - **Sanity Studio hosted by Sanity** — a Core app at `<studioHost>.sanity.studio`, deployed with `npx sanity deploy`. **Not embedded** at `/studio` (that's the legacy alternative). Hosting decouples Studio updates from site deploys, removes the React-bundle fragility, and auto-updates.
 - **Cross-origin Presentation** — the hosted Studio iframes the live site for draft preview; the site allows the Sanity app origins via CSP `frame-ancestors` (§3.5).
 - **Org-level hosted Dashboard** for the overview (no in-Studio dashboard plugin), and a **content-first** Studio desk — most-edited types as direct lists at the top, one click to content, Settings pinned at the bottom.
@@ -32,22 +32,22 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
 
 ## 1. What carries over with the code (✅ in-code — verify only)
 
-| Protection                                                    | Where it lives                                                    | How to verify                                                                                                                                                                                                                                     |
-| ------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTTP security headers (SSR)                                   | `src/middleware.ts`                                               | `curl -sI` an SSR route (`/preview/blog/<slug>`) → CSP `frame-ancestors` (allows the hosted Studio origin), HSTS, nosniff, Referrer-Policy, Permissions-Policy, plus `X-Robots-Tag: noindex` + `Cache-Control: private, no-cache` on `/preview/*` |
-| HTTP security headers (static)                                | `public/_headers`                                                 | `curl -sI` the homepage after deploy — same five headers                                                                                                                                                                                          |
-| CI gates                                                      | `.github/workflows/ci.yml`                                        | Runs automatically on the new repo: config sync, `astro check`, build, `npm audit` (fails on high/critical)                                                                                                                                       |
-| Dependabot config                                             | `.github/dependabot.yml`                                          | Weekly grouped updates + **review the ignore rules** (§8 — they may be obsolete by the time you fork)                                                                                                                                             |
-| Draft-mode security                                           | `@sanity/preview-url-secret` validation, cookie-gated `loadQuery` | Drafts can't leak to public visitors — architecture note in CLAUDE.md                                                                                                                                                                             |
-| JSON-LD escaping, trailing-slash config, iOS-zoom-safe inputs | Various                                                           | Already enforced by code + CLAUDE.md conventions                                                                                                                                                                                                  |
+| Protection                                                    | Where it lives                                                    | How to verify                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP security headers (SSR)                                   | `src/middleware.ts`                                               | `curl -sI` an SSR route (`/api/*`; with the Sanity add-on, `/preview/blog/<slug>`) → CSP `frame-ancestors` (`'self'`; the Sanity add-on allows the hosted Studio origins), HSTS, nosniff, Referrer-Policy, Permissions-Policy, plus `X-Robots-Tag: noindex` + `Cache-Control: private, no-cache` on `/preview/*` |
+| HTTP security headers (static)                                | `public/_headers`                                                 | `curl -sI` the homepage after deploy — same five headers                                                                                                                                                                                                                                                         |
+| CI gates                                                      | `.github/workflows/ci.yml`                                        | Runs automatically on the new repo: format, config + `_headers` sync, boundary, content checks, `astro check`, hover, build, built-site checks, `npm audit` (fails on critical)                                                                                                                                  |
+| Dependabot config                                             | `.github/dependabot.yml`                                          | Weekly grouped updates + **review the ignore rules** (§8 — they may be obsolete by the time you fork)                                                                                                                                                                                                            |
+| Draft-mode security (Sanity add-on)                           | `@sanity/preview-url-secret` validation, cookie-gated `loadQuery` | Drafts can't leak to public visitors — the `sanity-and-preview` skill                                                                                                                                                                                                                                            |
+| JSON-LD escaping, trailing-slash config, iOS-zoom-safe inputs | Various                                                           | Already enforced by code + CLAUDE.md conventions                                                                                                                                                                                                                                                                 |
 
 ---
 
 ## 2. Identity & config (🔁 per-fork — the "one file" edits)
 
 1. **[src/config/site.ts](../src/config/site.ts)** — name, URL, email, phone, founder, address, hours, socials, `areaServed`, brand color mirror. This is the single source for site identity.
-2. **[src/config/site.shared.mjs](../src/config/site.shared.mjs)** — new Sanity projectId/dataset + site URL (the config-file-safe leaf).
-3. **[wrangler.jsonc](../wrangler.jsonc)** — worker `name`, `PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`. `npm run check:config` (and every build) verifies it matches site.shared.mjs.
+2. **[src/config/site.shared.mjs](../src/config/site.shared.mjs)** — the site URL (the config-file-safe leaf; Sanity forks: the ids are in `src/config/sanity.shared.mjs`).
+3. **[wrangler.jsonc](../wrangler.jsonc)** — worker `name` (Sanity forks: the `PUBLIC_SANITY_*` vars too). `npm run check:config` (and every build) verifies the vars and `public/_headers` against `src/config`.
 4. **`.env`** — copy from [.env.example](../.env.example), fill in. **Never commit it** (gitignore already covers it; GitHub push protection is the backstop).
 5. Brand: `--color-brand-500` in [colors.css](../src/styles/variables/colors.css) + the `SITE.brand.color` mirror; [logo-paths.ts](../src/config/logo-paths.ts) for the wordmark.
 6. `src/data/site-structure.ts` — pages, nav, footer, banner for the new site.
@@ -73,20 +73,21 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
 
 > Only when the site uses Sanity. Content lives in files in `src/content/`
 > by default, and a files-only site skips this section and the Sanity
-> webhook in §4.
+> webhook in §4. Install the add-on first:
+> `npm run addon:sanity` (or choose Sanity in `npm run setup`).
 
 1. Create the Sanity project + `production` dataset (`sanity.io/manage`).
 2. Generate a **Viewer token** → local `.env` (`SANITY_API_READ_TOKEN`) and later as a Cloudflare **encrypted secret** (§4). Never a plain wrangler var.
 3. **CORS origins** (sanity.io/manage → API): add `https://www.<newdomain>`, the hosted Studio origin `https://<studioHost>.sanity.studio`, AND `http://localhost:3333` (local `sanity dev`) + `http://localhost:4321` (the site, for the visual-editing loader) — all with **Allow credentials** checked. `npx sanity deploy` usually adds the studio host automatically; verify it's present.
 4. Set `studioHost` (+ `deployment.appId` after first deploy) in [sanity.cli.ts](../sanity.cli.ts), then `npx sanity schema deploy && npx sanity deploy`. Confirm the Studio loads at `https://<studioHost>.sanity.studio`. The Studio is **hosted, not embedded** — there is no `/studio` on the site (run `npx sanity dev` for local Studio work).
-5. **Frame the site in Presentation:** the hosted Studio iframes the live site cross-origin. The branded `<studioHost>.sanity.studio` is only a redirect shim → the Studio app is sandboxed under `*.sanity.studio` nested inside the `www.sanity.io` dashboard shell, so [src/middleware.ts](../src/middleware.ts) + [public/_headers](../public/_headers) must allow **both families** via CSP `frame-ancestors`: `https://*.sanity.io https://*.sanity.studio http://localhost:3333` — **not** just the branded host and **not** just `www.sanity.io` (a single-origin value silently blocks Presentation). Presentation's `previewUrl.initial` / `allowOrigins` in [sanity.config.ts](../sanity.config.ts) must name the new **site** origin. ⚠️ The cross-site draft cookie can be blocked by Safari/ITP — **verify Presentation in Chrome first**; fall back to a same-site `studio.<domain>` Studio if Safari is a hard requirement.
+5. **Frame the site in Presentation:** the hosted Studio iframes the live site cross-origin. The branded `<studioHost>.sanity.studio` is only a redirect shim → the Studio app is sandboxed under `*.sanity.studio` nested inside the `www.sanity.io` dashboard shell, so CSP `frame-ancestors` must allow **both families** — the add-on sets them in `FRAME_ANCESTORS` in `src/config/cms.shared.mjs`, which [src/middleware.ts](../src/middleware.ts) sends and [public/_headers](../public/_headers) repeats (`npm run check:config` keeps the two in step): `https://*.sanity.io https://*.sanity.studio http://localhost:3333` — **not** just the branded host and **not** just `www.sanity.io` (a single-origin value silently blocks Presentation). Presentation's `previewUrl.initial` / `allowOrigins` in [sanity.config.ts](../sanity.config.ts) must name the new **site** origin. ⚠️ The cross-site draft cookie can be blocked by Safari/ITP — **verify Presentation in Chrome first**; fall back to a same-site `studio.<domain>` Studio if Safari is a hard requirement.
 
 ---
 
 ## 4. Cloudflare (🔁 per-fork — all dashboard work)
 
 1. **Workers Builds**: create the worker, connect the GitHub repo, production branch = `main`. Set `vars` from wrangler.jsonc; add `SANITY_API_READ_TOKEN` as an **encrypted secret**.
-   - ⚠️ **Never add `limits: { cpu_ms }` to `wrangler.jsonc`** — CPU limits exist only on **Workers Paid**. On the Free plan the build stays green and then `wrangler versions upload` fails (`CPU limits are not supported for the Free plan. [code: 100328]`) — nothing ships and production silently keeps the previous build, which reads as "all my changes broke" during verification. It's unnecessary anyway: the content routes are prerendered, so the only SSR surface is `/api/*` + `/preview/*`.
+   - ⚠️ **Never add `limits: { cpu_ms }` to `wrangler.jsonc`** — CPU limits exist only on **Workers Paid**. On the Free plan the build stays green and then `wrangler versions upload` fails (`CPU limits are not supported for the Free plan. [code: 100328]`) — nothing ships and production silently keeps the previous build, which reads as "all my changes broke" during verification. It's unnecessary anyway: the content routes are prerendered, so the only SSR surface is `/api/*` (plus `/preview/*` with the Sanity add-on).
 2. **Custom domain** attached to the worker; DNS through Cloudflare.
 3. **SSL/TLS → Edge Certificates → "Always Use HTTPS" = On** (pairs with the HSTS header the code already sends).
 4. **WAF rate-limiting rule** — for the public POST endpoint `/api/lead` (the GoHighLevel form handler, §6). Security → Security rules → Create rule → Rate limiting rule (free plan includes one):
@@ -97,11 +98,11 @@ Full narrative + the embedded alternative: the Notion guide _"Sanity + Astro + C
    - 5 requests / 10 seconds per IP → **Block**, 10 s duration
    - Every public POST endpoint should sit behind a rule like this.
 5. Optional: **Security.txt** (Security → Settings) — publishes `/.well-known/security.txt` with your contact for vulnerability reports.
-6. **Rebuild-debounce Worker + Sanity publish webhook — REQUIRED when Sanity is the content source.** The content routes are **prerendered**, so a Sanity publish reaches the live site only via a rebuild: until this webhook chain is wired, publishing changes **nothing** on production (draft preview in the Studio still works — `/preview/*` fetches live). A standalone Worker in [`workers/rebuild-debounce/`](../workers/rebuild-debounce/) debounces a burst of publishes into one build (~5 min quiet window, so publish-to-live is typically ~5–20 min). Deploy it and wire the webhook per its own [README](../workers/rebuild-debounce/README.md):
+6. **Rebuild-debounce Worker + Sanity publish webhook — REQUIRED when Sanity is the content source.** The content routes are **prerendered**, so a Sanity publish reaches the live site only via a rebuild: until this webhook chain is wired, publishing changes **nothing** on production (draft preview in the Studio still works — `/preview/*` fetches live). A standalone Worker in [`workers/rebuild-debounce/`](../workers/rebuild-debounce/) (installed by the Sanity add-on) debounces a burst of publishes into one build (~5 min quiet window, so publish-to-live is typically ~5–20 min). Deploy it and wire the webhook per its own [README](../workers/rebuild-debounce/README.md):
    - `cd workers/rebuild-debounce && npm install && npx wrangler deploy` (rename `name` in its `wrangler.jsonc` to match this fork's worker first).
      - ⚠️ If `wrangler deploy` errors with `redirected configuration path … does not exist`, delete the root `.wrangler/deploy/config.json` (a gitignored `@astrojs/cloudflare` artifact) and retry.
    - `wrangler secret put DEPLOY_HOOK_URL` (the site worker's deploy hook: Settings → Builds → Deploy hooks, targeting `main`) and `wrangler secret put WEBHOOK_TOKEN` (random, e.g. `openssl rand -hex 32`).
-   - In Sanity (manage.sanity.io → API → Webhooks): **URL** = the Worker's `*.workers.dev` URL, **header** `Authorization: Bearer <WEBHOOK_TOKEN>`, **Trigger on** Create/Update/Delete, **Filter** `!(_id in path("drafts.**"))` (intentionally broad — see the main README), Sanity "Secret" field left blank.
+   - In Sanity (manage.sanity.io → API → Webhooks): **URL** = the Worker's `*.workers.dev` URL, **header** `Authorization: Bearer <WEBHOOK_TOKEN>`, **Trigger on** Create/Update/Delete, **Filter** `!(_id in path("drafts.**"))` (intentionally broad — see the `sanity-and-preview` skill), Sanity "Secret" field left blank.
 
 ### 4a. Staging-first deploy (ship to `*.workers.dev` before the real domain exists)
 
@@ -170,14 +171,14 @@ Full walkthrough: [ghl-forms.md](ghl-forms.md).
 
 ```bash
 # Security headers — static page (served via public/_headers)
-curl -sI https://www.<domain>/ | grep -iE "x-frame|strict-transport|x-content-type|referrer|permissions"
+curl -sI https://www.<domain>/ | grep -iE "content-security|strict-transport|x-content-type|referrer|permissions"
 
 # Security headers — content page (prerendered → served via public/_headers)
-curl -sI https://www.<domain>/blog/<slug> | grep -iE "x-frame|cache-control"
+curl -sI https://www.<domain>/blog/<slug> | grep -iE "content-security|cache-control"
 
-# Security + robots headers — SSR preview page (served via middleware):
+# Sanity forks — security + robots headers on an SSR preview page (served via middleware):
 # expect X-Robots-Tag: noindex, nofollow and Cache-Control: private, no-cache
-curl -sI https://www.<domain>/preview/blog/<slug> | grep -iE "x-frame|cache-control|x-robots"
+curl -sI https://www.<domain>/preview/blog/<slug> | grep -iE "content-security|cache-control|x-robots"
 
 # Sitemap sanity: entries present, no /preview or /thank-you URLs
 curl -s https://www.<domain>/sitemap-0.xml | grep -c "<loc>"
@@ -206,7 +207,7 @@ Plus, in a browser: the hosted Studio loads at `https://<studioHost>.sanity.stud
 
 - **Audit cadence**: the CI `audit` job runs `npm audit --omit=dev --audit-level=critical` and fails any PR that introduces a **critical** advisory in production dependencies.
 
-  The gate sits at `critical`, not `high`, because the standing high advisories in this tree can't be fixed from here: they arrive through the **Sanity CLI** chain (`adm-zip`, `js-yaml`, `@module-federation/*`) and through **Astro's** own `sharp`/`vite` dependencies, and npm's only offered "fix" for each is a **major downgrade** of `sanity` or `astro`. All of them are build/CLI tooling — none ship in the deployed Worker runtime.
+  The gate sits at `critical`, not `high`, because the standing high advisories in this tree can't be fixed from here: they arrive through **Astro's**, the **Cloudflare adapter's** and **wrangler's** own dependencies (the list is in the comment above the `audit` job in `.github/workflows/ci.yml`), so the fix is an upstream release. A fork with the Sanity add-on also carries the **Sanity CLI** chain's highs, where npm's only offered "fix" is a **major downgrade** of `sanity`; the add-on's workflow keeps the same `critical` gate.
 
   Because the gate no longer catches highs automatically, review them deliberately: run `npm audit --omit=dev --audit-level=high` periodically, and when upstream ships patched releases, tighten `ci.yml` back to `--audit-level=high`.
 
@@ -216,7 +217,7 @@ Plus, in a browser: the hosted Studio loads at `https://<studioHost>.sanity.stud
 
 The `audit` job re-checks dependencies against GitHub's **live** advisory database on every push, so a PR can fail for a vulnerability that has nothing to do with its changes — a new advisory was simply published since the last green run. This is the gate working, not a bug. Triage it in ~60 seconds:
 
-1. **Severity** — the gate only blocks **high/critical**. Moderate/low are batched later, not urgent.
+1. **Severity** — the gate only blocks **critical**; review a new **high** by hand (§8). Moderate/low are batched later, not urgent.
 2. **Runtime vs. build/dev-only** — _does the package run inside the deployed Worker, or only locally / in CI during the build?_ Build tools (esbuild, vite, wrangler, typescript, @astrojs/*) can't be reached by a site visitor — low real-world risk. A flaw in something that runs in the Worker (request handling, page rendering, anything in `src/`) is serious.
 3. **Reachability** — does the flaw apply to how you actually use it? (e.g. a "Deno registry" or "Windows dev server" flaw doesn't apply to a Mac/Cloudflare setup.)
 4. **Fix available?** — if a patched version exists, adopt it (see below). If npm's only offered fix is a **major downgrade** of a framework package (`sanity`, `astro`, `@astrojs/cloudflare`), don't take it: note the advisory and wait for an upstream patch.

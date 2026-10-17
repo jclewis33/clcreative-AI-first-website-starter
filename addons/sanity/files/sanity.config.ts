@@ -53,7 +53,8 @@ const PROJECT_ORDER = [
 // Required on any S.documentList() with a custom .filter() — Sanity warns
 // ("No apiVersion specified for document type list with custom filter") and
 // will require it in a future Studio. Keep in sync with the apiVersion used
-// elsewhere (visionTool / astro.config.mjs).
+// elsewhere (visionTool below; SANITY_API_VERSION in
+// src/config/sanity.shared.mjs).
 const STRUCTURE_API_VERSION = "2025-03-15";
 
 export default defineConfig({

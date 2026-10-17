@@ -134,9 +134,9 @@ hidden, matching the case-study `getStaticPaths` rule. Bodies arrive as
 Markdown on the view models (`markdown`). The Files source exports an MDX
 post's own Markdown, with components converted or dropped
 ([src/lib/content/files/mdx-text.ts](../../../src/lib/content/files/mdx-text.ts)),
-and a case study's block Markdown as written. The Sanity source converts
+and a case study's block Markdown as written. The Sanity add-on's source converts
 Portable Text with `portableTextToMarkdown()` in
-[src/sanity/lib/portable-text.ts](../../../src/sanity/lib/portable-text.ts).
+`src/sanity/lib/portable-text.ts` (Sanity add-on).
 
 The built files land in `dist/client/` alongside `sitemap-index.xml`. They are
 intentionally **not** in the XML sitemap.

@@ -1,16 +1,17 @@
 ---
 name: sanity-and-preview
-description: The Sanity CMS + Cloudflare deployment architecture reference for this starter. Load BEFORE touching anything involving Sanity, GROQ queries, TypeGen, sanity.types.ts, schema types, the Studio (sanity.config.ts, desk structure, Presentation, Vision), draft mode / preview routes (src/pages/preview/**), the Sanity content source behind @/lib/content (src/sanity/lib/source.ts, page-data.ts loaders, map/ mappers), loadQuery/getDraftModeProps, the stega policy, the parity fixtures and preview-safety checks, adding a new content type or detail route, the sitemap, trailing slashes, wrangler.jsonc, env vars (SANITY_API_READ_TOKEN, PUBLIC_SANITY_*), rebuild webhooks, or the rendering model (prerender vs SSR). Also load when a build fails at prerender with a CSS-extension error, when Presentation shows "Unable to connect", or when content pages 503.
+description: The Sanity CMS + Cloudflare deployment architecture reference for this starter. Installed by the Sanity add-on (`npm run addon:sanity`). Load BEFORE touching anything involving Sanity, GROQ queries, TypeGen, sanity.types.ts, schema types, the Studio (sanity.config.ts, desk structure, Presentation, Vision), draft mode / preview routes (src/pages/preview/**), the Sanity content source behind @/lib/content (src/sanity/lib/source.ts, page-data.ts loaders, map/ mappers), loadQuery/getDraftModeProps, the stega policy, the parity fixtures and preview-safety checks, adding a new content type or detail route, the sitemap, trailing slashes, wrangler.jsonc, env vars (SANITY_API_READ_TOKEN, PUBLIC_SANITY_*), rebuild webhooks, or the rendering model (prerender vs SSR). Also load when a build fails at prerender with a CSS-extension error, when Presentation shows "Unable to connect", or when content pages 503.
 ---
 
 # Sanity, Deployment & Preview
 
-> **Files is the default content source.** `@/lib/content` reads
-> `src/content/` (the `content-files` skill). This skill covers the Sanity
-> source, `src/sanity/lib/source.ts`, which test builds select with
-> `CONTENT_SOURCE=sanity` (a build-time switch in `astro.config.mjs`) and
-> which the preview twins import directly. PR 4 moves all of it into an
-> opt-in add-on.
+> **This skill comes with the Sanity add-on.** Files is the starter's
+> default content source (the `content-files` skill); `npm run addon:sanity`
+> installed this add-on, which replaced the CMS seams
+> (`src/lib/content/source.ts`, `src/config/cms.mjs`,
+> `src/config/cms.shared.mjs`, `src/components/global/CmsEditing.astro`,
+> `src/components/blog/BlogBody.astro`, `public/_headers`,
+> `.github/workflows/ci.yml`) with the Sanity versions.
 
 ## Sanity types — generated, never hand-written
 
@@ -73,10 +74,14 @@ ships on the next build. The Studio is **hosted by Sanity** (deployed with
 `npx sanity deploy`), not embedded in the app. Its Presentation tool iframes
 the `/preview/*` routes **cross-origin**, via a cookie set by the
 `/api/draft-mode/enable` route on `www.example.com`. Because the frame is
-cross-origin, the site allows the Studio origin via CSP `frame-ancestors` (in
-[src/middleware.ts](../../../src/middleware.ts) for SSR responses and
-[public/_headers](../../../public/_headers) for static assets — keep both in
-sync), and the enable route sets the cookie `SameSite=None; Secure`.
+cross-origin, the site allows the Studio origins via CSP `frame-ancestors`:
+edit `FRAME_ANCESTORS` in
+[src/config/cms.shared.mjs](../../../src/config/cms.shared.mjs);
+[src/config/headers.shared.mjs](../../../src/config/headers.shared.mjs)
+builds the CSP that [src/middleware.ts](../../../src/middleware.ts) sends on
+SSR responses, and [public/_headers](../../../public/_headers) repeats it for
+static assets (`npm run check:config`, also run before every build, fails
+when the two drift). The enable route sets the cookie `SameSite=None; Secure`.
 
 **Why a `/preview` tree instead of drafts on the public URLs:** with
 `@astrojs/cloudflare`, the request handler returns a matching static asset
@@ -92,7 +97,8 @@ per request and causes production 503s (`exceededCpu`) under crawler load. The
 `/intent/...` paths) to the actual app at
 `https://www.sanity.io/@your-org-id/studio/<appId>`, which is itself sandboxed
 under `*.sanity.studio` nested inside the `www.sanity.io` dashboard shell. So
-`frame-ancestors` (in `src/middleware.ts` + `public/_headers`) must allow
+`frame-ancestors` (`FRAME_ANCESTORS` in `src/config/cms.shared.mjs`, mirrored
+in `public/_headers`) must allow
 **both** `https://*.sanity.io` **and** `https://*.sanity.studio` (plus
 `http://localhost:3333` for `sanity dev`) — NOT just the branded host, and NOT
 just `www.sanity.io` (a single-origin value silently blocks Presentation).
@@ -123,7 +129,7 @@ Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.s
    `@sanity/preview-url-secret`'s `validatePreviewUrl` against the live
    dataset — if the request isn't from a legitimate Studio session, it
    returns 401.
-3. On success the route sets the `sanity-preview-mode` cookie
+3. On success the route sets the `sanity-preview-perspective` cookie
    (`perspectiveCookieName` from `@sanity/preview-url-secret/constants`) with
    the editor's chosen perspective (default `"drafts"`) and redirects to the
    target path.
@@ -133,16 +139,17 @@ Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.s
    `getDraftModeProps(Astro)`
    ([src/sanity/lib/draft-mode.ts](../../../src/sanity/lib/draft-mode.ts)),
    which reads the cookie. The Sanity source forwards `{ preview }`
-   through its loaders
+   (the `ContentOptions` field) through its loaders
    ([src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)) into
    `loadQuery`
    ([src/sanity/lib/load-query.ts](../../../src/sanity/lib/load-query.ts)).
    When present, `loadQuery` fetches drafts with stega encoding and
    authenticates using `SANITY_API_READ_TOKEN`. Only the three preview twins
    pass the cookie; public routes and sections call without it.
-5. [src/layouts/BaseLayout.astro](../../../src/layouts/BaseLayout.astro) checks
-   `Astro.cookies.has(perspectiveCookieName)` (guarded by `Astro.isPrerendered`)
-   and conditionally mounts
+5. [src/components/global/CmsEditing.astro](../../../src/components/global/CmsEditing.astro)
+   (the CMS editing seam, rendered by BaseLayout) checks
+   `Astro.cookies.has(perspectiveCookieName)` (guarded by
+   `Astro.isPrerendered`) and conditionally mounts
    [src/components/SanityVisualEditing.tsx](../../../src/components/SanityVisualEditing.tsx)
    (click-to-edit overlays + history sync + content refresh) and
    [src/components/DisableDraftMode.tsx](../../../src/components/DisableDraftMode.tsx)
@@ -157,13 +164,15 @@ never have the cookie on the SSR routes → `<SanityVisualEditing>` isn't
 mounted. **Drafts can't leak.**
 
 The `/preview` tree is invisible to search and never edge-cached, via three
-required layers: `Disallow: /preview` in
-[public/robots.txt](../../../public/robots.txt); `X-Robots-Tag: noindex,
-nofollow` + forced `private, no-cache` from
+required layers, all driven by `/preview` in `NOINDEX_PATHS`
+([src/config/seo.shared.mjs](../../../src/config/seo.shared.mjs)):
+`Disallow: /preview` in the generated `robots.txt`
+([src/pages/robots.txt.ts](../../../src/pages/robots.txt.ts));
+`X-Robots-Tag: noindex, nofollow` + forced `private, no-cache` from
 [src/middleware.ts](../../../src/middleware.ts) (forced **regardless of the
 cookie** — Cloudflare's edge cache doesn't vary on cookies, so a cached
 published render would otherwise be served back to editors); and exclusion from
-the sitemap in [astro.config.mjs](../../../astro.config.mjs).
+the sitemap filter in [astro.config.mjs](../../../astro.config.mjs).
 
 **Publishing requires a rebuild.** Prerendered content ships on the next build,
 so a Sanity publish must trigger one: Sanity webhook (filter
@@ -186,6 +195,8 @@ Only two kinds of routes opt into SSR with `export const prerender = false;`:
 
 - `src/pages/preview/**` — the draft-preview twins that Presentation iframes
 - `src/pages/api/**` — the draft-mode cookie set/clear routes
+  (`src/pages/api/draft-mode/`) and the starter's own API routes (the lead
+  form)
 
 Rules that keep this model healthy:
 
@@ -230,11 +241,13 @@ invisible to the sitemap), and no content route here is SSR. A new content type
 only needs a prerendered route with `getStaticPaths` and it appears in the
 sitemap on the next build.
 
-**Exclusions** live in [astro.config.mjs](../../../astro.config.mjs) as **two
+**Exclusions** live in
+[src/config/seo.shared.mjs](../../../src/config/seo.shared.mjs) (the sitemap
+`filter` in [astro.config.mjs](../../../astro.config.mjs) reads them) as **two
 lists with two different matching modes** (a single loose `page.includes(path)`
 gets it wrong in both directions):
 
-- `NOINDEX_PATHS` (src/config/seo.shared.mjs) — whole path segments (`/x` and
+- `NOINDEX_PATHS` — whole path segments (`/x` and
   `/x/…`, never `/blog/x-…`): the dev-only pages and `/preview`.
 - `NOINDEX_PREFIXES` — literal prefixes mirroring robots.txt `Disallow`
   semantics: one `/thank-you` entry covers every `/thank-you*` variant.
@@ -242,16 +255,17 @@ gets it wrong in both directions):
   `robots.txt`, the `noindex` meta tag, the SSR `X-Robots-Tag`, and the
   llms.txt index — one fact, five surfaces.
 
-Keep both lists in sync with [public/robots.txt](../../../public/robots.txt).
-To verify after a change: build and inspect `dist/sitemap-0.xml` — count
+`robots.txt` is generated from the same lists, so there is nothing to keep
+in sync by hand. To verify after a change: build and inspect `dist/sitemap-0.xml` — count
 entries, confirm no robots-disallowed URL appears, confirm no real content page
 is missing.
 
 ## Studio
 
 Sanity Studio is **hosted by Sanity** at `your-studio.sanity.studio` — not
-embedded in the app. The `@sanity/astro` integration in `astro.config.mjs`
-intentionally omits `studioBasePath` (so no `/studio` route is injected) but is
+embedded in the app. The `@sanity/astro` integration (in the add-on's build seam,
+[src/config/cms.mjs](../../../src/config/cms.mjs), which `astro.config.mjs`
+spreads into its integrations) intentionally omits `studioBasePath` (so no `/studio` route is injected) but is
 still present because it provides the `sanity:client` virtual module used by
 `src/sanity/lib/load-query.ts`. Studio config lives in
 [sanity.config.ts](../../../sanity.config.ts) and is shared by the hosted
@@ -355,7 +369,7 @@ siteSettings→`CogIcon`.
 `...(import.meta.env?.DEV ? [visionTool({ defaultApiVersion: "2025-03-15" })] : [])`.
 The `?.` keeps it safe when `sanity.config.ts` is loaded by the Sanity CLI
 (Node has no `import.meta.env`). Keep `defaultApiVersion` in sync with
-`astro.config.mjs`.
+`SANITY_API_VERSION` in `src/config/sanity.shared.mjs`.
 
 **Document actions & badges.** Extended via
 [src/sanity/components/studioDocument.ts](../../../src/sanity/components/studioDocument.ts):
@@ -407,11 +421,11 @@ route exists), **then the Studio**.
 
 ## Required env vars
 
-| Name                       | Where                                          | Purpose                                                                                                                                                                                                                                                                                  |
-| -------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PUBLIC_SANITY_PROJECT_ID` | `wrangler.jsonc` `vars` + local `.env`         | Sanity project                                                                                                                                                                                                                                                                           |
-| `PUBLIC_SANITY_DATASET`    | `wrangler.jsonc` `vars` + local `.env`         | Dataset name                                                                                                                                                                                                                                                                             |
-| `SANITY_API_READ_TOKEN`    | Cloudflare **encrypted secret** + local `.env` | Viewer token — validates preview secrets, authenticates draft fetches. Never a plain wrangler var. Read at **runtime** with `getSecret()` from `astro:env/server` (load-query.ts, draft-mode/enable.ts) — `import.meta.env` is baked in at build, when the Worker secret does not exist. |
+| Name                       | Where                                                                           | Purpose                                                                                                                                                                                                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_SANITY_PROJECT_ID` | `wrangler.jsonc` `vars` (mirrors `src/config/sanity.shared.mjs`) + local `.env` | Sanity project                                                                                                                                                                                                                                                                           |
+| `PUBLIC_SANITY_DATASET`    | `wrangler.jsonc` `vars` (mirrors `src/config/sanity.shared.mjs`) + local `.env` | Dataset name                                                                                                                                                                                                                                                                             |
+| `SANITY_API_READ_TOKEN`    | Cloudflare **encrypted secret** + local `.env`                                  | Viewer token — validates preview secrets, authenticates draft fetches. Never a plain wrangler var. Read at **runtime** with `getSecret()` from `astro:env/server` (load-query.ts, draft-mode/enable.ts) — `import.meta.env` is baked in at build, when the Worker secret does not exist. |
 
 The Sanity project needs `https://www.example.com` (and
 `http://localhost:4321` for dev) as CORS origins with **Allow credentials**.
@@ -421,12 +435,14 @@ The Sanity project needs `https://www.example.com` (and
 **Consumers get content from `@/lib/content` — never from `src/sanity`.**
 Pages, templates, sections and components import the functions, view-model
 types and image helpers from there; `npm run check:boundary` fails when
-anything outside `src/sanity` and the Sanity-only allow list (preview twins,
-`/api/draft-mode`, Portable Text renderers, `BlogBody`, the visual-editing
-islands, `BaseLayout`, `middleware.ts`, `env.d.ts`, and the one-line backend
-selector `src/lib/content/source.ts`) imports Sanity code; the Files
-backend in `src/lib/content/files/` never does. The allow list lives in
-`scripts/check-content-boundary.mjs`.
+anything outside `src/sanity` and the Sanity-only allow list (the CMS seams
+`src/lib/content/source.ts`, `src/config/cms.mjs`, `cms.shared.mjs`,
+`CmsEditing.astro` and `BlogBody.astro`; the preview twins;
+`/api/draft-mode`; the Portable Text renderers; the visual-editing
+islands) imports Sanity code; the Files backend in
+`src/lib/content/files/` never does. The rule and its allow list live in
+`scripts/boundary/sanity.json`, which core
+`scripts/check-content-boundary.mjs` loads.
 
 ```astro
 ---
@@ -458,12 +474,12 @@ height, format })` (a plain URL string for raw tags, OG, JSON-LD and
   height). The Sanity mapper attaches a `url()` builder around `urlFor`, so
   each placement gets exactly the CDN size it always did.
 - **Rich text** arrives pre-rendered: HTML strings for FAQ answers, project
-  write-ups and case-study blocks; the blog body is a
-  `{ kind: "portable-text" | "mdx" }` union rendered by `<BlogBody>`. The
-  union is open: `BlogBodyFormats` in `@/lib/content/types` holds `mdx`, and
-  [src/sanity/lib/body-format.ts](../../../src/sanity/lib/body-format.ts)
-  registers `portable-text` by module augmentation. Its `buildToc` walker
-  lives in `src/sanity/lib/portable-text.ts`.
+  write-ups and case-study blocks; the blog body is `{ kind: "portable-text" }` here (registered in
+  `BlogBodyFormats` by
+  [src/sanity/lib/body-format.ts](../../../src/sanity/lib/body-format.ts),
+  module augmentation) or `{ kind: "mdx" }`, both rendered by this add-on's
+  `<BlogBody>`. The Portable Text `buildToc` walker lives in
+  `src/sanity/lib/portable-text.ts`.
 - **Draft perspective.** Every content function takes a trailing
   `opts?: { preview }` (`ContentOptions`). Only the `/preview/*` twins pass
   `getDraftModeProps(Astro)` (pass the **whole `Astro` global**, not
@@ -539,7 +555,8 @@ before and after and diffing `dist/client`.
   fixtures (`src/sanity/lib/fixtures/`), so a populated site builds with no
   Sanity project. `KEEP_DEV_PAGES=1` keeps `/components` in the build
   (normally stripped). The flag is read **at build time only**:
-  `astro.config.mjs` bakes it into the `__PARITY_FIXTURES__` constant
+  the add-on's `src/config/cms.mjs` (`viteDefine`, spread in by
+  `astro.config.mjs`) bakes it into the `__PARITY_FIXTURES__` constant
   (`vite.define`), which `loadQuery` reads. A normal build gets `""`, so the
   fixture import is dead code and no fixture chunk reaches `dist/server`
   (`ls dist/server/chunks | grep -i fixture` prints nothing); a Worker
@@ -550,10 +567,11 @@ before and after and diffing `dist/client`.
   comparison covers every `.html`/`.xml`/`.txt` file plus `_headers` and
   `_redirects`, normalising hashed asset names and `data-astro-cid-*`. It
   prints `Identical: N files.` or a window around the first difference in
-  each file, and exits 1 on any difference. Sanity builds need
-  `CONTENT_SOURCE=sanity` now that Files is the default. Do it twice: once
-  with `KEEP_DEV_PAGES=1 CONTENT_SOURCE=sanity` (no fixtures, the
-  empty-site case), once adding `PARITY_FIXTURES=1` (the populated case).
+  each file, and exits 1 on any difference. Do it twice: once with
+  `KEEP_DEV_PAGES=1` (no fixtures, the empty-site case), once adding
+  `PARITY_FIXTURES=1` (the populated case). In the starter repo,
+  `npm run check:addon -- --baselines .parity` does all of this in a
+  scratch install.
 - **`--canonical`** compares HTML as a DOM (attributes sorted, entities
   decoded, whitespace collapsed). Use it where the same markup legitimately
   arrives through a different serializer (an Astro component versus an HTML
@@ -574,15 +592,16 @@ before and after and diffing `dist/client`.
   diffs the two, normalising only the documented renderer differences
   (listed in its header; the full table is "Expected Files-vs-Sanity
   differences" in `docs/superpowers/plans/2026-10-16-pr3-files-backend.md`).
-  Unit checks for the converter: `node scripts/check-fixture-markdown.mjs`.
-- **Preview safety.** `KEEP_DEV_PAGES=1 CONTENT_SOURCE=sanity
-PARITY_FIXTURES=preview npm run build && node scripts/check-stega-leaks.mjs` builds draft-like data (stega-encoded
+  Unit checks for the converter: `npm run check:fixtures`
+  (`scripts/check-fixture-markdown.mjs`).
+- **Preview safety.** `KEEP_DEV_PAGES=1 PARITY_FIXTURES=preview npm run build && npm run check:stega` builds draft-like data (stega-encoded
   strings plus half-filled documents) and fails if stega reaches any
   attribute, the `<title>` or JSON-LD on the pages the preview twins render
   (and, defensively, on the listing pages). Only visible element text may stay
-  encoded. It is a script, not an npm script.
+  encoded. `npm run check:stega` runs the check (CI runs it after the
+  preview build).
 - **Boundary.** `npm run check:boundary` (see above) keeps Sanity imports
-  inside `src/sanity` and the allow list.
+  inside `src/sanity` and the allow list in `scripts/boundary/sanity.json`.
 
 ## Projects + gallery (photo portfolio)
 
@@ -608,3 +627,59 @@ either, or both.
   covered by `node scripts/check-projects.mjs`.
 - `/projects` and `/gallery` are prerendered with no preview twin (like the
   case-studies index); gallery edits appear after the publish rebuild.
+
+## Removing the add-on
+
+Content stays where it is: nothing is exported from Sanity, so after
+removal the site renders whatever is in `src/content/` (the starter's
+sample content, unless the fork replaced it).
+
+If the install was committed on its own, `git revert <that commit>` and
+`npm install` remove it. A fork that chose Sanity in `npm run setup`
+can't: the install and setup's writes are one change. Remove it by hand
+instead (each step names what the installer or setup put there):
+
+1. Delete what the overlay added: `src/sanity/`, `src/pages/preview/`,
+   `src/pages/api/draft-mode/`, `src/components/portabletext/`,
+   `src/components/SanityVisualEditing.tsx`,
+   `src/components/DisableDraftMode.tsx`, `sanity.config.ts`,
+   `sanity.cli.ts`, `sanity-typegen.json`, `skills-lock.json`,
+   `workers/rebuild-debounce/`, `scripts/boundary/sanity.json`,
+   `scripts/check-stega-leaks.mjs`, `scripts/check-fixture-markdown.mjs`,
+   `scripts/migrate-webflow-blog.mjs`, `src/config/sanity.shared.mjs`,
+   `.claude/skills/sanity-and-preview/` and
+   `.claude/skills/setup/references/studio-branding.md` (plus the ignored
+   `.sanity/` cache, if present).
+2. Restore the Files versions of the seams it overwrote:
+   `src/lib/content/source.ts`, `src/config/cms.mjs`,
+   `src/config/cms.shared.mjs`, `src/components/global/CmsEditing.astro`,
+   `src/components/blog/BlogBody.astro`, `public/_headers`,
+   `scripts/compare-dist.mjs` and `.github/workflows/ci.yml` — with
+   `git checkout <the commit before the install> -- <paths>`, or copied
+   from the starter repo.
+3. Remove what the manifest merged (`addons/sanity/manifest.json` in the
+   starter repo lists it): its `dependencies`, `devDependencies`
+   (`csv-parse`) and scripts (`studio`, `studio:local`, `typegen`,
+   `check:fixtures`, `check:stega`) in `package.json`; the
+   `PUBLIC_SANITY_PROJECT_ID` / `PUBLIC_SANITY_DATASET` vars and the
+   comment above them in `wrangler.jsonc`; `jsx` and `jsxImportSource` in
+   `tsconfig.json`, with `types` back to `[]`; the Sanity block in
+   `.env.example` (and those lines in `.env`); and the three rules, with
+   their comment, in `.gitignore` (`.sanity/`, `src/sanity/schema.json`,
+   `!.claude/skills/sanity-and-preview`).
+4. Remove the `SANITY_API_READ_TOKEN` secret, the rebuild-debounce Worker
+   and the publish webhook from the Cloudflare and Sanity dashboards.
+5. `npm install`, then `npm run check:config && npm run check:boundary &&
+npm run check && npm run build`.
+
+## Maintaining the add-on (starter repo only)
+
+In the starter repo this skill lives at
+`addons/sanity/files/.claude/skills/sanity-and-preview/SKILL.md`, and all
+Sanity code under `addons/sanity/files/`, which is not built or
+type-checked in place. `npm run check:addon -- --keep` installs it into a
+scratch copy and leaves it there: work in that copy (it type-checks,
+`npm run typegen` and the Studio run there) and copy changed files back
+under `addons/sanity/files/`. A new `ContentSource` method in core must be
+implemented in `src/sanity/lib/source.ts` too; CI's `addon-sanity` job
+fails until it is.

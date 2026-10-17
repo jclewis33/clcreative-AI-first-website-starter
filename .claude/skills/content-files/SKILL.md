@@ -188,8 +188,9 @@ Body text in Markdown.
     id as a literal in double quotes, `id="free-site-review"`: that is the
     form the sync checks, and an unknown id then fails it, naming the post.
     Any other form (`id='…'`, `id={…}`) skips the check and fails the
-    build later, at render, without naming the post. A tag inside fenced
-    code is only a code sample and is not checked or rendered.
+    build later, at render, without naming the post. A tag inside code
+    (fenced blocks and inline spans) is only a code sample and is not
+    checked or rendered.
 
 ## Case studies
 
@@ -374,14 +375,15 @@ Define the collection (with `filesIn()` and
 `src/lib/content/files/<type>.ts` wired into `files/index.ts` and
 `src/lib/content/index.ts`, map the JSON Schema in
 `.vscode/settings.json`, and add a case to
-`scripts/check-content-validation.mjs`. The Sanity source needs the same
-functions (`sanity-and-preview` → "Data fetching pattern").
+`scripts/check-content-validation.mjs`. The Sanity add-on's source must implement them too
+(`src/lib/content/types.ts` is the contract): CI's `addon-sanity` job
+fails until it does (`sanity-and-preview` → "Data fetching pattern",
+in the add-on).
 
-### The Sanity source and `CONTENT_SOURCE`
+### The Sanity add-on
 
-- **The Sanity source** (`src/sanity/lib/source.ts`) is the alternative
-  backend. Test builds select it with `CONTENT_SOURCE=sanity` (a build-time
-  switch in `astro.config.mjs`, removed when PR 4 turns Sanity into an
-  add-on). `compare-dist --equivalent` proves both sources render the
-  sample content alike (see `sanity-and-preview` → "Parity and
-  preview-safety checks").
+- **The Sanity source** lives in the add-on (`addons/sanity/`); installed,
+  it is `src/sanity/lib/source.ts` and `src/lib/content/source.ts` points
+  at it. `npm run check:addon` installs it into a scratch copy and proves
+  that the same sample content renders equivalently from both sources
+  (`compare-dist --equivalent`, the add-on's copy).

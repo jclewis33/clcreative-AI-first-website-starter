@@ -34,7 +34,7 @@ TestimonialsSlider, TestimonialsGrid, TestimonialShowcase, FAQ, HowItWorks,
 StackingPanels, Services, SplitSection, …), `src/components/case-study/`
 (block renderer + blocks), `src/components/global/` (Navbar, Footer, Head,
 Logo, JsonLd), `src/components/templates/` (BlogPost/CaseStudy/Project
-templates), `src/components/blog/` (`BlogBody`, which renders an MDX or Portable Text post body; `Callout` and `VideoEmbed`, shared by both; `mdx/` holds the MDX-only `pre` and `<BlogCta id>`), `src/components/portabletext/` (Sanity rich-text renderers, used by BlogBody).
+templates), `src/components/blog/` (`BlogBody`, which renders an MDX post body — the Sanity add-on's version adds Portable Text; `Callout` and `VideoEmbed`, also used by the add-on's Portable Text renderers in `src/components/portabletext/`; `mdx/` holds the MDX-only `pre` and `<BlogCta id>`).
 Content-driven components take view models and `ContentImage`s from `@/lib/content` — never collection entries or Sanity data. Plain URL strings for a raw `<img>`, OG, JSON-LD or a lightbox come from `await resolveImageUrl(image, { width })`, which sizes local images with getImage().
 
 Live demos of every component: `/components` and `/style-guide`. Both are

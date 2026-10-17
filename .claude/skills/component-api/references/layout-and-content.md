@@ -315,7 +315,7 @@ omitted); `CaseStudyGrid` likewise takes `CaseStudySummary[]` or fetches
 ## `<Callout>` and `<VideoEmbed>`
 
 Blog-body components in `src/components/blog/`, used by MDX posts by tag
-name (no import) and by the Portable Text renderers. `Callout`: `type`
+name (no import) and by the Sanity add-on's Portable Text renderers. `Callout`: `type`
 (`tip` default · `warning` · `info`), content in the slot (in MDX, the
 opening and closing tags each on their own line). `VideoEmbed`: `url`
 (YouTube watch/youtu.be/Shorts or Vimeo, parsed by `src/lib/video.ts`;
