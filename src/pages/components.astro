@@ -93,6 +93,11 @@ import GalleryBrowser from "@/components/ui/GalleryBrowser.astro";
 import "@/styles/pages/components-demo.css";
 import CtaButton from "@/components/ui/CtaButton.astro";
 import CtaPanel from "@/components/ui/CtaPanel.astro";
+import SymptomCards from "@/components/sections/SymptomCards.astro";
+import OfferBand from "@/components/sections/OfferBand.astro";
+import RecentWork from "@/components/sections/RecentWork.astro";
+import Guarantee from "@/components/sections/Guarantee.astro";
+import ComparisonTable from "@/components/sections/ComparisonTable.astro";
 import TrustBadges from "@/components/ui/TrustBadges.astro";
 /* Real town boundaries for the street-map demo — the Brightline fixture's
    cache (scripts/lib/service-area-geo.mjs), so the page needs no lookup. */
@@ -363,6 +368,60 @@ const demoAreaGeo = Object.entries(fixtureGeo).map(([key, geometry]) => ({
   },
 }));
 const demoAreaNames = demoAreaGeo.map((area) => area.name);
+const demoSymptoms = [
+  {
+    title: "Breaker keeps tripping",
+    text: "Every time the microwave and the dryer run together.",
+  },
+  { title: "Lights flicker or dim", text: "Especially when the AC kicks on." },
+  {
+    title: "No outlet where you need it",
+    text: "Extension cords running across the room.",
+  },
+];
+const demoOfferSeal = { value: "$50", label: "Off" };
+const demoOfferItems = [
+  "Any repair or install",
+  "Written price before we start",
+];
+const demoWork = [
+  {
+    image: demoPhoto1,
+    imageAlt: "A new labelled breaker panel",
+    title: "Panel upgrade",
+    place: "Round Rock",
+  },
+  {
+    image: demoPhoto2,
+    imageAlt: "A finished kitchen with new lighting",
+    title: "Kitchen lighting",
+    place: "Cedar Park",
+  },
+  {
+    image: demoPhoto3,
+    imageAlt: "A home exterior with new outdoor lights",
+    title: "Outdoor lighting",
+    place: "Austin",
+  },
+];
+const demoGuaranteeItems = [
+  "Every job",
+  "Parts and labor",
+  "No trip fee for warranty calls",
+];
+const demoCompareRows = [
+  {
+    label: "Pricing",
+    us: "Written price before any work",
+    them: "Hourly, open-ended",
+  },
+  {
+    label: "Permits",
+    us: "Pulled and inspected, every time",
+    them: "Often skipped",
+  },
+  { label: "Clean-up", us: "Every site left clean", them: "Dust left behind" },
+];
 ---
 
 <BaseLayout
@@ -2709,6 +2768,30 @@ const demoAreaNames = demoAreaGeo.map((area) => area.name);
     text="A free on-site estimate, with no pressure."
     secondaryCta={demoEstimateCta}
   />
+
+  <Section theme="light" padding="small" id="home-service-sections">
+    <Heading variant="eyebrow">Home-service sections</Heading>
+    <Heading tag="h2"
+      >SymptomCards, OfferBand, RecentWork, Guarantee, ComparisonTable</Heading
+    >
+  </Section>
+  <SymptomCards items={demoSymptoms} cta={demoEstimateCta} />
+  <OfferBand
+    seal={demoOfferSeal}
+    eyebrow="New customers"
+    heading="<strong>$50 off</strong> your first service call"
+    text="Book any repair or install and we take $50 off the invoice."
+    items={demoOfferItems}
+    cta={demoEstimateCta}
+    note="One per household. Example offer."
+  />
+  <RecentWork heading="Done this year, near you" items={demoWork} />
+  <Guarantee
+    name="The <strong>Done-Right</strong> Guarantee"
+    text="If something we installed is not right, we come back and fix it, free, for a full year."
+    items={demoGuaranteeItems}
+  />
+  <ComparisonTable heading="How we compare" rows={demoCompareRows} />
 
   <Section theme="light" padding="small" id="cta-section-cta">
     <Heading variant="eyebrow">CTASection with SectionCta</Heading>

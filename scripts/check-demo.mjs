@@ -169,6 +169,17 @@ try {
   assert.match(home, /class="trust-badges_wrap/);
   assert.match(home, /reviews_card is-rated/);
   assert.match(home, /call-band_wrap is-photo-card/);
+  // Phase-2 sections, and the two-step estimate form in the site-wide modal.
+  for (const cls of [
+    "symptom-cards_wrap",
+    "offer-band_wrap",
+    "recent-work_wrap",
+    "guarantee_wrap",
+    "comparison-table_wrap",
+  ])
+    assert.match(home, new RegExp(`class="[^"]*\\b${cls}\\b`), cls);
+  assert.match(home, /class="lead-form_tiles"/);
+  assert.match(home, /What do you need help with\?/);
   // The street map, from the fixture's cached boundaries (no network).
   assert.match(home, /class="service-map_wrap/);
   assert.match(home, /"name":"Round Rock","geometry":\{"type":"Polygon"/);

@@ -1,0 +1,207 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import CheckList from "@/components/ui/CheckList.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type OfferSeal = {
+  /** The big part: "$100", "0%", "$8K". */
+  value: string;
+  /** The small part under it: "Off", "APR", "In rebates". */
+  label: string;
+};
+type OfferBandTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **OfferBand** — one offer on one card: a seal ("$100 off", "0% APR",
+   * "$8K in rebates"), the heading, a few bullets, a button, and the fine
+   * print. The pattern for a first-visit discount, financing, a seasonal
+   * tune-up special or government rebates.
+   *
+   * Only for offers the business really runs — and the fine print is not
+   * optional decoration: state the terms (`note`).
+   *
+   * - `seal` — `{ value, label }`; leave out for a text-only card
+   * - `eyebrow`, `heading` (HTML; `<strong>` = accent), `text`
+   * - `items` — bullets (CheckList)
+   * - `cta`, `note` — the button, and the terms under it
+   *
+   * @example
+   * <OfferBand seal={{ value: "0%", label: "APR" }} heading="Financing for <strong>any budget</strong>" items={["Quick approval", "No prepayment penalty"]} cta={{ label: "Check your options", modal: "estimate-modal" }} note="On approved credit. Terms vary." />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The seal on the card: a big value over a short label. */
+  seal?: OfferSeal;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** The offer. HTML allowed; `<strong>` marks the accent words. Required. */
+  heading: string;
+
+  /** A sentence or two of detail. */
+  text?: string;
+
+  /** Bullets: what's included, who qualifies. */
+  items?: string[];
+
+  /** The button. */
+  cta?: SectionCta;
+
+  /** The terms, under the button. */
+  note?: string;
+
+  /** Section theme. */
+  theme?: OfferBandTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  seal,
+  eyebrow,
+  heading,
+  text,
+  items = [],
+  cta,
+  note,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !heading) {
+  console.warn("[OfferBand] `heading` is required; nothing renders.");
+}
+---
+
+{
+  render && heading && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["offer-band_wrap", className]}
+      {...rest}
+    >
+      <div class:list={["offer-band_card", { "is-sealed": seal }]}>
+        {seal && (
+          <p class="offer-band_seal" data-theme="brand" aria-hidden="true">
+            <span class="offer-band_seal_value">{seal.value}</span>
+            <span class="offer-band_seal_label">{seal.label}</span>
+          </p>
+        )}
+        <div class="offer-band_content">
+          {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+          <Heading tag="h2" variant="h3" accent>
+            <Fragment set:html={heading} />
+          </Heading>
+          {text && <Text muted>{text}</Text>}
+          {items.length > 0 && <CheckList items={items} variant="plain" />}
+          {cta && (
+            <div class="offer-band_action">
+              <CtaButton cta={cta} size="large" />
+            </div>
+          )}
+          {note && <p class="offer-band_note">{note}</p>}
+        </div>
+      </div>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .offer-band_card {
+      display: grid;
+      grid-template-columns: var(--_offer-columns, minmax(0, 1fr));
+      align-items: center;
+      gap: var(--space-7);
+      padding: var(--space-7);
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+    }
+
+    .offer-band_card.is-sealed {
+      --_offer-columns: auto minmax(0, 1fr);
+    }
+
+    @container (width < 40em) {
+      .offer-band_card.is-sealed {
+        --_offer-columns: minmax(0, 1fr);
+        justify-items: start;
+      }
+    }
+
+    /* The seal: a brand-coloured disc with a thin inner ring, like a
+       printed coupon stamp. */
+    .offer-band_seal {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 11rem;
+      aspect-ratio: 1 / 1;
+      margin: 0;
+      border-radius: var(--radius-full);
+      /* The brand theme (data-theme="brand"): brand paper, its own ink. */
+      background-color: var(--background);
+      color: var(--text);
+      box-shadow:
+        inset 0 0 0 0.5rem var(--background),
+        inset 0 0 0 0.625rem color-mix(in srgb, var(--text) 60%, transparent);
+      text-align: center;
+      rotate: -6deg;
+    }
+
+    .offer-band_seal_value {
+      font-family: var(--font-primary);
+      font-size: var(--h2-size);
+      font-weight: var(--font-weight-bold);
+      line-height: 1;
+    }
+
+    .offer-band_seal_label {
+      margin-top: var(--space-1);
+      font-size: var(--text-small-size);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .offer-band_content {
+      min-width: 0;
+    }
+
+    .offer-band_action {
+      margin-top: var(--space-5);
+    }
+
+    .offer-band_note {
+      margin: var(--space-3) 0 0;
+      font-size: var(--text-tiny-size);
+      color: color-mix(in srgb, var(--text) 65%, transparent);
+    }
+  }
+</style>

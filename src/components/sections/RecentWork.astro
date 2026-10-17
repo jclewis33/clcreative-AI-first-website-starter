@@ -1,0 +1,207 @@
+---
+import type { ImageMetadata } from "astro";
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Lightbox from "@/components/ui/Lightbox.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type RecentWorkItem = {
+  /** The job photo (an import or a URL). */
+  image: ImageMetadata | string;
+  /** Alt text for the photo. Required. */
+  imageAlt: string;
+  /** What was done: "Paver patio and fire pit". */
+  title: string;
+  /** Where — the town or neighbourhood: "Prosper". */
+  place?: string;
+};
+type RecentWorkTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **RecentWork** — "Built this year, in your neighbourhood": real job
+   * photos as tiles, each captioned with the town (small caps) over what
+   * was done, opening large in a Lightbox. The town on every tile is the
+   * point — homeowners look for theirs.
+   *
+   * Photos of the business's own jobs only.
+   *
+   * - `items` — `{ image, imageAlt, title, place? }[]`; empty renders nothing
+   * - `eyebrow`, `heading` (default "Recent work"), `intro`, `cta`
+   *
+   * @example
+   * <RecentWork items={[{ image: patio, imageAlt: "A paver patio with a fire pit", title: "Patio and fire pit", place: "Frisco" }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. @default 'Recent work' */
+  heading?: string;
+
+  /** Intro beside the heading. */
+  intro?: string;
+
+  /** The jobs. Empty renders nothing. */
+  items: RecentWorkItem[];
+
+  /** Optional button under the tiles ("See more of our work"). */
+  cta?: SectionCta;
+
+  /** Section theme. */
+  theme?: RecentWorkTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading = "Recent work",
+  intro,
+  items = [],
+  cta,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const fullSize = (image: ImageMetadata | string) =>
+  typeof image === "string" ? image : image.src;
+const caption = (item: RecentWorkItem) =>
+  item.place ? `${item.title} · ${item.place}` : item.title;
+
+if (import.meta.env.DEV && render && !Astro.props.items?.length) {
+  console.warn("[RecentWork] `items` is empty or missing; nothing renders.");
+}
+---
+
+{
+  render && items.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["recent-work_wrap", className]}
+      {...rest}
+    >
+      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      <Lightbox label={heading}>
+        <Grid largeColumns={3} mediumColumns={2} smallColumns={1}>
+          {items.map((item) => (
+            <button
+              type="button"
+              class="recent-work_tile_wrap"
+              data-lightbox-src={fullSize(item.image)}
+              data-lightbox-alt={item.imageAlt}
+              data-lightbox-caption={caption(item)}
+            >
+              <Visual src={item.image} alt={item.imageAlt} ratio="landscape" />
+              <span class="recent-work_caption" data-theme="dark">
+                {item.place && (
+                  <span class="recent-work_place">{item.place}</span>
+                )}
+                <span class="recent-work_title">{item.title}</span>
+              </span>
+            </button>
+          ))}
+        </Grid>
+      </Lightbox>
+      {cta && (
+        <div class="recent-work_action">
+          <CtaButton cta={cta} variant="secondary" size="large" />
+        </div>
+      )}
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .recent-work_tile_wrap {
+      position: relative;
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      border-radius: var(--radius-main);
+      cursor: zoom-in;
+    }
+
+    .recent-work_tile_wrap .u-image-wrapper {
+      border-radius: 0;
+    }
+
+    /* The caption sits on the photo's lower edge, over a fade to dark so
+       white text reads on any photo. */
+    .recent-work_caption {
+      position: absolute;
+      inset: auto 0 0;
+      display: grid;
+      gap: var(--space-1);
+      padding: var(--space-8) var(--space-5) var(--space-4);
+      /* The dark theme (data-theme="dark"): its paper as the fade, its ink
+         as the text. */
+      background-image: linear-gradient(
+        to top,
+        color-mix(in srgb, var(--background) 80%, transparent),
+        transparent
+      );
+      color: var(--text);
+      text-align: left;
+    }
+
+    .recent-work_place {
+      font-size: var(--text-tiny-size);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--eyebrow-letter-spacing);
+    }
+
+    .recent-work_title {
+      font-family: var(--font-primary);
+      font-size: var(--h6-size);
+      font-weight: var(--h6-weight);
+      line-height: 1.2;
+    }
+
+    .recent-work_tile_wrap .u-image {
+      transition: scale 0.4s ease;
+    }
+
+    @media (hover: hover) {
+      .recent-work_tile_wrap:hover .u-image {
+        scale: 1.04;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .recent-work_tile_wrap .u-image {
+        transition: none;
+      }
+    }
+
+    .recent-work_action {
+      display: flex;
+      justify-content: var(--_buttons-justify, flex-start);
+    }
+  }
+</style>

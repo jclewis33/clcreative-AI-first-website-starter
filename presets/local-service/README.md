@@ -34,7 +34,9 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
 - `brand` — `color` (`#rrggbb`), `logo: { file, plate? }`, `favicon?`
 - `seo` — `tagline`, `description` (at most 160 characters)
 - `home` — `LocalServiceHomeData` (`src/lib/local-service-home.ts`) with image
-  sources; leave out `reviews` unless they're real and attributed
+  sources. The optional sections are `symptoms`, `offer`, `recentWork`,
+  `guarantee`, `comparison` and `reviews`; each appears only when it's set,
+  and only with real material
 - `services` — 1 to 8 entries in the service-file shape
   (`src/content.config.ts`, guide: `.claude/skills/component-api/references/service-pages.md`)
   plus a `slug`

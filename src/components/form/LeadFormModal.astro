@@ -48,6 +48,9 @@ interface Props {
 
   /** Quote preset: project-type choices. */
   projectOptions?: LeadFormModalOptions;
+
+  /** Steps preset: the step-1 question over the tiles. */
+  stepQuestion?: string;
 }
 
 const {
@@ -59,6 +62,7 @@ const {
   text,
   fields,
   projectOptions,
+  stepQuestion,
 } = Astro.props;
 
 if (import.meta.env.DEV && render && (!id || !formId || !heading)) {
@@ -80,6 +84,7 @@ if (import.meta.env.DEV && render && (!id || !formId || !heading)) {
         id={`${id}-form`}
         fields={fields}
         projectOptions={projectOptions}
+        stepQuestion={stepQuestion}
       />
     </Modal>
   )

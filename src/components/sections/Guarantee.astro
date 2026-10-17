@@ -1,0 +1,193 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import CheckList from "@/components/ui/CheckList.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type GuaranteeTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **Guarantee** — the business's promise, named and specific: a seal, the
+   * guarantee's name ("The No-Weed Guarantee"), the promise in one plain
+   * sentence ("If weeds come back between visits, so do we — free"), and
+   * what it covers. A named guarantee is remembered; "satisfaction
+   * guaranteed" is not.
+   *
+   * Only a guarantee the business actually gives.
+   *
+   * - `name` — the guarantee's name (the heading). Required.
+   * - `text` — the promise; `items` — what it covers (CheckList)
+   * - `sealLabel` — the word on the seal. @default 'Guaranteed'
+   * - `eyebrow`, `cta`
+   *
+   * @example
+   * <Guarantee name="The Done-Right Guarantee" text="If it isn't right, we come back and fix it — free, for a full year." items={["Every job", "Parts and labour"]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the name. @default 'Our promise' */
+  eyebrow?: string;
+
+  /** The guarantee's name. HTML allowed; `<strong>` = accent. Required. */
+  name: string;
+
+  /** The promise, in a sentence or two. */
+  text?: string;
+
+  /** What it covers. */
+  items?: string[];
+
+  /** The word on the seal. @default 'Guaranteed' */
+  sealLabel?: string;
+
+  /** Optional button. */
+  cta?: SectionCta;
+
+  /** Section theme. */
+  theme?: GuaranteeTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow = "Our promise",
+  name,
+  text,
+  items = [],
+  sealLabel = "Guaranteed",
+  cta,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !name) {
+  console.warn("[Guarantee] `name` is required; nothing renders.");
+}
+---
+
+{
+  render && name && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["guarantee_wrap", className]}
+      {...rest}
+    >
+      <div class="guarantee_layout">
+        <div class="guarantee_seal" aria-hidden="true">
+          <svg class="guarantee_seal_svg" viewBox="0 0 120 120">
+            <path
+              class="guarantee_seal_rosette"
+              d="M60 4l9.6 8.4 12.6-2.2 4.8 11.8 12 4.6-2.2 12.6L105 49l-6 11 6 11-8.2 9.8 2.2 12.6-12 4.6-4.8 11.8-12.6-2.2L60 116l-9.6-8.4-12.6 2.2-4.8-11.8-12-4.6 2.2-12.6L15 71l6-11-6-11 8.2-9.8-2.2-12.6 12-4.6 4.8-11.8 12.6 2.2z"
+            />
+            <circle class="guarantee_seal_ring" cx="60" cy="60" r="36" />
+            <path class="guarantee_seal_check" d="M44 61l11 11 22-24" />
+          </svg>
+          <span class="guarantee_seal_label">{sealLabel}</span>
+        </div>
+        <div class="guarantee_content">
+          {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+          <Heading tag="h2" variant="h2" accent>
+            <Fragment set:html={name} />
+          </Heading>
+          {text && <Text variant="large">{text}</Text>}
+          {items.length > 0 && <CheckList items={items} variant="plain" />}
+          {cta && (
+            <div class="guarantee_action">
+              <CtaButton cta={cta} variant="secondary" size="large" />
+            </div>
+          )}
+        </div>
+      </div>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .guarantee_layout {
+      display: grid;
+      grid-template-columns: var(--_guarantee-columns, auto minmax(0, 1fr));
+      align-items: center;
+      gap: var(--space-8);
+    }
+
+    @container (width < 40em) {
+      .guarantee_layout {
+        --_guarantee-columns: minmax(0, 1fr);
+        gap: var(--space-6);
+      }
+
+      .guarantee_seal {
+        justify-items: start;
+      }
+    }
+
+    .guarantee_seal {
+      display: grid;
+      justify-items: center;
+      gap: var(--space-2);
+      color: var(--heading-accent);
+    }
+
+    .guarantee_seal_svg {
+      width: 9rem;
+      aspect-ratio: 1 / 1;
+    }
+
+    .guarantee_seal_rosette {
+      fill: currentColor;
+    }
+
+    .guarantee_seal_ring {
+      fill: none;
+      stroke: var(--background);
+      stroke-width: 2.5;
+    }
+
+    .guarantee_seal_check {
+      fill: none;
+      stroke: var(--background);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .guarantee_seal_label {
+      font-family: var(--font-primary);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .guarantee_content {
+      min-width: 0;
+      max-width: 44rem;
+    }
+
+    .guarantee_action {
+      margin-top: var(--space-5);
+    }
+  }
+</style>
