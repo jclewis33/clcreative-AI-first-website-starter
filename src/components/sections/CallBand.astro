@@ -1,27 +1,44 @@
 ---
+import type { ImageMetadata } from "astro";
 import type { HTMLAttributes, ComponentProps } from "astro/types";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
+import CtaPanel from "@/components/ui/CtaPanel.astro";
 import type { SectionCta } from "@/lib/cta";
 
+type CallBandVariant =
+  /** Dark band: heading left, phone + second button right */
+  | "band"
+  /** A white card centred on a full-width photo, with the estimate button + "or" + phone panel */
+  | "photo-card"
+  /** One rounded card: dark text side with the buttons, photo side */
+  | "split";
 type CallBandTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
 interface Props extends HTMLAttributes<"section"> {
   /**
-   * **CallBand** — a dark closing band: a heading on the left, the
-   * `SITE.phone` call button and a second button on the right. A lighter
-   * alternative to CTASection for the bottom of service and project pages.
+   * **CallBand** — the closing call to action of a local-service page.
    *
+   * - `variant` — `'band'` (dark band, phone + second button), `'photo-card'`
+   *   (a white card on a full-width photo — a lawn, a roofline — with the
+   *   estimate panel) or `'split'` (a rounded card, text one side, photo the
+   *   other). The photo variants need `image` + `imageAlt`; without them
+   *   they fall back to `'band'`.
    * - `heading` (HTML allowed; `<strong>` = accent), `text`
    * - `secondaryCta` — default `{ label: "Contact us", href: "/contact" }`;
-   *   pass `{ label, modal }` to open the estimate form instead
+   *   pass `{ label, modal }` to open the estimate form instead. On the
+   *   photo variants it is the main button.
+   * - `ctaNote` — small line under the button on `'photo-card'`
    *
    * @example
    * <CallBand heading="Ready to start?" secondaryCta={{ label: "Get an estimate", modal: "estimate-modal" }} />
+   * <CallBand variant="photo-card" image={lawn} imageAlt="A thick green lawn" heading="Get a free quote" secondaryCta={estimateCta} />
    */
   docs?: string;
 
@@ -34,10 +51,22 @@ interface Props extends HTMLAttributes<"section"> {
   /** Supporting line. */
   text?: string;
 
-  /** The second button. @default { label: "Contact us", href: "/contact" } */
+  /** The second button (the main one on the photo variants). @default { label: "Contact us", href: "/contact" } */
   secondaryCta?: SectionCta;
 
-  /** Section theme. @default 'dark' */
+  /** Layout. @default 'band' */
+  variant?: CallBandVariant;
+
+  /** Photo for `'photo-card'` and `'split'` (imported image or URL). */
+  image?: ImageMetadata | string;
+
+  /** Alt text for the photo. */
+  imageAlt?: string;
+
+  /** Small line under the button on `'photo-card'`, e.g. "No obligation". */
+  ctaNote?: string;
+
+  /** Section theme. @default 'dark' for band and photo-card, else inherit */
   theme?: CallBandTheme;
 
   /** Section padding (top and bottom). */
@@ -56,20 +85,39 @@ const {
   heading,
   text,
   secondaryCta = { label: "Contact us", href: "/contact" },
-  theme = "dark",
+  variant: variantProp = "band",
+  image,
+  imageAlt,
+  ctaNote,
+  theme: themeProp,
   padding,
   id,
   class: className,
   ...rest
 } = Astro.props;
 
-if (import.meta.env.DEV && render && !heading) {
-  console.warn("[CallBand] `heading` is required; nothing renders.");
+/* The photo variants need a photo; without one, the plain band. */
+const variant: CallBandVariant =
+  variantProp !== "band" && !image ? "band" : variantProp;
+const theme: CallBandTheme =
+  themeProp ?? (variant === "split" ? undefined : "dark");
+/* Never alt="" (CLAUDE.md): fall back to the heading's plain text. */
+const photoAlt = imageAlt || heading?.replace(/<[^>]+>/g, "") || "";
+
+if (import.meta.env.DEV && render) {
+  if (!heading)
+    console.warn("[CallBand] `heading` is required; nothing renders.");
+  if (!["band", "photo-card", "split"].includes(variantProp))
+    console.warn(`[CallBand] Unknown variant "${variantProp}".`);
+  if (variantProp !== "band" && !image)
+    console.warn(
+      `[CallBand] variant "${variantProp}" needs an \`image\`; showing the band.`,
+    );
 }
 ---
 
 {
-  render && heading && (
+  render && heading && variant === "band" && (
     <Section
       theme={theme}
       padding={padding}
@@ -96,6 +144,58 @@ if (import.meta.env.DEV && render && !heading) {
   )
 }
 
+{
+  render && heading && variant === "photo-card" && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["call-band_wrap", "is-photo-card", className]}
+      {...rest}
+    >
+      <Fragment slot="background">
+        <Visual src={image!} alt={photoAlt} variant="background" />
+        <Overlay strength={45} />
+      </Fragment>
+      <div class="call-band_card" data-theme-invert>
+        <Heading tag="h2" variant="h2" accent>
+          <Fragment set:html={heading} />
+        </Heading>
+        {text && <Text muted>{text}</Text>}
+        <CtaPanel cta={secondaryCta} note={ctaNote} class="call-band_panel" />
+      </div>
+    </Section>
+  )
+}
+
+{
+  render && heading && variant === "split" && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["call-band_wrap", "is-split", className]}
+      {...rest}
+    >
+      <div class="call-band_split" data-theme-invert>
+        <div class="call-band_split_content">
+          <Heading tag="h2" variant="h2" accent>
+            <Fragment set:html={heading} />
+          </Heading>
+          {text && <Text muted>{text}</Text>}
+          <div class="call-band_split_actions">
+            <CtaButton cta={secondaryCta} size="large" />
+            <CtaButton phone variant="secondary" size="large" />
+          </div>
+        </div>
+        <div class="call-band_split_media">
+          <Visual src={image!} alt={photoAlt} variant="background" />
+        </div>
+      </div>
+    </Section>
+  )
+}
+
 <style is:global>
   @layer components {
     .call-band_actions {
@@ -104,6 +204,61 @@ if (import.meta.env.DEV && render && !heading) {
       width: 100%;
       max-width: 22rem;
       justify-self: var(--start-medium, end);
+    }
+
+    /* photo-card: a light card centred on the photo. */
+    .call-band_card {
+      --_text-inline-margin: auto;
+      --_buttons-justify: center;
+      align-self: center;
+      width: 100%;
+      max-width: 44rem;
+      padding: var(--space-7) var(--space-6);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+      color: var(--text);
+      text-align: center;
+      box-shadow: var(--box-shadow-xlarge);
+    }
+
+    .call-band_card .call-band_panel {
+      align-self: center;
+      margin-inline: auto;
+    }
+
+    /* split: one rounded card, text and photo side by side. */
+    .call-band_split {
+      display: grid;
+      grid-template-columns: var(
+        --_split-columns,
+        minmax(0, 1fr) minmax(0, 1fr)
+      );
+      overflow: hidden;
+      border-radius: var(--radius-main);
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    @container (width < 48em) {
+      .call-band_split {
+        --_split-columns: minmax(0, 1fr);
+      }
+    }
+
+    .call-band_split_content {
+      padding: var(--space-8) var(--space-7);
+    }
+
+    .call-band_split_actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-top: var(--space-5);
+    }
+
+    .call-band_split_media {
+      position: relative;
+      min-height: 18rem;
     }
   }
 </style>

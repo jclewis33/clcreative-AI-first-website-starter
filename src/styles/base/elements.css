@@ -64,6 +64,7 @@ h1 {
   line-height: var(--h1-line-height);
   font-weight: var(--h1-weight);
   text-transform: var(--h1-text-transform);
+  letter-spacing: var(--heading-letter-spacing);
   margin-top: 0;
   margin-bottom: 0;
   display: flow-root;
@@ -75,6 +76,7 @@ h2 {
   line-height: var(--h2-line-height);
   font-weight: var(--h2-weight);
   text-transform: var(--h2-text-transform);
+  letter-spacing: var(--heading-letter-spacing);
   margin-top: 0;
   margin-bottom: 0;
   display: flow-root;
@@ -86,6 +88,7 @@ h3 {
   line-height: var(--h3-line-height);
   font-weight: var(--h3-weight);
   text-transform: var(--h3-text-transform);
+  letter-spacing: var(--heading-letter-spacing);
   margin-top: 0;
   margin-bottom: 0;
   display: flow-root;
@@ -97,6 +100,7 @@ h4 {
   line-height: var(--h4-line-height);
   font-weight: var(--h4-weight);
   text-transform: var(--h4-text-transform);
+  letter-spacing: var(--heading-letter-spacing);
   margin-top: 0;
   margin-bottom: 0;
   display: flow-root;
@@ -108,6 +112,7 @@ h5 {
   line-height: var(--h5-line-height);
   font-weight: var(--h5-weight);
   text-transform: var(--h5-text-transform);
+  letter-spacing: var(--heading-letter-spacing);
   margin-top: 0;
   margin-bottom: 0;
   display: flow-root;
@@ -119,6 +124,7 @@ h6 {
   line-height: var(--h6-line-height);
   font-weight: var(--h6-weight);
   text-transform: var(--h6-text-transform);
+  letter-spacing: var(--heading-letter-spacing);
   margin-top: 0;
   margin-bottom: 0;
   display: flow-root;
@@ -152,4 +158,16 @@ a {
 
 a:hover {
   color: var(--link-text-hover);
+}
+
+/* A highlighted offer inside a heading ("Call today for <mark>$100 off</mark>"):
+   the heading accent colour on a pale tint of itself, like a highlighter.
+   Clones its padding onto each line when it wraps. */
+mark {
+  padding-inline: 0.12em;
+  border-radius: var(--radius-xsmall);
+  background-color: color-mix(in srgb, var(--heading-accent) 16%, transparent);
+  color: var(--heading-accent);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }

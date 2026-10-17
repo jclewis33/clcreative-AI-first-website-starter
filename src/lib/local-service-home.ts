@@ -21,6 +21,7 @@ type HomeReview = { text: string; name: string; meta?: string };
 type HomeOption = { label: string; value: string };
 /** An SVG imported as a component (ServiceArea's interactive map). */
 type HomeMap = (props: Record<string, unknown>) => unknown;
+type HomeTrust = { label: string; image?: HomeImage };
 
 export interface LocalServiceHomeData {
   /** Page `<title>` and meta description. */
@@ -32,13 +33,21 @@ export interface LocalServiceHomeData {
 
   hero: {
     eyebrow?: string;
-    /** HTML allowed (`<strong>` marks the accent words). */
+    /** HTML allowed: `<strong>` marks the accent words, `<mark>` highlights an offer. */
     heading: string;
     text?: string;
     image: HomeImage;
     imageAlt: string;
+    /** Photo behind the text (default) or beside it. */
+    variant?: "background" | "split";
+    /** `panel` = the estimate button, "or", and the phone on one panel. */
+    ctaStyle?: "buttons" | "panel";
+    /** Small line under the estimate button in the panel ("And claim $100 off"). */
+    ctaNote?: string;
     /** Star line under the CTAs — only with a real rating to quote. */
     proof?: { rating?: number; text: string };
+    /** Credentials the business really holds. */
+    trust?: HomeTrust[];
   };
 
   /** Four short numbers or words. Leave out anything you can't back up. */
@@ -76,7 +85,13 @@ export interface LocalServiceHomeData {
   };
 
   /** Real, attributed reviews only. Absent = no Reviews section. */
-  reviews?: { rating?: number; count?: number; items: HomeReview[] };
+  reviews?: {
+    rating?: number;
+    count?: number;
+    items: HomeReview[];
+    /** @default 'cards' (stars on every card) */
+    layout?: "cards" | "featured" | "grid";
+  };
 
   leadForm: {
     eyebrow?: string;
@@ -89,5 +104,13 @@ export interface LocalServiceHomeData {
   /** Absent = no FAQ section (never the generic lorem defaults). */
   faqs?: { eyebrow?: string; items: FAQItem[] };
 
-  callBand: { heading: string; text?: string };
+  callBand: {
+    heading: string;
+    text?: string;
+    /** `photo-card` / `split` need `image`. @default 'band' */
+    variant?: "band" | "photo-card" | "split";
+    image?: HomeImage;
+    imageAlt?: string;
+    ctaNote?: string;
+  };
 }

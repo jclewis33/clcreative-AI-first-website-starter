@@ -26,6 +26,8 @@ import FAQ from "@/components/sections/FAQ.astro";
 import CallBand from "@/components/sections/CallBand.astro";
 import LeadFormModal from "@/components/form/LeadFormModal.astro";
 import { getServices, servicePath } from "@/lib/services";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { SITE } from "@/config/site";
 import type { LocalServiceHomeData } from "@/lib/local-service-home";
 
 interface Props {
@@ -47,8 +49,11 @@ interface Props {
 const { home } = Astro.props;
 
 const services = await getServices();
-const ESTIMATE = "estimate-modal";
-const estimateCta = { label: home.estimate.label, modal: ESTIMATE };
+/* With SITE.quote set, BaseLayout already renders the site-wide estimate
+   form; otherwise (the dev sample in the agency chrome) this page brings
+   its own. Either way the buttons open ESTIMATE_MODAL_ID. */
+const ownModal = !SITE.quote;
+const estimateCta = { label: home.estimate.label, modal: ESTIMATE_MODAL_ID };
 const serviceItems = services.map((s) => ({
   title: s.data.title,
   text: s.data.cardText,
@@ -75,8 +80,12 @@ if (import.meta.env.DEV && !services.length)
     text={hero.text}
     image={hero.image}
     imageAlt={hero.imageAlt}
+    variant={hero.variant}
+    ctaStyle={hero.ctaStyle}
+    ctaNote={hero.ctaNote}
     primaryCta={estimateCta}
     proof={hero.proof}
+    trust={hero.trust}
   />
 
   {home.stats && <StatsStrip items={home.stats} />}
@@ -130,6 +139,7 @@ if (import.meta.env.DEV && !services.length)
         rating={reviews.rating}
         count={reviews.count}
         reviews={reviews.items}
+        layout={reviews.layout ?? "cards"}
       />
     )
   }
@@ -148,15 +158,23 @@ if (import.meta.env.DEV && !services.length)
   <CallBand
     heading={home.callBand.heading}
     text={home.callBand.text}
+    variant={home.callBand.variant}
+    image={home.callBand.image}
+    imageAlt={home.callBand.imageAlt}
+    ctaNote={home.callBand.ctaNote}
     secondaryCta={estimateCta}
   />
 
-  <LeadFormModal
-    id={ESTIMATE}
-    formId="contact"
-    heading={home.estimate.heading}
-    text={home.estimate.text}
-    fields="quote"
-    projectOptions={projectOptions}
-  />
+  {
+    ownModal && (
+      <LeadFormModal
+        id={ESTIMATE_MODAL_ID}
+        formId="contact"
+        heading={home.estimate.heading}
+        text={home.estimate.text}
+        fields="quote"
+        projectOptions={projectOptions}
+      />
+    )
+  }
 </BaseLayout>

@@ -68,6 +68,7 @@
 @import "./variables/spacing.css" layer(variables);
 @import "./variables/layout.css" layer(variables);
 @import "./variables/nav.css" layer(variables);
+@import "./variables/looks.css" layer(variables);
 
 /* ── base ── element and attribute defaults that components are meant to
    override. elements.css must come first: it carries the bare h1-h6/p/a/

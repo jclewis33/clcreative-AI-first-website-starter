@@ -33,12 +33,22 @@ const homeSchema = z.object({
     }),
   hero: z.object({
     eyebrow: text.optional(),
+    /** HTML: <strong> = accent words, <mark> = a highlighted offer. */
     heading: text,
     text: text.optional(),
     image,
     imageAlt: text,
+    variant: z.enum(["background", "split"]).optional(),
+    /** "panel" = estimate button + "or" + "Call or text us". */
+    ctaStyle: z.enum(["buttons", "panel"]).default("panel"),
+    ctaNote: text.optional(),
     proof: z
       .object({ rating: z.number().min(1).max(5).optional(), text })
+      .optional(),
+    /** Credentials they really hold; `image` is a logo source. */
+    trust: z
+      .array(z.object({ label: text, image: image.optional() }))
+      .max(5)
       .optional(),
   }),
   stats: z
@@ -88,6 +98,7 @@ const homeSchema = z.object({
       items: z
         .array(z.object({ text, name: text, meta: text.optional() }))
         .min(1),
+      layout: z.enum(["cards", "featured", "grid"]).optional(),
     })
     .optional(),
   leadForm: z.object({
@@ -105,7 +116,20 @@ const homeSchema = z.object({
       items: z.array(z.object({ question: text, answer: text })).min(2),
     })
     .optional(),
-  callBand: z.object({ heading: text, text: text.optional() }),
+  callBand: z
+    .object({
+      heading: text,
+      text: text.optional(),
+      /** photo-card / split need `image` + `imageAlt`. */
+      variant: z.enum(["band", "photo-card", "split"]).optional(),
+      image: image.optional(),
+      imageAlt: text.optional(),
+      ctaNote: text.optional(),
+    })
+    .refine((c) => !c.image || c.imageAlt, {
+      message: "imageAlt is required when image is set",
+      path: ["imageAlt"],
+    }),
 });
 
 /** A service: the content schema's fields, plus its slug. */
@@ -130,8 +154,18 @@ const serviceSchema = z
   })
   .passthrough();
 
+/** The looks (src/config/looks.ts) a demo can wear. */
+export const LOOK_NAMES = ["fresh", "warm", "rugged", "natural", "studio"];
+
 export const demoSchema = z.object({
   preset: z.literal("local-service"),
+  /**
+   * fresh (lawn, pest, cleaning) · warm (HVAC, insulation, remodeling) ·
+   * rugged (electrical, roofing, plumbing) · natural (hardscape, landscaping)
+   */
+  look: z.enum(LOOK_NAMES).default("fresh"),
+  /** Contractor license, shown in the footer, e.g. "TECL #25414". */
+  license: text.optional(),
   prospect: z.object({
     name: text,
     legalName: text.optional(),

@@ -3,6 +3,7 @@
 import { Font } from "astro:assets";
 import { isNoindexRoute, SITE_NOINDEX } from "@/config/seo.shared.mjs";
 import { SITE } from"@/config/site";
+import { LOOKS } from "@/config/looks";
 import { isToolsPath } from "@/lib/tools-auth";
 
 // Destructure props with default values.
@@ -62,9 +63,7 @@ const resolvedTwitterImage = resolvedOgImage;
 <meta name="theme-color" content={SITE.brand.color} />
 
 <!-- Fonts (Astro Fonts API) -->
-<Font cssVariable="--font-bdo-grotesk" preload />
-<Font cssVariable="--font-inter" preload />
-<Font cssVariable="--font-ibm-plex-mono" preload />
+{/* Only the current look's fonts (src/config/looks.ts). */ LOOKS[SITE.look].fonts.map((font, i) => <Fragment>{i > 0 && " "}<Font cssVariable={font} preload /></Fragment>)}
 
 <!-- Favicon and Apple Touch Icon -->
 <link rel="icon" href={SITE.logoPath} type="image/x-icon" />

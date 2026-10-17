@@ -1,0 +1,106 @@
+---
+/**
+ * TrustBadges — a row of credentials a homeowner checks before calling:
+ * "Licensed & insured", "BBB A+", "Veteran-owned", "Trane comfort
+ * specialist". Each badge is the credential's logo (when you have it) or a
+ * check-shield icon, beside its label. Used in Hero (`trust`) and wherever
+ * a section needs proof in one line.
+ */
+import type { ImageMetadata } from "astro";
+import Icon from "@/components/ui/Icon.astro";
+import shieldIcon from "@/assets/icons/shield-check.svg";
+
+type TrustBadge = {
+  /** The credential, e.g. "Licensed & insured". */
+  label: string;
+  /** Its seal or logo (an import or a URL). Without one, a check-shield icon shows. */
+  image?: ImageMetadata | string;
+};
+
+interface Props {
+  /**
+   * **TrustBadges** — a wrapping row of credential badges (logo or
+   * check-shield icon + label). Empty `items` renders nothing.
+   *
+   * Only list credentials the business really holds.
+   *
+   * @example
+   * <TrustBadges items={[{ label: "Licensed & insured" }, { label: "BBB A+", image: bbbLogo }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The badges. Empty renders nothing. */
+  items: TrustBadge[];
+
+  /** Extra classes on the list. */
+  class?: string;
+}
+
+const { docs, render = true, items = [], class: className } = Astro.props;
+
+const src = (image: ImageMetadata | string) =>
+  typeof image === "string" ? image : image.src;
+---
+
+{
+  render && items.length > 0 && (
+    <ul class:list={["trust-badges_wrap", className]}>
+      {items.map((item) => (
+        <li class="trust-badges_item">
+          {item.image && (
+            <img
+              class="trust-badges_img"
+              src={src(item.image)}
+              alt={item.label}
+              loading="lazy"
+              decoding="async"
+            />
+          )}
+          {!item.image && <Icon src={shieldIcon} class="trust-badges_icon" />}
+          <span class="trust-badges_label">{item.label}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .trust-badges_wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3) var(--space-5);
+      margin: var(--space-5) 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .trust-badges_item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      min-width: 0;
+      font-size: var(--text-small-size);
+      font-weight: var(--font-weight-medium);
+    }
+
+    .trust-badges_img {
+      flex-shrink: 0;
+      width: auto;
+      height: 2.5rem;
+      object-fit: contain;
+    }
+
+    .trust-badges_icon {
+      flex-shrink: 0;
+      color: var(--heading-accent);
+    }
+
+    .trust-badges_label {
+      min-width: 0;
+    }
+  }
+</style>

@@ -541,7 +541,7 @@ const tagAttrs = resolvedHref
     /* This element IS the <a> or <button> (see the STRUCTURE note above), so it
        carries the UA resets a bare wrapper div never needed. */
     .button_main_wrap {
-      border-radius: var(--radius-main);
+      border-radius: var(--button-radius);
       display: inline-block;
       position: relative;
       padding: 0;
@@ -647,10 +647,11 @@ const tagAttrs = resolvedHref
    ===================================================== */
 
     .button_main_element {
-      font-family: var(--font-tertiary);
-      font-size: var(--text-small-size);
-      text-transform: uppercase;
-      letter-spacing: var(--letter-spacing-tight);
+      font-family: var(--button-font-family);
+      font-size: var(--button-font-size);
+      font-weight: var(--button-font-weight);
+      text-transform: var(--button-text-transform);
+      letter-spacing: var(--button-letter-spacing);
       gap: 0.5rem;
       text-align: center;
       vertical-align: middle;

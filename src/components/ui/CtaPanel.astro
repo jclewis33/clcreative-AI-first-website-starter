@@ -1,0 +1,157 @@
+---
+/**
+ * CtaPanel — the home-service "two ways to reach us" unit: the estimate
+ * button, an "or" divider, and the phone as a big tap-to-call number under a
+ * small "Call or text us" label, all on one tinted panel. It frames calling
+ * as an equal choice rather than a secondary button.
+ */
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+import { SITE } from "@/config/site";
+
+interface Props {
+  /**
+   * **CtaPanel** — the estimate button, "or", and the phone number on one
+   * tinted panel. Used by Hero (`ctaStyle="panel"`) and CallBand.
+   *
+   * - `cta` — the button (`{ label, modal }` to open the estimate form)
+   * - `note` — a small line under the button ("No obligation · Free quote")
+   * - `phoneLabel` — the line over the number. @default 'Call or text us'
+   *
+   * Renders nothing (with a dev warning) without `cta.label`.
+   *
+   * @example
+   * <CtaPanel cta={{ label: "Get a free estimate", modal: "estimate-modal" }} note="And claim $100 off" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The estimate button. Required. */
+  cta: SectionCta;
+
+  /** Small line under the button. */
+  note?: string;
+
+  /** The line over the phone number. @default 'Call or text us' */
+  phoneLabel?: string;
+
+  /** Extra classes on the panel. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  cta,
+  note,
+  phoneLabel = "Call or text us",
+  class: className,
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !cta?.label) {
+  console.warn("[CtaPanel] `cta.label` is required; nothing renders.");
+}
+---
+
+{
+  render && cta?.label && (
+    <div class:list={["cta-panel_wrap", className]}>
+      <div class="cta-panel_action">
+        <CtaButton cta={cta} size="large" fullWidth />
+        {note && <p class="cta-panel_note">{note}</p>}
+      </div>
+      <span class="cta-panel_or" aria-hidden="true">
+        or
+      </span>
+      <a
+        class="cta-panel_phone_wrap"
+        href={`tel:${SITE.phone.tel}`}
+        aria-label={`${phoneLabel} ${SITE.phone.display}`}
+      >
+        <span class="cta-panel_phone_label">{phoneLabel}</span>
+        <span class="cta-panel_phone_number">{SITE.phone.display}</span>
+      </a>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .cta-panel_wrap {
+      display: flex;
+      flex-direction: var(--column-small, row);
+      align-items: center;
+      gap: var(--space-4);
+      align-self: flex-start;
+      width: fit-content;
+      max-width: 100%;
+      margin-top: var(--space-5);
+      padding: var(--space-4);
+      border-radius: var(--radius-main);
+      background-color: color-mix(in srgb, var(--text) 5%, transparent);
+    }
+
+    /* Stacked on a phone: the panel spans the column. */
+    @container (width < 35em) {
+      .cta-panel_wrap {
+        align-self: stretch;
+        width: 100%;
+      }
+    }
+
+    .cta-panel_action {
+      display: grid;
+      gap: var(--space-2);
+      justify-items: center;
+      min-width: min(16rem, 100%);
+    }
+
+    .cta-panel_note {
+      margin: 0;
+      font-size: var(--text-tiny-size);
+      text-transform: var(--button-text-transform);
+      letter-spacing: var(--button-letter-spacing);
+      opacity: 0.8;
+    }
+
+    .cta-panel_or {
+      flex: none;
+      font-size: var(--text-small-size);
+      opacity: 0.6;
+    }
+
+    .cta-panel_phone_wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-inline: var(--space-3);
+      color: var(--text);
+      text-decoration: none;
+      line-height: 1.1;
+    }
+
+    .cta-panel_phone_label {
+      font-size: var(--text-tiny-size);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      opacity: 0.8;
+    }
+
+    .cta-panel_phone_number {
+      font-family: var(--font-primary);
+      font-size: var(--h4-size);
+      font-weight: var(--h4-weight);
+      color: var(--heading-accent);
+      white-space: nowrap;
+    }
+
+    @media (hover: hover) {
+      .cta-panel_phone_wrap:hover .cta-panel_phone_number {
+        text-decoration: underline;
+        text-underline-offset: 0.15em;
+      }
+    }
+  }
+</style>

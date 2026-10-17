@@ -29,6 +29,8 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   `hours`, `locality`, `region`
 - `serviceAreas`, `founded?`, `reviewsUrl?`, `social?` (`{ "Facebook": url }`),
   `utilityBar?`
+- `look` — `fresh` | `warm` | `rugged` | `natural` (by trade; see
+  `src/config/looks.ts`), and `license?` for the footer
 - `brand` — `color` (`#rrggbb`), `logo: { file, plate? }`, `favicon?`
 - `seo` — `tagline`, `description` (at most 160 characters)
 - `home` — `LocalServiceHomeData` (`src/lib/local-service-home.ts`) with image

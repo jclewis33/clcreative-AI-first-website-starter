@@ -154,9 +154,21 @@ try {
     home,
     /see-how-it-works\?from=demo&amp;demo=brightline-electric/,
   );
-  assert.match(home, /Electrical work done/);
+  assert.match(home, /your first service call/);
   assert.match(home, /href="\/services\/panel-upgrades"/);
   assert.doesNotMatch(home, /href="\/blog"/);
+  // The local-service chrome: the fixture's look, the nav phone, the
+  // site-wide estimate form (once per page), the mobile bar, the license.
+  assert.match(home, /<html[^>]* data-look="rugged"/);
+  assert.match(home, /class="nav_phone_wrap"/);
+  assert.equal(home.match(/id="estimate-modal"/g)?.length, 1);
+  assert.match(home, /class="mobile-bar_wrap"/);
+  assert.match(home, /License TECL #12345/);
+  assert.match(home, /<mark>\$50 off<\/mark>/);
+  assert.match(home, /class="cta-panel_wrap/);
+  assert.match(home, /class="trust-badges_wrap/);
+  assert.match(home, /reviews_card is-rated/);
+  assert.match(home, /call-band_wrap is-photo-card/);
   assert.match(html("contact/index.html"), /Contact \| Brightline Electric/);
   assert.ok(
     fs.existsSync(path.join(client, "services", "ev-chargers", "index.html")),

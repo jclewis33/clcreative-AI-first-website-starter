@@ -1,0 +1,97 @@
+---
+/**
+ * MobileActionBar — the phone-only sticky bar of a local-service site: a
+ * tap-to-call button and the estimate button, fixed to the bottom of the
+ * screen. Most home-service leads are a thumb on a phone; this keeps both
+ * one tap away on every page.
+ *
+ * Renders only in local-service mode (`SITE.quote` set — BaseLayout renders
+ * it on every page). Hidden at tablet width and up, where the navbar shows
+ * the phone and the estimate button. The estimate button opens the
+ * site-wide estimate form (ESTIMATE_MODAL_ID).
+ */
+import Button from "@/components/ui/Button.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import Icon from "@/components/ui/Icon.astro";
+import phoneIcon from "@/assets/icons/phone.svg";
+import { SITE } from "@/config/site";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+
+interface Props {
+  /**
+   * **MobileActionBar** — sticky call + estimate bar on phones. No props:
+   * it reads `SITE.phone` and `SITE.quote`, and renders nothing when
+   * `SITE.quote` is null.
+   */
+  docs?: string;
+}
+
+const estimateCta = SITE.quote
+  ? { label: SITE.quote.label, modal: ESTIMATE_MODAL_ID }
+  : null;
+---
+
+{
+  estimateCta && (
+    <div class="mobile-bar_wrap" data-theme="light">
+      <div class="mobile-bar_layout">
+        {/* "Call now", not the number: two full-width buttons share a phone
+            screen, and the number would wrap. */}
+        <Button
+          href={`tel:${SITE.phone.tel}`}
+          variant="secondary"
+          fullWidth
+          iconPosition="start"
+          ariaLabel={`Call ${SITE.phone.display}`}
+        >
+          Call now
+          <Icon slot="icon" src={phoneIcon} variant="small" />
+        </Button>
+        <CtaButton cta={estimateCta} fullWidth />
+      </div>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .mobile-bar_wrap {
+      display: none;
+    }
+
+    /* Phones only: a viewport query, not a container query — the bar is
+       fixed to the viewport, outside every container. */
+    @media (width < 48em) {
+      .mobile-bar_wrap {
+        display: block;
+        position: fixed;
+        inset-inline: 0;
+        inset-block-end: 0;
+        z-index: 40;
+        padding: var(--space-2) var(--site-margin);
+        padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+        background-color: var(--background-2);
+        border-top: var(--border-width-main) solid var(--border);
+        box-shadow: var(--box-shadow-large);
+      }
+
+      /* Keep the end of the page (the footer's last line) clear of it. */
+      body:has(.mobile-bar_wrap) {
+        padding-bottom: 5rem;
+      }
+    }
+
+    .mobile-bar_layout {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-2);
+    }
+
+    /* One line per button: the labels are short, and a wrapped label
+       doubles the bar's height. */
+    .mobile-bar_layout .button_main_element {
+      padding-inline: var(--space-3);
+      white-space: nowrap;
+    }
+  }
+</style>

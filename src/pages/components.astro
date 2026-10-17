@@ -92,6 +92,8 @@ import ProjectBrowser from "@/components/ui/ProjectBrowser.astro";
 import GalleryBrowser from "@/components/ui/GalleryBrowser.astro";
 import "@/styles/pages/components-demo.css";
 import CtaButton from "@/components/ui/CtaButton.astro";
+import CtaPanel from "@/components/ui/CtaPanel.astro";
+import TrustBadges from "@/components/ui/TrustBadges.astro";
 import LeadFormModal from "@/components/form/LeadFormModal.astro";
 import ImagePair from "@/components/ui/ImagePair.astro";
 import ServiceIcon, {
@@ -324,6 +326,32 @@ const demoProject2: ProjectCardData = {
     position: "center",
   },
 };
+
+/* Home-service demos (CtaPanel, TrustBadges, Reviews cards, CallBand photo
+   variants) — hoisted here so no attribute holds a multi-line literal. */
+const demoEstimateCta = { label: "Get an estimate", modal: "demo-estimate" };
+const demoTrust = [
+  { label: "Licensed & insured" },
+  { label: "Upfront pricing" },
+  { label: "Same-week service" },
+];
+const demoRatedReviews = [
+  {
+    text: "Swapped our panel in a day and left the garage cleaner than they found it.",
+    name: "Dana M.",
+    meta: "Panel upgrade · Round Rock",
+  },
+  {
+    text: "Clear price up front, on time, and the charger has worked perfectly.",
+    name: "Chris L.",
+    meta: "EV charger · Cedar Park",
+  },
+  {
+    text: "Sorted a tripping breaker the same afternoon.",
+    name: "Priya S.",
+    meta: "Repair · Austin",
+  },
+];
 ---
 
 <BaseLayout
@@ -2261,6 +2289,15 @@ const demoProject2: ProjectCardData = {
       heading="Get a free estimate"
       text="Tell us a little about the project and we'll be in touch."
     />
+    <Layout variant="stack">
+      <Heading variant="eyebrow">CtaPanel &amp; TrustBadges</Heading>
+      <Text muted
+        >The home-service pair: the estimate button, "or", and the phone on one
+        panel, then the credentials a homeowner checks.</Text
+      >
+    </Layout>
+    <CtaPanel cta={demoEstimateCta} note="No-obligation quote" />
+    <TrustBadges items={demoTrust} />
   </Section>
 
   <Section theme="light" id="image-pair">
@@ -2599,6 +2636,14 @@ const demoProject2: ProjectCardData = {
     ]}
   />
 
+  <Reviews
+    layout="cards"
+    heading="What neighbors say"
+    rating={4.9}
+    count={86}
+    reviews={demoRatedReviews}
+  />
+
   <Section theme="light" padding="small" id="lead-form-section">
     <Heading variant="eyebrow">LeadFormSection</Heading>
     <Heading tag="h2"
@@ -2629,6 +2674,23 @@ const demoProject2: ProjectCardData = {
     heading="Ready to <strong>get started</strong>?"
     text="Call now, or get an estimate online."
     secondaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
+  />
+  <CallBand
+    variant="photo-card"
+    image={demoPhoto5}
+    imageAlt="A bright finished room"
+    heading="Get a <strong>free quote</strong>"
+    text="Pricing and options for your home, usually the same day."
+    ctaNote="No obligation"
+    secondaryCta={demoEstimateCta}
+  />
+  <CallBand
+    variant="split"
+    image={demoPhoto4}
+    imageAlt="A project manager walking a homeowner through plans"
+    heading="Stop putting off <strong>that project</strong>"
+    text="A free on-site estimate, with no pressure."
+    secondaryCta={demoEstimateCta}
   />
 
   <Section theme="light" padding="small" id="cta-section-cta">

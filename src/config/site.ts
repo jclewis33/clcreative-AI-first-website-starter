@@ -13,6 +13,7 @@
  */
 
 import { SITE_URL as SHARED_SITE_URL } from "./site.shared.mjs";
+import type { SiteLook } from "./looks";
 
 export interface SocialLink {
   /** Accessible label / platform name. */
@@ -121,6 +122,25 @@ export const SITE = {
    * desktop ("Serving Your City and nearby").
    */
   utilityBar: null as { text: string; areaLabel?: string } | null,
+
+  /**
+   * The site's visual look (src/config/looks.ts): "studio" (the starter's
+   * own), or a home-service look — "fresh", "warm", "rugged", "natural".
+   */
+  look: "studio" as SiteLook,
+
+  /**
+   * Local-service mode: the site-wide estimate CTA. When set, every page
+   * gets the estimate form as a modal (BaseLayout), the navbar shows the
+   * phone and a button that opens the form, phones get a sticky call /
+   * estimate bar, and the footer lists the service areas. `label` is the
+   * button text everywhere, `heading`/`text` head the form. `null` = the
+   * agency chrome (a "Contact" link).
+   */
+  quote: null as { label: string; heading: string; text?: string } | null,
+
+  /** Contractor license, shown in the footer's bottom line (e.g. "TECL #25414"). Blank = none. */
+  license: "",
 
   /** Home-based — no street line by design. */
   address: {

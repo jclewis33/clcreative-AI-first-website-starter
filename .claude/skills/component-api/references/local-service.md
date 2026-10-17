@@ -50,22 +50,26 @@ missing, warns in dev, and passes `theme` / `padding` / `id` / `class` to its
 `@/lib/cta`); `modal` opens a `<LeadFormModal>` by id. Phone buttons always
 read `SITE.phone`.
 
-| Section           | What it's for                                     | Key props                                                                                                                                 | Use when                                              |
-| ----------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `Hero`            | The first section                                 | `variant: background \| split \| text`, `heading` (HTML, `<strong>` = accent), `primaryCta`, `showPhone`, `breadcrumbs`, `proof`, `badge` | Every page. `split` + `breadcrumbs` for service pages |
-| `StatsStrip`      | Four proof points in a slim band                  | `items: {value, label}[]`, `valueSize: number \| word`                                                                                    | Under the hero                                        |
-| `ServiceCards`    | The services, as cards                            | `items: {title, text?, image?, href?, icon?}[]`, `layout: grid \| swipe`                                                                  | Home services; `swipe` for related services           |
-| `ServiceArea`     | Places served, with a map or photos               | `areas` (default `SITE.serviceAreas`), `map` (SVG component), `images`                                                                    | Home, contact                                         |
-| `ProcessSteps`    | How it works                                      | `steps: {title, text}[]`, `image`, `variant: list \| cards`                                                                               | Home, service pages, "what happens next"              |
-| `StorySplit`      | Meet the owner / why us                           | `paragraphs`, `image`, `reasons: {title, text}[]`, `cta`                                                                                  | Home, about                                           |
-| `Reviews`         | Customer reviews                                  | `reviews: {text, name, meta?}[]`, `rating`, `count`, `layout: featured \| grid`                                                           | Home, service pages                                   |
-| `LeadFormSection` | Intro + phone line beside the GHL LeadForm        | `formId`, `fields`, `projectOptions`, `showPhone`                                                                                         | The main conversion section                           |
-| `CallBand`        | Dark closing band: phone + one more button        | `heading`, `secondaryCta`                                                                                                                 | Bottom of service and project pages                   |
-| `IncludedList`    | Checklist beside an offset photo pair             | `items: string[]`, `images`                                                                                                               | Service pages ("what's included")                     |
-| `PhotoBand`       | Full-width photo strip                            | `image`, `alt`                                                                                                                            | Breaking up a long page                               |
-| `UtilityBar`      | Thin bar above the nav (`src/components/global/`) | none — set `SITE.utilityBar` (`null` = off)                                                                                               | Emergency / 24/7 businesses                           |
+| Section           | What it's for                                     | Key props                                                                                                                                                                                                                 | Use when                                                                                                                                                       |
+| ----------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Hero`            | The first section                                 | `variant: background \| split \| text`, `heading` (HTML, `<strong>` = accent, `<mark>` = highlighted offer), `primaryCta`, `ctaStyle: buttons \| panel`, `ctaNote`, `trust`, `showPhone`, `breadcrumbs`, `proof`, `badge` | Every page. `split` + `breadcrumbs` for service pages; `ctaStyle="panel"` + `trust` on home-service homes                                                      |
+| `StatsStrip`      | Four proof points in a slim band                  | `items: {value, label}[]`, `valueSize: number \| word`                                                                                                                                                                    | Under the hero                                                                                                                                                 |
+| `ServiceCards`    | The services, as cards                            | `items: {title, text?, image?, href?, icon?}[]`, `layout: grid \| swipe`                                                                                                                                                  | Home services; `swipe` for related services                                                                                                                    |
+| `ServiceArea`     | Places served, with a map or photos               | `areas` (default `SITE.serviceAreas`), `map` (SVG component), `images`                                                                                                                                                    | Home, contact                                                                                                                                                  |
+| `ProcessSteps`    | How it works                                      | `steps: {title, text}[]`, `image`, `variant: list \| cards`                                                                                                                                                               | Home, service pages, "what happens next"                                                                                                                       |
+| `StorySplit`      | Meet the owner / why us                           | `paragraphs`, `image`, `reasons: {title, text}[]`, `cta`                                                                                                                                                                  | Home, about                                                                                                                                                    |
+| `Reviews`         | Customer reviews                                  | `reviews: {text, name, meta?}[]`, `rating`, `count`, `layout: featured \| grid \| cards`                                                                                                                                  | Home, service pages. `cards` (stars on every card, rating centred, `meta` = "job · town") is the home-service default                                          |
+| `LeadFormSection` | Intro + phone line beside the GHL LeadForm        | `formId`, `fields`, `projectOptions`, `showPhone`                                                                                                                                                                         | The main conversion section                                                                                                                                    |
+| `CallBand`        | The closing CTA                                   | `heading`, `secondaryCta`, `variant: band \| photo-card \| split`, `image`, `imageAlt`, `ctaNote`                                                                                                                         | Bottom of every local-service page. `photo-card` = a white quote card on a full-width photo (a lawn, a roofline); `split` = text and photo in one rounded card |
+| `IncludedList`    | Checklist beside an offset photo pair             | `items: string[]`, `images`                                                                                                                                                                                               | Service pages ("what's included")                                                                                                                              |
+| `PhotoBand`       | Full-width photo strip                            | `image`, `alt`                                                                                                                                                                                                            | Breaking up a long page                                                                                                                                        |
+| `UtilityBar`      | Thin bar above the nav (`src/components/global/`) | none — set `SITE.utilityBar` (`null` = off)                                                                                                                                                                               | Emergency / 24/7 businesses                                                                                                                                    |
 
-Supporting pieces: `CtaButton` (renders a `SectionCta`, or `phone`),
+Supporting pieces: `CtaPanel` (the estimate button, "or", and "Call or text
+us" + the number on one tinted panel; `cta`, `note`, `phoneLabel`),
+`TrustBadges` (a row of credentials, each a logo `image` or a check-shield
+icon + `label` — only ones the business holds), `CtaButton` (renders a
+`SectionCta`, or `phone`),
 `LeadFormModal` (a pop-up LeadForm; place once per page), `ImagePair`,
 `ServiceIcon` (icon set in `src/data/service-icons.json`). `CTASection` also
 accepts `primaryCta` / `secondaryCta` and HTML headings.
@@ -74,6 +78,27 @@ accepts `primaryCta` / `secondaryCta` and HTML headings.
 `map`. Each region that should light up carries `data-area="<name>"`
 matching one of `areas` exactly. Everything else in the SVG is artwork and
 ignores the pointer. Example: `src/assets/maps/sample-service-area.svg`.
+
+### Local-service mode and looks
+
+Two `SITE` settings turn the agency chrome into contractor chrome, site-wide:
+
+- **`SITE.quote`** (`{ label, heading, text? }`, `null` = off): BaseLayout
+  renders the estimate form once as a modal (`ESTIMATE_MODAL_ID` from
+  `@/lib/cta` — open it with `{ label, modal: ESTIMATE_MODAL_ID }`), the
+  navbar shows "Call or text" + the number and a button that opens it, phones
+  get the sticky `MobileActionBar` (Call now | estimate), and the footer adds
+  a "Service area" column and "© year Legal Name. License …" (`SITE.license`).
+  `LocalServiceHome` uses the site-wide modal when it exists and brings its
+  own otherwise.
+- **`SITE.look`** — `studio` (the starter's own), `fresh`, `warm`, `rugged`,
+  `natural` (`src/config/looks.ts`; tokens in
+  `src/styles/variables/looks.css`). A look re-values tokens only — fonts,
+  heading case and tracking, radii, button and nav/footer type, paper and
+  ink — so every component follows; the brand colour stays the client's.
+  Pick by trade: fresh = lawn, pest, cleaning, pool; warm = HVAC,
+  insulation, remodeling; rugged = electrical, roofing, plumbing,
+  commercial; natural = hardscape, landscaping, decks.
 
 ### Composing a page
 

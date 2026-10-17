@@ -101,7 +101,9 @@ const {
       box-sizing: content-box;
       padding: 0.25em 0.5em;
       border-radius: var(--radius-small);
-      background-color: var(--background);
+      /* The light theme's card white: it disappears on a white navbar and
+         shows as a plate on a dark one. */
+      background-color: var(--background-2);
     }
   }
 </style>

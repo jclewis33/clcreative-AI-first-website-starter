@@ -86,6 +86,33 @@ git switch -c demo/<slug>
   - `included.images`: exactly 2.
   - Service `faqs`: at least 2.
 
+### 3b. Pick the look and the home-service pieces (1 min)
+
+- **`look`**, by trade (see `src/config/looks.ts`):
+  - `fresh`: lawn, pest, cleaning, pool
+  - `warm`: HVAC, insulation, remodeling
+  - `rugged`: electrical, roofing, plumbing, commercial
+  - `natural`: hardscape, landscaping, decks, outdoor living
+
+  If their current brand clearly fights the default for their trade, pick
+  the closer look and say why in your report.
+
+- **Hero:**
+  - `ctaStyle: "panel"` is the default: the estimate button, "or", and
+    "Call or text us".
+  - `variant: "split"` when you have a strong portrait job photo; otherwise
+    the background photo.
+  - Put a **real** offer from their site in `<mark>` in the heading
+    ("Call today for <mark>$100 off</mark>"). No offer on their site means no
+    `<mark>`.
+  - `trust`: only credentials they actually show (licensed & insured, BBB,
+    manufacturer dealer), with the seal file as `image` when you have it.
+- **`callBand`:** `variant: "photo-card"` with a wide texture-like job photo
+  (a lawn, a roofline, a finished patio). Otherwise leave out `variant` for
+  the dark band.
+- **`license`:** their license number, if their site or the state lookup
+  shows it.
+
 ### 4. Photos (3–5 min)
 
 Use the first source that works:

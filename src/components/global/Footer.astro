@@ -46,6 +46,13 @@ import {
 } from "@/data/site-structure";
 
 const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
+
+/* Local-service mode (SITE.quote): a "Service area" column of the towns
+   served, and the business name and license on the bottom line — what a
+   homeowner checks before calling a contractor. */
+const localService = Boolean(SITE.quote);
+const serviceAreas = localService ? SITE.serviceAreas : [];
+const linkColumns = FOOTER_GROUPS.length + (serviceAreas.length ? 1 : 0);
 ---
 
 <footer class="footer_wrap">
@@ -151,37 +158,39 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
           </div>
         </div>
 
-        <div class="footer_social_wrap">
-          <h3 class="footer_social_title u-text-style-h6 u-margin-bottom-4">
-            Follow us
-          </h3>
-          <div role="list" class="footer_social_list">
-            {
-              visibleSocialLinks.map((link) => (
-                <div role="listitem" class="footer_social_item">
-                  <a
-                    aria-label={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="footer_social_link"
-                  >
-                    {/* Real anchor text for crawlers — the SVG icon alone
-                        leaves this link textless for SEO. */}
-                    <span class="u-sr-only">{link.label}</span>
-                    <svg
-                      viewBox={link.viewBox}
-                      aria-hidden="true"
-                      class="u-svg"
+        {
+          visibleSocialLinks.length > 0 && (
+            <div class="footer_social_wrap">
+              <h3 class="footer_social_title u-text-style-h6 u-margin-bottom-4">
+                Follow us
+              </h3>
+              <div role="list" class="footer_social_list">
+                {visibleSocialLinks.map((link) => (
+                  <div role="listitem" class="footer_social_item">
+                    <a
+                      aria-label={link.label}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="footer_social_link"
                     >
-                      <Fragment set:html={link.paths} />
-                    </svg>
-                  </a>
-                </div>
-              ))
-            }
-          </div>
-        </div>
+                      {/* Real anchor text for crawlers — the SVG icon alone
+                        leaves this link textless for SEO. */}
+                      <span class="u-sr-only">{link.label}</span>
+                      <svg
+                        viewBox={link.viewBox}
+                        aria-hidden="true"
+                        class="u-svg"
+                      >
+                        <Fragment set:html={link.paths} />
+                      </svg>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        }
       </div>
 
       <!-- ── Right columns: Link groups ──────────────────────────
@@ -194,7 +203,7 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
       <div class="footer_links_wrap u-gap-row-7">
         <div
           role="navigation"
-          data-large-columns={String(FOOTER_GROUPS.length)}
+          data-large-columns={String(linkColumns)}
           data-medium-columns="0"
           data-small-columns="2"
           data-xsmall-columns="1"
@@ -280,6 +289,24 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
               </section>
             ))
           }
+          {
+            serviceAreas.length > 0 && (
+              <section class="footer_group_wrap">
+                <h3 class="footer_group_title u-text-style-h6 u-margin-bottom-3">
+                  Service area
+                </h3>
+                <div role="list" class="footer_group_list">
+                  {serviceAreas.map((area) => (
+                    <div role="listitem" class="footer_group_item">
+                      <div class="footer_area_text u-text-style-small">
+                        {area}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )
+          }
         </div>
       </div>
     </div>
@@ -289,11 +316,25 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
   <div class="footer_bottom_wrap">
     <div class="footer_bottom_contain u-container">
       <div class="footer_bottom_layout">
-        <div class="footer_bottom_text u-text-style-small">
-          <span>&copy; </span>
-          <span class="footer_year">2026</span>
-          <span>&nbsp;Copyright. All Rights Reserved.</span>
-        </div>
+        {
+          !localService && (
+            <div class="footer_bottom_text u-text-style-small">
+              <span>&copy; </span>
+              <span class="footer_year">2026</span>
+              <span>&nbsp;Copyright. All Rights Reserved.</span>
+            </div>
+          )
+        }
+        {
+          localService && (
+            <div class="footer_bottom_text u-text-style-small">
+              <span>&copy; </span>
+              <span class="footer_year">2026</span>
+              <span>&nbsp;{SITE.legalName}.</span>
+              {SITE.license && <span>&nbsp;License {SITE.license}.</span>}
+            </div>
+          )
+        }
         {
           /* Legal links come from the "optional"-group pages in the registry
             (OPTIONAL_PAGES, src/data/site-structure.ts). "Privacy Settings"
@@ -422,9 +463,9 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
       --link-text: color-mix(in srgb, var(--footer-text) 75%, transparent);
       --link-text-hover: var(--footer-text);
 
-      font-family: var(--font-tertiary);
-      text-transform: uppercase;
-      letter-spacing: var(--letter-spacing-tight);
+      font-family: var(--chrome-font-family);
+      text-transform: var(--chrome-text-transform);
+      letter-spacing: var(--chrome-letter-spacing);
       background-color: var(--footer-background);
       color: var(--footer-text);
       flex-flow: column;
@@ -580,6 +621,12 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
     .footer_link_text {
       /* Custom class anchor — size styled by utilities */
       margin-bottom: 0;
+    }
+
+    /* Service-area towns (local-service mode): plain text, link-muted. */
+    .footer_area_text {
+      margin-bottom: 0;
+      color: var(--link-text);
     }
 
     /* ── Locations Served dropdown ─────────────────────────────── */

@@ -241,6 +241,69 @@ export default defineConfig({
         ],
       },
     },
+    // The home-service looks' display faces (src/config/looks.ts picks
+    // which ones a page preloads; unused ones are never requested).
+    {
+      provider: fontProviders.local(),
+      name: "Barlow Condensed",
+      cssVariable: "--font-barlow-condensed",
+      options: {
+        variants: [
+          {
+            weight: 600,
+            style: "normal",
+            src: ["./src/assets/fonts/barlow-condensed-latin-600-normal.woff2"],
+          },
+          {
+            weight: 700,
+            style: "normal",
+            src: ["./src/assets/fonts/barlow-condensed-latin-700-normal.woff2"],
+          },
+        ],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: "Montserrat",
+      cssVariable: "--font-montserrat",
+      options: {
+        variants: [
+          {
+            weight: "100 900",
+            style: "normal",
+            src: ["./src/assets/fonts/montserrat-latin-wght-normal.woff2"],
+          },
+        ],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: "Archivo",
+      cssVariable: "--font-archivo",
+      options: {
+        variants: [
+          {
+            weight: "100 900",
+            style: "normal",
+            src: ["./src/assets/fonts/archivo-latin-wght-normal.woff2"],
+          },
+        ],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: "Fraunces",
+      cssVariable: "--font-fraunces",
+      options: {
+        variants: [
+          {
+            weight: "100 900",
+            style: "normal",
+            src: ["./src/assets/fonts/fraunces-latin-wght-normal.woff2"],
+          },
+        ],
+      },
+    },
     {
       provider: fontProviders.local(),
       name: "IBM Plex Mono",
