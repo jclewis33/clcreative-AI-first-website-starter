@@ -39,7 +39,7 @@ function tree(files, rules = {}) {
     ...Object.fromEntries(
       Object.entries(rules).map(([name, rule]) => [
         `scripts/boundary/${name}.json`,
-        JSON.stringify(rule),
+        typeof rule === "string" ? rule : JSON.stringify(rule),
       ]),
     ),
   };
@@ -138,6 +138,29 @@ ok(
     { demo: RULE },
   ),
 );
+
+// A malformed rule file must fail loudly, naming the file, never weaken the guard.
+for (const [rule, pattern] of /** @type {[unknown, RegExp][]} */ ([
+  ["{ not json", /scripts\/boundary\/demo\.json: invalid JSON/],
+  [{ ...RULE, package: ["x"] }, /demo\.json: unknown key "package"/],
+  [{ ...RULE, packages: "sanity" }, /demo\.json: "packages" must be an array/],
+  [{ ...RULE, paths: [1] }, /demo\.json: "paths" must be an array/],
+  [{}, /demo\.json: unknown key|demo\.json: "why"/],
+  [
+    { why: "x", packages: [], paths: [], allow: [] },
+    /demo\.json: needs at least one/,
+  ],
+  [{ ...RULE, why: "" }, /demo\.json: "why" must be a non-empty string/],
+  [[], /demo\.json: must be a JSON object/],
+]))
+  bad(tree({ "src/a.ts": "export {};\n" }, { demo: rule }), pattern);
+{
+  const r = spawnSync(process.execPath, [GUARD, "--root"], {
+    encoding: "utf8",
+  });
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /--root needs a directory/);
+}
 
 // Core rules apply with or without add-ons: the Files backend from a page.
 bad(

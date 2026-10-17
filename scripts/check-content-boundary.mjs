@@ -40,6 +40,10 @@ import path from "node:path";
 
 const args = process.argv.slice(2);
 const rootAt = args.indexOf("--root");
+if (rootAt >= 0 && !args[rootAt + 1]) {
+  console.error("check-content-boundary: --root needs a directory");
+  process.exit(1);
+}
 const ROOT = path.resolve(rootAt >= 0 ? args[rootAt + 1] : process.cwd());
 const SRC = path.join(ROOT, "src");
 
@@ -67,7 +71,19 @@ const RESTRICTED = [
   },
 ];
 
-/** @returns {Rule[]} */
+/** @param {string} message @returns {never} */
+function fail(message) {
+  console.error(`check-content-boundary: ${message}`);
+  process.exit(1);
+}
+
+const RULE_KEYS = ["why", "packages", "paths", "allow"];
+
+/**
+ * Reads scripts/boundary/<name>.json strictly: a malformed rule file must
+ * fail loudly, never silently weaken the guard.
+ * @returns {Rule[]}
+ */
 function addonRules() {
   const dir = path.join(ROOT, "scripts", "boundary");
   if (!fs.existsSync(dir)) return [];
@@ -76,12 +92,44 @@ function addonRules() {
     .filter((file) => file.endsWith(".json"))
     .sort()
     .map((file) => {
-      const rule = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
+      const name = `scripts/boundary/${file}`;
+      /** @type {any} */
+      let rule;
+      try {
+        rule = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
+      } catch (error) {
+        return fail(
+          `${name}: invalid JSON (${/** @type {Error} */ (error).message})`,
+        );
+      }
+      if (!rule || typeof rule !== "object" || Array.isArray(rule))
+        return fail(`${name}: must be a JSON object`);
+      for (const key of Object.keys(rule))
+        if (!RULE_KEYS.includes(key))
+          return fail(
+            `${name}: unknown key "${key}" (expected ${RULE_KEYS.join(", ")})`,
+          );
+      if (typeof rule.why !== "string" || !rule.why.trim())
+        return fail(`${name}: "why" must be a non-empty string`);
+      for (const key of ["packages", "paths", "allow"]) {
+        const list = rule[key];
+        if (
+          !Array.isArray(list) ||
+          list.some((v) => typeof v !== "string" || !v.trim())
+        )
+          return fail(
+            `${name}: "${key}" must be an array of non-empty strings`,
+          );
+      }
+      if (!rule.packages.length && !rule.paths.length)
+        return fail(
+          `${name}: needs at least one entry in "packages" or "paths"`,
+        );
       return {
-        why: rule.why ?? `scripts/boundary/${file}`,
-        paths: rule.paths ?? [],
-        packages: rule.packages ?? [],
-        allow: rule.allow ?? [],
+        why: rule.why,
+        paths: rule.paths,
+        packages: rule.packages,
+        allow: rule.allow,
       };
     });
 }
