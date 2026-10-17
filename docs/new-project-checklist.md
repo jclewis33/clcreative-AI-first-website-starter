@@ -112,7 +112,8 @@ You can stand up a fully working site — including, with the Sanity add-on, **P
 1. **Create the Worker** from the client repo (Workers Builds connected, building from the production branch); select your deploy API token. (A missing `ai_search_write` permission warning is irrelevant — ignore it.)
 2. **Create a KV namespace** for sessions and pin its id (Astro SSR sessions require it — deploy fails on the placeholder):
    - `npx wrangler kv namespace create SESSION` (or dashboard → Storage & Databases → KV → Create)
-   - Put the returned 32-char id into `wrangler.jsonc` → `kv_namespaces[0].id` (binding stays `SESSION`). Commit + push.
+   - Put the returned 32-char id into `wrangler.jsonc` → `kv_namespaces[0].id` (binding stays `SESSION`), and into `previews.kv_namespaces[0].id` too (Worker Previews — non-production branches — inherit nothing from the top level; one namespace can serve both). Commit + push.
+   - A staging site that must stay out of search: build with `SITE_NOINDEX=1` (build variable). Every page gets the noindex meta, robots.txt disallows everything, and no sitemap ships — see `src/config/seo.shared.mjs`.
 3. **Sanity add-on only — add the read token secret:** create a **Viewer** token (manage.sanity.io → project → API → Tokens) and add it to the Worker as an **encrypted secret** named exactly `SANITY_API_READ_TOKEN` (Worker → Settings → Variables and Secrets).
 4. **Set the build var** `SITE_URL=https://<worker>.<account>.workers.dev` in the Worker's **build** environment (read at build time for canonical URLs / sitemap / Studio preview).
 5. **Make the site live:** Worker → **Domains** tab → toggle the **Production** `workers.dev` route ON. Then promote the latest version to 100% (Deployments tab), OR set the Workers Builds deploy command to `npx wrangler deploy` so pushes auto-go-live (default `wrangler versions upload` only stages a version).

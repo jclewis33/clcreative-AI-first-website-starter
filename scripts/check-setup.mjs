@@ -41,7 +41,7 @@ let runs = 0;
 /**
  * Run setup in `dir` with these --config answers.
  * @param {string} dir
- * @param {Record<string, string>} answers
+ * @param {Record<string, unknown>} answers
  * @param {...string} flags
  */
 function setup(dir, answers, ...flags) {
@@ -113,9 +113,28 @@ try {
         contentSource: "files",
         siteName: "Acme Roofing",
         workerName: "acme-roofing",
+        // The structured --config-only fields (npm run demo uses them).
+        serviceAreas: ["Austin", "Round Rock"],
+        founded: 2004,
+        utilityBar: { text: "24/7 emergency service" },
+        reviewsUrl: "https://g.page/acme",
+        social: { Facebook: "https://facebook.com/acme" },
+        logoImage: { src: "/images/logo.png", width: 320, height: 96 },
       });
       assert.equal(r.status, 0, out(r));
-      assert.match(read(dir, "src/config/site.ts"), /name: "Acme Roofing"/);
+      const site = read(dir, "src/config/site.ts");
+      assert.match(site, /name: "Acme Roofing"/);
+      assert.match(site, /serviceAreas: \[\s*"Austin",\s*"Round Rock"\s*\]/);
+      assert.match(site, /founded: 2004 as number \| null/);
+      assert.match(site, /utilityBar: \{\s*"text": "24\/7 emergency service"/);
+      assert.match(site, /reviewsUrl: "https:\/\/g\.page\/acme"/);
+      assert.match(site, /href: "https:\/\/facebook\.com\/acme"/);
+      // Profiles not given are hidden ("#"), never left as placeholders.
+      assert.doesNotMatch(site, /www\.example\.com",\s*viewBox/);
+      assert.match(
+        read(dir, "src/config/logo-paths.ts"),
+        /\| null = \{\s*"src": "\/images\/logo\.png"/,
+      );
       assert.match(read(dir, "wrangler.jsonc"), /"name": "acme-roofing"/);
       assert.doesNotMatch(read(dir, "wrangler.jsonc"), /SANITY/);
       assert.doesNotMatch(read(dir, ".env"), /SANITY/);

@@ -44,6 +44,22 @@
       "id": "YOUR_KV_NAMESPACE_ID",
     },
   ],
+  // Worker Previews (a non-production branch's build → its own Preview URL;
+  // Wrangler 4.135+). Previews do NOT inherit the settings above: bindings
+  // and vars must be repeated here, and secrets live in the Previews Base
+  // config (`npx wrangler preview base-config secret put NAME`). One KV
+  // namespace can serve both. `npm run check:config` keeps the vars here in
+  // step with the top-level ones. Used by staging branches and by the
+  // prospect demos (docs/demo-mode.md).
+  "previews": {
+    "vars": {},
+    "kv_namespaces": [
+      {
+        "binding": "SESSION",
+        "id": "YOUR_KV_NAMESPACE_ID",
+      },
+    ],
+  },
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1,

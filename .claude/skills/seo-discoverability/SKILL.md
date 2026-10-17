@@ -20,6 +20,13 @@ description: Per-page SEO, structured data, and LLM discoverability reference fo
   `SITE.ogImagePath` and `SITE.logoPath`;
   [src/lib/jsonld.ts](../../../src/lib/jsonld.ts) reuses the same `SITE.*`
   values for the blog/case-study templates.
+- **Noindex** is one list: `NOINDEX_PATHS` / `NOINDEX_PREFIXES` in
+  [src/config/seo.shared.mjs](../../../src/config/seo.shared.mjs) feed the
+  robots meta, robots.txt, the sitemap filter, llms.txt and the SSR
+  `X-Robots-Tag`. `SITE_NOINDEX` (same file) takes the **whole** site out —
+  on for a prospect demo (`DEMO` in src/config/demo.shared.mjs) or any build
+  with `SITE_NOINDEX=1` (staging): noindex on every page, `Disallow: /`, no
+  sitemap, stub llms files, and `X-Robots-Tag` added to the built `_headers`.
 
 Most pages need nothing here. Reach for the per-page graph only when a page
 should advertise a specific **Service** (and optionally an **FAQ**) — a
