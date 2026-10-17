@@ -116,7 +116,8 @@ rename the copy and change its contents.**
      the post is never missing from that category's archive page).
    - `author`: the name of a file in `src/content/authors/`.
    - `featured: true` puts the post in the slider at the top of `/blog`
-     (with none featured, the slider shows the newest four).
+     (up to six featured posts; with none featured, the slider shows the
+     newest four).
    - Optional extras: `updated: "2026-04-09"` after a real edit,
      `relatedPosts: ["another-post"]` (up to three),
      `video: "https://www.youtube.com/watch?v=…"` to show a YouTube video

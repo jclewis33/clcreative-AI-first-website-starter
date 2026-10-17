@@ -209,6 +209,6 @@ New **static** pages also need a `PAGES` entry in
   `document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"))` instead
   of importing GSAP. Today GSAP is used only by: `animation.js` (dynamic
   import behind data-attribute checks), ScrollReveal, HowItWorks,
-  StackingPanels, Services. Swiper is used only by Slider and
+  StackingPanels, Services (plus the dev-only `/style-guide` demo). Swiper is used only by Slider and
   TestimonialShowcase. Everything else — Tab, Accordion, Modal, Marquee,
   Carousel, Dropdown — is pure CSS + small hoisted scripts.

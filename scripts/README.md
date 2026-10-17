@@ -68,8 +68,9 @@ against saved builds, `--lockfile <path>` pins the add-on's packages, and
 
 ## `check-content-validation.mjs` — bad content must fail (`npm run check:content`)
 
-Runs `check-content-text.mjs`, then writes temporary `zz-check-*` entries that
-are valid together, breaks one field per case and expects `astro sync` to fail
+`npm run check:content` runs `check-content-text.mjs` (unit checks for the
+content text helpers) and then this script, which writes temporary
+`zz-check-*` entries that are valid together, breaks one field per case and expects `astro sync` to fail
 naming the file and the field. It never edits your entries (the gallery and
 settings cases back up `gallery.json` and `settings.json` and restore them).
 Cleanup runs on exit, Ctrl-C, SIGTERM and SIGHUP; after a hard kill the next
@@ -97,6 +98,15 @@ allow list: the Files backend and the node-only content helpers, plus any
 add-on rule file in `scripts/boundary/*.json` (the Sanity add-on ships
 `scripts/boundary/sanity.json`). `check-boundary-rules.mjs` is its test
 (`npm run check:boundary` runs both).
+
+---
+
+## `check-projects.mjs` — project/gallery formatter fixtures
+
+`node scripts/check-projects.mjs` runs fixture checks for the pure
+formatters in `src/config/projects.ts` and `src/lib/project-format.ts`
+(renamed categories, missing locations, deleted project references). No
+npm alias, and CI does not run it; run it after touching those helpers.
 
 ---
 

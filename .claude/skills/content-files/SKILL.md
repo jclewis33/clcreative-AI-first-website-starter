@@ -222,7 +222,9 @@ Every block also takes `sectionSpacing`, `sectionSpacingTop` and
 **Which studies are "featured".** The homepage strip (`<CaseStudyFeatured>`)
 shows the three slugs in `FEATURED_CASE_STUDIES_SLUGS`
 (`src/components/sections/CaseStudyFeatured.astro`), whatever their
-`featured` flag. The flag is read only by `<CaseStudyGrid featured>` (which
+`featured` flag. A slug that names no case study is dropped (with fewer
+than three left, the strip is hidden); the build does not fail, but
+`npm run dev` logs a `[CaseStudyFeatured]` warning naming the slug. The flag is read only by `<CaseStudyGrid featured>` (which
 then shows only flagged studies; no public page uses that today, only the
 `/components` demo) and is stamped as `data-featured` on the card; it
 changes nothing visible on its own. Case-study grids show only studies
@@ -276,7 +278,9 @@ that have an `image` (every Files study does: it is required).
   `src/content/testimonials/`, rename it, and set `avatar`
   (`"./images/<file>"`) and `avatarAlt` (the person's name). Set
   `featured` to add it to the homepage testimonial showcase, or point
-  `<SingleTestimonial name>` in `src/pages/index.astro` at its `name`.
+  `<SingleTestimonial name>` in `src/pages/index.astro` at its `name`
+  (a name that matches no testimonial hides that section; `npm run dev`
+  logs a `[SingleTestimonial]` warning).
 - **Add a case study:** copy a sibling JSON file, rename it, swap the
   photos into `src/content/case-studies/images/`, and edit it.
 - **Add a gallery photo:** put the photo in `src/content/gallery/images/`

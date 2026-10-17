@@ -183,7 +183,7 @@ deploy hook → **one** build. The debounce matters because Sanity fires once pe
 document — publishing a batch without it means one build per document.
 Publish-to-live lands ~5–20 minutes depending on the debounce window.
 
-## Rendering model — prerender public, SSR only /preview and /api
+## Rendering model — prerender public, SSR only /preview, /api and /tools
 
 `astro.config.mjs` uses `output: "static"` with `@astrojs/cloudflare`. **All
 public routes are prerendered**, including the content routes — each
@@ -191,12 +191,14 @@ dynamic route exports a `getStaticPaths` helper from `@/lib/content` (the
 Files source lists `src/content/`; the Sanity source runs a minimal
 slug-only query in
 [src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)).
-Only two kinds of routes opt into SSR with `export const prerender = false;`:
+Only three kinds of routes opt into SSR with `export const prerender = false;`:
 
 - `src/pages/preview/**` — the draft-preview twins that Presentation iframes
 - `src/pages/api/**` — the draft-mode cookie set/clear routes
   (`src/pages/api/draft-mode/`) and the starter's own API routes (the lead
   form)
+- `src/pages/tools/**` — the starter's staff-only Client tools (gated by
+  `src/middleware.ts`; `docs/ghl-forms.md`)
 
 Rules that keep this model healthy:
 
@@ -256,7 +258,7 @@ gets it wrong in both directions):
   llms.txt index — one fact, five surfaces.
 
 `robots.txt` is generated from the same lists, so there is nothing to keep
-in sync by hand. To verify after a change: build and inspect `dist/sitemap-0.xml` — count
+in sync by hand. To verify after a change: build and inspect `dist/client/sitemap-0.xml` — count
 entries, confirm no robots-disallowed URL appears, confirm no real content page
 is missing.
 

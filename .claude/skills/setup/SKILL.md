@@ -159,8 +159,9 @@ value in `addons/sanity/files/src/config/sanity.shared.mjs` (Sanity forks).
 
 **Required:** site name, site URL, email, founder, brand hex.
 **Optional** (keep current if blank): tagline, descriptions, X handle, phone,
-hours, address (locality/region/country), priceRange, GTM/MailerLite/Usercentrics
-ids.
+hours, address (locality/region/country), priceRange, legal name (the SMS
+consent wording), GTM/MailerLite/Usercentrics ids, GoHighLevel chat widget and
+External Tracking ids.
 
 > **⚠️ Four questions are REQUIRED every run — do not skip any.** These are what
 > make a fork look like the user's site instead of the starter, and every one is
@@ -200,8 +201,8 @@ brand is anything more than a single accent color.
 > [site-structure.ts](../../../src/data/site-structure.ts) `PAGES` (the `desc`
 > field, which also feeds llms.txt) — flag that those still hold placeholder text.
 
-> **Integrations:** GTM, MailerLite, and Usercentrics ids in `SITE.integrations`
-> all ship **blank (`""`) = off**. Fill in the ones the new site uses (Head.astro
+> **Integrations:** the GTM, MailerLite, Usercentrics and GoHighLevel chat /
+> External Tracking ids in `SITE.integrations` all ship **blank (`""`) = off**. Fill in the ones the new site uses (Head.astro
 > only injects each script when its id is set). To drop one permanently, delete
 > the field + its use in `Head.astro` / `BaseLayout.astro`.
 
@@ -244,16 +245,20 @@ the Studio deploy.
 
 **Always raise this.** The starter ships **20 stock photos** in
 [src/assets/placeholder-images/](../../../src/assets/placeholder-images/),
-used **55 times across 15 files** — hero, services grid, pricing, case studies,
-blog cards, CTA sections. A fork that skips this ships a branded shell full of
+imported by the pages and sections in the table below — hero, services grid,
+pricing, CTA sections, the blog post template. A fork that skips this ships a branded shell full of
 someone else's photography. The CLI does **not** touch `src/assets/`.
 
-| Where              | Files                                                                                                                                  |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Home page + hero   | `src/pages/index.astro`                                                                                                                |
-| Section components | `Services`, `Pricing`, `WhyWorkWithUs`, `HowItWorks`, `CTASection`, `ImagePromo`, `PostLaunchSupport`, `ProjectImages`, `BlogPostGrid` |
-| Sample content     | `src/content/**` (see the content-files skill), `src/components/templates/BlogPostTemplate.astro`                                      |
-| Other pages        | `contact.astro`, `components.astro`                                                                                                    |
+| Where              | Files                                                                                                                  |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Home page + hero   | `src/pages/index.astro`                                                                                                |
+| Section components | `Services`, `Pricing`, `WhyWorkWithUs`, `HowItWorks`, `CTASection`, `ImagePromo`, `PostLaunchSupport`, `ProjectImages` |
+| Templates          | `src/components/templates/BlogPostTemplate.astro`                                                                      |
+| Other pages        | `contact.astro`, `components.astro`, `demo/local-service.astro`                                                        |
+
+The sample content's photos are separate: they live beside the entries in
+`src/content/**/images/` and go when the sample content is replaced (the
+content-files skill).
 
 **Two ways to do it — offer both:**
 
@@ -261,7 +266,8 @@ someone else's photography. The CLI does **not** touch `src/assets/`.
    `src/assets/placeholder-images/` using the same `ai-first-starter-<n>.webp`
    names. **Zero code changes.**
 2. **Rename to something meaningful.** Add images under real names and update the
-   matching `import` statements — better long-term, but touches all 15 files. Only
+   matching `import` statements — better long-term, but touches every file in the
+   table. Only
    if they ask; `npm run check` catches any import you miss.
 
 Either way: **`.webp`, and let Astro handle sizing** — these go through
@@ -289,9 +295,9 @@ Answer keys (all optional — omitted keys keep the current file value;
 `contentSource` defaults to `files`, or `sanity` once the add-on is installed):
 `contentSource, siteName, siteUrl, email, founder, tagline, defaultDescription, summary,`
 `localBusinessDescription, xHandle, phoneDisplay, phoneE164, phoneTel, hours,`
-`addressLocality, addressRegion, addressCountry, priceRange, brandColor,`
+`addressLocality, addressRegion, addressCountry, priceRange, legalName, brandColor,`
 `sanityProjectId, sanityDataset, sanityApiVersion, studioHost, workerName,`
-`gtmId, mailerLiteAccount, usercentricsId`
+`gtmId, mailerLiteAccount, usercentricsId, ghlChatWidgetId, ghlTrackingId`
 
 Plus three optional maps:
 
@@ -393,7 +399,8 @@ every item the user deferred in earlier steps** so nothing is silently dropped:
   the live site until that webhook exists.
 - **GitHub** (§5) — Dependabot alerts / security updates / malware alerts / grouped
   updates; account-level push protection.
-- **Email / lead capture** (§6) — only if the fork wires a form endpoint.
+- **GoHighLevel forms** (§6) — the `GHL_API_TOKEN` / `GHL_LOCATION_ID` secrets,
+  the form tags, the `/tools` gate and `SITE.smsOptIn`.
 - **Content & images still holding placeholders** — any un-swapped photography
   (Step 3.2), plus the scaffolding the CLI leaves alone: `areaServed`, `social` /
   `sameAs`, FAQ copy, and the page `desc` fields in

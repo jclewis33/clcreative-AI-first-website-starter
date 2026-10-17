@@ -46,9 +46,11 @@ Three places name sample entries and must follow your changes:
 in `src/components/sections/CaseStudyFeatured.astro` (the homepage case
 studies) and `<SingleTestimonial name="Marcus Bell" />` in
 `src/pages/index.astro`. The checks below catch a missed `settings.json`.
-The other two fail quietly: if a featured case study or the named
-testimonial no longer exists, that homepage section is simply left out, so
-look at the homepage.
+The other two don't fail a build: if a featured case study or the named
+testimonial no longer exists, that homepage section is left out. The
+development server (`npm run dev`) prints a warning naming the missing
+entry (`[CaseStudyFeatured]` or `[SingleTestimonial]`) when you open the
+homepage, so open it once and look at the terminal.
 
 **Sanity projects:** the sample entries are documents in the dataset.
 Delete them in the Studio.
@@ -65,7 +67,8 @@ npm run check:content-build
 All four must finish without an error. `check:content-build` reads the
 built site, so it runs after `build`. The CI workflow
 (`.github/workflows/ci.yml`) runs these and the other checks on every
-push to `main`; make sure the latest run is green.
+pull request and every push to `main` (and `development`); make sure the
+latest run is green.
 
 ### Make sure no secrets are in the repository
 
@@ -75,7 +78,7 @@ git ls-files .env
 
 This must print nothing. `.env` holds your local copies of the secrets and
 is ignored by git; it never goes to the client. The client gets
-`.env.example`, which lists the names with empty values.
+`.env.example`, which lists the names with placeholder or empty values.
 
 ### Decide what else ships
 
@@ -164,7 +167,8 @@ Things to check when the client takes over an account:
   Worker there: connect the repository, create a new KV namespace and put
   its id in `wrangler.jsonc`, enter each secret again, set `SITE_URL`, and
   move the domain. Follow sections 4 and 4a of
-  [`new-project-checklist.md`](new-project-checklist.md). Cloudflare
+  [`new-project-checklist.md`](new-project-checklist.md); a site that keeps
+  its content in files skips the steps marked **Sanity add-on only**. Cloudflare
   Access on `/tools` needs the domain in the same account as the Access
   app; otherwise use `TOOLS_PASSWORD`.
 - **Live deploys.** Pushes go live by themselves only when the Workers
@@ -186,7 +190,8 @@ Things to check when the client takes over an account:
 ### Run it on your computer
 
 1. Install **Node.js 22.18 or later** (the project's `package.json`
-   requires it).
+   requires it). Git is not needed to run the site locally; you need it
+   to publish changes through GitHub.
 2. In the project folder:
 
    ```bash
@@ -210,7 +215,8 @@ every push. A build takes a minute or two; if it fails, the live site
 keeps the previous version. Check builds in the Cloudflare dashboard
 (**Workers & Pages** → the Worker → **Deployments**). Setting this up in a
 new Cloudflare account is sections 4 and 4a of
-[`new-project-checklist.md`](new-project-checklist.md).
+[`new-project-checklist.md`](new-project-checklist.md) (skip the steps
+marked **Sanity add-on only** unless the site uses Sanity).
 
 **Sanity projects:** publishing in the Studio also rebuilds the site,
 through the rebuild Worker.

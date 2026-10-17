@@ -90,8 +90,8 @@ src/
 ├── data/             # site-structure.ts (PAGES/NAV_MENU/FOOTER_GROUPS/BANNER), faqs.ts
 ├── layouts/          # BaseLayout.astro
 ├── lib/              # content/ (THE content interface — all content comes from @/lib/content; files/ is the default backend), slots.ts, uid.ts, jsonld.ts, toc.ts, …
-├── pages/            # Routes; api/** is the only SSR route (the Sanity add-on adds preview/**)
-├── scripts/          # animation.js, scroll-refresh.js, social-share.js
+├── pages/            # Routes; api/** and tools/** are the only SSR routes (the Sanity add-on adds preview/**)
+├── scripts/          # animation.js, animate-observer.js, scroll-refresh.js, social-share.js
 └── styles/           # A DIRECTORY'S NAME IS ITS CASCADE LAYER
     ├── global.css    # The index — declares the cascade, imports every global sheet
     ├── reset.css · vendor.css · overrides.css
@@ -254,7 +254,8 @@ const content = await slotContent(Astro.slots);
 - **Animation/slider dependencies are per-component imports** — no window
   globals, no site-wide library script. GSAP today: `animation.js`
   (dynamically imported behind data-attribute checks), ScrollReveal,
-  HowItWorks, StackingPanels, Services. Swiper: Slider, TestimonialShowcase.
+  HowItWorks, StackingPanels, Services (and the dev-only `/style-guide`
+  demo). Swiper: Slider, TestimonialShowcase.
   Tab, Accordion, Modal, Marquee, Carousel, Dropdown are pure CSS + small
   hoisted scripts. Layout-changing components dispatch
   `scrolltrigger:refresh` (see `src/scripts/scroll-refresh.js`) instead of
@@ -328,8 +329,9 @@ Before writing any new CSS:
 `npm run check` (astro check) · `npm run check:hover` (prop tooltips) ·
 `npm run check:config` (wrangler vars and `_headers` ↔ src/config; runs
 prebuild) · `npm run check:boundary` (content files read only through
-`@/lib/content`; add-on rules in `scripts/boundary/`) ·
-`npm run check:content` (bad content must fail `astro sync` naming file and field) ·
+`@/lib/content`; an add-on's rules in `scripts/boundary/`, which the
+add-on ships) · `npm run check:content` (content text-helper unit checks,
+then bad content must fail `astro sync` naming file and field) ·
 `npm run check:content-build` (after a build: coming-soon studies, OG/JSON-LD
 image URLs, resized local images, TOC anchors) ·
 `npm run check:schema -- --dist dist/client` (JSON-LD on the built site) ·

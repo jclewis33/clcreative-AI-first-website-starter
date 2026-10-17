@@ -49,7 +49,7 @@ that owns the project (`npx sanity login` if needed).
 
 1. **Validate the schema compiles first** — catch errors before they hit the new
    project: `npx sanity build` (compiles the Studio incl. the schema). Fix any
-   schema error before deploying. The schema is 13 types defined in
+   schema error before deploying. The schema is 14 types defined in
    [src/sanity/schemaTypes/](../../../../src/sanity/schemaTypes/) (`index.ts` is the
    registry) — don't edit them to set up a fork; they ship ready.
 2. **Deploy the schema manifest:** `npx sanity schema deploy`. This publishes the

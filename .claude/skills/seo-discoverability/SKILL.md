@@ -163,7 +163,8 @@ slash, `title` is the page title with the ` | Your Company` suffix stripped,
 and `desc` is the page's meta description. Because nav and footer reference
 pages by path from this same registry, adding the page here once + referencing
 its path in `NAV_MENU`/`FOOTER_GROUPS` is all that's needed — one registry,
-never three separate lists. New **CMS** content needs nothing here — but
+never three separate lists. New content entries (files in `src/content/`,
+or Sanity documents with the add-on) need nothing here — but
 its _index_ page does: `/projects` and `/gallery` (the photo portfolio) are
 `group: "index"` entries, linked from the footer Resources group and left out
 of `NAV_MENU` by default; add them to the nav on sites that use them.

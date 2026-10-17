@@ -3,7 +3,10 @@
  * compare-dist — parity check between two builds of the site.
  *
  * Refactors that must not change rendered output copy `dist/client` aside
- * before the change, rebuild after it, and compare:
+ * before the change, rebuild after it, and compare. Build both sides with
+ * `KEEP_DEV_PAGES=1` (`.parity/files` is such a build): a plain build strips
+ * the dev-only pages (/components, /style-guide, /demo/*), which then show
+ * as MISSING:
  *
  *   node scripts/compare-dist.mjs .parity/files dist/client
  *   node scripts/compare-dist.mjs --canonical .parity/files dist/client

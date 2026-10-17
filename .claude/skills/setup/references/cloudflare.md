@@ -41,8 +41,8 @@ prerendered, so the chain **publish → debounce Worker (waits ~5 min) → Cloud
 deploy hook → one build** is the only path by which published content reaches the
 live site. The setup CLI already renamed the Worker's `wrangler.jsonc` `name` to
 `<worker>-rebuild-debounce`. Full runbook: the Worker's own
-[README](../../../../workers/rebuild-debounce/README.md) (installed by the Sanity
-add-on) and §4.6 of the checklist.
+README (`workers/rebuild-debounce/README.md`, added by `npm run addon:sanity`)
+and §4.6 of the checklist.
 
 ### Detect wrangler auth, then pick the path
 
@@ -137,7 +137,7 @@ Per §6 and `docs/ghl-forms.md`:
 - **CSP `frame-ancestors`** (§3.5) is already correct in code — for Sanity forks,
   verify Presentation loads in Chrome after deploy.
 - Run the **§7 post-launch verification** curl block from the checklist: security
-  headers on a static page, a content page, and (Sanity forks) an SSR preview page; sitemap
-  entries with no `/preview` or `/thank-you` URLs; API validation (bad email → 400,
-  oversized → 413, honeypot → fake 200); the rate limit (9 rapid POSTs → first 5
-  reach the API, rest 429, recovers after ~10s); and dependency health.
+  headers on a static page, a content page, and (Sanity forks) an SSR preview page;
+  sitemap entries with no `/preview` or `/thank-you` URLs; and dependency health
+  (`npm audit`). Then, in a browser, one real form submission should reach the
+  client's GoHighLevel sub-account.

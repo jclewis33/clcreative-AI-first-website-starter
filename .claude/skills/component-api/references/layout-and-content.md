@@ -358,8 +358,8 @@ One bare `<video>` element with ratio presets and sane defaults.
 ## `<FormattedDate>`
 
 Renders a publish date as `<time>` — **never format a date by hand**
-(`toLocaleDateString()` in a template gets the time zone wrong: Sanity
-date-only strings parse as UTC midnight and render a day early west of
+(`toLocaleDateString()` in a template gets the time zone wrong: the
+content's date-only `YYYY-MM-DD` strings parse as UTC midnight and render a day early west of
 Greenwich, varying by build machine). Props: `date` (Date | string — renders
 nothing if unparseable), `format` (`Intl.DateTimeFormatOptions`, default
 `{ dateStyle: 'long' }`), `timeZone` (default `'UTC'` — pinned on purpose),
