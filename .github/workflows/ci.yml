@@ -32,10 +32,12 @@ jobs:
   # Fails on any critical advisory in production dependencies.
   #
   # The gate sits at `critical` rather than `high` because the standing high
-  # advisories in this tree are unfixable from here: they come in through the
-  # Sanity CLI's dependency chain (adm-zip, js-yaml — build tooling, never
-  # shipped in the deployed Worker) and through Astro's own sharp/vite deps,
-  # where npm's only "fix" is a major downgrade of sanity or astro. Tighten
+  # advisories in this tree are not fixable from here: `npm audit` lists
+  # devalue, http-cache-semantics, js-yaml, sharp (and miniflare, wrangler and
+  # @cloudflare/vite-plugin through it), source-map-js, svgo and undici. They
+  # arrive through Astro's, the Cloudflare adapter's and wrangler's own
+  # dependencies, so the fix is an upstream release. The Sanity CLI
+  # chain is no longer one of them (it ships with the Sanity add-on). Tighten
   # this back to `--audit-level=high` once upstream ships patched releases;
   # check with `npm audit --omit=dev --audit-level=high`.
   #

@@ -11,28 +11,22 @@
   // The green build log makes this failure mode very easy to misread as
   // broken code. It's also unnecessary on this architecture: the content
   // routes are prerendered (zero Worker CPU), so the only SSR surface is
-  // /api/* and the editor-only /preview tree.
+  // /api/* (plus a CMS add-on's editor-only preview routes).
   "main": "@astrojs/cloudflare/entrypoints/server",
   "name": "your-worker-name",
   "compatibility_date": "2026-04-16",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  // Public, non-secret runtime vars. Draft-mode perspective switching is
-  // handled at request time by the sanity-preview-mode cookie set by
-  // /api/draft-mode/enable, NOT by an env var. SANITY_API_READ_TOKEN must be
-  // added as a Cloudflare secret (encrypted, not a plain wrangler var) —
-  // /api/draft-mode/enable validates Presentation preview URLs with it, and
-  // loadQuery uses it to fetch drafts when the cookie is present. Public
-  // visitors never have the cookie so drafts never leak.
+  // Public, non-secret runtime vars. None by default; a content add-on
+  // adds its own, and `npm run check:config` keeps them in step with its
+  // src/config/*.shared.mjs. Secrets are ENCRYPTED Cloudflare secrets
+  // (dashboard or `wrangler secret put`), never vars.
   //
   // GHL lead pipeline: GHL_API_TOKEN and GHL_LOCATION_ID are ENCRYPTED
   // secrets (dashboard or `wrangler secret put`), never vars. The Client tools
   // gate needs EITHER CF_ACCESS_TEAM_DOMAIN + CF_ACCESS_AUD (Cloudflare Access)
   // OR the encrypted secret TOOLS_PASSWORD (shared password) — set them in the
   // dashboard, or add the Access pair here per fork. See docs/ghl-forms.md.
-  "vars": {
-    "PUBLIC_SANITY_PROJECT_ID": "your-sanity-project-id",
-    "PUBLIC_SANITY_DATASET": "production",
-  },
+  "vars": {},
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist",
