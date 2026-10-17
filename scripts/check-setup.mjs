@@ -21,9 +21,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { git, scratchCopy } from "./lib/scratch.mjs";
+import { git, requireGitRepo, scratchCopy } from "./lib/scratch.mjs";
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+requireGitRepo(REPO, "npm run check:setup");
 /** The starter: the add-on folder is here to install from. */
 const HAS_ADDON = fs.existsSync(
   path.join(REPO, "addons", "sanity", "manifest.json"),

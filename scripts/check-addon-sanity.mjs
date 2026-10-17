@@ -45,9 +45,10 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseJsonc } from "./lib/jsonc.mjs";
-import { scratchCopy } from "./lib/scratch.mjs";
+import { requireGitRepo, scratchCopy } from "./lib/scratch.mjs";
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+requireGitRepo(REPO, "npm run check:addon");
 const args = process.argv.slice(2);
 const option = (/** @type {string} */ name) => {
   const i = args.indexOf(name);

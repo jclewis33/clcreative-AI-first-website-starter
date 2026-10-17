@@ -37,6 +37,24 @@ export function git(cwd, ...args) {
 }
 
 /**
+ * Exit with a one-line message, not a stack trace, when `dir` is not inside
+ * a git repository (or git is missing): the scratch copy lists files with
+ * git. A downloaded ZIP of the starter has no .git folder.
+ * @param {string} dir
+ * @param {string} command the npm script, for the message
+ */
+export function requireGitRepo(dir, command) {
+  try {
+    git(dir, "rev-parse", "--is-inside-work-tree");
+  } catch {
+    console.error(
+      `${command} needs a git repository: run \`git init && git add -A && git commit -m "Start"\` in ${dir}, then try again.`,
+    );
+    process.exit(1);
+  }
+}
+
+/**
  * Copy the repo at `from` into a new temp dir and commit it there. A copy
  * that fails part-way is removed before the error is rethrown; once this
  * returns, removing the copy is the caller's job.
