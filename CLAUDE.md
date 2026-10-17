@@ -344,6 +344,13 @@ builds it; needs the network, takes minutes) · `npm run build` · `npm run form
 
 ## Anti-patterns
 
+- **Patterns the Stacki visual editor has failed on** (plain Astro is fine
+  with both): a multi-line object literal as an attribute (`project={{ … }}`
+  across lines — Stacki can't edit the page; hoist it to a frontmatter
+  `const`), and the `cond ? ( …markup… ) : ( …markup… )` ternary Reviews.astro
+  used (Stacki's rewrite broke the file; prefer separate `cond && (…)` /
+  `!cond && (…)` blocks).
+
 - Importing a CMS package or `src/sanity` outside the add-on's allow list
   (`scripts/boundary/*.json`, shipped by the add-on) — content, types and
   image helpers come from `@/lib/content`.

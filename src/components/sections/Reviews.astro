@@ -168,7 +168,7 @@ const reviewAvatar = (review: Review) =>
         </div>
       ) : null}
 
-      {layout === "featured" && featured ? (
+      {layout === "featured" && featured && (
         <Grid largeColumns={2} mediumColumns={1} smallColumns={1} rowGap={5}>
           <Card variant="stacked" theme="dark" class="reviews_feature">
             <Quote
@@ -198,7 +198,10 @@ const reviewAvatar = (review: Review) =>
             </div>
           )}
         </Grid>
-      ) : (
+      )}
+      {/* Two conditions, not one ternary: the Stacki visual editor misreads
+          this ternary's second branch and fails to compile the file. */}
+      {!(layout === "featured" && featured) && (
         <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={5}>
           {reviews.map((review) => (
             <Card variant="stacked" class="reviews_card">

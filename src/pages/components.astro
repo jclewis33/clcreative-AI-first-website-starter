@@ -291,6 +291,39 @@ const demoGallery = galleryEntries.map((entry) => ({
   thumb: sizedImage(entry.image, 640),
   full: sizedImage(entry.image, 1800),
 }));
+/* ProjectCard demo data lives here, not inline as project={{ … }}: the
+   Stacki visual editor can't parse a multi-line object attribute, and
+   then can't edit this page at all. */
+const demoProject1: ProjectCardData = {
+  id: "demo-1",
+  title: "Kitchen remodel",
+  href: "/projects",
+  category: "remodel",
+  categoryLabel: "Remodel",
+  location: "Springfield, IL",
+  image: {
+    src: demoPhoto1,
+    alt: "A remodeled kitchen with white cabinets",
+    width: demoPhoto1.width,
+    height: demoPhoto1.height,
+    position: "center",
+  },
+};
+const demoProject2: ProjectCardData = {
+  id: "demo-2",
+  title: "Storefront refresh",
+  href: "/projects",
+  category: "commercial",
+  categoryLabel: "Commercial",
+  location: "",
+  image: {
+    src: demoPhoto2,
+    alt: "A refreshed storefront with new signage",
+    width: demoPhoto2.width,
+    height: demoPhoto2.height,
+    position: "center",
+  },
+};
 ---
 
 <BaseLayout
@@ -2167,40 +2200,8 @@ const demoGallery = galleryEntries.map((entry) => ({
       >
     </Layout>
     <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
-      <ProjectCard
-        project={{
-          id: "demo-1",
-          title: "Kitchen remodel",
-          href: "/projects",
-          category: "remodel",
-          categoryLabel: "Remodel",
-          location: "Springfield, IL",
-          image: {
-            src: demoPhoto1,
-            alt: "A remodeled kitchen with white cabinets",
-            width: demoPhoto1.width,
-            height: demoPhoto1.height,
-            position: "center",
-          },
-        }}
-      />
-      <ProjectCard
-        project={{
-          id: "demo-2",
-          title: "Storefront refresh",
-          href: "/projects",
-          category: "commercial",
-          categoryLabel: "Commercial",
-          location: "",
-          image: {
-            src: demoPhoto2,
-            alt: "A refreshed storefront with new signage",
-            width: demoPhoto2.width,
-            height: demoPhoto2.height,
-            position: "center",
-          },
-        }}
-      />
+      <ProjectCard project={demoProject1} />
+      <ProjectCard project={demoProject2} />
     </Grid>
   </Section>
 
