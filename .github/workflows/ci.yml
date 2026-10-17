@@ -1,7 +1,14 @@
 # Checks-only CI — deploys are handled by Cloudflare Workers Builds, not
-# Actions. The build step fetches Sanity slugs over the network (the
-# getStaticPaths queries in src/sanity/lib/page-data.ts), which works on
-# GitHub runners.
+# Actions.
+#
+#   checks        the site as it ships: content from src/content (Files).
+#   addon-sanity  installs the Sanity add-on (addons/sanity/) into a
+#                 scratch copy and proves it type-checks, builds, and
+#                 renders the sample content like the Files site
+#                 (scripts/check-addon-sanity.mjs). A fork that deleted
+#                 addons/ passes it with nothing to check.
+#
+# Installing the Sanity add-on replaces this file with its own workflow.
 name: CI
 
 on:
@@ -25,16 +32,37 @@ jobs:
       - run: npm ci
       - run: npm run format:check
       - run: npm run check:config
+      - run: npm run check:boundary
+      - run: npm run check:addon-installer
+      - run: npm run check:setup
+      - run: npm run check:content
       - run: npm run check
+      - run: npm run check:hover
       - run: npm run build
+      - run: npm run check:content-build
+      - run: npm run check:schema -- --dist dist/client
+
+  addon-sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      # The install resolves the manifest's ^ ranges fresh (unpinned).
+      - run: node scripts/check-addon-sanity.mjs
 
   # Fails on any critical advisory in production dependencies.
   #
   # The gate sits at `critical` rather than `high` because the standing high
-  # advisories in this tree are unfixable from here: they come in through the
-  # Sanity CLI's dependency chain (adm-zip, js-yaml — build tooling, never
-  # shipped in the deployed Worker) and through Astro's own sharp/vite deps,
-  # where npm's only "fix" is a major downgrade of sanity or astro. Tighten
+  # advisories in this tree are not fixable from here: `npm audit` lists
+  # devalue, http-cache-semantics, js-yaml, sharp (and miniflare, wrangler and
+  # @cloudflare/vite-plugin through it), source-map-js, svgo and undici. They
+  # arrive through Astro's, the Cloudflare adapter's and wrangler's own
+  # dependencies, so the fix is an upstream release. The Sanity CLI
+  # chain is no longer one of them (it ships with the Sanity add-on). Tighten
   # this back to `--audit-level=high` once upstream ships patched releases;
   # check with `npm audit --omit=dev --audit-level=high`.
   #

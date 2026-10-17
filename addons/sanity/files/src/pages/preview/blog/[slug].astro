@@ -1,0 +1,29 @@
+---
+/**
+ * SSR PREVIEW twin of /blog/[slug] — the route Sanity's Presentation tool
+ * iframes for draft preview (see src/sanity/lib/resolve.ts). Renders the
+ * IDENTICAL template as the public prerendered route, through the Sanity
+ * source's getBlogPost(); it runs per request, so the Presentation cookie
+ * can switch the fetch to the drafts perspective.
+ *
+ * Editor-only surface: robots.txt disallows /preview, the middleware adds
+ * X-Robots-Tag noindex + private,no-cache, and it's excluded from the
+ * sitemap. Keep this file in sync with src/pages/blog/[slug].astro.
+ *
+ * Part of the Sanity add-on, so the Sanity source is also the active
+ * @/lib/content source and the shared template's plainText() strips
+ * stega.
+ */
+export const prerender = false;
+import BlogPostTemplate from "@/components/templates/BlogPostTemplate.astro";
+import sanity from "@/sanity/lib/source";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const data = await sanity.getBlogPost(slug, getDraftModeProps(Astro));
+if (!data) return Astro.redirect("/404");
+---
+
+<BlogPostTemplate {...data} />

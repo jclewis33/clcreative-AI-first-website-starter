@@ -13,12 +13,13 @@
  * - `limit`      — cap the number of displayed cards
  * - `excludeSlug` — hide a specific study (useful on detail pages)
  *
- * All results sort by date descending (newest first). If no studies match
- * the filters, the entire section is hidden.
+ * All results sort by date descending (newest first). Studies without an
+ * image are skipped before the limit applies (a card needs its image). If
+ * no studies match the filters, the entire section is hidden.
  *
- * CMS-ready: accepts a typed `CaseStudy[]` array that maps directly to CMS
- * collection fields. When connecting Sanity, Contentful, or another headless
- * CMS, pass the query result as the `studies` prop.
+ * Data: pass `studies` (CaseStudySummary[] from `getCaseStudies()` in
+ * `@/lib/content`), or omit it and the section fetches every case study
+ * itself.
  *
  * @example Featured case studies on a landing page
  * ```astro
@@ -63,17 +64,7 @@ import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
-
-// Data fallback — same source used by the listing and detail pages
-import { caseStudies as allCaseStudiesData } from "@/data/case-studies";
-
-/* ── Re-export the shared type ───────────────────────────────────────────
-   Single source of truth in case-studies.ts. Other pages can import
-   from here or from the data file directly.
-   ────────────────────────────────────────────────────────────────────── */
-
-export type { CaseStudy } from "@/data/case-studies";
-import type { CaseStudy } from "@/data/case-studies";
+import { getCaseStudies, imageSrc, type CaseStudySummary } from "@/lib/content";
 
 /* ── Shared types ── */
 
@@ -91,7 +82,7 @@ type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
  * responsive grid with composable filtering props.
  *
  * **Props:**
- * - `studies` — CaseStudy[] to filter from (falls back to imported sample data)
+ * - `studies` — CaseStudySummary[] (fetched with getCaseStudies() if omitted)
  * - `featured` — only show featured case studies
  * - `categories` — filter by categories (OR logic, case-insensitive exact match)
  * - `limit` — max cards to display (default: `3`)
@@ -112,7 +103,7 @@ type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 interface Props {
   /**
    * **CaseStudyGrid props:**
-   * - `studies` — CaseStudy[] to filter from (falls back to sample data)
+   * - `studies` — CaseStudySummary[] (fetched with getCaseStudies() if omitted)
    * - `featured` — only show featured studies
    * - `categories` — category filter array (OR logic)
    * - `limit` — max cards (default 3)
@@ -135,19 +126,13 @@ interface Props {
   docs?: string;
 
   /**
-   * All available case studies to filter from.
-   * Pass your full studies array — the component handles filtering and sorting.
-   * If omitted, uses the shared data from `src/data/case-studies.ts`.
-   *
-   * When connecting a CMS, pass the query result here:
-   * ```astro
-   * const allStudies = await sanity.fetch(studiesQuery);
-   * <CaseStudyGrid studies={allStudies} featured limit={3} />
-   * ```
+   * The case studies to filter from (`getCaseStudies()` from
+   * `@/lib/content`). Omit it and the section fetches them itself; the
+   * component handles filtering, sorting and the limit.
    *
    * @example studies={allStudies}
    */
-  studies?: CaseStudy[];
+  studies?: CaseStudySummary[];
 
   /**
    * When `true`, only show case studies with `featured: true`.
@@ -393,9 +378,17 @@ const invertCards =
    Filters are composable — applied in sequence.
    ═══════════════════════════════════════════════════ */
 
-const allStudies = studies ?? allCaseStudiesData;
+/* Tolerate an empty or unreachable dataset — the section then renders
+   nothing, like any other empty filter result. */
+const allStudies =
+  studies ?? (await getCaseStudies().catch((): CaseStudySummary[] => []));
 
-let filtered = [...allStudies];
+/* A card needs its image: skip image-less studies first, so they never
+   take a slot under the limit. */
+type StudyWithImage = CaseStudySummary & {
+  image: NonNullable<CaseStudySummary["image"]>;
+};
+let filtered = allStudies.filter((s): s is StudyWithImage => Boolean(s.image));
 
 // 1. Exclude current slug (for detail pages)
 if (excludeSlug) {
@@ -415,10 +408,8 @@ if (filterCategories && filterCategories.length > 0) {
   );
 }
 
-// 4. Sort by date descending (most recent first)
-filtered.sort(
-  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-);
+// 4. Sort by date descending (most recent first); undated last
+filtered.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
 
 // 5. Apply limit
 filtered = filtered.slice(0, limit);
@@ -486,13 +477,16 @@ const gridProps =
               title={study.title}
               description={study.description}
               categories={study.categories}
+              industries={study.industries}
+              client={study.client ?? undefined}
               href={`/case-studies/${study.slug}`}
-              image={study.image}
-              imageAlt={study.imageAlt}
-              date={study.date}
+              image={imageSrc(study.image, { width: 1200 })}
+              imageAlt={study.image.alt}
+              imagePosition={study.image.position}
+              date={study.date ?? undefined}
               featured={study.featured}
-              comingSoon={(study as any).comingSoon}
-              externalUrl={(study as any).liveUrl}
+              comingSoon={study.comingSoon}
+              externalUrl={study.liveUrl ?? undefined}
               headingVariant={cardHeadingVariant}
               textVariant={cardTextVariant}
             />

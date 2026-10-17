@@ -25,6 +25,7 @@ Read a reference **when you work with its components**:
 | [references/interactive.md](references/interactive.md)               | Accordion, Tab, Modal, Slider, Carousel, Marquee, ScrollReveal, Dropdown, SkipLink, Navbar                                                                                                                                                                                                                                                                                            |
 | [references/forms.md](references/forms.md)                           | Form, LeadForm (GoHighLevel + forms registry), SmsConsent, DiscountClaimForm, ReviewRequest, FormField, FormSelect, FormCheckbox, FormRadio, FormTextarea, FormRange, FormFieldset                                                                                                                                                                                                    |
 | [references/local-service.md](references/local-service.md)           | SectionHeader, CheckList, ChipList, StepList, Quote, Breadcrumbs, BeforeAfter, FactPhoto, SwipeRow, Lightbox, ProjectCard, ProjectBrowser, GalleryBrowser, ProjectTemplate, CtaButton, LeadFormModal, ImagePair, ServiceIcon; sections Hero, StatsStrip, ServiceCards, ServiceArea, ProcessSteps, StorySplit, Reviews, LeadFormSection, CallBand, IncludedList, PhotoBand, UtilityBar |
+| [content-files skill](../content-files/SKILL.md)                     | Editing content files (posts, case studies, projects, gallery, testimonials, CTAs)                                                                                                                                                                                                                                                                                                    |
 | [references/service-pages.md](references/service-pages.md)           | Service pages from `src/content/services/*.json`, the `[slug]` template, ContactCards, LinkList, home and contact recipes                                                                                                                                                                                                                                                             |
 
 **Directory map:** `src/components/ui/` (the primitives above),
@@ -32,8 +33,9 @@ Read a reference **when you work with its components**:
 TestimonialsSlider, TestimonialsGrid, TestimonialShowcase, FAQ, HowItWorks,
 StackingPanels, Services, SplitSection, …), `src/components/case-study/`
 (block renderer + blocks), `src/components/global/` (Navbar, Footer, Head,
-Logo, JsonLd), `src/components/templates/` (BlogPost/CaseStudy/GlossaryTerm
-templates), `src/components/portabletext/` (Sanity rich-text renderers).
+Logo, JsonLd), `src/components/templates/` (BlogPost/CaseStudy/Project
+templates), `src/components/blog/` (`BlogBody`, which renders an MDX post body — the Sanity add-on's version adds Portable Text; `Callout` and `VideoEmbed`, also used by the add-on's Portable Text renderers in `src/components/portabletext/`; `mdx/` holds the MDX-only `pre` and `<BlogCta id>`).
+Content-driven components take view models and `ContentImage`s from `@/lib/content` — never collection entries or Sanity data. Plain URL strings for a raw `<img>`, OG, JSON-LD or a lightbox come from `await resolveImageUrl(image, { width })`, which sizes local images with getImage().
 
 Live demos of every component: `/components` and `/style-guide`. Both are
 **dev-only** — `DEV_ONLY_PATHS` (src/config/seo.shared.mjs) strips them from
@@ -207,6 +209,6 @@ New **static** pages also need a `PAGES` entry in
   `document.dispatchEvent(new CustomEvent("scrolltrigger:refresh"))` instead
   of importing GSAP. Today GSAP is used only by: `animation.js` (dynamic
   import behind data-attribute checks), ScrollReveal, HowItWorks,
-  StackingPanels, Services. Swiper is used only by Slider and
+  StackingPanels, Services (plus the dev-only `/style-guide` demo). Swiper is used only by Slider and
   TestimonialShowcase. Everything else — Tab, Accordion, Modal, Marquee,
   Carousel, Dropdown — is pure CSS + small hoisted scripts.

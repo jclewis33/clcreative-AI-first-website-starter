@@ -18,5 +18,43 @@
   ],
   "editor.quickSuggestions": {
     "strings": "on"
-  }
+  },
+  "json.schemas": [
+    {
+      "fileMatch": ["**/src/content/services/*.json"],
+      "url": "./.astro/collections/services.schema.json"
+    },
+    {
+      "fileMatch": ["**/src/content/authors/*.json"],
+      "url": "./.astro/collections/authors.schema.json"
+    },
+    {
+      "fileMatch": ["**/src/content/ctas/blog/*.json"],
+      "url": "./.astro/collections/blogCtas.schema.json"
+    },
+    {
+      "fileMatch": ["**/src/content/ctas/section/*.json"],
+      "url": "./.astro/collections/ctaSections.schema.json"
+    },
+    {
+      "fileMatch": ["**/src/content/settings.json"],
+      "url": "./.astro/collections/settings.schema.json"
+    },
+    {
+      "fileMatch": ["**/src/content/case-studies/*.json"],
+      "url": "./.astro/collections/caseStudies.schema.json"
+    },
+    {
+      "fileMatch": ["**/src/content/projects/*.json"],
+      "url": "./.astro/collections/projects.schema.json"
+    },
+    {
+      "fileMatch": ["**/src/content/gallery.json"],
+      "url": "./.astro/collections/gallery.schema.json"
+    },
+    {
+      "fileMatch": ["**/src/content/testimonials/*.json"],
+      "url": "./.astro/collections/testimonials.schema.json"
+    }
+  ]
 }

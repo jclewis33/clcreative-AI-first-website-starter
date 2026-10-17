@@ -1,0 +1,40 @@
+---
+/**
+ * MDX `<BlogCta id="…" />` — an inline blog CTA
+ * (src/content/ctas/blog/<id>.json) in a post body. BlogBody maps the
+ * `BlogCta` tag to this file, so authors write no import. Content sync
+ * checks an id written as a literal `id="…"` in double quotes
+ * (src/lib/content/checks.ts, outside fenced code), so an unknown one fails
+ * the sync, naming the post. Any other form (`id='…'`, `id={…}`) is only
+ * resolved here, and an unknown id then fails the build at render. Files
+ * mode only: a Portable Text body (Sanity add-on) uses its
+ * src/components/portabletext/BlogCtaInline.astro.
+ */
+import BlogCtaPanel from "@/components/blog/BlogCta.astro";
+import { getBlogCtaById } from "@/lib/content/files/ctas";
+
+interface Props {
+  /**
+   * **BlogCta (MDX)** — an inline call to action in an MDX post. `id` is
+   * the CTA file's name in src/content/ctas/blog/, without `.json`.
+   *
+   * @example
+   * <BlogCta id="free-site-review" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /**
+   * The CTA file's name without `.json`, written as a literal in double
+   * quotes so content sync can check it. @example id="free-site-review"
+   */
+  id: string;
+}
+
+const { docs, render = true, id } = Astro.props;
+const cta = render ? await getBlogCtaById(id) : null;
+---
+
+{cta && <BlogCtaPanel cta={cta} />}

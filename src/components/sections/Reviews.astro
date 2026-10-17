@@ -1,4 +1,5 @@
 ---
+import type { ImageMetadata } from "astro";
 import type { HTMLAttributes, ComponentProps } from "astro/types";
 import Section from "@/components/ui/Section.astro";
 import Grid from "@/components/ui/Grid.astro";
@@ -8,7 +9,15 @@ import Quote from "@/components/ui/Quote.astro";
 import SectionHeader from "@/components/ui/SectionHeader.astro";
 import { SITE } from "@/config/site";
 
-type Review = { text: string; name: string; meta?: string };
+type Review = {
+  text: string;
+  name: string;
+  meta?: string;
+  /** Reviewer photo: an imported image or a URL. Needs `avatarAlt`. */
+  avatar?: ImageMetadata | string;
+  /** Alt text for `avatar` — usually the reviewer's name. */
+  avatarAlt?: string;
+};
 type ReviewsLayout =
   /** First review large on a dark card, the next two stacked beside it */
   | "featured"
@@ -21,7 +30,7 @@ interface Props extends HTMLAttributes<"section"> {
   /**
    * **Reviews** — customer reviews with an optional star rating.
    *
-   * - `reviews` — `{ text, name, meta? }[]`, typed in by you
+   * - `reviews` — `{ text, name, meta?, avatar?, avatarAlt? }[]`, typed in by you or from a service file
    * - `rating`, `count` — the summary badge ("4.9 out of 5 · Based on 127 reviews")
    * - `layout` — `'featured'` (default with 3+ reviews; the first review
    *   sits large on a dark card) or `'grid'`
@@ -109,6 +118,12 @@ if (import.meta.env.DEV && render) {
   if (layoutProp && !["featured", "grid"].includes(layoutProp))
     console.warn(`[Reviews] Unknown layout "${layoutProp}".`);
 }
+
+/** A review's photo in the shape Quote takes (alt falls back to the name). */
+const reviewAvatar = (review: Review) =>
+  review.avatar
+    ? { src: review.avatar, alt: review.avatarAlt || review.name }
+    : undefined;
 ---
 
 {
@@ -160,6 +175,7 @@ if (import.meta.env.DEV && render) {
               text={featured.text}
               name={featured.name}
               meta={featured.meta}
+              avatar={reviewAvatar(featured)}
               mark="icon"
               spread
             />
@@ -172,6 +188,7 @@ if (import.meta.env.DEV && render) {
                     text={review.text}
                     name={review.name}
                     meta={review.meta}
+                    avatar={reviewAvatar(review)}
                     size="regular"
                     mark="none"
                     spread
@@ -189,6 +206,7 @@ if (import.meta.env.DEV && render) {
                 text={review.text}
                 name={review.name}
                 meta={review.meta}
+                avatar={reviewAvatar(review)}
                 size="regular"
                 mark="none"
                 spread

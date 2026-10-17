@@ -524,7 +524,9 @@ if (!isRemote) {
   }
 }
 
-if (import.meta.env.DEV) {
+/* Skipped when `render` is false: a caller that skips the image (no source
+   yet) passes a placeholder `src` these checks would misreport. */
+if (import.meta.env.DEV && render) {
   if (typeof src === "string" && !isRemote) {
     console.warn(
       `\n[Visual] src="${src}" is a string path, so this image is NOT ` +

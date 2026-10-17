@@ -6,20 +6,13 @@
  * pages or the llms endpoints. When re-skinning this project
  * for a new site, edit THIS file first.
  *
- * The Sanity project id/dataset and the site URL live in `site.shared.mjs` (a
- * dependency-free leaf module) so the config-load contexts that can't import
- * this file — `astro.config.mjs`, `sanity.config.ts`, `sanity.cli.ts`, the
- * `scripts/*.mjs` — can import the SAME values. One definition, no hand-synced copies.
- * `wrangler.jsonc` is the lone exception (it's JSON); `scripts/check-config-sync.mjs`
- * guards it.
+ * The site URL lives in `site.shared.mjs` (a dependency-free leaf module) so
+ * the config-load contexts that can't import this file — `astro.config.mjs`
+ * and the `scripts/*.mjs` — can import the SAME value. One definition, no
+ * hand-synced copies.
  */
 
-import {
-  SANITY_PROJECT_ID,
-  SANITY_DATASET,
-  SANITY_API_VERSION,
-  SITE_URL as SHARED_SITE_URL,
-} from "./site.shared.mjs";
+import { SITE_URL as SHARED_SITE_URL } from "./site.shared.mjs";
 
 export interface SocialLink {
   /** Accessible label / platform name. */
@@ -184,13 +177,6 @@ export const SITE = {
     color: "#f35423",
   },
 
-  /** Sanity project — canonical values live in site.shared.mjs. */
-  sanity: {
-    projectId: SANITY_PROJECT_ID,
-    dataset: SANITY_DATASET,
-    apiVersion: SANITY_API_VERSION,
-  },
-
   /**
    * Social profiles rendered in the footer. Items with `href: "#"` are
    * placeholders and filtered out at render time.
@@ -247,7 +233,7 @@ export const SITE = {
 
 /**
  * Convenience named exports — the canonical home for these values lives here.
- * Consumed by the llms endpoints and `portable-text.ts`.
+ * Consumed by the llms endpoints (and the Sanity add-on's portable-text.ts).
  */
 export const SITE_URL = SITE.url;
 export const SITE_NAME = SITE.name;

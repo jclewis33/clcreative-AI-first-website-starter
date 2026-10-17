@@ -1,0 +1,25 @@
+{
+  "title": "Design studio refresh",
+  "category": "commercial",
+  "location": "Springfield, IL",
+  "service": "Commercial interiors",
+  "description": "New oak workstations, better light and quieter acoustics for a six-person design studio, finished over two weekends so the team never closed.",
+  "quote": {
+    "text": "We worked through the whole job and barely noticed the crew."
+  },
+  "heroImage": "./images/studio-hero.webp",
+  "imageAlt": "Two designers discussing a page at a desktop monitor in the refreshed studio",
+  "photos": [
+    {
+      "src": "./images/studio-review.webp",
+      "alt": "Two people reviewing a layout at one of the new oak desks"
+    },
+    {
+      "src": "./images/studio-workstation.webp",
+      "alt": "A designer working at one of the new workstations",
+      "label": "After"
+    }
+  ],
+  "completed": "2025-11-14",
+  "seoDescription": "New oak workstations, better light and quieter acoustics for a six-person design studio, built over two weekends."
+}

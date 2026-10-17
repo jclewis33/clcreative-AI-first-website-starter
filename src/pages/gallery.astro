@@ -1,6 +1,6 @@
 ---
 /**
- * /gallery — every Sanity `galleryItem` (monthly jobsite photos), filterable
+ * /gallery — every gallery photo (getGallery() in @/lib/content), filterable
  * by category, with a click-to-enlarge lightbox. Prerendered; publishing in
  * the Studio triggers a rebuild.
  */
@@ -13,37 +13,23 @@ import GalleryBrowser, {
   type GalleryItem,
 } from "@/components/ui/GalleryBrowser.astro";
 import CTASection from "@/components/sections/CTASection.astro";
-import { stegaClean } from "@sanity/client/stega";
 import { SITE } from "@/config/site";
 import { getPage } from "@/data/site-structure";
-import { sanityPhoto } from "@/lib/projects";
-import { photoAlt } from "@/lib/project-format";
-import { loadGallery } from "@/sanity/lib/page-data";
-import { getDraftModeProps } from "@/sanity/lib/draft-mode";
-import { PROJECT_CATEGORIES, categoryTitle } from "@/config/projects";
+import { PROJECT_CATEGORIES } from "@/config/projects";
+import { getGallery, sizedImage } from "@/lib/content";
 
-const rows = await loadGallery(getDraftModeProps(Astro));
+const entries = await getGallery();
 
-const items: GalleryItem[] = rows.flatMap((row) => {
-  const caption = stegaClean(row.caption) ?? "";
-  const alt = photoAlt(row.imageAlt, caption || "Gallery photo");
-  const thumb = sanityPhoto(row.image, alt, row.imageMeta, 640);
-  const full = sanityPhoto(row.image, alt, row.imageMeta, 1800);
-  if (!thumb || !full) return [];
-  const category = stegaClean(row.category) ?? "";
-  return [
-    {
-      id: row._id,
-      caption,
-      category,
-      categoryLabel: categoryTitle(category),
-      location: stegaClean(row.location)?.trim() ?? "",
-      projectTitle: stegaClean(row.project?.title)?.trim() ?? "",
-      thumb,
-      full,
-    },
-  ];
-});
+const items: GalleryItem[] = entries.map((entry) => ({
+  id: entry.id,
+  caption: entry.caption,
+  category: entry.category,
+  categoryLabel: entry.categoryLabel,
+  location: entry.location,
+  projectTitle: entry.projectTitle,
+  thumb: sizedImage(entry.image, 640),
+  full: sizedImage(entry.image, 1800),
+}));
 ---
 
 <BaseLayout

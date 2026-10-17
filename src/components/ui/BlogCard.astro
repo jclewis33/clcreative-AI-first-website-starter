@@ -15,7 +15,7 @@ import type { HTMLAttributes } from "astro/types";
  * <BlogCard
  *   title="How to Build a Design System"
  *   description="Learn how to create a scalable design system for your team."
- *   category="Design"
+ *   categories={["Design"]}
  *   href="/blog/design-system"
  *   image={blogImage}
  *   imageAlt="Design system components"
@@ -29,7 +29,7 @@ import type { HTMLAttributes } from "astro/types";
  * <BlogCard
  *   title="How to Get Started in Five Simple Steps"
  *   description="A practical walkthrough to help you get up and running quickly."
- *   category="Guides"
+ *   categories={["Guides"]}
  *   href="/blog/getting-started-guide"
  *   image={postImage}
  *   imageAlt="Getting started checklist on a desk"
@@ -45,6 +45,9 @@ import Card from "./Card.astro";
 import Visual from "./Visual.astro";
 import Heading from "./Heading.astro";
 import Text from "./Text.astro";
+// Deliberately last: moving this import first reorders the inlined CSS chunks
+// in the built pages (build-output parity, see compare-dist --layers).
+import { plainText } from "@/lib/content";
 
 /**
  * BlogCard — blog post card with image, title, description, category,
@@ -53,7 +56,7 @@ import Text from "./Text.astro";
  * **Props:**
  * - `title` — post title (clamped at 2 lines) (**required**)
  * - `description` — post excerpt/description (clamped at 2 lines) (**required**)
- * - `category` — category label displayed at the bottom (**required**)
+ * - `categories` — category labels displayed at the bottom (**required**; `null` or empty hides them)
  * - `href` — link to the full blog post (**required**)
  * - `image` — post featured image: imported `ImageMetadata` or URL string (**required**)
  * - `imageAlt` — alt text for the featured image (**required**)
@@ -69,7 +72,7 @@ interface Props extends HTMLAttributes<"div"> {
    * **BlogCard props:**
    * - `title` — post title, clamped at 2 lines (required)
    * - `description` — post excerpt, clamped at 2 lines (required)
-   * - `category` — category label at bottom (required)
+   * - `categories` — category labels at bottom (required; `null` or empty hides them)
    * - `href` — link to full post (required)
    * - `image` — featured image source (required)
    * - `imageAlt` — image alt text (required)
@@ -139,9 +142,9 @@ const {
 <Card
   theme={theme}
   href={href}
-  ariaLabel={`Read ${title}`}
+  ariaLabel={`Read ${plainText(title)}`}
   class:list={["blog_card_wrap", className]}
-  data-author={author}
+  data-author={plainText(author)}
   data-date={date}
   {...rest}
 >

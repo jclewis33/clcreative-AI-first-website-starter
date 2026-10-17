@@ -6,7 +6,7 @@
  * Counter shows "1/N WHAT OUR CLIENTS SAY" and updates on slide change.
  * Swiper loops infinitely with prev/next arrows.
  *
- * Self-fetches featured testimonials from Sanity by default.
+ * Self-fetches featured testimonials from the content source by default.
  * Pass `testimonials` prop to override with pre-fetched data.
  *
  * Usage:
@@ -22,9 +22,7 @@
 import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
-import { urlFor } from "@/sanity/lib/image";
-import { getTestimonials as fetchTestimonials } from "@/sanity/lib/testimonials";
-import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+import { getTestimonials, plainText, resolveImageUrl } from "@/lib/content";
 
 /* Single source for the testimonial shape: TestimonialCard.astro — never
    re-declare it locally, the same rule the padding union follows. */
@@ -40,7 +38,7 @@ interface Props {
    * **TestimonialShowcase props:**
    * - `testimonials` — array of `{ quote, name, role?, company?, avatar? }`
    *   Fetch with `getTestimonials()` or `getTestimonials({ featured: true })`
-   * - `limit` — max testimonials to display (slices after Sanity ordering)
+   * - `limit` — max testimonials to display (slices after the source's ordering)
    * - `heading` — section heading text (default `"Lorem ipsum dolor sit amet consectetur"`)
    * - `theme` — `'light'` | `'dark'` | `'brand'` (default `'light'`)
    * - `padding` — sets both paddingTop and paddingBottom (default `'main'`)
@@ -53,7 +51,7 @@ interface Props {
 
   /** Array of testimonial objects. Omit to self-fetch featured testimonials. */
   testimonials?: Testimonial[];
-  /** Max testimonials to show (slices after Sanity ordering) */
+  /** Max testimonials to show (slices after the source's ordering) */
   limit?: number;
   /** Section heading text */
   heading?: string;
@@ -86,12 +84,23 @@ const {
 
 const resolved =
   rawTestimonials ??
-  (await fetchTestimonials({
-    featured: true,
-    ...getDraftModeProps(Astro),
-  }).catch(() => []));
+  (await getTestimonials({ featured: true }).catch(() => []));
 const testimonials = limit ? resolved.slice(0, limit) : resolved;
 const total = testimonials.length;
+/* Avatar URLs resolve asynchronously (a local image is sized by getImage()),
+   so the slides are prepared before the markup maps over them. */
+const slides = await Promise.all(
+  testimonials.map(async (t) => ({
+    ...t,
+    avatarUrl:
+      typeof t.avatar === "string"
+        ? t.avatar
+        : await resolveImageUrl(t.avatar, { width: 96, height: 96 }),
+    avatarAlt:
+      (t.avatar && typeof t.avatar !== "string" && t.avatar.alt) ||
+      plainText(t.name),
+  })),
+);
 ---
 
 <Section
@@ -125,48 +134,45 @@ const total = testimonials.length;
       <div class="swiper testimonial_showcase_swiper" data-tsc-swiper>
         <div class="swiper-wrapper">
           {
-            testimonials.map(({ quote, name, role, company, avatar }) => {
-              const avatarUrl = avatar
-                ? typeof avatar === "string"
-                  ? avatar
-                  : urlFor(avatar).width(96).height(96).url()
-                : undefined;
-              const subtitle = [role, company].filter(Boolean).join(", ");
-              return (
-                <div class="swiper-slide">
-                  <div class="testimonial_showcase_card">
-                    <p class="testimonial_showcase_quote">{quote}</p>
-                    <div class="testimonial_showcase_author">
-                      {avatarUrl && (
-                        <img
-                          class="testimonial_showcase_avatar"
-                          src={avatarUrl}
-                          alt={name}
-                          loading="lazy"
-                          width="48"
-                          height="48"
-                        />
-                      )}
-                      <div class="testimonial_showcase_author_info">
-                        <Text
-                          tag="span"
-                          weight="bold"
-                          variant="regular"
-                          marginBottom={0}
-                        >
-                          {name}
-                        </Text>
-                        {subtitle && (
-                          <Text tag="span" variant="regular" marginBottom={0}>
-                            {subtitle}
-                          </Text>
+            slides.map(
+              ({ quote, name, role, company, avatarUrl, avatarAlt }) => {
+                const subtitle = [role, company].filter(Boolean).join(", ");
+                return (
+                  <div class="swiper-slide">
+                    <div class="testimonial_showcase_card">
+                      <p class="testimonial_showcase_quote">{quote}</p>
+                      <div class="testimonial_showcase_author">
+                        {avatarUrl && (
+                          <img
+                            class="testimonial_showcase_avatar"
+                            src={avatarUrl}
+                            alt={avatarAlt}
+                            loading="lazy"
+                            width="48"
+                            height="48"
+                          />
                         )}
+                        <div class="testimonial_showcase_author_info">
+                          <Text
+                            tag="span"
+                            weight="bold"
+                            variant="regular"
+                            marginBottom={0}
+                          >
+                            {name}
+                          </Text>
+                          {subtitle && (
+                            <Text tag="span" variant="regular" marginBottom={0}>
+                              {subtitle}
+                            </Text>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
+                );
+              },
+            )
           }
         </div>
       </div>

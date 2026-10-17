@@ -1,0 +1,48 @@
+[
+  {
+    "id": "arched-window-nook",
+    "image": "./gallery/images/arched-window-nook.webp",
+    "alt": "Morning light through an arched window onto a round table",
+    "caption": "Arched window nook",
+    "category": "residential",
+    "location": "Chatham, IL",
+    "project": "breakfast-nook-remodel",
+    "added": "2026-03-04"
+  },
+  {
+    "id": "oak-shelf-and-arch",
+    "image": "./gallery/images/oak-shelf-and-arch.webp",
+    "alt": "A laptop on a stone table in front of a curved plaster arch and shelf",
+    "caption": "Plaster arch and stone shelf",
+    "category": "residential",
+    "location": "Chatham, IL",
+    "project": "breakfast-nook-remodel",
+    "added": "2026-03-03"
+  },
+  {
+    "id": "stone-and-linen-samples",
+    "image": "./gallery/images/stone-and-linen-samples.webp",
+    "alt": "A tablet resting on stone and fabric finish samples",
+    "caption": "Finish samples for a client review",
+    "category": "remodel",
+    "location": "Springfield, IL",
+    "added": "2026-02-20"
+  },
+  {
+    "id": "studio-workstations",
+    "image": "./gallery/images/studio-workstations.webp",
+    "alt": "A designer at one of the new studio workstations",
+    "caption": "New studio workstations",
+    "category": "commercial",
+    "project": "design-studio-refresh",
+    "added": "2025-11-15"
+  },
+  {
+    "id": "swatch-board",
+    "image": "./gallery/images/swatch-board.webp",
+    "alt": "A tablet surrounded by fabric, stone and brass samples",
+    "caption": "Material board for a remodel",
+    "category": "remodel",
+    "added": "2025-10-30"
+  }
+]

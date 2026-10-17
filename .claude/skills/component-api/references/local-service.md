@@ -27,18 +27,19 @@ live demo on `/components`, a `docs` prop (hover it), and a `render` prop.
 `Button` also gained `iconPosition: 'start' | 'end'` (a phone icon before
 "Call us", for example).
 
-## Projects and gallery (Sanity)
+## Projects and gallery
 
-| Piece             | Role                                                                                       |
-| ----------------- | ------------------------------------------------------------------------------------------ |
-| `ProjectCard`     | Card from `toProjectCards()` — photo, category badge, location, "View project"             |
-| `ProjectBrowser`  | `/projects` grid with search, category select (only used categories), live count           |
-| `GalleryBrowser`  | `/gallery` chips + square tiles + Lightbox; caption meta never leaves a stray "·"          |
-| `ProjectTemplate` | `/projects/[slug]` and its preview twin — every optional section renders only with content |
+| Piece             | Role                                                                                                                  |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `ProjectCard`     | Card for a `ProjectCardData` from `getProjects()` (`@/lib/content`) — photo, category badge, location, "View project" |
+| `ProjectBrowser`  | `/projects` grid with search, category select (only used categories), live count                                      |
+| `GalleryBrowser`  | `/gallery` chips + square tiles + Lightbox; caption meta never leaves a stray "·"                                     |
+| `ProjectTemplate` | `/projects/[slug]` (and the Sanity add-on's preview twin) — every optional section renders only with content          |
 
-Routes: `/projects`, `/projects/[slug]`, `/preview/projects/[slug]`,
-`/gallery`. Categories are set per client in `src/config/projects.ts`. The
-content model and loaders are documented in the `sanity-and-preview` skill.
+Routes: `/projects`, `/projects/[slug]`, `/gallery` (plus
+`/preview/projects/[slug]` with the Sanity add-on). Categories are set per
+client in `src/config/projects.ts`. The content functions are in `@/lib/content` (the Files side: the `content-files`
+skill; the Sanity mapping: the add-on's `sanity-and-preview` skill).
 
 ## Sections (`src/components/sections/`)
 

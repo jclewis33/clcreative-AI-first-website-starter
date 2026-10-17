@@ -171,7 +171,7 @@ For example, to give the brand theme a brand-colored footer:
 --footer-border: var(--color-brand-text-o20);
 ```
 
-**How it works:** `.footer_wrap` in `footer.css` remaps these three variables onto the standard theme aliases (`--background`, `--text`, `--border`) and derives the link variables (`--link-text`, `--link-text-hover`, etc.) from `--footer-text` via `color-mix()`. You only need to set the three `--footer-*` variables — link colors, borders, and all descendant styles cascade automatically.
+**How it works:** `.footer_wrap` (in `Footer.astro`'s co-located styles) remaps these three variables onto the standard theme aliases (`--background`, `--text`, `--border`) and derives the link variables (`--link-text`, `--link-text-hover`, etc.) from `--footer-text` via `color-mix()`. You only need to set the three `--footer-*` variables — link colors, borders, and all descendant styles cascade automatically.
 
 ---
 

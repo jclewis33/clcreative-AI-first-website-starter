@@ -1,26 +1,24 @@
 /**
  * `/llms-full.txt` — the full text content of the site for LLM ingestion.
  *
- * Prerendered to `dist/llms-full.txt` at build time. Static marketing pages are
- * listed as a link index (their content lives in `.astro` templates); every
- * blog post, case study, and glossary term has its full body rendered inline as
- * Markdown via `portableTextToMarkdown`. Rebuilt from Sanity on every deploy.
+ * Prerendered to `dist/llms-full.txt` at build time. Static marketing pages
+ * are listed as a link index (their content lives in `.astro` templates);
+ * every blog post and published case study has its full body inline as
+ * Markdown (converted by the content source), and every project is listed
+ * with its category and location. Rebuilt from `@/lib/content` on every
+ * deploy.
  */
 
 import type { APIRoute } from "astro";
-import { loadQuery } from "@/sanity/lib/load-query";
 import {
-  BLOG_POSTS_QUERY,
-  BLOG_POST_QUERY,
-  CASE_STUDIES_QUERY,
-  PROJECTS_QUERY,
-  CASE_STUDY_QUERY,
-  GLOSSARY_TERMS_QUERY,
-  GLOSSARY_TERM_QUERY,
-} from "@/sanity/lib/queries";
-import { portableTextToMarkdown } from "@/sanity/lib/portable-text";
+  getFullBlogPosts,
+  getFullCaseStudies,
+  getProjects,
+  type BlogPostDetail,
+  type CaseStudyDetail,
+  type ProjectCardData,
+} from "@/lib/content";
 import { SITE_URL, SITE_NAME, SITE_SUMMARY } from "@/config/site";
-import { categoryTitle } from "@/config/projects";
 import {
   MAIN_PAGES,
   SERVICE_PAGES,
@@ -29,14 +27,6 @@ import {
   OPTIONAL_PAGES,
   type StaticPage,
 } from "@/data/site-structure";
-
-import type {
-  BLOG_POSTS_QUERY_RESULT,
-  CASE_STUDIES_QUERY_RESULT,
-  PROJECTS_QUERY_RESULT,
-  GLOSSARY_TERMS_QUERY_RESULT,
-  CASE_STUDY_QUERY_RESULT,
-} from "@/sanity/sanity.types";
 
 export const prerender = true;
 
@@ -50,103 +40,13 @@ function pageIndex(heading: string, pages: StaticPage[]): string {
     .join("\n")}`;
 }
 
-/** One entry in a case study's flexible `content[]`, as the query projects it. */
-type CaseStudyBlock = NonNullable<
-  NonNullable<CASE_STUDY_QUERY_RESULT>["content"]
->[number];
-
-/** Render a case study's flexible `content[]` blocks to Markdown. */
-function caseStudyContentToMarkdown(
-  blocks: CaseStudyBlock[] | null | undefined,
-): string {
-  if (!blocks?.length) return "";
-  const parts: string[] = [];
-  for (const b of blocks) {
-    // Each block shape carries a different subset of these fields; the union
-    // only exposes one after `_type` narrowing, and this walker deliberately
-    // probes them instead.
-    const block = b as {
-      _type: string;
-      body?: unknown[] | null;
-      items?: Array<{ value?: string | null; label?: string | null }> | null;
-      imageAlt?: string | null;
-      images?: Array<{ alt?: string | null }> | null;
-    };
-    if (block.body?.length) {
-      const md = portableTextToMarkdown(block.body as never);
-      if (md) parts.push(md);
-      continue;
-    }
-    if (block._type === "stats" && block.items?.length) {
-      parts.push(
-        block.items
-          .map((s) => `- **${s.value ?? ""}** — ${s.label ?? ""}`)
-          .join("\n"),
-      );
-      continue;
-    }
-    if (block.imageAlt) {
-      parts.push(`![${block.imageAlt}]`);
-      continue;
-    }
-    if (block.images?.length) {
-      parts.push(block.images.map((i) => `![${i.alt ?? "image"}]`).join("\n"));
-    }
-  }
-  return parts.join("\n\n");
-}
-
 export const GET: APIRoute = async () => {
-  // 1. Fetch the listings to know what exists (and order). Tolerate an empty
-  //    or unreachable dataset (e.g. a fresh fork before `/setup`) — the file
-  //    still renders the static page index.
-  const [posts, caseStudies, glossary, projects] = await Promise.all([
-    loadQuery({ query: BLOG_POSTS_QUERY })
-      .then((r) => r.data)
-      .catch((): BLOG_POSTS_QUERY_RESULT => []),
-    loadQuery({ query: CASE_STUDIES_QUERY })
-      .then((r) => r.data)
-      .catch((): CASE_STUDIES_QUERY_RESULT => []),
-    loadQuery({ query: GLOSSARY_TERMS_QUERY })
-      .then((r) => r.data)
-      .catch((): GLOSSARY_TERMS_QUERY_RESULT => []),
-    loadQuery({ query: PROJECTS_QUERY })
-      .then((r) => r.data)
-      .catch((): PROJECTS_QUERY_RESULT => []),
-  ]);
-
-  const postSlugs = (posts ?? []).map((p) => p.slug);
-  const caseStudySlugs = (caseStudies ?? [])
-    .filter((c) => c.comingSoon !== true)
-    .map((c) => c.slug);
-  const glossarySlugs = (glossary ?? []).map((g) => g.slug);
-
-  // 2. Fetch full bodies for each document in parallel.
-  const [fullPosts, fullCaseStudies, fullGlossary] = await Promise.all([
-    Promise.all(
-      postSlugs.map((slug) =>
-        loadQuery({
-          query: BLOG_POST_QUERY,
-          params: { slug },
-        }).then((r) => r.data),
-      ),
-    ),
-    Promise.all(
-      caseStudySlugs.map((slug) =>
-        loadQuery({
-          query: CASE_STUDY_QUERY,
-          params: { slug },
-        }).then((r) => r.data),
-      ),
-    ),
-    Promise.all(
-      glossarySlugs.map((slug) =>
-        loadQuery({
-          query: GLOSSARY_TERM_QUERY,
-          params: { slug },
-        }).then((r) => r.data),
-      ),
-    ),
+  // Tolerate an empty or unreachable dataset (e.g. a fresh fork before
+  // `/setup`) — the file still renders the static page index.
+  const [caseStudies, projects, posts] = await Promise.all([
+    getFullCaseStudies().catch((): CaseStudyDetail[] => []),
+    getProjects().catch((): ProjectCardData[] => []),
+    getFullBlogPosts().catch((): BlogPostDetail[] => []),
   ]);
 
   const staticGroups: Array<[string, StaticPage[]]> = [
@@ -164,53 +64,34 @@ export const GET: APIRoute = async () => {
       .map(([heading, pages]) => pageIndex(heading, pages)),
   ];
 
-  if (fullCaseStudies.length) {
+  if (caseStudies.length) {
     out.push("---", "# Case Studies");
-    for (const cs of fullCaseStudies) {
-      if (!cs) continue;
+    for (const cs of caseStudies) {
       out.push(`## ${cs.title}`);
       out.push(`URL: ${SITE_URL}/case-studies/${cs.slug}`);
       if (cs.client) out.push(`Client: ${cs.client}`);
       if (cs.description) out.push(cs.description);
-      const md = caseStudyContentToMarkdown(cs.content);
-      if (md) out.push(md);
+      if (cs.markdown) out.push(cs.markdown);
     }
   }
 
-  const listedProjects = (projects ?? []).filter((p) => p.title && p.slug);
-  if (listedProjects.length) {
+  if (projects.length) {
     out.push("---", "# Projects");
-    for (const p of listedProjects) {
+    for (const p of projects) {
       out.push(`## ${p.title}`);
-      out.push(`URL: ${SITE_URL}/projects/${p.slug}`);
-      const meta = [categoryTitle(p.category), p.location]
-        .filter(Boolean)
-        .join(" · ");
+      out.push(`URL: ${SITE_URL}${p.href}`);
+      const meta = [p.categoryLabel, p.location].filter(Boolean).join(" · ");
       if (meta) out.push(meta);
     }
   }
 
-  if (fullPosts.length) {
+  if (posts.length) {
     out.push("---", "# Blog");
-    for (const post of fullPosts) {
-      if (!post) continue;
+    for (const post of posts) {
       out.push(`## ${post.title}`);
       out.push(`URL: ${SITE_URL}/blog/${post.slug}`);
       if (post.description) out.push(post.description);
-      const md = portableTextToMarkdown(post.body as never);
-      if (md) out.push(md);
-    }
-  }
-
-  if (fullGlossary.length) {
-    out.push("---", "# Glossary");
-    for (const term of fullGlossary) {
-      if (!term) continue;
-      out.push(`## ${term.term}`);
-      out.push(`URL: ${SITE_URL}/glossary/${term.slug}`);
-      if (term.shortDefinition) out.push(term.shortDefinition);
-      const md = portableTextToMarkdown(term.body as never);
-      if (md) out.push(md);
+      if (post.markdown) out.push(post.markdown);
     }
   }
 

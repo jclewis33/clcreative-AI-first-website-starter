@@ -2,63 +2,67 @@
 /**
  * Blog CTA — clickable image + text + link block.
  *
- * Whole block is an `<a>`. The visible "button" inside is a styled `<span>`
- * (not a nested anchor). Image bleeds above the colored panel via a negative
- * top margin on `.blog-cta_visual_wrap`. Theme-aware (uses --background-2 etc).
+ * The whole block is one anchor. The visible "button" inside is a styled
+ * span (not a nested anchor). The image bleeds above the colored panel via
+ * a negative top margin on `.blog-cta_visual_wrap`. Theme-aware (uses
+ * --background-2 etc).
+ *
+ * Takes a `BlogCtaData` from `@/lib/content`: a post's override or the site
+ * default (`getBlogPost().cta`), or an inline CTA from a post body (MDX
+ * `<BlogCta id>`, or the Sanity add-on's BlogCtaInline).
  */
-
-import { stegaClean } from "@sanity/client/stega";
+import type { HTMLAttributes } from "astro/types";
 import Visual from "@/components/ui/Visual.astro";
-import { urlFor } from "@/sanity/lib/image";
-import type { SITE_SETTINGS_QUERY_RESULT } from "@/sanity/sanity.types";
+import { imageSrc, plainText, type BlogCtaData } from "@/lib/content";
 
-/* The resolved `blogCta` document, taken from the query that fetches it
-   rather than restated here — every field is nullable until an editor
-   fills it in. */
-type Cta = NonNullable<
-  NonNullable<SITE_SETTINGS_QUERY_RESULT>["defaultBlogCta"]
->;
+interface Props extends HTMLAttributes<"a"> {
+  /**
+   * **BlogCta** — a linked image + heading + text panel. Pass `cta` (a
+   * `BlogCtaData`). Its `aspectRatio` picks the image shape (portrait when
+   * unset) and `linkLabel` defaults to "Learn more". `class` and any other
+   * anchor attribute land on the link wrapper (`blog-cta_wrap`).
+   */
+  docs?: string;
 
-interface Props {
-  cta: Cta;
-  class?: string;
+  /** The CTA to render. */
+  cta: BlogCtaData;
 }
 
-const { cta, class: className } = Astro.props;
+const { docs, cta, class: className, ...rest } = Astro.props;
 
-// stegaClean strips the invisible Unicode characters Sanity injects in draft
-// mode. Without this, the image asset _ref contains stega chars that break
-// the URL builder — the image silently 404s inside Presentation.
-const cleanImage = stegaClean(cta.image);
-const ratio = (stegaClean(cta.aspectRatio) ?? "portrait") as NonNullable<
-  Cta["aspectRatio"]
->;
-const linkUrl = stegaClean(cta.linkUrl);
-const linkLabel = stegaClean(cta.linkLabel) ?? "Learn more";
-const imageAlt = stegaClean(cta.imageAlt) ?? "";
+const ratio = cta.aspectRatio ?? "portrait";
+const linkLabel = cta.linkLabel ?? "Learn more";
+const imageAlt = cta.image?.alt ?? "";
 
 const imageWidth = 800;
 const imageHeight =
   ratio === "square" ? 800 : ratio === "landscape" ? 533 : 1067;
-
-const imageUrl = urlFor(cleanImage).width(imageWidth).height(imageHeight).url();
+const imageSource = imageSrc(cta.image, {
+  width: imageWidth,
+  height: imageHeight,
+});
 ---
 
 <a
   class:list={["blog-cta_wrap", className]}
   data-aspect={ratio}
-  href={linkUrl}
-  aria-label={linkLabel}
+  href={cta.linkUrl}
+  aria-label={plainText(linkLabel)}
+  {...rest}
 >
   <div class="blog-cta_visual_wrap">
-    <Visual
-      src={imageUrl}
-      alt={imageAlt}
-      ratio={ratio}
-      radius="medium"
-      width={imageWidth}
-      height={imageHeight}
-    />
+    {
+      imageSource && (
+        <Visual
+          src={imageSource}
+          alt={imageAlt}
+          ratio={ratio}
+          radius="medium"
+          width={imageWidth}
+          height={imageHeight}
+        />
+      )
+    }
   </div>
 
   <div class="blog-cta_content">
@@ -111,8 +115,12 @@ const imageUrl = urlFor(cleanImage).width(imageWidth).height(imageHeight).url();
       padding-left: calc(
         var(--bcta-image-width) + var(--space-5) + var(--bcta-gap)
       );
-      /* Min height ensures the bottom half of the image is fully inside the panel. */
-      min-height: calc(var(--bcta-bleed) + var(--space-5) * 2);
+      /* Min height keeps the part of the image below the panel's top edge
+         (image height minus the bleed) inside the panel, plus bottom
+         breathing room — so tall portrait images never hang out the bottom. */
+      min-height: calc(
+        var(--bcta-image-height) - var(--bcta-bleed) + var(--space-5)
+      );
       /* Clearance above for the bleeding upper half of the image. */
       margin-top: calc(var(--bcta-bleed) + var(--space-5));
       margin-bottom: var(--space-6);

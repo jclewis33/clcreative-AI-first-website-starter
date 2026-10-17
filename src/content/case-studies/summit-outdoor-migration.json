@@ -1,0 +1,73 @@
+{
+  "title": "E-Commerce Migration for Summit Outdoor",
+  "description": "Rebuilt a slow, legacy storefront on a modern platform with custom product filtering, cutting page load times by 60%.",
+  "client": "Summit Outdoor",
+  "image": "./images/summit-hero.webp",
+  "imageAlt": "Summit Outdoor’s product photo library open on a laptop",
+  "date": "2026-02-15",
+  "featured": true,
+  "categories": ["Development", "Strategy", "Marketing"],
+  "industries": ["Retail / E-commerce"],
+  "timeline": "12 weeks",
+  "liveUrl": "https://example.com",
+  "galleryImages": [
+    {
+      "src": "./images/summit-hero.webp",
+      "alt": "Summit Outdoor’s product photo library open on a laptop"
+    },
+    {
+      "src": "./images/summit-devices.webp",
+      "alt": "The new storefront on a desktop, laptop, tablet and phone"
+    }
+  ],
+  "content": [
+    {
+      "type": "richText",
+      "body": "### Introduction\n\nSummit Outdoor’s storefront was slow, hard to maintain and losing sales. We planned a phased move to a modern platform with zero downtime, keeping every search ranking through careful redirect mapping."
+    },
+    {
+      "type": "fullWidthImage",
+      "image": "./images/summit-devices.webp",
+      "imageAlt": "The new storefront on a desktop, laptop, tablet and phone",
+      "aspectRatio": "widescreen"
+    },
+    {
+      "type": "richTextLeft",
+      "body": "### From legacy to modern\n\nThe migration covered more than 500 product pages. We:\n\n1. audited every page and its traffic\n2. mapped each old address to its new one\n3. rebuilt the catalog with the filters customers actually use\n\nCart abandonment fell by 35% once checkout dropped from five steps to two.",
+      "maxWidth": "60ch",
+      "sectionSpacingTop": "none",
+      "sectionSpacingBottom": "large"
+    },
+    {
+      "type": "richTextWithImage",
+      "body": "### Working as one team\n\nWeekly reviews with Summit’s merchandisers kept the catalog accurate while it moved.",
+      "image": "./images/summit-review.webp",
+      "imageAlt": "Two people reviewing the new product pages on a desktop monitor",
+      "objectFit": "contain",
+      "transparent": true
+    },
+    {
+      "type": "imageGrid",
+      "aspectRatio": "auto",
+      "images": [
+        {
+          "image": "./images/summit-code.webp",
+          "alt": "A developer building the product filters at a desktop monitor"
+        },
+        {
+          "image": "./images/summit-shelf.webp",
+          "alt": "The finished storefront on a laptop in front of a plaster arch"
+        },
+        {
+          "image": "./images/summit-nook.webp",
+          "alt": "The storefront open on a laptop beside a bookshelf"
+        }
+      ]
+    },
+    {
+      "type": "richText",
+      "body": "### The outcome\n\nThe move finished with zero downtime and no lost rankings. Pages load 60% faster, and the new filters help customers find the right gear in fewer clicks."
+    }
+  ],
+  "ctaSection": "talk-to-us"
+}

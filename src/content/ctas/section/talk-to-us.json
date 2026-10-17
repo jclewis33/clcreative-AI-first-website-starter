@@ -1,0 +1,8 @@
+{
+  "heading": "Have a question about your site?",
+  "text": "Book a twenty-minute call. No pitch, just answers.",
+  "primaryButtonLabel": "Book a call",
+  "primaryButtonHref": "/contact",
+  "backgroundImage": "./images/studio-desk.webp",
+  "imageAlt": "A desk with a large monitor and a lamp beside a tall window"
+}

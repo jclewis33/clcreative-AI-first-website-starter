@@ -19,7 +19,7 @@ description: Per-page SEO, structured data, and LLM discoverability reference fo
   `LocalBusiness + WebPage + BreadcrumbList`. Image/logo paths come from
   `SITE.ogImagePath` and `SITE.logoPath`;
   [src/lib/jsonld.ts](../../../src/lib/jsonld.ts) reuses the same `SITE.*`
-  values for the blog/case-study/glossary templates.
+  values for the blog/case-study templates.
 
 Most pages need nothing here. Reach for the per-page graph only when a page
 should advertise a specific **Service** (and optionally an **FAQ**) — a
@@ -82,11 +82,14 @@ marketing/service/landing page.
 ```bash
 npm run dev               # in one terminal
 npm run check:schema      # in another
+# or, with no server, against a build (what CI runs):
+npm run build && npm run check:schema -- --dist dist/client
 ```
 
 [scripts/check-schema.mjs](../../../scripts/check-schema.mjs) validates the
 JSON-LD on the pages in its `STATIC_PAGES` array (currently `/` and
-`/contact`) plus one live sample of each CMS content type. **Add any page that
+`/contact`) plus one sample of each content type (the first blog post and the first
+published case study in `src/content/`). **Add any page that
 ships a custom `schema`** to `STATIC_PAGES`. It catches: JSON parse errors,
 missing `@context`/`@type`/required fields, duplicate or malformed `@id`
 values, dangling `provider.@id` references (the load-bearing failure mode for
@@ -113,29 +116,34 @@ The site serves two LLM-facing files at the root, following the
 
 - **`/llms.txt`** — a concise, curated index: site summary + links (with
   one-line descriptions) to the important pages and every blog post, case
-  study, and glossary term.
-- **`/llms-full.txt`** — the full body text of every blog post, case study,
-  and glossary term, rendered to Markdown for whole-site ingestion.
+  study and project.
+- **`/llms-full.txt`** — the full body text of every blog post, case study and project,
+  rendered to Markdown for whole-site ingestion.
 
-### How they stay current (no manual work for CMS content)
+### How they stay current (no manual work for content)
 
 Both are **Astro endpoint routes that prerender to static files at build time**
 ([src/pages/llms.txt.ts](../../../src/pages/llms.txt.ts),
 [src/pages/llms-full.txt.ts](../../../src/pages/llms-full.txt.ts)). They
-re-run their Sanity queries on every build — the same lifecycle as the
-sitemap — so new/edited/deleted content flows through automatically on the
-next deploy. They reuse the queries in `src/sanity/lib/queries.ts` and mirror
-the `comingSoon != true` rule used by the case-study `getStaticPaths` slug
-query, so unpublished case studies stay hidden. The full file uses
-`portableTextToMarkdown()` in
-[src/sanity/lib/portable-text.ts](../../../src/sanity/lib/portable-text.ts).
+read the content interface (`@/lib/content`: `getBlogPosts`,
+`getCaseStudies`, `getProjects`, and for the full file
+`getFullBlogPosts` / `getFullCaseStudies`) on every build — the same
+lifecycle as the sitemap — so new, edited and deleted content flows
+through automatically on the next deploy. Coming-soon case studies stay
+hidden, matching the case-study `getStaticPaths` rule. Bodies arrive as
+Markdown on the view models (`markdown`). The Files source exports an MDX
+post's own Markdown, with components converted or dropped
+([src/lib/content/files/mdx-text.ts](../../../src/lib/content/files/mdx-text.ts)),
+and a case study's block Markdown as written. The Sanity add-on's source converts
+Portable Text with `portableTextToMarkdown()` in
+`src/sanity/lib/portable-text.ts` (Sanity add-on).
 
 The built files land in `dist/client/` alongside `sitemap-index.xml`. They are
 intentionally **not** in the XML sitemap.
 
 ### ⚠️ The one manual step — adding a new static page
 
-Dynamic content is automatic; **static (non-Sanity) marketing pages are
+Dynamic content is automatic; **static marketing pages are
 hand-curated** in the `PAGES` registry in
 [src/data/site-structure.ts](../../../src/data/site-structure.ts) — the single
 source of truth that also drives the nav and footer. **Whenever you add a new
@@ -155,7 +163,8 @@ slash, `title` is the page title with the ` | Your Company` suffix stripped,
 and `desc` is the page's meta description. Because nav and footer reference
 pages by path from this same registry, adding the page here once + referencing
 its path in `NAV_MENU`/`FOOTER_GROUPS` is all that's needed — one registry,
-never three separate lists. New **CMS** content needs nothing here — but
+never three separate lists. New content entries (files in `src/content/`,
+or Sanity documents with the add-on) need nothing here — but
 its _index_ page does: `/projects` and `/gallery` (the photo portfolio) are
 `group: "index"` entries, linked from the footer Resources group and left out
 of `NAV_MENU` by default; add them to the nav on sites that use them.

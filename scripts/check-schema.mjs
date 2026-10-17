@@ -10,6 +10,9 @@
  * Override the base URL with --base (default http://localhost:4321):
  *   node scripts/check-schema.mjs --base https://www.example.com
  *
+ * Or check a build without a server:
+ *   npm run build && node scripts/check-schema.mjs --dist dist/client
+ *
  * What it checks per page:
  *   - Every <script type="application/ld+json"> parses as valid JSON
  *   - Each top-level node has @context and @type
@@ -22,61 +25,52 @@
  */
 
 import { parse } from "node-html-parser";
-import { createClient } from "@sanity/client";
-import {
-  SANITY_PROJECT_ID,
-  SANITY_DATASET,
-  SANITY_API_VERSION,
-} from "../src/config/site.shared.mjs";
+import fs from "node:fs";
+import path from "node:path";
 
 const args = process.argv.slice(2);
 const baseIdx = args.indexOf("--base");
 const BASE = baseIdx >= 0 ? args[baseIdx + 1] : "http://localhost:4321";
+// --dist <dir>: read the built pages (<dir>/<path>/index.html) instead of
+// fetching a server, e.g. `npm run check:schema -- --dist dist/client`.
+const distIdx = args.indexOf("--dist");
+const DIST = distIdx >= 0 ? args[distIdx + 1] : null;
+if (distIdx >= 0 && (!DIST || DIST.startsWith("--"))) {
+  console.error(
+    "check-schema: --dist needs a directory, e.g. --dist dist/client.",
+  );
+  process.exit(2);
+}
 
 // Static pages to validate the automatic baseline (WebPage / Breadcrumb /
 // LocalBusiness) schema. Add pages here that ship per-page Service/FAQ JSON-LD
 // (via serviceFaqJsonLd) as the starter grows.
 const STATIC_PAGES = ["/", "/contact"];
 
-// Pull one sample slug from each Sanity content type so we also validate
-// the JsonLd helper output on blog / case-study / glossary templates.
-async function getSampleSanityPaths() {
-  const client = createClient({
-    projectId: SANITY_PROJECT_ID,
-    dataset: SANITY_DATASET,
-    apiVersion: SANITY_API_VERSION,
-    useCdn: true,
-  });
-
-  const [post, caseStudy, glossary] = await Promise.all([
-    client.fetch(
-      `*[_type == "blogPost" && defined(slug.current)][0]{ "slug": slug.current }`,
-    ),
-    client.fetch(
-      `*[_type == "caseStudy" && defined(slug.current)][0]{ "slug": slug.current }`,
-    ),
-    client.fetch(
-      `*[_type == "glossaryTerm" && defined(slug.current)][0]{ "slug": slug.current }`,
-    ),
-  ]);
-
-  const paths = [];
-  if (post?.slug) paths.push(`/blog/${post.slug}`);
-  if (caseStudy?.slug) paths.push(`/case-studies/${caseStudy.slug}`);
-  if (glossary?.slug) paths.push(`/glossary/${glossary.slug}`);
-  return paths;
-}
-
-let sanityPaths = [];
-try {
-  sanityPaths = await getSampleSanityPaths();
-} catch (err) {
-  console.error(
-    `\x1b[33mwarn: could not fetch sample Sanity slugs (${err.message}); skipping CMS pages\x1b[0m`,
+// One sample page per content type, taken from src/content, so the JsonLd
+// helper output on the blog and case-study templates is validated too.
+function getSampleContentPaths() {
+  const first = (dir, ext, keep = () => true) =>
+    fs.existsSync(dir)
+      ? fs
+          .readdirSync(dir)
+          .filter((f) => f.endsWith(ext))
+          .sort()
+          .find((f) => keep(path.join(dir, f)))
+      : undefined;
+  const post = first("src/content/blog", ".mdx");
+  const study = first(
+    "src/content/case-studies",
+    ".json",
+    (file) => !JSON.parse(fs.readFileSync(file, "utf8")).comingSoon,
   );
+  return [
+    post && `/blog/${post.slice(0, -".mdx".length)}`,
+    study && `/case-studies/${study.slice(0, -".json".length)}`,
+  ].filter(Boolean);
 }
 
-const PAGES = [...STATIC_PAGES, ...sanityPaths];
+const PAGES = [...STATIC_PAGES, ...getSampleContentPaths()];
 
 const COLORS = {
   red: "\x1b[31m",
@@ -91,22 +85,33 @@ const c = (color, s) => `${COLORS[color]}${s}${COLORS.reset}`;
 
 let pageFailures = 0;
 
-for (const path of PAGES) {
-  const url = `${BASE}${path}`;
-  console.log(`\n${c("bold", c("cyan", `→ ${url}`))}`);
+for (const pagePath of PAGES) {
+  const where = DIST
+    ? path.join(DIST, pagePath, "index.html")
+    : `${BASE}${pagePath}`;
+  console.log(`\n${c("bold", c("cyan", `→ ${where}`))}`);
 
   let html;
   try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.log(c("red", `  ✗ fetch failed: HTTP ${res.status}`));
-      pageFailures++;
-      continue;
+    if (DIST) {
+      html = fs.readFileSync(where, "utf8");
+    } else {
+      const res = await fetch(where);
+      if (!res.ok) {
+        console.log(c("red", `  ✗ fetch failed: HTTP ${res.status}`));
+        pageFailures++;
+        continue;
+      }
+      html = await res.text();
     }
-    html = await res.text();
   } catch (err) {
     console.log(
-      c("red", `  ✗ fetch failed: ${err.message} — is the dev server running?`),
+      c(
+        "red",
+        DIST
+          ? `  ✗ not built: ${err.message}`
+          : `  ✗ fetch failed: ${err.message} — is the dev server running?`,
+      ),
     );
     pageFailures++;
     continue;

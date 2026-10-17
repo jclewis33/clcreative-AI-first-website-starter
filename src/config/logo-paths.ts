@@ -6,9 +6,10 @@
  * paths (and LOGO_LABEL with your brand name) when rebranding.
  *
  * Rendered by the front-end logo ([src/components/global/Logo.astro]) and the
- * Sanity Studio navbar logo ([src/sanity/components/StudioLogo.tsx]). Both map
- * over these arrays and draw `<path d=… fill="currentColor" />`, so the logo
- * stays theme-adaptive (light/dark) and a redesign is a single edit here.
+ * Sanity add-on's Studio navbar logo (its
+ * src/sanity/components/StudioLogo.tsx). Both map over these arrays and
+ * draw `<path d=… fill="currentColor" />`, so the logo stays theme-adaptive
+ * (light/dark) and a redesign is a single edit here.
  *
  * The original Logo.astro wrapped the two MARK paths in luminance masks; those
  * masks were bounding-box rectangles that fully enclosed their paths (visual

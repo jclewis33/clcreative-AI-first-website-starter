@@ -80,18 +80,18 @@ The one component that arranges a section's content. Two-column CSS grid with
 wrapper itself. A second column takes `slot="column2"`. Two-column variants
 collapse to a stack via container query.
 
-| Prop            | Type                                                            | Default                  | Description                                                                  |
-| --------------- | --------------------------------------------------------------- | ------------------------ | ---------------------------------------------------------------------------- |
-| `variant`       | table below                                                     | `'columns'`              | Column proportion and behavior                                               |
-| `verticalAlign` | `'start'`\|`'center'`\|`'end'`\|`'stretch'`                     | `'start'`                | Vertical alignment of columns                                                |
-| `collapseAt`    | `'medium'`\|`'small'`                                           | `'medium'`               | Collapse breakpoint (~928px / ~560px container width)                        |
-| `contentSpan`   | `1`–`11`                                                        | breakout: `7`, full: `6` | Content-side span for breakout/full — must pair with `bleedSpan` to total 13 |
-| `bleedSpan`     | `1`–`11`                                                        | breakout: `6`, full: `7` | Bleed-side span (includes the gutter track to the viewport edge)             |
-| `ratio`         | `string`                                                        | —                        | `"N-M"` custom column ratio (`"60-40"`, `"5-7"`) for columns/sticky/contain  |
-| `rowGap`        | `0`–`8`                                                         | —                        | Row gap inside a column                                                      |
-| `align`         | `'inherit'`\|`'center'`\|`'left'`\|`'right'`\|`'center-mobile'` | `'inherit'`              | Alignment for stack variants                                                 |
-| `cardPadding`   | `string`                                                        | `--section-space-main`   | Vertical padding for the `card` variant                                      |
-| `class`         | `string`                                                        | —                        | Extra classes                                                                |
+| Prop            | Type                                                            | Default                  | Description                                                                                                       |
+| --------------- | --------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `variant`       | table below                                                     | `'columns'`              | Column proportion and behavior                                                                                    |
+| `verticalAlign` | `'start'`\|`'center'`\|`'end'`\|`'stretch'`                     | centered (when omitted)  | Vertical alignment of columns — pass `start` when a short column sits beside a tall one (e.g. text beside a form) |
+| `collapseAt`    | `'medium'`\|`'small'`                                           | `'medium'`               | Collapse breakpoint (~928px / ~560px container width)                                                             |
+| `contentSpan`   | `1`–`11`                                                        | breakout: `7`, full: `6` | Content-side span for breakout/full — must pair with `bleedSpan` to total 13                                      |
+| `bleedSpan`     | `1`–`11`                                                        | breakout: `6`, full: `7` | Bleed-side span (includes the gutter track to the viewport edge)                                                  |
+| `ratio`         | `string`                                                        | —                        | `"N-M"` custom column ratio (`"60-40"`, `"5-7"`) for columns/sticky/contain                                       |
+| `rowGap`        | `0`–`8`                                                         | —                        | Row gap inside a column                                                                                           |
+| `align`         | `'inherit'`\|`'center'`\|`'left'`\|`'right'`\|`'center-mobile'` | `'inherit'`              | Alignment for stack variants                                                                                      |
+| `cardPadding`   | `string`                                                        | `--section-space-main`   | Vertical padding for the `card` variant                                                                           |
+| `class`         | `string`                                                        | —                        | Extra classes                                                                                                     |
 
 Variants: `columns` (50/50) · `columns-reversed` · `stack` (single column,
 plain block, **no gap** — text margins provide rhythm) · `stack-centered` ·
@@ -302,10 +302,33 @@ variant), default (body), `footer`.
 ## `<BlogCard>`
 
 Blog card built on Card: image top, title + description clamped at 2 lines,
-category label, whole surface clickable. Required props: `title`,
-`description`, `category`, `href`, `image`, `imageAlt`; optional `author`,
-`authorAvatar`, `date`. `...rest` passes through to Card. The `BlogPost`
-interface in `src/pages/blog/index.astro` maps 1:1 to CMS fields.
+category labels, whole surface clickable. Required props: `title`,
+`description`, `categories` (a string array; `null` or empty hides the
+labels), `href`, `image`, `imageAlt`; optional `author`,
+`authorAvatar`, `date`. `...rest` passes through to Card. Listings pass
+`BlogPostSummary`s from `@/lib/content`, sizing the image with
+`imageSrc(post.image, { width: 600 })`; `BlogPostGrid` takes
+`BlogPostSummary[]` (fetched with `getBlogPosts()` when `posts` is
+omitted); `CaseStudyGrid` likewise takes `CaseStudySummary[]` or fetches
+`getCaseStudies()`.
+
+## `<Callout>` and `<VideoEmbed>`
+
+Blog-body components in `src/components/blog/`, used by MDX posts by tag
+name (no import) and by the Sanity add-on's Portable Text renderers. `Callout`: `type`
+(`tip` default · `warning` · `info`), content in the slot (in MDX, the
+opening and closing tags each on their own line). `VideoEmbed`: `url`
+(YouTube watch/youtu.be/Shorts or Vimeo, parsed by `src/lib/video.ts`;
+anything else renders nothing, and a literal unsupported `url="…"` in an MDX
+body fails content sync), `caption`. `Callout` styles (`callout_*`) live in
+`src/styles/pages/blog-post.css`, with the code-block (`code_block_*`) and
+`<TableOfContents>` (`toc_*`) styles; `BlogPostTemplate` imports it, so a
+page that uses any of these outside the post template must import that
+stylesheet itself (as `/components` does). Co-locating them is
+deliberately deferred. VideoEmbed's frame (`video-embed_frame`) is global,
+in `src/styles/utilities/typography.css`. `Quote` and `Reviews` also take
+an optional `avatar` (`{ src, alt }` on Quote; `avatar` + `avatarAlt` on
+each review), cropped square from the centre.
 
 ## `<Icon>`
 
@@ -335,8 +358,8 @@ One bare `<video>` element with ratio presets and sane defaults.
 ## `<FormattedDate>`
 
 Renders a publish date as `<time>` — **never format a date by hand**
-(`toLocaleDateString()` in a template gets the time zone wrong: Sanity
-date-only strings parse as UTC midnight and render a day early west of
+(`toLocaleDateString()` in a template gets the time zone wrong: the
+content's date-only `YYYY-MM-DD` strings parse as UTC midnight and render a day early west of
 Greenwich, varying by build machine). Props: `date` (Date | string — renders
 nothing if unparseable), `format` (`Intl.DateTimeFormatOptions`, default
 `{ dateStyle: 'long' }`), `timeZone` (default `'UTC'` — pinned on purpose),

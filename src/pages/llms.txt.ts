@@ -2,21 +2,22 @@
  * `/llms.txt` — an LLM-friendly index of the site (llmstxt.org format).
  *
  * Prerendered to `dist/llms.txt` at build time. Static marketing pages come
- * from the `PAGES` registry in `src/data/site-structure.ts`; blog posts, case
- * studies, and glossary terms are pulled fresh from Sanity on every build — so
- * this file stays in sync with published content automatically, like the sitemap.
+ * from the `PAGES` registry in `src/data/site-structure.ts`; blog posts,
+ * case studies, and projects come from the content interface
+ * (`@/lib/content`) on every build — so this file stays in sync with
+ * published content automatically, like the sitemap.
  */
 
 import type { APIRoute } from "astro";
-import { loadQuery } from "@/sanity/lib/load-query";
 import {
-  BLOG_POSTS_QUERY,
-  CASE_STUDIES_QUERY,
-  PROJECTS_QUERY,
-  GLOSSARY_TERMS_QUERY,
-} from "@/sanity/lib/queries";
+  getBlogPosts,
+  getCaseStudies,
+  getProjects,
+  type BlogPostSummary,
+  type CaseStudySummary,
+  type ProjectCardData,
+} from "@/lib/content";
 import { SITE_URL, SITE_NAME, SITE_SUMMARY } from "@/config/site";
-import { categoryTitle } from "@/config/projects";
 import {
   MAIN_PAGES,
   SERVICE_PAGES,
@@ -26,13 +27,6 @@ import {
   type StaticPage,
 } from "@/data/site-structure";
 import { isNoindexRoute } from "@/config/seo.shared.mjs";
-
-import type {
-  BLOG_POSTS_QUERY_RESULT,
-  CASE_STUDIES_QUERY_RESULT,
-  PROJECTS_QUERY_RESULT,
-  GLOSSARY_TERMS_QUERY_RESULT,
-} from "@/sanity/sanity.types";
 
 export const prerender = true;
 
@@ -53,17 +47,6 @@ function staticLine(p: StaticPage): string {
   return `- [${p.title}](${url(p.path)}): ${p.desc}`;
 }
 
-/**
- * A document is only listable once it has both a title and a slug: without a
- * slug there is no URL to link, and without a title the line would read
- * `- [null](…)`. Sanity leaves both nullable until an editor fills them in.
- */
-function listable<T extends { title: string | null; slug: string | null }>(
-  d: T,
-): d is T & { title: string; slug: string } {
-  return !!d.title && !!d.slug;
-}
-
 function dynamicLine(
   title: string,
   path: string,
@@ -75,26 +58,16 @@ function dynamicLine(
 
 export const GET: APIRoute = async () => {
   // Tolerate an empty or unreachable dataset (e.g. a fresh fork before
-  // `/setup`) — the file still renders the static page index.
-  const [posts, caseStudies, glossary, projects] = await Promise.all([
-    loadQuery({ query: BLOG_POSTS_QUERY })
-      .then((r) => r.data)
-      .catch((): BLOG_POSTS_QUERY_RESULT => []),
-    loadQuery({ query: CASE_STUDIES_QUERY })
-      .then((r) => r.data)
-      .catch((): CASE_STUDIES_QUERY_RESULT => []),
-    loadQuery({ query: GLOSSARY_TERMS_QUERY })
-      .then((r) => r.data)
-      .catch((): GLOSSARY_TERMS_QUERY_RESULT => []),
-    loadQuery({ query: PROJECTS_QUERY })
-      .then((r) => r.data)
-      .catch((): PROJECTS_QUERY_RESULT => []),
+  // `/setup`) — the file still renders the static page index. Listings only
+  // carry linkable entries (slug + title), so nothing to filter here.
+  const [posts, caseStudies, projects] = await Promise.all([
+    getBlogPosts().catch((): BlogPostSummary[] => []),
+    getCaseStudies().catch((): CaseStudySummary[] => []),
+    getProjects().catch((): ProjectCardData[] => []),
   ]);
 
   // Mirror the sitemap rule: hide case studies marked "coming soon".
-  const publishedCaseStudies = (caseStudies ?? []).filter(
-    (c) => c.comingSoon !== true,
-  );
+  const publishedCaseStudies = caseStudies.filter((c) => !c.comingSoon);
 
   // Only emit static groups that have pages (services/locations are empty in
   // the bare starter).
@@ -116,10 +89,9 @@ export const GET: APIRoute = async () => {
       ),
   ];
 
-  const listableCaseStudies = publishedCaseStudies.filter(listable);
-  if (listableCaseStudies.length) {
+  if (publishedCaseStudies.length) {
     sections.push(
-      `## Case Studies\n${listableCaseStudies
+      `## Case Studies\n${publishedCaseStudies
         .map((c) =>
           dynamicLine(c.title, `/case-studies/${c.slug}`, c.description),
         )
@@ -127,39 +99,24 @@ export const GET: APIRoute = async () => {
     );
   }
 
-  const listableProjects = (projects ?? []).filter(listable);
-  if (listableProjects.length) {
+  if (projects.length) {
     sections.push(
-      `## Projects\n${listableProjects
+      `## Projects\n${projects
         .map((p) =>
           dynamicLine(
             p.title,
-            `/projects/${p.slug}`,
-            [categoryTitle(p.category), p.location].filter(Boolean).join(" · "),
+            p.href,
+            [p.categoryLabel, p.location].filter(Boolean).join(" · "),
           ),
         )
         .join("\n")}`,
     );
   }
 
-  const listablePosts = (posts ?? []).filter(listable);
-  if (listablePosts.length) {
+  if (posts.length) {
     sections.push(
-      `## Blog\n${listablePosts
+      `## Blog\n${posts
         .map((p) => dynamicLine(p.title, `/blog/${p.slug}`, p.description))
-        .join("\n")}`,
-    );
-  }
-
-  const listableTerms = (glossary ?? []).filter(
-    (g): g is typeof g & { term: string; slug: string } => !!g.term && !!g.slug,
-  );
-  if (listableTerms.length) {
-    sections.push(
-      `## Glossary\n${listableTerms
-        .map((g) =>
-          dynamicLine(g.term, `/glossary/${g.slug}`, g.shortDefinition),
-        )
         .join("\n")}`,
     );
   }

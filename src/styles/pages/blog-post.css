@@ -294,7 +294,7 @@
     border-left-color: var(--heading-accent);
   }
 
-  /* ---- Scroll-margin for TOC targets (matches style-guide/glossary pattern) ---- */
+  /* ---- Scroll-margin for TOC targets (matches the style-guide pattern) ---- */
 
   .blog_post_prose h2[id] {
     scroll-margin-top: calc(var(--nav-height-total) + 1.5rem);

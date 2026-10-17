@@ -1,19 +1,24 @@
 /**
- * JSON-LD structured data builders for blog posts, case studies, and
- * glossary terms. Each function returns a plain object (or @graph array)
- * that a `<script type="application/ld+json">` tag can stringify.
+ * JSON-LD structured data builders for blog posts and case studies. Each
+ * function returns a plain object (or @graph array) that a
+ * `<script type="application/ld+json">` tag can stringify.
  *
  * All functions expect `siteUrl` to be an absolute origin (e.g.
  * "https://www.example.com") — pass `Astro.site!.toString().replace(/\/$/, "")`
  * from calling templates.
  */
 
-import { urlFor } from "@/sanity/lib/image";
 import { SITE } from "@/config/site";
+import {
+  resolveImageUrl,
+  plainText,
+  type BlogPostDetail,
+  type CaseStudyDetail,
+  type ContentImage,
+} from "@/lib/content";
 
 const ORG_NAME = SITE.name;
 const ORG_LOGO_PATH = SITE.logoPath;
-const DEFAULT_OG_IMAGE_PATH = SITE.ogImagePath;
 
 function absoluteUrl(siteUrl: string, path: string): string {
   if (!path) return siteUrl;
@@ -21,14 +26,14 @@ function absoluteUrl(siteUrl: string, path: string): string {
   return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-function toImageUrl(image: any, siteUrl: string): string | null {
-  if (!image) return null;
-  try {
-    return urlFor(image).width(1200).url();
-  } catch {
-    if (typeof image === "string") return absoluteUrl(siteUrl, image);
-    return null;
-  }
+/** Absolute URL of a content image at 1200 wide — CDN URLs pass through,
+    local files get the site origin. */
+async function contentImageUrl(
+  image: ContentImage | null,
+  siteUrl: string,
+): Promise<string | null> {
+  const url = await resolveImageUrl(image, { width: 1200 });
+  return url ? absoluteUrl(siteUrl, url) : null;
 }
 
 /**
@@ -261,21 +266,31 @@ function youtubeVideoId(url: string | null | undefined): string | null {
   return null;
 }
 
+/*
+ * Draft-mode values from a CMS preview may carry invisible markers (the
+ * Sanity add-on's stega). Structured data is plumbing, not an editing
+ * surface, so the builders below clean every content string they emit.
+ */
+
 /**
  * Build a VideoObject node for a YouTube URL. Returns null if the URL
  * isn't a recognizable YouTube link.
  */
 function youtubeVideoObject(
   videoUrl: string,
-  post: { title?: string; description?: string; date?: string },
+  post: {
+    title?: string | null;
+    description?: string | null;
+    date?: string | null;
+  },
 ): any {
   const id = youtubeVideoId(videoUrl);
   if (!id) return null;
 
   return {
     "@type": "VideoObject",
-    name: post.title || "Video",
-    description: post.description || post.title || "",
+    name: plainText(post.title) || "Video",
+    description: plainText(post.description || post.title) || "",
     thumbnailUrl: [
       `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
       `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
@@ -292,21 +307,24 @@ function youtubeVideoObject(
  * - VideoObject (when post.video is a YouTube URL)
  * - FAQPage (when post.faqs is non-empty)
  */
-export function blogPostJsonLd(post: any, siteUrl: string): any {
+export async function blogPostJsonLd(
+  post: BlogPostDetail,
+  siteUrl: string,
+): Promise<any> {
   const pageUrl = `${siteUrl}/blog/${post.slug}`;
-  const imageUrl = toImageUrl(post.image, siteUrl);
+  const imageUrl = await contentImageUrl(post.image, siteUrl);
 
   const blogPosting: any = {
     "@type": "BlogPosting",
     "@id": pageUrl,
-    headline: post.title,
-    description: post.description,
+    headline: plainText(post.title),
+    description: plainText(post.description),
     ...(imageUrl && { image: imageUrl }),
     datePublished: toIsoDateTime(post.date),
-    dateModified: toIsoDateTime(post._updatedAt) || toIsoDateTime(post.date),
+    dateModified: toIsoDateTime(post.updatedAt) || toIsoDateTime(post.date),
     author: {
       "@type": "Person",
-      name: post.author || ORG_NAME,
+      name: plainText(post.author) || ORG_NAME,
       url: siteUrl,
     },
     publisher: publisher(siteUrl),
@@ -320,22 +338,18 @@ export function blogPostJsonLd(post: any, siteUrl: string): any {
     if (video) nodes.push(video);
   }
 
-  if (Array.isArray(post.faqs) && post.faqs.length > 0) {
+  const faqs = post.faqs.filter((f) => f.question && f.answerText);
+  if (faqs.length > 0) {
     nodes.push({
       "@type": "FAQPage",
-      mainEntity: post.faqs
-        .filter((f: any) => f?.question && f?.answer)
-        .map((f: any) => ({
-          "@type": "Question",
-          name: f.question,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: String(f.answer)
-              .replace(/<[^>]+>/g, " ")
-              .replace(/\s+/g, " ")
-              .trim(),
-          },
-        })),
+      mainEntity: faqs.map((f) => ({
+        "@type": "Question",
+        name: plainText(f.question),
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: f.answerText.replace(/\s+/g, " ").trim(),
+        },
+      })),
     });
   }
 
@@ -348,70 +362,28 @@ export function blogPostJsonLd(post: any, siteUrl: string): any {
 /**
  * Build JSON-LD for a case study page. Uses schema.org/Article.
  */
-export function caseStudyJsonLd(cs: any, siteUrl: string): any {
+export async function caseStudyJsonLd(
+  cs: CaseStudyDetail,
+  siteUrl: string,
+): Promise<any> {
   const pageUrl = `${siteUrl}/case-studies/${cs.slug}`;
-  const imageUrl = toImageUrl(cs.image, siteUrl);
+  const csImageUrl = await contentImageUrl(cs.image, siteUrl);
 
   return {
     "@context": "https://schema.org",
     "@type": "Article",
     "@id": pageUrl,
-    headline: cs.title,
-    description: cs.description,
-    ...(imageUrl && { image: imageUrl }),
+    headline: plainText(cs.title),
+    description: plainText(cs.description),
+    ...(csImageUrl && { image: csImageUrl }),
     datePublished: toIsoDateTime(cs.date),
-    dateModified: toIsoDateTime(cs._updatedAt) || toIsoDateTime(cs.date),
+    dateModified: toIsoDateTime(cs.updatedAt) || toIsoDateTime(cs.date),
     articleSection: "Case Study",
     author: publisher(siteUrl),
     publisher: publisher(siteUrl),
     mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
     ...(cs.client && {
-      about: { "@type": "Organization", name: cs.client },
+      about: { "@type": "Organization", name: plainText(cs.client) },
     }),
-  };
-}
-
-/**
- * Build JSON-LD for a glossary term page. Returns an @graph containing:
- * - Article (primary — needed for Google rich-result eligibility)
- * - DefinedTerm (semantic type, supplementary)
- *
- * Google doesn't surface DefinedTerm on its own, so we lead with Article
- * and keep DefinedTerm alongside for schema.org consumers.
- */
-export function glossaryTermJsonLd(term: any, siteUrl: string): any {
-  const pageUrl = `${siteUrl}/glossary/${term.slug}`;
-  const description = term.shortDefinition || term.term;
-
-  const article = {
-    "@type": "Article",
-    "@id": pageUrl,
-    headline: term.term,
-    description,
-    image: absoluteUrl(siteUrl, DEFAULT_OG_IMAGE_PATH),
-    articleSection: "Glossary",
-    datePublished: toIsoDateTime(term._createdAt),
-    dateModified:
-      toIsoDateTime(term._updatedAt) || toIsoDateTime(term._createdAt),
-    author: publisher(siteUrl),
-    publisher: publisher(siteUrl),
-    mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
-  };
-
-  const definedTerm = {
-    "@type": "DefinedTerm",
-    name: term.term,
-    description,
-    url: pageUrl,
-    inDefinedTermSet: {
-      "@type": "DefinedTermSet",
-      name: "Astro Starter Glossary",
-      url: `${siteUrl}/glossary`,
-    },
-  };
-
-  return {
-    "@context": "https://schema.org",
-    "@graph": [article, definedTerm],
   };
 }

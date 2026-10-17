@@ -4,27 +4,27 @@ import Card from "@/components/ui/Card.astro";
 import Visual from "@/components/ui/Visual.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
-import type { ProjectCardData } from "@/lib/projects";
+import type { ProjectCardData } from "@/lib/content";
 
 /**
  * ProjectCard — a project tile built on `<Card>`: photo with a category badge,
  * title, the location line (as the editor wrote it), and "View project →". The whole
  * card is one link.
  *
- * Takes the view model from `toProjectCard()` in src/lib/projects.ts, so it
- * never sees raw Sanity shapes.
+ * Takes the view model from `getProjects()` / `getProject()` in
+ * `@/lib/content`, so it never sees raw CMS shapes.
  *
  * `compact` drops the category badge and the "View project" line (the
  * homepage strip under the before/after slider).
  *
  * @example
- * <ProjectCard project={toProjectCard(row)} />
+ * <ProjectCard project={card} />
  */
 /* The HTML `title` attribute is omitted: Card owns a `title` prop. */
 export interface Props extends Omit<HTMLAttributes<"div">, "title"> {
   /**
    * **ProjectCard** — a linked project tile. `project` is a
-   * `ProjectCardData` from `toProjectCard()`. `compact` for the slimmer
+   * `ProjectCardData` from `getProjects()` / `getProject()` in `@/lib/content`. `compact` for the slimmer
    * homepage version.
    */
   docs?: string;
@@ -32,7 +32,7 @@ export interface Props extends Omit<HTMLAttributes<"div">, "title"> {
   /** Set to `false` to skip rendering. @default true */
   render?: boolean;
 
-  /** The card data (from `toProjectCard()`). */
+  /** The card data (from `getProjects()` / `getProject()` in `@/lib/content`). */
   project: ProjectCardData;
 
   /** Slim version: no badge, no "View project" line, no card surface. @default false */

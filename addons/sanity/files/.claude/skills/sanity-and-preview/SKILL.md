@@ -1,0 +1,687 @@
+---
+name: sanity-and-preview
+description: The Sanity CMS + Cloudflare deployment architecture reference for this starter. Installed by the Sanity add-on (`npm run addon:sanity`). Load BEFORE touching anything involving Sanity, GROQ queries, TypeGen, sanity.types.ts, schema types, the Studio (sanity.config.ts, desk structure, Presentation, Vision), draft mode / preview routes (src/pages/preview/**), the Sanity content source behind @/lib/content (src/sanity/lib/source.ts, page-data.ts loaders, map/ mappers), loadQuery/getDraftModeProps, the stega policy, the parity fixtures and preview-safety checks, adding a new content type or detail route, the sitemap, trailing slashes, wrangler.jsonc, env vars (SANITY_API_READ_TOKEN, PUBLIC_SANITY_*), rebuild webhooks, or the rendering model (prerender vs SSR). Also load when a build fails at prerender with a CSS-extension error, when Presentation shows "Unable to connect", or when content pages 503.
+---
+
+# Sanity, Deployment & Preview
+
+> **This skill comes with the Sanity add-on.** Files is the starter's
+> default content source (the `content-files` skill); `npm run addon:sanity`
+> installed this add-on, which replaced the CMS seams
+> (`src/lib/content/source.ts`, `src/config/cms.mjs`,
+> `src/config/cms.shared.mjs`, `src/components/global/CmsEditing.astro`,
+> `src/components/blog/BlogBody.astro`, `public/_headers`,
+> `.github/workflows/ci.yml`) with the Sanity versions.
+
+## Sanity types — generated, never hand-written
+
+Sanity data is typed from the schema and the queries, by TypeGen. There are no
+hand-written interfaces mirroring a document shape.
+
+**After editing any GROQ query or Sanity schema, run `npm run typegen`.** It
+extracts the schema to `src/sanity/schema.json` (gitignored) and regenerates
+`src/sanity/sanity.types.ts` (committed, so a fresh clone type-checks without
+running anything).
+
+**Every query lives in `src/sanity/lib/queries.ts`, wrapped in `defineQuery()`.**
+TypeGen only finds queries through that call — a bare template literal is
+invisible to it, and a query defined in an `.astro` file is not scanned at all.
+
+`defineQuery()` preserves the query's literal string type, and TypeGen maps
+those literals onto result types, so `loadQuery` infers with no generic:
+
+```ts
+const { data } = await loadQuery({ query: BLOG_POST_QUERY });
+// data: BLOG_POST_QUERY_RESULT | null — a query cannot be paired
+// with the wrong shape, because you never name the shape.
+```
+
+**Templates and components never see Sanity types.** They take the named view
+models from `@/lib/content` (`BlogPostPage`, `CaseStudyDetail`,
+`ProjectCardData`, …, defined in `src/lib/content/types.ts`; the case-study
+`ContentBlock` union in `src/lib/content/blocks.ts`). TypeGen types stay
+inside `src/sanity/`: each mapper in `src/sanity/lib/map/` takes a
+`*_QUERY_RESULT` and returns a view model, and `src/sanity/lib/source.ts` is
+declared `satisfies ContentSource`. After editing a query and running
+`npm run typegen`, any drift surfaces in the one mapper that reads it, not in
+the templates.
+
+**Sanity fields are nullable.** A document exists the moment an editor creates
+it, before any field is filled in, so the generated types say `string | null`
+almost everywhere. Component prop types must allow that — a contract claiming
+`title: string` is asserting something the CMS does not guarantee. Where a
+component boundary wants `undefined` instead (Astro props, `BaseLayout`),
+coalesce at the call site with `?? undefined` rather than widening the
+component.
+
+**A field the query does not project does not exist**, however plausibly it
+reads. Two live bugs came from exactly this — a `comingSoon` guard that never
+fired and a `maxWidth` control in the Studio that did nothing — both invisible
+while the data was typed `any`. If a field is missing, add it to the projection
+and re-run typegen.
+
+## Deployment architecture
+
+The site runs on a **single** Cloudflare Worker (the `your-worker-name`
+project). `www.example.com` is the only public URL. The public CMS content
+routes (`/blog/**`, `/case-studies/**`, `/projects/**`) are **prerendered
+static HTML** served by the Worker's assets binding at zero CPU; draft preview
+happens on a parallel **SSR `/preview/*` tree** (`/preview/blog/[slug]`, etc.)
+that renders the identical templates through the identical content functions — only the
+perspective differs. A second, tiny Worker (`workers/rebuild-debounce/`)
+collapses Sanity publish webhooks into a single rebuild so published content
+ships on the next build. The Studio is **hosted by Sanity** (deployed with
+`npx sanity deploy`), not embedded in the app. Its Presentation tool iframes
+the `/preview/*` routes **cross-origin**, via a cookie set by the
+`/api/draft-mode/enable` route on `www.example.com`. Because the frame is
+cross-origin, the site allows the Studio origins via CSP `frame-ancestors`:
+edit `FRAME_ANCESTORS` in
+[src/config/cms.shared.mjs](../../../src/config/cms.shared.mjs);
+[src/config/headers.shared.mjs](../../../src/config/headers.shared.mjs)
+builds the CSP that [src/middleware.ts](../../../src/middleware.ts) sends on
+SSR responses, and [public/_headers](../../../public/_headers) repeats it for
+static assets (`npm run check:config`, also run before every build, fails
+when the two drift). The enable route sets the cookie `SameSite=None; Secure`.
+
+**Why a `/preview` tree instead of drafts on the public URLs:** with
+`@astrojs/cloudflare`, the request handler returns a matching static asset
+**before** `app.render()` is ever called — Astro middleware never runs for a
+prerendered path, so a cookie-keyed draft rewrite on the public URL is
+impossible (including with `run_worker_first`). And serving the CMS routes as
+SSR just to enable preview is not an acceptable workaround: it burns Worker CPU
+per request and causes production 503s (`exceededCpu`) under crawler load. The
+`/preview` tree is the supported pattern — don't reach for either alternative.
+
+**Studio URLs (Sanity app model):** the branded host
+`your-studio.sanity.studio` is a **redirect shim** — it 302s (preserving deep
+`/intent/...` paths) to the actual app at
+`https://www.sanity.io/@your-org-id/studio/<appId>`, which is itself sandboxed
+under `*.sanity.studio` nested inside the `www.sanity.io` dashboard shell. So
+`frame-ancestors` (`FRAME_ANCESTORS` in `src/config/cms.shared.mjs`, mirrored
+in `public/_headers`) must allow
+**both** `https://*.sanity.io` **and** `https://*.sanity.studio` (plus
+`http://localhost:3333` for `sanity dev`) — NOT just the branded host, and NOT
+just `www.sanity.io` (a single-origin value silently blocks Presentation).
+`stega.studioUrl` can still point at the branded `your-studio.sanity.studio`
+(overlay deep-links redirect through correctly). The backing app id is pinned
+in [sanity.cli.ts](../../../sanity.cli.ts) (`deployment.appId`). ⚠️ The
+cross-site draft cookie can be blocked by Safari/ITP — verify Presentation in
+Chrome; a same-site `studio.example.com` Studio is the fallback.
+
+**Forking this repo as a template?** Work through
+[docs/new-project-checklist.md](../../../docs/new-project-checklist.md) — it
+lists the security/infra setup that lives in dashboards (Cloudflare WAF
+rate-limit rule, GitHub Dependabot settings, Sanity CORS, encrypted secrets)
+and must be re-created per project, plus post-launch verification commands.
+
+Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.sanity.io/docs/astro/astro-visual-editing).
+
+## How draft mode works
+
+1. Editor opens `your-studio.sanity.studio` and clicks **Presentation** in
+   Studio's left rail. Per-document locations
+   ([src/sanity/lib/resolve.ts](../../../src/sanity/lib/resolve.ts)) point at
+   the **`/preview/<type>/<slug>`** SSR twins — never the public URLs, which
+   are static files where the cookie can't do anything.
+2. Presentation calls `/api/draft-mode/enable`
+   ([src/pages/api/draft-mode/enable.ts](../../../src/pages/api/draft-mode/enable.ts))
+   with a Sanity-signed preview secret. The route validates the secret via
+   `@sanity/preview-url-secret`'s `validatePreviewUrl` against the live
+   dataset — if the request isn't from a legitimate Studio session, it
+   returns 401.
+3. On success the route sets the `sanity-preview-perspective` cookie
+   (`perspectiveCookieName` from `@sanity/preview-url-secret/constants`) with
+   the editor's chosen perspective (default `"drafts"`) and redirects to the
+   target path.
+4. The Presentation iframe loads the `/preview/*` path. The preview route
+   calls the same content function as its public twin (`getBlogPost()`,
+   `getCaseStudy()` or `getProject()` from `@/lib/content`), passing
+   `getDraftModeProps(Astro)`
+   ([src/sanity/lib/draft-mode.ts](../../../src/sanity/lib/draft-mode.ts)),
+   which reads the cookie. The Sanity source forwards `{ preview }`
+   (the `ContentOptions` field) through its loaders
+   ([src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)) into
+   `loadQuery`
+   ([src/sanity/lib/load-query.ts](../../../src/sanity/lib/load-query.ts)).
+   When present, `loadQuery` fetches drafts with stega encoding and
+   authenticates using `SANITY_API_READ_TOKEN`. Only the three preview twins
+   pass the cookie; public routes and sections call without it.
+5. [src/components/global/CmsEditing.astro](../../../src/components/global/CmsEditing.astro)
+   (the CMS editing seam, rendered by BaseLayout) checks
+   `Astro.cookies.has(perspectiveCookieName)` (guarded by
+   `Astro.isPrerendered`) and conditionally mounts
+   [src/components/SanityVisualEditing.tsx](../../../src/components/SanityVisualEditing.tsx)
+   (click-to-edit overlays + history sync + content refresh) and
+   [src/components/DisableDraftMode.tsx](../../../src/components/DisableDraftMode.tsx)
+   (exit button, hidden inside the iframe).
+6. When an editor changes a field, `SanityVisualEditing`'s `refresh` callback
+   reloads the page. The server re-fetches with drafts perspective.
+7. Clicking "Disable Draft Mode" (only visible outside the iframe) hits
+   `/api/draft-mode/disable`, which clears the cookie.
+
+Public visitors get prerendered HTML with `published` content baked in, and
+never have the cookie on the SSR routes → `<SanityVisualEditing>` isn't
+mounted. **Drafts can't leak.**
+
+The `/preview` tree is invisible to search and never edge-cached, via three
+required layers, all driven by `/preview` in `NOINDEX_PATHS`
+([src/config/seo.shared.mjs](../../../src/config/seo.shared.mjs)):
+`Disallow: /preview` in the generated `robots.txt`
+([src/pages/robots.txt.ts](../../../src/pages/robots.txt.ts));
+`X-Robots-Tag: noindex, nofollow` + forced `private, no-cache` from
+[src/middleware.ts](../../../src/middleware.ts) (forced **regardless of the
+cookie** — Cloudflare's edge cache doesn't vary on cookies, so a cached
+published render would otherwise be served back to editors); and exclusion from
+the sitemap filter in [astro.config.mjs](../../../astro.config.mjs).
+
+**Publishing requires a rebuild.** Prerendered content ships on the next build,
+so a Sanity publish must trigger one: Sanity webhook (filter
+`!(_id in path("drafts.**"))`, on Create/Update/Delete) → the rebuild-debounce
+Worker ([workers/rebuild-debounce/](../../../workers/rebuild-debounce/README.md),
+~5 min quiet period / ~15 min hard cap via a Durable Object alarm) → Cloudflare
+deploy hook → **one** build. The debounce matters because Sanity fires once per
+document — publishing a batch without it means one build per document.
+Publish-to-live lands ~5–20 minutes depending on the debounce window.
+
+## Rendering model — prerender public, SSR only /preview, /api and /tools
+
+`astro.config.mjs` uses `output: "static"` with `@astrojs/cloudflare`. **All
+public routes are prerendered**, including the content routes — each
+dynamic route exports a `getStaticPaths` helper from `@/lib/content` (the
+Files source lists `src/content/`; the Sanity source runs a minimal
+slug-only query in
+[src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)).
+Only three kinds of routes opt into SSR with `export const prerender = false;`:
+
+- `src/pages/preview/**` — the draft-preview twins that Presentation iframes
+- `src/pages/api/**` — the draft-mode cookie set/clear routes
+  (`src/pages/api/draft-mode/`) and the starter's own API routes (the lead
+  form)
+- `src/pages/tools/**` — the starter's staff-only Client tools (gated by
+  `src/middleware.ts`; `docs/ghl-forms.md`)
+
+Rules that keep this model healthy:
+
+- **Keep slug queries thin.** `getStaticPaths` fetches the whole collection at
+  build time — enumerate `slug.current` only.
+- **Exclude "not published yet" flags from the slug query** (e.g.
+  `comingSoon != true` on case studies), or you'll build pages that immediately
+  redirect to /404. Those documents remain previewable under `/preview`.
+- **`getStaticPaths` is extracted into its own module at build time.** Only
+  _imports_ are in scope inside it — sibling consts in the same frontmatter are
+  **not**. Keep its helpers in an imported module — routes import them from
+  `@/lib/content`. Symptom of
+  getting this wrong: `<helper> is not defined` at build, pointing into an
+  Astro-generated chunk.
+- **Fresh forks build green:** the `page-data.ts` static-path helpers return
+  `[]` (with a warning) when the Sanity project id is still the template
+  placeholder. For a **real** project id they rethrow — a Sanity outage
+  mid-build must fail the build loudly, not silently ship a site with every
+  content page missing.
+
+## Trailing slash config
+
+URLs must resolve without trailing slashes. Two places must stay in sync:
+
+1. **[astro.config.mjs](../../../astro.config.mjs)** — `trailingSlash: 'never'`
+   on the root config so Astro emits canonical URLs, sitemap entries, and
+   internal links without trailing slashes.
+2. **[wrangler.jsonc](../../../wrangler.jsonc)** — inside the `assets` block,
+   `"html_handling": "drop-trailing-slash"` so the Worker serves `/contact`
+   instead of redirecting at the edge.
+
+If only one side is set, you get edge redirects or 404s that don't show up in
+local dev.
+
+## Sitemap
+
+Every public route is prerendered, so `@astrojs/sitemap` enumerates the whole
+site — **including the CMS content routes** — automatically from the route
+table. There is **no** `customPages` option and **no** `getSanityUrls()`-style
+helper — a `customPages` list is only ever needed for SSR routes (which are
+invisible to the sitemap), and no content route here is SSR. A new content type
+only needs a prerendered route with `getStaticPaths` and it appears in the
+sitemap on the next build.
+
+**Exclusions** live in
+[src/config/seo.shared.mjs](../../../src/config/seo.shared.mjs) (the sitemap
+`filter` in [astro.config.mjs](../../../astro.config.mjs) reads them) as **two
+lists with two different matching modes** (a single loose `page.includes(path)`
+gets it wrong in both directions):
+
+- `NOINDEX_PATHS` — whole path segments (`/x` and
+  `/x/…`, never `/blog/x-…`): the dev-only pages and `/preview`.
+- `NOINDEX_PREFIXES` — literal prefixes mirroring robots.txt `Disallow`
+  semantics: one `/thank-you` entry covers every `/thank-you*` variant.
+  `isNoindexRoute()` combines both and feeds the sitemap filter, the generated
+  `robots.txt`, the `noindex` meta tag, the SSR `X-Robots-Tag`, and the
+  llms.txt index — one fact, five surfaces.
+
+`robots.txt` is generated from the same lists, so there is nothing to keep
+in sync by hand. To verify after a change: build and inspect `dist/client/sitemap-0.xml` — count
+entries, confirm no robots-disallowed URL appears, confirm no real content page
+is missing.
+
+## Studio
+
+Sanity Studio is **hosted by Sanity** at `your-studio.sanity.studio` — not
+embedded in the app. The `@sanity/astro` integration (in the add-on's build seam,
+[src/config/cms.mjs](../../../src/config/cms.mjs), which `astro.config.mjs`
+spreads into its integrations) intentionally omits `studioBasePath` (so no `/studio` route is injected) but is
+still present because it provides the `sanity:client` virtual module used by
+`src/sanity/lib/load-query.ts`. Studio config lives in
+[sanity.config.ts](../../../sanity.config.ts) and is shared by the hosted
+Studio, `npx sanity deploy`, and `npx sanity dev`. `stega.studioUrl` is the
+absolute hosted URL so overlay clicks deep-link into the hosted Studio.
+
+**Deploying the Studio:** `npx sanity schema deploy` then `npx sanity deploy`
+(publishes to `your-studio.sanity.studio` using the `studioHost` /
+`deployment.appId` already set in `sanity.cli.ts`). Studio updates ship
+independently of the site build.
+
+**Local workflow:** run `npm run studio:local` (Studio at `localhost:3333`,
+iframing the local site) and `npm run dev` (site at `localhost:4321`) in
+separate terminals — there is no `/studio` on the dev site. `studio:local` sets
+`SANITY_STUDIO_PREVIEW_URL=http://localhost:4321` inline; a plain
+`npm run studio` / `sanity dev` falls back to `SITE_URL`, which iframes
+**production** — local route changes appear to do nothing, and if the route
+doesn't exist in production yet Presentation shows **"Unable to connect"**
+(that means "wrong origin", not broken code). The env var lives in
+`package.json` on purpose — do **not** put `SANITY_STUDIO_PREVIEW_URL` in
+`.env`, where it leaks into `sanity deploy` and ships a Studio pointing at
+localhost. `frame-ancestors` already allows `localhost:3333`.
+
+**Staging-first deploy (ship before the real domain exists).** A fork can run
+on the Worker's free `https://<worker>.<account>.workers.dev` URL — including
+Presentation — before any custom domain is attached, with **no per-fork code
+edits**. `SITE_URL` in
+[src/config/site.shared.mjs](../../../src/config/site.shared.mjs) is
+**env-overridable** (`process.env.SITE_URL || "<literal>"`), so the Cloudflare
+_build_ env supplies the staging origin; `sanity.config.ts` drives
+`presentationTool`'s `previewUrl.initial` and `allowOrigins` from `SITE_URL`
+plus a `https://*.workers.dev` wildcard. Deploy the Studio with
+`SANITY_STUDIO_PREVIEW_URL=https://<worker>.<account>.workers.dev npx sanity
+deploy` (env var on the same line). At launch, change the Cloudflare `SITE_URL`
+build var to the real origin and redeploy — no code commit. Full runbook:
+**§4a** in [docs/new-project-checklist.md](../../../docs/new-project-checklist.md).
+
+## Studio editing experience (desk, groups, icons, Vision)
+
+The Studio UI is configured entirely in code — `sanity.config.ts` for the
+desk/plugins/branding, and each schema file for per-type icons and field
+groups. None of this touches content data.
+
+**Branding.** `defineConfig` sets `name`, `title`, a workspace `icon`
+(`StudioIcon`) and a navbar `logo` (`StudioLogo`), both in
+[src/sanity/components/](../../../src/sanity/components/) as TSX SVGs using
+`currentColor`. `StudioLogo` and the front-end `Logo.astro` both render their
+SVG paths from the shared
+[src/config/logo-paths.ts](../../../src/config/logo-paths.ts) — edit that one
+file to restyle the wordmark everywhere.
+
+**Landing view / Dashboard.** There is **no in-Studio dashboard** — the
+org-level overview is Sanity's **hosted Dashboard**. `structureTool` is the
+first plugin, so opening the Studio lands on the content desk. Quick-link
+widgets belong in the hosted Dashboard — don't add `@sanity/dashboard`.
+
+**Sanity version policy — track current.** The Studio runs on **Sanity 6**; no
+Sanity package is version-held. A Sanity major deserves a real review —
+re-verify the Studio plugins (`sanity-plugin-media`, `@sanity/code-input`,
+`visionTool`), the desk structure, and the visual-editing islands — but treat
+it as an ordinary upgrade. Verify in this order: `npm ci` (on a **Linux**
+runner, where native/optional-peer resolution bugs surface) → `npm run check`
+→ `npm run build` → `npx sanity build` → Presentation in a browser. If an
+"Invalid hook call" appears in dev after an `@sanity/astro` bump, that's a
+duplicate-React issue
+([sanity-astro#406](https://github.com/sanity-io/sanity-astro/issues/406)) —
+pin `@sanity/astro` to the last-good version.
+
+⚠️ **Never import `sanity/*` Studio modules from site code.** The Studio
+dependency tree includes packages that ship CSS imports, which the prerender
+step cannot load (`Unknown file extension ".css"`) — the build fails at the
+prerender stage, well after the bundle looks fine. This is why the Presentation
+location map ([resolve.ts](../../../src/sanity/lib/resolve.ts), Studio-only)
+and the public content-link helper
+([internal-links.ts](../../../src/sanity/lib/internal-links.ts), site-only,
+zero Studio imports) are **separate modules**. Keep them separate.
+
+**Desk structure** (the `structureTool({ structure })` resolver). An explicit
+`S.list()` — **every new document type must be added here by hand** or it will
+not appear in the desk. Layout: Site Settings (pinned singleton) · Blog Posts /
+Case Studies / Projects (All, Featured, one list per category from
+`src/config/projects.ts`) / Gallery photos at top level, with curated sub-views
+(Featured, Drafts, Coming Soon — plain GROQ filters on `S.documentList()`) ·
+Reusable Content and
+People & Social folders. The `SINGLETON_TYPES` / `SINGLETON_ACTIONS` logic
+keeps `siteSettings` a singleton — leave it intact.
+
+**Field groups.** `blogPost`, `caseStudy` and `project` split fields into
+tabs via `groups:` on the type + `group:` per field. Convention: `content`
+(default), then `media`, `meta`, `seo`. Editor-UI only — no data migration, so
+always safe. Object/array-member sub-fields do not take groups.
+
+**Icons.** Every document type sets `icon:` on its `defineType` (from
+`@sanity/icons`). Current mapping: blogPost→`DocumentTextIcon`,
+caseStudy→`CaseIcon`, project→`ProjectsIcon`,
+galleryItem→`ImageIcon`, author→`UserIcon`,
+testimonial→`CommentIcon`, blogCta→`BellIcon`, ctaSection→`BlockElementIcon`,
+siteSettings→`CogIcon`.
+
+**Vision (GROQ playground).** `visionTool` is dev-gated:
+`...(import.meta.env?.DEV ? [visionTool({ defaultApiVersion: "2025-03-15" })] : [])`.
+The `?.` keeps it safe when `sanity.config.ts` is loaded by the Sanity CLI
+(Node has no `import.meta.env`). Keep `defaultApiVersion` in sync with
+`SANITY_API_VERSION` in `src/config/sanity.shared.mjs`.
+
+**Document actions & badges.** Extended via
+[src/sanity/components/studioDocument.ts](../../../src/sanity/components/studioDocument.ts):
+a "View on site" action on `PREVIEWABLE_TYPES` plus Featured / Coming Soon
+badges. The singleton `actions` filter for `siteSettings` is preserved — keep
+it intact.
+
+**SEO length nudges.** `blogPost`/`caseStudy` `description` fields return an
+**array of validation rules**: a hard `required().max(300)` error plus a
+`max(155).warning(...)` non-blocking nudge.
+
+**When adding a new document type, do all four:** (1) an `S.listItem()` in the
+right desk group, (2) an `icon`, (3) field `groups` if field-heavy, (4) a
+Presentation location if previewable. A detail route also needs the steps in the
+"Adding a new content type" recipe under _Data fetching pattern_ below.
+
+## Image alt text (asset-level fallback)
+
+Editors set **Alt text** once per asset in the Media tab
+(`sanity-plugin-media` writes the asset's native `altText`). Queries project
+every image alt as `"imageAlt": coalesce(imageAlt, <image>.asset->altText, "")`
+(galleries also fold in their per-block default). Precedence: per-placement
+field → asset alt → empty string; the trailing `""` guarantees a **string** so
+`<Image>`/`Visual` never receives `null`. Every image query lives in
+`queries.ts` (including `FEATURED_CASE_STUDIES_QUERY`, which CaseStudyFeatured
+uses through `getFeaturedCaseStudies()`). Per-field `imageAlt` inputs stay **optional** (they override the
+asset alt); body inline-image alt stays `required` (contextual, per insertion).
+
+**When adding a new image field + query:** mirror the
+`coalesce(…, asset->altText, "")` projection.
+
+## Presentation locations
+
+Per-document iframe URLs are mapped in
+[src/sanity/lib/resolve.ts](../../../src/sanity/lib/resolve.ts) via
+`defineLocations`. Location hrefs must point at the **`/preview/<type>/<slug>`**
+SSR twins.
+
+⚠️ **Two URL maps exist — separate modules on purpose:**
+
+| Module              | Used by                                         | Returns                                           |
+| ------------------- | ----------------------------------------------- | ------------------------------------------------- |
+| `resolve.ts`        | the Studio only (imports `sanity/presentation`) | `/preview/<type>/<slug>` — draft-preview targets  |
+| `internal-links.ts` | site code only (zero Studio imports)            | `/blog/…`, `/case-studies/…`, `/projects/…` links |
+
+`resolve.ts` is compiled into the **hosted Studio bundle**, so location changes
+require `npx sanity deploy`. Deploy order: **site first** (so the `/preview`
+route exists), **then the Studio**.
+
+## Required env vars
+
+| Name                       | Where                                                                           | Purpose                                                                                                                                                                                                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_SANITY_PROJECT_ID` | `wrangler.jsonc` `vars` (mirrors `src/config/sanity.shared.mjs`) + local `.env` | Sanity project                                                                                                                                                                                                                                                                           |
+| `PUBLIC_SANITY_DATASET`    | `wrangler.jsonc` `vars` (mirrors `src/config/sanity.shared.mjs`) + local `.env` | Dataset name                                                                                                                                                                                                                                                                             |
+| `SANITY_API_READ_TOKEN`    | Cloudflare **encrypted secret** + local `.env`                                  | Viewer token — validates preview secrets, authenticates draft fetches. Never a plain wrangler var. Read at **runtime** with `getSecret()` from `astro:env/server` (load-query.ts, draft-mode/enable.ts) — `import.meta.env` is baked in at build, when the Worker secret does not exist. |
+
+The Sanity project needs `https://www.example.com` (and
+`http://localhost:4321` for dev) as CORS origins with **Allow credentials**.
+
+## Data fetching pattern
+
+**Consumers get content from `@/lib/content` — never from `src/sanity`.**
+Pages, templates, sections and components import the functions, view-model
+types and image helpers from there; `npm run check:boundary` fails when
+anything outside `src/sanity` and the Sanity-only allow list (the CMS seams
+`src/lib/content/source.ts`, `src/config/cms.mjs`, `cms.shared.mjs`,
+`CmsEditing.astro` and `BlogBody.astro`; the preview twins;
+`/api/draft-mode`; the Portable Text renderers; the visual-editing
+islands) imports Sanity code; the Files backend in
+`src/lib/content/files/` never does. The rule and its allow list live in
+`scripts/boundary/sanity.json`, which core
+`scripts/check-content-boundary.mjs` loads.
+
+```astro
+---
+import { getBlogPosts, imageSrc, plainText } from "@/lib/content";
+
+const posts = await getBlogPosts(); // BlogPostSummary[], newest first
+---
+
+{
+  posts.map((post) => (
+    <BlogCard
+      title={post.title}
+      description={post.description}
+      categories={post.categories}
+      image={imageSrc(post.image, { width: 600 }) ?? null}
+      imageAlt={post.image?.alt ?? null}
+      data-title={plainText(post.title)}
+      href={`/blog/${post.slug}`}
+    />
+  ))
+}
+```
+
+- **Images** are `ContentImage`. Size them with `imageSrc(image, { width })`
+  (for `<Visual>` and cards), `await resolveImageUrl(image, { width,
+height, format })` (a plain URL string for raw tags, OG, JSON-LD and
+  lightboxes; a local image gets a resized file from getImage(), a Sanity
+  image its CDN URL) or `sizedImage(image, width)` (tiles that need width +
+  height). The Sanity mapper attaches a `url()` builder around `urlFor`, so
+  each placement gets exactly the CDN size it always did.
+- **Rich text** arrives pre-rendered: HTML strings for FAQ answers, project
+  write-ups and case-study blocks; the blog body is `{ kind: "portable-text" }` here (registered in
+  `BlogBodyFormats` by
+  [src/sanity/lib/body-format.ts](../../../src/sanity/lib/body-format.ts),
+  module augmentation) or `{ kind: "mdx" }`, both rendered by this add-on's
+  `<BlogBody>`. The Portable Text `buildToc` walker lives in
+  `src/sanity/lib/portable-text.ts`.
+- **Draft perspective.** Every content function takes a trailing
+  `opts?: { preview }` (`ContentOptions`). Only the `/preview/*` twins pass
+  `getDraftModeProps(Astro)` (pass the **whole `Astro` global**, not
+  `Astro.cookies` — the helper checks `isPrerendered`); everything else is
+  prerendered and calls without it.
+
+**Inside `src/sanity/`** the layers run one way:
+`page-data.ts` (GROQ loaders, `loadQuery`, placeholder-safe listings and
+`getStaticPaths` helpers) → `map/*.ts` (query results → view models; the
+only users of `urlFor`, `hotspotPosition`, `stegaClean` and Portable Text
+serialisation) → `source.ts` (the `ContentSource` functions).
+
+**Stega policy** (header of `src/sanity/lib/source.ts`). In draft mode
+`loadQuery` stega-encodes strings so Presentation can overlay them. The
+mappers clean values used as logic — slugs, URLs, enums and categories,
+dates, numbers, booleans, image sources and alt text, CSS-ish values, SEO
+fields, derived text, anything they trim — and leave display strings
+(titles, descriptions, names, captions, quotes, labels, rich text) encoded.
+A CTA section is cleaned in full (deliberate; see `map/cta.ts`). Consumers
+that need a display string as data call `plainText()`.
+
+**Loader rules** (`page-data.ts`):
+
+- Fetch the single document **first** (related-content queries depend on
+  its categories/slug), then `Promise.all` everything independent — never
+  stack sequential awaits.
+- **Related content is filtered in GROQ, never in JS over the whole
+  collection.** Fetching all posts to render 3 related cards is the pattern
+  that caused production `exceededCpu` 503s. Query the few cards you need,
+  with a small buffer over the card slot (`[0...4]` for a 2-card slot).
+- Clean any GROQ param built from fetched values (`stegaClean`) — an
+  encoded category never matches in preview.
+- Return `null` for "not found" / "not publicly visible" and let the route
+  decide the response.
+
+**Adding a new content type with a detail route needs six pieces:**
+
+Both sources implement every `ContentSource` function. The Files side is
+in the `content-files` skill ("Adding a content type"); the pieces below
+are the Sanity side.
+
+1. **View models + contract** — named types in `src/lib/content/types.ts`
+   and the new functions on `ContentSource` (`getThing`, `getThings`,
+   `getThingStaticPaths`).
+2. **Loader** — GROQ in `queries.ts` (`defineQuery`, then
+   `npm run typegen`), a raw loader and a `get<Type>StaticPaths` helper in
+   `page-data.ts` (slug-only query, "not published" flags excluded).
+3. **Mapper + source** — `src/sanity/lib/map/<type>.ts` (apply the stega
+   policy) and the functions in `source.ts`; re-export them from
+   `src/lib/content/index.ts`.
+4. **Public prerendered route** — `src/pages/<type>/[slug].astro` with
+   `export const getStaticPaths = get<Type>StaticPaths;` imported from
+   `@/lib/content`.
+5. **`/preview` SSR twin** — `src/pages/preview/<type>/[slug].astro` with
+   `prerender = false`, same template, same function plus
+   `getDraftModeProps(Astro)`.
+6. **Presentation location** — a `defineLocations` entry in `resolve.ts`
+   pointing at `/preview/<type>/<slug>`, followed by a Studio deploy.
+
+Then add the query to the parity fixtures (`src/sanity/lib/fixtures/` —
+an unknown query throws there) and run the checks below. The sitemap picks
+the new route up automatically. **llms.txt / llms-full.txt do not** — each
+content type needs an explicit section there (see the case-studies and
+projects blocks in `src/pages/llms*.txt.ts`), calling the content functions
+with `.catch(() => [])` so a fresh fork still builds.
+
+### Parity and preview-safety checks
+
+A refactor that must not change rendered output is verified by building
+before and after and diffing `dist/client`.
+
+- **Fixtures.** `PARITY_FIXTURES=1` answers every query from GROQ-shaped
+  fixtures (`src/sanity/lib/fixtures/`), so a populated site builds with no
+  Sanity project. `KEEP_DEV_PAGES=1` keeps `/components` in the build
+  (normally stripped). The flag is read **at build time only**:
+  the add-on's `src/config/cms.mjs` (`viteDefine`, spread in by
+  `astro.config.mjs`) bakes it into the `__PARITY_FIXTURES__` constant
+  (`vite.define`), which `loadQuery` reads. A normal build gets `""`, so the
+  fixture import is dead code and no fixture chunk reaches `dist/server`
+  (`ls dist/server/chunks | grep -i fixture` prints nothing); a Worker
+  variable named `PARITY_FIXTURES` has no effect.
+- **Capture a baseline** before the change (copy `dist/client` aside; the
+  `.parity/` folder is git-ignored and prettier-ignored), rebuild after it,
+  then `node scripts/compare-dist.mjs <before> dist/client`. The
+  comparison covers every `.html`/`.xml`/`.txt` file plus `_headers` and
+  `_redirects`, normalising hashed asset names and `data-astro-cid-*`. It
+  prints `Identical: N files.` or a window around the first difference in
+  each file, and exits 1 on any difference. Do it twice: once with
+  `KEEP_DEV_PAGES=1` (no fixtures, the empty-site case), once adding
+  `PARITY_FIXTURES=1` (the populated case). In the starter repo,
+  `npm run check:addon -- --baselines .parity` does all of this in a
+  scratch install.
+- **`--canonical`** compares HTML as a DOM (attributes sorted, entities
+  decoded, whitespace collapsed). Use it where the same markup legitimately
+  arrives through a different serializer (an Astro component versus an HTML
+  string).
+- **`--layers`** compares the inlined `<style>` CSS layer by layer: per
+  `@layer`, the ordered sequence of blocks must match, and everything outside
+  `<style>` must be byte-identical. Use it when Astro reorders inlined CSS
+  chunks after an import moves (reordering _across_ layers is harmless; a
+  swap _within_ a layer is not). Limitation: a `<style>` block that Astro
+  splits around a `<link>` makes the non-style comparison fail, so
+  `--layers` cannot judge such pages.
+- **Files ≡ Sanity.** `PARITY_FIXTURES=sample` derives GROQ-shaped
+  documents from `src/content` at build time (`fixtures/sample.ts`; rich
+  text through the strict converter in `fixtures/markdown-to-pt.ts`, which
+  throws on any Markdown outside the subset it supports), so the Sanity
+  build renders exactly the Files sample content.
+  `node scripts/compare-dist.mjs --equivalent <sanity-build> <files-build>`
+  diffs the two, normalising only the documented renderer differences
+  (listed in its header; the full table is "Expected Files-vs-Sanity
+  differences" in `docs/superpowers/plans/2026-10-16-pr3-files-backend.md`).
+  Unit checks for the converter: `npm run check:fixtures`
+  (`scripts/check-fixture-markdown.mjs`).
+- **Preview safety.** `KEEP_DEV_PAGES=1 PARITY_FIXTURES=preview npm run build && npm run check:stega` builds draft-like data (stega-encoded
+  strings plus half-filled documents) and fails if stega reaches any
+  attribute, the `<title>` or JSON-LD on the pages the preview twins render
+  (and, defensively, on the listing pages). Only visible element text may stay
+  encoded. `npm run check:stega` runs the check (CI runs it after the
+  preview build).
+- **Boundary.** `npm run check:boundary` (see above) keeps Sanity imports
+  inside `src/sanity` and the allow list in `scripts/boundary/sanity.json`.
+
+## Projects + gallery (photo portfolio)
+
+`project` (detail page `/projects/<slug>`, preview twin
+`/preview/projects/<slug>`) and `galleryItem` (no detail page; listed on
+`/gallery`) are the photo-led portfolio for trade / local-service sites —
+separate from `caseStudy`, the long-form marketing story. A site can use
+either, or both.
+
+- **Categories** live in `src/config/projects.ts` — plain data shared by the
+  schema dropdown, the desk's per-category lists and the public filters.
+  Placeholders: replace per client. `categoryTitle()` falls back to the raw
+  value, so a renamed category never breaks a page.
+- **Location** is one free-text field shown exactly as written — no region
+  suffix is appended anywhere.
+- **Content functions** (`@/lib/content`): `getProject` (the project, up to
+  three related cards — same category first, filtered in GROQ — and the
+  default CTA section), `getProjects`, `getFeaturedProjects`, `getGallery`,
+  `getProjectStaticPaths` — all placeholder-safe.
+- **Mapping** (`src/sanity/lib/map/projects.ts`): `toProjectCard`,
+  `toProjectDetail`, `toGalleryEntry`. Pages size photos with
+  `sizedImage()`. Pure formatters live in `src/lib/project-format.ts` and are
+  covered by `node scripts/check-projects.mjs`.
+- `/projects` and `/gallery` are prerendered with no preview twin (like the
+  case-studies index); gallery edits appear after the publish rebuild.
+
+## Removing the add-on
+
+Content stays where it is: nothing is exported from Sanity, so after
+removal the site renders whatever is in `src/content/` (the starter's
+sample content, unless the fork replaced it).
+
+If the install was committed on its own, `git revert <that commit>` and
+`npm install` remove it. A fork that chose Sanity in `npm run setup`
+can't: the install and setup's writes are one change. Remove it by hand
+instead (each step names what the installer or setup put there):
+
+1. Delete what the overlay added: `src/sanity/`, `src/pages/preview/`,
+   `src/pages/api/draft-mode/`, `src/components/portabletext/`,
+   `src/components/SanityVisualEditing.tsx`,
+   `src/components/DisableDraftMode.tsx`, `sanity.config.ts`,
+   `sanity.cli.ts`, `sanity-typegen.json`, `skills-lock.json`,
+   `workers/rebuild-debounce/`, `scripts/boundary/sanity.json`,
+   `scripts/check-stega-leaks.mjs`, `scripts/check-fixture-markdown.mjs`,
+   `scripts/migrate-webflow-blog.mjs`, `src/config/sanity.shared.mjs`,
+   `.claude/skills/sanity-and-preview/` and
+   `.claude/skills/setup/references/studio-branding.md` (plus the ignored
+   `.sanity/` cache, if present).
+2. Restore the Files versions of the seams it overwrote:
+   `src/lib/content/source.ts`, `src/config/cms.mjs`,
+   `src/config/cms.shared.mjs`, `src/components/global/CmsEditing.astro`,
+   `src/components/blog/BlogBody.astro`, `public/_headers`,
+   `scripts/compare-dist.mjs` and `.github/workflows/ci.yml` — with
+   `git checkout <the commit before the install> -- <paths>`, or copied
+   from the starter repo.
+3. Remove what the manifest merged (`addons/sanity/manifest.json` in the
+   starter repo lists it): its `dependencies`, `devDependencies`
+   (`csv-parse`) and scripts (`studio`, `studio:local`, `typegen`,
+   `check:fixtures`, `check:stega`) in `package.json`; the
+   `PUBLIC_SANITY_PROJECT_ID` / `PUBLIC_SANITY_DATASET` vars and the
+   comment above them in `wrangler.jsonc`; `jsx` and `jsxImportSource` in
+   `tsconfig.json`, with `types` back to `[]`; the Sanity block in
+   `.env.example` (and those lines in `.env`); and the three rules, with
+   their comment, in `.gitignore` (`.sanity/`, `src/sanity/schema.json`,
+   `!.claude/skills/sanity-and-preview`).
+4. Remove the `SANITY_API_READ_TOKEN` secret, the rebuild-debounce Worker
+   and the publish webhook from the Cloudflare and Sanity dashboards.
+5. `npm install`, then `npm run check:config && npm run check:boundary &&
+npm run check && npm run build`.
+
+## Maintaining the add-on (starter repo only)
+
+In the starter repo this skill lives at
+`addons/sanity/files/.claude/skills/sanity-and-preview/SKILL.md`, and all
+Sanity code under `addons/sanity/files/`, which is not built or
+type-checked in place. `npm run check:addon -- --keep` installs it into a
+scratch copy and leaves it there: work in that copy (it type-checks,
+`npm run typegen` and the Studio run there) and copy changed files back
+under `addons/sanity/files/`. A new `ContentSource` method in core must be
+implemented in `src/sanity/lib/source.ts` too; CI's `addon-sanity` job
+fails until it is.

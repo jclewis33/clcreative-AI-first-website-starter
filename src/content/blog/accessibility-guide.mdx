@@ -1,0 +1,65 @@
+---
+title: "Designing for Everyone: A Practical Accessibility Guide"
+description: "Practical techniques for building sites that work for everyone, from keyboard navigation to screen reader support."
+date: "2026-03-01"
+updated: "2026-03-08"
+categories: ["Guides", "Tutorials"]
+primaryCategory: "Guides"
+image: "./images/accessibility-guide.webp"
+imageAlt: "A website shown on a desktop monitor, a laptop, a tablet and a phone"
+author: "daniel-reyes"
+featured: true
+relatedPosts: ["customer-focused-messaging"]
+faqs:
+  - question: "Where should we start if our site has never been audited?"
+    answer: |
+      Start with the pages that bring in leads:
+
+      - your homepage
+      - your contact form
+      - your busiest service page
+
+      Then run each one through [WebAIM’s WAVE checker](https://wave.webaim.org/) and fix the errors before the warnings.
+  - question: "Do we need a separate accessible version of the site?"
+    answer: "No. One site built to the **WCAG 2.2 AA** standard serves everyone, and it is easier to keep current than two."
+seo:
+  metaTitle: "A Practical Accessibility Guide for Small-Business Sites"
+---
+
+Accessibility is not a feature you bolt on before launch. It is a handful of habits that make a site easier for every visitor, including the one in four adults who lives with a disability.
+
+## Start with the keyboard
+
+Put your mouse away and press Tab. Every link, button and form field should light up in order, with a focus ring you can actually see. If you get stuck or lose track of where you are, so does everyone who browses this way.
+
+### A skip link
+
+The first thing a keyboard user meets should be a way past the navigation:
+
+```html
+<a class="skip-link" href="#main">Skip to content</a>
+```
+
+<Callout type="tip">
+  Put the skip link first in the page, and make it visible when it receives
+  focus.
+</Callout>
+
+## Write real alt text
+
+Describe what an image shows and why it is there, in a sentence or less:
+
+- _Good:_ “A technician replacing a furnace filter”
+- _Not useful:_ “image1.jpg”
+
+Decorative flourishes are the exception, and they are rarer than you think.
+
+## Check contrast early
+
+Low-contrast text is the most common failure we find. Check your brand colors with [the WebAIM contrast checker](https://webaim.org/resources/contrastchecker/) before they reach a single page, not after.
+
+<BlogCta id="accessibility-checklist" />
+
+## Test with a screen reader
+
+Turn on VoiceOver or NVDA and listen to your homepage. Within a minute you will hear every unlabeled button and every “click here” link.

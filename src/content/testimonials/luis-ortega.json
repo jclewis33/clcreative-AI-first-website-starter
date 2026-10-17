@@ -1,0 +1,10 @@
+{
+  "name": "Luis Ortega",
+  "role": "Property manager",
+  "company": "Ortega Rentals",
+  "quote": "Clear quotes, real start dates and photos at the end of every day. That is rare.",
+  "website": "https://example.com",
+  "stars": 5,
+  "featured": true,
+  "order": 3
+}

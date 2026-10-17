@@ -10,9 +10,10 @@
  * When the container collapses further, all cards stack at equal width.
  *
  * Designed to be placed once and updated in one place — pass studies
- * via prop or let it pull the first 3 featured case studies from data.
+ * via prop or let it look up the slugs in FEATURED_CASE_STUDIES_SLUGS (or a
+ * `slugs` prop) from the content source.
  *
- * @example Default usage (pulls first 3 featured case studies)
+ * @example Default usage (looks up FEATURED_CASE_STUDIES_SLUGS)
  * ```astro
  * <CaseStudyFeatured />
  * ```
@@ -36,10 +37,12 @@ import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
 import Button from "@/components/ui/Button.astro";
 
-import { loadQuery } from "@/sanity/lib/load-query";
-import { FEATURED_CASE_STUDIES_QUERY } from "@/sanity/lib/queries";
-import { getDraftModeProps } from "@/sanity/lib/draft-mode";
-import { urlFor } from "@/sanity/lib/image";
+import {
+  getFeaturedCaseStudies,
+  imageSrc,
+  plainText,
+  type FeaturedCaseStudy,
+} from "@/lib/content";
 import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 
 type SectionTheme = "light" | "dark" | "brand";
@@ -51,7 +54,7 @@ type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
  * CaseStudyFeatured — interactive 3-card showcase with hover expand animation.
  *
  * **Props:**
- * - `slugs` — 3 case study slugs in display order (falls back to placeholder slugs)
+ * - `slugs` — 3 case study slugs in display order (defaults to FEATURED_CASE_STUDIES_SLUGS)
  * - `eyebrow` — eyebrow text above heading (default `'Proven Results'`)
  * - `headingVariant` — visual style for card title headings (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
  * - `theme` — light, dark, brand
@@ -65,8 +68,8 @@ type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 interface Props {
   /**
    * **CaseStudyFeatured props:**
-   * - `studies` — pre-fetched case study data array (skips internal Sanity fetch when provided)
-   * - `slugs` — 3 case study slugs in display order (falls back to placeholder slugs)
+   * - `studies` — pre-fetched case study data array (skips the internal lookup when provided)
+   * - `slugs` — 3 case study slugs in display order (defaults to FEATURED_CASE_STUDIES_SLUGS)
    * - `eyebrow` — eyebrow text (default `'Proven Results'`)
    * - `headingVariant` — card title heading variant (default `'h6'`). Accepts: display-xl/lg/md/sm, h1–h6, eyebrow
    * - `theme` — light, dark, brand
@@ -81,24 +84,23 @@ interface Props {
 
   /**
    * Case study slugs to display, in display order. Exactly 3 required.
-   * Falls back to placeholder slugs.
+   * Falls back to FEATURED_CASE_STUDIES_SLUGS (three sample case studies).
    *
-   * @default ["case-study-one", "case-study-two", "case-study-three"]
+   * @default ["acme-corp-rebrand", "summit-outdoor-migration", "greenleaf-organics-seo"]
    * @example slugs={["slug-a", "slug-b", "slug-c"]}
    */
   slugs?: [string, string, string];
 
   /**
-   * Pre-fetched case study data from Sanity. When provided, the component
-   * skips its internal Sanity fetch — use this to parallelize fetches at
-   * the page level with `Promise.all`.
-   *
-   * Each object needs: `slug`, `client`, `description`, `image`, `imageAlt`.
-   * Must be in display order (first item renders as the expanded card).
+   * Pre-fetched featured studies (`getFeaturedCaseStudies()` from
+   * `@/lib/content`). With three or more, the component skips its own
+   * lookup — use this to parallelize fetches at the page level. Each needs
+   * `slug`, `client`, `description` and `image` (a ContentImage). Must be in
+   * display order (the first renders as the expanded card).
    *
    * @example studies={prefetchedStudies}
    */
-  studies?: any[];
+  studies?: FeaturedCaseStudy[];
 
   /**
    * Eyebrow text rendered above the heading.
@@ -161,9 +163,9 @@ interface Props {
 /* ── Exported constants for page-level fetching ───────────────────────── */
 
 export const FEATURED_CASE_STUDIES_SLUGS: [string, string, string] = [
-  "case-study-one",
-  "case-study-two",
-  "case-study-three",
+  "acme-corp-rebrand",
+  "summit-outdoor-migration",
+  "greenleaf-organics-seo",
 ];
 
 const {
@@ -180,26 +182,29 @@ const {
   class: className,
 } = Astro.props;
 
-/* ── Resolve studies — use prop or fetch from Sanity ──────────────────── */
+/* ── Resolve studies — the prop, or look the slugs up ─────────────────── */
 
-let displayStudies: any[];
+const prefetched = studies && studies.length >= 3 ? studies : null;
+const displayStudies: FeaturedCaseStudy[] =
+  prefetched ??
+  // Standalone usage. Tolerate an empty/unreachable dataset — the
+  // section simply doesn't render when fewer than 3 resolve.
+  (await getFeaturedCaseStudies(slugs).catch(() => []));
 
-if (studies && studies.length >= 3) {
-  // Pre-fetched data provided — skip internal fetch
-  displayStudies = studies;
-} else {
-  // Fetch from Sanity (standalone usage). Tolerate an empty/unreachable
-  // dataset — the section simply doesn't render when fewer than 3 resolve.
-  const results = await loadQuery({
-    query: FEATURED_CASE_STUDIES_QUERY,
-    params: { slugs },
-    ...getDraftModeProps(Astro),
-  })
-    .then((r) => r.data)
-    .catch(() => []);
-  displayStudies = slugs
-    .map((slug: string) => (results ?? []).find((s: any) => s.slug === slug))
-    .filter(Boolean);
+// A slug that names no case study is dropped silently in production (and
+// fewer than 3 hides the section), so say which ones in dev.
+if (import.meta.env.DEV && !prefetched) {
+  const found = new Set(displayStudies.map((s) => s.slug));
+  const missing = slugs.filter((slug) => !found.has(slug));
+  if (missing.length) {
+    console.warn(
+      `[CaseStudyFeatured] No case study found for slug(s): ${missing.join(", ")}. ` +
+        `Check FEATURED_CASE_STUDIES_SLUGS (or the slugs prop) against the content source (src/content/case-studies/ in a files site).` +
+        (displayStudies.length < 3
+          ? " The section is hidden until 3 resolve."
+          : ""),
+    );
+  }
 }
 
 /* ── Heading slot ─────────────────────────────────────────────────────── */
@@ -252,27 +257,25 @@ const hasHeadingSlot = Astro.slots.has("heading");
 
         {/* Cards */}
         <div class="case-study-featured_cards">
-          {displayStudies.map((study: any, i: number) => (
+          {displayStudies.map((study, i) => (
             <a
               href={`/case-studies/${study.slug}`}
               class:list={[
                 "case-study-featured_card",
                 i === 0 && "is-expanded",
               ]}
-              aria-label={`View ${study.client} case study`}
+              aria-label={`View ${plainText(study.client)} case study`}
             >
               <div class="case-study-featured_card_visual">
-                <Visual
-                  src={
-                    typeof study.image === "string"
-                      ? study.image
-                      : urlFor(study.image).width(1200).url()
-                  }
-                  alt={study.imageAlt}
-                  width={1200}
-                  height={800}
-                  radius="large"
-                />
+                {study.image && (
+                  <Visual
+                    src={imageSrc(study.image, { width: 1200 })}
+                    alt={study.image.alt}
+                    width={1200}
+                    height={800}
+                    radius="large"
+                  />
+                )}
               </div>
               <div class="case-study-featured_card_content">
                 <Heading

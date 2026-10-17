@@ -1,0 +1,432 @@
+/**
+ * GROQ fetching layer of the Sanity content source (src/sanity/lib/
+ * source.ts). Consumers never import this file — they call @/lib/content,
+ * whose Sanity implementation composes these loaders with the mappers in
+ * ./map/.
+ *
+ * Loader contract:
+ * - Fetch the single document FIRST (the related-content query depends on its
+ *   categories/slug), then `Promise.all` everything independent.
+ * - Related content is filtered in GROQ with a small buffer over the card
+ *   slot — never by fetching the whole collection and filtering in JS.
+ * - GROQ params built from fetched values are stegaClean'd (an encoded
+ *   category never matches in preview).
+ * - Return `null` for "not found"; the route decides how to respond.
+ * - Listing loaders go through loadPageQuery: empty on a fresh fork
+ *   (placeholder project id), a loud failure on a real project.
+ * - `draftProps` is the `opts` a content function received — set only on
+ *   the /preview twins.
+ *
+ * This module also holds the `getStaticPaths` helpers the source re-exports.
+ * Routes import them from @/lib/content (an imported module): Astro extracts
+ * `getStaticPaths` into its own module at build time, so only imports are in
+ * scope inside it — sibling consts declared in the same frontmatter are not
+ * (symptom: "<helper> is not defined" pointing into an Astro-generated chunk).
+ */
+import { stegaClean } from "@sanity/client/stega";
+import { loadQuery } from "./load-query";
+import {
+  BLOG_POST_QUERY,
+  RELATED_BLOG_POSTS_QUERY,
+  BLOG_SLUGS_QUERY,
+  BLOG_CATEGORIES_QUERY,
+  BLOG_POSTS_QUERY,
+  BLOG_POSTS_BY_CATEGORY_QUERY,
+  CASE_STUDIES_QUERY,
+  FEATURED_CASE_STUDIES_QUERY,
+  CASE_STUDY_QUERY,
+  RELATED_CASE_STUDIES_QUERY,
+  CASE_STUDY_SLUGS_QUERY,
+  SITE_SETTINGS_QUERY,
+  TESTIMONIALS_QUERY,
+  FEATURED_TESTIMONIALS_QUERY,
+  PROJECT_QUERY,
+  PROJECT_SLUGS_QUERY,
+  RELATED_PROJECTS_QUERY,
+  PROJECTS_QUERY,
+  FEATURED_PROJECTS_QUERY,
+  GALLERY_QUERY,
+} from "./queries";
+import { SANITY_PROJECT_ID } from "@/config/sanity.shared.mjs";
+import { categoryToSlug } from "@/lib/blog-categories";
+import type { ContentOptions } from "@/lib/content/types";
+
+/** Perspective forwarding — the `opts` a content function received. */
+type DraftProps = ContentOptions;
+
+/* ── Blog post ─────────────────────────────────────────────────────────────── */
+
+/** One blog post document by slug (BLOG_POST_QUERY), or null. */
+export async function loadBlogPostDocument(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
+  const { data } = await loadQuery({
+    query: BLOG_POST_QUERY,
+    params: { slug },
+    ...draftProps,
+  });
+  return data;
+}
+
+export async function loadBlogPostPage(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
+  const post = await loadBlogPostDocument(slug, draftProps);
+  if (!post) return null;
+
+  // Editor-picked related posts; dangling references dropped.
+  const manualRelatedPosts = (post.relatedPosts ?? []).filter((p) => p?.slug);
+
+  // Cleaned + lowercased for the case-insensitive GROQ category match
+  // (stega characters would break the match in preview).
+  const categories = (post.categories ?? []).map((c) =>
+    stegaClean(c).toLowerCase(),
+  );
+  const excludeSlugs = manualRelatedPosts.map((p) => stegaClean(p.slug));
+
+  const [{ data: related }, { data: settings }] = await Promise.all([
+    loadQuery({
+      query: RELATED_BLOG_POSTS_QUERY,
+      params: { slug, categories, excludeSlugs },
+      ...draftProps,
+    }),
+    loadQuery({ query: SITE_SETTINGS_QUERY, ...draftProps }),
+  ]);
+
+  return {
+    post,
+    relatedPosts: related ?? [],
+    manualRelatedPosts,
+    defaultCta: settings?.defaultBlogCta ?? null,
+    defaultCtaSection: settings?.defaultCtaSection ?? null,
+  };
+}
+
+/* ── Case study ────────────────────────────────────────────────────────────── */
+
+/** One case study document by slug (CASE_STUDY_QUERY), or null. */
+export async function loadCaseStudyDocument(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
+  const { data } = await loadQuery({
+    query: CASE_STUDY_QUERY,
+    params: { slug },
+    ...draftProps,
+  });
+  return data;
+}
+
+export async function loadCaseStudyPage(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
+  const study = await loadCaseStudyDocument(slug, draftProps);
+  if (!study) return null;
+
+  const [{ data: siblings }, { data: settings }] = await Promise.all([
+    loadQuery({
+      query: RELATED_CASE_STUDIES_QUERY,
+      params: { slug },
+      ...draftProps,
+    }),
+    loadQuery({ query: SITE_SETTINGS_QUERY, ...draftProps }),
+  ]);
+
+  return {
+    study,
+    allStudies: siblings ?? [],
+    defaultCtaSection: settings?.defaultCtaSection ?? null,
+  };
+}
+
+/* ── Project ───────────────────────────────────────────────────────────────── */
+
+/**
+ * Project detail page: the project, up to three "More projects" cards (same
+ * category first, filtered in GROQ), and the site-wide default CTA section.
+ * Returns null when not found.
+ */
+export async function loadProjectPage(
+  slug: string,
+  draftProps: DraftProps = {},
+) {
+  const { data: project } = await loadQuery({
+    query: PROJECT_QUERY,
+    params: { slug },
+    ...draftProps,
+  });
+  if (!project) return null;
+
+  const [{ data: related }, { data: settings }] = await Promise.all([
+    loadQuery({
+      query: RELATED_PROJECTS_QUERY,
+      params: { slug, category: stegaClean(project.category) ?? "" },
+      ...draftProps,
+    }),
+    loadQuery({ query: SITE_SETTINGS_QUERY, ...draftProps }),
+  ]);
+
+  return {
+    project,
+    relatedProjects: (related ?? []).slice(0, 3),
+    defaultCtaSection: settings?.defaultCtaSection ?? null,
+  };
+}
+
+/* ── getStaticPaths helpers ────────────────────────────────────────────────── */
+
+/**
+ * A fresh fork still carries the placeholder project id from
+ * src/config/sanity.shared.mjs (real Sanity project ids are strictly
+ * lowercase-alphanumeric), so its builds can't reach a dataset yet.
+ *
+ * Never true in a parity-fixtures build (`PARITY_FIXTURES` set, see
+ * ./load-query.ts): there no query touches the network, so an error is a
+ * fixture bug (an unknown query, unsupported sample Markdown) and must
+ * fail the build instead of silently emitting the empty-state pages.
+ */
+function isPlaceholderSanityProject(): boolean {
+  return !__PARITY_FIXTURES__ && !/^[a-z0-9]+$/.test(SANITY_PROJECT_ID);
+}
+
+/**
+ * Run a build-time enumeration query for getStaticPaths.
+ *
+ * Fresh fork (placeholder project id): warn and return `null` so `npm run
+ * build` stays green before `/setup` provisions Sanity — callers treat null
+ * as "emit no pages at all" (distinct from an empty-but-reachable dataset).
+ *
+ * Real project: RETHROW. Swallowing a network error here would silently ship
+ * a deploy with every blog/case-study/project page missing — previously
+ * live URLs would 404. A loud build failure is the correct outcome.
+ */
+async function fetchStaticPathList<const Q extends string>(
+  query: Q,
+  label: string,
+): Promise<string[] | null> {
+  try {
+    const { data } = await loadQuery({ query });
+    // Every caller passes a `.slug.current` projection, typed Array<string | null>.
+    return ((data ?? []) as Array<string | null>).filter(
+      (s): s is string => !!s,
+    );
+  } catch (err) {
+    if (isPlaceholderSanityProject()) {
+      console.warn(
+        `[page-data] Skipping ${label} static paths — Sanity project id is still the template placeholder.`,
+      );
+      return null;
+    }
+    throw err;
+  }
+}
+
+/**
+ * Build-safe query for PRERENDERED listing pages (blog/case-studies
+ * indexes). Same policy as the static-path helpers: on a fresh fork
+ * (placeholder project id) it warns and returns `fallback` so the page
+ * renders its empty state and the build stays green; on a real project a
+ * failed fetch rethrows and fails the build loudly.
+ */
+async function loadPageQuery<const Q extends string, F>({
+  query,
+  params,
+  draftProps = {},
+  fallback,
+  label,
+}: {
+  query: Q;
+  params?: Record<string, unknown>;
+  draftProps?: DraftProps;
+  fallback: F;
+  label: string;
+}) {
+  try {
+    const { data } = await loadQuery({ query, params, ...draftProps });
+    return (data ?? fallback) as NonNullable<typeof data> | F;
+  } catch (err) {
+    if (isPlaceholderSanityProject()) {
+      console.warn(
+        `[page-data] ${label}: returning fallback — Sanity project id is still the template placeholder.`,
+      );
+      return fallback;
+    }
+    throw err;
+  }
+}
+
+/** Site Settings (default blog CTA + CTA section). Null on a fresh fork. */
+export function loadSiteSettings(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: SITE_SETTINGS_QUERY,
+    draftProps,
+    fallback: null,
+    label: "site settings",
+  });
+}
+
+/** All testimonials, or only featured ones, in sortOrder. Empty on a fresh fork. */
+export function loadTestimonials(
+  featured: boolean,
+  draftProps: DraftProps = {},
+) {
+  return loadPageQuery({
+    query: featured ? FEATURED_TESTIMONIALS_QUERY : TESTIMONIALS_QUERY,
+    draftProps,
+    fallback: [],
+    label: featured ? "featured testimonials" : "testimonials",
+  });
+}
+
+export async function getBlogPostStaticPaths() {
+  const slugs = await fetchStaticPathList<string>(
+    BLOG_SLUGS_QUERY,
+    "blog post",
+  );
+  return (slugs ?? []).map((slug) => ({ params: { slug } }));
+}
+
+export async function getProjectStaticPaths() {
+  const slugs = await fetchStaticPathList<string>(
+    PROJECT_SLUGS_QUERY,
+    "project",
+  );
+  return (slugs ?? []).map((slug) => ({ params: { slug } }));
+}
+
+export async function getCaseStudyStaticPaths() {
+  const slugs = await fetchStaticPathList<string>(
+    CASE_STUDY_SLUGS_QUERY,
+    "case study",
+  );
+  return (slugs ?? []).map((slug) => ({ params: { slug } }));
+}
+
+/**
+ * One path per unique blog category plus the "all" archive. The display name
+ * rides along as a prop so the page doesn't need to re-resolve slug → name.
+ * When Sanity is unreachable on a fresh fork (null), emit NO paths at all —
+ * not even "all" — because the page's own frontmatter queries would fail.
+ */
+export async function getBlogCategoryStaticPaths() {
+  const categories = await fetchStaticPathList<string>(
+    BLOG_CATEGORIES_QUERY,
+    "blog category",
+  );
+  if (categories === null) return [];
+  const seen = new Set<string>();
+  const paths = [
+    { params: { category: "all" }, props: { categoryName: "All" } },
+  ];
+  for (const name of categories) {
+    const slug = categoryToSlug(name);
+    if (slug === "all" || seen.has(slug)) continue;
+    seen.add(slug);
+    paths.push({ params: { category: slug }, props: { categoryName: name } });
+  }
+  return paths;
+}
+
+/* ── Project + gallery listings ────────────────────────────────────────────── */
+
+/*
+ * Listing helpers for the prerendered /projects and /gallery pages and any
+ * featured-projects strip. Build-safe via loadPageQuery: empty array on a fresh fork,
+ * loud failure on a real project. Pass getDraftModeProps(Astro) when the
+ * caller may run under /preview.
+ */
+
+/** Every project in card shape, newest first. */
+export function loadProjects(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: PROJECTS_QUERY,
+    draftProps,
+    fallback: [],
+    label: "projects",
+  });
+}
+
+/** Up to three projects marked Featured, newest first. */
+export function loadFeaturedProjects(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: FEATURED_PROJECTS_QUERY,
+    draftProps,
+    fallback: [],
+    label: "featured projects",
+  });
+}
+
+/** Every gallery photo, newest first. */
+export function loadGallery(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: GALLERY_QUERY,
+    draftProps,
+    fallback: [],
+    label: "gallery",
+  });
+}
+
+/* ── Case study listings ───────────────────────────────────────────────────── */
+
+/** Every case study (card fields), newest first. Empty on a fresh fork. */
+export function loadCaseStudies(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: CASE_STUDIES_QUERY,
+    draftProps,
+    fallback: [],
+    label: "case studies",
+  });
+}
+
+/** The case studies with these slugs, in document order. */
+export function loadFeaturedCaseStudies(
+  slugs: readonly string[],
+  draftProps: DraftProps = {},
+) {
+  return loadPageQuery({
+    query: FEATURED_CASE_STUDIES_QUERY,
+    params: { slugs: [...slugs] },
+    draftProps,
+    fallback: [],
+    label: "featured case studies",
+  });
+}
+
+/* ── Blog listings ─────────────────────────────────────────────────────────── */
+
+/** Every post (card fields + primaryCategory), newest first. Empty on a fresh fork. */
+export function loadBlogPosts(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: BLOG_POSTS_QUERY,
+    draftProps,
+    fallback: [],
+    label: "blog posts",
+  });
+}
+
+/** Posts in one category (display name), newest first. */
+export function loadBlogPostsByCategory(
+  category: string,
+  draftProps: DraftProps = {},
+) {
+  return loadPageQuery({
+    query: BLOG_POSTS_BY_CATEGORY_QUERY,
+    params: { category },
+    draftProps,
+    fallback: [],
+    label: `blog category "${category}"`,
+  });
+}
+
+/** Every category name across posts. */
+export function loadBlogCategories(draftProps: DraftProps = {}) {
+  return loadPageQuery({
+    query: BLOG_CATEGORIES_QUERY,
+    draftProps,
+    fallback: [],
+    label: "blog categories",
+  });
+}

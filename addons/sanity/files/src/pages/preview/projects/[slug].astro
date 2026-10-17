@@ -1,0 +1,27 @@
+---
+/**
+ * SSR PREVIEW twin of /projects/[slug] — iframed by Sanity Presentation for
+ * draft preview. Same template as the public route, fed by the Sanity
+ * source's getProject() in the request's perspective (getDraftModeProps
+ * reads the Presentation cookie).
+ *
+ * Editor-only surface: robots-disallowed, noindexed, never edge-cached.
+ * Keep this file in sync with src/pages/projects/[slug].astro.
+ *
+ * Part of the Sanity add-on, so the Sanity source is also the active
+ * @/lib/content source and the shared template's plainText() strips
+ * stega.
+ */
+export const prerender = false;
+import ProjectTemplate from "@/components/templates/ProjectTemplate.astro";
+import sanity from "@/sanity/lib/source";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const data = await sanity.getProject(slug, getDraftModeProps(Astro));
+if (!data) return Astro.redirect("/404");
+---
+
+<ProjectTemplate {...data} />

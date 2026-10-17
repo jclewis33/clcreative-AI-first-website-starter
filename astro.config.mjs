@@ -1,37 +1,21 @@
 // @ts-check
 import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
-import sanity from "@sanity/astro";
-import react from "@astrojs/react";
+import mdx from "@astrojs/mdx";
 import cloudflare from "@astrojs/cloudflare";
-import { loadEnv } from "vite";
 import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import {
-  SANITY_PROJECT_ID,
-  SANITY_DATASET,
-  SANITY_API_VERSION,
-  SITE_URL,
-} from "./src/config/site.shared.mjs";
+import * as cms from "./src/config/cms.mjs";
+import { SITE_URL } from "./src/config/site.shared.mjs";
 import { DEV_ONLY_PATHS, isNoindexRoute } from "./src/config/seo.shared.mjs";
 
-const env = loadEnv(process.env.NODE_ENV ?? "", process.cwd(), "");
-// Fallbacks come from the shared leaf module (src/config/site.shared.mjs) —
-// CI (Cloudflare Workers Builds) has no root .env, so env-only lookup silently
-// bakes empty strings into the sanity:client module. The shared module is the
-// single source for these values (site.ts imports it too); no hand-syncing.
-const PUBLIC_SANITY_PROJECT_ID =
-  env.PUBLIC_SANITY_PROJECT_ID || SANITY_PROJECT_ID;
-const PUBLIC_SANITY_DATASET = env.PUBLIC_SANITY_DATASET || SANITY_DATASET;
-
 /**
- * NOTE: the sitemap deliberately has NO `customPages` option and no
- * `getSanityUrls()`-style helper. A customPages list is only ever needed for
- * SSR routes (which are invisible to `@astrojs/sitemap`), and every content
- * route here is PRERENDERED via `getStaticPaths` (see
- * src/sanity/lib/page-data.ts) — the sitemap enumerates them automatically
- * from the route table. When adding a new content type, add a getStaticPaths
- * helper, never a customPages list.
+ * NOTE: the sitemap deliberately has NO `customPages` option. A
+ * customPages list is only ever needed for SSR routes (which are invisible
+ * to `@astrojs/sitemap`), and every content route here is PRERENDERED via
+ * `getStaticPaths` (helpers from src/lib/content) — the sitemap
+ * enumerates them automatically from the route table. When adding a new
+ * content type, add a getStaticPaths helper, never a customPages list.
  */
 
 /**
@@ -50,6 +34,12 @@ function excludeDevOnlyPages() {
     hooks: {
       /** @param {{ dir: URL, logger: { info: (msg: string) => void } }} ctx */
       "astro:build:done": async ({ dir, logger }) => {
+        // Parity builds (scripts/compare-dist.mjs) keep the dev-only demo
+        // pages so /components is compared too. Never set in production.
+        if (process.env.KEEP_DEV_PAGES === "1") {
+          logger.info("KEEP_DEV_PAGES=1 — dev-only pages left in the build.");
+          return;
+        }
         const root = fileURLToPath(dir);
         for (const p of DEV_ONLY_PATHS) {
           await rm(`${root}${p}`, { recursive: true, force: true });
@@ -75,20 +65,11 @@ const redirects = {};
 
 // https://astro.build/config
 export default defineConfig({
-  // Static by default — INCLUDING the CMS content routes (blog, case
-  // studies, glossary), which enumerate their slugs with `getStaticPaths`
-  // (helpers in src/sanity/lib/page-data.ts) and ship as prerendered HTML at
-  // zero Worker CPU. Only two kinds of routes opt into SSR with
-  // `export const prerender = false;`:
-  //   - `src/pages/preview/**` — the draft-preview twins that Sanity's
-  //     Presentation tool iframes (per-request fetch, drafts perspective via
-  //     the sanity-preview-mode cookie). Drafts CANNOT be served on the
-  //     prerendered public URLs: the Cloudflare adapter returns static
-  //     assets before Astro middleware ever runs, so a cookie-keyed rewrite
-  //     there is impossible — hence the parallel /preview tree.
-  //   - `src/pages/api/**` — the draft-mode cookie set/clear routes.
-  // Publishing content triggers a rebuild via the rebuild-debounce Worker
-  // (workers/rebuild-debounce/) — prerendered content ships on the next build.
+  // Static by default — INCLUDING the content routes (blog, case studies,
+  // projects), which enumerate their slugs with `getStaticPaths` (helpers
+  // from @/lib/content) and ship as prerendered HTML at zero Worker CPU.
+  // Only `src/pages/api/**` opts into SSR (`export const prerender =
+  // false;`), plus any draft-preview routes a CMS add-on brings.
   output: "static",
   adapter: cloudflare({
     inspectorPort: false,
@@ -96,8 +77,8 @@ export default defineConfig({
     // Pre-optimize images at build time with sharp, serve them via a
     // passthrough endpoint at runtime. Without this the adapter defaults to
     // `cloudflare-binding` mode, which requires a paid Cloudflare Images
-    // binding for SSR pages — any <Image> on the /preview draft-preview
-    // routes would otherwise fail to render.
+    // binding for SSR pages — any <Image> on an SSR route would otherwise
+    // fail to render.
     imageService: "compile",
   }),
   redirects,
@@ -106,28 +87,10 @@ export default defineConfig({
     sitemap({
       filter: (page) => !isNoindexRoute(new URL(page).pathname),
     }),
-    // React must be registered BEFORE Sanity — the visual-editing islands
-    // (SanityVisualEditing / DisableDraftMode) are React components that need
-    // the React renderer available when draft mode mounts them.
-    react(),
-    sanity({
-      projectId: PUBLIC_SANITY_PROJECT_ID,
-      dataset: PUBLIC_SANITY_DATASET,
-      useCdn: true,
-      apiVersion: SANITY_API_VERSION,
-      // No `studioBasePath` — the Studio is hosted by Sanity at
-      // <studioHost>.sanity.studio (deployed via `npx sanity deploy`), not
-      // embedded in this app. The integration still provides the
-      // `sanity:client` virtual module used by src/sanity/lib/load-query.ts.
-      stega: {
-        // Required for Visual Editing overlays — when stega encoding is on,
-        // text fields rendered from Sanity contain hidden source links that
-        // the overlay reads to map clicks back to the corresponding Studio
-        // field. The studioUrl tells the overlay which Studio to deep-link —
-        // the hosted Studio origin (cross-origin from the site).
-        studioUrl: "https://your-studio.sanity.studio",
-      },
-    }),
+    mdx(),
+    // The content source's integrations (src/config/cms.mjs): none for
+    // content in local files; a CMS add-on supplies its own.
+    ...cms.integrations,
   ],
   // This is the URL of your live site. Astro uses this for generating canonical URLs and your sitemap.
   site: SITE_URL,
@@ -187,13 +150,16 @@ export default defineConfig({
       },
     },
 
-    // Allow Sanity CDN images without requiring width/height
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "cdn.sanity.io",
-      },
-    ],
+    // Remote image hosts the content source serves from (src/config/cms.mjs).
+    remotePatterns: cms.remotePatterns,
+  },
+
+  /* Fenced code in MDX blog bodies is highlighted at build time with these
+     settings. A CMS add-on that renders its own code blocks passes the same
+     theme and wrapping to <Code>, so a code block looks the same from
+     either content source. */
+  markdown: {
+    shikiConfig: { theme: "github-dark", wrap: true },
   },
 
   fonts: [
@@ -252,23 +218,10 @@ export default defineConfig({
   ],
 
   vite: {
-    optimizeDeps: {
-      // Astro 6 + @sanity/visual-editing compat workaround:
-      // Several transitive deps are CJS modules that Vite doesn't pre-bundle
-      // automatically. Without this, the VisualEditing component fails to
-      // hydrate. Per the official Sanity + Astro guide.
-      // (Production builds use Rollup which handles this; the issue is
-      // primarily dev-server, but harmless to include for both.)
-      include: [
-        "react/compiler-runtime",
-        "lodash/isObject.js",
-        "lodash/groupBy.js",
-        "lodash/keyBy.js",
-        "lodash/partition.js",
-        "lodash/sortedIndex.js",
-      ],
-      exclude: ["@sanity/astro"],
-    },
+    // Build-time constants and dependency pre-bundling hints the content
+    // source needs (src/config/cms.mjs).
+    define: cms.viteDefine,
+    optimizeDeps: cms.optimizeDeps,
   },
 
   // Optional: If your site is hosted in a subdirectory, specify the base path.

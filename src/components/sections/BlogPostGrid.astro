@@ -14,9 +14,8 @@
  * All variants sort by date descending (newest first) and cap at 3 cards.
  * If no posts match the filter, the entire section is hidden.
  *
- * CMS-ready: accepts a typed `BlogPost[]` array that maps directly to CMS
- * collection fields. When connecting Sanity, Contentful, or another headless
- * CMS, pass the query result as the `posts` prop.
+ * Takes `BlogPostSummary[]` from the content interface (`@/lib/content`) as
+ * the `posts` prop; with no `posts` it fetches them with `getBlogPosts()`.
  *
  * @example Related posts on a blog post page
  * ```astro
@@ -56,51 +55,13 @@
  * ```
  */
 
-import type { ImageMetadata } from "astro";
 import Section from "@/components/ui/Section.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import BlogCard from "@/components/ui/BlogCard.astro";
 
-// Images — replace with CMS image fields when connecting a headless CMS
-import heroImage from "@/assets/placeholder-images/ai-first-starter-7.webp";
-import featuredImage from "@/assets/placeholder-images/ai-first-starter-8.webp";
-import avatarPlaceholder from "@/assets/placeholder-images/ai-first-starter-14.webp";
-import blogImage1 from "@/assets/placeholder-images/ai-first-starter-9.webp";
-import blogImage2 from "@/assets/placeholder-images/ai-first-starter-10.webp";
-import blogImage3 from "@/assets/placeholder-images/ai-first-starter-1.webp";
 import Layout from "@/components/ui/Layout.astro";
-
-/* ── Exported post type ────────────────────────────────────────────────────
-   Reusable across the project. When connecting a CMS, import this type
-   from BlogPostGrid and use it as your content schema.
-   ────────────────────────────────────────────────────────────────────── */
-
-/** Shape of a single blog post — CMS-ready with ImageMetadata | string. */
-export interface BlogPost {
-  /* Nullable throughout: these usually arrive from Sanity, where a document
-     is incomplete until an editor fills it in. */
-  /** Post title */
-  title: string | null;
-  /** URL slug — used for href and exclusion filtering */
-  slug: string | null;
-  /** Post excerpt / description */
-  description: string | null;
-  /** Category labels (e.g. ["Guides", "News"]) */
-  categories: string[] | null;
-  /** Featured image — imported ImageMetadata or URL string */
-  image: ImageMetadata | string | null;
-  /** Alt text for the featured image */
-  imageAlt: string | null;
-  /** Author name (optional — used for CMS sorting) */
-  author?: string | null;
-  /** Author avatar image (optional) */
-  authorAvatar?: ImageMetadata | string | null;
-  /** Publish date as ISO string for sorting (e.g. "2026-03-01") */
-  date?: string | null;
-  /** Whether this post is featured (optional) */
-  featured?: boolean | null;
-}
+import { getBlogPosts, imageSrc, type BlogPostSummary } from "@/lib/content";
 
 /* ── Variant & shared types ── */
 
@@ -119,7 +80,7 @@ type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
  * in a responsive grid with filtering variants.
  *
  * **Props:**
- * - `posts` — all available blog posts to filter from (**required**)
+ * - `posts` — all available blog posts to filter from (fetched with getBlogPosts() if omitted)
  * - `variant` — filtering mode: related, recent, category (default: `'recent'`)
  * - `currentSlug` — slug of the current post to exclude (required for `related`, optional for `recent`/`category`)
  * - `currentCategory` — category of the current post (required for `related`)
@@ -140,7 +101,7 @@ type GapScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 interface Props {
   /**
    * **BlogPostGrid props:**
-   * - `posts` — BlogPost[] to filter from (required)
+   * - `posts` — BlogPostSummary[] to filter from (fetched with getBlogPosts() if omitted)
    * - `variant` — related, recent, category (default 'recent')
    * - `currentSlug` — current post slug to exclude
    * - `currentCategory` — current post category (for related)
@@ -162,17 +123,17 @@ interface Props {
   /**
    * All available blog posts to filter from.
    * Pass your full posts array — the component handles filtering and sorting.
-   * If omitted, uses built-in sample data for previewing.
+   * If omitted, the section fetches every post itself.
    *
-   * When connecting a CMS, pass the query result here:
+   * Pass posts from the content interface:
    * ```astro
-   * const allPosts = await sanity.fetch(postsQuery);
+   * const allPosts = await getBlogPosts();
    * <BlogPostGrid posts={allPosts} variant="recent" />
    * ```
    *
    * @example posts={allPosts}
    */
-  posts?: BlogPost[];
+  posts?: BlogPostSummary[];
 
   /**
    * Filtering mode that determines which posts are displayed.
@@ -386,111 +347,15 @@ const invertCards =
   theme === "dark" || theme === "brand" ? ("invert" as const) : undefined;
 
 /* ═══════════════════════════════════════════════════
-   Sample data — used for previewing when no `posts` prop is passed.
-   Replace with CMS query results when connecting a headless CMS.
-   ═══════════════════════════════════════════════════ */
-
-const samplePosts: BlogPost[] = [
-  {
-    title: "How to Get Started in Five Simple Steps",
-    slug: "getting-started-guide",
-    description:
-      "A practical walkthrough to help you get up and running quickly — from first setup to your first results.",
-    categories: ["Guides"],
-    image: featuredImage,
-    imageAlt: "Getting started checklist on a desk",
-    author: "Jane Doe",
-    authorAvatar: avatarPlaceholder,
-    date: "2026-03-01",
-    featured: true,
-  },
-  {
-    title: "What's New: Our Latest Updates",
-    slug: "latest-updates",
-    description:
-      "A roundup of the improvements and features we've shipped recently, and what they mean for you.",
-    categories: ["News"],
-    image: blogImage1,
-    imageAlt: "Team reviewing recent product updates",
-    author: "Jane Doe",
-    date: "2026-02-20",
-  },
-  {
-    title: "Five Trends Shaping Our Industry This Year",
-    slug: "industry-trends",
-    description:
-      "The shifts we're watching closely, and how forward-thinking teams are responding to them.",
-    categories: ["Insights"],
-    image: blogImage2,
-    imageAlt: "Charts illustrating industry trends",
-    author: "Jane Doe",
-    date: "2026-02-15",
-  },
-  {
-    title: "The Power of Clear, Customer-Focused Messaging",
-    slug: "customer-focused-messaging",
-    description:
-      "How sharper messaging turns a website from a digital brochure into a tool that actually converts.",
-    categories: ["Insights"],
-    image: blogImage3,
-    imageAlt: "Whiteboard messaging workshop",
-    author: "Jane Doe",
-    date: "2026-02-10",
-  },
-  {
-    title: "Designing for Everyone: A Practical Accessibility Guide",
-    slug: "accessibility-guide",
-    description:
-      "Practical techniques for building experiences that work for everyone, including keyboard navigation and screen reader support.",
-    categories: ["Guides"],
-    image: heroImage,
-    imageAlt: "Accessible interface components",
-    author: "Jane Doe",
-    date: "2026-02-05",
-  },
-  {
-    title: "A Step-by-Step Walkthrough of Your First Project",
-    slug: "first-project-walkthrough",
-    description:
-      "Follow along as we set up a project from scratch and explain each decision along the way.",
-    categories: ["Tutorials"],
-    image: blogImage1,
-    imageAlt: "Step-by-step project walkthrough on screen",
-    author: "Jane Doe",
-    date: "2026-01-28",
-  },
-  {
-    title: "The Tools and Resources We Rely On",
-    slug: "tools-and-resources",
-    description:
-      "A curated list of the software, templates, and references our team reaches for every day.",
-    categories: ["Resources"],
-    image: blogImage2,
-    imageAlt: "Collection of tools and resources",
-    author: "Jane Doe",
-    date: "2026-01-20",
-  },
-  {
-    title: "Building a Design System from Scratch",
-    slug: "design-system-from-scratch",
-    description:
-      "How we build scalable, consistent systems that accelerate work and improve quality.",
-    categories: ["Guides"],
-    image: featuredImage,
-    imageAlt: "Design system component library",
-    author: "Jane Doe",
-    date: "2026-01-08",
-  },
-];
-
-/* ═══════════════════════════════════════════════════
    Filter & sort posts
-   Use `posts` prop if provided, otherwise fall back to sample data.
    ═══════════════════════════════════════════════════ */
 
-const allPosts = posts ?? samplePosts;
+/* Use `posts` when given, else fetch every post (an empty or unreachable
+   dataset renders nothing). */
+const allPosts =
+  posts ?? (await getBlogPosts().catch((): BlogPostSummary[] => []));
 const excludeSet = new Set<string | null>(excludeSlugs ?? []);
-let filtered: BlogPost[] = [];
+let filtered: BlogPostSummary[] = [];
 
 switch (variant) {
   case "related":
@@ -611,10 +476,13 @@ const showHeading = Astro.slots.has("heading") || resolvedHeading;
               description={post.description}
               categories={post.categories}
               href={`/blog/${post.slug}`}
-              image={post.image}
-              imageAlt={post.imageAlt}
+              image={imageSrc(post.image, { width: 600 }) ?? null}
+              imageAlt={post.image?.alt ?? null}
               author={post.author}
-              authorAvatar={post.authorAvatar}
+              authorAvatar={imageSrc(post.authorAvatar, {
+                width: 80,
+                height: 80,
+              })}
               date={post.date}
             />
           ))}

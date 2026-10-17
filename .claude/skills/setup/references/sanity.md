@@ -1,7 +1,15 @@
 # The Sanity branch — stand up the CMS
 
-**Only run this if the fork answered "yes, Sanity" at the CMS gate.** If they said
-no or not-yet, read [no-cms.md](./no-cms.md) instead and skip everything here.
+**Only run this if the fork chose Sanity at the content-source gate.** If
+it keeps content in files, read [no-cms.md](./no-cms.md) instead.
+
+Sanity is an add-on: `npm run setup` with `"contentSource": "sanity"`
+installs it (`npm run addon:sanity`) before writing anything else. If the
+fork is past setup, install it yourself: commit, then
+`npm run addon:sanity`, then `npm install`. The installer refuses a dirty
+tree and a second run. What it adds and overwrites:
+`addons/sanity/README.md` in the starter repo. Everything below assumes
+it is installed.
 
 Work top to bottom. Confirm each external action before taking it.
 
@@ -23,14 +31,15 @@ back the projectId.
 
 > Feed the projectId into the setup CLI's `sanityProjectId` answer (main SKILL.md,
 > "Write the config files"). Do that **before** the deploys below — they read
-> `sanity.cli.ts` / `site.shared.mjs` to know which project to target.
+> `sanity.cli.ts` / `src/config/sanity.shared.mjs` to know which project to target.
 
 ## S2. Studio branding — do this BEFORE deploying
 
 The workspace `icon` is extracted into the studio manifest **at deploy time**, so
 the navbar logo and dashboard rail icon must already be in place when you run
 `npx sanity deploy`. Full procedure, including the sandboxed-iframe mechanism that
-makes the rail icon fussy: [studio-branding.md](./studio-branding.md).
+makes the rail icon fussy: [studio-branding.md](./studio-branding.md) (installed
+by the add-on).
 
 ## S3. Deploy the schema + Studio
 
@@ -40,7 +49,7 @@ that owns the project (`npx sanity login` if needed).
 
 1. **Validate the schema compiles first** — catch errors before they hit the new
    project: `npx sanity build` (compiles the Studio incl. the schema). Fix any
-   schema error before deploying. The schema is 13 types defined in
+   schema error before deploying. The schema is 14 types defined in
    [src/sanity/schemaTypes/](../../../../src/sanity/schemaTypes/) (`index.ts` is the
    registry) — don't edit them to set up a fork; they ship ready.
 2. **Deploy the schema manifest:** `npx sanity schema deploy`. This publishes the
@@ -72,12 +81,13 @@ that owns the project (`npx sanity login` if needed).
 
 Don't skip — this is the whole point of S3.
 
-- Sanity MCP `get_schema` on the new project should list **all 13 types**:
+- Sanity MCP `get_schema` on the new project should list **all 14 types**:
   `author, blogCta, blogCtaInline, blogFaq, blogPost, callout, caseStudy,
-ctaSection, glossaryTerm, seo, siteSettings, testimonial, videoEmbed`.
-- Open `https://<studioHost>.sanity.studio` → the desk shows **Site Settings**
-  (pinned singleton) on top, then **Blog Posts / Case Studies / Glossary Terms**,
-  then the **Reusable Content** and **People & Social** folders. If a type is
+galleryItem, ctaSection, project, seo, siteSettings, testimonial, videoEmbed`.
+- Open `https://<studioHost>.sanity.studio` → the desk shows **Blog Posts**,
+  **Case Studies**, **Projects** and **Gallery photos** on top, then the
+  **Quick views**, **Reusable Content** and **People & Social** folders, with
+  **Site Settings** (the pinned singleton) at the bottom. If a type is
   missing from the desk, it's not in the `structureTool` resolver in
   [sanity.config.ts](../../../../sanity.config.ts) — but for an unmodified fork it's
   already complete.
@@ -103,12 +113,13 @@ ctaSection, glossaryTerm, seo, siteSettings, testimonial, videoEmbed`.
 > editors don't start from nothing — but it's not needed for the site to work;
 > opening "Site Settings" in Studio creates it on first edit.
 
-> **When the fork later adds a new document type:** per CLAUDE.md, do all four —
+> **When the fork later adds a new document type:** per the `sanity-and-preview`
+> skill, do all four —
 > add it to `schemaTypes/index.ts`, an `S.listItem()` in the desk resolver, an
 > `icon`, and a Presentation location in `resolve.ts` (pointing at
 > `/preview/<type>/<slug>`) — or it won't show in the desk / preview. A type with
-> its own detail route additionally needs the **four route pieces** from CLAUDE.md →
-> "Adding a new content type". Setup itself doesn't require this; it's for future
+> its own detail route additionally needs the route pieces in that skill's
+> "Data fetching pattern" ("Adding a new content type with a detail route"). Setup itself doesn't require this; it's for future
 > schema work.
 
 > **Deploy order for preview:** Presentation iframes the site's `/preview/*` routes,
@@ -170,7 +181,7 @@ exact values:
 - **HTTP header** → `Authorization: Bearer <WEBHOOK_TOKEN>`.
 - **Trigger on** → Create, Update, Delete.
 - **Filter** → `!(_id in path("drafts.**"))` — intentionally broad (any published
-  doc of any type; see the main README).
+  doc of any type; see the `sanity-and-preview` skill → "How draft mode works").
 - Leave Sanity's **"Secret"** field blank (a different HMAC feature we don't use).
 
 > **If the user defers this**, warn clearly: with prerendered content routes,

@@ -4,17 +4,21 @@ This project uses a structured class-naming and component system. This file
 holds the rules that must always be in context; the deep reference material
 lives in **skills** — load them, don't guess:
 
-| Load this skill       | Before                                                                                                                                                                                                |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `component-api`       | Building or editing any page/section, or using any component (Section, Layout, Card, Slider, Carousel, Tab, Accordion, forms, …) — every prop table and page pattern is there                         |
-| `styling-reference`   | Styling beyond applying existing utilities: tokens/variables, theming and `data-theme-invert`, the responsive flag system, the full utility list, text rhythm/margin-trim mechanisms, image/SVG rules |
-| `sanity-and-preview`  | Anything Sanity (queries, TypeGen, schema, Studio, Presentation), draft mode / `/preview`, deployment, rendering model, sitemap, env vars, adding a content type                                      |
-| `seo-discoverability` | JSON-LD / structured data, per-page SEO, llms.txt — and ALWAYS when adding a new static page (manual `PAGES` registry step)                                                                           |
-| `setup`               | Setting up a fork as a new project                                                                                                                                                                    |
+| Load this skill       | Before                                                                                                                                                                                                                                        |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `component-api`       | Building or editing any page/section, or using any component (Section, Layout, Card, Slider, Carousel, Tab, Accordion, forms, …) — every prop table and page pattern is there                                                                 |
+| `content-files`       | Adding or editing any content under `src/content/` (blog posts, case studies, projects, gallery, testimonials, authors, CTAs), a content build error, or wiring a content type into the Files source                                          |
+| `styling-reference`   | Styling beyond applying existing utilities: tokens/variables, theming and `data-theme-invert`, the responsive flag system, the full utility list, text rhythm/margin-trim mechanisms, image/SVG rules                                         |
+| `sanity-and-preview`  | Only with the Sanity add-on installed (`npm run addon:sanity`; the skill ships with it — in the starter repo read `addons/sanity/files/.claude/skills/sanity-and-preview/SKILL.md`): queries, TypeGen, Studio, draft preview, rebuild webhook |
+| `seo-discoverability` | JSON-LD / structured data, per-page SEO, llms.txt — and ALWAYS when adding a new static page (manual `PAGES` registry step)                                                                                                                   |
+| `setup`               | Setting up a fork as a new project                                                                                                                                                                                                            |
 
 Other docs: [docs/new-project-checklist.md](docs/new-project-checklist.md)
-(per-fork dashboard setup), [docs/brand-color-guide.md](docs/brand-color-guide.md),
-[docs/responsive-columns.md](docs/responsive-columns.md).
+(per-fork dashboard setup), [docs/handing-off.md](docs/handing-off.md)
+(handing a finished site to a client), [docs/brand-color-guide.md](docs/brand-color-guide.md),
+[docs/responsive-columns.md](docs/responsive-columns.md),
+[docs/editing-content.md](docs/editing-content.md) (the client-facing
+content-editing guide; keep it in step with the `content-files` skill).
 
 > **Forking this repo for a new project?** Start with the checklist above —
 > most of a rebrand is config (`src/config/site.ts`, `site.shared.mjs`,
@@ -80,14 +84,14 @@ dashes between words, applied on top of a custom class and **always scoped**:
 ```
 src/
 ├── assets/           # Images (.avif/.webp preferred), icons/*.svg for <Icon>
-├── components/       # ui/ · sections/ · form/ · global/ · templates/ · case-study/ · portabletext/
+├── content/          # Site content as files (one per entry) — see the content-files skill
+├── components/       # ui/ · sections/ · form/ · global/ · templates/ · case-study/ · blog/ (+ blog/mdx/)
 ├── config/           # site.ts (SITE), site.shared.mjs, logo-paths.ts — import, never hardcode
 ├── data/             # site-structure.ts (PAGES/NAV_MENU/FOOTER_GROUPS/BANNER), faqs.ts
 ├── layouts/          # BaseLayout.astro
-├── lib/              # slots.ts (slotContent), uid.ts, jsonld.ts, toc.ts, …
-├── pages/            # Routes; preview/** and api/** are the only SSR routes
-├── sanity/           # Queries, loaders, generated types, Studio components
-├── scripts/          # animation.js, scroll-refresh.js, social-share.js
+├── lib/              # content/ (THE content interface — all content comes from @/lib/content; files/ is the default backend), slots.ts, uid.ts, jsonld.ts, toc.ts, …
+├── pages/            # Routes; api/** and tools/** are the only SSR routes (the Sanity add-on adds preview/**)
+├── scripts/          # animation.js, animate-observer.js, scroll-refresh.js, social-share.js
 └── styles/           # A DIRECTORY'S NAME IS ITS CASCADE LAYER
     ├── global.css    # The index — declares the cascade, imports every global sheet
     ├── reset.css · vendor.css · overrides.css
@@ -97,6 +101,14 @@ src/
     ├── components/   # ONLY component CSS with no single owner (forms.css)
     └── pages/        # Page CSS; imported by the page, opens with @layer pages { }
 ```
+
+`addons/sanity/` (outside `src/`, not built) is the Sanity add-on: an
+overlay plus a manifest that `npm run addon:sanity` installs. The CMS seams
+it replaces: `src/lib/content/source.ts`, `src/config/cms.mjs`,
+`src/config/cms.shared.mjs`, `src/components/global/CmsEditing.astro`,
+`src/components/blog/BlogBody.astro`. It also overwrites
+`public/_headers`, `scripts/compare-dist.mjs` and
+`.github/workflows/ci.yml` (full list: `addons/sanity/README.md`).
 
 ## Cascade layers (the two hard rules)
 
@@ -145,8 +157,9 @@ const content = await slotContent(Astro.slots);
 - Frontmatter capture is verified safe on the current setup against both
   known failure modes (the script drop above, and an image-service
   `validateOptions` crash on cold start) — checked on dev cold start,
-  production build, and SSR `/preview` cold start. If a `validateOptions`
-  error ever appears on a cold start, re-measure before changing anything.
+  production build, and (with the Sanity add-on) SSR `/preview` cold
+  start. If a `validateOptions` error ever appears on a cold start,
+  re-measure before changing anything.
 - `Astro.slots.has()` stays fine for cheap "was it passed" checks.
 - Section, Card, Carousel, Dropdown, Accordion(Item) already work this way —
   their empty slots emit nothing. `render={false}` still expresses "skip"
@@ -230,7 +243,9 @@ const content = await slotContent(Astro.slots);
   same-directory `./` is fine.
 - **Formatting:** Prettier owns it — `npm run format` before committing;
   `format:check` gates CI. `Head.astro` and `BaseLayout.astro` are
-  `.prettierignore`d (format by hand).
+  `.prettierignore`d (format by hand). So is `src/content/`: clients edit
+  content outside a formatting editor, and formatting must never block a
+  content deploy.
 - **Whitespace:** `compressHTML: true` is pinned in `astro.config.mjs` —
   don't switch to Astro 7's `"jsx"` default. Under JSX rules a Prettier line
   break between an inline element and its neighbour renders as no space
@@ -241,7 +256,8 @@ const content = await slotContent(Astro.slots);
 - **Animation/slider dependencies are per-component imports** — no window
   globals, no site-wide library script. GSAP today: `animation.js`
   (dynamically imported behind data-attribute checks), ScrollReveal,
-  HowItWorks, StackingPanels, Services. Swiper: Slider, TestimonialShowcase.
+  HowItWorks, StackingPanels, Services (and the dev-only `/style-guide`
+  demo). Swiper: Slider, TestimonialShowcase.
   Tab, Accordion, Modal, Marquee, Carousel, Dropdown are pure CSS + small
   hoisted scripts. Layout-changing components dispatch
   `scrolltrigger:refresh` (see `src/scripts/scroll-refresh.js`) instead of
@@ -258,9 +274,12 @@ const content = await slotContent(Astro.slots);
   property set in one file and read in another — have no compiler tying the
   ends together; change both in one commit.
 - **Site-wide values** (email, phone, URL, brand name, socials) come from
-  `SITE` in `src/config/site.ts` — never hardcode. Sanity ids + site URL live
-  in `site.shared.mjs` (the config-context leaf); `wrangler.jsonc` mirrors
-  them, validated by `npm run check:config` (prebuild). Brand color:
+  `SITE` in `src/config/site.ts` — never hardcode. The site
+  URL lives in `site.shared.mjs` (the config-context leaf). A content
+  add-on keeps its ids in its own `src/config/<name>.shared.mjs`, whose
+  `WRANGLER_VARS` export `wrangler.jsonc` mirrors; `npm run check:config`
+  (prebuild) validates that and `public/_headers` against
+  `src/config/headers.shared.mjs`. Brand color:
   `--color-brand-500` in `colors.css` is canonical; `SITE.brand.color` is its
   literal mirror for email/`<meta theme-color>` — keep in sync.
 
@@ -310,12 +329,28 @@ Before writing any new CSS:
 ## Verification commands
 
 `npm run check` (astro check) · `npm run check:hover` (prop tooltips) ·
-`npm run check:config` (wrangler/site.shared sync; runs prebuild) ·
-`npm run check:schema` (JSON-LD, needs dev server) · `npm run build` ·
-`npm run format:check` · `npm run typegen` (after any GROQ/schema change).
+`npm run check:config` (wrangler vars and `_headers` ↔ src/config; runs
+prebuild) · `npm run check:boundary` (content files read only through
+`@/lib/content`; an add-on's rules in `scripts/boundary/`, which the
+add-on ships) · `npm run check:content` (content text-helper unit checks,
+then bad content must fail `astro sync` naming file and field, and an
+emptied folder must leave no deleted entry behind) ·
+`npm run check:content-build` (after a build: coming-soon studies, OG/JSON-LD
+image URLs, resized local images, TOC anchors) ·
+`npm run check:schema -- --dist dist/client` (JSON-LD on the built site) ·
+`npm run check:addon-installer` · `npm run check:setup` ·
+`npm run check:addon` (installs the Sanity add-on in a scratch copy and
+builds it; needs the network, takes minutes) · `npm run build` · `npm run format:check`.
 
 ## Anti-patterns
 
+- Importing a CMS package or `src/sanity` outside the add-on's allow list
+  (`scripts/boundary/*.json`, shipped by the add-on) — content, types and
+  image helpers come from `@/lib/content`.
+- Wiring a CMS by editing `astro.config.mjs`, `BaseLayout.astro` or
+  `middleware.ts` — they read the CMS seams (`src/config/cms.mjs`,
+  `cms.shared.mjs`, `CmsEditing.astro`); a CMS add-on replaces the seams.
+- Reading `src/content` with `getCollection()` in a page or component — content comes from `@/lib/content`; the Files backend in `src/lib/content/files/` is the only reader (`check:boundary` enforces it).
 - Unlayered CSS anywhere; third-party CSS imported from a script.
 - `display: grid` on `u-container`; bare `1fr` grid columns.
 - Rendering `<slot />` after `Astro.slots.render()` — dead client JS.
@@ -337,11 +372,12 @@ Before writing any new CSS:
   the card's own wrapping class).
 - An `<a>` whose only accessible name is `aria-label` — put the label in a
   visually-hidden child (`u-sr-only`); `<button>` is exempt.
-- Making CMS content routes SSR "so preview works" — preview lives on the
-  `/preview/*` SSR twins; public content routes are prerendered (SSR content
-  routes caused real production `exceededCpu` 503s).
+- Making CMS content routes SSR "so preview works" — a CMS add-on's preview
+  lives on its own SSR twins (the Sanity add-on's `/preview/*`); public
+  content routes are prerendered (SSR content routes caused real
+  production `exceededCpu` 503s).
 - Fetching a whole collection to render a few related cards; sequential
-  awaits on independent queries — filter in GROQ, `Promise.all`.
+  awaits on independent queries — filter in the content query, `Promise.all`.
 - A `sitemap({ customPages })` list — prerendered routes enumerate
   automatically.
 - `limits: { cpu_ms }` in `wrangler.jsonc` — Workers Paid only; on Free the

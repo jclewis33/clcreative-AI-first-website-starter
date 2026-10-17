@@ -1,0 +1,32 @@
+---
+/**
+ * Link Mark — Portable Text mark component
+ *
+ * Renders link annotations with support for the `newTab` field
+ * defined in the blog post schema.
+ *
+ * Mark shape: { _type: "link", href: string, newTab?: boolean }
+ */
+
+import type { MarkProps } from "astro-portabletext/types";
+
+type LinkDef = { href: string; newTab?: boolean };
+type Props = MarkProps<LinkDef>;
+
+const { node } = Astro.props;
+const { href, newTab } = node.markDef;
+
+/* The link text is rendered once and set flush inside the anchor with
+   set:html. A slot element written inside the anchor let the formatter's
+   line breaks render as padding spaces around the link text. Not
+   slotContent(): that trims, and a span's own edge spaces are real text. */
+const text = await Astro.slots.render("default");
+---
+
+{
+  newTab ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" set:html={text} />
+  ) : (
+    <a href={href} set:html={text} />
+  )
+}

@@ -1,4 +1,5 @@
 ---
+import { uid } from "@/lib/uid";
 /**
  * Tab component — a tabbed interface with multiple layout and transition variants.
  *
@@ -167,8 +168,8 @@ const hasHeading = Astro.slots.has("heading");
 /* Transition mode: slider variant uses horizontal slide; everything else fades */
 const transitionMode = isSlider ? "slide" : "fade";
 
-/* Unique ID prefix for ARIA linking */
-const tabId = `tab-${Math.random().toString(36).slice(2, 8)}`;
+/* Unique ID prefix for ARIA linking (a counter, not random: builds stay byte-identical) */
+const tabId = uid("tab");
 ---
 
 <div

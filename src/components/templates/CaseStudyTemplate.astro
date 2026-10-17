@@ -2,13 +2,13 @@
 /**
  * Case Study Template
  *
- * Renders a case study detail page given the study document and the full list
- * of studies (used to compute prev/next). Used by the production route
- * (`src/pages/case-studies/[slug].astro`).
+ * Renders a case study detail page from the CaseStudyPage view model
+ * (getCaseStudy() in @/lib/content): the study, its "Up next" cards and the
+ * resolved CTA section. Shared by the prerendered route
+ * (src/pages/case-studies/[slug].astro) and its /preview twin.
  */
-
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import SanityCtaSection from "@/components/sections/SanityCtaSection.astro";
+import ContentCtaSection from "@/components/sections/ContentCtaSection.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
@@ -19,156 +19,56 @@ import Button from "@/components/ui/Button.astro";
 import Slider from "@/components/ui/Slider.astro";
 import CaseStudyCard from "@/components/ui/CaseStudyCard.astro";
 import CaseStudyBlockRenderer from "@/components/case-study/CaseStudyBlockRenderer.astro";
-import type { ContentBlock } from "@/components/case-study/types";
-
-import { urlFor, hotspotPosition } from "@/sanity/lib/image";
-import { stegaClean } from "@sanity/client/stega";
-import { portableTextToHtml } from "@/sanity/lib/portable-text";
 import { caseStudyJsonLd } from "@/lib/jsonld";
 import JsonLd from "@/components/global/JsonLd.astro";
+import {
+  imageSrc,
+  resolveImageUrl,
+  plainText,
+  type CaseStudyDetail,
+  type CaseStudySummary,
+  type CtaSectionData,
+} from "@/lib/content";
 
 import "@/styles/pages/case-study-detail.css";
-import type { loadCaseStudyPage } from "@/sanity/lib/page-data";
-
-/* Slices of what loadCaseStudyPage() returns — see BlogPostTemplate. */
-type PageData = NonNullable<Awaited<ReturnType<typeof loadCaseStudyPage>>>;
 
 interface Props {
-  study: PageData["study"];
-  allStudies: PageData["allStudies"];
-  defaultCtaSection?: PageData["defaultCtaSection"];
+  /**
+   * **CaseStudyTemplate** — the case study detail page. Pass the fields of
+   * `getCaseStudy()`'s CaseStudyPage: `study`, `upNext`, `ctaSection`.
+   */
+  docs?: string;
+
+  /** The case study to render. */
+  study: CaseStudyDetail;
+
+  /** Up to two "Up next" cards (other studies with an image, newest first). */
+  upNext: CaseStudySummary[];
+
+  /** Bottom CTA section (the study's override, else the site default), or null. */
+  ctaSection: CtaSectionData | null;
 }
 
-const { study, allStudies, defaultCtaSection = null } = Astro.props;
-const resolvedCtaSection =
-  study.ctaSectionOverride ?? defaultCtaSection ?? null;
+const { docs, study, upNext, ctaSection } = Astro.props;
 
 const siteOrigin = Astro.site!.toString().replace(/\/$/, "");
-const jsonLd = caseStudyJsonLd(study, siteOrigin);
-
-const imageUrlFn = (ref: string) => urlFor({ _ref: ref }).width(1920).url();
-const hasImageSource = (value: any) =>
-  Boolean(value?.asset?._ref || value?._ref || value?.asset?._id);
-
-// stegaClean strips the invisible Unicode characters Sanity injects into
-// string fields in draft/preview mode. Without it, an aspect-ratio value like
-// "wide" arrives as "wide​…" — which is invalid CSS, collapses the image
-// wrapper to zero height, and makes the image vanish in the Presentation preview.
-const resolveAspectRatio = (block: any, fallback: string) => {
-  const custom = stegaClean(block.customAspectRatio);
-  if (custom) return custom;
-  const ratio = stegaClean(block.aspectRatio);
-  if (ratio === "auto") return undefined;
-  return ratio || fallback;
-};
-
-const contentBlocks = (study.content ?? [])
-  .map((block): ContentBlock | null => {
-    const spacingProps = {
-      sectionSpacing: block.sectionSpacing || undefined,
-      sectionSpacingTop: block.sectionSpacingTop || undefined,
-      sectionSpacingBottom: block.sectionSpacingBottom || undefined,
-    };
-
-    switch (block._type) {
-      case "richText":
-        return {
-          type: "richText",
-          html: portableTextToHtml(block.body, imageUrlFn),
-          maxWidth: block.maxWidth || undefined,
-          ...spacingProps,
-        };
-      case "richTextLeft":
-        return {
-          type: "richTextLeft",
-          html: portableTextToHtml(block.body, imageUrlFn),
-          maxWidth: block.maxWidth || undefined,
-          ...spacingProps,
-        };
-      case "richTextColumns":
-        return {
-          type: "richTextColumns",
-          html: portableTextToHtml(block.body, imageUrlFn),
-          ...spacingProps,
-        };
-      case "richTextWithImage":
-        if (!hasImageSource(block.image)) return null;
-        return {
-          type: "richTextWithImage",
-          html: portableTextToHtml(block.body, imageUrlFn),
-          image: urlFor(block.image).width(1600).url(),
-          imageAlt: block.imageAlt || "",
-          aspectRatio: resolveAspectRatio(block, "landscape"),
-          transparent: block.transparent || false,
-          objectFit: stegaClean(block.objectFit) || undefined,
-          position: hotspotPosition(block.image),
-          ...spacingProps,
-        };
-      case "fullWidthImage":
-        if (!hasImageSource(block.image)) return null;
-        return {
-          type: "fullWidthImage",
-          image: urlFor(block.image).width(2400).url(),
-          imageAlt: block.imageAlt || "",
-          aspectRatio: resolveAspectRatio(block, "wide"),
-          transparent: block.transparent || false,
-          position: hotspotPosition(block.image),
-          ...spacingProps,
-        };
-      case "imageGrid":
-        return {
-          type: "imageGrid",
-          images: (block.images ?? [])
-            .filter((img) => hasImageSource(img))
-            .map((img) => ({
-              src: urlFor(img).width(1400).url(),
-              alt: img.alt || block.defaultAlt || "",
-              transparent: img.transparent || false,
-              position: hotspotPosition(img),
-            })),
-          aspectRatio: resolveAspectRatio(block, "landscape"),
-          ...spacingProps,
-        };
-      case "stats":
-        return { type: "stats", items: block.items ?? [], ...spacingProps };
-      default:
-        return null;
-    }
-  })
-  .filter(
-    (block): block is ContentBlock =>
-      block !== null && (block.type !== "imageGrid" || block.images.length > 0),
-  );
-
-const siblingStudies = (allStudies ?? []).filter(
-  (entry) =>
-    entry?.slug &&
-    entry.slug !== study.slug &&
-    entry.title &&
-    hasImageSource(entry.image),
-);
-const upNextStudies = siblingStudies.slice(0, 2);
-const categories = Array.isArray(study.categories) ? study.categories : [];
-const galleryImages = (study.galleryImages ?? []).filter((img) =>
-  hasImageSource(img),
-);
+const jsonLd = await caseStudyJsonLd(study, siteOrigin);
 
 const seo = study.seo;
-const metaTitle = seo?.metaTitle || study.title || "Case Study";
+/* Head values are plumbing: the title/description fallbacks arrive
+   stega-encoded in draft mode, so clean them (seo.* is already clean). */
+const metaTitle = seo?.metaTitle || plainText(study.title) || "Case Study";
 const metaDescription =
-  seo?.metaDescription || study.description || "Preview this case study draft.";
+  seo?.metaDescription ||
+  plainText(study.description) ||
+  "Preview this case study draft.";
 const ogTitle = seo?.ogTitle || metaTitle;
 const ogDescription = seo?.ogDescription || metaDescription;
-const ogImageUrl = seo?.ogImage
-  ? urlFor(seo?.ogImage).width(1200).height(630).format("jpg").quality(90).url()
-  : hasImageSource(study.image)
-    ? urlFor(study.image)
-        .width(1200)
-        .height(630)
-        .format("jpg")
-        .quality(90)
-        .url()
-    : undefined;
+const ogImageUrl = await resolveImageUrl(seo?.ogImage ?? study.image, {
+  width: 1200,
+  height: 630,
+  format: "jpg",
+});
 ---
 
 <BaseLayout
@@ -241,7 +141,7 @@ const ogImageUrl = seo?.ogImage
                 variant="text"
                 href={study.liveUrl}
                 newTab
-                ariaLabel={`Visit ${study.client} website`}
+                ariaLabel={`Visit ${plainText(study.client)} website`}
               >
                 Visit Website
                 <svg
@@ -263,7 +163,7 @@ const ogImageUrl = seo?.ogImage
 
       <div class="case-study_detail_categories">
         {
-          categories.map((cat: string) => (
+          study.categories.map((cat) => (
             <span class="case-study_detail_category_tag">{cat}</span>
           ))
         }
@@ -280,11 +180,11 @@ const ogImageUrl = seo?.ogImage
           loop
         >
           {
-            galleryImages.map((img) => (
+            study.gallery.map((img) => (
               <Visual
-                src={urlFor(img).width(1400).url()}
-                alt={img.alt || study.galleryImagesAlt || ""}
-                position={hotspotPosition(img)}
+                src={imageSrc(img, { width: 1400 })}
+                alt={img.alt}
+                position={img.position}
               />
             ))
           }
@@ -293,29 +193,32 @@ const ogImageUrl = seo?.ogImage
     </Layout>
   </Section>
 
-  {contentBlocks.map((block) => <CaseStudyBlockRenderer block={block} />)}
+  {study.blocks.map((block) => <CaseStudyBlockRenderer block={block} />)}
 
-  {resolvedCtaSection && <SanityCtaSection cta={resolvedCtaSection} />}
+  {ctaSection && <ContentCtaSection cta={ctaSection} />}
 
   {
-    upNextStudies.length > 0 && (
+    upNext.length > 0 && (
       <Section padding="large" class="case-study_detail_up_next_wrap">
         <Heading tag="h2" variant="h3" marginBottom={0}>
           Up Next
         </Heading>
         <Grid largeColumns={2} mediumColumns={2} smallColumns={1}>
-          {upNextStudies.map((entry: any) => (
-            <CaseStudyCard
-              title={entry.title}
-              description={entry.description}
-              categories={entry.categories ?? []}
-              href={`/case-studies/${entry.slug}`}
-              image={urlFor(entry.image).width(1200).url()}
-              imageAlt={entry.imageAlt}
-              imagePosition={hotspotPosition(entry.image)}
-              date={entry.date}
-            />
-          ))}
+          {upNext.map(
+            (entry) =>
+              entry.image && (
+                <CaseStudyCard
+                  title={entry.title}
+                  description={entry.description}
+                  categories={entry.categories}
+                  href={`/case-studies/${entry.slug}`}
+                  image={imageSrc(entry.image, { width: 1200 })}
+                  imageAlt={entry.image.alt}
+                  imagePosition={entry.image.position}
+                  date={entry.date ?? undefined}
+                />
+              ),
+          )}
         </Grid>
       </Section>
     )

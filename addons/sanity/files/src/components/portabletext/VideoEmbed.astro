@@ -1,0 +1,22 @@
+---
+/**
+ * Video Embed — Portable Text custom type component. Renders the shared
+ * src/components/blog/VideoEmbed.astro.
+ *
+ * Node shape: { _type: "videoEmbed", url: string, caption?: string }
+ */
+import type { Props as PortableTextProps } from "astro-portabletext/types";
+import VideoEmbed from "@/components/blog/VideoEmbed.astro";
+
+interface VideoEmbedNode {
+  _type: "videoEmbed";
+  url: string;
+  caption?: string;
+}
+
+type Props = PortableTextProps<VideoEmbedNode>;
+
+const { node } = Astro.props;
+---
+
+<VideoEmbed url={node.url} caption={node.caption} />

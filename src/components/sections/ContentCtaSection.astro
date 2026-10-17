@@ -1,0 +1,136 @@
+---
+import type { HTMLAttributes } from "astro/types";
+/**
+ * ContentCtaSection — the bottom-of-page CTA whose copy and background come
+ * from the content source: a page's override, else the site default
+ * (`getCtaDefaults()` and the `ctaSection` of `getBlogPost()`,
+ * `getCaseStudy()` and `getProject()` in `@/lib/content`). Used on the blog
+ * post, case study and project templates and the blog and case study
+ * listing pages.
+ *
+ * It is a deliberate duplicate of CTASection.astro's composition (same
+ * Section + Layout card + Heading/Text/Button/Visual/Overlay primitives and
+ * the same data-fade-in hooks), so it renders identically. With a CMS the
+ * background is a CDN URL, which renders through Visual's remote image
+ * branch and so bypasses the runtime `/_image` Worker endpoint that fails on
+ * first load for locally-imported images on SSR routes.
+ *
+ * The Sanity add-on's source hands this section fully cleaned text (no
+ * stega) on purpose, so draft-mode rendering matches CTASection — see its
+ * src/sanity/lib/map/cta.ts.
+ *
+ * Keep this separate from CTASection.astro: CTASection stays the local-image
+ * component for static (industry/location) pages and can diverge
+ * independently.
+ */
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
+import Button from "@/components/ui/Button.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import { imageSrc, type CtaSectionData } from "@/lib/content";
+
+/* Single source for the padding union: Section.astro — never re-declare
+   these values locally; the copies this replaced had all drifted. */
+type PaddingValue = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ContentCtaSection** — bottom-of-page CTA built from content data.
+   * Pass `cta` (a `CtaSectionData` from `@/lib/content`). `padding`
+   * defaults to `'small'`; `paddingTop` / `paddingBottom` override one side.
+   */
+  docs?: string;
+
+  /**
+   * Set to `false` to skip rendering. Forwarded to Section, which then
+   * emits nothing. @default true
+   */
+  render?: boolean;
+
+  /** The CTA section to render: a page's override, else the site default. */
+  cta: CtaSectionData;
+
+  /** Section vertical padding. @default 'small' */
+  padding?: PaddingValue;
+
+  /** Override top padding only. */
+  paddingTop?: PaddingValue;
+
+  /** Override bottom padding only. */
+  paddingBottom?: PaddingValue;
+}
+
+const {
+  docs,
+  render = true,
+  cta,
+  padding = "small",
+  paddingTop,
+  paddingBottom,
+  ...rest
+} = Astro.props;
+
+// 1920 matches the project's full-width image convention; the Sanity URL
+// builder applies dpr(2) for retina, so the served asset is up to 3840px wide.
+const backgroundSrc = imageSrc(cta.backgroundImage, { width: 1920 });
+/* No background yet (a half-filled draft) skips the Visual through its
+   `render` prop rather than a conditional block: same markup, and a
+   conditional there changes the column's whitespace. */
+const hasBackground = backgroundSrc !== undefined;
+const imagePosition = cta.backgroundImage?.position;
+const imageAlt = cta.backgroundImage?.alt ?? "";
+const overlayStrength = cta.overlayStrength ?? 80;
+
+/* `?? undefined` because these are nullable until an editor fills them in,
+   and Button's href/ariaLabel take undefined rather than null. */
+const primaryLabel = cta.primaryButtonLabel ?? undefined;
+const primaryHref = cta.primaryButtonHref ?? undefined;
+const secondaryLabel = cta.secondaryButtonLabel ?? undefined;
+const secondaryHref = cta.secondaryButtonHref ?? undefined;
+const hasSecondary = Boolean(secondaryLabel && secondaryHref);
+---
+
+<Section
+  render={render}
+  padding={padding}
+  paddingTop={paddingTop}
+  paddingBottom={paddingBottom}
+  {...rest}
+>
+  <Layout variant="card">
+    <div class="u-display-contents u-theme-dark">
+      <Heading data-fade-in maxWidth="30ch">{cta.heading}</Heading>
+      <Text variant="large" data-fade-in data-delay="0.2">{cta.text}</Text>
+      <ButtonWrapper data-fade-in data-delay="0.3">
+        <Button href={primaryHref} ariaLabel={primaryLabel}>
+          {primaryLabel}
+        </Button>
+        {
+          hasSecondary && (
+            <Button
+              variant="secondary"
+              href={secondaryHref}
+              ariaLabel={secondaryLabel}
+            >
+              {secondaryLabel}
+            </Button>
+          )
+        }
+      </ButtonWrapper>
+    </div>
+    <Fragment slot="column2">
+      <Visual
+        render={hasBackground}
+        src={backgroundSrc ?? ""}
+        alt={imageAlt}
+        variant="background"
+        position={imagePosition}
+      />
+      <Overlay strength={overlayStrength} />
+    </Fragment>
+  </Layout>
+</Section>

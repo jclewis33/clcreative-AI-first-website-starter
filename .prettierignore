@@ -4,6 +4,7 @@ dist/
 node_modules/
 .vercel/
 .netlify/
+.parity/
 .wrangler/
 
 # Lockfiles — owned by the package manager
@@ -14,6 +15,14 @@ public/
 
 # Generated / vendored
 .agents/
+
+# Site content is edited by clients and editors, often outside an editor
+# that formats on save. Formatting must never fail CI (format:check) and
+# block a content deploy, so the content files are not Prettier-formatted.
+src/content/
+
+# Local agent scratch (plans, briefs, reports, review diffs) — not source
+.superpowers/
 
 # prettier-plugin-astro (0.14.1, latest as of writing) throws a SyntaxError
 # parsing the `is:inline` scripts in these two files - the GTM snippet and the

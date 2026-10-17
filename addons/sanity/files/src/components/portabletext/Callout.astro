@@ -1,0 +1,38 @@
+---
+/**
+ * Callout — Portable Text custom type component. Renders the shared
+ * src/components/blog/Callout.astro with the node's body (normal
+ * paragraphs only) in its slot.
+ *
+ * Node shape:
+ *   { _type: "callout", type: "tip" | "warning" | "info", body: PortableText[] }
+ */
+import type { Props as PortableTextProps } from "astro-portabletext/types";
+import { PortableText } from "astro-portabletext";
+import Callout from "@/components/blog/Callout.astro";
+import type { CalloutType } from "@/config/blog";
+
+interface CalloutNode {
+  _type: "callout";
+  type?: CalloutType;
+  body?: any[];
+}
+
+type Props = PortableTextProps<CalloutNode>;
+
+const { node } = Astro.props;
+
+const { default: LinkMark } = await import("./LinkMark.astro");
+const { default: InternalLinkMark } = await import("./InternalLinkMark.astro");
+
+const innerComponents = {
+  mark: {
+    link: LinkMark,
+    internalLink: InternalLinkMark,
+  },
+};
+---
+
+<Callout type={node.type || "tip"}>
+  {node.body && <PortableText value={node.body} components={innerComponents} />}
+</Callout>

@@ -1,0 +1,50 @@
+---
+/**
+ * BlogBody — renders a blog post's body (`post.body` from `getBlogPost()`
+ * in `@/lib/content`): a compiled MDX `Content` component, rendered with
+ * `mdxComponents` below, so a post body can use `<Callout>`,
+ * `<VideoEmbed>` and `<BlogCta id>` without importing them. Fenced code
+ * renders through the `pre` override (mdx/CodeBlock.astro).
+ *
+ * It emits only the body markup. The caller owns the wrapping prose
+ * element (`blog_post_prose u-rich-text` in BlogPostTemplate).
+ *
+ * This is a CMS seam: a content add-on with its own body format
+ * (registered in BlogBodyFormats, src/lib/content/types.ts) overwrites
+ * this file with a version that renders that format too.
+ */
+import Callout from "@/components/blog/Callout.astro";
+import VideoEmbed from "@/components/blog/VideoEmbed.astro";
+import MdxBlogCta from "@/components/blog/mdx/BlogCta.astro";
+import MdxCodeBlock from "@/components/blog/mdx/CodeBlock.astro";
+import type { BlogBodyContent } from "@/lib/content";
+
+interface Props {
+  /**
+   * **BlogBody** — renders `post.body` (MDX) from `getBlogPost()`. It
+   * emits no wrapper element; put it inside the prose container.
+   */
+  docs?: string;
+
+  /** The post body from `@/lib/content` (`post.body`). */
+  body: BlogBodyContent;
+}
+
+const { docs, body } = Astro.props;
+
+/* The components an MDX body may use by tag name, without an import, and
+   the `pre` override every fenced code block renders through. Keep the
+   list in step with the content guide (.claude/skills/content-files). */
+const mdxComponents = {
+  Callout,
+  VideoEmbed,
+  BlogCta: MdxBlogCta,
+  pre: MdxCodeBlock,
+};
+
+/* A component reference must be a capitalised identifier: Astro treats a
+   lowercase tag such as `body.Content` as an HTML element. */
+const { Content } = body;
+---
+
+<Content components={mdxComponents} />

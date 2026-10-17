@@ -42,7 +42,7 @@ interface Props {
   /**
    * **TestimonialsSlider props:**
    * - `testimonials` — array of { quote, name, role?, company?, avatar?, stars? }
-   * - `limit` — max testimonials to display (slices after Sanity ordering)
+   * - `limit` — max testimonials to display (slices after the source's ordering)
    * - `heading` — simple heading text (or use `heading` slot for custom markup)
    * - `eyebrow` — small label above heading (e.g. "Testimonials")
    * - `theme` — 'light' | 'dark' | 'brand'
@@ -60,7 +60,7 @@ interface Props {
    * **Slots:** `heading` — override the heading area with custom markup
    *
    * **Testimonial shape:** { quote, name, role?, company?, avatar?, stars? }
-   * - `avatar` accepts a URL string or Sanity image object
+   * - `avatar` accepts a URL string or a ContentImage (`@/lib/content`)
    * - `stars` — 1–5 (omit to hide stars)
    */
   docs?: string;
@@ -70,7 +70,7 @@ interface Props {
 
   /**
    * Max number of testimonials to display.
-   * Slices the array after any Sanity-side ordering.
+   * Slices the array after any source-side ordering.
    */
   limit?: number;
 
@@ -216,7 +216,15 @@ const showHeading = Astro.slots.has("heading") || heading;
   >
     {
       testimonials.map((testimonial) => (
-        <TestimonialCard {...testimonial} theme={invertCards} />
+        <TestimonialCard
+          quote={testimonial.quote}
+          name={testimonial.name}
+          role={testimonial.role}
+          company={testimonial.company}
+          avatar={testimonial.avatar}
+          stars={testimonial.stars}
+          theme={invertCards}
+        />
       ))
     }
   </Slider>

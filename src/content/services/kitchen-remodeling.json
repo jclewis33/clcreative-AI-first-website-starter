@@ -75,7 +75,9 @@
     {
       "text": "They kept us informed every day and finished the week they said they would.",
       "name": "Jordan P.",
-      "meta": "Kitchen remodel"
+      "meta": "Kitchen remodel",
+      "avatar": "./images/reviewer-jordan.webp",
+      "avatarAlt": "Jordan P."
     },
     {
       "text": "The layout change made the whole house feel bigger.",

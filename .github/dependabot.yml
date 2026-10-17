@@ -17,11 +17,12 @@ updates:
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
-    # No `ignore` entries: every dependency, Sanity included, tracks current
-    # versions through the cooldown above. A Sanity major still deserves a
-    # careful review before merging (re-verify the Studio plugins, the desk
-    # structure, and the visual-editing islands), but it arrives as a normal
-    # PR rather than being blocked at the config level.
+    # No `ignore` entries: every dependency (Sanity too, with the Sanity
+    # add-on) tracks current versions through the cooldown above. With the
+    # add-on, a Sanity major still deserves a careful review before merging
+    # (re-verify the Studio plugins, the desk structure, and the
+    # visual-editing islands), but it arrives as a normal PR rather than being
+    # blocked at the config level.
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

@@ -1,0 +1,24 @@
+---
+/**
+ * MDX `pre` override — wraps each highlighted code block in an MDX post in
+ * the same `figure.code_block_wrap` the Portable Text CodeBlock renders, so
+ * blog-post.css styles both alike. BlogBody passes it as `components.pre`;
+ * authors never name it. Highlighting happens at build time
+ * (`markdown.shikiConfig` in astro.config.mjs). The markup stays on one
+ * line: whitespace inside a pre is visible.
+ */
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"pre"> {
+  /**
+   * **MDX code block** — the `pre` of a fenced code block in an MDX post,
+   * wrapped in `figure.code_block_wrap`. Supplied by BlogBody; Shiki's
+   * `class`, `style`, `tabindex` and `data-language` pass through.
+   */
+  docs?: string;
+}
+
+const { docs, ...rest } = Astro.props;
+---
+
+<figure class="code_block_wrap"><pre {...rest}><slot /></pre></figure>
