@@ -9,8 +9,8 @@
  *   2. runs `npm run addon:sanity`; a second run must refuse
  *   3. checks the merge: package.json and wrangler.jsonc vars are exactly
  *      the starter's plus addons/sanity/manifest.json
- *   4. npm install, then check, check:hover, check:boundary, check:config
- *      and format:check
+ *   4. npm install, then check, check:hover, check:boundary, check:config,
+ *      check:content and format:check
  *   5. builds the placeholder project (an empty site), then
  *      PARITY_FIXTURES=sample, which must be equivalent to step 1
  *      (compare-dist --equivalent) and pass check:schema
@@ -34,7 +34,9 @@
  * failure names its step and the command or assertion that failed.
  *
  * A project without addons/sanity/ (a fork that deleted it) has nothing to
- * check: exit 0. Needs the network (npm). CI: the `addon-sanity` job.
+ * check: exit 0. So does a project that already has the add-on installed
+ * (its manifest's marker exists): its own CI checks it in Sanity mode.
+ * Needs the network (npm). CI: the `addon-sanity` job.
  */
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
@@ -61,11 +63,22 @@ const BASELINES = option("--baselines");
 const LOCKFILE = option("--lockfile");
 const KEEP = args.includes("--keep");
 
-if (!fs.existsSync(path.join(REPO, "addons", "sanity", "manifest.json"))) {
+const MANIFEST = path.join(REPO, "addons", "sanity", "manifest.json");
+if (!fs.existsSync(MANIFEST)) {
   console.log(
     "check-addon-sanity: no addons/sanity/ in this project, nothing to check.",
   );
   process.exit(0);
+}
+{
+  /** @type {{ marker?: unknown }} */
+  const { marker } = JSON.parse(fs.readFileSync(MANIFEST, "utf8"));
+  if (typeof marker === "string" && fs.existsSync(path.join(REPO, marker))) {
+    console.log(
+      `check-addon-sanity: the Sanity add-on is already installed in this project (${marker} exists), nothing to check. This check proves the add-on installs into the Files starter; an installed project is checked by its own CI.`,
+    );
+    process.exit(0);
+  }
 }
 for (const [flag, file] of [
   ["--baselines", BASELINES],
@@ -238,6 +251,7 @@ try {
       "check:hover",
       "check:boundary",
       "check:config",
+      "check:content",
       "format:check",
     ])
       await run(cwd, "npm", ["run", script]);

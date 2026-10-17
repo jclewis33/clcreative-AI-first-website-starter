@@ -35,6 +35,12 @@ const BASE = baseIdx >= 0 ? args[baseIdx + 1] : "http://localhost:4321";
 // fetching a server, e.g. `npm run check:schema -- --dist dist/client`.
 const distIdx = args.indexOf("--dist");
 const DIST = distIdx >= 0 ? args[distIdx + 1] : null;
+if (distIdx >= 0 && (!DIST || DIST.startsWith("--"))) {
+  console.error(
+    "check-schema: --dist needs a directory, e.g. --dist dist/client.",
+  );
+  process.exit(2);
+}
 
 // Static pages to validate the automatic baseline (WebPage / Breadcrumb /
 // LocalBusiness) schema. Add pages here that ship per-page Service/FAQ JSON-LD
