@@ -196,7 +196,7 @@ Radios sharing a `name` form the group.
 
 ```astro
 <FormCheckbox label="Email me updates" name="updates" variant="toggle" />
-<div class="u-display-flex u-flex-wrap u-gap-3">
+<div class="u-flex u-flex-wrap u-gap-3">
   <FormRadio
     label="Monthly"
     name="billing"

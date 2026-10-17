@@ -2,8 +2,8 @@
    LAYOUT UTILITIES — layer(utilities)
    ==========================================================================
    Owns:      .u-container* width variants, .u-content-wrapper alignment,
-              .u-grid-*, .u-display-*, .u-gap-*, .u-layout-column.
-   Does not:  --grid-* / --gap-* values these read → variables/layout.css
+              .u-grid-*, .u-flex-*, .u-gap-*, .u-layout-column.
+   Does not:  --grid-breakout / --space-* values these read → variables/
               --site-margin / --site-gutter        → variables/foundation.css
               per-tier column counts               → utilities/responsive-columns.css
               padding + margin                     → utilities/spacing.css

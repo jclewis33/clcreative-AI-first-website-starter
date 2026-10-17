@@ -1140,9 +1140,7 @@ const demoGallery = galleryEntries.map((entry) => ({
         Renders an SVG from src/assets inline, sized in em so it tracks the text
         beside it. Decorative by default — aria-hidden unless you pass a label.
       </Text>
-      <div
-        class="components_icon_row u-display-flex u-align-items-center u-gap-4"
-      >
+      <div class="components_icon_row u-flex u-align-center u-gap-4">
         <Icon src={arrowIcon} variant="small" />
         <Icon src={arrowIcon} />
         <Icon src={arrowIcon} variant="large" />
@@ -1801,7 +1799,7 @@ const demoGallery = galleryEntries.map((entry) => ({
         variant="toggle"
         checked
       />
-      <div class="u-display-flex u-flex-wrap u-gap-3">
+      <div class="u-flex u-flex-wrap u-gap-3">
         <FormRadio
           label="Monthly"
           name="v-billing"
