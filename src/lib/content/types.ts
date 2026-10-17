@@ -384,7 +384,10 @@ export interface ContentSource {
   ): Promise<TestimonialData | undefined>;
   /** Every project as a card, newest first. */
   getProjects(opts?: ContentOptions): Promise<ProjectCardData[]>;
-  /** Up to three featured projects. */
+  /**
+   * Up to three featured projects. Available for custom pages; unused by
+   * the starter's own pages (kept so every backend offers it).
+   */
   getFeaturedProjects(opts?: ContentOptions): Promise<ProjectCardData[]>;
   /** One project with up to three related cards; null when not found. */
   getProject(slug: string, opts?: ContentOptions): Promise<ProjectPage | null>;
@@ -420,7 +423,10 @@ export interface ContentSource {
     category: string,
     opts?: ContentOptions,
   ): Promise<BlogPostSummary[]>;
-  /** Every category name in use, de-duplicated. */
+  /**
+   * Every category name in use, de-duplicated. Available for custom pages;
+   * unused by the starter's own pages (kept so every backend offers it).
+   */
   getBlogCategories(opts?: ContentOptions): Promise<string[]>;
   /** getStaticPaths for /blog/category/[category] (one per category, plus "all"). */
   getBlogCategoryStaticPaths(): Promise<CategoryPath[]>;
