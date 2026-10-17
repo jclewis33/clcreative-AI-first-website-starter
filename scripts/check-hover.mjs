@@ -157,6 +157,37 @@ fs.writeFileSync(PROBE_PAGE, imports + "---\n" + body.join("\n") + "\n");
 
 /* ── Drive the language server ────────────────────────────────────────────── */
 
+/* The server is a separate process, and every way it can go wrong has to end
+   this script loudly: a server that exits, never answers or never gets ready
+   would otherwise leave a request awaiting forever, and Node then quits with
+   a bare "unsettled top-level await" (exit 13) that names no cause. */
+
+/** How long one request may take before the run fails. */
+const REQUEST_TIMEOUT_MS = 30_000;
+/** How long the server may take to return its first hover. */
+const READY_TIMEOUT_MS = 60_000;
+/** How much of the server's stderr to keep for a failure report. */
+const STDERR_TAIL_CHARS = 8_000;
+
+let stderrTail = "";
+let finished = false;
+
+/** Stop the server, remove the probe page, explain, exit 1. */
+function fail(message) {
+  if (finished) return;
+  finished = true;
+  if (server.exitCode === null && server.signalCode === null) server.kill();
+  fs.rmSync(PROBE_PAGE, { force: true });
+  console.error(`\n✗ check-hover: ${message}`);
+  const tail = stderrTail.trim();
+  console.error(
+    tail
+      ? `\nLanguage server stderr (last ${STDERR_TAIL_CHARS} characters):\n${tail}`
+      : "\n(The language server wrote nothing to stderr.)",
+  );
+  process.exit(1);
+}
+
 const server = spawn(
   process.execPath,
   [
@@ -167,89 +198,171 @@ const server = spawn(
 );
 
 let buf = Buffer.alloc(0);
+/** id → { resolve, reject, timer, method } */
 const pending = new Map();
 let nextId = 1;
+const send = (m) => {
+  const s = JSON.stringify({ jsonrpc: "2.0", ...m });
+  server.stdin.write(`Content-Length: ${Buffer.byteLength(s)}\r\n\r\n${s}`);
+};
 server.stdout.on("data", (chunk) => {
   buf = Buffer.concat([buf, chunk]);
   for (;;) {
     const h = buf.indexOf("\r\n\r\n");
     if (h === -1) return;
-    const len = Number(/Content-Length: (\d+)/.exec(buf.subarray(0, h))[1]);
+    const header = /Content-Length: (\d+)/.exec(buf.subarray(0, h).toString());
+    if (!header)
+      return fail(
+        `unreadable message header from the language server: ${JSON.stringify(buf.subarray(0, h).toString())}`,
+      );
+    const len = Number(header[1]);
     if (buf.length < h + 4 + len) return;
     const msg = JSON.parse(buf.subarray(h + 4, h + 4 + len).toString());
     buf = buf.subarray(h + 4 + len);
-    if (msg.id !== undefined && pending.has(msg.id)) {
-      pending.get(msg.id)(msg);
+    if (msg.method !== undefined && msg.id !== undefined) {
+      /* A request FROM the server (workspace/configuration,
+         client/registerCapability, …). Answer it, so the server never waits
+         on us; null is what a client without that feature replies. */
+      const items = msg.params?.items;
+      send({
+        id: msg.id,
+        result: Array.isArray(items) ? items.map(() => null) : null,
+      });
+    } else if (msg.id !== undefined && pending.has(msg.id)) {
+      const p = pending.get(msg.id);
       pending.delete(msg.id);
+      clearTimeout(p.timer);
+      if (msg.error)
+        p.reject(
+          new Error(
+            `${p.method} returned an error: ${JSON.stringify(msg.error)}`,
+          ),
+        );
+      else p.resolve(msg);
     }
   }
 });
-server.stderr.on("data", () => {});
-const send = (m) => {
-  const s = JSON.stringify({ jsonrpc: "2.0", ...m });
-  server.stdin.write(`Content-Length: ${Buffer.byteLength(s)}\r\n\r\n${s}`);
-};
+server.stderr.on("data", (chunk) => {
+  stderrTail = (stderrTail + chunk.toString()).slice(-STDERR_TAIL_CHARS);
+});
+server.on("error", (err) =>
+  fail(`the language server could not be started: ${err.message}`),
+);
+server.on("exit", (code, signal) => {
+  if (finished) return;
+  const how = signal ? `was killed by ${signal}` : `exited with code ${code}`;
+  const waiting = [...pending.values()].map((p) => p.method);
+  fail(
+    `the language server ${how} before the check finished` +
+      (waiting.length ? ` (waiting on: ${waiting.join(", ")})` : "") +
+      ".\nA SIGKILL (code 137), or a SIGABRT with 'heap out of memory' in the stderr below, means it ran out of memory.",
+  );
+});
+/* Writing to a server that has just died raises EPIPE on stdin; the 'exit'
+   handler above reports the real cause. */
+server.stdin.on("error", () => {});
+
 const request = (method, params) =>
-  new Promise((resolve) => {
+  new Promise((resolve, reject) => {
     const id = nextId++;
-    pending.set(id, resolve);
+    const timer = setTimeout(() => {
+      pending.delete(id);
+      reject(
+        new Error(
+          `${method} got no answer within ${REQUEST_TIMEOUT_MS / 1000}s — the language server is hung or overloaded`,
+        ),
+      );
+    }, REQUEST_TIMEOUT_MS);
+    pending.set(id, { resolve, reject, timer, method });
     send({ id, method, params });
   });
 
-await request("initialize", {
-  processId: process.pid,
-  rootUri: pathToFileURL(ROOT).href,
-  workspaceFolders: [{ uri: pathToFileURL(ROOT).href, name: "root" }],
-  initializationOptions: {
-    typescript: { tsdk: path.join(ROOT, "node_modules/typescript/lib") },
-  },
-  capabilities: {
-    textDocument: { hover: { contentFormat: ["markdown", "plaintext"] } },
-  },
-});
-send({ method: "initialized", params: {} });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const hoverText = (res) => res?.result?.contents?.value ?? "";
 
-const abs = path.resolve(PROBE_PAGE);
-const text = fs.readFileSync(abs, "utf8");
-const uri = pathToFileURL(abs).href;
-send({
-  method: "textDocument/didOpen",
-  params: { textDocument: { uri, languageId: "astro", version: 1, text } },
-});
-await new Promise((r) => setTimeout(r, 8000));
-
-const lines = text.split("\n");
-const failures = [];
-let checked = 0;
-for (let i = 0; i < lines.length; i++) {
-  const marker = /@probe (\S+)\|(\S+)\|(\S+) (\S+) \*\/\}/.exec(lines[i]);
-  if (!marker) continue;
-  const [, , file, prop, attr] = marker;
-  const col = lines[i + 1].indexOf(attr);
-  if (col === -1) continue;
-  checked++;
-  const res = await request("textDocument/hover", {
-    textDocument: { uri },
-    position: { line: i + 1, character: col + 1 },
+try {
+  await request("initialize", {
+    processId: process.pid,
+    rootUri: pathToFileURL(ROOT).href,
+    workspaceFolders: [{ uri: pathToFileURL(ROOT).href, name: "root" }],
+    initializationOptions: {
+      typescript: { tsdk: path.join(ROOT, "node_modules/typescript/lib") },
+    },
+    capabilities: {
+      textDocument: { hover: { contentFormat: ["markdown", "plaintext"] } },
+    },
   });
-  const hover = res?.result?.contents?.value ?? "";
-  const description = hover.replace(/```[\s\S]*?```/, "").trim();
-  if (!description) failures.push({ file, prop, hover: hover.split("\n")[1] });
-}
+  send({ method: "initialized", params: {} });
 
-server.kill();
-fs.unlinkSync(PROBE_PAGE);
+  const abs = path.resolve(PROBE_PAGE);
+  const text = fs.readFileSync(abs, "utf8");
+  const uri = pathToFileURL(abs).href;
+  send({
+    method: "textDocument/didOpen",
+    params: { textDocument: { uri, languageId: "astro", version: 1, text } },
+  });
 
-console.log(`check-hover: ${checked} documented props probed`);
-if (failures.length) {
-  console.error(`\n✗ ${failures.length} prop(s) lost their editor tooltip:\n`);
-  for (const f of failures) {
-    console.error(`  ${f.file}  →  ${f.prop}`);
-    console.error(`      hover shows: ${f.hover || "(nothing)"}`);
+  const lines = text.split("\n");
+  const probes = [];
+  for (let i = 0; i < lines.length; i++) {
+    const marker = /@probe (\S+)\|(\S+)\|(\S+) (\S+) \*\/\}/.exec(lines[i]);
+    if (!marker) continue;
+    const [, , file, prop, attr] = marker;
+    const col = lines[i + 1].indexOf(attr);
+    if (col === -1) continue;
+    probes.push({ file, prop, position: { line: i + 1, character: col + 1 } });
   }
-  console.error(
-    "\nSee the header of scripts/check-hover.mjs for the two known causes.",
-  );
-  process.exit(1);
+  const hover = (position) =>
+    request("textDocument/hover", { textDocument: { uri }, position });
+
+  /* Ready when the first probe's hover has any content (a type signature at
+     least — its description is what the loop below judges). Until the
+     TypeScript project has loaded, hovers come back empty. */
+  if (probes.length) {
+    const started = Date.now();
+    let attempts = 0;
+    for (;;) {
+      attempts++;
+      if (hoverText(await hover(probes[0].position))) break;
+      if (Date.now() - started > READY_TIMEOUT_MS)
+        throw new Error(
+          `the language server returned no hover for ${probes[0].file} → ${probes[0].prop} in ${READY_TIMEOUT_MS / 1000}s (${attempts} attempts) — it never finished loading the project`,
+        );
+      await sleep(1000);
+    }
+  }
+
+  const failures = [];
+  for (const p of probes) {
+    const hoverMd = hoverText(await hover(p.position));
+    const description = hoverMd.replace(/```[\s\S]*?```/, "").trim();
+    if (!description)
+      failures.push({
+        file: p.file,
+        prop: p.prop,
+        hover: hoverMd.split("\n")[1],
+      });
+  }
+
+  finished = true;
+  server.kill();
+  fs.unlinkSync(PROBE_PAGE);
+
+  console.log(`check-hover: ${probes.length} documented props probed`);
+  if (failures.length) {
+    console.error(
+      `\n✗ ${failures.length} prop(s) lost their editor tooltip:\n`,
+    );
+    for (const f of failures) {
+      console.error(`  ${f.file}  →  ${f.prop}`);
+      console.error(`      hover shows: ${f.hover || "(nothing)"}`);
+    }
+    console.error(
+      "\nSee the header of scripts/check-hover.mjs for the two known causes.",
+    );
+    process.exit(1);
+  }
+  console.log("✓ every documented prop shows its JSDoc on hover");
+} catch (err) {
+  fail(err instanceof Error ? err.message : String(err));
 }
-console.log("✓ every documented prop shows its JSDoc on hover");
