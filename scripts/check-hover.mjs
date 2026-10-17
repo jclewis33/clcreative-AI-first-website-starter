@@ -27,6 +27,11 @@
  *
  * Usage: npm run check:hover
  * Exits 1 if any prop documented in source shows no description on hover.
+ * Exits 3 if the language server itself fails (crashes, hangs, never gets
+ * ready) — `scripts/run-check-hover.mjs`, which `npm run check:hover` calls,
+ * retries once on exit 3, because the server's bundled Astro compiler (a Go
+ * WebAssembly program) occasionally dies on CI with "Go program has already
+ * exited" for reasons unrelated to the code under test.
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -166,26 +171,39 @@ fs.writeFileSync(PROBE_PAGE, imports + "---\n" + body.join("\n") + "\n");
 const REQUEST_TIMEOUT_MS = 30_000;
 /** How long the server may take to return its first hover. */
 const READY_TIMEOUT_MS = 60_000;
-/** How much of the server's stderr to keep for a failure report. */
+/** How much of the server's stderr to keep for a failure report: the start
+    (where a crash's first message, e.g. a Go panic, usually is) and the end. */
+const STDERR_HEAD_CHARS = 4_000;
 const STDERR_TAIL_CHARS = 8_000;
+/** Exit code for "the language server failed", distinct from 1 ("a tooltip
+    is missing") so the runner can retry only the former. */
+const EXIT_SERVER_FAILED = 3;
 
+let stderrHead = "";
 let stderrTail = "";
 let finished = false;
 
-/** Stop the server, remove the probe page, explain, exit 1. */
-function fail(message) {
+/** Stop the server, remove the probe page, explain, exit (default 3: the
+    server failed; tooltip failures exit 1 at the end of the script). */
+function fail(message, exitCode = EXIT_SERVER_FAILED) {
   if (finished) return;
   finished = true;
   if (server.exitCode === null && server.signalCode === null) server.kill();
   fs.rmSync(PROBE_PAGE, { force: true });
   console.error(`\n✗ check-hover: ${message}`);
+  const head = stderrHead.trim();
   const tail = stderrTail.trim();
-  console.error(
-    tail
-      ? `\nLanguage server stderr (last ${STDERR_TAIL_CHARS} characters):\n${tail}`
-      : "\n(The language server wrote nothing to stderr.)",
-  );
-  process.exit(1);
+  if (!head && !tail)
+    console.error("\n(The language server wrote nothing to stderr.)");
+  if (head)
+    console.error(
+      `\nLanguage server stderr (first ${STDERR_HEAD_CHARS} characters):\n${head}`,
+    );
+  if (tail && tail !== head)
+    console.error(
+      `\nLanguage server stderr (last ${STDERR_TAIL_CHARS} characters):\n${tail}`,
+    );
+  process.exit(exitCode);
 }
 
 const server = spawn(
@@ -243,7 +261,10 @@ server.stdout.on("data", (chunk) => {
   }
 });
 server.stderr.on("data", (chunk) => {
-  stderrTail = (stderrTail + chunk.toString()).slice(-STDERR_TAIL_CHARS);
+  const text = chunk.toString();
+  if (stderrHead.length < STDERR_HEAD_CHARS)
+    stderrHead = (stderrHead + text).slice(0, STDERR_HEAD_CHARS);
+  stderrTail = (stderrTail + text).slice(-STDERR_TAIL_CHARS);
 });
 server.on("error", (err) =>
   fail(`the language server could not be started: ${err.message}`),

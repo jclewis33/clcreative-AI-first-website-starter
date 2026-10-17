@@ -105,6 +105,18 @@ add-on rule file in `scripts/boundary/*.json` (the Sanity add-on ships
 
 ---
 
+## `check-hover.mjs` + `run-check-hover.mjs` — prop tooltips survive (`npm run check:hover`)
+
+Drives the real Astro language server over LSP and asks for the hover of every
+documented component prop, exactly as the editor would; exits 1 if any prop
+lost its JSDoc tooltip (the two known causes are in the script header).
+`npm run check:hover` goes through `run-check-hover.mjs`, which retries
+**once** when the language server itself fails (check-hover exits 3): its
+bundled Astro compiler, a Go WebAssembly program, occasionally dies on CI with
+"Go program has already exited" for reasons unrelated to the code. A missing
+tooltip is never retried, and a server that fails twice still fails the check;
+either way the failure prints the start and end of the server's stderr.
+
 ## `check-projects.mjs` — project/gallery formatter fixtures
 
 `node scripts/check-projects.mjs` runs fixture checks for the pure
