@@ -16,7 +16,7 @@
  *      (compare-dist --equivalent) and pass check:schema
  *   6. builds PARITY_FIXTURES=1 (the edge fixtures) and
  *      PARITY_FIXTURES=preview + check-stega-leaks; runs
- *      check-fixture-markdown
+ *      check-fixture-markdown and check-preview-session
  *
  * Every build sets KEEP_DEV_PAGES=1, so /components is covered.
  *
@@ -276,13 +276,14 @@ try {
   );
 
   await stage(
-    "6. edge fixtures, preview safety, the fixture converter",
+    "6. edge fixtures, preview safety, the fixture converter, preview sessions",
     async () => {
       await build({ PARITY_FIXTURES: "1" });
       await againstBaseline("fixtures");
       await build({ PARITY_FIXTURES: "preview" });
       await run(cwd, "node", ["scripts/check-stega-leaks.mjs", DIST]);
       await run(cwd, "node", ["scripts/check-fixture-markdown.mjs"]);
+      await run(cwd, "npm", ["run", "check:preview-session"]);
     },
   );
   ok = true;

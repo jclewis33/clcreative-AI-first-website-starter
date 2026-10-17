@@ -10,8 +10,9 @@
  *                  serialisation and the TypeGen types)
  *   source.ts    — composes the two into the ContentSource functions
  *
- * Stega (Presentation draft mode). With a perspective cookie, loadQuery
- * stega-encodes strings so Presentation can draw click-to-edit overlays over
+ * Stega (Presentation draft mode). When getDraftModeProps() passes a
+ * draft perspective (only with a verified signed preview session, see
+ * preview-session.ts), loadQuery stega-encodes strings so Presentation can draw click-to-edit overlays over
  * the text it renders. The mappers therefore clean ONLY values used as logic
  * or plumbing and leave display strings encoded:
  *   cleaned — slugs, URLs/hrefs, enums and categories, dates, numbers,
@@ -26,7 +27,7 @@
  * Consumers that need a display string as data (a search data-attribute)
  * call `plainText()` from @/lib/content — stegaClean here.
  *
- * Public routes are prerendered with no cookie, so nothing is encoded there;
+ * Public routes are prerendered with no session, so nothing is encoded there;
  * all of this only affects /preview/*.
  */
 import { stegaClean } from "@sanity/client/stega";

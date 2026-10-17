@@ -20,14 +20,14 @@ vars.
   of publishes into one Cloudflare build.
 - **Checks and tools:** the parity fixtures (`src/sanity/lib/fixtures/`),
   `scripts/check-stega-leaks.mjs`, `scripts/check-fixture-markdown.mjs`,
-  `scripts/compare-dist.mjs` with `--equivalent`,
+  `scripts/check-preview-session.mjs`, `scripts/compare-dist.mjs` with `--equivalent`,
   `scripts/migrate-webflow-blog.mjs`, and the boundary rule
   `scripts/boundary/sanity.json`.
 - **Docs:** the `sanity-and-preview` skill and the Studio-branding
   reference for `/setup`.
 - **Merged into your files** (from `manifest.json`): the Sanity and React
-  packages and the `studio`, `studio:local`, `typegen`, `check:fixtures`
-  and `check:stega` scripts in `package.json`; the
+  packages and the `studio`, `studio:local`, `typegen`, `check:fixtures`,
+  `check:stega` and `check:preview-session` scripts in `package.json`; the
   `PUBLIC_SANITY_PROJECT_ID` / `PUBLIC_SANITY_DATASET` vars in
   `wrangler.jsonc`; JSX and Sanity types in `tsconfig.json`; the Sanity
   block in `.env.example`; three `.gitignore` rules.
@@ -116,7 +116,9 @@ The chain is: **publish → debounce Worker (waits ~5 min) → Cloudflare deploy
 
 ### Draft preview (Presentation)
 
-Editors open the hosted Studio, click **Presentation**, and the iframe loads the **`/preview/<type>/<slug>`** SSR twin of the page — same template as the public route, fed by the Sanity source's content function, but fetched per-request so the `sanity-preview-perspective` cookie (set by `/api/draft-mode/enable`) can switch it to the drafts perspective. Public visitors get the prerendered pages and never have the cookie on an SSR route, so drafts can't leak; `/preview` is robots-disallowed, noindexed, and never edge-cached. Full flow is documented in the `sanity-and-preview` skill (`.claude/skills/sanity-and-preview/SKILL.md` once installed; [here](files/.claude/skills/sanity-and-preview/SKILL.md) in the starter repo), "How draft mode works".
+Editors open the hosted Studio, click **Presentation**, and the iframe loads the **`/preview/<type>/<slug>`** SSR twin of the page — same template as the public route, fed by the Sanity source's content function, but fetched per-request so a draft session can switch it to the drafts perspective. `/api/draft-mode/enable` validates Presentation's signed preview URL, then sets an httpOnly `starter-preview-session` cookie (an HMAC-signed expiry keyed with `SANITY_API_READ_TOKEN`, valid 8 hours; re-opening Presentation issues a fresh one) next to Sanity's `sanity-preview-perspective` cookie. Draft content and the read token are used only when that signed session verifies, so a hand-set perspective cookie gets published content, and the perspective itself is checked against an allowlist. Public visitors get the prerendered pages, so drafts can't leak; `/preview` is robots-disallowed, noindexed, and never edge-cached. Full flow is documented in the `sanity-and-preview` skill (`.claude/skills/sanity-and-preview/SKILL.md` once installed; [here](files/.claude/skills/sanity-and-preview/SKILL.md) in the starter repo), "How draft mode works".
+
+**Rolling it back:** the signed session replaced an insecure cookie check (any hand-set `sanity-preview-perspective` cookie used to unlock drafts). If it ever has to be undone, see "Rolling back the signed preview session" in the `sanity-and-preview` skill ([here](files/.claude/skills/sanity-and-preview/SKILL.md) in the starter repo) — it lists what to try first, the `git revert` for the starter, and the file-by-file change for an installed project.
 
 > Changing preview URLs or adding a previewable type touches `src/sanity/lib/resolve.ts`, which ships inside the **Studio** bundle — deploy the site first, then run `npx sanity deploy`, or Presentation keeps loading the old URLs.
 

@@ -28,7 +28,10 @@ export const FRAME_ANCESTORS = [
 /**
  * The cookie that marks a draft-preview session (set by
  * /api/draft-mode/enable). Middleware never caches a response to a request
- * that carries it.
+ * that carries it. A cache hint only, never authorization: draft content is
+ * gated on the signed httpOnly session cookie
+ * (src/sanity/lib/preview-session.ts), which the enable route sets
+ * alongside this one.
  * @type {string | null}
  */
 export const PREVIEW_COOKIE = perspectiveCookieName;

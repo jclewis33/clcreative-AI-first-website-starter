@@ -59,9 +59,12 @@ export interface ContentImage {
 /**
  * Per-call options. `preview` is the current request's draft-preview
  * state, opaque to everything but the backend that issued it: a CMS
- * add-on's preview routes read it off their own cookie and pass it, and
- * that backend returns draft content. Every other caller passes nothing
- * and gets published content; backends without drafts ignore it.
+ * add-on's preview routes get it from the add-on's own helper, and that
+ * backend returns draft content. Authenticating the draft session (the
+ * Sanity add-on verifies a signed httpOnly session cookie before setting
+ * `preview`) is the add-on's job — never build this from a raw cookie.
+ * Every other caller passes nothing and gets published content; backends
+ * without drafts ignore it.
  */
 export interface ContentOptions {
   preview?: string | undefined;

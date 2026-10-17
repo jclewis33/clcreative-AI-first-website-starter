@@ -31,6 +31,7 @@ jobs:
       - run: npm run check:boundary
       - run: npm run check:content
       - run: npm run check:fixtures
+      - run: npm run check:preview-session
       - run: npm run check
       - run: npm run check:hover
       - run: npm run build

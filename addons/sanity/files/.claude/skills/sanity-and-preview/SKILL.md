@@ -81,7 +81,7 @@ edit `FRAME_ANCESTORS` in
 builds the CSP that [src/middleware.ts](../../../src/middleware.ts) sends on
 SSR responses, and [public/_headers](../../../public/_headers) repeats it for
 static assets (`npm run check:config`, also run before every build, fails
-when the two drift). The enable route sets the cookie `SameSite=None; Secure`.
+when the two drift). The enable route sets its cookies `SameSite=None; Secure`.
 
 **Why a `/preview` tree instead of drafts on the public URLs:** with
 `@astrojs/cloudflare`, the request handler returns a matching static asset
@@ -129,27 +129,49 @@ Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.s
    `@sanity/preview-url-secret`'s `validatePreviewUrl` against the live
    dataset — if the request isn't from a legitimate Studio session, it
    returns 401.
-3. On success the route sets the `sanity-preview-perspective` cookie
-   (`perspectiveCookieName` from `@sanity/preview-url-secret/constants`) with
-   the editor's chosen perspective (default `"drafts"`) and redirects to the
-   target path.
+3. On success the route sets two cookies (both `SameSite=None; Secure`,
+   `path=/`, 8-hour `Max-Age`) and redirects to the target path:
+   - **`starter-preview-session`** (`PREVIEW_SESSION_COOKIE`), httpOnly —
+     the signed session that actually turns draft mode on:
+     `<expiry ms>.<base64url HMAC-SHA256>` over `"preview:" + expiry`,
+     keyed with `SANITY_API_READ_TOKEN`
+     ([src/sanity/lib/preview-session.ts](../../../src/sanity/lib/preview-session.ts),
+     Web Crypto, so it runs the same in the Worker, dev and Node). No new
+     secret to set up; rotating the token ends every open session.
+   - **`sanity-preview-perspective`** (`perspectiveCookieName` from
+     `@sanity/preview-url-secret/constants`), script-readable — the
+     editor's chosen perspective (default `"drafts"`), stored only after
+     `sanitizePerspective()` accepts it. `SanityVisualEditing` rewrites it
+     when the editor switches perspective, which is why it can never be
+     the thing that grants draft access.
 4. The Presentation iframe loads the `/preview/*` path. The preview route
    calls the same content function as its public twin (`getBlogPost()`,
    `getCaseStudy()` or `getProject()` from `@/lib/content`), passing
-   `getDraftModeProps(Astro)`
-   ([src/sanity/lib/draft-mode.ts](../../../src/sanity/lib/draft-mode.ts)),
-   which reads the cookie. The Sanity source forwards `{ preview }`
+   `await getDraftModeProps(Astro)`
+   ([src/sanity/lib/draft-mode.ts](../../../src/sanity/lib/draft-mode.ts)).
+   The decision is the pure `resolvePreview()` in `preview-session.ts`:
+   `{ preview: undefined }` (published, no token) unless the session
+   cookie verifies — a well-formed value with a valid signature
+   (constant-time `crypto.subtle.verify`), unexpired, and expiring no
+   later than one TTL (plus five minutes of clock skew) from now. With a session it
+   returns the perspective cookie run through `sanitizePerspective()` (an
+   allowlist: `drafts`, `published`, `previewDrafts`, `raw`, or a release
+   stack whose ids are letters, digits, `.`, `_`, `-`, at most 1024
+   characters serialized), defaulting to `"drafts"`. The Sanity source forwards `{ preview }`
    (the `ContentOptions` field) through its loaders
    ([src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)) into
    `loadQuery`
    ([src/sanity/lib/load-query.ts](../../../src/sanity/lib/load-query.ts)).
-   When present, `loadQuery` fetches drafts with stega encoding and
-   authenticates using `SANITY_API_READ_TOKEN`. Only the three preview twins
-   pass the cookie; public routes and sections call without it.
+   When `preview` passes `sanitizePerspective()` again, `loadQuery`
+   fetches in that perspective with stega encoding and authenticates
+   using `SANITY_API_READ_TOKEN`; any other value falls back to the
+   published, token-free fetch. Only the three preview twins pass it;
+   public routes and sections call without it.
 5. [src/components/global/CmsEditing.astro](../../../src/components/global/CmsEditing.astro)
    (the CMS editing seam, rendered by BaseLayout) checks
-   `Astro.cookies.has(perspectiveCookieName)` (guarded by
-   `Astro.isPrerendered`) and conditionally mounts
+   `(await getDraftModeProps(Astro)).preview !== undefined` (the same
+   gate, so the overlay shows exactly when drafts are fetched) and
+   conditionally mounts
    [src/components/SanityVisualEditing.tsx](../../../src/components/SanityVisualEditing.tsx)
    (click-to-edit overlays + history sync + content refresh) and
    [src/components/DisableDraftMode.tsx](../../../src/components/DisableDraftMode.tsx)
@@ -157,11 +179,28 @@ Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.s
 6. When an editor changes a field, `SanityVisualEditing`'s `refresh` callback
    reloads the page. The server re-fetches with drafts perspective.
 7. Clicking "Disable Draft Mode" (only visible outside the iframe) hits
-   `/api/draft-mode/disable`, which clears the cookie.
+   `/api/draft-mode/disable`, which clears both cookies.
 
-Public visitors get prerendered HTML with `published` content baked in, and
-never have the cookie on the SSR routes → `<SanityVisualEditing>` isn't
-mounted. **Drafts can't leak.**
+Public visitors get prerendered HTML with `published` content baked in. On
+the SSR `/preview/*` routes, only a request carrying a session signed with
+the server's token gets drafts: hand-setting
+`sanity-preview-perspective=drafts` (or anything else) does nothing, since
+the server never reads that cookie without a valid session. **Drafts can't
+leak** as long as `SANITY_API_READ_TOKEN` stays secret. Unit checks:
+`npm run check:preview-session`
+(`scripts/check-preview-session.mjs`: forged, tampered, expired,
+wrong-secret sessions and hostile perspective values).
+
+**Session lifetime.** A session lasts 8 hours
+(`PREVIEW_SESSION_TTL_MS`). After that the preview silently drops to
+published content and the overlays disappear; re-opening Presentation (or
+reloading it) calls `/api/draft-mode/enable` again and issues a fresh one.
+Middleware still keys its `private, no-cache` header on the perspective
+cookie (`PREVIEW_COOKIE` in `src/config/cms.shared.mjs`) — a cache hint,
+not authorization. The enable/disable responses (redirects carrying `Set-Cookie`)
+are `private, no-store` like every `/api/*` response
+([src/middleware.ts](../../../src/middleware.ts)), so no shared cache can
+replay a session cookie.
 
 The `/preview` tree is invisible to search and never edge-cached, via three
 required layers, all driven by `/preview` in `NOINDEX_PATHS`
@@ -182,6 +221,52 @@ Worker ([workers/rebuild-debounce/](../../../workers/rebuild-debounce/README.md)
 deploy hook → **one** build. The debounce matters because Sanity fires once per
 document — publishing a batch without it means one build per document.
 Publish-to-live lands ~5–20 minutes depending on the debounce window.
+
+### Rolling back the signed preview session (only if you must)
+
+The signed session (added October 2026, starter commits `677c07b` and
+`e9f2d28`, merged as "Sanity add-on: signed preview session") replaced an
+older, **insecure** check: draft mode used to turn on for any request with a
+`sanity-preview-perspective` cookie, so anyone could hand-set that cookie on
+`/preview/*` and read unpublished drafts fetched with the server's read
+token. **Rolling back reopens that hole.** Do it only to unblock editors while
+you fix the real problem, and roll forward again.
+
+Things to try before rolling back:
+
+- Editors see published content in Presentation: the session expired or was
+  never set. Re-open Presentation (it calls `/api/draft-mode/enable`).
+- Still nothing: check the response headers of `/api/draft-mode/enable` for
+  `Set-Cookie: starter-preview-session=…`. A browser blocking third-party
+  cookies in the Studio iframe (Safari, some incognito modes) drops it —
+  the old cookie had the same limitation.
+- A valid-looking session is rejected: `SANITY_API_READ_TOKEN` changed (it is
+  the signing key, so rotating it signs everyone out — expected) or the
+  server clock is off by more than 5 minutes.
+
+**In the starter repo** (has the history):
+
+```bash
+git log --oneline --grep "signed preview session"   # find the merge commit
+git revert -m 1 <merge-sha>                         # undo both commits
+```
+
+**In a project that installed the add-on** (no starter history), restore the
+old behaviour by hand:
+
+| File                                                                     | Change back to                                                                                                                           |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/sanity/lib/draft-mode.ts`                                           | `getDraftModeProps` is synchronous and returns `{ preview: cookies.get(perspectiveCookieName)?.value }` (undefined on prerendered pages) |
+| `src/pages/preview/**/[slug].astro` (3 files)                            | `getDraftModeProps(Astro)` without `await`                                                                                               |
+| `src/components/global/CmsEditing.astro`                                 | mount the editing islands when the perspective cookie is present                                                                         |
+| `src/pages/api/draft-mode/enable.ts`                                     | after `validatePreviewUrl`, set only `sanity-preview-perspective`                                                                        |
+| `src/pages/api/draft-mode/disable.ts`                                    | delete only `sanity-preview-perspective`                                                                                                 |
+| `src/sanity/lib/load-query.ts`                                           | `parsePerspective(preview) ?? "drafts"` instead of `sanitizePerspective`                                                                 |
+| `src/sanity/lib/preview-session.ts`, `scripts/check-preview-session.mjs` | delete, and remove the `check:preview-session` script + CI step                                                                          |
+
+Leave the core change in `src/middleware.ts` in place: every `/api/*`
+response is `Cache-Control: private, no-store`, which is correct with or
+without the session.
 
 ## Rendering model — prerender public, SSR only /preview, /api and /tools
 
@@ -423,11 +508,11 @@ route exists), **then the Studio**.
 
 ## Required env vars
 
-| Name                       | Where                                                                           | Purpose                                                                                                                                                                                                                                                                                  |
-| -------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PUBLIC_SANITY_PROJECT_ID` | `wrangler.jsonc` `vars` (mirrors `src/config/sanity.shared.mjs`) + local `.env` | Sanity project                                                                                                                                                                                                                                                                           |
-| `PUBLIC_SANITY_DATASET`    | `wrangler.jsonc` `vars` (mirrors `src/config/sanity.shared.mjs`) + local `.env` | Dataset name                                                                                                                                                                                                                                                                             |
-| `SANITY_API_READ_TOKEN`    | Cloudflare **encrypted secret** + local `.env`                                  | Viewer token — validates preview secrets, authenticates draft fetches. Never a plain wrangler var. Read at **runtime** with `getSecret()` from `astro:env/server` (load-query.ts, draft-mode/enable.ts) — `import.meta.env` is baked in at build, when the Worker secret does not exist. |
+| Name                       | Where                                                                           | Purpose                                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_SANITY_PROJECT_ID` | `wrangler.jsonc` `vars` (mirrors `src/config/sanity.shared.mjs`) + local `.env` | Sanity project                                                                                                                                                                                                                                                                                                                                            |
+| `PUBLIC_SANITY_DATASET`    | `wrangler.jsonc` `vars` (mirrors `src/config/sanity.shared.mjs`) + local `.env` | Dataset name                                                                                                                                                                                                                                                                                                                                              |
+| `SANITY_API_READ_TOKEN`    | Cloudflare **encrypted secret** + local `.env`                                  | Viewer token — validates preview secrets, authenticates draft fetches. Never a plain wrangler var. Read at **runtime** with `getSecret()` from `astro:env/server` (load-query.ts, draft-mode.ts, draft-mode/enable.ts; also the HMAC key for the signed preview session) — `import.meta.env` is baked in at build, when the Worker secret does not exist. |
 
 The Sanity project needs `https://www.example.com` (and
 `http://localhost:4321` for dev) as CORS origins with **Allow credentials**.
@@ -484,9 +569,11 @@ height, format })` (a plain URL string for raw tags, OG, JSON-LD and
   `src/sanity/lib/portable-text.ts`.
 - **Draft perspective.** Every content function takes a trailing
   `opts?: { preview }` (`ContentOptions`). Only the `/preview/*` twins pass
-  `getDraftModeProps(Astro)` (pass the **whole `Astro` global**, not
-  `Astro.cookies` — the helper checks `isPrerendered`); everything else is
-  prerendered and calls without it.
+  `await getDraftModeProps(Astro)` (async: it verifies the signed preview
+  session; pass the **whole `Astro` global**, not `Astro.cookies` — the
+  helper checks `isPrerendered`); everything else is prerendered and calls
+  without it. Never build `preview` from a cookie yourself — that skips
+  the session check.
 
 **Inside `src/sanity/`** the layers run one way:
 `page-data.ts` (GROQ loaders, `loadQuery`, placeholder-safe listings and
@@ -537,7 +624,7 @@ are the Sanity side.
    `@/lib/content`.
 5. **`/preview` SSR twin** — `src/pages/preview/<type>/[slug].astro` with
    `prerender = false`, same template, same function plus
-   `getDraftModeProps(Astro)`.
+   `await getDraftModeProps(Astro)`.
 6. **Presentation location** — a `defineLocations` entry in `resolve.ts`
    pointing at `/preview/<type>/<slug>`, followed by a Studio deploy.
 
@@ -648,7 +735,7 @@ instead (each step names what the installer or setup put there):
    `sanity.cli.ts`, `sanity-typegen.json`, `skills-lock.json`,
    `workers/rebuild-debounce/`, `scripts/boundary/sanity.json`,
    `scripts/check-stega-leaks.mjs`, `scripts/check-fixture-markdown.mjs`,
-   `scripts/migrate-webflow-blog.mjs`, `src/config/sanity.shared.mjs`,
+   `scripts/check-preview-session.mjs`, `scripts/migrate-webflow-blog.mjs`, `src/config/sanity.shared.mjs`,
    `.claude/skills/sanity-and-preview/` and
    `.claude/skills/setup/references/studio-branding.md` (plus the ignored
    `.sanity/` cache, if present).
@@ -662,7 +749,8 @@ instead (each step names what the installer or setup put there):
 3. Remove what the manifest merged (`addons/sanity/manifest.json` in the
    starter repo lists it): its `dependencies`, `devDependencies`
    (`csv-parse`) and scripts (`studio`, `studio:local`, `typegen`,
-   `check:fixtures`, `check:stega`) in `package.json`; the
+   `check:fixtures`, `check:stega`, `check:preview-session`) in
+   `package.json`; the
    `PUBLIC_SANITY_PROJECT_ID` / `PUBLIC_SANITY_DATASET` vars and the
    comment above them in `wrangler.jsonc`; `jsx` and `jsxImportSource` in
    `tsconfig.json`, with `types` back to `[]`; the Sanity block in

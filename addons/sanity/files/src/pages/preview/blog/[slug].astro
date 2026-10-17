@@ -22,7 +22,7 @@ import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
-const data = await sanity.getBlogPost(slug, getDraftModeProps(Astro));
+const data = await sanity.getBlogPost(slug, await getDraftModeProps(Astro));
 if (!data) return Astro.redirect("/404");
 ---
 

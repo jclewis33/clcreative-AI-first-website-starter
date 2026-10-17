@@ -20,7 +20,7 @@ import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
-const data = await sanity.getProject(slug, getDraftModeProps(Astro));
+const data = await sanity.getProject(slug, await getDraftModeProps(Astro));
 if (!data) return Astro.redirect("/404");
 ---
 
