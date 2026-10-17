@@ -40,7 +40,7 @@
  *   node scripts/setup.mjs                      # interactive prompts
  *   node scripts/setup.mjs --config answers.json --yes   # non-interactive (skill)
  *   node scripts/setup.mjs --dry-run            # show what would change, write nothing
- *   node scripts/setup.mjs --force          pass --force to the add-on installer (dirty/non-git tree)
+ *   node scripts/setup.mjs --force              # pass --force to the add-on installer (dirty/non-git tree)
  *
  * Zero dependencies — uses only node: built-ins (keeps the supply-chain surface
  * small, matching this repo's security posture).
@@ -394,6 +394,26 @@ async function assertContentSource(source) {
     throw new Error(
       `${ADDON_DIR}/ is missing. Copy it from the starter repo, commit, and run setup again. Nothing was written.`,
     );
+  if (source === "sanity" && !installed) preflightInstall();
+}
+
+/**
+ * Ask the installer whether it would run (its own --dry-run: clean tree,
+ * valid manifest, nothing in the way), so a refusal comes before the
+ * remaining questions rather than after them.
+ */
+function preflightInstall() {
+  const r = spawnSync(
+    process.execPath,
+    [p("scripts/addon-sanity.mjs"), "--dry-run", ...(FORCE ? ["--force"] : [])],
+    { cwd: ROOT, encoding: "utf8" },
+  );
+  if (r.status !== 0) {
+    process.stderr.write(r.stderr);
+    throw new Error(
+      "the add-on installer stopped (see above). Nothing was written.",
+    );
+  }
 }
 
 async function gatherInteractive() {
@@ -928,6 +948,10 @@ and the placeholder photography (src/assets/placeholder-images/).
     ok(`${ch.rel} ${c.dim}→ ${ch.edits.join(", ") || "rewritten"}${c.reset}`);
   }
   if (totalEdits === 0) warn("Nothing changed (values already match).");
+  if (DRY_RUN && sanity && !installed)
+    info(
+      `  The installer adds PUBLIC_SANITY_PROJECT_ID and PUBLIC_SANITY_DATASET to ${WRANGLER} (and .env.example); a real run then sets them to "${answers.sanityProjectId}" and "${answers.sanityDataset}".`,
+    );
 
   if (DRY_RUN) {
     await ensureEnv(answers);
@@ -969,6 +993,11 @@ and the placeholder photography (src/assets/placeholder-images/).
       ? [
           `The ${c.bold}Sanity branch${c.reset}: .claude/skills/setup/references/sanity.md (project, Studio, Viewer token in .env, CORS, typegen)`,
           `Deploy the ${c.bold}rebuild-debounce Worker${c.reset} + wire the publish webhook (workers/rebuild-debounce/README.md) — REQUIRED: content pages are prerendered, so a publish reaches the live site only through this rebuild chain`,
+        ]
+      : []),
+    ...(sanity && !installed
+      ? [
+          `${c.bold}Commit now.${c.reset} The add-on install and setup's own writes are one change, so reverting it would also undo setup. To remove the add-on later, follow its removal steps (the sanity-and-preview skill installed with it, or "Remove it" in addons/sanity/README.md in the starter repo) instead of the installer's "revert the install commit" advice above.`,
         ]
       : []),
     `Finish the dashboard steps in ${c.bold}docs/new-project-checklist.md${c.reset} (Cloudflare secrets + WAF + domain, GitHub Dependabot)`,
