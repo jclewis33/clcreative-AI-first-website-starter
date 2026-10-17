@@ -3,8 +3,7 @@
    ==========================================================================
    Owns:      .u-padding-*, .u-margin-* — the classes that apply the scale.
    Does not:  --space-* / --section-space-* values → variables/spacing.css
-              --gap-* and .u-gap-*                 → variables/layout.css
-                                                     + utilities/layout.css
+              .u-gap-* (reads --space-*)          → utilities/layout.css
               first/last-child margin removal      → utilities/margin-trim.css
 
    Retuning the whole scale is a variables/spacing.css job. Adding a new

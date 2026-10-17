@@ -9,7 +9,7 @@ description: The long-form CSS system reference for this starter. Load BEFORE st
 
 CSS custom properties are defined in `src/styles/variables/`. Use them for:
 typography, color, page structure (section padding, container widths), spacing
-(`--space-*`, `--section-space-*`, `--gap-*`), layout (grid counts, max
+(`--space-*`, `--section-space-*`; the `u-gap-*` utilities read `--space-*`), layout (grid counts, max
 widths), and misc (radius `--radius-*`, border width). Use custom styles or
 utility classes (not variables) for `display`, width/height, opacity,
 overflow.

@@ -4,7 +4,7 @@
    Owns:      --viewport-min/max, --site-margin, --site-gutter,
               --radius-*, --border-width-*, --focus-*.
    Does not:  --space-1..8, --section-space-*  → variables/spacing.css
-              --grid-*, --gap-*                → variables/layout.css
+              --grid-breakout                  → variables/layout.css
               --text-*, --font-*               → variables/typography.css
               any color                        → variables/colors.css
 

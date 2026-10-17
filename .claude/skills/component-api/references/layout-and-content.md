@@ -167,7 +167,7 @@ Responsive CSS grid via container-query column counts.
 
 | Prop            | Type                     | Default     | Description                                     |
 | --------------- | ------------------------ | ----------- | ----------------------------------------------- |
-| `largeColumns`  | `1`–`6`                  | `3`         | Columns at default size                         |
+| `largeColumns`  | `1`–`12`                 | `3`         | Columns at default size                         |
 | `mediumColumns` | `0`–`4`                  | `2`         | Columns at container ≤ 928px (`0` = inherit)    |
 | `smallColumns`  | `0`–`2`                  | `1`         | Columns at container ≤ 560px                    |
 | `xsmallColumns` | `0`–`1`                  | `0`         | Columns at container ≤ 320px                    |
