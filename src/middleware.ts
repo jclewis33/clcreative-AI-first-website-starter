@@ -13,9 +13,9 @@ import { checkToolsAuth, isToolsPath } from "@/lib/tools-auth";
 // two drift.
 
 // Runs for every SSR route — with the content routes prerendered, that means
-// only /api/* and the /preview/* draft-preview tree (prerendered pages are
-// served as static assets by the assets binding and get their headers from
-// public/_headers instead; Astro still invokes middleware during the
+// only /api/* (plus the /preview/* draft-preview tree when the Sanity add-on
+// is installed). Prerendered pages are served as static assets by the
+// assets binding and get their headers from public/_headers instead; Astro still invokes middleware during the
 // prerender build phase — guard against that to avoid touching cookies).
 /* While texting is off, swap call-back promises for message wording. */
 const swapCopy = !SITE.smsOptIn && SMS_OFF_COPY_SWAPS.length > 0;

@@ -197,6 +197,52 @@ try {
       assert.match(r.stdout, /installer adds PUBLIC_SANITY_PROJECT_ID/);
       assert.equal(git(dir, "status", "--porcelain"), "");
     }
+    // A minimal Sanity config keeps every current id and the API version
+    // (the *.shared.mjs constants resolve as defaults), dry-run and real.
+    {
+      const dir = copy();
+      const SHARED = "src/config/sanity.shared.mjs";
+      const lines = () =>
+        [
+          read(dir, "src/config/site.shared.mjs").match(/SITE_URL = [^\n]*/),
+          ...["SANITY_PROJECT_ID", "SANITY_DATASET", "SANITY_API_VERSION"].map(
+            (name) =>
+              read(dir, `addons/sanity/files/${SHARED}`).match(
+                new RegExp(`${name} = [^\\n]*`),
+              ),
+          ),
+        ].map((m) => m?.[0] ?? "");
+      const before = lines();
+      for (const line of before) assert.ok(line && !/= ""/.test(line));
+      const dry = setup(dir, { contentSource: "sanity" }, "--dry-run");
+      assert.equal(dry.status, 0, out(dry));
+      assert.equal(git(dir, "status", "--porcelain"), "");
+      const r = setup(dir, { contentSource: "sanity" });
+      assert.equal(r.status, 0, out(r));
+      const names = [
+        "SITE_URL",
+        "SANITY_PROJECT_ID",
+        "SANITY_DATASET",
+        "SANITY_API_VERSION",
+      ];
+      const rels = ["src/config/site.shared.mjs", SHARED, SHARED, SHARED];
+      names.forEach((name, i) => {
+        const got = read(dir, rels[i]).match(new RegExp(`${name} = [^\\n]*`));
+        assert.equal(got?.[0], before[i]);
+      });
+    }
+    // An explicit empty string for a required key is refused, nothing written.
+    {
+      const dir = copy();
+      const r = setup(dir, { contentSource: "sanity", sanityApiVersion: "" });
+      assert.equal(r.status, 1);
+      assert.match(r.stderr, /sanityApiVersion is required/);
+      assert.equal(git(dir, "status", "--porcelain"), "");
+      const u = setup(dir, { contentSource: "files", siteUrl: "" });
+      assert.equal(u.status, 1);
+      assert.match(u.stderr, /siteUrl is required/);
+      assert.equal(git(dir, "status", "--porcelain"), "");
+    }
     // A fork set up as Files has no addons/: this check must still pass there.
     {
       const dir = copy();

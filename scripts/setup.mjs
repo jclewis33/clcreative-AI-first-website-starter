@@ -181,7 +181,13 @@ function replaceJsonString(src, key, value) {
 }
 
 const currentString = (src, key) => {
-  const m = src.match(new RegExp(`\\b${key}\\s*:\\s*"((?:\\\\.|[^"])*)"`));
+  // `key: "…"` (site.ts, cli) or `export const KEY = "…"` / the env-overridable
+  // `KEY = process.env.KEY || "…"` (the *.shared.mjs files).
+  const m = src.match(
+    new RegExp(
+      `\\b${key}\\s*[:=]\\s*(?:process\\.env\\.${key}\\s*\\|\\|\\s*)?"((?:\\\\.|[^"])*)"`,
+    ),
+  );
   return m ? m[1].replace(/\\"/g, '"') : "";
 };
 const currentJson = (src, key) => {
@@ -216,6 +222,7 @@ const PROMPTS = [
   // (see docs/new-project-checklist.md §4a "Staging-first deploy").
   {
     key: "siteUrl",
+    required: true,
     q: "Site URL (no trailing slash — a staging *.workers.dev URL is fine pre-launch)",
     from: [SHARED, "SITE_URL"],
     validate: (v) =>
@@ -279,30 +286,35 @@ const PROMPTS = [
   // ── Sanity ────────────────────────────────────────────────────────────────
   {
     key: "sanityProjectId",
+    required: true,
     q: "Sanity project id",
     from: [SANITY_SHARED, "SANITY_PROJECT_ID"],
     cms: "sanity",
   },
   {
     key: "sanityDataset",
+    required: true,
     q: "Sanity dataset",
     from: [SANITY_SHARED, "SANITY_DATASET"],
     cms: "sanity",
   },
   {
     key: "sanityApiVersion",
+    required: true,
     q: "Sanity API version (date)",
     from: [SANITY_SHARED, "SANITY_API_VERSION"],
     cms: "sanity",
   },
   {
     key: "studioHost",
+    required: true,
     q: "Sanity studioHost (the <host>.sanity.studio subdomain)",
     from: [CLI, "studioHost"],
     cms: "sanity",
   },
   {
     key: "workerName",
+    required: true,
     q: "Cloudflare Worker name",
     from: [WRANGLER, "name"],
     json: true,
@@ -440,6 +452,10 @@ async function gatherInteractive() {
         value = def;
         break;
       }
+      if (prompt.required && !value) {
+        warn("This value is required");
+        continue;
+      }
       if (prompt.validate && value) {
         const res = prompt.validate(value);
         if (res !== true) {
@@ -470,10 +486,18 @@ async function gatherFromConfig(path) {
   // Fill from JSON, falling back to the current file value for anything omitted.
   for (const prompt of PROMPTS) {
     if (prompt.cms && prompt.cms !== answers.contentSource) continue;
+    if (prompt.required && json[prompt.key] === "")
+      throw new Error(
+        `${prompt.key} is required and can't be an empty string (leave it out to keep the current value). Nothing was written.`,
+      );
     answers[prompt.key] =
       json[prompt.key] !== undefined && json[prompt.key] !== ""
         ? json[prompt.key]
         : await resolveDefault(prompt, cache);
+    if (prompt.required && !answers[prompt.key])
+      throw new Error(
+        `${prompt.key} is required, but the project has no current value for it. Nothing was written.`,
+      );
     // Checked as soon as it's known, before any Sanity default is read.
     if (prompt.key === "contentSource")
       await assertContentSource(

@@ -1,11 +1,10 @@
 # Security headers for static assets served directly by the Cloudflare
 # Workers assets binding (prerendered pages, /_astro/*, images), which bypass
-# the worker. SSR responses get the same set from src/middleware.ts — keep
-# both in sync. CSP frame-ancestors (not X-Frame-Options) lets the hosted
-# Sanity Studio iframe site pages for draft preview while blocking every other
-# origin. The Core-app Studio is sandboxed under *.sanity.studio nested inside
-# the www.sanity.io dashboard shell, so both families are allowed (Sanity's
-# documented set); localhost:3333 is local `sanity dev`.
+# the worker. SSR responses get the same list from src/middleware.ts, which
+# reads src/config/headers.shared.mjs; `npm run check:config` fails when this
+# file drifts from it. CSP frame-ancestors (not X-Frame-Options) lets only
+# this site frame its pages; a CMS add-on widens it for its editor (the Sanity
+# add-on adds the hosted Studio's origins).
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
