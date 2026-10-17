@@ -256,7 +256,8 @@ export function planInstall({ root, addonDir, force = false }) {
 
   const filesDir = path.join(addonDir, "files");
   const overlay = overlayFiles(filesDir);
-  const clash = overlay.find((rel) => MERGED.includes(rel));
+  // Lower-cased: on a case-insensitive filesystem Package.json IS package.json.
+  const clash = overlay.find((rel) => MERGED.includes(rel.toLowerCase()));
   if (clash)
     throw new AddonError(
       `the add-on overlay must not contain ${clash}: put those changes in manifest.json.`,
@@ -277,6 +278,10 @@ export function planInstall({ root, addonDir, force = false }) {
   // 1. The overlay.
   for (const rel of overlay) {
     insideRoot(root, rel, "the overlay file");
+    if (exists(rel) && fs.lstatSync(path.join(root, rel)).isDirectory())
+      throw new AddonError(
+        `the overlay file ${rel} would replace a directory in the project. Move or remove that directory first.`,
+      );
     const content = fs.readFileSync(path.join(filesDir, rel));
     if (!exists(rel)) writes.push({ path: rel, content, action: "add" });
     else if (!fs.readFileSync(path.join(root, rel)).equals(content))
@@ -407,8 +412,30 @@ export function planInstall({ root, addonDir, force = false }) {
       }
     });
 
-  // Every write target, re-checked as a whole (merged files included).
-  for (const write of writes) insideRoot(root, write.path, "the write target");
+  // Every write target, re-checked as a whole (merged files included): no
+  // symlink on the way, no existing file where a directory must go, and
+  // no delete entry that would remove it (deletes run first).
+  for (const write of writes) {
+    insideRoot(root, write.path, "the write target");
+    const parts = write.path.split("/");
+    for (let i = 1; i < parts.length; i++) {
+      const dir = parts.slice(0, i).join("/");
+      if (exists(dir) && !fs.statSync(path.join(root, dir)).isDirectory())
+        throw new AddonError(
+          `${write.path} can't be written: ${dir} is a file in the project, not a directory.`,
+        );
+    }
+    const lower = write.path.toLowerCase();
+    const removed = deletes.find(
+      (rel) =>
+        lower === rel.toLowerCase() ||
+        lower.startsWith(`${rel.toLowerCase()}/`),
+    );
+    if (removed)
+      throw new AddonError(
+        `the manifest deletes ${removed}, which the install also writes (${write.path}). Drop one of them.`,
+      );
+  }
 
   return { manifest, writes, deletes, notes };
 }

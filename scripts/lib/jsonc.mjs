@@ -284,10 +284,47 @@ function hasComment(text, tokens, from, to) {
 }
 
 /**
- * Edits that add `entries` before the closing brace of the object at
- * tokens[open], one per line, indented one level past the line that opens
- * it. An object written on one line is first expanded, one member per
- * line, as Prettier would print it once a member is added.
+ * A plain object as Prettier prints it, opening on its own line indented
+ * `outer`. `comment` becomes `//` lines above the member `commentKey`;
+ * with `child`, the member `child.key` is printed by this same function
+ * and the comment goes inside it, above `child.commentKey`.
+ * @param {Record<string, unknown>} obj
+ * @param {string} outer
+ * @param {boolean} trailingCommas
+ * @param {string | undefined} comment
+ * @param {string | undefined} commentKey
+ * @param {{ key: string, commentKey: string | undefined }} [child]
+ * @returns {string}
+ */
+function renderObject(obj, outer, trailingCommas, comment, commentKey, child) {
+  const keys = Object.keys(obj);
+  if (keys.length === 0) return "{}";
+  const indent = `${outer}  `;
+  /** @type {string[]} */
+  const lines = [];
+  keys.forEach((k, i) => {
+    const last = i === keys.length - 1;
+    if (comment && k === commentKey)
+      lines.push(...comment.split("\n").map((line) => `${indent}// ${line}`));
+    if (child && k === child.key) {
+      const comma = trailingCommas || !last ? "," : "";
+      const value = renderObject(
+        /** @type {Record<string, unknown>} */ (obj[k]),
+        indent,
+        trailingCommas,
+        comment,
+        child.commentKey,
+      );
+      lines.push(`${indent}${JSON.stringify(k)}: ${value}${comma}`);
+    } else lines.push(...renderMember(k, obj[k], indent, trailingCommas, last));
+  });
+  return `{\n${lines.join("\n")}\n${outer}}`;
+}
+
+/**
+ * Edits that add `entries` before the closing brace of the multi-line
+ * object at tokens[open], one per line, indented one level past the line
+ * that opens it. (setMembers re-prints one-line objects whole instead.)
  * @param {string} text
  * @param {Token[]} tokens
  * @param {number} open
@@ -299,15 +336,14 @@ function insertInto(text, tokens, open, entries, { trailingCommas, comment }) {
   const close = closing(tokens, open);
   const outer = lineIndent(text, tokens[open].start);
   const indent = `${outer}  `;
-  const added = [
+  const lines = [
     ...(comment
       ? comment.split("\n").map((line) => `${indent}// ${line}`)
       : []),
     ...entries.flatMap(([k, v], i) =>
       renderMember(k, v, indent, trailingCommas, i === entries.length - 1),
     ),
-  ];
-  const lines = added.join("\n");
+  ].join("\n");
   if (close === open + 1)
     return [
       {
@@ -316,27 +352,6 @@ function insertInto(text, tokens, open, entries, { trailingCommas, comment }) {
         text: `\n${lines}\n${outer}`,
       },
     ];
-  const between = text.slice(tokens[open].start, tokens[close].end);
-  if (!between.includes("\n")) {
-    // One line: rewrite the object with each existing member on its own line.
-    if (hasComment(text, tokens, open, close))
-      throw new Error(
-        `Can't add to the one-line object at offset ${tokens[open].start}: it holds a comment`,
-      );
-    /** @type {string[]} */
-    const existing = [];
-    for (const [, v] of members(tokens, open))
-      existing.push(
-        `${indent}${text.slice(tokens[v - 2].start, tokens[valueEnd(tokens, v)].end)},`,
-      );
-    return [
-      {
-        start: tokens[open].start,
-        end: tokens[close].end,
-        text: `{\n${[...existing, ...added].join("\n")}\n${outer}}`,
-      },
-    ];
-  }
   /** @type {Edit[]} */
   const edits = [];
   const last = tokens[close - 1];
@@ -359,8 +374,13 @@ function insertInto(text, tokens, open, entries, { trailingCommas, comment }) {
  * member when it is absent. An entry whose value is already equal is left
  * alone; a different value is replaced in place, printed as Prettier
  * would; a missing entry is added before the object's closing brace, with
- * `comment` as `//` lines above the first added entry. CRLF line endings
- * are kept.
+ * `comment` as `//` lines above the first added entry (above the new
+ * member itself when `key` is created). When the object — or the root
+ * holding it — is written on one line, that container is re-printed whole,
+ * one member per line, as Prettier prints it once it grows; a one-line
+ * container holding a comment is refused rather than losing it. CRLF line
+ * endings are kept. The result is re-parsed and must equal the intended
+ * merge, or this throws.
  * @param {string} text
  * @param {string} key
  * @param {Record<string, unknown>} entries
@@ -368,35 +388,79 @@ function insertInto(text, tokens, open, entries, { trailingCommas, comment }) {
  * @returns {{ text: string, changed: string[] }}
  */
 export function setMembers(text, key, entries, options) {
+  const { trailingCommas, comment } = options;
   const crlf = text.includes("\r\n");
   const src = crlf ? text.replace(/\r\n/g, "\n") : text;
   const tokens = tokenize(src);
   if (tokens[0]?.type !== "{")
     throw new Error("The top level must be an object");
+  const rootClose = closing(tokens, 0);
+  /** @type {Record<string, unknown>} */
+  const root = JSON.parse(toJson(src, tokens, 0, rootClose));
   const at = members(tokens, 0).get(key);
-  /** @type {Edit[]} */
-  let edits = [];
+  if (at !== undefined && tokens[at].type !== "{")
+    throw new Error(`"${key}" is not an object`);
+  /** @type {Record<string, unknown>} */
+  const current =
+    at === undefined ? {} : /** @type {Record<string, unknown>} */ (root[key]);
+
   /** @type {string[]} */
   const changed = [];
-  if (at === undefined) {
-    if (Object.keys(entries).length === 0) return { text, changed };
-    edits = insertInto(src, tokens, 0, [[key, entries]], options);
-    changed.push(...Object.keys(entries).map((k) => `added ${k}`));
+  /** @type {string[]} */
+  const added = [];
+  for (const [k, value] of Object.entries(entries)) {
+    if (!Object.hasOwn(current, k)) {
+      added.push(k);
+      changed.push(`added ${k}`);
+    } else if (JSON.stringify(current[k]) !== JSON.stringify(value))
+      changed.push(`updated ${k}`);
+  }
+  if (changed.length === 0) return { text, changed };
+  const merged = { ...current, ...entries };
+  const expected = { ...root, [key]: merged };
+
+  const oneLine = (/** @type {number} */ open) =>
+    !src
+      .slice(tokens[open].start, tokens[closing(tokens, open)].end)
+      .includes("\n");
+  /** @type {Edit[]} */
+  const edits = [];
+  const reprint = oneLine(0) ? 0 : at !== undefined && oneLine(at) ? at : -1;
+  if (reprint !== -1) {
+    const close = closing(tokens, reprint);
+    if (hasComment(src, tokens, reprint, close))
+      throw new Error(
+        `Can't edit the one-line object at offset ${tokens[reprint].start}: it holds a comment`,
+      );
+    const outer = lineIndent(src, tokens[reprint].start);
+    edits.push({
+      start: tokens[reprint].start,
+      end: tokens[close].end,
+      text:
+        reprint === 0
+          ? at === undefined
+            ? renderObject(expected, outer, trailingCommas, comment, key)
+            : renderObject(
+                expected,
+                outer,
+                trailingCommas,
+                comment,
+                undefined,
+                {
+                  key,
+                  commentKey: added[0],
+                },
+              )
+          : renderObject(merged, outer, trailingCommas, comment, added[0]),
+    });
+  } else if (at === undefined) {
+    edits.push(...insertInto(src, tokens, 0, [[key, entries]], options));
   } else {
-    if (tokens[at].type !== "{") throw new Error(`"${key}" is not an object`);
-    const current = members(tokens, at);
-    /** @type {Array<[string, unknown]>} */
-    const missing = [];
+    const positions = members(tokens, at);
     for (const [k, value] of Object.entries(entries)) {
-      const v = current.get(k);
-      if (v === undefined) {
-        missing.push([k, value]);
-        changed.push(`added ${k}`);
-        continue;
-      }
+      const v = positions.get(k);
+      if (v === undefined || !changed.includes(`updated ${k}`)) continue;
       const end = valueEnd(tokens, v);
-      const existing = JSON.parse(toJson(src, tokens, v, end));
-      if (JSON.stringify(existing) === JSON.stringify(value)) continue;
       const lineStart = src.lastIndexOf("\n", tokens[v].start - 1) + 1;
       edits.push({
         start: tokens[v].start,
@@ -406,17 +470,36 @@ export function setMembers(text, key, entries, options) {
           tokens[v].start - lineStart,
           lineIndent(src, tokens[v].start),
           tokens[end + 1]?.type === "," ? 1 : 0,
-          options.trailingCommas,
+          trailingCommas,
         ),
       });
-      changed.push(`updated ${k}`);
     }
-    if (missing.length)
-      edits.push(...insertInto(src, tokens, at, missing, options));
+    if (added.length)
+      edits.push(
+        ...insertInto(
+          src,
+          tokens,
+          at,
+          added.map((k) => [k, entries[k]]),
+          options,
+        ),
+      );
   }
-  if (edits.length === 0) return { text, changed };
+
   let out = src;
   for (const edit of edits.sort((a, b) => b.start - a.start))
     out = out.slice(0, edit.start) + edit.text + out.slice(edit.end);
+  let result;
+  try {
+    result = parseJsonc(out);
+  } catch (err) {
+    throw new Error(
+      `setMembers produced unparsable output (a bug): ${/** @type {Error} */ (err).message}`,
+    );
+  }
+  if (JSON.stringify(result) !== JSON.stringify(expected))
+    throw new Error(
+      `setMembers produced output that does not match the intended merge of "${key}" (a bug); nothing was written`,
+    );
   return { text: crlf ? out.replace(/\n/g, "\r\n") : out, changed };
 }

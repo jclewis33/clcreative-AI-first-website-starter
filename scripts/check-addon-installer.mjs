@@ -255,6 +255,54 @@ try {
     await assertPrettier(text, "wrangler.jsonc");
   }
 
+  // Updating and adding in one call inside a one-line object.
+  {
+    const src = `{\n  "vars": { "A": "1", "C": "3" },\n  "name": "site",\n}\n`;
+    const { text, changed } = setMembers(
+      src,
+      "vars",
+      { A: "changed-longer-value", B: "2" },
+      { trailingCommas: true },
+    );
+    assert.deepEqual(changed, ["updated A", "added B"]);
+    assert.equal(
+      text,
+      `{\n  "vars": {\n    "A": "changed-longer-value",\n    "C": "3",\n    "B": "2",\n  },\n  "name": "site",\n}\n`,
+    );
+    await assertPrettier(text, "wrangler.jsonc");
+  }
+
+  // One-line containers, re-printed whole: Prettier-clean in both formats.
+  for (const [file, trailingCommas] of /** @type {const} */ ([
+    ["wrangler.jsonc", true],
+    ["tsconfig.json", false],
+  ])) {
+    // Sources already Prettier-clean for their format.
+    const c = trailingCommas ? "," : "";
+    for (const [src, entries] of /** @type {const} */ ([
+      [
+        `{\n  "vars": { "A": "1", "C": "3" },\n  "name": "site"${c}\n}\n`,
+        { A: "x", B: "2" },
+      ],
+      [`{ "vars": { "A": "1" } }\n`, { A: "1", B: "2" }],
+      [`{ "vars": { "A": "1" } }\n`, { A: "2" }],
+      [`{ "vars": {} }\n`, { B: "2" }],
+      [`{ "name": "site", "assets": { "dir": "./d" } }\n`, { B: ["x", "y"] }],
+      [`{\n  "vars": { "A": "1" }${c}\n}\n`, { A: { deep: [1, 2] }, B: "2" }],
+      [`{ "vars": { "A": "1" } }\n`, { A: { deep: { x: "y" } } }],
+    ])) {
+      const { text } = setMembers(src, "vars", entries, {
+        trailingCommas,
+        comment: "Added.",
+      });
+      assert.deepEqual(parseJsonc(text).vars, {
+        ...parseJsonc(src).vars,
+        ...entries,
+      });
+      await assertPrettier(text, file);
+    }
+  }
+
   // A one-line object holding a comment is refused, not mangled.
   assert.throws(
     () =>
@@ -683,6 +731,58 @@ try {
       parseJsonc(fs.readFileSync(path.join(root, "wrangler.jsonc"), "utf8"))
         .vars,
       { PUBLIC_DEMO_ID: "demo" },
+    );
+  }
+
+  // An overlay file over a project directory refuses (no EISDIR mid-apply).
+  {
+    const { root, addonDir } = fixture();
+    fs.mkdirSync(path.join(root, "docs"));
+    fs.writeFileSync(path.join(root, "docs", "a.md"), "a\n");
+    fs.writeFileSync(path.join(addonDir, "files", "docs"), "a file\n");
+    git(root, "add", "-A");
+    git(root, "commit", "-qm", "overlay file over a dir");
+    assert.throws(
+      () => planInstall({ root, addonDir }),
+      refused(/overlay file docs would replace a directory/),
+    );
+  }
+
+  // A write under a path that is a file in the project refuses up front.
+  {
+    const { root, addonDir } = fixture();
+    fs.writeFileSync(path.join(root, "src", "demo"), "a file\n");
+    git(root, "add", "-A");
+    git(root, "commit", "-qm", "file where a dir goes");
+    assert.throws(
+      () => planInstall({ root, addonDir }),
+      refused(/src\/demo\/marker\.ts can't be written: src\/demo is a file/),
+    );
+  }
+
+  // The merged-file clash check ignores case (Package.json is package.json
+  // on a case-insensitive filesystem).
+  {
+    const { root, addonDir } = fixture();
+    fs.writeFileSync(path.join(addonDir, "files", "Package.json"), "{}\n");
+    git(root, "add", "-A");
+    git(root, "commit", "-qm", "case clash");
+    assert.throws(
+      () => planInstall({ root, addonDir }),
+      refused(/must not contain Package\.json/),
+    );
+  }
+
+  // A delete entry that is, or holds, a write target refuses.
+  for (const rel of ["public", "public/_headers", "PUBLIC"]) {
+    const { root, addonDir } = fixtureWith((m) => {
+      m.delete = [rel];
+    });
+    if (rel === "PUBLIC" && !fs.existsSync(path.join(root, "PUBLIC"))) continue;
+    assert.throws(
+      () => planInstall({ root, addonDir }),
+      refused(/the manifest deletes [\s\S]*also writes \(public\/_headers\)/),
+      `delete ${rel}`,
     );
   }
 
