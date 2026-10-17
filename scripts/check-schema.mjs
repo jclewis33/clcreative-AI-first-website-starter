@@ -10,6 +10,9 @@
  * Override the base URL with --base (default http://localhost:4321):
  *   node scripts/check-schema.mjs --base https://www.example.com
  *
+ * Or check a build without a server:
+ *   npm run build && node scripts/check-schema.mjs --dist dist/client
+ *
  * What it checks per page:
  *   - Every <script type="application/ld+json"> parses as valid JSON
  *   - Each top-level node has @context and @type
@@ -28,6 +31,10 @@ import path from "node:path";
 const args = process.argv.slice(2);
 const baseIdx = args.indexOf("--base");
 const BASE = baseIdx >= 0 ? args[baseIdx + 1] : "http://localhost:4321";
+// --dist <dir>: read the built pages (<dir>/<path>/index.html) instead of
+// fetching a server, e.g. `npm run check:schema -- --dist dist/client`.
+const distIdx = args.indexOf("--dist");
+const DIST = distIdx >= 0 ? args[distIdx + 1] : null;
 
 // Static pages to validate the automatic baseline (WebPage / Breadcrumb /
 // LocalBusiness) schema. Add pages here that ship per-page Service/FAQ JSON-LD
@@ -73,21 +80,32 @@ const c = (color, s) => `${COLORS[color]}${s}${COLORS.reset}`;
 let pageFailures = 0;
 
 for (const pagePath of PAGES) {
-  const url = `${BASE}${pagePath}`;
-  console.log(`\n${c("bold", c("cyan", `→ ${url}`))}`);
+  const where = DIST
+    ? path.join(DIST, pagePath, "index.html")
+    : `${BASE}${pagePath}`;
+  console.log(`\n${c("bold", c("cyan", `→ ${where}`))}`);
 
   let html;
   try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.log(c("red", `  ✗ fetch failed: HTTP ${res.status}`));
-      pageFailures++;
-      continue;
+    if (DIST) {
+      html = fs.readFileSync(where, "utf8");
+    } else {
+      const res = await fetch(where);
+      if (!res.ok) {
+        console.log(c("red", `  ✗ fetch failed: HTTP ${res.status}`));
+        pageFailures++;
+        continue;
+      }
+      html = await res.text();
     }
-    html = await res.text();
   } catch (err) {
     console.log(
-      c("red", `  ✗ fetch failed: ${err.message} — is the dev server running?`),
+      c(
+        "red",
+        DIST
+          ? `  ✗ not built: ${err.message}`
+          : `  ✗ fetch failed: ${err.message} — is the dev server running?`,
+      ),
     );
     pageFailures++;
     continue;

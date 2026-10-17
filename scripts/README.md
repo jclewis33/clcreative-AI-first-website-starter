@@ -67,6 +67,8 @@ npm run dev            # in one terminal
 npm run check:schema   # in another (defaults to http://localhost:4321)
 # or point at a deployed site:
 node scripts/check-schema.mjs --base https://www.example.com
+# or read a build, no server (what CI runs):
+npm run build && npm run check:schema -- --dist dist/client
 ```
 
 To validate a new static page, add its path to the `STATIC_PAGES` array at the

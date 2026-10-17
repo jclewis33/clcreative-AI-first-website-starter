@@ -82,6 +82,8 @@ marketing/service/landing page.
 ```bash
 npm run dev               # in one terminal
 npm run check:schema      # in another
+# or, with no server, against a build (what CI runs):
+npm run build && npm run check:schema -- --dist dist/client
 ```
 
 [scripts/check-schema.mjs](../../../scripts/check-schema.mjs) validates the

@@ -24,10 +24,11 @@ All commands are run from the root of the project, from a terminal:
 | `npm run preview`             | Preview your build locally, before deploying (Astro's local server — unrelated to the `/preview` draft-preview routes)                 |
 | `npm run studio`              | Run Sanity Studio locally at `localhost:3333` (Presentation iframes **production**)                                                    |
 | `npm run studio:local`        | Studio at `localhost:3333` with Presentation iframing the **local** site (`localhost:4321`) — use this while developing routes/preview |
-| `npm run check:schema`        | Validate JSON-LD on key pages (dev server must be running)                                                                             |
+| `npm run check:schema`        | Validate JSON-LD on key pages (dev server running, or `-- --dist dist/client` after a build)                                           |
 | `npm run check:config`        | Verify `wrangler.jsonc` matches `src/config/site.shared.mjs` (also runs automatically before `build`)                                  |
 | `npm run check:content`       | Prove bad content fails the build, naming the file and field                                                                           |
 | `npm run check:content-build` | After a build: check coming-soon studies, OG/JSON-LD image URLs, resized local images and TOC anchors                                  |
+| `npm run check:addon`         | Install the Sanity add-on into a scratch copy and prove it checks, builds and matches the Files site (slow; needs the network)         |
 | `npm run astro ...`           | Run CLI commands like `astro add`, `astro check`                                                                                       |
 
 ## 📝 Content

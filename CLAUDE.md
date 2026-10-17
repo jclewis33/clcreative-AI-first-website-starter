@@ -322,7 +322,8 @@ files read only through `@/lib/content`) ·
 `npm run check:content` (bad content must fail `astro sync` naming file and field) ·
 `npm run check:content-build` (after a build: coming-soon studies, OG/JSON-LD
 image URLs, resized local images, TOC anchors) ·
-`npm run check:schema` (JSON-LD, needs dev server) · `npm run build` ·
+`npm run check:schema` (JSON-LD; needs dev server, or `-- --dist dist/client`
+after a build) · `npm run build` ·
 `npm run format:check` · `npm run typegen` (after any GROQ/schema change).
 
 ## Anti-patterns

@@ -1,0 +1,63 @@
+# Checks-only CI for a site with the Sanity add-on installed — deploys are
+# handled by Cloudflare Workers Builds, not Actions. The add-on installer
+# put this file here in place of the starter's workflow.
+#
+# The build reads Sanity (the placeholder project id builds an empty site).
+# The fixture builds exercise the templates and draft-preview safety with
+# no Sanity project.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, development]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run check:config
+      - run: npm run check:boundary
+      - run: npm run check:content
+      - run: npm run check:fixtures
+      - run: npm run check
+      - run: npm run check:hover
+      - run: npm run build
+      # Draft preview must never leak stega into an attribute, the <title>
+      # or JSON-LD (scripts/check-stega-leaks.mjs).
+      - run: KEEP_DEV_PAGES=1 PARITY_FIXTURES=preview npm run build && npm run check:stega
+
+  # Fails on any critical advisory in production dependencies.
+  #
+  # The gate sits at `critical` rather than `high` because the standing high
+  # advisories in this tree are unfixable from here: they come in through the
+  # Sanity CLI's dependency chain (adm-zip, js-yaml — build tooling, never
+  # shipped in the deployed Worker) and through Astro's own sharp/vite deps,
+  # where npm's only "fix" is a major downgrade of sanity or astro. Tighten
+  # this back to `--audit-level=high` once upstream ships patched releases;
+  # check with `npm audit --omit=dev --audit-level=high`.
+  #
+  # This gate is about the deployed runtime, so it always runs with
+  # `--omit=dev`. Review any NEW high advisory on its merits rather than
+  # assuming this threshold covers it.
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=critical

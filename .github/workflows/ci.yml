@@ -1,5 +1,14 @@
 # Checks-only CI — deploys are handled by Cloudflare Workers Builds, not
-# Actions. The build reads content from src/content (the Files source).
+# Actions.
+#
+#   checks        the site as it ships: content from src/content (Files).
+#   addon-sanity  installs the Sanity add-on (addons/sanity/) into a
+#                 scratch copy and proves it type-checks, builds, and
+#                 renders the sample content like the Files site
+#                 (scripts/check-addon-sanity.mjs). A fork that deleted
+#                 addons/ passes it with nothing to check.
+#
+# Installing the Sanity add-on replaces this file with its own workflow.
 name: CI
 
 on:
@@ -24,10 +33,23 @@ jobs:
       - run: npm run format:check
       - run: npm run check:config
       - run: npm run check:boundary
+      - run: npm run check:addon-installer
       - run: npm run check:content
       - run: npm run check
+      - run: npm run check:hover
       - run: npm run build
       - run: npm run check:content-build
+      - run: npm run check:schema -- --dist dist/client
+
+  addon-sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: node scripts/check-addon-sanity.mjs
 
   # Fails on any critical advisory in production dependencies.
   #

@@ -1,11 +1,10 @@
 ---
 /**
  * CmsEditing — the CMS editing seam. BaseLayout renders it once, at the
- * end of `<body>`. This is the Sanity add-on's version: in draft mode (the
- * Presentation perspective cookie is set, which happens only on SSR
- * routes) it mounts the visual-editing overlay and the "Disable Draft
- * Mode" button. The Sanity add-on's version, installed over the Files one
- * (which renders nothing) by `npm run addon:sanity`.
+ * end of `<body>`. In draft mode (the Presentation perspective cookie is
+ * set, which happens only on SSR routes) it mounts the visual-editing
+ * overlay and the "Disable Draft Mode" button. Installed over the Files
+ * version (which renders nothing) by `npm run addon:sanity`.
  *
  * As a seam rather than a page-building component, it is exempt from the
  * new-component checklist's demo (src/pages/components.astro) and

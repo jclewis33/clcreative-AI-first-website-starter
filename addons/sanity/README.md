@@ -72,7 +72,8 @@ didn't keep that commit.
 
 The overlay in `files/` is not built or type-checked in place
 (`tsconfig.json` excludes `addons/`). `node scripts/check-addon-sanity.mjs`
-installs it into a scratch copy of the repo and runs the checks and
-builds there; `--keep` leaves the copy for working in. Edit there, run
+(`npm run check:addon`) installs it into a scratch copy of the repo and
+runs the checks and builds there; `--keep` leaves the copy for working
+in. Edit there, run
 `npm run typegen` there after a schema or query change, and copy the
 changed files back under `files/`. CI runs the same script on every PR.
