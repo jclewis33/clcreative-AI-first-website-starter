@@ -13,8 +13,12 @@
  *                     `key` (creating it), editing only the text it must:
  *                     comments and formatting elsewhere are untouched
  *
- * Output follows Prettier (measured on 3.6): a .jsonc file ends every
- * member with a comma (`trailingCommas: true`); a .json file never does.
+ * Output follows Prettier (measured on 3.6, printWidth 80): a .jsonc file
+ * ends every member with a comma (`trailingCommas: true`); a .json file
+ * never does. Values are printed as Prettier prints them (printValue), a
+ * one-line object that gains a member is expanded, and CRLF files stay
+ * CRLF. scripts/check-addon-installer.mjs checks all of it against
+ * Prettier itself.
  */
 
 /**
@@ -163,8 +167,94 @@ function lineIndent(text, offset) {
   return /^[ \t]*/.exec(text.slice(start))?.[0] ?? "";
 }
 
+/* ── Printing values the way Prettier prints JSON ─────────────────────── */
+
+/** Prettier's default printWidth; the repo's config doesn't change it for JSON. */
+const WIDTH = 80;
+
+/** @param {unknown} v */
+const isObject = (v) => !!v && typeof v === "object" && !Array.isArray(v);
+
 /**
- * `"key": value` as lines; a plain-object value opens its own block.
+ * Entry count of an array or object; -1 for anything else.
+ * @param {unknown} v
+ */
+const size = (v) =>
+  Array.isArray(v)
+    ? v.length
+    : isObject(v)
+      ? Object.keys(/** @type {object} */ (v)).length
+      : -1;
+
+/**
+ * `value` as Prettier would print it, starting at `column` on a line
+ * indented `indent`, with `suffix` characters (a comma) after it on the
+ * same line. Non-empty objects always open their own block — Prettier
+ * keeps an object expanded when its source breaks after the `{`, so that
+ * form is stable. Arrays stay on one line when they fit and nothing in
+ * them forces a break; otherwise one element per line, or, for an
+ * all-number array, as many per line as fit (Prettier's "fill"). An array
+ * of two or more arrays, or of two or more objects, each with two or more
+ * entries, always breaks (measured on Prettier 3.6).
+ * @param {unknown} value
+ * @param {number} column
+ * @param {string} indent
+ * @param {number} suffix
+ * @param {boolean} trailingCommas
+ * @returns {string}
+ */
+function printValue(value, column, indent, suffix, trailingCommas) {
+  if (isObject(value)) {
+    const entries = Object.entries(/** @type {object} */ (value));
+    if (entries.length === 0) return "{}";
+    const inner = `${indent}  `;
+    const lines = entries.map(([k, v], i) => {
+      const last = i === entries.length - 1;
+      const comma = trailingCommas || !last ? "," : "";
+      const head = `${inner}${JSON.stringify(k)}: `;
+      return `${head}${printValue(v, head.length, inner, comma.length, trailingCommas)}${comma}`;
+    });
+    return `{\n${lines.join("\n")}\n${indent}}`;
+  }
+  if (!Array.isArray(value)) return JSON.stringify(value);
+  if (value.length === 0) return "[]";
+  const inner = `${indent}  `;
+  const forced =
+    value.some((v) => isObject(v) && size(v) > 0) ||
+    (value.length > 1 &&
+      (value.every((v) => Array.isArray(v) && v.length > 1) ||
+        value.every((v) => isObject(v) && size(v) > 1)));
+  if (!forced) {
+    const flat = `[${value
+      .map((v) => printValue(v, 0, "", 0, trailingCommas))
+      .join(", ")}]`;
+    if (!flat.includes("\n") && column + flat.length + suffix <= WIDTH)
+      return flat;
+  }
+  const end = trailingCommas ? "," : "";
+  if (value.every((v) => typeof v === "number")) {
+    /** @type {string[]} */
+    const rows = [];
+    let row = "";
+    value.forEach((v, i) => {
+      const item = `${JSON.stringify(v)}${i === value.length - 1 ? end : ","}`;
+      if (row && inner.length + row.length + 1 + item.length > WIDTH) {
+        rows.push(row);
+        row = item;
+      } else row = row ? `${row} ${item}` : item;
+    });
+    rows.push(row);
+    return `[\n${rows.map((r) => `${inner}${r}`).join("\n")}\n${indent}]`;
+  }
+  const lines = value.map((v, i) => {
+    const comma = i === value.length - 1 ? end : ",";
+    return `${inner}${printValue(v, inner.length, inner, comma.length, trailingCommas)}${comma}`;
+  });
+  return `[\n${lines.join("\n")}\n${indent}]`;
+}
+
+/**
+ * `"key": value` as lines.
  * @param {string} key
  * @param {unknown} value
  * @param {string} indent
@@ -174,29 +264,30 @@ function lineIndent(text, offset) {
  */
 function renderMember(key, value, indent, trailingCommas, last) {
   const comma = trailingCommas || !last ? "," : "";
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    const entries = Object.entries(value);
-    return [
-      `${indent}${JSON.stringify(key)}: {`,
-      ...entries.flatMap(([k, v], i) =>
-        renderMember(
-          k,
-          v,
-          `${indent}  `,
-          trailingCommas,
-          i === entries.length - 1,
-        ),
-      ),
-      `${indent}}${comma}`,
-    ];
-  }
-  return [`${indent}${JSON.stringify(key)}: ${JSON.stringify(value)}${comma}`];
+  const head = `${indent}${JSON.stringify(key)}: `;
+  return `${head}${printValue(value, head.length, indent, comma.length, trailingCommas)}${comma}`.split(
+    "\n",
+  );
+}
+
+/**
+ * The text between tokens[from] and tokens[to] holds a comment.
+ * @param {string} text
+ * @param {Token[]} tokens
+ * @param {number} from
+ * @param {number} to
+ */
+function hasComment(text, tokens, from, to) {
+  for (let k = from; k < to; k++)
+    if (text.slice(tokens[k].end, tokens[k + 1].start).trim()) return true;
+  return false;
 }
 
 /**
  * Edits that add `entries` before the closing brace of the object at
  * tokens[open], one per line, indented one level past the line that opens
- * it.
+ * it. An object written on one line is first expanded, one member per
+ * line, as Prettier would print it once a member is added.
  * @param {string} text
  * @param {Token[]} tokens
  * @param {number} open
@@ -208,14 +299,15 @@ function insertInto(text, tokens, open, entries, { trailingCommas, comment }) {
   const close = closing(tokens, open);
   const outer = lineIndent(text, tokens[open].start);
   const indent = `${outer}  `;
-  const lines = [
+  const added = [
     ...(comment
       ? comment.split("\n").map((line) => `${indent}// ${line}`)
       : []),
     ...entries.flatMap(([k, v], i) =>
       renderMember(k, v, indent, trailingCommas, i === entries.length - 1),
     ),
-  ].join("\n");
+  ];
+  const lines = added.join("\n");
   if (close === open + 1)
     return [
       {
@@ -224,6 +316,27 @@ function insertInto(text, tokens, open, entries, { trailingCommas, comment }) {
         text: `\n${lines}\n${outer}`,
       },
     ];
+  const between = text.slice(tokens[open].start, tokens[close].end);
+  if (!between.includes("\n")) {
+    // One line: rewrite the object with each existing member on its own line.
+    if (hasComment(text, tokens, open, close))
+      throw new Error(
+        `Can't add to the one-line object at offset ${tokens[open].start}: it holds a comment`,
+      );
+    /** @type {string[]} */
+    const existing = [];
+    for (const [, v] of members(tokens, open))
+      existing.push(
+        `${indent}${text.slice(tokens[v - 2].start, tokens[valueEnd(tokens, v)].end)},`,
+      );
+    return [
+      {
+        start: tokens[open].start,
+        end: tokens[close].end,
+        text: `{\n${[...existing, ...added].join("\n")}\n${outer}}`,
+      },
+    ];
+  }
   /** @type {Edit[]} */
   const edits = [];
   const last = tokens[close - 1];
@@ -244,9 +357,10 @@ function insertInto(text, tokens, open, entries, { trailingCommas, comment }) {
 /**
  * Set `entries` inside the top-level object member `key`, creating the
  * member when it is absent. An entry whose value is already equal is left
- * alone; a different value is replaced in place (on one line); a missing
- * entry is added before the object's closing brace, with `comment` as
- * `//` lines above the first added entry.
+ * alone; a different value is replaced in place, printed as Prettier
+ * would; a missing entry is added before the object's closing brace, with
+ * `comment` as `//` lines above the first added entry. CRLF line endings
+ * are kept.
  * @param {string} text
  * @param {string} key
  * @param {Record<string, unknown>} entries
@@ -254,7 +368,9 @@ function insertInto(text, tokens, open, entries, { trailingCommas, comment }) {
  * @returns {{ text: string, changed: string[] }}
  */
 export function setMembers(text, key, entries, options) {
-  const tokens = tokenize(text);
+  const crlf = text.includes("\r\n");
+  const src = crlf ? text.replace(/\r\n/g, "\n") : text;
+  const tokens = tokenize(src);
   if (tokens[0]?.type !== "{")
     throw new Error("The top level must be an object");
   const at = members(tokens, 0).get(key);
@@ -264,7 +380,7 @@ export function setMembers(text, key, entries, options) {
   const changed = [];
   if (at === undefined) {
     if (Object.keys(entries).length === 0) return { text, changed };
-    edits = insertInto(text, tokens, 0, [[key, entries]], options);
+    edits = insertInto(src, tokens, 0, [[key, entries]], options);
     changed.push(...Object.keys(entries).map((k) => `added ${k}`));
   } else {
     if (tokens[at].type !== "{") throw new Error(`"${key}" is not an object`);
@@ -279,20 +395,28 @@ export function setMembers(text, key, entries, options) {
         continue;
       }
       const end = valueEnd(tokens, v);
-      const existing = JSON.parse(toJson(text, tokens, v, end));
+      const existing = JSON.parse(toJson(src, tokens, v, end));
       if (JSON.stringify(existing) === JSON.stringify(value)) continue;
+      const lineStart = src.lastIndexOf("\n", tokens[v].start - 1) + 1;
       edits.push({
         start: tokens[v].start,
         end: tokens[end].end,
-        text: JSON.stringify(value),
+        text: printValue(
+          value,
+          tokens[v].start - lineStart,
+          lineIndent(src, tokens[v].start),
+          tokens[end + 1]?.type === "," ? 1 : 0,
+          options.trailingCommas,
+        ),
       });
       changed.push(`updated ${k}`);
     }
     if (missing.length)
-      edits.push(...insertInto(text, tokens, at, missing, options));
+      edits.push(...insertInto(src, tokens, at, missing, options));
   }
-  let out = text;
+  if (edits.length === 0) return { text, changed };
+  let out = src;
   for (const edit of edits.sort((a, b) => b.start - a.start))
     out = out.slice(0, edit.start) + edit.text + out.slice(edit.end);
-  return { text: out, changed };
+  return { text: crlf ? out.replace(/\n/g, "\r\n") : out, changed };
 }

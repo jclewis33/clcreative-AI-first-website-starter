@@ -10,8 +10,10 @@
  *                   top: a file already there is overwritten (the CMS
  *                   seams are designed to be)
  *
- * planInstall() decides every write before anything is written, so a
- * refusal leaves the tree untouched; applyPlan() then writes.
+ * planInstall() validates the manifest and decides every write before
+ * anything is written, so a refusal leaves the tree untouched; applyPlan()
+ * then writes. Every path it touches must sit strictly inside the project,
+ * outside any .git folder, and never reach through a symlink.
  */
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -50,17 +52,115 @@ const MERGED = [
   ".gitignore",
 ];
 
+/** @param {unknown} v */
+const isRecord = (v) => !!v && typeof v === "object" && !Array.isArray(v);
+/** @param {unknown} v */
+const isStringRecord = (v) =>
+  isRecord(v) &&
+  Object.values(/** @type {object} */ (v)).every((x) => typeof x === "string");
+/** @param {unknown} v */
+const isStringArray = (v) =>
+  Array.isArray(v) && v.every((x) => typeof x === "string");
+
 /**
- * Every file under `dir` as a POSIX path relative to it.
+ * Refuse a manifest whose fields have the wrong shape.
+ * @param {any} m
+ * @param {string} where
+ * @returns {Manifest}
+ */
+function validateManifest(m, where) {
+  /** @type {string[]} */
+  const bad = [];
+  if (!isRecord(m)) bad.push("the top level must be an object");
+  else {
+    if (typeof m.name !== "string" || !m.name.trim())
+      bad.push("name must be a non-empty string");
+    if (typeof m.marker !== "string" || !m.marker.trim())
+      bad.push("marker must be a non-empty string");
+    for (const field of ["dependencies", "devDependencies", "scripts"])
+      if (m[field] !== undefined && !isStringRecord(m[field]))
+        bad.push(`${field} must map names to strings`);
+    if (
+      m.wrangler !== undefined &&
+      (!isRecord(m.wrangler) ||
+        !isStringRecord(m.wrangler.vars) ||
+        (m.wrangler.comment !== undefined &&
+          typeof m.wrangler.comment !== "string"))
+    )
+      bad.push("wrangler must be { vars: { NAME: string }, comment?: string }");
+    if (m.tsconfig !== undefined && !isRecord(m.tsconfig))
+      bad.push("tsconfig must be an object of compilerOptions");
+    for (const field of ["env", "gitignore", "delete", "nextSteps"])
+      if (m[field] !== undefined && !isStringArray(m[field]))
+        bad.push(`${field} must be an array of strings`);
+  }
+  if (bad.length)
+    throw new AddonError(`${where} is invalid: ${bad.join("; ")}.`);
+  return m;
+}
+
+/**
+ * `rel` as a POSIX path strictly inside `root` (not root itself, not
+ * in a .git folder), with no symlink among the directories between them; the
+ * path itself may be a symlink only when `linkOk` (deleting a link
+ * removes the link, not its target).
+ * @param {string} root
+ * @param {string} rel
+ * @param {string} what  Names the path in the refusal.
+ * @param {boolean} [linkOk]
+ * @returns {string}
+ */
+function insideRoot(root, rel, what, linkOk = false) {
+  const relative = path.relative(root, path.resolve(root, rel));
+  const parts = relative.split(path.sep);
+  if (
+    !rel.trim() ||
+    !relative ||
+    parts[0] === ".." ||
+    path.isAbsolute(relative)
+  )
+    throw new AddonError(
+      `${what} "${rel}" is not a path inside the project. Refusing to touch it.`,
+    );
+  if (parts.some((part) => part.toLowerCase() === ".git"))
+    throw new AddonError(
+      `${what} "${rel}" is inside .git. Refusing to touch it.`,
+    );
+  let current = root;
+  for (const [i, part] of parts.entries()) {
+    current = path.join(current, part);
+    let stat;
+    try {
+      stat = fs.lstatSync(current);
+    } catch {
+      break; // Nothing further exists, so nothing further is a link.
+    }
+    if (stat.isSymbolicLink() && (i < parts.length - 1 || !linkOk))
+      throw new AddonError(
+        `${what} "${rel}" goes through a symlink (${parts.slice(0, i + 1).join("/")}). Refusing to write through it.`,
+      );
+  }
+  return parts.join("/");
+}
+
+/**
+ * Every file under `dir` as a POSIX path relative to it, sorted.
  * @param {string} dir
  * @param {string} [prefix]
  * @returns {string[]}
  */
 function overlayFiles(dir, prefix = "") {
   if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+  const entries = fs
+    .readdirSync(dir, { withFileTypes: true })
+    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  return entries.flatMap((entry) => {
     if (SKIP.has(entry.name)) return [];
     const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (entry.isSymbolicLink())
+      throw new AddonError(
+        `the add-on overlay contains a symlink (files/${rel}). Replace it with a real file.`,
+      );
     return entry.isDirectory()
       ? overlayFiles(path.join(dir, entry.name), rel)
       : [rel];
@@ -68,22 +168,30 @@ function overlayFiles(dir, prefix = "") {
 }
 
 /**
- * Refuse unless `root` is a clean git checkout.
+ * Refuse unless `root` is the top level of a clean git checkout.
  * @param {string} root
  */
 function assertClean(root) {
-  let status;
-  try {
-    status = execFileSync("git", ["status", "--porcelain"], {
+  const git = (/** @type {string[]} */ ...args) =>
+    execFileSync("git", args, {
       cwd: root,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     });
+  let top;
+  let status;
+  try {
+    top = git("rev-parse", "--show-toplevel").trim();
+    status = git("status", "--porcelain");
   } catch {
     throw new AddonError(
       "can't confirm the working tree is clean: this is not a git repository (or git is not installed). Back the project up, then run again with --force.",
     );
   }
+  if (fs.realpathSync(top) !== fs.realpathSync(root))
+    throw new AddonError(
+      `can't confirm the working tree is clean: the project is not the top level of its git repository (that is ${top}). Make the project its own repository, or back it up and run again with --force.`,
+    );
   if (status.trim())
     throw new AddonError(
       `the working tree has uncommitted changes:\n${status
@@ -98,13 +206,26 @@ function assertClean(root) {
 }
 
 /**
+ * `out` (written with LF) in the line endings `original` uses.
+ * @param {string} original
+ * @param {string} out
+ */
+const sameEol = (original, out) =>
+  original.includes("\r\n") ? out.replace(/\r?\n/g, "\r\n") : out;
+
+/**
  * @param {string} current
  * @param {string[]} block
  */
-const appendBlock = (current, block) =>
-  current
-    ? `${current.replace(/\n*$/, "\n")}\n${block.join("\n")}\n`
-    : `${block.join("\n")}\n`;
+const appendBlock = (current, block) => {
+  const lf = current.replace(/\r\n/g, "\n");
+  return sameEol(
+    current,
+    lf
+      ? `${lf.replace(/\n*$/, "\n")}\n${block.join("\n")}\n`
+      : `${block.join("\n")}\n`,
+  );
+};
 
 /**
  * @param {{ root: string, addonDir: string, force?: boolean }} options
@@ -112,13 +233,22 @@ const appendBlock = (current, block) =>
  */
 export function planInstall({ root, addonDir, force = false }) {
   const manifestPath = path.join(addonDir, "manifest.json");
+  const manifestRel = path.relative(root, manifestPath);
   if (!fs.existsSync(manifestPath))
     throw new AddonError(
-      `${path.relative(root, manifestPath)} not found. Copy the add-on folder from the starter repo (addons/<name>/) into this project, commit it, then run again.`,
+      `${manifestRel} not found. Copy the add-on folder from the starter repo (addons/<name>/) into this project, commit it, then run again.`,
     );
-  /** @type {Manifest} */
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-  if (fs.existsSync(path.join(root, manifest.marker)))
+  let raw;
+  try {
+    raw = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  } catch (err) {
+    throw new AddonError(
+      `${manifestRel} is not valid JSON: ${/** @type {Error} */ (err).message}`,
+    );
+  }
+  const manifest = validateManifest(raw, manifestRel);
+  const marker = insideRoot(root, manifest.marker, "the manifest's marker");
+  if (fs.existsSync(path.join(root, marker)))
     throw new AddonError(
       `the ${manifest.name} add-on is already installed (${manifest.marker} exists). Nothing to do.`,
     );
@@ -136,6 +266,7 @@ export function planInstall({ root, addonDir, force = false }) {
     fs.existsSync(path.join(root, rel));
   const read = (/** @type {string} */ rel) => {
     if (!exists(rel)) throw new AddonError(`${rel} not found in the project.`);
+    insideRoot(root, rel, "the project file");
     return fs.readFileSync(path.join(root, rel), "utf8");
   };
   /** @type {Write[]} */
@@ -145,6 +276,7 @@ export function planInstall({ root, addonDir, force = false }) {
 
   // 1. The overlay.
   for (const rel of overlay) {
+    insideRoot(root, rel, "the overlay file");
     const content = fs.readFileSync(path.join(filesDir, rel));
     if (!exists(rel)) writes.push({ path: rel, content, action: "add" });
     else if (!fs.readFileSync(path.join(root, rel)).equals(content))
@@ -153,7 +285,15 @@ export function planInstall({ root, addonDir, force = false }) {
 
   // 2. package.json: dependencies (kept sorted, as npm does) and scripts.
   if (manifest.dependencies || manifest.devDependencies || manifest.scripts) {
-    const pkg = JSON.parse(read("package.json"));
+    const original = read("package.json");
+    let pkg;
+    try {
+      pkg = JSON.parse(original);
+    } catch (err) {
+      throw new AddonError(
+        `package.json is not valid JSON: ${/** @type {Error} */ (err).message}`,
+      );
+    }
     /** @type {string[]} */
     const changes = [];
     for (const field of /** @type {const} */ ([
@@ -179,7 +319,7 @@ export function planInstall({ root, addonDir, force = false }) {
     if (changes.length) {
       writes.push({
         path: "package.json",
-        content: `${JSON.stringify(pkg, null, 2)}\n`,
+        content: sameEol(original, `${JSON.stringify(pkg, null, 2)}\n`),
         action: "update",
       });
       notes.push(`package.json: ${changes.join(", ")}`);
@@ -202,10 +342,18 @@ export function planInstall({ root, addonDir, force = false }) {
     ],
   ])) {
     if (!entries) continue;
-    const { text, changed } = setMembers(read(file), key, entries, options);
-    if (changed.length) {
-      writes.push({ path: file, content: text, action: "update" });
-      notes.push(`${file} ${key}: ${changed.join(", ")}`);
+    let result;
+    try {
+      result = setMembers(read(file), key, entries, options);
+    } catch (err) {
+      if (err instanceof AddonError) throw err;
+      throw new AddonError(
+        `${file} could not be merged: ${/** @type {Error} */ (err).message}`,
+      );
+    }
+    if (result.changed.length) {
+      writes.push({ path: file, content: result.text, action: "update" });
+      notes.push(`${file} ${key}: ${result.changed.join(", ")}`);
     }
   }
 
@@ -247,23 +395,67 @@ export function planInstall({ root, addonDir, force = false }) {
     }
   }
 
-  // 7. Deletions.
-  const deletes = (manifest.delete ?? []).filter(exists);
+  // 7. Deletions (a symlink is removed itself, never followed).
+  const deletes = (manifest.delete ?? [])
+    .map((rel) => insideRoot(root, rel, "the manifest's delete entry", true))
+    .filter((rel) => {
+      try {
+        fs.lstatSync(path.join(root, rel));
+        return true;
+      } catch {
+        return false;
+      }
+    });
+
+  // Every write target, re-checked as a whole (merged files included).
+  for (const write of writes) insideRoot(root, write.path, "the write target");
 
   return { manifest, writes, deletes, notes };
 }
 
 /**
- * Carry out a plan from planInstall().
+ * Carry out a plan from planInstall(). Planning already refused anything
+ * it could foresee; if the filesystem fails part-way, the AddonError names
+ * the step that failed and every step already applied (`git status` shows
+ * them too).
  * @param {string} root
  * @param {Plan} plan
  */
 export function applyPlan(root, plan) {
-  for (const rel of plan.deletes)
-    fs.rmSync(path.join(root, rel), { recursive: true, force: true });
-  for (const write of plan.writes) {
-    const abs = path.join(root, write.path);
-    fs.mkdirSync(path.dirname(abs), { recursive: true });
-    fs.writeFileSync(abs, write.content);
+  /** @type {string[]} */
+  const done = [];
+  /** @type {Array<[string, () => void]>} */
+  const steps = [
+    ...plan.deletes.map(
+      (rel) =>
+        /** @type {[string, () => void]} */ ([
+          `delete ${rel}`,
+          () =>
+            fs.rmSync(path.join(root, rel), { recursive: true, force: true }),
+        ]),
+    ),
+    ...plan.writes.map(
+      (write) =>
+        /** @type {[string, () => void]} */ ([
+          `${write.action} ${write.path}`,
+          () => {
+            const abs = path.join(root, write.path);
+            fs.mkdirSync(path.dirname(abs), { recursive: true });
+            fs.writeFileSync(abs, write.content);
+          },
+        ]),
+    ),
+  ];
+  for (const [label, run] of steps) {
+    try {
+      run();
+    } catch (err) {
+      throw new AddonError(
+        `the install failed at ${label}: ${/** @type {Error} */ (err).message}\n  Already applied:${
+          done.length ? done.map((d) => `\n    ${d}`).join("") : " nothing"
+        }\n  \`git status\` shows them; restore what you need (\`git restore <path>\`, and remove added files), fix the cause, then run again.`,
+      );
+    }
+    done.push(label);
   }
 }
