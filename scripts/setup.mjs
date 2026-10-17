@@ -128,7 +128,7 @@ const FLUID_TIERS = new Set([
 function replaceCssDecl(src, varName, value) {
   const re = new RegExp(`(${varName.replace(/[-]/g, "\\$&")}\\s*:\\s*)[^;]+;`);
   if (!re.test(src)) return { src, changed: false };
-  const next = src.replace(re, `$1${value};`);
+  const next = src.replace(re, (_, lead) => `${lead}${value};`);
   return { src: next, changed: next !== src };
 }
 
@@ -141,7 +141,10 @@ function replaceAssignedString(src, name, value) {
     `(\\b${name}\\s*=\\s*(?:process\\.env\\.${name}\\s*\\|\\|\\s*)?)(["'])(?:\\\\.|(?!\\2).)*\\2`,
   );
   if (!re.test(src)) return { src, changed: false };
-  return { src: src.replace(re, `$1${JSON.stringify(value)}`), changed: true };
+  return {
+    src: src.replace(re, (_, lead) => `${lead}${JSON.stringify(value)}`),
+    changed: true,
+  };
 }
 
 // Maps a `themeColors` key to the selector that opens that theme's block in
@@ -163,7 +166,7 @@ function replaceInThemeBlock(src, marker, varName, value) {
   const re = new RegExp(`(${varName.replace(/[-]/g, "\\$&")}\\s*:\\s*)[^;]+;`);
   const block = src.slice(braceIdx, closeIdx);
   if (!re.test(block)) return { src, changed: false };
-  const next = block.replace(re, `$1${value};`);
+  const next = block.replace(re, (_, lead) => `${lead}${value};`);
   return {
     src: src.slice(0, braceIdx) + next + src.slice(closeIdx),
     changed: true,
@@ -174,14 +177,20 @@ function replaceInThemeBlock(src, marker, varName, value) {
 function replaceKeyedString(src, key, value) {
   const re = new RegExp(`(\\b${key}\\s*:\\s*)(["'])(?:\\\\.|(?!\\2).)*\\2`);
   if (!re.test(src)) return { src, changed: false };
-  return { src: src.replace(re, `$1${JSON.stringify(value)}`), changed: true };
+  return {
+    src: src.replace(re, (_, lead) => `${lead}${JSON.stringify(value)}`),
+    changed: true,
+  };
 }
 
 /** Replace a JSON `"key": "..."` value (wrangler.jsonc). */
 function replaceJsonString(src, key, value) {
   const re = new RegExp(`("${key}"\\s*:\\s*)"(?:\\\\.|[^"])*"`);
   if (!re.test(src)) return { src, changed: false };
-  return { src: src.replace(re, `$1${JSON.stringify(value)}`), changed: true };
+  return {
+    src: src.replace(re, (_, lead) => `${lead}${JSON.stringify(value)}`),
+    changed: true,
+  };
 }
 
 /**
@@ -824,7 +833,7 @@ async function buildChanges(a) {
       if (!value) continue;
       const re = new RegExp(`(${name.replace(/[-]/g, "\\$&")}\\s*:\\s*)[^;]+;`);
       if (re.test(after)) {
-        const next = after.replace(re, `$1${value};`);
+        const next = after.replace(re, (_, lead) => `${lead}${value};`);
         if (next !== after) {
           after = next;
           edits.push(name);

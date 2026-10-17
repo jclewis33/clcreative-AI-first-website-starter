@@ -77,8 +77,19 @@ ignores the pointer. Example: `src/assets/maps/sample-service-area.svg`.
 
 ### Composing a page
 
-The dev-only `/demo/local-service` page (`src/pages/demo/local-service.astro`)
-is a complete example — copy it as the starting point for a client home page:
+The whole stack is a template: **`LocalServiceHome`**
+(`src/components/templates/LocalServiceHome.astro`) renders a full home page
+from one `home` object (`LocalServiceHomeData`, `src/lib/local-service-home.ts`);
+optional sections (`stats`, `process`, `photoBand`, `story`, `reviews`, `faqs`)
+render only when their data is there, and the service cards come from
+`src/content/services`. **`LocalServiceContact`** (same folder) is the matching
+contact page — it needs only `title` and `description`. The dev-only
+`/demo/local-service` page feeds `LocalServiceHome` the sample in
+`src/data/local-service-sample.ts`; prospect demos (`npm run demo`,
+presets/local-service) feed it a generated `src/data/home.ts`. For a client
+site, either use the template with the client's data or copy its section
+stack into the page when the client wants page-level edits. The stack, in
+order:
 
 ```astro
 <Hero

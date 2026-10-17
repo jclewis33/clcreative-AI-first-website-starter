@@ -12,6 +12,7 @@ lives in **skills** — load them, don't guess:
 | `sanity-and-preview`  | Only with the Sanity add-on installed (`npm run addon:sanity`; the skill ships with it — in the starter repo read `addons/sanity/files/.claude/skills/sanity-and-preview/SKILL.md`): queries, TypeGen, Studio, draft preview, rebuild webhook |
 | `seo-discoverability` | JSON-LD / structured data, per-page SEO, llms.txt — and ALWAYS when adding a new static page (manual `PAGES` registry step)                                                                                                                   |
 | `setup`               | Setting up a fork as a new project                                                                                                                                                                                                            |
+| `demo`                | Building, updating or cleaning up a prospect demo (`npm run demo`, presets/, the private demos repo) — one-time setup in [docs/demo-mode.md](docs/demo-mode.md)                                                                               |
 
 Other docs: [docs/new-project-checklist.md](docs/new-project-checklist.md)
 (per-fork dashboard setup), [docs/handing-off.md](docs/handing-off.md)
@@ -101,6 +102,12 @@ src/
     ├── components/   # ONLY component CSS with no single owner (forms.css)
     └── pages/        # Page CSS; imported by the page, opens with @layer pages { }
 ```
+
+`presets/` (outside `src/`, excluded from tsconfig) holds the prospect-demo
+presets `npm run demo` installs; their page markup lives in
+`src/components/templates/` (LocalServiceHome, LocalServiceContact) so the
+starter's CI still checks it. `DEMO` in `src/config/demo.shared.mjs` is
+`null` on every real site.
 
 `addons/sanity/` (outside `src/`, not built) is the Sanity add-on: an
 overlay plus a manifest that `npm run addon:sanity` installs. The CMS seams
@@ -339,6 +346,7 @@ emptied folder must leave no deleted entry behind) ·
 image URLs, resized local images, TOC anchors) ·
 `npm run check:schema -- --dist dist/client` (JSON-LD on the built site) ·
 `npm run check:addon-installer` · `npm run check:setup` ·
+`npm run check:demo` (the fixture prospect demo, built and checked noindex) ·
 `npm run check:addon` (installs the Sanity add-on in a scratch copy and
 builds it; needs the network, takes minutes) · `npm run build` · `npm run format:check`.
 

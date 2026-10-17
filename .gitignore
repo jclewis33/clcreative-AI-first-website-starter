@@ -42,6 +42,7 @@ preview/.env
 !.claude/skills/styling-reference
 !.claude/skills/seo-discoverability
 !.claude/skills/content-files
+!.claude/skills/demo
 
 # Playwright MCP scratch dir — screenshots, console logs, and anything the
 # browser downloads while driving the site. Never source.

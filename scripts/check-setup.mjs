@@ -124,6 +124,9 @@ try {
       assert.equal(r.status, 0, out(r));
       const site = read(dir, "src/config/site.ts");
       assert.match(site, /name: "Acme Roofing"/);
+      // A "$" in a value is literal — String.replace patterns once ate one
+      // per run ("$$$" → "$$").
+      assert.match(site, /priceRange: "\$\$\$"/);
       assert.match(site, /serviceAreas: \[\s*"Austin",\s*"Round Rock"\s*\]/);
       assert.match(site, /founded: 2004 as number \| null/);
       assert.match(site, /utilityBar: \{\s*"text": "24\/7 emergency service"/);
