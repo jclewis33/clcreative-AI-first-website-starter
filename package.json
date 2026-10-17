@@ -25,7 +25,8 @@
     "check:content-build": "node scripts/check-content-build.mjs",
     "addon:sanity": "node scripts/addon-sanity.mjs",
     "check:addon-installer": "node scripts/check-addon-installer.mjs",
-    "check:addon": "node scripts/check-addon-sanity.mjs"
+    "check:addon": "node scripts/check-addon-sanity.mjs",
+    "check:setup": "node scripts/check-setup.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.1",

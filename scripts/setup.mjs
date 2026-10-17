@@ -12,20 +12,25 @@
  * THIS script (via `--config`) for the file writes so the literal values always
  * land deterministically.
  *
- * Sanity is optional for a fork. This script writes whatever Sanity ids it is
- * given and is happy when given none: the repo builds and deploys with the
- * placeholder project id (see the guard in src/sanity/lib/page-data.ts), so a
- * no-CMS fork is a supported path, not a broken one.
+ * Content source. The first question is Files (the default: content in
+ * src/content) or Sanity. Sanity runs the add-on installer
+ * (`npm run addon:sanity`, addons/sanity/) BEFORE writing anything else,
+ * then asks for and writes the Sanity ids. Either way, setup then deletes
+ * addons/: a Files fork re-adds the folder from the starter repo if it
+ * ever adopts Sanity, and a Sanity fork has installed it. Setup refuses to
+ * treat a project with the add-on installed as Files.
  *
  * Files this touches:
  *   • src/config/site.shared.mjs       — the site URL
- *   • src/config/sanity.shared.mjs     — Sanity projectId/dataset/apiVersion
  *   • src/config/site.ts               — scalar identity fields (keyed replace)
- *   • wrangler.jsonc                   — worker `name` + the two PUBLIC_SANITY_* vars
- *   • workers/rebuild-debounce/wrangler.jsonc — debounce worker `name` (kept "<worker>-rebuild-debounce")
+ *   • wrangler.jsonc                   — worker `name` (+ the two PUBLIC_SANITY_* vars, Sanity)
  *   • src/styles/variables/colors.css  — --color-brand-500 (the canonical brand hue)
+ *   • src/config/logo-paths.ts         — LOGO_LABEL
+ *   • .env                             — created from .env.example (secrets left blank)
+ *   Sanity only (after installing the add-on):
+ *   • src/config/sanity.shared.mjs     — projectId/dataset/apiVersion
  *   • sanity.cli.ts                    — studioHost (+ clears appId for the new project)
- *   • .env                             — created from .env.example (token left blank)
+ *   • workers/rebuild-debounce/wrangler.jsonc — debounce worker `name`
  *
  * It intentionally does NOT touch the content scaffolding (areaServed, social,
  * sameAs, FAQs, site-structure) — those stay as a working skeleton for the new
@@ -35,12 +40,14 @@
  *   node scripts/setup.mjs                      # interactive prompts
  *   node scripts/setup.mjs --config answers.json --yes   # non-interactive (skill)
  *   node scripts/setup.mjs --dry-run            # show what would change, write nothing
+ *   node scripts/setup.mjs --force          pass --force to the add-on installer (dirty/non-git tree)
  *
  * Zero dependencies — uses only node: built-ins (keeps the supply-chain surface
  * small, matching this repo's security posture).
  */
 
-import { readFile, writeFile, access } from "node:fs/promises";
+import { readFile, writeFile, access, rm } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import { constants } from "node:fs";
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout, argv, exit } from "node:process";
@@ -74,6 +81,7 @@ const getFlagValue = (name) => {
 const DRY_RUN = FLAGS.has("--dry-run");
 const ASSUME_YES = FLAGS.has("--yes") || FLAGS.has("-y");
 const CONFIG_PATH = getFlagValue("--config");
+const FORCE = FLAGS.has("--force");
 
 // ── Field definitions ───────────────────────────────────────────────────────
 // Each prompt maps an answer key to where it gets written. `extract` pulls the
@@ -88,6 +96,9 @@ const THEMES = "src/styles/variables/themes.css";
 const TYPOGRAPHY = "src/styles/variables/typography.css";
 const LOGO_PATHS = "src/config/logo-paths.ts";
 const CLI = "sanity.cli.ts";
+const ADDON_DIR = "addons/sanity";
+/** Exists once the Sanity add-on is installed (its manifest's marker). */
+const SANITY_MARKER = "src/sanity/lib/source.ts";
 
 // Fluid type tiers whose size is driven by a --{tier}-min / --{tier}-max pair.
 // (eyebrow is fixed; tiny/small are fixed but still expose min/max.)
@@ -184,6 +195,15 @@ const currentCssVar = (src, name) => {
 
 // Prompt list. `target` describes where the value is written (handled below).
 const PROMPTS = [
+  // ── Content source ────────────────────────────────────────────────────────
+  // Files (content in src/content) is the default. Sanity installs the
+  // add-on in addons/sanity/ and asks the Sanity questions below.
+  {
+    key: "contentSource",
+    q: "Content source — files (default) or sanity",
+    validate: (v) =>
+      v === "files" || v === "sanity" || 'Answer "files" or "sanity"',
+  },
   // ── Identity ──────────────────────────────────────────────────────────────
   { key: "siteName", q: "Site / brand name", from: [SITE, "name"] },
   {
@@ -261,21 +281,25 @@ const PROMPTS = [
     key: "sanityProjectId",
     q: "Sanity project id",
     from: [SANITY_SHARED, "SANITY_PROJECT_ID"],
+    cms: "sanity",
   },
   {
     key: "sanityDataset",
     q: "Sanity dataset",
     from: [SANITY_SHARED, "SANITY_DATASET"],
+    cms: "sanity",
   },
   {
     key: "sanityApiVersion",
     q: "Sanity API version (date)",
     from: [SANITY_SHARED, "SANITY_API_VERSION"],
+    cms: "sanity",
   },
   {
     key: "studioHost",
     q: "Sanity studioHost (the <host>.sanity.studio subdomain)",
     from: [CLI, "studioHost"],
+    cms: "sanity",
   },
   {
     key: "workerName",
@@ -316,7 +340,14 @@ const PROMPTS = [
   },
 ];
 
+/**
+ * Read a repo file. A Sanity file that isn't installed yet is read from
+ * the add-on's overlay instead (prompt defaults and dry runs).
+ */
 async function readSrc(rel) {
+  const overlay = `${ADDON_DIR}/files/${rel}`;
+  if (!(await fileExists(rel)) && (await fileExists(overlay)))
+    return readFile(p(overlay), "utf8");
   return readFile(p(rel), "utf8");
 }
 async function fileExists(rel) {
@@ -329,12 +360,40 @@ async function fileExists(rel) {
 }
 
 async function resolveDefault(prompt, cache) {
+  if (prompt.key === "contentSource")
+    return (await fileExists(SANITY_MARKER)) ? "sanity" : "files";
   const [file, key] = prompt.from;
   if (!cache[file]) cache[file] = await readSrc(file);
   const src = cache[file];
   if (prompt.css) return currentCssVar(src, key);
   if (prompt.json) return currentJson(src, key);
   return currentString(src, key);
+}
+
+/**
+ * Stop before any Sanity question or write when the chosen content source
+ * can't work here: an unknown answer, Files on a project that has the
+ * add-on installed (setup never half-removes it), or Sanity with no
+ * add-on folder to install from.
+ */
+async function assertContentSource(source) {
+  if (source !== "files" && source !== "sanity")
+    throw new Error(
+      `contentSource must be "files" or "sanity" (got "${source}").`,
+    );
+  const installed = await fileExists(SANITY_MARKER);
+  if (installed && source === "files")
+    throw new Error(
+      `the Sanity add-on is installed (${SANITY_MARKER} exists), and setup can't remove it. Answer "sanity" (or leave contentSource out), or remove the add-on first (the sanity-and-preview skill → "Removing the add-on"). Nothing was written.`,
+    );
+  if (
+    source === "sanity" &&
+    !installed &&
+    !(await fileExists(`${ADDON_DIR}/manifest.json`))
+  )
+    throw new Error(
+      `${ADDON_DIR}/ is missing. Copy it from the starter repo, commit, and run setup again. Nothing was written.`,
+    );
 }
 
 async function gatherInteractive() {
@@ -346,6 +405,7 @@ async function gatherInteractive() {
     "Press Enter to keep the current value shown in [brackets]. Ctrl-C to abort.\n",
   );
   for (const prompt of PROMPTS) {
+    if (prompt.cms && prompt.cms !== answers.contentSource) continue;
     const def = await resolveDefault(prompt, cache);
     let value;
     while (true) {
@@ -355,6 +415,7 @@ async function gatherInteractive() {
         )
       ).trim();
       value = raw || def;
+      if (prompt.key === "contentSource") value = value.toLowerCase();
       if (prompt.optional && !raw) {
         value = def;
         break;
@@ -369,6 +430,14 @@ async function gatherInteractive() {
       break;
     }
     answers[prompt.key] = value;
+    if (prompt.key === "contentSource") {
+      try {
+        await assertContentSource(value);
+      } catch (err) {
+        rl.close();
+        throw err;
+      }
+    }
   }
   rl.close();
   return answers;
@@ -380,10 +449,16 @@ async function gatherFromConfig(path) {
   const answers = {};
   // Fill from JSON, falling back to the current file value for anything omitted.
   for (const prompt of PROMPTS) {
+    if (prompt.cms && prompt.cms !== answers.contentSource) continue;
     answers[prompt.key] =
       json[prompt.key] !== undefined && json[prompt.key] !== ""
         ? json[prompt.key]
         : await resolveDefault(prompt, cache);
+    // Checked as soon as it's known, before any Sanity default is read.
+    if (prompt.key === "contentSource")
+      await assertContentSource(
+        (answers.contentSource = String(answers.contentSource).toLowerCase()),
+      );
   }
   // Optional raw swatch map, e.g. pulled from Figma:
   //   { "--color-brand-500": "#1a73e8", "--color-dark-900": "#0c111d", ... }
@@ -436,6 +511,7 @@ function relativeLuminance(hex) {
 
 async function buildChanges(a) {
   const changes = []; // { rel, before, after, edits: [labels] }
+  const sanity = a.contentSource === "sanity";
 
   // Resolve the canonical brand hue. A `cssColors["--color-brand-500"]` (e.g.
   // pulled from Figma) wins over the scalar `brandColor`; either way the same
@@ -455,8 +531,8 @@ async function buildChanges(a) {
     });
   }
 
-  // 1b. sanity.shared.mjs — the Sanity project's ids.
-  {
+  // 1b. sanity.shared.mjs — the Sanity project's ids (Sanity only).
+  if (sanity) {
     const before = await readSrc(SANITY_SHARED);
     let src = before;
     const edits = [];
@@ -514,14 +590,18 @@ async function buildChanges(a) {
     changes.push({ rel: SITE, before: await readSrc(SITE), after: src, edits });
   }
 
-  // 3. wrangler.jsonc — name + the two public vars
+  // 3. wrangler.jsonc — name (+ the two public Sanity vars, Sanity only)
   {
     let src = await readSrc(WRANGLER);
     const edits = [];
     for (const [key, value] of [
       ["name", a.workerName],
-      ["PUBLIC_SANITY_PROJECT_ID", a.sanityProjectId],
-      ["PUBLIC_SANITY_DATASET", a.sanityDataset],
+      ...(sanity
+        ? [
+            ["PUBLIC_SANITY_PROJECT_ID", a.sanityProjectId],
+            ["PUBLIC_SANITY_DATASET", a.sanityDataset],
+          ]
+        : []),
     ]) {
       const r = replaceJsonString(src, key, value);
       if (r.changed) {
@@ -669,8 +749,8 @@ async function buildChanges(a) {
     }
   }
 
-  // 5. sanity.cli.ts — studioHost (+ clear appId; the new project issues its own on first deploy)
-  {
+  // 5. sanity.cli.ts — studioHost (+ clear appId; the new project issues its own on first deploy). Sanity only.
+  if (sanity) {
     let src = await readSrc(CLI);
     const edits = [];
     const r1 = replaceKeyedString(src, "studioHost", a.studioHost);
@@ -710,7 +790,55 @@ async function ensureEnv(a) {
     return;
   }
   await writeFile(p(".env"), filled, "utf8");
-  ok("Created .env (fill in SANITY_API_READ_TOKEN — it's intentionally blank)");
+  ok(
+    a.contentSource === "sanity"
+      ? "Created .env (fill in SANITY_API_READ_TOKEN — it's intentionally blank)"
+      : "Created .env",
+  );
+}
+
+/** addons/ is spent once the content source is chosen: delete it. */
+async function removeAddons(sanity) {
+  if (!(await fileExists("addons"))) return;
+  if (DRY_RUN) {
+    info("(dry-run) would delete addons/");
+    return;
+  }
+  await rm(p("addons"), { recursive: true, force: true });
+  ok(
+    sanity
+      ? "Deleted addons/ — the Sanity add-on is installed, so that copy is no longer needed."
+      : "Deleted addons/ — content stays in src/content. To adopt Sanity later, copy addons/sanity/ from the starter repo and run npm run addon:sanity.",
+  );
+}
+
+/** Install the Sanity add-on (scripts/addon-sanity.mjs) before anything else is written. */
+async function installSanity() {
+  if (!(await fileExists(`${ADDON_DIR}/manifest.json`)))
+    throw new Error(
+      `${ADDON_DIR}/ is missing. Copy it from the starter repo, commit, and run setup again. Nothing was written.`,
+    );
+  heading("Sanity add-on");
+  if (
+    !DRY_RUN &&
+    !(await confirm("Install the Sanity add-on now (npm run addon:sanity)?"))
+  ) {
+    warn("Aborted. No files written.");
+    exit(1);
+  }
+  const r = spawnSync(
+    process.execPath,
+    [
+      p("scripts/addon-sanity.mjs"),
+      ...(DRY_RUN ? ["--dry-run"] : []),
+      ...(FORCE ? ["--force"] : []),
+    ],
+    { cwd: ROOT, stdio: "inherit" },
+  );
+  if (r.status !== 0)
+    throw new Error(
+      "the add-on installer stopped (see above). Nothing else was written.",
+    );
 }
 
 async function confirm(question) {
@@ -731,9 +859,15 @@ ${c.bold}Fork setup${c.reset} — rewrite per-fork identity/config files.
   node scripts/setup.mjs               interactive
   node scripts/setup.mjs --config a.json --yes   non-interactive (used by /setup skill)
   node scripts/setup.mjs --dry-run     preview changes, write nothing
+  node scripts/setup.mjs --force       pass --force to the add-on installer
 
-Writes: ${SHARED}, ${SANITY_SHARED}, ${SITE}, ${WRANGLER}, ${WRANGLER_DEBOUNCE}, ${COLORS}, ${THEMES}, ${CLI}, .env
+Writes: ${SHARED}, ${SITE}, ${WRANGLER}, ${COLORS}, ${THEMES}, ${LOGO_PATHS}, .env — and, on the Sanity branch, ${SANITY_SHARED}, ${CLI}, ${WRANGLER_DEBOUNCE}
 Leaves content scaffolding (areaServed, social, FAQs, site-structure) intact.
+
+Content source ("contentSource" in --config; asked first interactively):
+  files  (default) content stays in src/content; addons/ is deleted
+  sanity runs npm run addon:sanity first, then writes the Sanity ids;
+         addons/ is deleted after installing
 
 Color maps (--config only; e.g. pulled from Figma by the /setup skill):
   "cssColors":   { "--color-brand-500": "#1a73e8", "--color-brand-text": "var(--color-light-100)" }
@@ -761,6 +895,26 @@ and the placeholder photography (src/assets/placeholder-images/).
   const answers = CONFIG_PATH
     ? await gatherFromConfig(CONFIG_PATH)
     : await gatherInteractive();
+  // gatherFromConfig / gatherInteractive already refused an unknown source,
+  // Files on an installed project, and Sanity with no addons/sanity/.
+  const sanity = answers.contentSource === "sanity";
+  const installed = await fileExists(SANITY_MARKER);
+
+  heading("Content source");
+  if (!sanity)
+    ok(
+      "Files — content stays in src/content. No Sanity code, packages or settings are added; addons/ is deleted.",
+    );
+  else if (installed)
+    ok(
+      "Sanity — the add-on is already installed; only the Sanity ids are written.",
+    );
+  else
+    ok(
+      "Sanity — the add-on installs first (npm run addon:sanity), then the Sanity ids are written; addons/ is deleted.",
+    );
+
+  if (sanity && !installed) await installSanity();
   const changes = await buildChanges(answers);
 
   heading("Planned changes");
@@ -777,12 +931,17 @@ and the placeholder photography (src/assets/placeholder-images/).
 
   if (DRY_RUN) {
     await ensureEnv(answers);
+    await removeAddons(sanity);
     info("\n(dry-run) No files written.");
     return;
   }
 
   if (!ASSUME_YES && !(await confirm("\nWrite these changes?"))) {
-    warn("Aborted. No files written.");
+    warn(
+      sanity && !installed
+        ? "Aborted. The Sanity add-on is installed (above); nothing else was written. Run setup again to write the rest."
+        : "Aborted. No files written.",
+    );
     exit(1);
   }
 
@@ -792,24 +951,31 @@ and the placeholder photography (src/assets/placeholder-images/).
     ok(`Wrote ${ch.rel}`);
   }
   await ensureEnv(answers);
+  await removeAddons(sanity);
 
   heading("Next steps");
-  console.log(`  1. ${c.bold}npm run format${c.reset}         re-format the files just written
-  2. ${c.bold}npm run check:config${c.reset}   verify wrangler.jsonc and public/_headers match src/config
-  3. ${c.bold}npm run check${c.reset}          type-check (astro check)
-  4. ${c.bold}npm run build${c.reset}          confirm the site still builds
-     ${c.dim}Steps 1–4 are what CI gates on — see .github/workflows/ci.yml.${c.reset}
-  5. Swap the ${c.bold}placeholder photography${c.reset} in src/assets/placeholder-images/
-     ${c.dim}(the starter ships stock images on every page — not written by this CLI)${c.reset}
-  6. Fill ${c.bold}SANITY_API_READ_TOKEN${c.reset} in .env (Sanity → API → Tokens, Viewer role)
-  7. Finish the dashboard steps in ${c.bold}docs/new-project-checklist.md${c.reset}
-     (Sanity CORS, Cloudflare secrets + WAF + domain, GitHub Dependabot).
-  8. Deploy the ${c.bold}rebuild-debounce Worker${c.reset} + wire the Sanity publish webhook
-     (${c.dim}workers/rebuild-debounce/README.md${c.reset}) — REQUIRED: content pages are
-     prerendered, so publishing only reaches the live site via this rebuild chain.
-${c.dim}  The /setup Claude skill runs steps 1–4 for you, guides 5, and additionally
-  creates the Sanity project, deploys the schema, and adds the CORS origins.${c.reset}
-`);
+  const steps = [
+    ...(sanity
+      ? [
+          `${c.bold}npm install${c.reset}            the add-on's packages (Sanity, React)`,
+        ]
+      : []),
+    `${c.bold}npm run format${c.reset}         re-format the files just written`,
+    `${c.bold}npm run check:config${c.reset}   verify wrangler.jsonc and public/_headers match src/config`,
+    `${c.bold}npm run check${c.reset}          type-check (astro check)`,
+    `${c.bold}npm run build${c.reset}          confirm the site still builds`,
+    `Swap the ${c.bold}placeholder photography${c.reset} (src/assets/placeholder-images/) and the ${c.bold}sample content${c.reset} (src/content/)`,
+    ...(sanity
+      ? [
+          `The ${c.bold}Sanity branch${c.reset}: .claude/skills/setup/references/sanity.md (project, Studio, Viewer token in .env, CORS, typegen)`,
+          `Deploy the ${c.bold}rebuild-debounce Worker${c.reset} + wire the publish webhook (workers/rebuild-debounce/README.md) — REQUIRED: content pages are prerendered, so a publish reaches the live site only through this rebuild chain`,
+        ]
+      : []),
+    `Finish the dashboard steps in ${c.bold}docs/new-project-checklist.md${c.reset} (Cloudflare secrets + WAF + domain, GitHub Dependabot)`,
+  ];
+  steps.forEach((step, i) => console.log(`  ${i + 1}. ${step}`));
+  console.log(`${c.dim}  CI runs these checks and more — see .github/workflows/ci.yml.
+  The /setup Claude skill runs the checks for you and guides the rest.${c.reset}`);
 }
 
 main().catch((err) => {

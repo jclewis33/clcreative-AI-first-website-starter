@@ -20,15 +20,23 @@ Dev deps used by the migration scripts (`csv-parse`, `node-html-parser`,
 ## `setup.mjs` — deterministic fork setup (`npm run setup`)
 
 Interactive (or `--config <json> --yes`, or `--dry-run`) rewriter of the
-per-fork identity values: `src/config/site.shared.mjs`, `src/config/site.ts`,
-both `wrangler.jsonc` files (site + rebuild-debounce Worker names/vars), brand
-color + optional theme/typography variables, `logo-paths.ts`, `sanity.cli.ts`
-(`studioHost`, clears `appId`), and a `.env` scaffold. It only **replaces
-values of declarations that already exist** — it never scaffolds content
-types, routes, or queries (see CLAUDE.md → "Adding a new content type" for
-the four route pieces a new type needs). The `/setup` skill orchestrates this
-script plus the cross-system work (Sanity project creation, schema/Studio
-deploys, CORS, verification).
+per-fork identity values. Its first question is the content source:
+**files** (the default — content stays in `src/content`) or **sanity**, which
+runs the add-on installer (`npm run addon:sanity`; `--force` is passed through)
+before writing anything else. Either way setup then deletes `addons/`, and it
+refuses to treat a project that has the add-on installed as Files.
+
+It writes `src/config/site.shared.mjs`, `src/config/site.ts`, the
+`wrangler.jsonc` worker name, brand color + optional theme/typography
+variables, `logo-paths.ts` and a `.env` scaffold — plus, on the Sanity branch,
+`src/config/sanity.shared.mjs`, the two `PUBLIC_SANITY_*` wrangler vars,
+`sanity.cli.ts` (`studioHost`, clears `appId`) and the rebuild-debounce
+Worker's name. It only **replaces values of declarations that already exist**
+— it never scaffolds content types, routes, or queries. The `/setup` skill
+orchestrates this script plus the cross-system work (on the Sanity branch:
+project creation, schema/Studio deploys, CORS, verification).
+`npm run check:setup` (`check-setup.mjs`) runs both branches and the refusals
+in scratch copies of the repo.
 
 ---
 
