@@ -12,8 +12,8 @@
  *   mdx-text.ts       — read time, llms Markdown and inline-CTA ids from a raw MDX body
  *
  * There are no drafts here: every function ignores the trailing `opts`
- * the interface allows (only the Sanity source's /preview twins pass it),
- * and plainText() returns its input unchanged.
+ * the interface allows (only a CMS add-on's preview routes pass it), and
+ * plainText() returns its input unchanged.
  */
 import type { ContentSource } from "@/lib/content/types";
 import {

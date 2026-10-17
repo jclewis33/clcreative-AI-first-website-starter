@@ -73,9 +73,10 @@ export function mdxToMarkdown(body: string): string {
 
 /**
  * Every id an inline `<BlogCta />` names with a literal `id="…"` (double
- * quotes). Code (fenced blocks and inline spans) is skipped, so a post that shows the tag as a code
- * sample is not checked as a real CTA. Any other form (`id='…'`,
- * `id={…}`) is not found here, so content sync cannot check it.
+ * quotes). Code (fenced blocks and inline spans) is skipped, so a post that
+ * shows the tag as a code sample is not checked as a real CTA. Any other
+ * form (`id='…'`, `id={…}`) is not found here, so content sync cannot check
+ * it.
  */
 export function inlineCtaIds(body: string): string[] {
   return [...outsideCode(body).matchAll(/<BlogCta\b[^>]*\bid="([^"]+)"/g)].map(

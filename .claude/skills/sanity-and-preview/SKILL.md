@@ -132,7 +132,7 @@ Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.s
    `getCaseStudy()` or `getProject()` from `@/lib/content`), passing
    `getDraftModeProps(Astro)`
    ([src/sanity/lib/draft-mode.ts](../../../src/sanity/lib/draft-mode.ts)),
-   which reads the cookie. The Sanity source forwards `{ perspectiveCookie }`
+   which reads the cookie. The Sanity source forwards `{ preview }`
    through its loaders
    ([src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)) into
    `loadQuery`
@@ -459,9 +459,13 @@ height, format })` (a plain URL string for raw tags, OG, JSON-LD and
   each placement gets exactly the CDN size it always did.
 - **Rich text** arrives pre-rendered: HTML strings for FAQ answers, project
   write-ups and case-study blocks; the blog body is a
-  `{ kind: "portable-text" | "mdx" }` union rendered by `<BlogBody>`.
+  `{ kind: "portable-text" | "mdx" }` union rendered by `<BlogBody>`. The
+  union is open: `BlogBodyFormats` in `@/lib/content/types` holds `mdx`, and
+  [src/sanity/lib/body-format.ts](../../../src/sanity/lib/body-format.ts)
+  registers `portable-text` by module augmentation. Its `buildToc` walker
+  lives in `src/sanity/lib/portable-text.ts`.
 - **Draft perspective.** Every content function takes a trailing
-  `opts?: { perspectiveCookie }`. Only the `/preview/*` twins pass
+  `opts?: { preview }` (`ContentOptions`). Only the `/preview/*` twins pass
   `getDraftModeProps(Astro)` (pass the **whole `Astro` global**, not
   `Astro.cookies` — the helper checks `isPrerendered`); everything else is
   prerendered and calls without it.

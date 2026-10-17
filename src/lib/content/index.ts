@@ -5,13 +5,12 @@
  * - View models and the ContentSource contract: ./types.ts
  * - Image helpers (imageSrc, resolveImageUrl, sizedImage): ./images.ts
  * - The active backend: ./source.ts (one line; the Files implementation in
- *   ./files/ by default, the Sanity one in src/sanity/lib/source.ts with the
- *   add-on)
+ *   ./files/ unless a CMS add-on has replaced it)
  *
  * Every content function takes an optional trailing `opts`
- * ({ perspectiveCookie }) that only a CMS backend reads. Callers here pass
- * none and get published content; the /preview/* draft twins pass
- * getDraftModeProps(Astro) to the Sanity source directly.
+ * ({ preview }) that only a CMS backend reads. Callers here pass none and
+ * get published content; a CMS add-on's draft-preview routes pass the
+ * request's preview state.
  */
 import source from "./source";
 

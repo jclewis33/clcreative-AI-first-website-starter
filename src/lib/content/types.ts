@@ -1,14 +1,13 @@
 /**
  * The content interface's types — the view models every page, template,
  * section and component renders from, and the ContentSource contract each
- * backend implements (./files/ by default; src/sanity/lib/source.ts with the
- * Sanity add-on).
+ * backend implements (./files/ by default; a CMS add-on brings its own).
  *
  * Nothing in here knows which backend is active. Consumers import these
  * through `@/lib/content`; backend code imports this file directly.
  *
- * Nullability mirrors what a backend can genuinely hand over: Sanity drafts
- * are incomplete until an editor fills them in, so most display fields are
+ * Nullability mirrors what a backend can genuinely hand over: a CMS draft
+ * is incomplete until an editor fills it in, so most display fields are
  * `string | null`. Listings drop entries that cannot be linked to.
  */
 import type { ImageMetadata, MDXInstance } from "astro";
@@ -58,12 +57,14 @@ export interface ContentImage {
 /* ── Shared ────────────────────────────────────────────────────────────── */
 
 /**
- * Per-call options. `perspectiveCookie` switches a CMS backend to its draft
- * perspective; only the /preview/* twins pass it (getDraftModeProps(Astro)),
- * calling the Sanity source directly. Backends without drafts ignore it.
+ * Per-call options. `preview` is the current request's draft-preview
+ * state, opaque to everything but the backend that issued it: a CMS
+ * add-on's preview routes read it off their own cookie and pass it, and
+ * that backend returns draft content. Every other caller passes nothing
+ * and gets published content; backends without drafts ignore it.
  */
 export interface ContentOptions {
-  perspectiveCookie?: string | undefined;
+  preview?: string | undefined;
 }
 
 /** One `getStaticPaths` entry for a `[slug]` route. */
@@ -293,12 +294,19 @@ export interface BlogPostSummary {
 }
 
 /**
- * A post body in whatever form its backend keeps it; `<BlogBody>` renders
- * either. Portable Text blocks arrive with each h2 carrying `_slug`.
+ * The body formats `<BlogBody>` can render, keyed by `kind`. Core knows
+ * MDX. A content add-on with its own format registers it by augmenting
+ * this interface (`declare module "@/lib/content/types"`) and ships the
+ * BlogBody that renders it.
  */
-export type BlogBodyContent =
-  | { kind: "portable-text"; blocks: Array<{ _type: string; _key?: string }> }
-  | { kind: "mdx"; Content: MdxContent };
+export interface BlogBodyFormats {
+  mdx: { Content: MdxContent };
+}
+
+/** A post body, in whichever registered format its backend keeps it. */
+export type BlogBodyContent = {
+  [K in keyof BlogBodyFormats]: { kind: K } & BlogBodyFormats[K];
+}[keyof BlogBodyFormats];
 
 /** One FAQ under a post. */
 export interface FaqItem {
@@ -356,13 +364,13 @@ export interface BlogPostPage {
  */
 export interface ContentSource {
   /**
-   * Strip any invisible editor-tooling encoding from a string (Sanity's
-   * stega, present only in draft preview). Identity for other backends.
-   * Use it before a display string is compared or written into a search
-   * data-attribute.
+   * Strip any invisible markers a backend's draft preview embeds in
+   * strings (click-to-edit metadata). Identity for a backend without
+   * them. Use it before a display string is compared, written into a
+   * search data-attribute, or used as SEO or structured data.
    */
   plainText<T extends string | null | undefined>(value: T): T;
-  /** The site-wide CTA defaults (Site Settings in Sanity). */
+  /** The site-wide CTA defaults (the backend's site settings). */
   getCtaDefaults(opts?: ContentOptions): Promise<CtaDefaults>;
   /** Testimonials in their editor-set order; filter by `featured`, cap with `limit`. */
   getTestimonials(

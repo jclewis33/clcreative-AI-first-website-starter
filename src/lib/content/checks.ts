@@ -17,7 +17,7 @@
  *   file in src/content/ctas/blog/, and every `<VideoEmbed url="…">` must be
  *   a supported YouTube or Vimeo link (src/lib/video.ts, the rule the
  *   component renders with). Only literal, double-quoted values outside
- *   fenced code are seen (inlineCtaIds, videoEmbedUrls).
+ *   code (fenced blocks and inline spans) are seen (inlineCtaIds, videoEmbedUrls).
  * - Required entries (`required`): a single-file collection must hold these
  *   keys, so a typo in settings.json's "site" cannot silently drop defaults.
  *

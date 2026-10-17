@@ -1,5 +1,6 @@
 import type { AstroCookies } from "astro";
 import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
+import type { ContentOptions } from "@/lib/content/types";
 
 /**
  * Reads the Sanity perspective cookie off a request so `loadQuery` can switch
@@ -9,20 +10,19 @@ import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
  * touching `cookies` there would trigger "Astro.request.headers was used"
  * warnings.
  *
- * Prerendered pages always resolve to `{ perspectiveCookie: undefined }`,
- * which makes `loadQuery` use the `published` perspective. That's correct:
+ * Prerendered pages always resolve to `{ preview: undefined }`, which
+ * makes `loadQuery` use the `published` perspective. That's correct:
  * prerendered pages are baked at build time and can't support live draft
  * preview anyway.
  */
 export function getDraftModeProps(ctx: {
   cookies: AstroCookies;
   isPrerendered?: boolean;
-}) {
+}): ContentOptions {
   if (ctx.isPrerendered) {
-    return { perspectiveCookie: undefined };
+    return { preview: undefined };
   }
   return {
-    perspectiveCookie:
-      ctx.cookies.get(perspectiveCookieName)?.value ?? undefined,
+    preview: ctx.cookies.get(perspectiveCookieName)?.value ?? undefined,
   };
 }

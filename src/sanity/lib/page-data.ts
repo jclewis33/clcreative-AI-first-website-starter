@@ -49,9 +49,10 @@ import {
 } from "./queries";
 import { SANITY_PROJECT_ID } from "@/config/site.shared.mjs";
 import { categoryToSlug } from "@/lib/blog-categories";
+import type { ContentOptions } from "@/lib/content/types";
 
-/** Perspective forwarding — the return shape of `getDraftModeProps(Astro)`. */
-type DraftProps = { perspectiveCookie?: string | undefined };
+/** Perspective forwarding — the `opts` a content function received. */
+type DraftProps = ContentOptions;
 
 /* ── Blog post ─────────────────────────────────────────────────────────────── */
 

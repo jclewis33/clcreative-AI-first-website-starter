@@ -14,9 +14,9 @@ import type {
   RELATED_BLOG_POSTS_QUERY_RESULT,
 } from "@/sanity/sanity.types";
 import type { BlogPostDetail, BlogPostSummary } from "@/lib/content/types";
-import { buildToc } from "@/lib/toc";
 import { estimateReadTime } from "@/lib/read-time";
 import {
+  buildToc,
   portableTextToHtml,
   portableTextToMarkdown,
   portableTextToPlainText,

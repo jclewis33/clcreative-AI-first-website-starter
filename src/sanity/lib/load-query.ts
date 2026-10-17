@@ -44,13 +44,14 @@ function parsePerspective(
 export async function loadQuery<const Q extends string>({
   query,
   params,
-  perspectiveCookie = undefined,
+  preview = undefined,
 }: {
   query: Q;
   params?: QueryParams;
-  perspectiveCookie?: string | undefined;
+  /** The perspective cookie's value (ContentOptions.preview); set only in draft mode. */
+  preview?: string | undefined;
 }) {
-  const draftMode = perspectiveCookie ? true : false;
+  const draftMode = preview ? true : false;
   /* Read per request, not at build: `import.meta.env` is replaced at build
      time, and the Worker secret only exists at runtime. getSecret() reads
      the Cloudflare binding on the Worker and .env / process.env locally. */
@@ -62,7 +63,7 @@ export async function loadQuery<const Q extends string>({
   }
 
   const perspective: ClientPerspective = draftMode
-    ? (parsePerspective(perspectiveCookie) ?? "drafts")
+    ? (parsePerspective(preview) ?? "drafts")
     : "published";
 
   const run = () =>
