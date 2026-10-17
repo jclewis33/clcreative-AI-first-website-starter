@@ -8,12 +8,21 @@ import Text from "@/components/ui/Text.astro";
 import ChipList from "@/components/ui/ChipList.astro";
 import ImagePair from "@/components/ui/ImagePair.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
+import ServiceMap from "@/components/ui/ServiceMap.astro";
 import type { SectionCta } from "@/lib/cta";
 import { SITE } from "@/config/site";
 
 type ServiceAreaImage = { src: ImageMetadata | string; alt: string };
 /** An SVG imported as a component: `import Map from "@/assets/maps/x.svg"`. */
 type ServiceAreaMap = (props: Record<string, unknown>) => unknown;
+/** A town and its real boundary (scripts/lib/service-area-geo.mjs). */
+type ServiceAreaGeo = {
+  name: string;
+  geometry: {
+    type: "Polygon" | "MultiPolygon" | "Point";
+    coordinates: unknown;
+  };
+};
 type ServiceAreaTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -28,7 +37,13 @@ interface Props extends HTMLAttributes<"section"> {
    * chip highlights its region, and hovering a region highlights its chip.
    * See src/assets/maps/sample-service-area.svg.
    *
+   * **Street map:** pass `geo` — each town's real boundary, fetched from
+   * OpenStreetMap when the site is generated
+   * (scripts/lib/service-area-geo.mjs) — and the column shows a street map
+   * with the towns outlined (ServiceMap). It wins over `map` and `images`.
+   *
    * - `areas` — place names (default `SITE.serviceAreas`)
+   * - `geo` — town boundaries for the street map
    * - `map`, `mapLabel` — the SVG and its accessible description
    * - `images` — two photos, shown when there's no `map`
    * - `cta` — optional button under the chips
@@ -53,6 +68,9 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Place names, one chip each. @default SITE.serviceAreas */
   areas?: readonly string[];
+
+  /** Town boundaries: shows a street map with each town outlined. */
+  geo?: ServiceAreaGeo[];
 
   /** The client's map, imported as an SVG component. */
   map?: ServiceAreaMap;
@@ -86,6 +104,7 @@ const {
   heading,
   text,
   areas = SITE.serviceAreas,
+  geo = [],
   map: Map,
   mapLabel,
   images = [],
@@ -98,7 +117,7 @@ const {
 } = Astro.props;
 
 const chips = areas.map((area) => ({ label: area, key: area }));
-const hasMedia = Boolean(Map) || images.length === 2;
+const hasMedia = geo.length > 0 || Boolean(Map) || images.length === 2;
 const hasContent = chips.length > 0 || hasMedia;
 
 if (import.meta.env.DEV && render) {
@@ -134,7 +153,12 @@ if (import.meta.env.DEV && render) {
         )}
         {cta && <CtaButton cta={cta} variant="secondary" />}
 
-        {Map ? (
+        {geo.length > 0 && (
+          <div slot="column2" class="service-area_map is-street">
+            <ServiceMap areas={geo} label={mapLabel} />
+          </div>
+        )}
+        {geo.length === 0 && Map ? (
           <div slot="column2" class="service-area_map">
             <Map
               class="service-area_svg"
@@ -142,7 +166,7 @@ if (import.meta.env.DEV && render) {
               aria-label={mapLabel ?? `Map of ${areas.join(", ")}`}
             />
           </div>
-        ) : images.length === 2 ? (
+        ) : geo.length === 0 && images.length === 2 ? (
           <ImagePair slot="column2" images={images} />
         ) : null}
       </Layout>

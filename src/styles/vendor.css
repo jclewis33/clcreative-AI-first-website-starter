@@ -12,3 +12,5 @@
    ========================================================================== */
 
 @import "swiper/css/bundle" layer(vendor);
+/* Leaflet — the ServiceMap component's map (src/components/ui/ServiceMap.astro). */
+@import "leaflet/dist/leaflet.css" layer(vendor);

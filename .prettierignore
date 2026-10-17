@@ -30,3 +30,7 @@ src/content/
 # excluded until the plugin can handle inline scripts. Format them by hand.
 src/components/global/Head.astro
 src/layouts/BaseLayout.astro
+
+# Service-area map boundaries (scripts/lib/service-area-geo.mjs): generated,
+# compact on purpose — formatting would put every coordinate on its own line.
+**/service-area.geo.json

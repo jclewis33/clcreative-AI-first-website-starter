@@ -110,6 +110,11 @@ git switch -c demo/<slug>
 - **`callBand`:** `variant: "photo-card"` with a wide texture-like job photo
   (a lawn, a roofline, a finished patio). Otherwise leave out `variant` for
   the dark band.
+- **Service-area map:** automatic. `npm run demo` looks each service area
+  up on OpenStreetMap and draws a street map with the towns outlined,
+  caching the boundaries in `service-area.geo.json` beside demo.json. Commit
+  that file with the demo. A town it can't find is skipped with a warning;
+  check the spelling, or use the town's official name.
 - **`license`:** their license number, if their site or the state lookup
   shows it.
 

@@ -94,6 +94,9 @@ import "@/styles/pages/components-demo.css";
 import CtaButton from "@/components/ui/CtaButton.astro";
 import CtaPanel from "@/components/ui/CtaPanel.astro";
 import TrustBadges from "@/components/ui/TrustBadges.astro";
+/* Real town boundaries for the street-map demo — the Brightline fixture's
+   cache (scripts/lib/service-area-geo.mjs), so the page needs no lookup. */
+import fixtureGeo from "../../presets/local-service/fixture/service-area.geo.json";
 import LeadFormModal from "@/components/form/LeadFormModal.astro";
 import ImagePair from "@/components/ui/ImagePair.astro";
 import ServiceIcon, {
@@ -352,6 +355,14 @@ const demoRatedReviews = [
     meta: "Repair · Austin",
   },
 ];
+const demoAreaGeo = Object.entries(fixtureGeo).map(([key, geometry]) => ({
+  name: key.split(",")[0],
+  geometry: geometry as {
+    type: "Polygon" | "MultiPolygon" | "Point";
+    coordinates: unknown;
+  },
+}));
+const demoAreaNames = demoAreaGeo.map((area) => area.name);
 ---
 
 <BaseLayout
@@ -2577,6 +2588,12 @@ const demoRatedReviews = [
     areas={["North County", "Your City", "Neighboring City", "Fort Bend"]}
     map={SampleMap}
     cta={{ label: "Check your address", modal: "demo-estimate" }}
+  />
+  <ServiceArea
+    heading="Serving Austin and nearby"
+    text="A real street map, each town outlined. Point at a town or its chip."
+    areas={demoAreaNames}
+    geo={demoAreaGeo}
   />
   <ServiceArea
     eyebrow="Service area"

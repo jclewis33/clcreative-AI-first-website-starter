@@ -49,6 +49,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { parseJsonc } from "./lib/jsonc.mjs";
+import { serviceAreaGeo } from "./lib/service-area-geo.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const at = (/** @type {string[]} */ ...rel) => path.join(ROOT, ...rel);
@@ -263,6 +264,23 @@ async function main() {
   await homeImage(home.callBand, "image", "call-band");
   for (const [i, badge] of (home.hero.trust ?? []).entries())
     await homeImage(badge, "image", `trust-${i + 1}`, 320);
+
+  // 1a'. The service-area street map: each town's real boundary from
+  // OpenStreetMap, cached beside demo.json (service-area.geo.json) so a
+  // re-run — and check:demo — needs no network. A failed lookup only costs
+  // the map; the chips still show.
+  try {
+    home.serviceArea.geo = await serviceAreaGeo(
+      demo.home.serviceArea.areas ?? demo.serviceAreas,
+      demo.contact.region,
+      path.join(baseDir, "service-area.geo.json"),
+      (m) => console.warn(`! ${m}`),
+    );
+  } catch (err) {
+    console.warn(
+      `! Service-area map skipped: ${/** @type {Error} */ (err).message}`,
+    );
+  }
 
   // 1b. Logo, favicon, webclip, share image.
   const logoSrc = demo.brand.logo.file;

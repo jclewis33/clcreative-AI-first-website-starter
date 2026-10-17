@@ -22,6 +22,13 @@ type HomeOption = { label: string; value: string };
 /** An SVG imported as a component (ServiceArea's interactive map). */
 type HomeMap = (props: Record<string, unknown>) => unknown;
 type HomeTrust = { label: string; image?: HomeImage };
+type HomeAreaGeo = {
+  name: string;
+  geometry: {
+    type: "Polygon" | "MultiPolygon" | "Point";
+    coordinates: unknown;
+  };
+};
 
 export interface LocalServiceHomeData {
   /** Page `<title>` and meta description. */
@@ -61,6 +68,8 @@ export interface LocalServiceHomeData {
     text?: string;
     /** Defaults to SITE.serviceAreas. */
     areas?: string[];
+    /** Town boundaries for the street map — `npm run demo` fetches them. */
+    geo?: HomeAreaGeo[];
     map?: HomeMap;
   };
 
