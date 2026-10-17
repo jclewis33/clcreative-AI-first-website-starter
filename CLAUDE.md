@@ -14,7 +14,8 @@ lives in **skills** — load them, don't guess:
 | `setup`               | Setting up a fork as a new project                                                                                                                                                                                                            |
 
 Other docs: [docs/new-project-checklist.md](docs/new-project-checklist.md)
-(per-fork dashboard setup), [docs/brand-color-guide.md](docs/brand-color-guide.md),
+(per-fork dashboard setup), [docs/handing-off.md](docs/handing-off.md)
+(handing a finished site to a client), [docs/brand-color-guide.md](docs/brand-color-guide.md),
 [docs/responsive-columns.md](docs/responsive-columns.md),
 [docs/editing-content.md](docs/editing-content.md) (the client-facing
 content-editing guide; keep it in step with the `content-files` skill).

@@ -70,6 +70,15 @@ and VS Code autocompletes the JSON fields (`.vscode/settings.json`).
 
 **No domain yet?** A fork can deploy to the Worker's free `*.workers.dev` URL before any custom domain exists — `SITE_URL` is env-overridable, so the staging→production switch is a no-code env change. Per-client runbook: **§4a "Staging-first deploy"** in [docs/new-project-checklist.md](docs/new-project-checklist.md).
 
+## 📦 Handing off this project
+
+A finished site hands over as the GitHub repository (transfer it to the
+client) or as a zip (`git archive --format=zip -o site.zip HEAD`, which
+leaves out `.env`, `node_modules/` and `dist/`). Before you do, clear the
+sample content, run the checks and list the accounts and secrets the client
+takes over. Step by step, for you and for the recipient:
+[`docs/handing-off.md`](docs/handing-off.md).
+
 ## 🎨 Cloning this as a template
 
 The site identity is centralized so a new site is mostly config, not find-and-replace:

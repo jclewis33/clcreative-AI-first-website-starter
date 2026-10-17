@@ -190,6 +190,8 @@ npm audit --omit=dev --audit-level=critical   # expect 0 critical (matches the C
 
 Plus, in a browser: the hosted Studio loads at `https://<studioHost>.sanity.studio` and its Presentation tool previews the live site (click-to-edit overlays appear), and — if the fork wired a form endpoint — one full submission delivers.
 
+Handing the finished site to the client: [handing-off.md](handing-off.md) (sample content, transfer by GitHub or zip, the accounts and secrets that move).
+
 ---
 
 ## 8. Ongoing security rhythm (applies to this repo AND every fork)
