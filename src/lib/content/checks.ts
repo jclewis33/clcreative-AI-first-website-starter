@@ -22,6 +22,13 @@
  * - Required entries (`required`): a single-file collection must hold these
  *   keys, so a typo in settings.json's "site" cannot silently drop defaults.
  *
+ * - Stale entries. Astro's glob() loader returns early, without clearing
+ *   what it stored last time, when its folder holds no matching files —
+ *   so emptying a folder (all testimonials deleted) would keep the deleted
+ *   entries in the content store and ship them in the next build. After
+ *   every load (and every dev re-check) an entry whose source file is gone
+ *   is removed (pruneDeleted), so an emptied folder simply builds empty.
+ *
  * Every problem is collected, then thrown as one error, one line each:
  *   src/content/projects/x.json → heroImage: image file not found: "./images/y.webp"
  *
@@ -72,6 +79,7 @@ export function checked(loader: Loader, options: CheckOptions = {}): Loader {
         ...context,
         watcher: context.watcher && afterEach(context.watcher, recheck.after),
       });
+      pruneDeleted(context);
       const problems = findProblems(context, options);
       recheck.reported(problems);
       if (problems.length) throw new Error(report(context, problems));
@@ -127,6 +135,7 @@ function devRechecks(context: LoaderContext, options: CheckOptions) {
 
   const run = () => {
     try {
+      pruneDeleted(context);
       const problems = findProblems(context, options);
       const key = problems.join("\n");
       if (key === last) return;
@@ -154,6 +163,18 @@ function devRechecks(context: LoaderContext, options: CheckOptions) {
     after,
     reported: (problems: string[]) => (last = problems.join("\n")),
   };
+}
+
+/**
+ * Remove stored entries whose source file no longer exists. Entries
+ * without a filePath (none today) are left alone.
+ */
+function pruneDeleted(context: LoaderContext): void {
+  const root = fileURLToPath(context.config.root);
+  for (const [id, entry] of [...context.store.entries()]) {
+    if (entry.filePath && !fs.existsSync(path.resolve(root, entry.filePath)))
+      context.store.delete(id);
+  }
 }
 
 function report(context: LoaderContext, problems: string[]): string {

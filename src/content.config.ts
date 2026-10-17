@@ -40,7 +40,9 @@ import { renderRichText } from "./lib/content/markdown";
  *   is missing, a body image has no alt text, a body `<VideoEmbed url>` is
  *   not YouTube or Vimeo, or settings.json lacks its "site" key — naming
  *   the file and the field (Astro itself only logs a dangling reference).
- *   In `npm run dev` it re-runs after every save and logs instead.
+ *   In `npm run dev` it re-runs after every save and logs instead. It
+ *   also drops entries whose file was deleted, so an emptied folder
+ *   builds empty (Astro's glob loader alone would keep them).
  * - Enums come from src/config/, which the Sanity add-on's schema reads too.
  */
 

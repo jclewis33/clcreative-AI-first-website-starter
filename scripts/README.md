@@ -74,7 +74,11 @@ content text helpers) and then this script, which writes temporary
 naming the file and the field. It never edits your entries (the gallery and
 settings cases back up `gallery.json` and `settings.json` and restore them).
 Cleanup runs on exit, Ctrl-C, SIGTERM and SIGHUP; after a hard kill the next
-run sweeps the leftovers. Stop `npm run dev` first: it would briefly see the
+run sweeps the leftovers. Two `EMPTIED` cases then hide every file of a
+folder (testimonials, then projects, as `.zz-check-backup` sidecars) and
+expect no deleted entry to survive in the content store or in a build
+written to `node_modules/.cache/zz-check-build` (never `dist/`). Stop
+`npm run dev` first: it would briefly see the
 transient files (and log their errors). New cases go in the `CASES` array. It
 is a test harness for the checks themselves; to check your content, run
 `npm run check` or `npm run build`.

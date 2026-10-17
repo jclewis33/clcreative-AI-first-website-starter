@@ -19,12 +19,21 @@
  * leftovers: `zz-check*` files are deleted, and any file with a
  * `.zz-check-backup` sidecar is restored from it.
  *
+ * Two more cases empty a whole folder (Astro's glob() loader keeps what it
+ * stored last time when its folder has no files; checked() prunes those
+ * entries): the testimonials are hidden — renamed to `.zz-check-backup`
+ * sidecars, restored like the rewrites above — and the sync must pass with
+ * none of them left in Astro's content store; then the projects are hidden
+ * and a build (into node_modules/.cache/zz-check-build, never dist/) must
+ * contain no page for any of them.
+ *
  * While it runs, the transient files exist on disk, so a dev server running
  * at the same time will briefly see them (and may log errors). Stop the dev
  * server first, or ignore the noise.
  *
  * Usage: npm run check:content
- * Exit 1 when a broken entry syncs, or its error misses the file or field.
+ * Exit 1 when a broken entry syncs, its error misses the file or field, or
+ * an emptied folder leaves its old entries behind.
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -105,6 +114,29 @@ function write(rel, content) {
   }
   fs.writeFileSync(abs, content);
 }
+
+/**
+ * Hide an existing file for one case: renamed to its backup sidecar, so
+ * cleanup (or the next run's sweep) puts it back.
+ */
+function hide(rel) {
+  const abs = path.join(ROOT, rel);
+  if (created.has(abs)) {
+    fs.rmSync(abs, { force: true });
+    return;
+  }
+  if (originals.has(abs)) return;
+  originals.set(abs, fs.readFileSync(abs));
+  created.add(abs + BACKUP);
+  fs.renameSync(abs, abs + BACKUP);
+}
+
+/** The repo-relative `*.<ext>` files directly in a src/content folder. */
+const entriesIn = (dir, ext) =>
+  fs
+    .readdirSync(path.join(CONTENT, dir))
+    .filter((f) => f.endsWith(`.${ext}`) && !f.endsWith(BACKUP))
+    .map((f) => `src/content/${dir}/${f}`);
 
 function cleanup() {
   for (const [abs, bytes] of originals) fs.writeFileSync(abs, bytes);
@@ -433,10 +465,13 @@ const CASES = [
 
 /* ── Run ───────────────────────────────────────────────────────────────── */
 
-/** Async (not spawnSync) so SIGINT/SIGTERM handlers run promptly and clean up. */
-function sync() {
+/**
+ * `astro sync` (or `args`, e.g. a build). Async, not spawnSync, so
+ * SIGINT/SIGTERM handlers run promptly and clean up.
+ */
+function sync(args = ["sync"]) {
   return new Promise((resolve) => {
-    child = spawn(process.execPath, [ASTRO, "sync"], {
+    child = spawn(process.execPath, [ASTRO, ...args], {
       cwd: ROOT,
       env: { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" },
     });
@@ -444,7 +479,7 @@ function sync() {
     const run = child;
     run.stdout.on("data", (chunk) => (output += chunk));
     run.stderr.on("data", (chunk) => (output += chunk));
-    const timer = setTimeout(() => run.kill(), 180_000);
+    const timer = setTimeout(() => run.kill(), 600_000);
     run.on("close", (code) => {
       clearTimeout(timer);
       child = null;
@@ -484,6 +519,79 @@ for (const testCase of CASES) {
   } else console.log(`ok    ${testCase.name}`);
 }
 
+/* ── Emptied folders: no deleted entry may outlive its file ─────────── */
+
+/** Where the build case writes (gitignored, never the real dist/). */
+const BUILD_DIR = path.join(ROOT, "node_modules", ".cache", "zz-check-build");
+/** Astro's content store, which the build reads. */
+const DATA_STORE = path.join(ROOT, "node_modules", ".astro", "data-store.json");
+
+const EMPTIED = [
+  {
+    name: "emptied folder syncs clean (testimonials)",
+    /** @returns {Promise<string | null>} the problem, if any */
+    run: async () => {
+      const files = entriesIn("testimonials", "json");
+      for (const rel of files) hide(rel);
+      // The stale-entry symptom: the control testimonial's photo is gone too.
+      hide("src/content/testimonials/images/zz-check.png");
+      const { ok, output } = await sync();
+      if (!ok) return `astro sync failed\n${tail(output)}`;
+      const store = fs.existsSync(DATA_STORE)
+        ? fs.readFileSync(DATA_STORE, "utf8")
+        : "";
+      const left = files.filter((rel) => store.includes(rel));
+      return left.length
+        ? `the content store still holds ${left.join(", ")}`
+        : null;
+    },
+  },
+  {
+    name: "emptied folder builds no deleted pages (projects)",
+    run: async () => {
+      const files = entriesIn("projects", "json");
+      for (const rel of files) hide(rel);
+      // Gallery photos may name a project; drop those links with them.
+      const gallery = "src/content/gallery.json";
+      if (fs.existsSync(path.join(ROOT, gallery))) {
+        const items = JSON.parse(
+          fs.readFileSync(path.join(ROOT, gallery), "utf8"),
+        );
+        write(
+          gallery,
+          json(items.map(({ project: _project, ...item }) => item)),
+        );
+      }
+      fs.rmSync(BUILD_DIR, { recursive: true, force: true });
+      created.add(BUILD_DIR);
+      const { ok, output } = await sync(["build", "--outDir", BUILD_DIR]);
+      if (!ok) return `astro build failed\n${tail(output)}`;
+      const built = files
+        .map((rel) => path.basename(rel, ".json"))
+        .filter((id) =>
+          fs.existsSync(path.join(BUILD_DIR, "client", "projects", id)),
+        );
+      return built.length
+        ? `the build still has pages for ${built.map((id) => `/projects/${id}/`).join(", ")}`
+        : null;
+    },
+  },
+];
+
+for (const testCase of EMPTIED) {
+  cleanup();
+  control();
+  // Load every entry first, so a stale one would have something to outlive.
+  const before = await sync();
+  const problem = before.ok
+    ? await testCase.run()
+    : `the control entries did not sync\n${tail(before.output)}`;
+  if (problem) {
+    failures++;
+    console.log(`FAIL  ${testCase.name}: ${problem}`);
+  } else console.log(`ok    ${testCase.name}`);
+}
+
 cleanup();
 if (!(await sync()).ok) {
   failures++;
@@ -493,6 +601,6 @@ if (!(await sync()).ok) {
 console.log(
   failures
     ? `\n${failures} case(s) failed.`
-    : `\nAll ${CASES.length} broken-content cases fail sync, naming the file and the field.`,
+    : `\nAll ${CASES.length} broken-content cases fail sync, naming the file and the field; ${EMPTIED.length} emptied-folder cases leave no deleted entry behind.`,
 );
 process.exit(failures ? 1 : 0);

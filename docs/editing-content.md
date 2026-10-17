@@ -318,6 +318,11 @@ check stops if it is missing or misspelled):
 Delete its file and its photos. If another file still points to it, the
 check in section 5 names that file and field; fix or remove the pointer.
 
+Emptying a whole folder is fine too: a site with no testimonials or no
+projects can delete every file in that folder. The pages for that type
+simply build empty (listings show no cards and no detail pages are
+built), and nothing needs clearing first.
+
 ## 5. Check your work
 
 Before you publish, run:

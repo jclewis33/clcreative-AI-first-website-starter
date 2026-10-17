@@ -331,7 +331,8 @@ Before writing any new CSS:
 prebuild) · `npm run check:boundary` (content files read only through
 `@/lib/content`; an add-on's rules in `scripts/boundary/`, which the
 add-on ships) · `npm run check:content` (content text-helper unit checks,
-then bad content must fail `astro sync` naming file and field) ·
+then bad content must fail `astro sync` naming file and field, and an
+emptied folder must leave no deleted entry behind) ·
 `npm run check:content-build` (after a build: coming-soon studies, OG/JSON-LD
 image URLs, resized local images, TOC anchors) ·
 `npm run check:schema -- --dist dist/client` (JSON-LD on the built site) ·

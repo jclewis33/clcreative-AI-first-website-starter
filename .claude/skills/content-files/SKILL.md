@@ -301,6 +301,13 @@ that have an `image` (every Files study does: it is required).
 - **Remove an entry:** delete its file and its photos. If another file
   referenced it, the sync names that file and field; fix or remove the
   reference.
+- **Drop a whole content type** (a site with no testimonials or projects):
+  delete every file in its folder — an empty folder is fine. Its pages
+  simply build empty (listings show no cards, no detail pages are
+  built). Astro's own glob loader would keep the old entries when a folder
+  has no files; `checked()` prunes any entry whose file is gone, so no
+  cache needs clearing. Fix references to the removed entries as above
+  (e.g. `project` links in `gallery.json`).
 
 ## When the build fails
 
@@ -326,7 +333,8 @@ The error names the file, then lists each problem as `field: message`.
 
 `npm run check:content` is the test harness for these checks, not a way to
 check content: it proves each of these still fails (it writes and removes
-temporary `zz-check-*` entries), and unit-tests the Markdown and MDX text
+temporary `zz-check-*` entries), that an emptied folder leaves no deleted
+entry in the sync or the build, and unit-tests the Markdown and MDX text
 helpers. After a build, `npm run check:content-build` checks the
 built pages: coming-soon studies stay unpublished, OG and JSON-LD images
 are absolute, local images are served resized, and table-of-contents links
