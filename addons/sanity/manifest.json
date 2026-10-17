@@ -28,7 +28,8 @@
     "studio:local": "SANITY_STUDIO_PREVIEW_URL=http://localhost:4321 sanity dev",
     "typegen": "sanity schema extract --path ./src/sanity/schema.json --force && sanity typegen generate",
     "check:fixtures": "node scripts/check-fixture-markdown.mjs",
-    "check:stega": "node scripts/check-stega-leaks.mjs"
+    "check:stega": "node scripts/check-stega-leaks.mjs",
+    "check:preview-session": "node scripts/check-preview-session.mjs"
   },
   "wrangler": {
     "comment": "Sanity add-on: the project id and dataset (src/config/sanity.shared.mjs;\nnpm run check:config keeps these in step). SANITY_API_READ_TOKEN is an\nENCRYPTED secret, never a var.",
@@ -52,9 +53,10 @@
     "",
     "# Sanity Viewer token — required in every environment. Used by",
     "# /api/draft-mode/enable to validate Presentation preview URLs, and by",
-    "# loadQuery when the sanity-preview-perspective cookie is set. Public",
-    "# visitors never trigger token use (the cookie is only set via the",
-    "# authenticated Studio → Presentation flow). Store as an encrypted",
+    "# loadQuery in draft mode. It also signs the httpOnly preview-session",
+    "# cookie that turns draft mode on (src/sanity/lib/preview-session.ts),",
+    "# issued only after a Studio-signed preview URL validates, so a",
+    "# hand-set cookie never reaches the token. Store as an encrypted",
     "# Cloudflare secret — never a plain wrangler var. Generate at",
     "# https://www.sanity.io/manage → API → Tokens with the Viewer role.",
     "SANITY_API_READ_TOKEN="

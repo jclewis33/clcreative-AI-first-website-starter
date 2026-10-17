@@ -371,8 +371,8 @@ and the `addon-sanity` job, which passes with nothing to check once
 
 Sanity forks: the add-on replaced `ci.yml` with its own workflow (it drops
 `check:addon-installer`, `check:setup`, `check:content-build` and
-`check:schema`, and adds `check:fixtures` and a draft-preview stega
-check) — run that list. Run `npm run typegen` **before** `npm run check`
+`check:schema`, and adds `check:fixtures`, `check:preview-session` and a
+draft-preview stega check) — run that list. Run `npm run typegen` **before** `npm run check`
 once the schema is deployed ([references/sanity.md](references/sanity.md)
 §S7).
 

@@ -1,6 +1,7 @@
 import type { ClientPerspective, QueryParams } from "@sanity/client";
 import { sanityClient } from "sanity:client";
 import { getSecret } from "astro:env/server";
+import { sanitizePerspective } from "./preview-session";
 
 /* Parity fixtures (dev-only): `PARITY_FIXTURES=1|preview|sample npm run
    build` answers every query from ./fixtures instead of the network, so a
@@ -13,21 +14,6 @@ import { getSecret } from "astro:env/server";
    the flag at runtime, so a stray Worker variable cannot switch it on.
    The constant is read inline (not via a local) so the condition is a
    literal the bundler folds. */
-
-function parsePerspective(
-  raw: string | undefined,
-): ClientPerspective | undefined {
-  if (!raw) return undefined;
-  const decoded = decodeURIComponent(raw);
-  if (decoded.startsWith("[")) {
-    try {
-      return JSON.parse(decoded) as ClientPerspective;
-    } catch {
-      return undefined;
-    }
-  }
-  return decoded as ClientPerspective;
-}
 
 /**
  * Fetch a GROQ query, honouring the Presentation draft perspective.
@@ -48,10 +34,14 @@ export async function loadQuery<const Q extends string>({
 }: {
   query: Q;
   params?: QueryParams;
-  /** The perspective cookie's value (ContentOptions.preview); set only in draft mode. */
+  /** The draft perspective (ContentOptions.preview) from getDraftModeProps(), set only when the signed preview session verifies. */
   preview?: string | undefined;
 }) {
-  const draftMode = preview ? true : false;
+  /* Draft mode needs a perspective that passes the allowlist. Anything
+     else (a value that did not come through getDraftModeProps) drops to
+     the published, token-free fetch rather than a guessed perspective. */
+  const draftPerspective = sanitizePerspective(preview);
+  const draftMode = draftPerspective !== undefined;
   /* Read per request, not at build: `import.meta.env` is replaced at build
      time, and the Worker secret only exists at runtime. getSecret() reads
      the Cloudflare binding on the Worker and .env / process.env locally. */
@@ -62,9 +52,7 @@ export async function loadQuery<const Q extends string>({
     );
   }
 
-  const perspective: ClientPerspective = draftMode
-    ? (parsePerspective(preview) ?? "drafts")
-    : "published";
+  const perspective: ClientPerspective = draftPerspective ?? "published";
 
   const run = () =>
     sanityClient.fetch(query, params ?? {}, {

@@ -9,7 +9,7 @@ helpers import Node built-ins only.
 
 The Sanity add-on (`addons/sanity/`) brings its own scripts
 (`check-stega-leaks.mjs`, `check-fixture-markdown.mjs`,
-`migrate-webflow-blog.mjs`, and a `compare-dist.mjs` with `--equivalent`);
+`check-preview-session.mjs`, `migrate-webflow-blog.mjs`, and a `compare-dist.mjs` with `--equivalent`);
 `addons/sanity/README.md` describes them.
 
 ---

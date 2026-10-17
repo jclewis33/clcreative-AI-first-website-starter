@@ -1,9 +1,9 @@
 ---
 /**
  * CmsEditing — the CMS editing seam. BaseLayout renders it once, at the
- * end of `<body>`. In draft mode (the Presentation perspective cookie is
- * set, which happens only on SSR routes) it mounts the visual-editing
- * overlay and the "Disable Draft Mode" button. Installed over the Files
+ * end of `<body>`. In draft mode (a signed preview session, issued by
+ * /api/draft-mode/enable and checked only on SSR routes) it mounts the
+ * visual-editing overlay and the "Disable Draft Mode" button. Installed over the Files
  * version (which renders nothing) by `npm run addon:sanity`.
  *
  * As a seam rather than a page-building component, it is exempt from the
@@ -12,7 +12,7 @@
  */
 import SanityVisualEditing from "@/components/SanityVisualEditing";
 import DisableDraftMode from "@/components/DisableDraftMode";
-import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
+import { hasPreviewSession } from "@/sanity/lib/draft-mode";
 
 interface Props {
   /**
@@ -24,13 +24,12 @@ interface Props {
 
 const { docs } = Astro.props;
 
-// Prerendered pages are baked at build time with no request, so cookies
-// aren't available. Short-circuit to avoid "Astro.request.headers was used"
-// build warnings. Draft mode only ever applies to SSR routes (the
-// /preview/* twins and API routes); public content routes are prerendered.
-const draftMode = Astro.isPrerendered
-  ? false
-  : Astro.cookies.has(perspectiveCookieName);
+// Draft mode only ever applies to SSR routes (the /preview/* twins and API
+// routes); public content routes are prerendered, and hasPreviewSession()
+// answers false for them without reading cookies. The perspective cookie
+// alone is not enough: page script can write it, the signed session it
+// cannot (src/sanity/lib/preview-session.ts).
+const draftMode = await hasPreviewSession(Astro);
 ---
 
 {
