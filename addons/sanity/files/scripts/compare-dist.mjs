@@ -44,18 +44,23 @@
  * chunks (compared layer by layer), llms-full.txt bodies (only its outline
  * — headings, URL:, Client: and index lines — is compared), `_headers`
  * (row 16: its CSP frame-ancestors differ by source — the Studio's origins
- * against 'self' — and check:config guards the rest), and (row 15)
- * the position of an inline module <script>. Astro emits a component's
- * hoisted script once, at whichever instance finishes rendering first;
- * local getImage() is slower than a CDN string, so with two instances on a
- * page (Lightbox alone and inside GalleryBrowser on /components) the
- * script lands at a different instance per source. Module scripts are
- * deferred, so behaviour is unchanged. That rule runs only when the page
- * still differs after every other one: inline <script type="module">
- * elements are lifted out and compared (text sorted) at the end of the
- * page; the script text must match exactly, and external scripts and all
- * other markup keep their positions. It ends by counting how often each
- * normalisation fired, so a rule that no longer does anything is visible.
+ * against 'self' — and check:config guards the rest), (row 17) inline
+ * module script text — bundler output varies with dependency versions;
+ * the components' source is shared, so text is not compared (every inline
+ * <script type="module"> body becomes one placeholder; the elements are
+ * still compared, so a missing or extra script on a page still differs),
+ * and (row 15) the position of an inline module <script>. Astro emits a
+ * component's hoisted script once, at whichever instance finishes
+ * rendering first; local getImage() is slower than a CDN string, so with
+ * two instances on a page (Lightbox alone and inside GalleryBrowser on
+ * /components) the script lands at a different instance per source.
+ * Module scripts are deferred, so behaviour is unchanged. That rule runs
+ * only when the page still differs after every other one: inline
+ * <script type="module"> elements are lifted out and compared at the end
+ * of the page (by count, their text being row 17's placeholder), while
+ * external scripts and all other markup keep their positions. It ends by
+ * counting how often each normalisation fired, so a rule that no longer
+ * does anything is visible.
  *
  *   node scripts/compare-dist.mjs --equivalent .parity/sample .parity/files
  *
@@ -186,6 +191,7 @@ const fired = {
   "id dropped on h3–h6": 0,
   "inline <style> compared by layer": 0,
   "inline module <script> position ignored": 0,
+  "inline module <script> text not compared (pages)": 0,
   "llms-full.txt → outline": 0,
   "_headers skipped (frame-ancestors differ by source)": 0,
 };
@@ -288,6 +294,25 @@ function loneImage(node) {
     : null;
 }
 
+/** Row 17: an inline module <script>'s text is bundler output. The same
+    component source minifies differently across Vite/Rolldown versions, and
+    the add-on's install re-resolves those shared build dependencies, so its
+    build can bundle with newer ones than the Files build it is compared
+    with. The text is replaced by this placeholder; the element itself (and
+    so the count of scripts per page) is still compared. */
+const MODULE_SCRIPT = "INLINE-MODULE-SCRIPT";
+const isInlineModuleScript = (node) =>
+  tagOf(node) === "script" &&
+  node.getAttribute("type") === "module" &&
+  !node.getAttribute("src");
+/** The inline module scripts' texts in a page, sorted. */
+const moduleScriptTexts = (html) =>
+  parse(html, PARSE_OPTIONS)
+    .querySelectorAll('script[type="module"]')
+    .filter((el) => !el.getAttribute("src"))
+    .map((el) => el.text)
+    .sort();
+
 /** Canonical DOM string with the equivalence normalisations applied. */
 function canonEq(node) {
   const tag = tagOf(node);
@@ -300,20 +325,22 @@ function canonEq(node) {
   }
   const kids = node.childNodes;
   const blockEdge = !tag || BLOCK_TAGS.has(tag);
-  const inner = kids
-    .map((kid, i) => {
-      if (isElement(kid)) return canonEq(kid);
-      if (kid.nodeType !== 3) return "";
-      const collapsed = kid.text.replace(/\s+/g, " ");
-      let text = collapsed;
-      if (i > 0 ? isBlock(kids[i - 1]) : blockEdge) text = text.trimStart();
-      if (i < kids.length - 1 ? isBlock(kids[i + 1]) : blockEdge)
-        text = text.trimEnd();
-      if (text !== collapsed && text)
-        fired["text trimmed beside a block element"]++;
-      return text;
-    })
-    .join("");
+  const inner = isInlineModuleScript(node)
+    ? MODULE_SCRIPT
+    : kids
+        .map((kid, i) => {
+          if (isElement(kid)) return canonEq(kid);
+          if (kid.nodeType !== 3) return "";
+          const collapsed = kid.text.replace(/\s+/g, " ");
+          let text = collapsed;
+          if (i > 0 ? isBlock(kids[i - 1]) : blockEdge) text = text.trimStart();
+          if (i < kids.length - 1 ? isBlock(kids[i + 1]) : blockEdge)
+            text = text.trimEnd();
+          if (text !== collapsed && text)
+            fired["text trimmed beside a block element"]++;
+          return text;
+        })
+        .join("");
   if (!tag) return inner;
   const attrs = Object.entries(node.attributes)
     .filter(([name]) => {
@@ -343,15 +370,15 @@ function canonEq(node) {
     getImage() is slower than a CDN URL string, so with two instances on a
     page (Lightbox, alone and inside GalleryBrowser on /components) the
     script can land at a different instance per source. Module scripts are
-    deferred, so the position changes nothing; the scripts' text still
-    has to match. */
+    deferred, so the position changes nothing. The text is compared as row
+    17's placeholder, so this compares how many scripts each page has. */
 function canonEqScriptsLifted(html) {
   const root = parse(html, PARSE_OPTIONS);
   const scripts = root
     .querySelectorAll('script[type="module"]')
     .filter((el) => !el.getAttribute("src"));
   for (const el of scripts) el.remove();
-  const lifted = scripts.map((el) => el.text).sort();
+  const lifted = scripts.map(() => MODULE_SCRIPT);
   return `${canonEq(root)}\n<lifted-module-scripts>\n${lifted.join("\n")}`;
 }
 
@@ -423,6 +450,11 @@ for (const file of base.filter((f) => candSet.has(f))) {
       const noStyles = (t) => t.replace(STYLE_RE, "<style></style>");
       const rawA = noStyles(a);
       const rawB = noStyles(b);
+      if (
+        JSON.stringify(moduleScriptTexts(rawA)) !==
+        JSON.stringify(moduleScriptTexts(rawB))
+      )
+        fired["inline module <script> text not compared (pages)"]++;
       a = canonEq(parse(rawA, PARSE_OPTIONS));
       b = canonEq(parse(rawB, PARSE_OPTIONS));
       if (a !== b) {
