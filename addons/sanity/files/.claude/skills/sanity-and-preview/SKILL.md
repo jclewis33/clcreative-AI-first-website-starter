@@ -222,6 +222,52 @@ deploy hook → **one** build. The debounce matters because Sanity fires once pe
 document — publishing a batch without it means one build per document.
 Publish-to-live lands ~5–20 minutes depending on the debounce window.
 
+### Rolling back the signed preview session (only if you must)
+
+The signed session (added October 2026, starter commits `677c07b` and
+`e9f2d28`, merged as "Sanity add-on: signed preview session") replaced an
+older, **insecure** check: draft mode used to turn on for any request with a
+`sanity-preview-perspective` cookie, so anyone could hand-set that cookie on
+`/preview/*` and read unpublished drafts fetched with the server's read
+token. **Rolling back reopens that hole.** Do it only to unblock editors while
+you fix the real problem, and roll forward again.
+
+Things to try before rolling back:
+
+- Editors see published content in Presentation: the session expired or was
+  never set. Re-open Presentation (it calls `/api/draft-mode/enable`).
+- Still nothing: check the response headers of `/api/draft-mode/enable` for
+  `Set-Cookie: starter-preview-session=…`. A browser blocking third-party
+  cookies in the Studio iframe (Safari, some incognito modes) drops it —
+  the old cookie had the same limitation.
+- A valid-looking session is rejected: `SANITY_API_READ_TOKEN` changed (it is
+  the signing key, so rotating it signs everyone out — expected) or the
+  server clock is off by more than 5 minutes.
+
+**In the starter repo** (has the history):
+
+```bash
+git log --oneline --grep "signed preview session"   # find the merge commit
+git revert -m 1 <merge-sha>                         # undo both commits
+```
+
+**In a project that installed the add-on** (no starter history), restore the
+old behaviour by hand:
+
+| File                                                                     | Change back to                                                                                                                           |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/sanity/lib/draft-mode.ts`                                           | `getDraftModeProps` is synchronous and returns `{ preview: cookies.get(perspectiveCookieName)?.value }` (undefined on prerendered pages) |
+| `src/pages/preview/**/[slug].astro` (3 files)                            | `getDraftModeProps(Astro)` without `await`                                                                                               |
+| `src/components/global/CmsEditing.astro`                                 | mount the editing islands when the perspective cookie is present                                                                         |
+| `src/pages/api/draft-mode/enable.ts`                                     | after `validatePreviewUrl`, set only `sanity-preview-perspective`                                                                        |
+| `src/pages/api/draft-mode/disable.ts`                                    | delete only `sanity-preview-perspective`                                                                                                 |
+| `src/sanity/lib/load-query.ts`                                           | `parsePerspective(preview) ?? "drafts"` instead of `sanitizePerspective`                                                                 |
+| `src/sanity/lib/preview-session.ts`, `scripts/check-preview-session.mjs` | delete, and remove the `check:preview-session` script + CI step                                                                          |
+
+Leave the core change in `src/middleware.ts` in place: every `/api/*`
+response is `Cache-Control: private, no-store`, which is correct with or
+without the session.
+
 ## Rendering model — prerender public, SSR only /preview, /api and /tools
 
 `astro.config.mjs` uses `output: "static"` with `@astrojs/cloudflare`. **All
