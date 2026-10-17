@@ -25,7 +25,9 @@
     "check:hover": "node scripts/check-hover.mjs",
     "check:boundary": "node scripts/check-content-boundary.mjs",
     "check:content": "node scripts/check-content-text.mjs && node scripts/check-content-validation.mjs",
-    "check:content-build": "node scripts/check-content-build.mjs"
+    "check:content-build": "node scripts/check-content-build.mjs",
+    "addon:sanity": "node scripts/addon-sanity.mjs",
+    "check:addon-installer": "node scripts/check-addon-installer.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.1",

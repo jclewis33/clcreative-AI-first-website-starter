@@ -21,6 +21,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { parseJsonc } from "./lib/jsonc.mjs";
 
 const args = process.argv.slice(2);
 const rootAt = args.indexOf("--root");
@@ -28,20 +29,6 @@ const ROOT = path.resolve(rootAt >= 0 ? args[rootAt + 1] : process.cwd());
 const CONFIG = path.join(ROOT, "src", "config");
 /** @type {string[]} */
 const problems = [];
-
-/**
- * wrangler.jsonc → object. Strips comments and trailing commas; naive but
- * enough: wrangler.jsonc has no string containing `//` after a non-colon.
- * @param {string} raw
- */
-function parseJsonc(raw) {
-  return JSON.parse(
-    raw
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/(^|[^:])\/\/.*$/gm, "$1")
-      .replace(/,(\s*[}\]])/g, "$1"),
-  );
-}
 
 /**
  * The headers under one path-pattern line (e.g. "/*") of a _headers file,
