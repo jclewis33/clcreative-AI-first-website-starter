@@ -199,8 +199,9 @@ GitHub only).
 To let those steps through, edit the environment → set **Network access** to
 **Custom** → add one domain per line under **Allowed domains**, and tick **"Also
 include default list of common package managers"** so npm/GitHub still work. Add
-the domains _your_ sources live on. For this stack (Sanity CMS + Figma, plus a
-Webflow live site as a content source) that's:
+the domains _your_ sources live on. For this stack (Figma, the optional Sanity
+CMS add-on if you install it, plus a Webflow live site as a content source)
+that's:
 
 ```text
 *.sanity.io

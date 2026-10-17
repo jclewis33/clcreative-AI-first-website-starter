@@ -231,6 +231,8 @@ through the rebuild Worker.
   with the add-on (`npm run addon:sanity`); its guide is
   `addons/sanity/README.md`. Projects set up with `npm run setup` no longer
   have the `addons/` folder: copy `addons/sanity/` from the starter
-  repository into the project first.
+  repository into the project first — from the same starter version (commit) the project was created from.
+  A newer add-on can mismatch an older site; to use one, update the
+  project to that starter version first.
 - **Everything else:** the project [`README`](../README.md) lists the
   commands and explains how the site is built.

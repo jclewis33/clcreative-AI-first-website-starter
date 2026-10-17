@@ -236,7 +236,7 @@ export function planInstall({ root, addonDir, force = false }) {
   const manifestRel = path.relative(root, manifestPath);
   if (!fs.existsSync(manifestPath))
     throw new AddonError(
-      `${manifestRel} not found. Copy the add-on folder from the starter repo (addons/<name>/) into this project, commit it, then run again.`,
+      `${manifestRel} not found. Copy the add-on folder from the starter repo (addons/<name>/, at the version this project was created from) into this project, commit it, then run again.`,
     );
   let raw;
   try {

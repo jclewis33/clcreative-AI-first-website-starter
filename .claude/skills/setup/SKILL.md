@@ -139,7 +139,9 @@ Then branch:
   Step 4, so create the project first (sanity.md §S1).
 
 Adopting Sanity later stays possible: copy `addons/sanity/` from the
-starter repo and run `npm run addon:sanity` (the add-on's README).
+starter repo — at the same starter version (commit) the project was created from, since a newer overlay can
+mismatch an older fork — and run `npm run addon:sanity` (the add-on's
+README).
 
 ### 1.2 — Is the real domain ready?
 

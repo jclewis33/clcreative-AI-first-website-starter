@@ -48,7 +48,10 @@ content-source question. It runs the installer for you.
 Later, in an existing project:
 
 1. If `addons/sanity/` is gone (setup deletes it), copy that folder from
-   the starter repo into the project.
+   the starter repo into the project — from the same starter version (commit) the project was created from.
+   A newer overlay replaces whole files (`source.ts`, `ci.yml`, …) and
+   can mismatch an older fork; to use a newer add-on, first update the
+   project to that starter version.
 2. Commit, so the tree is clean. The installer refuses uncommitted
    changes so that `git diff` afterwards shows only what it did; a
    project that isn't a git repository needs `--force`.

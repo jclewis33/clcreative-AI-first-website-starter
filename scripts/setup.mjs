@@ -852,7 +852,7 @@ async function removeAddons(sanity) {
   ok(
     sanity
       ? "Deleted addons/ — the Sanity add-on is installed, so that copy is no longer needed."
-      : "Deleted addons/ — content stays in src/content. To adopt Sanity later, copy addons/sanity/ from the starter repo and run npm run addon:sanity.",
+      : "Deleted addons/ — content stays in src/content. To adopt Sanity later, copy addons/sanity/ from this same starter version and run npm run addon:sanity.",
   );
 }
 

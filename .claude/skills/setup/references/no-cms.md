@@ -38,7 +38,9 @@ config or env vars.
 
 ## Adopting Sanity later
 
-Copy `addons/sanity/` from the starter repo into the project, commit, and
+Copy `addons/sanity/` from the starter repo into the project — from
+the same starter version (commit) the project was created from (a newer overlay can mismatch an older fork;
+otherwise update the project to that version first) — commit, and
 run `npm run addon:sanity` — then the Sanity branch
 ([sanity.md](./sanity.md)) from S1. Content already in `src/content/` is
 not migrated into Sanity.

@@ -106,7 +106,9 @@ src/
 overlay plus a manifest that `npm run addon:sanity` installs. The CMS seams
 it replaces: `src/lib/content/source.ts`, `src/config/cms.mjs`,
 `src/config/cms.shared.mjs`, `src/components/global/CmsEditing.astro`,
-`src/components/blog/BlogBody.astro`.
+`src/components/blog/BlogBody.astro`. It also overwrites
+`public/_headers`, `scripts/compare-dist.mjs` and
+`.github/workflows/ci.yml` (full list: `addons/sanity/README.md`).
 
 ## Cascade layers (the two hard rules)
 
