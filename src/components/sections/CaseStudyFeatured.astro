@@ -184,12 +184,28 @@ const {
 
 /* ── Resolve studies — the prop, or look the slugs up ─────────────────── */
 
+const prefetched = studies && studies.length >= 3 ? studies : null;
 const displayStudies: FeaturedCaseStudy[] =
-  studies && studies.length >= 3
-    ? studies
-    : // Standalone usage. Tolerate an empty/unreachable dataset — the
-      // section simply doesn't render when fewer than 3 resolve.
-      await getFeaturedCaseStudies(slugs).catch(() => []);
+  prefetched ??
+  // Standalone usage. Tolerate an empty/unreachable dataset — the
+  // section simply doesn't render when fewer than 3 resolve.
+  (await getFeaturedCaseStudies(slugs).catch(() => []));
+
+// A slug that names no case study is dropped silently in production (and
+// fewer than 3 hides the section), so say which ones in dev.
+if (import.meta.env.DEV && !prefetched) {
+  const found = new Set(displayStudies.map((s) => s.slug));
+  const missing = slugs.filter((slug) => !found.has(slug));
+  if (missing.length) {
+    console.warn(
+      `[CaseStudyFeatured] No case study found for slug(s): ${missing.join(", ")}. ` +
+        `Check FEATURED_CASE_STUDIES_SLUGS (or the slugs prop) against the content source (src/content/case-studies/ in a files site).` +
+        (displayStudies.length < 3
+          ? " The section is hidden until 3 resolve."
+          : ""),
+    );
+  }
+}
 
 /* ── Heading slot ─────────────────────────────────────────────────────── */
 

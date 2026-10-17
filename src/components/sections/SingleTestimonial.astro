@@ -87,6 +87,14 @@ const testimonial =
   (fetchName
     ? await getTestimonialByName(fetchName).catch(() => undefined)
     : undefined);
+// A name that matches no testimonial hides the section silently in
+// production, so say so in dev.
+if (import.meta.env.DEV && !rawTestimonial && fetchName && !testimonial) {
+  console.warn(
+    `[SingleTestimonial] No testimonial found with name "${fetchName}" — the section is hidden. ` +
+      `Check the name prop against the content source (src/content/testimonials/ in a files site).`,
+  );
+}
 if (!testimonial) return;
 
 const { name, role, company, quote, avatar } = testimonial;
