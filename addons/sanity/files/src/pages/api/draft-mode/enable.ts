@@ -8,6 +8,7 @@ import {
   PREVIEW_SESSION_TTL_MS,
   createPreviewSession,
   sanitizePerspective,
+  serializePerspective,
 } from "@/sanity/lib/preview-session";
 
 export const prerender = false;
@@ -48,10 +49,11 @@ export const GET: APIRoute = async ({ request, cookies, redirect }) => {
   /* The perspective stays a script-readable cookie: SanityVisualEditing
      rewrites it when the editor switches perspective. Only an allowlisted
      value is stored, and the server sanitizes it again on every read. */
-  const perspective = sanitizePerspective(studioPreviewPerspective) ?? "drafts";
   cookies.set(
     perspectiveCookieName,
-    typeof perspective === "string" ? perspective : JSON.stringify(perspective),
+    serializePerspective(
+      sanitizePerspective(studioPreviewPerspective) ?? "drafts",
+    ),
     {
       httpOnly: false,
       sameSite: "none",

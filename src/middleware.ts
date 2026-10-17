@@ -68,17 +68,26 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // content with nothing in the logs. Forcing
   // private,no-cache on the whole tree closes that hole.
   //
-  // Other SSR responses (i.e. /api/*): cache for 5 minutes at the edge,
+  // /api/* is never stored anywhere, whatever the method. Its routes are
+  // per-request by nature: form posts carry personal data (/api/lead), and
+  // a CMS add-on's API routes answer with redirects that set session
+  // cookies (the Sanity add-on's /api/draft-mode/*) — a shared cache must
+  // never replay a Set-Cookie to another visitor. Nothing under /api
+  // benefits from edge caching, so the rule is the path, not a per-route
+  // list. The client tools are private — never cached anywhere either.
+  //
+  // Any other SSR response (none today): cache for 5 minutes at the edge,
   // serve stale for 24h while revalidating in the background.
-  // The client tools are private — never cached anywhere. Form posts carry
-  // personal data — never cacheable either.
-  const cacheControl = isTools
-    ? "private, no-store"
-    : isDraftMode || isPreviewRoute
-      ? "private, no-cache"
-      : context.request.method !== "GET"
-        ? "no-store"
-        : "public, s-maxage=300, stale-while-revalidate=86400";
+  const isApi =
+    context.url.pathname === "/api" || context.url.pathname.startsWith("/api/");
+  const cacheControl =
+    isTools || isApi
+      ? "private, no-store"
+      : isDraftMode || isPreviewRoute
+        ? "private, no-cache"
+        : context.request.method !== "GET"
+          ? "no-store"
+          : "public, s-maxage=300, stale-while-revalidate=86400";
 
   // `wrangler dev` occasionally returns responses with sealed Headers objects,
   // which throws "Can't modify immutable headers" on `.set()`. Production CF

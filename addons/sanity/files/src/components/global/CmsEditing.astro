@@ -12,7 +12,7 @@
  */
 import SanityVisualEditing from "@/components/SanityVisualEditing";
 import DisableDraftMode from "@/components/DisableDraftMode";
-import { hasPreviewSession } from "@/sanity/lib/draft-mode";
+import { getDraftModeProps } from "@/sanity/lib/draft-mode";
 
 interface Props {
   /**
@@ -25,11 +25,12 @@ interface Props {
 const { docs } = Astro.props;
 
 // Draft mode only ever applies to SSR routes (the /preview/* twins and API
-// routes); public content routes are prerendered, and hasPreviewSession()
-// answers false for them without reading cookies. The perspective cookie
-// alone is not enough: page script can write it, the signed session it
-// cannot (src/sanity/lib/preview-session.ts).
-const draftMode = await hasPreviewSession(Astro);
+// routes); public content routes are prerendered, and getDraftModeProps()
+// answers without reading cookies for them. The same gate the preview
+// twins use, so the overlay shows exactly when loadQuery fetches drafts:
+// the perspective cookie alone is not enough (page script can write it),
+// the signed session is required (src/sanity/lib/preview-session.ts).
+const draftMode = (await getDraftModeProps(Astro)).preview !== undefined;
 ---
 
 {

@@ -29,6 +29,10 @@ export const PREVIEW_SESSION_COOKIE = "starter-preview-session";
 /** How long a session lasts: 8 hours. */
 export const PREVIEW_SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 
+/* Clock skew tolerated between the instance that issued a session and the
+   one verifying it, on top of the TTL. */
+const CLOCK_SKEW_MS = 5 * 60 * 1000;
+
 const SIGNATURE_BYTES = 32; // SHA-256
 /* A positive integer of at most 15 digits, a dot, then exactly 43
    base64url characters (32 bytes, unpadded). */
@@ -87,7 +91,10 @@ export async function createPreviewSession(
 }
 
 /**
- * True only for a well-formed, unexpired value signed with `secret`.
+ * True only for a well-formed, unexpired value signed with `secret`, whose
+ * expiry is no further out than a freshly issued session's (TTL plus five
+ * minutes of clock skew) — so even a signing bug or a leaked signature for
+ * a far-future expiry cannot outlive one TTL.
  * The signature is checked with crypto.subtle.verify, which compares in
  * constant time.
  */
@@ -100,7 +107,12 @@ export async function verifyPreviewSession(
   const match = SESSION_FORMAT.exec(value);
   if (!match) return false;
   const expiry = Number(match[1]);
-  if (!Number.isSafeInteger(expiry) || expiry <= now) return false;
+  if (
+    !Number.isSafeInteger(expiry) ||
+    expiry <= now ||
+    expiry > now + PREVIEW_SESSION_TTL_MS + CLOCK_SKEW_MS
+  )
+    return false;
   const signature = fromBase64Url(match[2]);
   /* Canonical encoding only: the last character carries two unused bits,
      so four spellings would otherwise decode to the same signature. */
@@ -126,8 +138,20 @@ export async function verifyPreviewSession(
    the releases plus "drafts"/"published", most specific first. */
 const KEYWORDS = new Set(["drafts", "published", "previewDrafts", "raw"]);
 const STACK_ITEM = /^[A-Za-z0-9._-]+$/;
+/* The longest perspective accepted, measured on the serialized form
+   (serializePerspective), so whatever sanitizePerspective accepts also
+   passes it again after a round trip through getDraftModeProps. */
 const MAX_LENGTH = 1024;
+/* Cheap bound on the raw input, before decoding or parsing. */
+const MAX_INPUT = 4 * MAX_LENGTH;
 const MAX_STACK = 32;
+
+/** The string form a perspective travels in (ContentOptions.preview, the cookie). */
+export function serializePerspective(perspective: ClientPerspective): string {
+  return typeof perspective === "string"
+    ? perspective
+    : JSON.stringify(perspective);
+}
 
 /**
  * Reduce a perspective from a cookie or a preview URL to a value that is
@@ -141,13 +165,15 @@ const MAX_STACK = 32;
  *   underscore or hyphen
  *
  * URL-encoded input is decoded once. Anything else (an unknown word, a
- * stray quote, an empty stack, more than 32 items, over 1024 characters)
- * gives undefined.
+ * stray quote, an empty stack, more than 32 items, a serialized form over
+ * 1024 characters) gives undefined. Idempotent over serializePerspective:
+ * sanitizePerspective(serializePerspective(p)) gives p back for any p it
+ * returned.
  */
 export function sanitizePerspective(
   value: unknown,
 ): ClientPerspective | undefined {
-  if (typeof value !== "string" || !value || value.length > MAX_LENGTH)
+  if (typeof value !== "string" || !value || value.length > MAX_INPUT)
     return undefined;
   let decoded: string;
   try {
@@ -173,5 +199,28 @@ export function sanitizePerspective(
     return undefined;
   for (const item of items)
     if (typeof item !== "string" || !STACK_ITEM.test(item)) return undefined;
-  return items as ClientPerspective;
+  const stack = items as ClientPerspective;
+  return serializePerspective(stack).length > MAX_LENGTH ? undefined : stack;
+}
+
+/**
+ * The draft-preview gate, pure so it can be unit-tested: the
+ * ContentOptions `preview` value for a request with these cookies.
+ * Undefined (published content, no token) unless `sessionCookie` verifies
+ * against `secret`; with a session, the sanitized perspective cookie in
+ * its serialized form, or "drafts" when it is missing or not allowed.
+ * getDraftModeProps() and CmsEditing both go through it, so the overlay
+ * shows exactly when loadQuery fetches drafts.
+ */
+export async function resolvePreview(
+  secret: string,
+  sessionCookie: string | undefined,
+  perspectiveCookie: string | undefined,
+  now = Date.now(),
+): Promise<string | undefined> {
+  if (!(await verifyPreviewSession(secret, sessionCookie, now)))
+    return undefined;
+  return serializePerspective(
+    sanitizePerspective(perspectiveCookie) ?? "drafts",
+  );
 }

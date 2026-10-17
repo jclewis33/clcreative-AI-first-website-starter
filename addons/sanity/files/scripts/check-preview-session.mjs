@@ -10,7 +10,9 @@ import {
   PREVIEW_SESSION_COOKIE,
   PREVIEW_SESSION_TTL_MS,
   createPreviewSession,
+  resolvePreview,
   sanitizePerspective,
+  serializePerspective,
   verifyPreviewSession,
 } from "../src/sanity/lib/preview-session.ts";
 
@@ -112,6 +114,25 @@ await check("expired → false", async () => {
   assert.equal(await verifyPreviewSession(SECRET, old, NOW), false);
 });
 
+await check("far-future expiry, even correctly signed → false", async () => {
+  const SKEW = 5 * 60_000;
+  const far = await createPreviewSession(SECRET, NOW, 365 * 86_400_000);
+  assert.equal(await verifyPreviewSession(SECRET, far, NOW), false);
+  const justOver = await createPreviewSession(
+    SECRET,
+    NOW,
+    PREVIEW_SESSION_TTL_MS + SKEW + 1,
+  );
+  assert.equal(await verifyPreviewSession(SECRET, justOver, NOW), false);
+  // Issued by an instance whose clock runs up to 5 minutes ahead: fine.
+  const skewed = await createPreviewSession(
+    SECRET,
+    NOW,
+    PREVIEW_SESSION_TTL_MS + SKEW,
+  );
+  assert.equal(await verifyPreviewSession(SECRET, skewed, NOW), true);
+});
+
 await check("wrong secret → false", async () => {
   assert.equal(await verifyPreviewSession("other-token", session, NOW), false);
 });
@@ -180,5 +201,71 @@ await check("sanitizePerspective refuses everything else", () => {
   ])
     assert.equal(sanitizePerspective(value), undefined, String(value));
 });
+
+await check("sanitizePerspective bounds the serialized form", () => {
+  // 32 ids, comma form under the cap but JSON (what travels on) over it.
+  const id = "r".repeat(29);
+  const comma = Array.from({ length: 32 }, () => id).join(",");
+  assert.ok(
+    comma.length <= 1024 && JSON.stringify(comma.split(",")).length > 1024,
+  );
+  assert.equal(sanitizePerspective(comma), undefined);
+  // Accepted values survive the serialize → sanitize round trip unchanged.
+  for (const value of [
+    "drafts",
+    "raw",
+    "rA,drafts",
+    Array.from({ length: 32 }, (_, i) => `r${i}`).join(","),
+    // Serializes to exactly 1023 characters: the longest kind accepted.
+    `${"r".repeat(1015)},d`,
+  ]) {
+    const once = sanitizePerspective(value);
+    assert.notEqual(once, undefined, value.slice(0, 40));
+    assert.deepEqual(sanitizePerspective(serializePerspective(once)), once);
+  }
+});
+
+const VALID = await createPreviewSession(SECRET, NOW);
+const resolve = (session, perspective) =>
+  resolvePreview(SECRET, session, perspective, NOW);
+
+await check("gate: no session → undefined", async () => {
+  assert.equal(await resolve(undefined, undefined), undefined);
+  assert.equal(await resolve("", "drafts"), undefined);
+});
+
+await check("gate: forged perspective only → undefined", async () => {
+  assert.equal(await resolve(undefined, "drafts"), undefined);
+  assert.equal(await resolve("drafts", "drafts"), undefined);
+  const wrong = await createPreviewSession("other-token", NOW);
+  assert.equal(await resolve(wrong, "drafts"), undefined);
+});
+
+await check('gate: valid session, no perspective → "drafts"', async () => {
+  assert.equal(await resolve(VALID, undefined), "drafts");
+  assert.equal(await resolve(VALID, ""), "drafts");
+});
+
+await check('gate: valid session, hostile perspective → "drafts"', async () => {
+  for (const hostile of ['drafts","x', "x".repeat(10_240), "Drafts", "[1]"])
+    assert.equal(await resolve(VALID, hostile), "drafts");
+});
+
+await check(
+  "gate: valid session, keyword or release stack → serialized",
+  async () => {
+    assert.equal(await resolve(VALID, "published"), "published");
+    assert.equal(await resolve(VALID, "rABC,drafts"), '["rABC","drafts"]');
+    assert.equal(
+      await resolve(VALID, encodeURIComponent('["rABC","drafts"]')),
+      '["rABC","drafts"]',
+    );
+    // What the gate returns, loadQuery's own sanitizePerspective accepts.
+    assert.deepEqual(sanitizePerspective('["rABC","drafts"]'), [
+      "rABC",
+      "drafts",
+    ]);
+  },
+);
 
 console.log(`check-preview-session: ok (${passed} checks)`);

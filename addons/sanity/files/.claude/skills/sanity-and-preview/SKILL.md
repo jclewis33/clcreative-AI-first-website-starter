@@ -149,13 +149,15 @@ Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.s
    `getCaseStudy()` or `getProject()` from `@/lib/content`), passing
    `await getDraftModeProps(Astro)`
    ([src/sanity/lib/draft-mode.ts](../../../src/sanity/lib/draft-mode.ts)).
-   It returns `{ preview: undefined }` (published, no token) unless the
-   session cookie verifies — a well-formed, unexpired value with a valid
-   signature (constant-time `crypto.subtle.verify`). With a session it
+   The decision is the pure `resolvePreview()` in `preview-session.ts`:
+   `{ preview: undefined }` (published, no token) unless the session
+   cookie verifies — a well-formed value with a valid signature
+   (constant-time `crypto.subtle.verify`), unexpired, and expiring no
+   later than one TTL (plus five minutes of clock skew) from now. With a session it
    returns the perspective cookie run through `sanitizePerspective()` (an
    allowlist: `drafts`, `published`, `previewDrafts`, `raw`, or a release
-   stack whose ids are letters, digits, `.`, `_`, `-`), defaulting to
-   `"drafts"`. The Sanity source forwards `{ preview }`
+   stack whose ids are letters, digits, `.`, `_`, `-`, at most 1024
+   characters serialized), defaulting to `"drafts"`. The Sanity source forwards `{ preview }`
    (the `ContentOptions` field) through its loaders
    ([src/sanity/lib/page-data.ts](../../../src/sanity/lib/page-data.ts)) into
    `loadQuery`
@@ -167,8 +169,9 @@ Architecture reference: [Sanity's Visual Editing with Astro guide](https://www.s
    public routes and sections call without it.
 5. [src/components/global/CmsEditing.astro](../../../src/components/global/CmsEditing.astro)
    (the CMS editing seam, rendered by BaseLayout) checks
-   `await hasPreviewSession(Astro)` (the same signed-session check, false
-   on prerendered pages without reading cookies) and conditionally mounts
+   `(await getDraftModeProps(Astro)).preview !== undefined` (the same
+   gate, so the overlay shows exactly when drafts are fetched) and
+   conditionally mounts
    [src/components/SanityVisualEditing.tsx](../../../src/components/SanityVisualEditing.tsx)
    (click-to-edit overlays + history sync + content refresh) and
    [src/components/DisableDraftMode.tsx](../../../src/components/DisableDraftMode.tsx)
@@ -194,7 +197,10 @@ published content and the overlays disappear; re-opening Presentation (or
 reloading it) calls `/api/draft-mode/enable` again and issues a fresh one.
 Middleware still keys its `private, no-cache` header on the perspective
 cookie (`PREVIEW_COOKIE` in `src/config/cms.shared.mjs`) — a cache hint,
-not authorization.
+not authorization. The enable/disable responses (redirects carrying `Set-Cookie`)
+are `private, no-store` like every `/api/*` response
+([src/middleware.ts](../../../src/middleware.ts)), so no shared cache can
+replay a session cookie.
 
 The `/preview` tree is invisible to search and never edge-cached, via three
 required layers, all driven by `/preview` in `NOINDEX_PATHS`
