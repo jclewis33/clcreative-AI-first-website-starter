@@ -1,8 +1,8 @@
 /**
  * Plain-string helpers over an MDX post's raw body (`entry.body`). Pure (no
  * Astro imports), so scripts/check-content-text.mjs runs them under Node.
- * They read a body the way the Sanity source reads Portable Text, so both
- * sources count the same words and export comparable Markdown:
+ * They read a body the way the Sanity add-on's source reads Portable Text,
+ * so both sources count the same words and export comparable Markdown:
  *
  * - mdxWords — the prose a reader reads: no code, callouts, embeds or images.
  * - mdxToMarkdown — the llms-full.txt copy: components converted or dropped.

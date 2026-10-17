@@ -4,10 +4,11 @@
  * by getBlogPostStaticPaths(); the page is emitted as static HTML and served
  * by the Cloudflare assets binding at zero Worker CPU.
  *
- * Draft preview does NOT happen here — Sanity's Presentation tool loads the
- * SSR twin at /preview/blog/[slug], which calls the same getBlogPost() with
- * the draft perspective. Keep the two files in sync (they should differ only
- * in prerender mode, getStaticPaths and the perspective argument).
+ * Draft preview does NOT happen here. With the Sanity add-on, its
+ * Presentation tool loads the SSR twin at /preview/blog/[slug], which calls
+ * the same getBlogPost() with the draft perspective. Keep the two files in
+ * sync (they should differ only in prerender mode, getStaticPaths and the
+ * perspective argument).
  */
 import BlogPostTemplate from "@/components/templates/BlogPostTemplate.astro";
 import { getBlogPost, getBlogPostStaticPaths } from "@/lib/content";

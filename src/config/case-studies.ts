@@ -1,7 +1,7 @@
 /**
  * Case-study enums — plain data, read by the content schemas
- * (src/content.config.ts) and the Sanity schema
- * (src/sanity/schemaTypes/caseStudy.ts), so the two can never disagree.
+ * (src/content.config.ts) and the Sanity add-on's schema (its
+ * src/sanity/schemaTypes/caseStudy.ts), so the two can never disagree.
  * REPLACE THE CATEGORIES AND INDUSTRIES PER CLIENT: they are placeholders.
  * The block options mirror the case-study block components and rarely
  * change.

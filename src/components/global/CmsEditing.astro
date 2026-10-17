@@ -1,40 +1,24 @@
 ---
 /**
  * CmsEditing — the CMS editing seam. BaseLayout renders it once, at the
- * end of `<body>`. This is the Sanity add-on's version: in draft mode (the
- * Presentation perspective cookie is set, which happens only on SSR
- * routes) it mounts the visual-editing overlay and the "Disable Draft
- * Mode" button. The Files version renders nothing, and the add-on
- * installer overwrites one with the other.
+ * end of `<body>`. With content in local files there is no in-page
+ * editing, so it renders nothing. A CMS add-on's installer overwrites
+ * this file with a version that mounts its editing tools in draft mode
+ * (the Sanity add-on: the visual-editing overlay on its /preview routes).
+ *
+ * As a seam rather than a page-building component, it is exempt from the
+ * new-component checklist's demo (src/pages/components.astro) and
+ * `render` prop items: BaseLayout is its only caller.
  */
-import SanityVisualEditing from "@/components/SanityVisualEditing";
-import DisableDraftMode from "@/components/DisableDraftMode";
-import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
 
 interface Props {
   /**
    * **CmsEditing** — the CMS editing seam. BaseLayout renders it once at
-   * the end of `<body>`; it takes no props.
+   * the end of `<body>`; it takes no props and renders nothing unless a
+   * CMS add-on replaces it.
    */
   docs?: string;
 }
 
 const { docs } = Astro.props;
-
-// Prerendered pages are baked at build time with no request, so cookies
-// aren't available. Short-circuit to avoid "Astro.request.headers was used"
-// build warnings. Draft mode only ever applies to SSR routes (the
-// /preview/* twins and API routes); public content routes are prerendered.
-const draftMode = Astro.isPrerendered
-  ? false
-  : Astro.cookies.has(perspectiveCookieName);
 ---
-
-{
-  draftMode && (
-    <>
-      <SanityVisualEditing client:only="react" />
-      <DisableDraftMode client:only="react" />
-    </>
-  )
-}

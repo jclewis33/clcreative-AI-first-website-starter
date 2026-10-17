@@ -267,8 +267,8 @@ function youtubeVideoId(url: string | null | undefined): string | null {
 }
 
 /*
- * Draft-mode values arrive stega-encoded (see the policy in
- * src/sanity/lib/source.ts). Structured data is plumbing, not an editing
+ * Draft-mode values from a CMS preview may carry invisible markers (the
+ * Sanity add-on's stega). Structured data is plumbing, not an editing
  * surface, so the builders below clean every content string they emit.
  */
 

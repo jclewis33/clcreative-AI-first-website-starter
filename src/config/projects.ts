@@ -1,7 +1,7 @@
 /**
  * Project + gallery categories — plain data (no `sanity` import), read by the
- * Sanity schema AND the site, so the Studio dropdown and the public filters
- * can never disagree. REPLACE THESE PER CLIENT: they are placeholders.
+ * site AND the Sanity add-on's schema, so the Studio dropdown and the public
+ * filters can never disagree. REPLACE THESE PER CLIENT: they are placeholders.
  *
  * Renaming a value orphans documents that use the old one — they still
  * render (categoryTitle falls back to the raw value) but drop out of the

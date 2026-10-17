@@ -3,8 +3,9 @@
  * VideoEmbed — a responsive YouTube or Vimeo iframe with an optional
  * caption, in a blog post body. One component for both content sources: an
  * MDX post writes `<VideoEmbed url="…" caption="…" />` (BlogBody passes it
- * in), and a Portable Text `videoEmbed` node renders through
- * src/components/portabletext/VideoEmbed.astro. Styles: `video-embed_*`.
+ * in), and, with the Sanity add-on, a Portable Text `videoEmbed` node
+ * renders through its src/components/portabletext/VideoEmbed.astro.
+ * Styles: `video-embed_*`.
  */
 import type { HTMLAttributes } from "astro/types";
 import { plainText } from "@/lib/content";

@@ -10,12 +10,9 @@
  * X-Robots-Tag noindex + private,no-cache, and it's excluded from the
  * sitemap. Keep this file in sync with src/pages/blog/[slug].astro.
  *
- * Draft preview is a Sanity feature, so this twin reads the Sanity source
- * directly, whichever source @/lib/content selects (Files by default). The
- * shared template still cleans text with @/lib/content's plainText, which
- * strips stega only when the Sanity source is the active one
- * (CONTENT_SOURCE=sanity builds, and the add-on). PR 4 moves this file into
- * the Sanity add-on.
+ * Part of the Sanity add-on, so the Sanity source is also the active
+ * @/lib/content source and the shared template's plainText() strips
+ * stega.
  */
 export const prerender = false;
 import BlogPostTemplate from "@/components/templates/BlogPostTemplate.astro";

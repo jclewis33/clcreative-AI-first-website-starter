@@ -1,7 +1,8 @@
 /**
  * Blog enums — plain data, read by the content schemas
- * (src/content.config.ts), the Sanity schema (src/sanity/schemaTypes/) and
- * the blog pages, so the three can never disagree. REPLACE THE CATEGORIES
+ * (src/content.config.ts), the Sanity add-on's schema (its
+ * src/sanity/schemaTypes/) and the blog pages, so the three can never
+ * disagree. REPLACE THE CATEGORIES
  * PER CLIENT: they are placeholders.
  *
  * Renaming a category orphans posts that use the old name: a files build

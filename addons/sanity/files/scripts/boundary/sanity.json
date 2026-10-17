@@ -19,7 +19,6 @@
     "src/components/SanityVisualEditing.tsx",
     "src/components/DisableDraftMode.tsx",
     "src/pages/preview/",
-    "src/pages/api/draft-mode/",
-    "src/env.d.ts"
+    "src/pages/api/draft-mode/"
   ]
 }

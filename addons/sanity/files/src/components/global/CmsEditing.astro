@@ -1,0 +1,44 @@
+---
+/**
+ * CmsEditing — the CMS editing seam. BaseLayout renders it once, at the
+ * end of `<body>`. This is the Sanity add-on's version: in draft mode (the
+ * Presentation perspective cookie is set, which happens only on SSR
+ * routes) it mounts the visual-editing overlay and the "Disable Draft
+ * Mode" button. The Sanity add-on's version, installed over the Files one
+ * (which renders nothing) by `npm run addon:sanity`.
+ *
+ * As a seam rather than a page-building component, it is exempt from the
+ * new-component checklist's demo (src/pages/components.astro) and
+ * `render` prop items: BaseLayout is its only caller.
+ */
+import SanityVisualEditing from "@/components/SanityVisualEditing";
+import DisableDraftMode from "@/components/DisableDraftMode";
+import { perspectiveCookieName } from "@sanity/preview-url-secret/constants";
+
+interface Props {
+  /**
+   * **CmsEditing** — the CMS editing seam. BaseLayout renders it once at
+   * the end of `<body>`; it takes no props.
+   */
+  docs?: string;
+}
+
+const { docs } = Astro.props;
+
+// Prerendered pages are baked at build time with no request, so cookies
+// aren't available. Short-circuit to avoid "Astro.request.headers was used"
+// build warnings. Draft mode only ever applies to SSR routes (the
+// /preview/* twins and API routes); public content routes are prerendered.
+const draftMode = Astro.isPrerendered
+  ? false
+  : Astro.cookies.has(perspectiveCookieName);
+---
+
+{
+  draftMode && (
+    <>
+      <SanityVisualEditing client:only="react" />
+      <DisableDraftMode client:only="react" />
+    </>
+  )
+}

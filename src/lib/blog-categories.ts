@@ -1,7 +1,7 @@
 /**
- * Blog category URL helper, shared by the content source (the category
- * archive's getStaticPaths in src/sanity/lib/page-data.ts) and the blog
- * index's category links, so the two can never disagree on a slug.
+ * Blog category URL helper, shared by the content source (each backend's
+ * category-archive getStaticPaths) and the blog index's category links, so
+ * the two can never disagree on a slug.
  * Backend-neutral: it knows nothing about where categories come from.
  */
 

@@ -41,7 +41,7 @@ import { renderRichText } from "./lib/content/markdown";
  *   not YouTube or Vimeo, or settings.json lacks its "site" key — naming
  *   the file and the field (Astro itself only logs a dangling reference).
  *   In `npm run dev` it re-runs after every save and logs instead.
- * - Enums come from src/config/, which the Sanity schema reads too.
+ * - Enums come from src/config/, which the Sanity add-on's schema reads too.
  */
 
 /** Where each folder-based collection lives (repo-relative). */
@@ -429,7 +429,7 @@ const caseStudies = defineCollection({
         .optional(),
     };
     /* The flexible body: one block per layout, the same fields as the
-       Sanity blocks (src/sanity/schemaTypes/caseStudy.ts). */
+       Sanity add-on's blocks (its src/sanity/schemaTypes/caseStudy.ts). */
     const block = z.discriminatedUnion("type", [
       z.object({
         type: z.literal("richText"),

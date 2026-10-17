@@ -1,7 +1,5 @@
 # Checks-only CI — deploys are handled by Cloudflare Workers Builds, not
-# Actions. The build reads content from src/content (the Files source). A
-# second, test-only build compiles the Sanity source until PR 4 moves it
-# into the add-on, whose own CI job replaces that step.
+# Actions. The build reads content from src/content (the Files source).
 name: CI
 
 on:
@@ -30,9 +28,6 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npm run check:content-build
-      # TEST-ONLY until PR 4 (the Sanity add-on's CI job replaces it): the
-      # Sanity source must keep compiling while it still lives in src/.
-      - run: CONTENT_SOURCE=sanity npm run build
 
   # Fails on any critical advisory in production dependencies.
   #

@@ -1,0 +1,110 @@
+---
+/**
+ * BlogBody — renders a blog post's body, whichever form the content source
+ * hands over (`post.body` from `getBlogPost()` in `@/lib/content`):
+ *
+ * - `portable-text` — Sanity Portable Text, rendered by astro-portabletext
+ *   with the components in src/components/portabletext/ (code, images,
+ *   video, callouts, inline blog CTAs, links, and h2 anchors for the table
+ *   of contents).
+ * - `mdx` — a compiled MDX `Content` component (files-backed content),
+ *   rendered with `mdxComponents` below, so a post body can use
+ *   `<Callout>`, `<VideoEmbed>` and `<BlogCta id>` without importing them.
+ *   Fenced code is wrapped like the Portable Text code block.
+ *
+ * It emits only the body markup. The caller owns the wrapping prose element
+ * (`blog_post_prose u-rich-text` in BlogPostTemplate).
+ */
+import { PortableText } from "astro-portabletext";
+import Callout from "@/components/blog/Callout.astro";
+import VideoEmbed from "@/components/blog/VideoEmbed.astro";
+import MdxBlogCta from "@/components/blog/mdx/BlogCta.astro";
+import MdxCodeBlock from "@/components/blog/mdx/CodeBlock.astro";
+import type { BlogBodyContent } from "@/lib/content";
+
+/* Why dynamic imports and not static ones: this pattern came over verbatim
+   from BlogPostTemplate (it dates from the initial commit, with no recorded
+   reason), so it was measured rather than assumed. Swapping all eight for
+   static imports leaves dist/client byte-identical in both parity builds
+   (empty and PARITY_FIXTURES=1, HTML and CSS/JS assets alike). The only
+   difference is in dist/server: here each Portable Text component gets its
+   own small chunk that the Worker loads only when a /preview/blog body
+   actually renders, instead of most of them being folded into the blog
+   route's chunk and loaded with it. Kept for that lazy loading; static
+   imports would be a safe swap. (The MDX components above are static: the
+   prerendered Files build renders them on every post. The shared Callout
+   and VideoEmbed they include are what the Portable Text wrappers render
+   too, so those two load with the route either way.) */
+const { default: CodeBlock } =
+  await import("@/components/portabletext/CodeBlock.astro");
+const { default: SanityImage } =
+  await import("@/components/portabletext/SanityImage.astro");
+const { default: LinkMark } =
+  await import("@/components/portabletext/LinkMark.astro");
+const { default: InternalLinkMark } =
+  await import("@/components/portabletext/InternalLinkMark.astro");
+const { default: BlockHeading2 } =
+  await import("@/components/portabletext/BlockHeading2.astro");
+const { default: PortableTextVideoEmbed } =
+  await import("@/components/portabletext/VideoEmbed.astro");
+const { default: PortableTextCallout } =
+  await import("@/components/portabletext/Callout.astro");
+const { default: BlogCtaInline } =
+  await import("@/components/portabletext/BlogCtaInline.astro");
+
+interface Props {
+  /**
+   * **BlogBody** — renders `post.body` (Portable Text or MDX) from
+   * `getBlogPost()`. It emits no wrapper element; put it inside the prose
+   * container.
+   */
+  docs?: string;
+
+  /** The post body from `@/lib/content` (`post.body`). */
+  body: BlogBodyContent;
+}
+
+const { docs, body } = Astro.props;
+
+const portableTextComponents = {
+  type: {
+    code: CodeBlock,
+    image: SanityImage,
+    videoEmbed: PortableTextVideoEmbed,
+    callout: PortableTextCallout,
+    blogCtaInline: BlogCtaInline,
+  },
+  mark: {
+    link: LinkMark,
+    internalLink: InternalLinkMark,
+  },
+  block: {
+    h2: BlockHeading2,
+  },
+};
+
+/* The components an MDX body may use by tag name, without an import, and
+   the `pre` override every fenced code block renders through. Keep the
+   list in step with the content guide (.claude/skills/content-files). */
+const mdxComponents = {
+  Callout,
+  VideoEmbed,
+  BlogCta: MdxBlogCta,
+  pre: MdxCodeBlock,
+};
+
+/* A component reference for the MDX branch. It must be a capitalised
+   identifier: Astro treats a lowercase tag such as `body.Content` as an
+   HTML element. The markup below is ONE expression, not two siblings:
+   the line break between two expressions renders as a stray whitespace
+   text node inside the caller's prose element. */
+const Content = body.kind === "mdx" ? body.Content : null;
+---
+
+{
+  body.kind === "portable-text" ? (
+    <PortableText value={body.blocks} components={portableTextComponents} />
+  ) : (
+    Content && <Content components={mdxComponents} />
+  )
+}

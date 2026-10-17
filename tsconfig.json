@@ -1,11 +1,9 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "workers"],
+  "exclude": ["dist", "workers", "addons"],
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    "types": ["@sanity/astro/module"],
+    "types": [],
     "paths": {
       "@/*": ["./src/*"]
     }

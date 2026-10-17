@@ -3,8 +3,9 @@
  * Callout — a tip, warning or info aside in a blog post body. One component
  * for both content sources: an MDX post writes `<Callout type="warning">`,
  * the text, then `</Callout>`, each on its own line (BlogBody passes it in,
- * so no import), and a Portable Text `callout` node renders through
- * src/components/portabletext/Callout.astro, which slots its body in here.
+ * so no import), and, with the Sanity add-on, a Portable Text `callout`
+ * node renders through its src/components/portabletext/Callout.astro,
+ * which slots its body in here.
  * Styles: src/styles/pages/blog-post.css (`callout_*`).
  */
 import type { HTMLAttributes } from "astro/types";

@@ -3,7 +3,6 @@ import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
 import cloudflare from "@astrojs/cloudflare";
-import { normalizePath } from "vite";
 import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import * as cms from "./src/config/cms.mjs";
@@ -11,13 +10,12 @@ import { SITE_URL } from "./src/config/site.shared.mjs";
 import { DEV_ONLY_PATHS, isNoindexRoute } from "./src/config/seo.shared.mjs";
 
 /**
- * NOTE: the sitemap deliberately has NO `customPages` option and no
- * `getSanityUrls()`-style helper. A customPages list is only ever needed for
- * SSR routes (which are invisible to `@astrojs/sitemap`), and every content
- * route here is PRERENDERED via `getStaticPaths` (see
- * src/sanity/lib/page-data.ts) — the sitemap enumerates them automatically
- * from the route table. When adding a new content type, add a getStaticPaths
- * helper, never a customPages list.
+ * NOTE: the sitemap deliberately has NO `customPages` option. A
+ * customPages list is only ever needed for SSR routes (which are invisible
+ * to `@astrojs/sitemap`), and every content route here is PRERENDERED via
+ * `getStaticPaths` (helpers from src/lib/content) — the sitemap
+ * enumerates them automatically from the route table. When adding a new
+ * content type, add a getStaticPaths helper, never a customPages list.
  */
 
 /**
@@ -65,61 +63,13 @@ function excludeDevOnlyPages() {
  */
 const redirects = {};
 
-/**
- * TEST-ONLY content-source switch (PR 3 of the files-first plan; removed in
- * PR 4, when the Sanity add-on's own CI job builds Sanity mode).
- * `CONTENT_SOURCE=files` or `CONTENT_SOURCE=sanity` replaces the module that
- * src/lib/content/source.ts re-exports, so one checkout can build either
- * backend for the parity checks (scripts/compare-dist.mjs). Unset in every
- * real build. Like __PARITY_FIXTURES__ (src/config/cms.mjs) it is decided at
- * build time — nothing at runtime can switch it.
- */
-const CONTENT_SOURCES = {
-  files: "./src/lib/content/files/index.ts",
-  sanity: "./src/sanity/lib/source.ts",
-};
-
-/** @returns {import("vite").Plugin | false} */
-function contentSourceSwitch() {
-  const choice = process.env.CONTENT_SOURCE;
-  if (!choice) return false;
-  if (!Object.hasOwn(CONTENT_SOURCES, choice)) {
-    throw new Error(
-      `[content-source-switch] Unknown CONTENT_SOURCE "${choice}". Use "files" or "sanity".`,
-    );
-  }
-  const toId = (/** @type {string} */ rel) =>
-    normalizePath(fileURLToPath(new URL(rel, import.meta.url)));
-  const selector = toId("./src/lib/content/source.ts");
-  const target = toId(
-    CONTENT_SOURCES[/** @type {keyof typeof CONTENT_SOURCES} */ (choice)],
-  );
-  return {
-    name: "content-source-switch",
-    enforce: "pre",
-    load(id) {
-      if (id.split("?")[0] === selector)
-        return `export { default } from ${JSON.stringify(target)};`;
-    },
-  };
-}
-
 // https://astro.build/config
 export default defineConfig({
-  // Static by default — INCLUDING the CMS content routes (blog, case
-  // studies, projects), which enumerate their slugs with `getStaticPaths`
-  // (helpers in src/sanity/lib/page-data.ts) and ship as prerendered HTML at
-  // zero Worker CPU. Only two kinds of routes opt into SSR with
-  // `export const prerender = false;`:
-  //   - `src/pages/preview/**` — the draft-preview twins that Sanity's
-  //     Presentation tool iframes (per-request fetch, drafts perspective via
-  //     the sanity-preview-mode cookie). Drafts CANNOT be served on the
-  //     prerendered public URLs: the Cloudflare adapter returns static
-  //     assets before Astro middleware ever runs, so a cookie-keyed rewrite
-  //     there is impossible — hence the parallel /preview tree.
-  //   - `src/pages/api/**` — the draft-mode cookie set/clear routes.
-  // Publishing content triggers a rebuild via the rebuild-debounce Worker
-  // (workers/rebuild-debounce/) — prerendered content ships on the next build.
+  // Static by default — INCLUDING the content routes (blog, case studies,
+  // projects), which enumerate their slugs with `getStaticPaths` (helpers
+  // from @/lib/content) and ship as prerendered HTML at zero Worker CPU.
+  // Only `src/pages/api/**` opts into SSR (`export const prerender =
+  // false;`), plus any draft-preview routes a CMS add-on brings.
   output: "static",
   adapter: cloudflare({
     inspectorPort: false,
@@ -127,8 +77,8 @@ export default defineConfig({
     // Pre-optimize images at build time with sharp, serve them via a
     // passthrough endpoint at runtime. Without this the adapter defaults to
     // `cloudflare-binding` mode, which requires a paid Cloudflare Images
-    // binding for SSR pages — any <Image> on the /preview draft-preview
-    // routes would otherwise fail to render.
+    // binding for SSR pages — any <Image> on an SSR route would otherwise
+    // fail to render.
     imageService: "compile",
   }),
   redirects,
@@ -205,9 +155,9 @@ export default defineConfig({
   },
 
   /* Fenced code in MDX blog bodies is highlighted at build time with these
-     settings — the same theme and wrapping the Portable Text CodeBlock
-     passes to <Code> (src/components/portabletext/CodeBlock.astro), so a
-     code block looks the same from either content source. */
+     settings. A CMS add-on that renders its own code blocks passes the same
+     theme and wrapping to <Code>, so a code block looks the same from
+     either content source. */
   markdown: {
     shikiConfig: { theme: "github-dark", wrap: true },
   },
@@ -268,7 +218,6 @@ export default defineConfig({
   ],
 
   vite: {
-    plugins: [contentSourceSwitch()],
     // Build-time constants and dependency pre-bundling hints the content
     // source needs (src/config/cms.mjs).
     define: cms.viteDefine,

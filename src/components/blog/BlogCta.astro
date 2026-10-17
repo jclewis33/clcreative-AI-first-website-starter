@@ -8,8 +8,8 @@
  * --background-2 etc).
  *
  * Takes a `BlogCtaData` from `@/lib/content`: a post's override or the site
- * default (`getBlogPost().cta`), or an inline CTA from a Portable Text body
- * (BlogCtaInline maps it).
+ * default (`getBlogPost().cta`), or an inline CTA from a post body (MDX
+ * `<BlogCta id>`, or the Sanity add-on's BlogCtaInline).
  */
 import type { HTMLAttributes } from "astro/types";
 import Visual from "@/components/ui/Visual.astro";
