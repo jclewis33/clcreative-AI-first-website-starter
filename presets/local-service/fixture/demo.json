@@ -52,6 +52,10 @@
         }
       ]
     },
+    "emergency": {
+      "heading": "Power out? Sparks? <strong>Call now.</strong>",
+      "text": "A licensed electrician answers, day or night."
+    },
     "services": {
       "eyebrow": "What we do",
       "heading": "Every electrical job, one crew",
@@ -92,6 +96,46 @@
       "text": "Book any repair or install and we take $50 off the invoice.",
       "items": ["Any repair or install", "Written price before we start"],
       "note": "One per household. Not combinable with other offers. Fictional example offer."
+    },
+    "plans": {
+      "eyebrow": "Peace of mind",
+      "heading": "Electrical safety plans",
+      "intro": "A yearly check-up that catches problems before they become emergencies.",
+      "note": "Billed yearly. Cancel anytime. Fictional example plans.",
+      "items": [
+        {
+          "name": "Basic",
+          "price": "$9",
+          "period": "/mo",
+          "description": "For newer homes.",
+          "perks": ["Annual safety inspection", "10% off repairs"]
+        },
+        {
+          "name": "Plus",
+          "price": "$15",
+          "period": "/mo",
+          "description": "Our most popular plan.",
+          "perks": [
+            "Annual safety inspection",
+            "Priority scheduling",
+            "15% off repairs",
+            "Surge protector check"
+          ],
+          "featured": true
+        },
+        {
+          "name": "Premium",
+          "price": "$25",
+          "period": "/mo",
+          "description": "For older homes and big families.",
+          "perks": [
+            "Twice-yearly inspections",
+            "Same-day priority",
+            "20% off repairs",
+            "No trip fees"
+          ]
+        }
+      ]
     },
     "serviceArea": {
       "heading": "Serving Austin and nearby",
@@ -157,6 +201,30 @@
         {
           "title": "Licensed",
           "text": "Every job, every electrician."
+        }
+      ]
+    },
+    "team": {
+      "eyebrow": "Meet the team",
+      "heading": "The people at your door",
+      "members": [
+        {
+          "name": "Marcus B.",
+          "role": "Owner · Master electrician",
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-16.webp",
+          "bio": "Twenty years wiring Austin homes."
+        },
+        {
+          "name": "Elena R.",
+          "role": "Lead electrician",
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-15.webp",
+          "bio": "Panels, EV chargers and code."
+        },
+        {
+          "name": "Sam T.",
+          "role": "Service technician",
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-19.webp",
+          "bio": "Repairs and troubleshooting."
         }
       ]
     },
@@ -288,14 +356,19 @@
         "items": [
           {
             "title": "Service upgrades",
-            "text": "100 to 200 amps, done right.",
+            "text": "100 to 200 amps, with the meter base, grounding and permit handled.",
             "icon": "bolt"
           },
           {
             "title": "Subpanels",
-            "text": "For garages, shops and additions.",
+            "text": "Extra circuits for a garage, workshop, addition or ADU, without touching the main panel.",
             "icon": "grid"
           }
+        ],
+        "intro": "From one new circuit to a full service upgrade.",
+        "paragraphs": [
+          "Plenty of Austin homes still run on a 100-amp panel that was sized for a house without central air, an EV or a home office. When breakers trip every time the dryer and AC run together, the panel is telling you it's out of room.",
+          "We size the upgrade to what you run today and what you're likely to add, pull the City of Austin permit, coordinate the disconnect with Austin Energy, and stay until the inspector signs off. Most upgrades take one day, with the power off for about six hours."
         ]
       },
       "included": {
@@ -366,9 +439,14 @@
         "items": [
           {
             "title": "Charger install",
-            "text": "Any brand, mounted and wired.",
+            "text": "Tesla, ChargePoint, Emporia or the one you already bought, mounted and wired.",
             "icon": "car"
           }
+        ],
+        "intro": "Level 2 charging at home, wired to code.",
+        "paragraphs": [
+          "A Level 2 charger adds about 25 to 30 miles of range an hour, so the car is full every morning. We check your panel first: if there's room, the install is usually a half day; if there isn't, we'll tell you before anything else happens.",
+          "We install any brand, hardwired or on a 240-volt outlet, mounted where your cord actually reaches, and we'll point you to any Austin Energy rebate you qualify for."
         ]
       },
       "included": {

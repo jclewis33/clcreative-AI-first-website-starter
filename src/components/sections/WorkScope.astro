@@ -1,0 +1,183 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import ServiceIcon, {
+  type ServiceIconName,
+} from "@/components/ui/ServiceIcon.astro";
+
+type WorkScopeItem = {
+  /** "Service upgrades". */
+  title: string;
+  /** One or two sentences on it. */
+  text: string;
+  /** An icon from src/data/service-icons.json. */
+  icon?: ServiceIconName;
+};
+type WorkScopeTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **WorkScope** — "What we work on" for ONE service: the heading, a lead
+   * line, a few real paragraphs about the work, and each kind of job as an
+   * icon row, beside a tall photo that stays in view while the text
+   * scrolls (on narrow screens it follows the text). The service-page
+   * twin of the home page's card grid: there a card is enough, here people
+   * are deciding, so it reads like the company talking about its work.
+   *
+   * - `heading` (required) and `image` + `imageAlt` (required)
+   * - `intro` — the lead line, set larger
+   * - `paragraphs` — 1–3 paragraphs, specific to this service
+   * - `items` — `{ title, text, icon? }[]`
+   *
+   * @example
+   * <WorkScope heading="What we work on" intro="From a single circuit to a full service upgrade." paragraphs={["Most Austin homes built before 1990 …"]} items={[{ title: "Service upgrades", text: "100 to 200 amps.", icon: "bolt" }]} image={panelPhoto} imageAlt="A new 200-amp panel" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. Required. */
+  heading: string;
+
+  /** The lead line under the heading, set larger. */
+  intro?: string;
+
+  /** The body: a few paragraphs about this kind of work. */
+  paragraphs?: string[];
+
+  /** The kinds of job, as icon rows. */
+  items?: WorkScopeItem[];
+
+  /** The photo beside the text. Required. */
+  image: ImageMetadata | string;
+
+  /** Alt text for the photo. */
+  imageAlt: string;
+
+  /** Section theme. */
+  theme?: WorkScopeTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  intro,
+  paragraphs = [],
+  items = [],
+  image,
+  imageAlt,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!heading)
+    console.warn("[WorkScope] `heading` is required; nothing renders.");
+  if (!image) console.warn("[WorkScope] `image` is required; nothing renders.");
+  if (!imageAlt)
+    console.warn("[WorkScope] Give the photo real alt text (`imageAlt`).");
+}
+---
+
+{
+  render && heading && image && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["work-scope_wrap", className]}
+      {...rest}
+    >
+      <Layout ratio="7-5" verticalAlign="stretch">
+        {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+        <Heading tag="h2">{heading}</Heading>
+        {intro && <Text variant="large">{intro}</Text>}
+        {paragraphs.map((p) => (
+          <Text muted>{p}</Text>
+        ))}
+        {items.length > 0 && (
+          <ul class="work-scope_list">
+            {items.map((item) => (
+              <li class="work-scope_item">
+                {item.icon && <ServiceIcon name={item.icon} />}
+                <div class="work-scope_item_body u-margin-trim">
+                  <Heading tag="h3" variant="h6" marginBottom={2}>
+                    {item.title}
+                  </Heading>
+                  <Text variant="small" muted>
+                    {item.text}
+                  </Text>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        <Visual
+          slot="column2"
+          src={image}
+          alt={imageAlt || heading}
+          ratio="portrait"
+          class="work-scope_img"
+        />
+      </Layout>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .work-scope_list {
+      margin: var(--space-4) 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .work-scope_item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+      padding-block: var(--space-5);
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .work-scope_item .service-icon_wrap {
+      flex-shrink: 0;
+    }
+
+    .work-scope_item_body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* The photo rides along beside the text on wide screens; stacked, it
+       is just the photo above. */
+    .work-scope_img {
+      position: var(--relative-medium, sticky);
+      top: calc(var(--nav-height-total) + var(--space-5));
+    }
+  }
+</style>

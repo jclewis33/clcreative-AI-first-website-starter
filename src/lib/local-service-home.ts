@@ -32,6 +32,14 @@ type HomeAreaGeo = {
 };
 
 export interface LocalServiceHomeData {
+  /**
+   * The home page's layout: `contractor` (LocalServiceHome — conversion-led:
+   * quote panel, offer, symptoms, comparison) or `showcase`
+   * (LocalServiceShowcase — photo-led and editorial, after the Outdoor
+   * Living demo). @default 'contractor'
+   */
+  layout?: "contractor" | "showcase";
+
   /** Page `<title>` and meta description. */
   title: string;
   description: string;
@@ -106,6 +114,40 @@ export interface LocalServiceHomeData {
     }[];
   };
 
+  /** Real round-the-clock (or after-hours) service only (EmergencyBand). */
+  emergency?: { heading?: string; text?: string };
+
+  /** Maintenance / membership plans at real prices (MaintenancePlans). */
+  plans?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    note?: string;
+    items: {
+      name: string;
+      price: string;
+      period?: string;
+      description?: string;
+      perks: string[];
+      featured?: boolean;
+      ctaLabel?: string;
+    }[];
+  };
+
+  /** The real people who show up (TeamGrid). */
+  team?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    members: {
+      name: string;
+      role: string;
+      image: HomeImage;
+      imageAlt?: string;
+      bio?: string;
+    }[];
+  };
+
   /** A named guarantee the business really gives (Guarantee). */
   guarantee?: {
     eyebrow?: string;
@@ -152,6 +194,8 @@ export interface LocalServiceHomeData {
     image: HomeImage;
     imageAlt: string;
     reasons?: HomeItem[];
+    /** The showcase layout's text link to the estimate form ("Book time with me"). */
+    ctaLabel?: string;
   };
 
   /** Real, attributed reviews only. Absent = no Reviews section. */

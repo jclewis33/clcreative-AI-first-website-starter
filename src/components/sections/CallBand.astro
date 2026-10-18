@@ -17,7 +17,9 @@ type CallBandVariant =
   /** A white card centred on a full-width photo, with the estimate button + "or" + phone panel */
   | "photo-card"
   /** One rounded card: dark text side with the buttons, photo side */
-  | "split";
+  | "split"
+  /** A full-width photo under a dark wash, the heading and buttons centred on it — no card */
+  | "cinematic";
 type CallBandTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -27,8 +29,9 @@ interface Props extends HTMLAttributes<"section"> {
    *
    * - `variant` — `'band'` (dark band, phone + second button), `'photo-card'`
    *   (a white card on a full-width photo — a lawn, a roofline — with the
-   *   estimate panel) or `'split'` (a rounded card, text one side, photo the
-   *   other). The photo variants need `image` + `imageAlt`; without them
+   *   estimate panel), `'split'` (a rounded card, text one side, photo the
+   *   other) or `'cinematic'` (the photo full-width under a dark wash, the
+   *   heading and both buttons centred on it). The photo variants need `image` + `imageAlt`; without them
    *   they fall back to `'band'`.
    * - `heading` (HTML allowed; `<strong>` = accent), `text`
    * - `secondaryCta` — default `{ label: "Contact us", href: "/contact" }`;
@@ -107,7 +110,7 @@ const photoAlt = imageAlt || heading?.replace(/<[^>]+>/g, "") || "";
 if (import.meta.env.DEV && render) {
   if (!heading)
     console.warn("[CallBand] `heading` is required; nothing renders.");
-  if (!["band", "photo-card", "split"].includes(variantProp))
+  if (!["band", "photo-card", "split", "cinematic"].includes(variantProp))
     console.warn(`[CallBand] Unknown variant "${variantProp}".`);
   if (variantProp !== "band" && !image)
     console.warn(
@@ -196,6 +199,33 @@ if (import.meta.env.DEV && render) {
   )
 }
 
+{
+  render && heading && variant === "cinematic" && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["call-band_wrap", "is-cinematic", className]}
+      {...rest}
+    >
+      <Fragment slot="background">
+        <Visual src={image!} alt={photoAlt} variant="background" />
+        <Overlay strength={70} />
+      </Fragment>
+      <div class="call-band_cinematic">
+        <Heading tag="h2" variant="h1" accent>
+          <Fragment set:html={heading} />
+        </Heading>
+        {text && <Text variant="large">{text}</Text>}
+        <div class="call-band_cinematic_actions">
+          <CtaButton cta={secondaryCta} size="large" />
+          <CtaButton phone variant="secondary" size="large" />
+        </div>
+      </div>
+    </Section>
+  )
+}
+
 <style is:global>
   @layer components {
     .call-band_actions {
@@ -252,6 +282,24 @@ if (import.meta.env.DEV && render) {
     .call-band_split_actions {
       display: flex;
       flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-top: var(--space-5);
+    }
+
+    /* cinematic: centred on the photo, no card. */
+    .call-band_cinematic {
+      --_text-inline-margin: auto;
+      --_buttons-justify: center;
+      align-self: center;
+      max-width: 48rem;
+      padding-block: var(--space-8);
+      text-align: center;
+    }
+
+    .call-band_cinematic_actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: var(--space-3);
       margin-top: var(--space-5);
     }

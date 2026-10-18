@@ -1,0 +1,173 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import { SITE } from "@/config/site";
+
+type EmergencyBandTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **EmergencyBand** — "Something wrong right now? Call." A slim, urgent
+   * band: a pulsing live dot, the heading, one line, and the phone as a big
+   * call button. For businesses that really answer around the clock (or
+   * after hours) — plumbing, HVAC, electrical, restoration.
+   *
+   * Only for a business with real emergency service; say the hours plainly
+   * in `text` if it isn't 24/7.
+   *
+   * - `heading` (default "24/7 emergency service"; HTML, `<strong>` = accent)
+   * - `text` — one line ("A real person answers, day or night.")
+   * - `theme` — default `brand`
+   *
+   * @example
+   * <EmergencyBand text="No water? Burst pipe? A licensed plumber answers, day or night." />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The heading. HTML allowed. @default '24/7 emergency service' */
+  heading?: string;
+
+  /** One line under it. */
+  text?: string;
+
+  /** Section theme. @default 'brand' */
+  theme?: EmergencyBandTheme;
+
+  /** Section padding (top and bottom). @default 'small' */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  heading = "24/7 emergency service",
+  text,
+  theme = "brand",
+  padding = "small",
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+{
+  render && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["emergency-band_wrap", className]}
+      {...rest}
+    >
+      <div class="emergency-band_layout">
+        <span class="emergency-band_dot" aria-hidden="true" />
+        <Heading tag="h2" variant="h4" accent class="emergency-band_title">
+          <Fragment set:html={heading} />
+        </Heading>
+        {text && <Text class="emergency-band_text">{text}</Text>}
+        <div class="emergency-band_action">
+          <CtaButton phone variant="secondary" size="large" />
+        </div>
+      </div>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* Dot, title and button share the first row, so the dot sits on the
+       heading's line (centred on it) whatever the text below does; the
+       line of text runs under the title; the button spans both rows. */
+    .emergency-band_layout {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        "dot title action"
+        ". text action";
+      align-items: center;
+      column-gap: var(--space-5);
+    }
+
+    .emergency-band_dot {
+      grid-area: dot;
+    }
+
+    .emergency-band_title {
+      grid-area: title;
+      margin-bottom: 0;
+    }
+
+    .emergency-band_text {
+      grid-area: text;
+      margin-top: var(--space-2);
+      margin-bottom: 0;
+    }
+
+    .emergency-band_action {
+      grid-area: action;
+    }
+
+    @container (width < 40em) {
+      .emergency-band_layout {
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas:
+          "dot title"
+          ". text"
+          "action action";
+      }
+
+      .emergency-band_action {
+        padding-top: var(--space-5);
+      }
+    }
+
+    /* A live "on call" dot: a solid core and a soft ring that pulses. */
+    .emergency-band_dot {
+      position: relative;
+      width: 0.875rem;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-full);
+      background-color: currentColor;
+    }
+
+    .emergency-band_dot::after {
+      content: "";
+      position: absolute;
+      inset: -0.5rem;
+      border-radius: inherit;
+      background-color: currentColor;
+      opacity: 0.25;
+      animation: emergency-band_pulse 2s ease-out infinite;
+    }
+
+    @keyframes emergency-band_pulse {
+      0% {
+        transform: scale(0.6);
+        opacity: 0.4;
+      }
+      100% {
+        transform: scale(1.4);
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .emergency-band_dot::after {
+        animation: none;
+      }
+    }
+  }
+</style>

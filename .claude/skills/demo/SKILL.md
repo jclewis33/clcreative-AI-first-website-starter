@@ -78,6 +78,10 @@ git switch -c demo/<slug>
 
 - Use the `cl-creative-storybrand-copywriter` skill for the home page (hero,
   story, call band) and each service (hero, scope, included, FAQs, CTA).
+- Each service's `scope` gets an `intro` line and 2 real `paragraphs` about
+  that work (what goes wrong, how they do it, what the customer gets), plus
+  a `scope.image` when they have a photo of the job; it falls back to the
+  card photo. A lone card there reads as an empty page.
 - Keep their real facts and their tone. A demo is their business on a better
   site, not a different business.
 - **Lengths:**
@@ -86,7 +90,19 @@ git switch -c demo/<slug>
   - `included.images`: exactly 2.
   - Service `faqs`: at least 2.
 
-### 3b. Pick the look and the home-service pieces (1 min)
+### 3b. Pick the layout, the look and the home-service pieces (1 min)
+
+- **`home.layout`** — the page's shape (any look works with either):
+  - `contractor` (default): conversion-led. Quote panel in the hero, offer
+    seal, symptom cards, comparison table. For call-driven trades —
+    electrical, plumbing, HVAC, pest, lawn.
+  - `showcase`: photo-led and editorial, after the Outdoor Living demo.
+    Full-bleed hero with a calmer headline, recent work on dark, the
+    owner's story with a "talk to us" link (`story.ctaLabel`), a cinematic
+    photo close. It skips `offer`, `symptoms`, `comparison` and the hero
+    panel/trust row. For work bought by looking at it — hardscape, decks,
+    remodeling, landscaping. Only pick it with strong real photos: it
+    leans on them.
 
 - **`look`**, by trade (see `src/config/looks.ts`):
   - `fresh`: lawn, pest, cleaning, pool
@@ -120,6 +136,12 @@ git switch -c demo/<slug>
   - `guarantee`: their written guarantee or warranty, given a short name.
   - `comparison`: honest rows on how they work versus common industry
     practice. Never name a competitor.
+  - `emergency`: only if they really offer 24/7 or after-hours service.
+    Their own words go in `text`.
+  - `plans`: their maintenance or membership plans, at their real prices.
+  - `team`: their real people, with their own photos.
+- **Town pages:** `cityPages` is on by default, so every service gets a page
+  in every town. Keep `serviceAreas` to the towns they actually serve.
 - `home.estimate.question` heads step 1 of the estimate form, above the
   service tiles. The default is "What do you need help with?". Phrase it for
   their trade ("What's going on with your AC?").
@@ -192,7 +214,7 @@ git push -u origin demo/<slug>
    docs/demo-mode.md §2.
 4. Then check:
    - `curl -sI <url> | grep -i x-robots` shows `noindex`.
-   - The banner links to the see-how-it-works page.
+   - The banner links to the see-how-it-works-demo page (no quiz; the video and calendar show straight away).
    - **Send one test lead** from the form and confirm it arrived in the GHL
      demo sub-account. The form always shows success, so this is the only
      way to know.

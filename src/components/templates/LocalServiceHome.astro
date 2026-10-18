@@ -30,6 +30,10 @@ import OfferBand from "@/components/sections/OfferBand.astro";
 import RecentWork from "@/components/sections/RecentWork.astro";
 import Guarantee from "@/components/sections/Guarantee.astro";
 import ComparisonTable from "@/components/sections/ComparisonTable.astro";
+import EmergencyBand from "@/components/sections/EmergencyBand.astro";
+import MaintenancePlans from "@/components/sections/MaintenancePlans.astro";
+import TeamGrid from "@/components/sections/TeamGrid.astro";
+import { geoFor } from "@/lib/service-area-geo";
 import { getServices, servicePath } from "@/lib/services";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
 import { SITE } from "@/config/site";
@@ -83,7 +87,14 @@ const {
   recentWork,
   guarantee,
   comparison,
+  emergency,
+  plans,
+  team,
 } = home;
+/* The street map: the home data's own outlines (the dev sample's SVG map
+   has none), else the generated src/data/service-area-geo.json. */
+const areaGeo =
+  serviceArea.geo ?? geoFor(serviceArea.areas ?? SITE.serviceAreas);
 const offerCta = offer
   ? { label: offer.ctaLabel ?? home.estimate.label, modal: ESTIMATE_MODAL_ID }
   : undefined;
@@ -110,6 +121,12 @@ if (import.meta.env.DEV && !services.length)
   />
 
   {home.stats && <StatsStrip items={home.stats} />}
+
+  {
+    emergency && (
+      <EmergencyBand heading={emergency.heading} text={emergency.text} />
+    )
+  }
 
   <ServiceCards
     id="services"
@@ -149,7 +166,7 @@ if (import.meta.env.DEV && !services.length)
     heading={serviceArea.heading}
     text={serviceArea.text}
     areas={serviceArea.areas}
-    geo={serviceArea.geo}
+    geo={areaGeo}
     map={serviceArea.map}
   />
 
@@ -162,6 +179,19 @@ if (import.meta.env.DEV && !services.length)
         steps={process.steps}
         image={process.image}
         imageAlt={process.imageAlt}
+      />
+    )
+  }
+
+  {
+    plans && (
+      <MaintenancePlans
+        eyebrow={plans.eyebrow}
+        heading={plans.heading}
+        intro={plans.intro}
+        note={plans.note}
+        plans={plans.items}
+        cta={estimateCta}
       />
     )
   }
@@ -188,6 +218,17 @@ if (import.meta.env.DEV && !services.length)
         image={story.image}
         imageAlt={story.imageAlt}
         reasons={story.reasons}
+      />
+    )
+  }
+
+  {
+    team && (
+      <TeamGrid
+        eyebrow={team.eyebrow}
+        heading={team.heading}
+        intro={team.intro}
+        members={team.members}
       />
     )
   }

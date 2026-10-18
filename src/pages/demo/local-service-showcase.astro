@@ -1,0 +1,12 @@
+---
+/**
+ * Local-service sample home page, SHOWCASE layout — DEV ONLY
+ * (`/demo/local-service-showcase` is in DEV_ONLY_PATHS, so the build strips
+ * it). The same fictional remodeler as /demo/local-service, on the
+ * photo-led LocalServiceShowcase template.
+ */
+import LocalServiceShowcase from "@/components/templates/LocalServiceShowcase.astro";
+import { SAMPLE_HOME } from "@/data/local-service-sample";
+---
+
+<LocalServiceShowcase home={SAMPLE_HOME} />

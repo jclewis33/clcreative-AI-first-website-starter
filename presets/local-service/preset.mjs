@@ -20,6 +20,8 @@ const image = text;
 const item = z.object({ title: text, text: text });
 
 const homeSchema = z.object({
+  /** contractor (conversion-led) or showcase (photo-led, editorial). */
+  layout: z.enum(["contractor", "showcase"]).default("contractor"),
   /** Defaults to "<name> | <tagline>". */
   title: text.optional(),
   /** Defaults to seo.description. */
@@ -110,6 +112,53 @@ const homeSchema = z.object({
         .max(9),
     })
     .optional(),
+  /** Only when they really answer around the clock / after hours. */
+  emergency: z
+    .object({ heading: text.optional(), text: text.optional() })
+    .optional(),
+  /** Their real maintenance / membership plans, at their prices. */
+  plans: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      note: text.optional(),
+      items: z
+        .array(
+          z.object({
+            name: text,
+            price: text,
+            period: text.optional(),
+            description: text.optional(),
+            perks: z.array(text).min(1),
+            featured: z.boolean().optional(),
+            ctaLabel: text.optional(),
+          }),
+        )
+        .min(1)
+        .max(3),
+    })
+    .optional(),
+  /** The real people, with their own photos. */
+  team: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      members: z
+        .array(
+          z.object({
+            name: text,
+            role: text,
+            image,
+            imageAlt: text.optional(),
+            bio: text.optional(),
+          }),
+        )
+        .min(1)
+        .max(8),
+    })
+    .optional(),
   /** A guarantee they actually give, named. */
   guarantee: z
     .object({
@@ -158,6 +207,7 @@ const homeSchema = z.object({
       image,
       imageAlt: text,
       reasons: z.array(item).optional(),
+      ctaLabel: text.optional(),
     })
     .optional(),
   /** Real, attributed reviews only — leave it out otherwise. */
@@ -213,6 +263,7 @@ const serviceSchema = z
     title: text,
     cardImage: image,
     hero: z.object({ image }).passthrough(),
+    scope: z.object({ image: image.optional() }).passthrough(),
     included: z
       .object({
         images: z.array(z.object({ src: image, alt: text })).length(2),
@@ -236,6 +287,8 @@ export const demoSchema = z.object({
   look: z.enum(LOOK_NAMES).default("fresh"),
   /** Contractor license, shown in the footer, e.g. "TECL #25414". */
   license: text.optional(),
+  /** A page per service per town in `serviceAreas`. */
+  cityPages: z.boolean().default(true),
   prospect: z.object({
     name: text,
     legalName: text.optional(),

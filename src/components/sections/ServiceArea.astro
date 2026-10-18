@@ -43,6 +43,7 @@ interface Props extends HTMLAttributes<"section"> {
    * with the towns outlined (ServiceMap). It wins over `map` and `images`.
    *
    * - `areas` — place names (default `SITE.serviceAreas`)
+   * - `areaLinks` — make chips links (a page per place)
    * - `geo` — town boundaries for the street map
    * - `map`, `mapLabel` — the SVG and its accessible description
    * - `images` — two photos, shown when there's no `map`
@@ -68,6 +69,12 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Place names, one chip each. @default SITE.serviceAreas */
   areas?: readonly string[];
+
+  /** Make chips links: a page per place, e.g. `{ "Round Rock": "/services/panels/round-rock" }`. */
+  areaLinks?: Record<string, string>;
+
+  /** The place this page is about: highlighted on the map. */
+  currentArea?: string;
 
   /** Town boundaries: shows a street map with each town outlined. */
   geo?: ServiceAreaGeo[];
@@ -104,6 +111,8 @@ const {
   heading,
   text,
   areas = SITE.serviceAreas,
+  areaLinks = {},
+  currentArea,
   geo = [],
   map: Map,
   mapLabel,
@@ -116,7 +125,11 @@ const {
   ...rest
 } = Astro.props;
 
-const chips = areas.map((area) => ({ label: area, key: area }));
+const chips = areas.map((area) => ({
+  label: area,
+  key: area,
+  href: areaLinks[area],
+}));
 const hasMedia = geo.length > 0 || Boolean(Map) || images.length === 2;
 const hasContent = chips.length > 0 || hasMedia;
 
@@ -155,7 +168,7 @@ if (import.meta.env.DEV && render) {
 
         {geo.length > 0 && (
           <div slot="column2" class="service-area_map is-street">
-            <ServiceMap areas={geo} label={mapLabel} />
+            <ServiceMap areas={geo} label={mapLabel} current={currentArea} />
           </div>
         )}
         {geo.length === 0 && Map ? (
@@ -214,9 +227,14 @@ if (import.meta.env.DEV && render) {
         stroke-opacity 0.2s ease;
     }
 
-    .service-area_map [data-area].is-active {
+    .service-area_map [data-area].is-active,
+    .service-area_map [data-area].is-current {
       fill-opacity: 0.35;
       stroke-opacity: 1;
+    }
+
+    .service-area_map [data-area].is-current {
+      stroke-width: 3;
     }
 
     /* The chip list carries no text-rhythm margin of its own, so the CTA

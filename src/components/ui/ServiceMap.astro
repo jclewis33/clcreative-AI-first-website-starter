@@ -43,6 +43,9 @@ interface Props {
   /** Accessible description of the map. @default 'Map of the areas we serve: …' */
   label?: string;
 
+  /** The town this page is about: outlined and filled more strongly. */
+  current?: string;
+
   /** Extra classes on the map. */
   class?: string;
 }
@@ -52,6 +55,7 @@ const {
   render = true,
   areas = [],
   label,
+  current,
   class: className,
 } = Astro.props;
 
@@ -66,6 +70,7 @@ const mapLabel =
       class:list={["service-map_wrap", className]}
       role="img"
       aria-label={mapLabel}
+      data-current={current}
     >
       <div class="service-map_canvas" data-service-map />
       <script
@@ -206,6 +211,8 @@ const mapLabel =
         (layer as any).eachLayer?.((l: any) => paths.push(l.getElement()));
         for (const path of paths.filter(Boolean)) {
           path.setAttribute("data-area", area.name);
+          if (area.name === wrap.dataset.current)
+            path.classList.add("is-current");
           path.addEventListener("pointerenter", () =>
             setActive(area.name, true),
           );

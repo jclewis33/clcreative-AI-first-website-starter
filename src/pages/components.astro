@@ -98,6 +98,9 @@ import OfferBand from "@/components/sections/OfferBand.astro";
 import RecentWork from "@/components/sections/RecentWork.astro";
 import Guarantee from "@/components/sections/Guarantee.astro";
 import ComparisonTable from "@/components/sections/ComparisonTable.astro";
+import EmergencyBand from "@/components/sections/EmergencyBand.astro";
+import MaintenancePlans from "@/components/sections/MaintenancePlans.astro";
+import TeamGrid from "@/components/sections/TeamGrid.astro";
 import TrustBadges from "@/components/ui/TrustBadges.astro";
 /* Real town boundaries for the street-map demo — the Brightline fixture's
    cache (scripts/lib/service-area-geo.mjs), so the page needs no lookup. */
@@ -114,6 +117,7 @@ import PhotoBand from "@/components/sections/PhotoBand.astro";
 import ServiceCards from "@/components/sections/ServiceCards.astro";
 import ProcessSteps from "@/components/sections/ProcessSteps.astro";
 import StorySplit from "@/components/sections/StorySplit.astro";
+import WorkScope from "@/components/sections/WorkScope.astro";
 import IncludedList from "@/components/sections/IncludedList.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import Reviews from "@/components/sections/Reviews.astro";
@@ -246,6 +250,7 @@ const COMPONENT_INDEX = [
   { slug: "service-cards", text: "ServiceCards" },
   { slug: "process-steps", text: "ProcessSteps" },
   { slug: "story-split", text: "StorySplit" },
+  { slug: "work-scope", text: "WorkScope" },
   { slug: "included-list", text: "IncludedList" },
   { slug: "service-area", text: "ServiceArea" },
   { slug: "reviews", text: "Reviews" },
@@ -421,6 +426,70 @@ const demoCompareRows = [
     them: "Often skipped",
   },
   { label: "Clean-up", us: "Every site left clean", them: "Dust left behind" },
+];
+const demoPlans = [
+  {
+    name: "Basic",
+    price: "$9",
+    period: "/mo",
+    perks: ["Annual inspection", "10% off repairs"],
+  },
+  {
+    name: "Plus",
+    price: "$15",
+    period: "/mo",
+    perks: ["Annual inspection", "Priority scheduling", "15% off repairs"],
+    featured: true,
+  },
+  {
+    name: "Premium",
+    price: "$25",
+    period: "/mo",
+    perks: ["Twice-yearly inspections", "Same-day priority", "20% off repairs"],
+  },
+];
+const demoTeam = [
+  {
+    name: "Marcus B.",
+    role: "Owner",
+    image: manCouch,
+    bio: "Twenty years in the trade.",
+  },
+  {
+    name: "Elena R.",
+    role: "Lead technician",
+    image: humanTouch,
+    bio: "Installs and code.",
+  },
+];
+const demoHiring = {
+  text: "We're hiring licensed technicians.",
+  cta: { label: "See openings", href: "/contact" },
+};
+const workScopeParagraphs = [
+  "Most kitchens we open up were laid out decades ago, before islands and before two cooks. We start with how you use the room.",
+  "One project lead from walkthrough to punch list, a written scope before demolition, and a crew that cleans up every day.",
+];
+const workScopeItems: {
+  title: string;
+  text: string;
+  icon: "grid" | "kitchen" | "bolt";
+}[] = [
+  {
+    title: "Layout changes",
+    text: "Moving walls, plumbing and the island.",
+    icon: "grid",
+  },
+  {
+    title: "Cabinets and counters",
+    text: "Custom or semi-custom, stone or quartz tops.",
+    icon: "kitchen",
+  },
+  {
+    title: "Lighting and electrical",
+    text: "Recessed, under-cabinet and pendants.",
+    icon: "bolt",
+  },
 ];
 ---
 
@@ -2611,6 +2680,22 @@ const demoCompareRows = [
     cta={{ label: "Get an estimate", modal: "demo-estimate" }}
   />
 
+  <Section theme="light" padding="small" id="work-scope">
+    <Heading variant="eyebrow">WorkScope</Heading>
+    <Heading tag="h2"
+      >A service page's "what we work on": paragraphs and job rows beside a
+      photo</Heading
+    >
+  </Section>
+  <WorkScope
+    heading="What we work on"
+    intro="From a refresh to a full gut-and-rebuild."
+    paragraphs={workScopeParagraphs}
+    items={workScopeItems}
+    image={demoPhoto5}
+    imageAlt="A remodeled kitchen with an island and pendant lights"
+  />
+
   <Section theme="light" padding="small" id="included-list">
     <Heading variant="eyebrow">IncludedList</Heading>
     <Heading tag="h2">What's included, beside an offset photo pair</Heading>
@@ -2769,6 +2854,15 @@ const demoCompareRows = [
     secondaryCta={demoEstimateCta}
   />
 
+  <CallBand
+    variant="cinematic"
+    image={demoPhoto4}
+    imageAlt="A project manager walking a homeowner through plans"
+    heading="Ready for <strong>your project</strong>?"
+    text="Call now, or get a free estimate online."
+    secondaryCta={demoEstimateCta}
+  />
+
   <Section theme="light" padding="small" id="home-service-sections">
     <Heading variant="eyebrow">Home-service sections</Heading>
     <Heading tag="h2"
@@ -2792,6 +2886,14 @@ const demoCompareRows = [
     items={demoGuaranteeItems}
   />
   <ComparisonTable heading="How we compare" rows={demoCompareRows} />
+  <EmergencyBand text="A licensed technician answers, day or night." />
+  <MaintenancePlans
+    heading="Maintenance plans"
+    plans={demoPlans}
+    cta={demoEstimateCta}
+    note="Billed yearly. Example plans."
+  />
+  <TeamGrid heading="Meet the team" members={demoTeam} hiring={demoHiring} />
 
   <Section theme="light" padding="small" id="cta-section-cta">
     <Heading variant="eyebrow">CTASection with SectionCta</Heading>

@@ -150,10 +150,7 @@ try {
   assert.match(html("llms.txt"), /not for indexing/);
   const home = html("index.html");
   assert.match(home, /Built for Brightline Electric by CL Creative/);
-  assert.match(
-    home,
-    /see-how-it-works\?from=demo&amp;demo=brightline-electric/,
-  );
+  assert.match(home, /see-how-it-works-demo\?demo=brightline-electric/);
   assert.match(home, /your first service call/);
   assert.match(home, /href="\/services\/panel-upgrades"/);
   assert.doesNotMatch(home, /href="\/blog"/);
@@ -184,6 +181,32 @@ try {
   assert.match(home, /class="service-map_wrap/);
   assert.match(home, /"name":"Round Rock","geometry":\{"type":"Polygon"/);
   assert.match(html("contact/index.html"), /Contact \| Brightline Electric/);
+  // Phase 3: the emergency band, plans and team on the home page.
+  for (const cls of ["emergency-band_wrap", "plans_wrap", "team-grid_wrap"])
+    assert.match(home, new RegExp(`class="[^"]*\\b${cls}\\b`), cls);
+  // Service pages carry one estimate form (the site-wide one), not two.
+  const service = html("services/panel-upgrades/index.html");
+  assert.equal(service.match(/id="estimate-modal"/g)?.length, 1);
+  // A page per service per town, with the town in its title and FAQ, and
+  // the area chips linking to the other towns.
+  const town = html("services/panel-upgrades/round-rock/index.html");
+  assert.match(
+    town,
+    /<title>Panel upgrades in Round Rock, TX \| Brightline Electric/,
+  );
+  assert.match(town, /Do you offer panel upgrades in Round Rock\?/);
+  assert.match(town, /href="\/services\/panel-upgrades\/cedar-park"/);
+  assert.ok(
+    fs.existsSync(
+      path.join(
+        client,
+        "services",
+        "ev-chargers",
+        "pflugerville",
+        "index.html",
+      ),
+    ),
+  );
   assert.ok(
     fs.existsSync(path.join(client, "services", "ev-chargers", "index.html")),
   );
