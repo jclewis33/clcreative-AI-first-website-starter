@@ -1,6 +1,14 @@
 {
   "html.customData": [".vscode/html.custom-data.json"],
   "css.customData": [".vscode/css.custom-data.json"],
+  "cssVariables.lookupFiles": ["src/styles/**/*.css"],
+  "cssVariables.blacklistFolders": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.astro/**",
+    "**/.wrangler/**",
+    "**/.parity/**"
+  ],
   "CSSNavigation.activeHTMLFileExtensions": [
     "html",
     "ejs",

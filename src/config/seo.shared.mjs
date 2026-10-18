@@ -10,6 +10,9 @@
  *   - src/components/global/Head.astro → <meta name="robots">
  *   - src/middleware.ts → X-Robots-Tag header on SSR routes
  *
+ * plus SITE_NOINDEX below, which takes the WHOLE site out of search (a
+ * prospect demo, a client staging site).
+ *
  * `.mjs` so astro.config.mjs and application code can both import it, the
  * same reason site.shared.mjs is .mjs.
  *
@@ -19,6 +22,22 @@
  * "/components"), and "fixing" that with exact matching pushes variant pages
  * like /thank-you-call INTO the sitemap while robots.txt still disallows them.
  */
+
+import { DEMO } from "./demo.shared.mjs";
+
+/**
+ * Keep the entire site out of search results: every page gets the noindex
+ * meta, robots.txt disallows everything, and the build ships no sitemap, a
+ * stub llms.txt, and an `X-Robots-Tag` header on every static asset
+ * (astro.config.mjs). On for every prospect demo (src/config/demo.shared.mjs),
+ * and for any build run with `SITE_NOINDEX=1` — a client staging site.
+ *
+ * The env read happens at build time: astro.config.mjs passes the value to
+ * the Worker bundle through `vite.define`, because the Worker's own
+ * `process.env` has no build variables.
+ */
+export const SITE_NOINDEX =
+  DEMO !== null || ["1", "true"].includes(process.env.SITE_NOINDEX ?? "");
 
 /** Pages that exist only for local development; stripped from the build. */
 export const DEV_ONLY_PATHS = [
@@ -57,6 +76,7 @@ export const NOINDEX_PREFIXES = ["/thank-you"];
  * @returns {boolean}
  */
 export function isNoindexRoute(pathname) {
+  if (SITE_NOINDEX) return true;
   if (typeof pathname !== "string" || pathname === "") return false;
 
   // Normalise a trailing slash so "/preview/" matches "/preview".

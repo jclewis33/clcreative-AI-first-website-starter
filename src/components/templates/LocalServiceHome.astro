@@ -1,0 +1,162 @@
+---
+/**
+ * Local-service home page template.
+ *
+ * Stacks the local-service sections — hero, stats, service cards, service
+ * area, process, photo band, story, reviews, lead form, FAQ, call band — into
+ * a full home page from one `home` object (LocalServiceHomeData). The service
+ * cards come from the services content (src/content/services), so the home
+ * page and the service pages never disagree.
+ *
+ * Used by the dev sample (/demo/local-service) and by every prospect demo
+ * generated with `npm run demo` (presets/local-service), whose index page is
+ * just this template and its generated src/data/home.ts.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import PhotoBand from "@/components/sections/PhotoBand.astro";
+import StorySplit from "@/components/sections/StorySplit.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import FAQ from "@/components/sections/FAQ.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import { getServices, servicePath } from "@/lib/services";
+import type { LocalServiceHomeData } from "@/lib/local-service-home";
+
+interface Props {
+  /**
+   * **LocalServiceHome** — a full local-service home page from one data
+   * object. Optional sections (`stats`, `process`, `photoBand`, `story`,
+   * `reviews`, `faqs`) render only when their data is present.
+   *
+   * @example
+   * import { HOME } from "@/data/home";
+   * <LocalServiceHome home={HOME} />
+   */
+  docs?: string;
+
+  /** The page's content — see LocalServiceHomeData (src/lib/local-service-home.ts). */
+  home: LocalServiceHomeData;
+}
+
+const { home } = Astro.props;
+
+const services = await getServices();
+const ESTIMATE = "estimate-modal";
+const estimateCta = { label: home.estimate.label, modal: ESTIMATE };
+const serviceItems = services.map((s) => ({
+  title: s.data.title,
+  text: s.data.cardText,
+  image: s.data.cardImage,
+  imageAlt: s.data.cardImageAlt,
+  href: servicePath(s.id),
+}));
+const projectOptions = home.leadForm.projectOptions ?? [
+  ...services.map((s) => ({ label: s.data.title, value: s.id })),
+  { label: "Something else", value: "other" },
+];
+const { hero, serviceArea, process, photoBand, story, reviews, faqs } = home;
+
+if (import.meta.env.DEV && !services.length)
+  console.warn(
+    "[LocalServiceHome] No services in src/content/services — the service cards are empty.",
+  );
+---
+
+<BaseLayout title={home.title} description={home.description}>
+  <Hero
+    eyebrow={hero.eyebrow}
+    heading={hero.heading}
+    text={hero.text}
+    image={hero.image}
+    imageAlt={hero.imageAlt}
+    primaryCta={estimateCta}
+    proof={hero.proof}
+  />
+
+  {home.stats && <StatsStrip items={home.stats} />}
+
+  <ServiceCards
+    id="services"
+    eyebrow={home.services.eyebrow}
+    heading={home.services.heading}
+    intro={home.services.intro}
+    items={serviceItems}
+  />
+
+  <ServiceArea
+    heading={serviceArea.heading}
+    text={serviceArea.text}
+    areas={serviceArea.areas}
+    map={serviceArea.map}
+  />
+
+  {
+    process && (
+      <ProcessSteps
+        eyebrow={process.eyebrow}
+        heading={process.heading}
+        text={process.text}
+        steps={process.steps}
+        image={process.image}
+        imageAlt={process.imageAlt}
+      />
+    )
+  }
+
+  {photoBand && <PhotoBand image={photoBand.image} alt={photoBand.alt} />}
+
+  {
+    story && (
+      <StorySplit
+        eyebrow={story.eyebrow}
+        heading={story.heading}
+        paragraphs={story.paragraphs}
+        image={story.image}
+        imageAlt={story.imageAlt}
+        reasons={story.reasons}
+      />
+    )
+  }
+
+  {
+    reviews && (
+      <Reviews
+        rating={reviews.rating}
+        count={reviews.count}
+        reviews={reviews.items}
+      />
+    )
+  }
+
+  <LeadFormSection
+    eyebrow={home.leadForm.eyebrow}
+    heading={home.leadForm.heading}
+    text={home.leadForm.text}
+    formId="contact"
+    fields="quote"
+    projectOptions={projectOptions}
+  />
+
+  {faqs && <FAQ eyebrow={faqs.eyebrow} items={faqs.items} />}
+
+  <CallBand
+    heading={home.callBand.heading}
+    text={home.callBand.text}
+    secondaryCta={estimateCta}
+  />
+
+  <LeadFormModal
+    id={ESTIMATE}
+    formId="contact"
+    heading={home.estimate.heading}
+    text={home.estimate.text}
+    fields="quote"
+    projectOptions={projectOptions}
+  />
+</BaseLayout>

@@ -35,6 +35,7 @@ jobs:
       - run: npm run check:boundary
       - run: npm run check:addon-installer
       - run: npm run check:setup
+      - run: npm run check:demo
       - run: npm run check:content
       - run: npm run check
       - run: npm run check:hover
