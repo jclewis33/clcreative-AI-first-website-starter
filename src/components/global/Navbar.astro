@@ -1172,7 +1172,9 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
    that utility class from the <span> in Navbar.astro. */
     .nav_banner_text {
       margin: 0;
-      font-size: var(--font-size-small);
+      /* The small text size. This read --font-size-small, which no file
+         defines, so the banner fell back to the full body size. */
+      font-size: var(--text-small-size);
       font-family: var(--font-secondary);
       text-transform: uppercase;
       color: inherit;
