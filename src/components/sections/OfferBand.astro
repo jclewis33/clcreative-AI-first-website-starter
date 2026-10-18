@@ -135,7 +135,9 @@ if (import.meta.env.DEV && render && !heading) {
     .offer-band_card {
       display: grid;
       grid-template-columns: var(--_offer-columns, minmax(0, 1fr));
-      align-items: center;
+      /* Top-aligned: the seal sits beside the eyebrow and heading, not
+         floating halfway down a tall card. */
+      align-items: start;
       gap: var(--space-7);
       padding: var(--space-7);
       border: var(--border-width-main) solid var(--border);

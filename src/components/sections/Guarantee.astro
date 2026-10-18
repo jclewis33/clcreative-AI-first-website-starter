@@ -129,7 +129,8 @@ if (import.meta.env.DEV && render && !name) {
     .guarantee_layout {
       display: grid;
       grid-template-columns: var(--_guarantee-columns, auto minmax(0, 1fr));
-      align-items: center;
+      /* Top-aligned: the seal sits beside the eyebrow and name. */
+      align-items: start;
       gap: var(--space-8);
     }
 

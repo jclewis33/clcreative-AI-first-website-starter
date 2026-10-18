@@ -51,6 +51,18 @@
   --heading-accent: var(--color-brand-300);
 }
 
+/* The demo/announcement banner above the nav: a pale wash of the brand,
+   so it reads as its own strip instead of making a light nav look twice
+   as tall (and still parts from a dark nav). Set on the nav, where the
+   banner's theme tokens resolve. */
+:root[data-look="fresh"] .nav_wrap,
+:root[data-look="warm"] .nav_wrap,
+:root[data-look="rugged"] .nav_wrap,
+:root[data-look="natural"] .nav_wrap {
+  --nav-banner-background: var(--color-brand-100);
+  --nav-banner-color: var(--color-dark-900);
+}
+
 /* =====================================================
    FRESH & FRIENDLY — lawn, pest, cleaning, pool (Hatch)
    White paper, warm brown ink, condensed uppercase headings, squared-off
