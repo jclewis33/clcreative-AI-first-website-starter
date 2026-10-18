@@ -10,7 +10,8 @@
               look, which is simply the defaults in the other variable files.
 
    What a look sets:
-     paper & ink   the neutral swatches (--color-light-*, --color-dark-*);
+     paper         the light swatches (--color-light-*); the ink
+                   (--color-dark-*) is shared and brand-derived, below.
                    themes.css builds every surface, text colour and button
                    from them, so light AND dark sections follow
      type          --font-primary/secondary/tertiary, heading weight, case
@@ -37,6 +38,20 @@
 :root[data-look="natural"] {
   --section-space-large: clamp(4rem, 4.286vw + 3.143rem, 7rem);
   --section-space-main: clamp(3rem, 2.857vw + 2.429rem, 5rem);
+}
+
+/* Ink — the dark swatches behind text, dark sections, the footer and dark
+   cards — is a near-black tinted with the client's own brand hue, not a
+   fixed per-look colour. A fixed warm brown or forest green fought every
+   brand that wasn't its match (a blue brand on brown); brand-tinted ink
+   always belongs to the brand: blue gets deep navy, red a deep oxblood,
+   green a deep forest. 800 is the raised card one step up. */
+:root[data-look="fresh"],
+:root[data-look="warm"],
+:root[data-look="rugged"],
+:root[data-look="natural"] {
+  --color-dark-900: color-mix(in oklab, var(--color-brand-500) 16%, #0b0d10);
+  --color-dark-800: color-mix(in oklab, var(--color-brand-500) 22%, #1c1f25);
 }
 
 /* Accent text on DARK sections: a lighter tint of the brand. The client's
@@ -66,15 +81,13 @@
 
 /* =====================================================
    FRESH & FRIENDLY — lawn, pest, cleaning, pool (Hatch)
-   White paper, warm brown ink, condensed uppercase headings, squared-off
+   White paper, brand-tinted ink, condensed uppercase headings, squared-off
    buttons, small radii, flat bordered cards.
    ===================================================== */
 
 :root[data-look="fresh"] {
   --color-light-100: #ffffff;
   --color-light-200: #ffffff;
-  --color-dark-900: #3d3330;
-  --color-dark-800: #574b45;
 
   --font-primary: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
   --font-secondary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;
@@ -122,15 +135,13 @@
 
 /* =====================================================
    WARM & PREMIUM — HVAC, insulation, remodeling (Thermal Plan)
-   Cream paper, navy ink, sentence-case Montserrat, very round corners,
+   Cream paper, sentence-case Montserrat, very round corners,
    pill buttons.
    ===================================================== */
 
 :root[data-look="warm"] {
   --color-light-100: #fffdfb;
   --color-light-200: #fff7f2;
-  --color-dark-900: #1b2547;
-  --color-dark-800: #2c365a;
 
   --font-primary: var(--font-montserrat), "Helvetica Neue", Helvetica, sans-serif;
   --font-secondary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;
@@ -169,14 +180,12 @@
 
 /* =====================================================
    BOLD & RUGGED — electrical, roofing, plumbing, commercial (ACE)
-   Cool paper, deep navy ink, heavy Archivo uppercase, tight corners.
+   Cool paper, heavy Archivo uppercase, tight corners.
    ===================================================== */
 
 :root[data-look="rugged"] {
   --color-light-100: #ffffff;
   --color-light-200: #f2f4f7;
-  --color-dark-900: #0b1530;
-  --color-dark-800: #1c2747;
 
   --font-primary: var(--font-archivo), "Helvetica Neue", Helvetica, sans-serif;
   --font-secondary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;
@@ -219,15 +228,13 @@
 
 /* =====================================================
    OUTDOOR & NATURAL — hardscape, landscaping, decks, outdoor living
-   Stone paper, deep green-brown ink, Fraunces serif headings, soft corners,
+   Stone paper, Fraunces serif headings, soft corners,
    pill buttons.
    ===================================================== */
 
 :root[data-look="natural"] {
   --color-light-100: #fbf9f5;
   --color-light-200: #f4efe6;
-  --color-dark-900: #1d2a22;
-  --color-dark-800: #33402f;
 
   --font-primary: var(--font-fraunces), Georgia, "Times New Roman", serif;
   --font-secondary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;

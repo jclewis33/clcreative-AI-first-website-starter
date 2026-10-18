@@ -9,8 +9,11 @@
 import LocalServiceHome from "@/components/templates/LocalServiceHome.astro";
 import LocalServiceShowcase from "@/components/templates/LocalServiceShowcase.astro";
 import { HOME } from "@/data/home";
+import type { LocalServiceHomeData } from "@/lib/local-service-home";
 
-const showcase = HOME.layout === "showcase";
+/* Widened: home.ts is `satisfies`-typed, so its layout is a literal. */
+const layout = HOME.layout as LocalServiceHomeData["layout"];
+const showcase = layout === "showcase";
 ---
 
 {showcase && <LocalServiceShowcase home={HOME} />}

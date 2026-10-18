@@ -117,6 +117,7 @@ import PhotoBand from "@/components/sections/PhotoBand.astro";
 import ServiceCards from "@/components/sections/ServiceCards.astro";
 import ProcessSteps from "@/components/sections/ProcessSteps.astro";
 import StorySplit from "@/components/sections/StorySplit.astro";
+import WorkScope from "@/components/sections/WorkScope.astro";
 import IncludedList from "@/components/sections/IncludedList.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import Reviews from "@/components/sections/Reviews.astro";
@@ -249,6 +250,7 @@ const COMPONENT_INDEX = [
   { slug: "service-cards", text: "ServiceCards" },
   { slug: "process-steps", text: "ProcessSteps" },
   { slug: "story-split", text: "StorySplit" },
+  { slug: "work-scope", text: "WorkScope" },
   { slug: "included-list", text: "IncludedList" },
   { slug: "service-area", text: "ServiceArea" },
   { slug: "reviews", text: "Reviews" },
@@ -464,6 +466,31 @@ const demoHiring = {
   text: "We're hiring licensed technicians.",
   cta: { label: "See openings", href: "/contact" },
 };
+const workScopeParagraphs = [
+  "Most kitchens we open up were laid out decades ago, before islands and before two cooks. We start with how you use the room.",
+  "One project lead from walkthrough to punch list, a written scope before demolition, and a crew that cleans up every day.",
+];
+const workScopeItems: {
+  title: string;
+  text: string;
+  icon: "grid" | "kitchen" | "bolt";
+}[] = [
+  {
+    title: "Layout changes",
+    text: "Moving walls, plumbing and the island.",
+    icon: "grid",
+  },
+  {
+    title: "Cabinets and counters",
+    text: "Custom or semi-custom, stone or quartz tops.",
+    icon: "kitchen",
+  },
+  {
+    title: "Lighting and electrical",
+    text: "Recessed, under-cabinet and pendants.",
+    icon: "bolt",
+  },
+];
 ---
 
 <BaseLayout
@@ -2651,6 +2678,22 @@ const demoHiring = {
       { title: "Warranty", text: "Two years on workmanship." },
     ]}
     cta={{ label: "Get an estimate", modal: "demo-estimate" }}
+  />
+
+  <Section theme="light" padding="small" id="work-scope">
+    <Heading variant="eyebrow">WorkScope</Heading>
+    <Heading tag="h2"
+      >A service page's "what we work on": paragraphs and job rows beside a
+      photo</Heading
+    >
+  </Section>
+  <WorkScope
+    heading="What we work on"
+    intro="From a refresh to a full gut-and-rebuild."
+    paragraphs={workScopeParagraphs}
+    items={workScopeItems}
+    image={demoPhoto5}
+    imageAlt="A remodeled kitchen with an island and pendant lights"
   />
 
   <Section theme="light" padding="small" id="included-list">

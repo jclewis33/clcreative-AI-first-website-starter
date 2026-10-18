@@ -356,14 +356,19 @@
         "items": [
           {
             "title": "Service upgrades",
-            "text": "100 to 200 amps, done right.",
+            "text": "100 to 200 amps, with the meter base, grounding and permit handled.",
             "icon": "bolt"
           },
           {
             "title": "Subpanels",
-            "text": "For garages, shops and additions.",
+            "text": "Extra circuits for a garage, workshop, addition or ADU, without touching the main panel.",
             "icon": "grid"
           }
+        ],
+        "intro": "From one new circuit to a full service upgrade.",
+        "paragraphs": [
+          "Plenty of Austin homes still run on a 100-amp panel that was sized for a house without central air, an EV or a home office. When breakers trip every time the dryer and AC run together, the panel is telling you it's out of room.",
+          "We size the upgrade to what you run today and what you're likely to add, pull the City of Austin permit, coordinate the disconnect with Austin Energy, and stay until the inspector signs off. Most upgrades take one day, with the power off for about six hours."
         ]
       },
       "included": {
@@ -434,9 +439,14 @@
         "items": [
           {
             "title": "Charger install",
-            "text": "Any brand, mounted and wired.",
+            "text": "Tesla, ChargePoint, Emporia or the one you already bought, mounted and wired.",
             "icon": "car"
           }
+        ],
+        "intro": "Level 2 charging at home, wired to code.",
+        "paragraphs": [
+          "A Level 2 charger adds about 25 to 30 miles of range an hour, so the car is full every morning. We check your panel first: if there's room, the install is usually a half day; if there isn't, we'll tell you before anything else happens.",
+          "We install any brand, hardwired or on a 240-volt outlet, mounted where your cord actually reaches, and we'll point you to any Austin Energy rebate you qualify for."
         ]
       },
       "included": {
