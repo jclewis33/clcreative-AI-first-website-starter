@@ -13,3 +13,10 @@ export interface SectionCta {
   /** Id of a `<Modal>` to open instead of navigating. */
   modal?: string;
 }
+
+/**
+ * The id of the site-wide estimate form modal. BaseLayout renders it on
+ * every page when `SITE.quote` is set; the navbar, the mobile action bar and
+ * the local-service templates open it with `{ modal: ESTIMATE_MODAL_ID }`.
+ */
+export const ESTIMATE_MODAL_ID = "estimate-modal";

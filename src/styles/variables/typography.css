@@ -27,6 +27,10 @@
   --font-primary: var(--font-bdo-grotesk), "Helvetica Neue", Helvetica, sans-serif;
   --font-secondary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;
   --font-tertiary: var(--font-ibm-plex-mono), "Courier New", Courier, monospace;
+  /* The page's default face (body, in reset.css) — what any text without a
+     type style of its own inherits. A look with a display-only primary
+     (condensed, serif) points it at --font-secondary. */
+  --font-body: var(--font-primary);
 
   /* =====================================================
      FONT WEIGHTS
@@ -51,6 +55,13 @@
 
   --letter-spacing-tight: -0.03em;
   --letter-spacing-normal: 0em;
+  /* --heading-letter-spacing (every h1–h6 and display-* style) and
+     --eyebrow-tracking (.u-text-style-eyebrow) are deliberately NOT defined
+     here: an undefined variable makes `letter-spacing` fall back to
+     inheriting, which is what headings and eyebrows always did (the nav
+     and footer set their own tracking). A look (variables/looks.css)
+     defines them — wider for condensed uppercase type, tighter for heavy
+     grotesks. */
 
   /* =====================================================
      DISPLAY HEADING VARIABLES
@@ -170,6 +181,24 @@
   --h6-margin-bottom: var(--space-4);
 
   /* =====================================================
+     CHROME — the navbar and footer's text (Navbar.astro, Footer.astro)
+     ===================================================== */
+
+  --chrome-font-family: var(--font-tertiary);
+  --chrome-text-transform: uppercase;
+  --chrome-letter-spacing: var(--letter-spacing-tight);
+
+  /* =====================================================
+     BUTTON LABEL — the main button's text (Button.astro)
+     ===================================================== */
+
+  --button-font-family: var(--font-tertiary);
+  --button-font-size: var(--text-small-size);
+  --button-font-weight: var(--font-weight-normal);
+  --button-text-transform: uppercase;
+  --button-letter-spacing: var(--letter-spacing-tight);
+
+  /* =====================================================
      EYEBROW
      ===================================================== */
 
@@ -180,7 +209,7 @@
   --eyebrow-text-transform: uppercase;
   --eyebrow-margin-top: 0;
   --eyebrow-margin-bottom: var(--space-3);
-  --eyebrow-letter-spacing: 0.14em;
+  --eyebrow-letter-spacing: 0.14em; /* wide tracking for small labels */
 
   /* =====================================================
      TEXT SIZE VARIABLES

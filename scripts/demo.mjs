@@ -49,6 +49,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { parseJsonc } from "./lib/jsonc.mjs";
+import { serviceAreaGeo } from "./lib/service-area-geo.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const at = (/** @type {string[]} */ ...rel) => path.join(ROOT, ...rel);
@@ -246,10 +247,10 @@ async function main() {
   /** @type {Array<[string, string]>} identifier → asset path */
   const homeImports = [];
   /** @param {any} holder @param {string} key @param {string} id */
-  async function homeImage(holder, key, id) {
+  async function homeImage(holder, key, id, width = 2000) {
     if (!holder?.[key]) return;
     const rel = `src/assets/demo/${id}.webp`;
-    await write(rel, await webp(await img(holder[key]), 2000));
+    await write(rel, await webp(await img(holder[key]), width));
     homeImports.push([
       `${id.replace(/-(\w)/g, (_, c) => c.toUpperCase())}Image`,
       rel,
@@ -260,6 +261,28 @@ async function main() {
   await homeImage(home.process, "image", "process");
   await homeImage(home.photoBand, "image", "photo-band");
   await homeImage(home.story, "image", "story");
+  await homeImage(home.callBand, "image", "call-band");
+  for (const [i, job] of (home.recentWork?.items ?? []).entries())
+    await homeImage(job, "image", `work-${i + 1}`, 1600);
+  for (const [i, badge] of (home.hero.trust ?? []).entries())
+    await homeImage(badge, "image", `trust-${i + 1}`, 320);
+
+  // 1a'. The service-area street map: each town's real boundary from
+  // OpenStreetMap, cached beside demo.json (service-area.geo.json) so a
+  // re-run — and check:demo — needs no network. A failed lookup only costs
+  // the map; the chips still show.
+  try {
+    home.serviceArea.geo = await serviceAreaGeo(
+      demo.home.serviceArea.areas ?? demo.serviceAreas,
+      demo.contact.region,
+      path.join(baseDir, "service-area.geo.json"),
+      (m) => console.warn(`! ${m}`),
+    );
+  } catch (err) {
+    console.warn(
+      `! Service-area map skipped: ${/** @type {Error} */ (err).message}`,
+    );
+  }
 
   // 1b. Logo, favicon, webclip, share image.
   const logoSrc = demo.brand.logo.file;
@@ -345,6 +368,18 @@ async function main() {
       height: logoMeta.height ?? 96,
       plate: demo.brand.logo.plate,
     },
+    // Local-service chrome: the look, the site-wide estimate CTA (nav,
+    // mobile bar, modal) from home.estimate, and the license line.
+    look: demo.look,
+    quote: {
+      label: demo.home.estimate.label,
+      heading: demo.home.estimate.heading,
+      ...(demo.home.estimate.text ? { text: demo.home.estimate.text } : {}),
+      ...(demo.home.estimate.question
+        ? { question: demo.home.estimate.question }
+        : {}),
+    },
+    license: demo.license ?? "",
   };
   const answersFile = path.join(
     os.tmpdir(),

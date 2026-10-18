@@ -10,6 +10,8 @@ import Overlay from "@/components/ui/Overlay.astro";
 import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
 import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
+import CtaPanel from "@/components/ui/CtaPanel.astro";
+import TrustBadges from "@/components/ui/TrustBadges.astro";
 import type { SectionCta } from "@/lib/cta";
 import { SITE } from "@/config/site";
 
@@ -26,6 +28,12 @@ type HeroCrumb = { label: string; href?: string };
 type HeroProof = { rating?: number; text: string };
 type HeroBadge = { value: string; label: string };
 type HeroFocus = { x: number; y: number };
+type HeroCtaStyle =
+  /** The buttons in a row: main, phone, then the optional third */
+  | "buttons"
+  /** The main button, "or", and "Call or text us" + the number on one tinted panel */
+  | "panel";
+type HeroTrust = { label: string; image?: ImageMetadata | string };
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -43,6 +51,12 @@ interface Props extends HTMLAttributes<"section"> {
    * - `badge` — a small card, e.g. `{ value: "Since 2009", label: "Family owned" }`.
    *   Defaults to "Since {SITE.founded}" when `SITE.founded` is set; pass
    *   `false` to hide it
+   * - `ctaStyle` — `'panel'` puts the main button and the phone on one tinted
+   *   panel ("Get a quote | or | Call or text us"), with `ctaNote` under
+   *   the button
+   * - `trust` — credential badges under the buttons (TrustBadges)
+   * - Wrap an offer in `<mark>` in `heading` for a highlighter accent,
+   *   e.g. `Call today for <mark>$100 off</mark>`
    *
    * Renders nothing (with a dev warning) without a `heading`.
    *
@@ -82,6 +96,15 @@ interface Props extends HTMLAttributes<"section"> {
   /** Layout. @default 'background' with an image, else 'text' */
   variant?: HeroVariant;
 
+  /**
+   * How the buttons show. `'panel'` = the main button, "or", and the phone
+   * on one panel (needs `primaryCta`). @default 'buttons'
+   */
+  ctaStyle?: HeroCtaStyle;
+
+  /** Small line under the main button in the panel, e.g. "And claim $100 off". */
+  ctaNote?: string;
+
   /** Main button — links, or opens a modal (e.g. the estimate form). */
   primaryCta?: SectionCta;
 
@@ -96,6 +119,9 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Trust line under the buttons. `rating` adds that many of 5 stars. */
   proof?: HeroProof;
+
+  /** Credential badges under the buttons — only ones the business holds. */
+  trust?: HeroTrust[];
 
   /**
    * Small card, e.g. "Since 2009 / Family owned". Defaults to
@@ -132,11 +158,14 @@ const {
   imageAlt,
   imagePosition,
   variant: variantProp,
+  ctaStyle = "buttons",
+  ctaNote,
   primaryCta,
   showPhone = true,
   secondaryCta,
   breadcrumbs,
   proof,
+  trust,
   badge: badgeProp,
   theme: themeProp,
   padding,
@@ -177,7 +206,12 @@ if (import.meta.env.DEV && render) {
     );
   if (image && !imageAlt)
     console.warn("[Hero] Give the photo real alt text (`imageAlt`).");
+  if (ctaStyle === "panel" && !primaryCta)
+    console.warn(
+      '[Hero] ctaStyle="panel" needs a `primaryCta`; showing buttons.',
+    );
 }
+const panel = ctaStyle === "panel" && Boolean(primaryCta);
 ---
 
 {
@@ -220,7 +254,8 @@ if (import.meta.env.DEV && render) {
             {text}
           </Text>
         )}
-        {(primaryCta || showPhone || secondaryCta) && (
+        {panel && <CtaPanel cta={primaryCta!} note={ctaNote} />}
+        {!panel && (primaryCta || showPhone || secondaryCta) && (
           <ButtonWrapper>
             {primaryCta && <CtaButton cta={primaryCta} size="large" />}
             {showPhone && <CtaButton phone variant="secondary" size="large" />}
@@ -243,6 +278,7 @@ if (import.meta.env.DEV && render) {
             <span class="hero_proof_text">{proof.text}</span>
           </p>
         )}
+        {trust?.length ? <TrustBadges items={trust} /> : null}
         {badge && variant !== "split" && (
           <p class="hero_badge" data-theme-invert>
             <span class="hero_badge_value">{badge.value}</span>

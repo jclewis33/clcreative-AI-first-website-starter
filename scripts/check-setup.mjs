@@ -120,6 +120,9 @@ try {
         reviewsUrl: "https://g.page/acme",
         social: { Facebook: "https://facebook.com/acme" },
         logoImage: { src: "/images/logo.png", width: 320, height: 96 },
+        look: "fresh",
+        quote: { label: "Get a quote", heading: "Get a free quote" },
+        license: "TECL #12345",
       });
       assert.equal(r.status, 0, out(r));
       const site = read(dir, "src/config/site.ts");
@@ -132,6 +135,9 @@ try {
       assert.match(site, /utilityBar: \{\s*"text": "24\/7 emergency service"/);
       assert.match(site, /reviewsUrl: "https:\/\/g\.page\/acme"/);
       assert.match(site, /href: "https:\/\/facebook\.com\/acme"/);
+      assert.match(site, /look: "fresh" as SiteLook/);
+      assert.match(site, /quote: \{\s*"label": "Get a quote"/);
+      assert.match(site, /license: "TECL #12345"/);
       // Profiles not given are hidden ("#"), never left as placeholders.
       assert.doesNotMatch(site, /www\.example\.com",\s*viewBox/);
       assert.match(

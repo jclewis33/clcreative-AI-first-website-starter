@@ -1,0 +1,248 @@
+---
+/**
+ * ServiceMap — a real street map with each town the business serves
+ * outlined in the accent colour, and its name on it. The home-service
+ * "where we work" picture: homeowners look for their own town on it.
+ *
+ * Streets are OpenStreetMap tiles, greyed so the outlines carry the colour
+ * (attribution shown, as the tile licence requires). The outlines are real
+ * boundaries from OpenStreetMap, fetched ONCE when the site is generated
+ * (scripts/lib/service-area-geo.mjs) and passed in as `areas` — the page
+ * never looks anything up. Leaflet loads only when the map nears the
+ * screen.
+ *
+ * Inside ServiceArea, every outline carries `data-area="<town>"`, so it
+ * lights up with its chip (and the chip with it), like the SVG map.
+ */
+import { SITE } from "@/config/site";
+
+type ServiceMapGeometry = {
+  type: "Polygon" | "MultiPolygon" | "Point";
+  coordinates: unknown;
+};
+type ServiceMapArea = { name: string; geometry: ServiceMapGeometry };
+
+interface Props {
+  /**
+   * **ServiceMap** — a street map with the service towns outlined and
+   * named. `areas` come from OpenStreetMap at generation time
+   * (scripts/lib/service-area-geo.mjs); a town known only as a point gets
+   * a circle. Empty `areas` renders nothing.
+   *
+   * @example
+   * <ServiceMap areas={HOME.serviceArea.geo} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The towns: a name and its boundary (GeoJSON Polygon, MultiPolygon or Point). */
+  areas: ServiceMapArea[];
+
+  /** Accessible description of the map. @default 'Map of the areas we serve: …' */
+  label?: string;
+
+  /** Extra classes on the map. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  areas = [],
+  label,
+  class: className,
+} = Astro.props;
+
+const mapLabel =
+  label ??
+  `Map of the areas ${SITE.name} serves: ${areas.map((a) => a.name).join(", ")}`;
+---
+
+{
+  render && areas.length > 0 && (
+    <div
+      class:list={["service-map_wrap", className]}
+      role="img"
+      aria-label={mapLabel}
+    >
+      <div class="service-map_canvas" data-service-map />
+      <script
+        type="application/json"
+        class="service-map_data"
+        set:html={JSON.stringify(areas)}
+      />
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .service-map_wrap {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+    }
+
+    .service-map_canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-color: inherit;
+      font-family: var(--font-secondary);
+    }
+
+    /* Greyed streets, so the brand-coloured outlines carry the colour.
+       Per tile, not on the tile pane: a filter on the pane composites the
+       tiles as one layer and opens hairline seams between them. */
+    .service-map_canvas .leaflet-tile {
+      filter: grayscale(1) contrast(0.92) brightness(1.04);
+    }
+
+    /* Town names: small labels, not Leaflet's default tooltip bubble. */
+    .service-map_canvas .service-map_label {
+      padding: 0.15em 0.5em;
+      border: 0;
+      border-radius: var(--radius-xsmall);
+      background-color: color-mix(
+        in srgb,
+        var(--background-2) 85%,
+        transparent
+      );
+      box-shadow: none;
+      color: var(--text);
+      font-size: var(--text-tiny-size);
+      font-weight: var(--font-weight-bold);
+      white-space: nowrap;
+    }
+
+    .service-map_canvas .service-map_label::before {
+      display: none;
+    }
+
+    .service-map_canvas .leaflet-control-attribution {
+      font-size: 0.625rem;
+    }
+  }
+</style>
+
+<script>
+  /* Build each map once it nears the screen: Leaflet (and its tiles) cost
+     nothing for visitors who never scroll to it. */
+  async function drawMap(wrap: HTMLElement) {
+    const canvas = wrap.querySelector<HTMLElement>("[data-service-map]");
+    const data = wrap.querySelector(".service-map_data")?.textContent;
+    if (!canvas || !data) return;
+    const areas = JSON.parse(data) as {
+      name: string;
+      geometry: { type: string; coordinates: any };
+    }[];
+    const L = (await import("leaflet")).default;
+
+    const accent =
+      getComputedStyle(wrap).getPropertyValue("--heading-accent").trim() ||
+      "currentColor";
+    const style = {
+      color: accent,
+      weight: 2,
+      opacity: 0.85,
+      fillColor: accent,
+      fillOpacity: 0.12,
+    };
+    const map = L.map(canvas, {
+      scrollWheelZoom: false,
+      // A one-finger drag on a phone should scroll the page, not the map.
+      dragging: !L.Browser.mobile,
+      // Whole zoom levels: fractional ones scale the tiles and open hairline
+      // seams between them.
+      zoomSnap: 1,
+      attributionControl: true,
+    });
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    const scope = wrap.closest(".service-area_wrap") ?? wrap;
+    const setActive = (name: string, on: boolean) => {
+      for (const el of scope.querySelectorAll(
+        `[data-key="${CSS.escape(name)}"], [data-area="${CSS.escape(name)}"]`,
+      ))
+        el.classList.toggle("is-active", on);
+    };
+
+    const group = L.featureGroup();
+    for (const area of areas) {
+      const layer =
+        area.geometry.type === "Point"
+          ? L.circle(
+              [area.geometry.coordinates[1], area.geometry.coordinates[0]],
+              { ...style, radius: 2500 },
+            )
+          : L.geoJSON(
+              {
+                type: "Feature",
+                properties: {},
+                geometry: area.geometry,
+              } as any,
+              { style: () => style },
+            );
+      layer.bindTooltip(area.name, {
+        permanent: true,
+        direction: "center",
+        className: "service-map_label",
+      });
+      layer.addTo(group);
+      layer.on("add", () => {
+        // Tag the drawn shape like an SVG-map region, so ServiceArea's chip
+        // hover lights it, and pointing at it lights the chip.
+        const paths: Element[] = [];
+        if ("getElement" in layer && (layer as any).getElement)
+          paths.push((layer as any).getElement());
+        (layer as any).eachLayer?.((l: any) => paths.push(l.getElement()));
+        for (const path of paths.filter(Boolean)) {
+          path.setAttribute("data-area", area.name);
+          path.addEventListener("pointerenter", () =>
+            setActive(area.name, true),
+          );
+          path.addEventListener("pointerleave", () =>
+            setActive(area.name, false),
+          );
+        }
+      });
+    }
+    group.addTo(map);
+    map.fitBounds(group.getBounds(), { padding: [24, 24] });
+  }
+
+  function initServiceMaps() {
+    const maps = document.querySelectorAll<HTMLElement>(
+      ".service-map_wrap:not([data-init])",
+    );
+    if (!maps.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          io.unobserve(entry.target);
+          drawMap(entry.target as HTMLElement);
+        }
+      },
+      { rootMargin: "400px" },
+    );
+    for (const wrap of maps) {
+      wrap.dataset.init = "true";
+      io.observe(wrap);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initServiceMaps);
+  } else {
+    initServiceMaps();
+  }
+</script>

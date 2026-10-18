@@ -3,8 +3,6 @@ import type { HTMLAttributes, ComponentProps } from "astro/types";
 import type { ImageMetadata } from "astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
-import Heading from "@/components/ui/Heading.astro";
-import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
 import SectionHeader from "@/components/ui/SectionHeader.astro";
 import StepList from "@/components/ui/StepList.astro";
@@ -114,18 +112,73 @@ if (import.meta.env.DEV && render) {
           <StepList steps={steps} variant="cards" />
         </>
       ) : (
-        <Layout ratio="5-7" verticalAlign="start">
-          <Layout variant="stack">
-            {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
-            <Heading tag="h2">{heading}</Heading>
-            {text && <Text muted>{text}</Text>}
-            {image && (
-              <Visual src={image} alt={imageAlt || heading} ratio="landscape" />
-            )}
-          </Layout>
-          <StepList slot="column2" steps={steps} variant="list" />
-        </Layout>
+        <>
+          {/* The header runs full width; the photo and the steps share the
+              row under it and stretch to one height, so the step rules line
+              up with the photo instead of starting above it. */}
+          <SectionHeader eyebrow={eyebrow} heading={heading} intro={text} />
+          {image && (
+            <Layout
+              ratio="5-7"
+              verticalAlign="stretch"
+              class="process-steps_row"
+            >
+              <div class="process-steps_media">
+                <Visual
+                  src={image}
+                  alt={imageAlt || heading}
+                  ratio="landscape"
+                />
+              </div>
+              <StepList
+                slot="column2"
+                steps={steps}
+                variant="list"
+                class="process-steps_list"
+              />
+            </Layout>
+          )}
+          {!image && <StepList steps={steps} variant="list" />}
+        </>
       )}
     </Section>
   )
 }
+
+<style is:global>
+  @layer components {
+    /* The photo fills the height of the steps beside it (and the steps
+       spread to the photo's), cropped by object-fit — never shorter than
+       a landscape crop would be. Stacked on phones, it is a plain
+       landscape photo again. */
+    .process-steps_media {
+      display: flex;
+      height: 100%;
+    }
+
+    .process-steps_media .u-image-wrapper {
+      flex: 1;
+      aspect-ratio: unset;
+      height: auto;
+      min-height: 18rem;
+    }
+
+    .process-steps_list[data-variant="list"] {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .process-steps_list[data-variant="list"] .step-list_item {
+      flex: 1;
+      align-content: center;
+    }
+
+    @container (width < 58em) {
+      .process-steps_media .u-image-wrapper {
+        aspect-ratio: 3 / 2;
+        min-height: 0;
+      }
+    }
+  }
+</style>

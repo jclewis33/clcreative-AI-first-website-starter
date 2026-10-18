@@ -25,7 +25,13 @@ const homeSchema = z.object({
   /** Defaults to seo.description. */
   description: text.optional(),
   estimate: z
-    .object({ label: text, heading: text, text: text.optional() })
+    .object({
+      label: text,
+      heading: text,
+      text: text.optional(),
+      /** The estimate form's first step, over the service tiles. */
+      question: text.optional(),
+    })
     .default({
       label: "Get a free estimate",
       heading: "Get a free estimate",
@@ -33,12 +39,22 @@ const homeSchema = z.object({
     }),
   hero: z.object({
     eyebrow: text.optional(),
+    /** HTML: <strong> = accent words, <mark> = a highlighted offer. */
     heading: text,
     text: text.optional(),
     image,
     imageAlt: text,
+    variant: z.enum(["background", "split"]).optional(),
+    /** "panel" = estimate button + "or" + "Call or text us". */
+    ctaStyle: z.enum(["buttons", "panel"]).default("panel"),
+    ctaNote: text.optional(),
     proof: z
       .object({ rating: z.number().min(1).max(5).optional(), text })
+      .optional(),
+    /** Credentials they really hold; `image` is a logo source. */
+    trust: z
+      .array(z.object({ label: text, image: image.optional() }))
+      .max(5)
       .optional(),
   }),
   stats: z
@@ -50,6 +66,70 @@ const homeSchema = z.object({
     heading: text,
     intro: text.optional(),
   }),
+  /** "Sound familiar?" — problems in the homeowner's words. */
+  symptoms: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      items: z
+        .array(z.object({ title: text, text, icon: text.optional() }))
+        .min(2)
+        .max(6),
+    })
+    .optional(),
+  /** One REAL offer from their site — never invent one. */
+  offer: z
+    .object({
+      seal: z.object({ value: text, label: text }).optional(),
+      eyebrow: text.optional(),
+      heading: text,
+      text: text.optional(),
+      items: z.array(text).optional(),
+      /** The terms — required: an offer without terms isn't shown. */
+      note: text,
+      ctaLabel: text.optional(),
+    })
+    .optional(),
+  /** Their own job photos only. */
+  recentWork: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      items: z
+        .array(
+          z.object({
+            image,
+            imageAlt: text,
+            title: text,
+            place: text.optional(),
+          }),
+        )
+        .min(3)
+        .max(9),
+    })
+    .optional(),
+  /** A guarantee they actually give, named. */
+  guarantee: z
+    .object({
+      eyebrow: text.optional(),
+      name: text,
+      text: text.optional(),
+      items: z.array(text).optional(),
+      sealLabel: text.optional(),
+    })
+    .optional(),
+  /** Us vs. a typical contractor — common practice, never a named competitor. */
+  comparison: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      themLabel: text.optional(),
+      rows: z.array(z.object({ label: text, us: text, them: text })).min(3),
+    })
+    .optional(),
   serviceArea: z.object({
     heading: text,
     text: text.optional(),
@@ -88,6 +168,7 @@ const homeSchema = z.object({
       items: z
         .array(z.object({ text, name: text, meta: text.optional() }))
         .min(1),
+      layout: z.enum(["cards", "featured", "grid"]).optional(),
     })
     .optional(),
   leadForm: z.object({
@@ -105,7 +186,20 @@ const homeSchema = z.object({
       items: z.array(z.object({ question: text, answer: text })).min(2),
     })
     .optional(),
-  callBand: z.object({ heading: text, text: text.optional() }),
+  callBand: z
+    .object({
+      heading: text,
+      text: text.optional(),
+      /** photo-card / split need `image` + `imageAlt`. */
+      variant: z.enum(["band", "photo-card", "split"]).optional(),
+      image: image.optional(),
+      imageAlt: text.optional(),
+      ctaNote: text.optional(),
+    })
+    .refine((c) => !c.image || c.imageAlt, {
+      message: "imageAlt is required when image is set",
+      path: ["imageAlt"],
+    }),
 });
 
 /** A service: the content schema's fields, plus its slug. */
@@ -130,8 +224,18 @@ const serviceSchema = z
   })
   .passthrough();
 
+/** The looks (src/config/looks.ts) a demo can wear. */
+export const LOOK_NAMES = ["fresh", "warm", "rugged", "natural", "studio"];
+
 export const demoSchema = z.object({
   preset: z.literal("local-service"),
+  /**
+   * fresh (lawn, pest, cleaning) · warm (HVAC, insulation, remodeling) ·
+   * rugged (electrical, roofing, plumbing) · natural (hardscape, landscaping)
+   */
+  look: z.enum(LOOK_NAMES).default("fresh"),
+  /** Contractor license, shown in the footer, e.g. "TECL #25414". */
+  license: text.optional(),
   prospect: z.object({
     name: text,
     legalName: text.optional(),

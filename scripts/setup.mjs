@@ -36,7 +36,8 @@
  * sameAs, FAQs, site-structure) — those stay as a working skeleton for the new
  * site to edit, per the starter design. A `--config` file MAY set the
  * structured site.ts fields (serviceAreas, areaServed, founded, utilityBar,
- * sameAs, reviewsUrl, googleReviewUrl, social hrefs) and an image logo
+ * sameAs, reviewsUrl, googleReviewUrl, social hrefs, look, quote, license)
+ * and an image logo
  * (logoImage) — `npm run demo` and the /setup skill use them. Each still
  * replaces an existing value; none adds a field.
  *
@@ -281,6 +282,12 @@ const STRUCTURED_SITE_KEYS = [
   "founded",
   "utilityBar",
   "sameAs",
+  // The look (src/config/looks.ts — astro check rejects an unknown name),
+  // the local-service estimate CTA ({ label, heading, text } or null) and
+  // the contractor license line.
+  "look",
+  "quote",
+  "license",
 ];
 
 const currentString = (src, key) => {

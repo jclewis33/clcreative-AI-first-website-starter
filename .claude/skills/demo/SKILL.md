@@ -86,6 +86,51 @@ git switch -c demo/<slug>
   - `included.images`: exactly 2.
   - Service `faqs`: at least 2.
 
+### 3b. Pick the look and the home-service pieces (1 min)
+
+- **`look`**, by trade (see `src/config/looks.ts`):
+  - `fresh`: lawn, pest, cleaning, pool
+  - `warm`: HVAC, insulation, remodeling
+  - `rugged`: electrical, roofing, plumbing, commercial
+  - `natural`: hardscape, landscaping, decks, outdoor living
+
+  If their current brand clearly fights the default for their trade, pick
+  the closer look and say why in your report.
+
+- **Hero:**
+  - `ctaStyle: "panel"` is the default: the estimate button, "or", and
+    "Call or text us".
+  - `variant: "split"` when you have a strong portrait job photo; otherwise
+    the background photo.
+  - Put a **real** offer from their site in `<mark>` in the heading
+    ("Call today for <mark>$100 off</mark>"). No offer on their site means no
+    `<mark>`.
+  - `trust`: only credentials they actually show (licensed & insured, BBB,
+    manufacturer dealer), with the seal file as `image` when you have it.
+- **`callBand`:** `variant: "photo-card"` with a wide texture-like job photo
+  (a lawn, a roofline, a finished patio). Otherwise leave out `variant` for
+  the dark band.
+- **Optional home sections:** include each one only when the material is
+  real. Leaving one out removes it from the page, which is better than
+  filling it with something made up.
+  - `symptoms`: 3 or 4 problems their customers describe ("AC blowing warm
+    air", "Water under the sink"), from their FAQ, service pages or reviews.
+  - `offer`: an offer **from their site**, with its terms in `note`.
+  - `recentWork`: their own job photos, captioned with the town.
+  - `guarantee`: their written guarantee or warranty, given a short name.
+  - `comparison`: honest rows on how they work versus common industry
+    practice. Never name a competitor.
+- `home.estimate.question` heads step 1 of the estimate form, above the
+  service tiles. The default is "What do you need help with?". Phrase it for
+  their trade ("What's going on with your AC?").
+- **Service-area map:** automatic. `npm run demo` looks each service area
+  up on OpenStreetMap and draws a street map with the towns outlined,
+  caching the boundaries in `service-area.geo.json` beside demo.json. Commit
+  that file with the demo. A town it can't find is skipped with a warning;
+  check the spelling, or use the town's official name.
+- **`license`:** their license number, if their site or the state lookup
+  shows it.
+
 ### 4. Photos (3–5 min)
 
 Use the first source that works:

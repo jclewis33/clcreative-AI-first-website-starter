@@ -61,7 +61,12 @@ import Footer from"@/components/global/Footer.astro";
 import SkipLink from"@/components/ui/SkipLink.astro";
 import UtilityBar from"@/components/global/UtilityBar.astro";
 import CmsEditing from"@/components/global/CmsEditing.astro";
+import MobileActionBar from"@/components/global/MobileActionBar.astro";
+import LeadFormModal from"@/components/form/LeadFormModal.astro";
 import { SITE } from"@/config/site";
+import { LOOKS } from"@/config/looks";
+import { ESTIMATE_MODAL_ID } from"@/lib/cta";
+import { getServices } from"@/lib/services";
 import { resolveBanner } from"@/data/site-structure";
 import JsonLd from"@/components/global/JsonLd.astro";
 import {
@@ -160,10 +165,24 @@ const breadcrumbSchema = breadcrumbs
 const banner = resolveBanner(Astro.url.pathname);
 const bannerText = banner?.text ?? "";
 const bannerHref = banner?.href;
+
+// ── Look + local-service chrome ────────────────────────────────────
+// SITE.look picks the token set (variables/looks.css) and the nav theme.
+// SITE.quote turns on the local-service chrome: the estimate form as a
+// site-wide modal (opened by the nav, the mobile bar and the templates
+// via ESTIMATE_MODAL_ID), its "what's the job" choices from the services.
+// ───────────────────────────────────────────────────────────────────
+const look = LOOKS[SITE.look];
+const estimateOptions = SITE.quote
+  ? [
+      ...(await getServices()).map((s) => ({ label: s.data.title, value: s.id })),
+      { label: "Something else", value: "other" },
+    ]
+  : [];
 ---
 
 <!doctype html>
-<html lang="en" data-theme={theme} class:list={[bannerText && "is-has-banner"]}>
+<html lang="en" data-theme={theme} data-look={SITE.look === "studio" ? undefined : SITE.look} class:list={[bannerText && "is-has-banner"]}>
   <head>
     <Head title={title} description={description} canonical={canonical} ogImage={ogImage} ogTitle={ogTitle} ogDescription={ogDescription} />
     {/* Synchronous check: hide banner before first paint if previously dismissed.
@@ -187,7 +206,7 @@ const bannerHref = banner?.href;
     <SkipLink />
     <UtilityBar />
     <!--Navbar appears at the top of every page -->
-    <Navbar theme="dark" bannerText={bannerText} bannerHref={bannerHref} />
+    <Navbar theme={look.nav} bannerText={bannerText} bannerHref={bannerHref} />
     <!--tabindex="-1" lets the skip link move focus here in every browser -->
     <main id="main-content" tabindex="-1">
       <!--Rest of page content -->
@@ -195,6 +214,12 @@ const bannerHref = banner?.href;
     </main>
     <!--Footer appears at the bottom of every page -->
     <Footer />
+    {/* Local-service chrome (SITE.quote): the estimate form every estimate
+        button opens, and the phone-only call / estimate bar. */}
+    {SITE.quote && (
+      <LeadFormModal id={ESTIMATE_MODAL_ID} formId="contact" heading={SITE.quote.heading} text={SITE.quote.text} fields="steps" stepQuestion={SITE.quote.question} projectOptions={estimateOptions} />
+    )}
+    <MobileActionBar />
     {/* Baseline JSON-LD — LocalBusiness anchor + per-page WebPage/Breadcrumb.
         Per-page `schema` (Service/FAQ etc.) renders alongside when provided. */}
     <JsonLd data={sitewideLocalBusiness} />

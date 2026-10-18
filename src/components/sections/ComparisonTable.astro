@@ -1,0 +1,277 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import { SITE } from "@/config/site";
+
+type ComparisonRow = {
+  /** What's compared: "Pricing", "Permits", "Clean-up". */
+  label: string;
+  /** How this business does it. */
+  us: string;
+  /** How a typical contractor does it. */
+  them: string;
+};
+type ComparisonTableTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ComparisonTable** — "us vs. a typical contractor", row by row: what's
+   * compared, how this business does it (with a check), and how the usual
+   * outfit does it. A real `<table>`; on a phone each row becomes a small
+   * card.
+   *
+   * Compare honestly: describe common industry practice, never a named
+   * competitor.
+   *
+   * - `rows` — `{ label, us, them }[]`; empty renders nothing
+   * - `usLabel` (default `SITE.name`), `themLabel` (default "Typical contractor")
+   * - `eyebrow`, `heading`, `intro`
+   *
+   * @example
+   * <ComparisonTable heading="Why homeowners switch to us" rows={[{ label: "Pricing", us: "Written, upfront", them: "Hourly, open-ended" }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. @default 'How we compare' */
+  heading?: string;
+
+  /** Intro beside the heading. */
+  intro?: string;
+
+  /** The rows. Empty renders nothing. */
+  rows: ComparisonRow[];
+
+  /** Header of this business's column. @default SITE.name */
+  usLabel?: string;
+
+  /** Header of the other column. @default 'Typical contractor' */
+  themLabel?: string;
+
+  /** Section theme. */
+  theme?: ComparisonTableTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading = "How we compare",
+  intro,
+  rows = [],
+  usLabel = SITE.name,
+  themLabel = "Typical contractor",
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !Astro.props.rows?.length) {
+  console.warn(
+    "[ComparisonTable] `rows` is empty or missing; nothing renders.",
+  );
+}
+---
+
+{
+  render && rows.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["comparison-table_wrap", className]}
+      {...rest}
+    >
+      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      <table class="comparison-table_table">
+        <thead class="comparison-table_head">
+          <tr class="comparison-table_row">
+            <th class="comparison-table_cell is-label" scope="col">
+              <span class="u-sr-only">Compared</span>
+            </th>
+            <th class="comparison-table_cell is-us" scope="col">
+              {usLabel}
+            </th>
+            <th class="comparison-table_cell is-them" scope="col">
+              {themLabel}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="comparison-table_body">
+          {rows.map((row) => (
+            <tr class="comparison-table_row">
+              <th class="comparison-table_cell is-label" scope="row">
+                {row.label}
+              </th>
+              <td class="comparison-table_cell is-us" data-label={usLabel}>
+                <svg
+                  class="comparison-table_mark"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="m5 12.5 4.5 4.5L19 7.5" />
+                </svg>
+                <span class="comparison-table_text">{row.us}</span>
+              </td>
+              <td class="comparison-table_cell is-them" data-label={themLabel}>
+                <svg
+                  class="comparison-table_mark"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="M7 7l10 10M17 7 7 17" />
+                </svg>
+                <span class="comparison-table_text">{row.them}</span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .comparison-table_table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+    }
+
+    .comparison-table_cell {
+      padding: var(--space-4) var(--space-5);
+      border-bottom: var(--border-width-main) solid var(--border);
+      text-align: left;
+      vertical-align: top;
+      font-weight: var(--font-weight-normal);
+    }
+
+    .comparison-table_body
+      .comparison-table_row:last-child
+      .comparison-table_cell {
+      border-bottom: 0;
+    }
+
+    .comparison-table_head .comparison-table_cell {
+      font-family: var(--font-primary);
+      font-size: var(--h6-size);
+      font-weight: var(--h6-weight);
+      text-transform: var(--h6-text-transform);
+    }
+
+    .comparison-table_cell.is-label {
+      width: 28%;
+      font-weight: var(--font-weight-bold);
+    }
+
+    /* This business's column: tinted, its header in the accent colour. */
+    .comparison-table_cell.is-us {
+      background-color: color-mix(
+        in srgb,
+        var(--heading-accent) 7%,
+        transparent
+      );
+    }
+
+    .comparison-table_head .comparison-table_cell.is-us {
+      color: var(--heading-accent);
+    }
+
+    .comparison-table_body .comparison-table_cell.is-us,
+    .comparison-table_body .comparison-table_cell.is-them {
+      display: table-cell;
+    }
+
+    .comparison-table_mark {
+      flex-shrink: 0;
+      width: 1.25em;
+      aspect-ratio: 1 / 1;
+      margin-right: var(--space-2);
+      vertical-align: -0.25em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.25;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .comparison-table_cell.is-us .comparison-table_mark {
+      color: var(--heading-accent);
+    }
+
+    .comparison-table_cell.is-them {
+      color: color-mix(in srgb, var(--text) 70%, transparent);
+    }
+
+    /* Phones: each row is a small card — the label, then both answers,
+       each led by its column name. */
+    @container (width < 40em) {
+      .comparison-table_table,
+      .comparison-table_body,
+      .comparison-table_row,
+      .comparison-table_cell {
+        display: block;
+      }
+
+      .comparison-table_head {
+        display: none;
+      }
+
+      .comparison-table_body .comparison-table_cell.is-us,
+      .comparison-table_body .comparison-table_cell.is-them {
+        display: block;
+      }
+
+      .comparison-table_cell {
+        width: auto;
+        border-bottom: 0;
+      }
+
+      .comparison-table_cell.is-label {
+        width: auto;
+        padding-bottom: var(--space-2);
+      }
+
+      .comparison-table_row {
+        border-bottom: var(--border-width-main) solid var(--border);
+      }
+
+      .comparison-table_body .comparison-table_row:last-child {
+        border-bottom: 0;
+      }
+
+      .comparison-table_body .comparison-table_cell.is-us::before,
+      .comparison-table_body .comparison-table_cell.is-them::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: var(--space-1);
+        font-size: var(--text-tiny-size);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+    }
+  }
+</style>

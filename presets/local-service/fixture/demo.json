@@ -1,5 +1,7 @@
 {
   "preset": "local-service",
+  "look": "rugged",
+  "license": "TECL #12345",
   "prospect": {
     "name": "Brightline Electric",
     "legalName": "Brightline Electric LLC",
@@ -14,10 +16,15 @@
   },
   "serviceAreas": ["Austin", "Round Rock", "Cedar Park", "Pflugerville"],
   "founded": 2009,
-  "social": { "Facebook": "https://www.facebook.com/example" },
+  "social": {
+    "Facebook": "https://www.facebook.com/example"
+  },
   "brand": {
     "color": "#1a4fd8",
-    "logo": { "file": "./assets/logo.svg", "plate": true }
+    "logo": {
+      "file": "./assets/logo.svg",
+      "plate": true
+    }
   },
   "seo": {
     "tagline": "Licensed electricians in Austin",
@@ -26,15 +33,65 @@
   "home": {
     "hero": {
       "eyebrow": "Licensed electricians in Austin",
-      "heading": "Electrical work done <strong>safely, on schedule</strong>",
-      "text": "Panel upgrades, EV chargers, lighting and repairs, with an upfront price before any work starts.",
+      "heading": "Call today for <mark>$50 off</mark> your first service call",
+      "text": "Licensed Austin electricians for panel upgrades, EV chargers, lighting and repairs, with an upfront price before any work starts.",
       "image": "../../../src/assets/placeholder-images/ai-first-starter-5.webp",
-      "imageAlt": "An electrician working on a residential panel"
+      "imageAlt": "An electrician working on a residential panel",
+      "variant": "split",
+      "ctaStyle": "panel",
+      "ctaNote": "No-obligation quote",
+      "trust": [
+        {
+          "label": "Licensed & insured"
+        },
+        {
+          "label": "Upfront pricing"
+        },
+        {
+          "label": "Same-week service"
+        }
+      ]
     },
     "services": {
       "eyebrow": "What we do",
       "heading": "Every electrical job, one crew",
       "intro": "From a single outlet to a full panel upgrade."
+    },
+    "symptoms": {
+      "intro": "If any of these sound like your house, it is worth a look before it gets worse.",
+      "items": [
+        {
+          "title": "Breaker keeps tripping",
+          "text": "Every time the microwave and the dryer run together.",
+          "icon": "bolt"
+        },
+        {
+          "title": "Lights flicker or dim",
+          "text": "Especially when the AC kicks on.",
+          "icon": "alert"
+        },
+        {
+          "title": "Warm outlets or switches",
+          "text": "A plate that feels warm to the touch is a warning sign.",
+          "icon": "alert"
+        },
+        {
+          "title": "No outlet where you need it",
+          "text": "Extension cords running across the room.",
+          "icon": "tools"
+        }
+      ]
+    },
+    "offer": {
+      "seal": {
+        "value": "$50",
+        "label": "Off"
+      },
+      "eyebrow": "New customers",
+      "heading": "<strong>$50 off</strong> your first service call",
+      "text": "Book any repair or install and we take $50 off the invoice.",
+      "items": ["Any repair or install", "Written price before we start"],
+      "note": "One per household. Not combinable with other offers. Fictional example offer."
     },
     "serviceArea": {
       "heading": "Serving Austin and nearby",
@@ -52,10 +109,37 @@
           "title": "Upfront price",
           "text": "A written quote before we start."
         },
-        { "title": "Done right", "text": "Clean work, up to code, inspected." }
+        {
+          "title": "Done right",
+          "text": "Clean work, up to code, inspected."
+        }
       ],
       "image": "../../../src/assets/placeholder-images/ai-first-starter-4.webp",
       "imageAlt": "An electrician explaining a quote to a homeowner"
+    },
+    "recentWork": {
+      "eyebrow": "Recent work",
+      "heading": "Done this year, near you",
+      "items": [
+        {
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-1.webp",
+          "imageAlt": "A new labelled breaker panel",
+          "title": "200-amp panel upgrade",
+          "place": "Round Rock"
+        },
+        {
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-6.webp",
+          "imageAlt": "An EV charger mounted in a garage",
+          "title": "Level 2 EV charger",
+          "place": "Cedar Park"
+        },
+        {
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-8.webp",
+          "imageAlt": "New recessed lighting in a living room",
+          "title": "Recessed lighting",
+          "place": "Austin"
+        }
+      ]
     },
     "story": {
       "eyebrow": "Why choose us",
@@ -66,8 +150,23 @@
       "image": "../../../src/assets/placeholder-images/ai-first-starter-7.webp",
       "imageAlt": "The Brightline team in front of their van",
       "reasons": [
-        { "title": "Upfront pricing", "text": "The quote is the price." },
-        { "title": "Licensed", "text": "Every job, every electrician." }
+        {
+          "title": "Upfront pricing",
+          "text": "The quote is the price."
+        },
+        {
+          "title": "Licensed",
+          "text": "Every job, every electrician."
+        }
+      ]
+    },
+    "guarantee": {
+      "name": "The <strong>Done-Right</strong> Guarantee",
+      "text": "If something we installed is not right, we come back and fix it, free, for a full year.",
+      "items": [
+        "Every job",
+        "Parts and labor",
+        "No trip fee for warranty calls"
       ]
     },
     "leadForm": {
@@ -89,7 +188,63 @@
     },
     "callBand": {
       "heading": "Need an <strong>electrician</strong>?",
-      "text": "Call now, or get a free estimate online."
+      "text": "Call now, or get a free estimate online.",
+      "variant": "photo-card",
+      "image": "../../../src/assets/placeholder-images/ai-first-starter-10.webp",
+      "imageAlt": "A newly wired home lit up at dusk",
+      "ctaNote": "No-obligation quote"
+    },
+    "reviews": {
+      "rating": 4.9,
+      "count": 86,
+      "items": [
+        {
+          "text": "They swapped our panel in a day, pulled the permit, and left the garage cleaner than they found it.",
+          "name": "Dana M.",
+          "meta": "Panel upgrade · Round Rock"
+        },
+        {
+          "text": "Clear price up front, showed up on time, and the EV charger has worked perfectly since.",
+          "name": "Chris L.",
+          "meta": "EV charger · Cedar Park"
+        },
+        {
+          "text": "Called about a breaker that kept tripping and they had it sorted the same afternoon.",
+          "name": "Priya S.",
+          "meta": "Repair · Austin"
+        }
+      ]
+    },
+    "comparison": {
+      "heading": "Why Austin homeowners switch to us",
+      "rows": [
+        {
+          "label": "Pricing",
+          "us": "Written price before any work",
+          "them": "Hourly, open-ended"
+        },
+        {
+          "label": "Permits",
+          "us": "Pulled and inspected, every time",
+          "them": "Often skipped"
+        },
+        {
+          "label": "Scheduling",
+          "us": "Same-week appointments",
+          "them": "Two-week waits"
+        },
+        {
+          "label": "Clean-up",
+          "us": "Every site left clean",
+          "them": "Drywall dust left behind"
+        }
+      ]
+    },
+    "estimate": {
+      "label": "Get a free estimate",
+      "heading": "Get a free estimate",
+      "text": "Two quick steps. We call you back the same business day.",
+      "question": "What do you need help with?"
     }
   },
   "services": [
@@ -111,10 +266,22 @@
         "imageAlt": "An electrician installing a breaker panel"
       },
       "highlights": [
-        { "value": "200A", "label": "Standard upgrade" },
-        { "value": "1 day", "label": "Typical install" },
-        { "value": "Upfront", "label": "Price before we start" },
-        { "value": "Permitted", "label": "And inspected" }
+        {
+          "value": "200A",
+          "label": "Standard upgrade"
+        },
+        {
+          "value": "1 day",
+          "label": "Typical install"
+        },
+        {
+          "value": "Upfront",
+          "label": "Price before we start"
+        },
+        {
+          "value": "Permitted",
+          "label": "And inspected"
+        }
       ],
       "scope": {
         "heading": "What we work on",
@@ -150,9 +317,14 @@
           "question": "How long does an upgrade take?",
           "answer": "Most are done in a day, plus the inspection."
         },
-        { "question": "Do you pull the permit?", "answer": "Yes, every time." }
+        {
+          "question": "Do you pull the permit?",
+          "answer": "Yes, every time."
+        }
       ],
-      "cta": { "heading": "Ready for a <strong>new panel</strong>?" }
+      "cta": {
+        "heading": "Ready for a <strong>new panel</strong>?"
+      }
     },
     {
       "slug": "ev-chargers",
@@ -172,10 +344,22 @@
         "imageAlt": "A wall-mounted EV charger in a garage"
       },
       "highlights": [
-        { "value": "Level 2", "label": "Home charging" },
-        { "value": "Half day", "label": "Typical install" },
-        { "value": "Upfront", "label": "Price before we start" },
-        { "value": "Permitted", "label": "And inspected" }
+        {
+          "value": "Level 2",
+          "label": "Home charging"
+        },
+        {
+          "value": "Half day",
+          "label": "Typical install"
+        },
+        {
+          "value": "Upfront",
+          "label": "Price before we start"
+        },
+        {
+          "value": "Permitted",
+          "label": "And inspected"
+        }
       ],
       "scope": {
         "heading": "What we work on",
@@ -211,10 +395,14 @@
           "answer": "Any Level 2 charger you choose."
         }
       ],
-      "cta": { "heading": "Ready to <strong>charge at home</strong>?" }
+      "cta": {
+        "heading": "Ready to <strong>charge at home</strong>?"
+      }
     }
   ],
   "notes": {
-    "confirmOrCut": ["Fictional fixture — nothing to confirm."]
+    "confirmOrCut": [
+      "Fictional fixture: the reviews, offer, guarantee and comparison are invented for the example; never do this for a real business."
+    ]
   }
 }

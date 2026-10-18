@@ -41,6 +41,29 @@ sync when re-skinning. `colors.css` holds raw swatches only;
 aliases (`--background`, `--text`, `--border`, …) — **components read the
 aliases, never a raw swatch**.
 
+## Looks — a whole-site personality from tokens
+
+`SITE.look` (`src/config/looks.ts`) sets `<html data-look="…">`;
+[looks.css](../../../src/styles/variables/looks.css) re-values tokens under
+`:root[data-look="…"]` — the same element as the defaults, one notch more
+specific, so derived tokens (the `-o20` mixes, clamped sizes) recompute.
+`studio` is the defaults themselves and emits no attribute. A look sets only
+tokens — never component CSS — so a new component follows every look for
+free **if it reads tokens**. The tokens a look owns, beyond colours and
+radii:
+
+| Token                                                                                   | Read by                                                                                                     |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `--font-body`                                                                           | `body` (reset.css) — anything without a type style                                                          |
+| `--heading-letter-spacing`, `--eyebrow-tracking`                                        | every heading/display style, `.u-text-style-eyebrow`. **Undefined by default** — so they inherit, as before |
+| `--button-font-family/-size/-weight/-text-transform/-letter-spacing`, `--button-radius` | the main Button                                                                                             |
+| `--chrome-font-family/-text-transform/-letter-spacing`                                  | `.nav_contain`, `.footer_wrap`                                                                              |
+
+So: in new component CSS, set type through these tokens, not
+`font-family: var(--font-tertiary)` + a hard-coded `text-transform`. Fonts a
+look uses are listed in `looks.ts` and registered in `astro.config.mjs`;
+Head.astro preloads only the current look's.
+
 ## Theme invert — a card that must contrast with its section
 
 `data-theme-invert` flips an element to the **opposite of the ground it sits

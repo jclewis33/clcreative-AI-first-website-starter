@@ -1,5 +1,6 @@
 import type { ImageMetadata } from "astro";
 import type { FAQItem } from "@/data/faqs";
+import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
 
 /**
  * The data a local-service home page is made of — everything
@@ -21,24 +22,48 @@ type HomeReview = { text: string; name: string; meta?: string };
 type HomeOption = { label: string; value: string };
 /** An SVG imported as a component (ServiceArea's interactive map). */
 type HomeMap = (props: Record<string, unknown>) => unknown;
+type HomeTrust = { label: string; image?: HomeImage };
+type HomeAreaGeo = {
+  name: string;
+  geometry: {
+    type: "Polygon" | "MultiPolygon" | "Point";
+    coordinates: unknown;
+  };
+};
 
 export interface LocalServiceHomeData {
   /** Page `<title>` and meta description. */
   title: string;
   description: string;
 
-  /** The "get an estimate" modal every estimate CTA on the page opens. */
-  estimate: { label: string; heading: string; text?: string };
+  /**
+   * The "get an estimate" modal every estimate CTA on the page opens.
+   * `question` heads its first step (the service tiles).
+   */
+  estimate: {
+    label: string;
+    heading: string;
+    text?: string;
+    question?: string;
+  };
 
   hero: {
     eyebrow?: string;
-    /** HTML allowed (`<strong>` marks the accent words). */
+    /** HTML allowed: `<strong>` marks the accent words, `<mark>` highlights an offer. */
     heading: string;
     text?: string;
     image: HomeImage;
     imageAlt: string;
+    /** Photo behind the text (default) or beside it. */
+    variant?: "background" | "split";
+    /** `panel` = the estimate button, "or", and the phone on one panel. */
+    ctaStyle?: "buttons" | "panel";
+    /** Small line under the estimate button in the panel ("And claim $100 off"). */
+    ctaNote?: string;
     /** Star line under the CTAs — only with a real rating to quote. */
     proof?: { rating?: number; text: string };
+    /** Credentials the business really holds. */
+    trust?: HomeTrust[];
   };
 
   /** Four short numbers or words. Leave out anything you can't back up. */
@@ -47,11 +72,65 @@ export interface LocalServiceHomeData {
   /** Heading for the service cards (the cards come from src/content/services). */
   services: { eyebrow?: string; heading: string; intro?: string };
 
+  /** "Sound familiar?" — the problems, in the homeowner's words (SymptomCards). */
+  symptoms?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    items: { title: string; text: string; icon?: ServiceIconName }[];
+  };
+
+  /** One real offer — a discount, financing, rebates (OfferBand). Opens the estimate form. */
+  offer?: {
+    seal?: { value: string; label: string };
+    eyebrow?: string;
+    heading: string;
+    text?: string;
+    items?: string[];
+    /** The terms. */
+    note?: string;
+    /** Button text. @default the estimate label */
+    ctaLabel?: string;
+  };
+
+  /** The business's own job photos, captioned with the town (RecentWork). */
+  recentWork?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    items: {
+      image: HomeImage;
+      imageAlt: string;
+      title: string;
+      place?: string;
+    }[];
+  };
+
+  /** A named guarantee the business really gives (Guarantee). */
+  guarantee?: {
+    eyebrow?: string;
+    name: string;
+    text?: string;
+    items?: string[];
+    sealLabel?: string;
+  };
+
+  /** Us vs. a typical contractor, honestly (ComparisonTable). */
+  comparison?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    themLabel?: string;
+    rows: { label: string; us: string; them: string }[];
+  };
+
   serviceArea: {
     heading: string;
     text?: string;
     /** Defaults to SITE.serviceAreas. */
     areas?: string[];
+    /** Town boundaries for the street map — `npm run demo` fetches them. */
+    geo?: HomeAreaGeo[];
     map?: HomeMap;
   };
 
@@ -76,7 +155,13 @@ export interface LocalServiceHomeData {
   };
 
   /** Real, attributed reviews only. Absent = no Reviews section. */
-  reviews?: { rating?: number; count?: number; items: HomeReview[] };
+  reviews?: {
+    rating?: number;
+    count?: number;
+    items: HomeReview[];
+    /** @default 'cards' (stars on every card) */
+    layout?: "cards" | "featured" | "grid";
+  };
 
   leadForm: {
     eyebrow?: string;
@@ -89,5 +174,13 @@ export interface LocalServiceHomeData {
   /** Absent = no FAQ section (never the generic lorem defaults). */
   faqs?: { eyebrow?: string; items: FAQItem[] };
 
-  callBand: { heading: string; text?: string };
+  callBand: {
+    heading: string;
+    text?: string;
+    /** `photo-card` / `split` need `image`. @default 'band' */
+    variant?: "band" | "photo-card" | "split";
+    image?: HomeImage;
+    imageAlt?: string;
+    ctaNote?: string;
+  };
 }

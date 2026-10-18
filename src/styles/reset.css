@@ -72,7 +72,7 @@ body {
      correct and its `:has()` specificity beats this rule. */
   overflow-x: clip;
   line-height: 1.5;
-  font-family: var(--font-primary);
+  font-family: var(--font-body);
   color: var(--text);
   background-color: var(--background);
   text-transform: inherit;

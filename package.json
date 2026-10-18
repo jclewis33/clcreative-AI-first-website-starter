@@ -37,10 +37,12 @@
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.2",
     "gsap": "^3.15.0",
+    "leaflet": "^1.9.4",
     "swiper": "^12.2.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@types/leaflet": "^1.9.22",
     "node-html-parser": "^7.1.0",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",

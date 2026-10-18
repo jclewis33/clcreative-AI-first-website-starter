@@ -92,6 +92,16 @@ import ProjectBrowser from "@/components/ui/ProjectBrowser.astro";
 import GalleryBrowser from "@/components/ui/GalleryBrowser.astro";
 import "@/styles/pages/components-demo.css";
 import CtaButton from "@/components/ui/CtaButton.astro";
+import CtaPanel from "@/components/ui/CtaPanel.astro";
+import SymptomCards from "@/components/sections/SymptomCards.astro";
+import OfferBand from "@/components/sections/OfferBand.astro";
+import RecentWork from "@/components/sections/RecentWork.astro";
+import Guarantee from "@/components/sections/Guarantee.astro";
+import ComparisonTable from "@/components/sections/ComparisonTable.astro";
+import TrustBadges from "@/components/ui/TrustBadges.astro";
+/* Real town boundaries for the street-map demo — the Brightline fixture's
+   cache (scripts/lib/service-area-geo.mjs), so the page needs no lookup. */
+import fixtureGeo from "../../presets/local-service/fixture/service-area.geo.json";
 import LeadFormModal from "@/components/form/LeadFormModal.astro";
 import ImagePair from "@/components/ui/ImagePair.astro";
 import ServiceIcon, {
@@ -324,6 +334,94 @@ const demoProject2: ProjectCardData = {
     position: "center",
   },
 };
+
+/* Home-service demos (CtaPanel, TrustBadges, Reviews cards, CallBand photo
+   variants) — hoisted here so no attribute holds a multi-line literal. */
+const demoEstimateCta = { label: "Get an estimate", modal: "demo-estimate" };
+const demoTrust = [
+  { label: "Licensed & insured" },
+  { label: "Upfront pricing" },
+  { label: "Same-week service" },
+];
+const demoRatedReviews = [
+  {
+    text: "Swapped our panel in a day and left the garage cleaner than they found it.",
+    name: "Dana M.",
+    meta: "Panel upgrade · Round Rock",
+  },
+  {
+    text: "Clear price up front, on time, and the charger has worked perfectly.",
+    name: "Chris L.",
+    meta: "EV charger · Cedar Park",
+  },
+  {
+    text: "Sorted a tripping breaker the same afternoon.",
+    name: "Priya S.",
+    meta: "Repair · Austin",
+  },
+];
+const demoAreaGeo = Object.entries(fixtureGeo).map(([key, geometry]) => ({
+  name: key.split(",")[0],
+  geometry: geometry as {
+    type: "Polygon" | "MultiPolygon" | "Point";
+    coordinates: unknown;
+  },
+}));
+const demoAreaNames = demoAreaGeo.map((area) => area.name);
+const demoSymptoms = [
+  {
+    title: "Breaker keeps tripping",
+    text: "Every time the microwave and the dryer run together.",
+  },
+  { title: "Lights flicker or dim", text: "Especially when the AC kicks on." },
+  {
+    title: "No outlet where you need it",
+    text: "Extension cords running across the room.",
+  },
+];
+const demoOfferSeal = { value: "$50", label: "Off" };
+const demoOfferItems = [
+  "Any repair or install",
+  "Written price before we start",
+];
+const demoWork = [
+  {
+    image: demoPhoto1,
+    imageAlt: "A new labelled breaker panel",
+    title: "Panel upgrade",
+    place: "Round Rock",
+  },
+  {
+    image: demoPhoto2,
+    imageAlt: "A finished kitchen with new lighting",
+    title: "Kitchen lighting",
+    place: "Cedar Park",
+  },
+  {
+    image: demoPhoto3,
+    imageAlt: "A home exterior with new outdoor lights",
+    title: "Outdoor lighting",
+    place: "Austin",
+  },
+];
+const demoGuaranteeItems = [
+  "Every job",
+  "Parts and labor",
+  "No trip fee for warranty calls",
+];
+const demoCompareRows = [
+  {
+    label: "Pricing",
+    us: "Written price before any work",
+    them: "Hourly, open-ended",
+  },
+  {
+    label: "Permits",
+    us: "Pulled and inspected, every time",
+    them: "Often skipped",
+  },
+  { label: "Clean-up", us: "Every site left clean", them: "Dust left behind" },
+];
 ---
 
 <BaseLayout
@@ -2261,6 +2359,15 @@ const demoProject2: ProjectCardData = {
       heading="Get a free estimate"
       text="Tell us a little about the project and we'll be in touch."
     />
+    <Layout variant="stack">
+      <Heading variant="eyebrow">CtaPanel &amp; TrustBadges</Heading>
+      <Text muted
+        >The home-service pair: the estimate button, "or", and the phone on one
+        panel, then the credentials a homeowner checks.</Text
+      >
+    </Layout>
+    <CtaPanel cta={demoEstimateCta} note="No-obligation quote" />
+    <TrustBadges items={demoTrust} />
   </Section>
 
   <Section theme="light" id="image-pair">
@@ -2542,6 +2649,12 @@ const demoProject2: ProjectCardData = {
     cta={{ label: "Check your address", modal: "demo-estimate" }}
   />
   <ServiceArea
+    heading="Serving Austin and nearby"
+    text="A real street map, each town outlined. Point at a town or its chip."
+    areas={demoAreaNames}
+    geo={demoAreaGeo}
+  />
+  <ServiceArea
     eyebrow="Service area"
     heading="Close to home, wherever that is"
     images={[
@@ -2599,6 +2712,14 @@ const demoProject2: ProjectCardData = {
     ]}
   />
 
+  <Reviews
+    layout="cards"
+    heading="What neighbors say"
+    rating={4.9}
+    count={86}
+    reviews={demoRatedReviews}
+  />
+
   <Section theme="light" padding="small" id="lead-form-section">
     <Heading variant="eyebrow">LeadFormSection</Heading>
     <Heading tag="h2"
@@ -2630,6 +2751,47 @@ const demoProject2: ProjectCardData = {
     text="Call now, or get an estimate online."
     secondaryCta={{ label: "Get an estimate", modal: "demo-estimate" }}
   />
+  <CallBand
+    variant="photo-card"
+    image={demoPhoto5}
+    imageAlt="A bright finished room"
+    heading="Get a <strong>free quote</strong>"
+    text="Pricing and options for your home, usually the same day."
+    ctaNote="No obligation"
+    secondaryCta={demoEstimateCta}
+  />
+  <CallBand
+    variant="split"
+    image={demoPhoto4}
+    imageAlt="A project manager walking a homeowner through plans"
+    heading="Stop putting off <strong>that project</strong>"
+    text="A free on-site estimate, with no pressure."
+    secondaryCta={demoEstimateCta}
+  />
+
+  <Section theme="light" padding="small" id="home-service-sections">
+    <Heading variant="eyebrow">Home-service sections</Heading>
+    <Heading tag="h2"
+      >SymptomCards, OfferBand, RecentWork, Guarantee, ComparisonTable</Heading
+    >
+  </Section>
+  <SymptomCards items={demoSymptoms} cta={demoEstimateCta} />
+  <OfferBand
+    seal={demoOfferSeal}
+    eyebrow="New customers"
+    heading="<strong>$50 off</strong> your first service call"
+    text="Book any repair or install and we take $50 off the invoice."
+    items={demoOfferItems}
+    cta={demoEstimateCta}
+    note="One per household. Example offer."
+  />
+  <RecentWork heading="Done this year, near you" items={demoWork} />
+  <Guarantee
+    name="The <strong>Done-Right</strong> Guarantee"
+    text="If something we installed is not right, we come back and fix it, free, for a full year."
+    items={demoGuaranteeItems}
+  />
+  <ComparisonTable heading="How we compare" rows={demoCompareRows} />
 
   <Section theme="light" padding="small" id="cta-section-cta">
     <Heading variant="eyebrow">CTASection with SectionCta</Heading>

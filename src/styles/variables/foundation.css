@@ -74,6 +74,9 @@
   --radius-main: 1rem;
   --radius-full: 100vw;
   --radius-section: clamp(2rem, 2.857vw + 1.429rem, 4rem);
+  /* The main button's corners. A look (variables/looks.css) can square or
+     round them independently of cards. */
+  --button-radius: var(--radius-main);
 
   /* =====================================================
      BORDER WIDTH

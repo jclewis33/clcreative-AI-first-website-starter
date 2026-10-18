@@ -47,6 +47,9 @@
 
 import Logo from "./Logo.astro";
 import Button from "@/components/ui/Button.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import { SITE } from "@/config/site";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
 import { NAV_MENU, navLabel } from "@/data/site-structure";
 
 /** Simple navigation link */
@@ -109,6 +112,11 @@ const {
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
+
+/** Local-service mode: the nav button opens the site-wide estimate form. */
+const estimateCta = SITE.quote
+  ? { label: SITE.quote.label, modal: ESTIMATE_MODAL_ID }
+  : null;
 
 // ── Feature Flags ──────────────────────────────────────────────────
 // Toggle these to show/hide nav features. When false, the markup is
@@ -555,15 +563,40 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
           }
         </ul>
 
-        {/* CTA (desktop) */}
+        {
+          /* CTA (desktop). Local-service mode (SITE.quote): the phone, then
+            a button that opens the site-wide estimate form. */
+        }
+        {
+          estimateCta && (
+            <a
+              class="nav_phone_wrap"
+              href={`tel:${SITE.phone.tel}`}
+              aria-label={`Call or text ${SITE.phone.display}`}
+            >
+              <span class="nav_phone_label">Call or text</span>
+              <span class="nav_phone_number">{SITE.phone.display}</span>
+            </a>
+          )
+        }
         <div class="nav_actions_cta">
-          <Button
-            id="main-cta-navbar"
-            size="small"
-            href="/contact"
-            ariaLabel="Contact us"
-            >Contact
-          </Button>
+          {
+            estimateCta && (
+              <CtaButton cta={estimateCta} size="small" id="main-cta-navbar" />
+            )
+          }
+          {
+            !estimateCta && (
+              <Button
+                id="main-cta-navbar"
+                size="small"
+                href="/contact"
+                ariaLabel="Contact us"
+              >
+                Contact
+              </Button>
+            )
+          }
         </div>
       </div>
 
@@ -780,13 +813,22 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
     </ul>
 
     <div class="nav_mobile_cta">
-      <Button
-        id="main-cta-navbar-mobile"
-        href="/contact"
-        ariaLabel="Contact us"
-      >
-        Contact
-      </Button>
+      {
+        estimateCta && (
+          <CtaButton cta={estimateCta} fullWidth id="main-cta-navbar-mobile" />
+        )
+      }
+      {
+        !estimateCta && (
+          <Button
+            id="main-cta-navbar-mobile"
+            href="/contact"
+            ariaLabel="Contact us"
+          >
+            Contact
+          </Button>
+        )
+      }
     </div>
   </div>
 </nav>
@@ -1114,6 +1156,9 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
       align-items: center;
       gap: var(--space-2);
       min-width: 0;
+      /* The banner's type size lives here so the dot and arrow (sized in
+         em) scale with the text. */
+      font-size: var(--text-tiny-size);
       color: inherit;
       text-decoration: none;
       transition: opacity 0.2s ease;
@@ -1130,21 +1175,25 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
    that utility class from the <span> in Navbar.astro. */
     .nav_banner_text {
       margin: 0;
-      font-size: var(--font-size-small);
+      /* Sized by .nav_banner_link. This once read --font-size-small, which
+         no file defines, so the banner fell back to the full body size. */
+      font-size: inherit;
       font-family: var(--font-secondary);
       text-transform: uppercase;
       color: inherit;
     }
 
+    /* In em: they follow the banner's text size (same proportions as at
+       the old 16px text — the dot 1.5x the text, the arrow a touch under). */
     .nav_banner_arrow {
       flex: none;
-      width: 0.875rem;
-      height: 0.875rem;
+      width: 0.9em;
+      aspect-ratio: 1 / 1;
     }
 
     .nav_banner_dot {
       flex: none;
-      width: 1.5rem;
+      width: 1.5em;
       aspect-ratio: 1 / 1;
     }
 
@@ -1268,9 +1317,9 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
    Centers content to --nav-max-width-inner and arranges items as a flex row.
    No padding here — padding belongs on nav_inner above. */
     .nav_contain {
-      font-family: var(--font-tertiary);
-      text-transform: uppercase;
-      letter-spacing: var(--letter-spacing-tight);
+      font-family: var(--chrome-font-family);
+      text-transform: var(--chrome-text-transform);
+      letter-spacing: var(--chrome-letter-spacing);
       gap: var(--space-3);
       height: var(--nav-height);
       max-width: var(--nav-max-width-inner);
@@ -1739,6 +1788,40 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
     .nav_actions_cta {
       flex: none;
       margin-left: var(--space-2);
+    }
+
+    /* Local-service phone: a small label over the number, tap to call.
+       Desktop only — phones get the sticky MobileActionBar instead. */
+    .nav_phone_wrap {
+      display: var(--none-medium, flex);
+      flex-direction: column;
+      flex: none;
+      align-items: flex-end;
+      margin-left: var(--space-4);
+      color: var(--text);
+      text-decoration: none;
+      text-transform: none;
+      letter-spacing: normal;
+      line-height: 1.1;
+    }
+
+    .nav_phone_label {
+      font-family: var(--font-secondary);
+      font-size: var(--text-tiny-size);
+      opacity: 0.75;
+    }
+
+    .nav_phone_number {
+      font-family: var(--font-primary);
+      font-size: var(--h6-size);
+      font-weight: var(--h6-weight);
+      white-space: nowrap;
+    }
+
+    @media (hover: hover) {
+      .nav_phone_wrap:hover .nav_phone_number {
+        color: var(--heading-accent);
+      }
     }
 
     /* =====================================================

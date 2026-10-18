@@ -1,0 +1,160 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import ServiceIcon, {
+  type ServiceIconName,
+} from "@/components/ui/ServiceIcon.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type SymptomCard = {
+  /** The problem, short: "Breaker keeps tripping". */
+  title: string;
+  /** How the homeowner puts it, or what it means: one or two sentences. */
+  text: string;
+  /** Icon from src/data/service-icons.json. @default 'alert' */
+  icon?: ServiceIconName;
+};
+type SymptomCardsTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **SymptomCards** — "Sound familiar?": the problems that make a homeowner
+   * pick up the phone, in their own words ("Hot and cold rooms", "Breaker
+   * keeps tripping", "Water under the sink"), one card each, then a button.
+   * People search for the symptom, not the service.
+   *
+   * - `items` — `{ title, text, icon? }[]`; empty renders nothing
+   * - `eyebrow`, `heading` (default "Sound familiar?"), `intro`
+   * - `cta` — optional button under the cards (e.g. the estimate form)
+   *
+   * @example
+   * <SymptomCards items={[{ title: "Breaker keeps tripping", text: "Every time the microwave and the dryer run together." }]} cta={estimateCta} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. @default 'Sound familiar?' */
+  heading?: string;
+
+  /** Intro beside the heading. */
+  intro?: string;
+
+  /** The problems. Empty renders nothing. */
+  items: SymptomCard[];
+
+  /** Optional button under the cards. */
+  cta?: SectionCta;
+
+  /** Section theme. */
+  theme?: SymptomCardsTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading = "Sound familiar?",
+  intro,
+  items = [],
+  cta,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !Astro.props.items?.length) {
+  console.warn("[SymptomCards] `items` is empty or missing; nothing renders.");
+}
+---
+
+{
+  render && items.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["symptom-cards_wrap", className]}
+      {...rest}
+    >
+      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      <Grid
+        largeColumns={items.length === 4 ? 4 : 3}
+        mediumColumns={2}
+        smallColumns={1}
+      >
+        {items.map((item) => (
+          <div class="symptom-cards_card">
+            <ServiceIcon
+              name={item.icon ?? "alert"}
+              class="symptom-cards_icon"
+            />
+            <Heading tag="h3" variant="h6" class="symptom-cards_title">
+              {item.title}
+            </Heading>
+            <Text muted class="symptom-cards_text">
+              {item.text}
+            </Text>
+          </div>
+        ))}
+      </Grid>
+      {cta && (
+        <div class="symptom-cards_action">
+          <CtaButton cta={cta} size="large" />
+        </div>
+      )}
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .symptom-cards_card {
+      height: 100%;
+      padding: var(--space-6);
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+    }
+
+    /* The icon chip in an alert tint: these are problems, not services. */
+    .symptom-cards_card .symptom-cards_icon {
+      margin-bottom: var(--space-4);
+      background-color: color-mix(
+        in srgb,
+        var(--heading-accent) 12%,
+        transparent
+      );
+    }
+
+    .symptom-cards_text {
+      margin-bottom: 0;
+    }
+
+    .symptom-cards_action {
+      display: flex;
+      justify-content: var(--_buttons-justify, flex-start);
+    }
+  }
+</style>

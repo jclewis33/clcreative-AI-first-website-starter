@@ -48,6 +48,9 @@ interface Props {
   /** Stretch to the full width of the parent. @default false */
   fullWidth?: boolean;
 
+  /** Id on the button (e.g. for analytics click triggers). */
+  id?: string;
+
   /** Extra classes on the button. */
   class?: string;
 }
@@ -60,6 +63,7 @@ const {
   variant,
   size,
   fullWidth,
+  id,
   class: className,
 } = Astro.props;
 
@@ -76,6 +80,7 @@ if (import.meta.env.DEV && render && !phone && !cta?.label) {
         variant={variant}
         size={size}
         fullWidth={fullWidth}
+        id={id}
         iconPosition="start"
         ariaLabel={`Call ${SITE.phone.display}`}
         class={className}
@@ -88,6 +93,7 @@ if (import.meta.env.DEV && render && !phone && !cta?.label) {
         variant={variant}
         size={size}
         fullWidth={fullWidth}
+        id={id}
         ariaLabel={cta.label}
         data-modal-trigger={cta.modal}
         class={className}
@@ -100,6 +106,7 @@ if (import.meta.env.DEV && render && !phone && !cta?.label) {
         variant={variant}
         size={size}
         fullWidth={fullWidth}
+        id={id}
         ariaLabel={cta.label}
         class={className}
       >
