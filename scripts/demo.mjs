@@ -262,6 +262,8 @@ async function main() {
   await homeImage(home.photoBand, "image", "photo-band");
   await homeImage(home.story, "image", "story");
   await homeImage(home.callBand, "image", "call-band");
+  for (const [i, job] of (home.recentWork?.items ?? []).entries())
+    await homeImage(job, "image", `work-${i + 1}`, 1600);
   for (const [i, badge] of (home.hero.trust ?? []).entries())
     await homeImage(badge, "image", `trust-${i + 1}`, 320);
 
@@ -373,6 +375,9 @@ async function main() {
       label: demo.home.estimate.label,
       heading: demo.home.estimate.heading,
       ...(demo.home.estimate.text ? { text: demo.home.estimate.text } : {}),
+      ...(demo.home.estimate.question
+        ? { question: demo.home.estimate.question }
+        : {}),
     },
     license: demo.license ?? "",
   };

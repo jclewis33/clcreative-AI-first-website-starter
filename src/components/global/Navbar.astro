@@ -1156,6 +1156,9 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
       align-items: center;
       gap: var(--space-2);
       min-width: 0;
+      /* The banner's type size lives here so the dot and arrow (sized in
+         em) scale with the text. */
+      font-size: var(--text-tiny-size);
       color: inherit;
       text-decoration: none;
       transition: opacity 0.2s ease;
@@ -1172,21 +1175,25 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
    that utility class from the <span> in Navbar.astro. */
     .nav_banner_text {
       margin: 0;
-      font-size: var(--font-size-small);
+      /* Sized by .nav_banner_link. This once read --font-size-small, which
+         no file defines, so the banner fell back to the full body size. */
+      font-size: inherit;
       font-family: var(--font-secondary);
       text-transform: uppercase;
       color: inherit;
     }
 
+    /* In em: they follow the banner's text size (same proportions as at
+       the old 16px text — the dot 1.5x the text, the arrow a touch under). */
     .nav_banner_arrow {
       flex: none;
-      width: 0.875rem;
-      height: 0.875rem;
+      width: 0.9em;
+      aspect-ratio: 1 / 1;
     }
 
     .nav_banner_dot {
       flex: none;
-      width: 1.5rem;
+      width: 1.5em;
       aspect-ratio: 1 / 1;
     }
 

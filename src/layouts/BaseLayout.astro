@@ -217,7 +217,7 @@ const estimateOptions = SITE.quote
     {/* Local-service chrome (SITE.quote): the estimate form every estimate
         button opens, and the phone-only call / estimate bar. */}
     {SITE.quote && (
-      <LeadFormModal id={ESTIMATE_MODAL_ID} formId="contact" heading={SITE.quote.heading} text={SITE.quote.text} fields="quote" projectOptions={estimateOptions} />
+      <LeadFormModal id={ESTIMATE_MODAL_ID} formId="contact" heading={SITE.quote.heading} text={SITE.quote.text} fields="steps" stepQuestion={SITE.quote.question} projectOptions={estimateOptions} />
     )}
     <MobileActionBar />
     {/* Baseline JSON-LD — LocalBusiness anchor + per-page WebPage/Breadcrumb.

@@ -134,10 +134,16 @@ export const SITE = {
    * gets the estimate form as a modal (BaseLayout), the navbar shows the
    * phone and a button that opens the form, phones get a sticky call /
    * estimate bar, and the footer lists the service areas. `label` is the
-   * button text everywhere, `heading`/`text` head the form. `null` = the
-   * agency chrome (a "Contact" link).
+   * button text everywhere, `heading`/`text` head the form, `question` is
+   * the form's first step over the service tiles (default "What do you
+   * need help with?"). `null` = the agency chrome (a "Contact" link).
    */
-  quote: null as { label: string; heading: string; text?: string } | null,
+  quote: null as {
+    label: string;
+    heading: string;
+    text?: string;
+    question?: string;
+  } | null,
 
   /** Contractor license, shown in the footer's bottom line (e.g. "TECL #25414"). Blank = none. */
   license: "",

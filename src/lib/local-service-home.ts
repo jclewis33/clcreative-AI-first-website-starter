@@ -1,5 +1,6 @@
 import type { ImageMetadata } from "astro";
 import type { FAQItem } from "@/data/faqs";
+import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
 
 /**
  * The data a local-service home page is made of — everything
@@ -35,8 +36,16 @@ export interface LocalServiceHomeData {
   title: string;
   description: string;
 
-  /** The "get an estimate" modal every estimate CTA on the page opens. */
-  estimate: { label: string; heading: string; text?: string };
+  /**
+   * The "get an estimate" modal every estimate CTA on the page opens.
+   * `question` heads its first step (the service tiles).
+   */
+  estimate: {
+    label: string;
+    heading: string;
+    text?: string;
+    question?: string;
+  };
 
   hero: {
     eyebrow?: string;
@@ -62,6 +71,58 @@ export interface LocalServiceHomeData {
 
   /** Heading for the service cards (the cards come from src/content/services). */
   services: { eyebrow?: string; heading: string; intro?: string };
+
+  /** "Sound familiar?" — the problems, in the homeowner's words (SymptomCards). */
+  symptoms?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    items: { title: string; text: string; icon?: ServiceIconName }[];
+  };
+
+  /** One real offer — a discount, financing, rebates (OfferBand). Opens the estimate form. */
+  offer?: {
+    seal?: { value: string; label: string };
+    eyebrow?: string;
+    heading: string;
+    text?: string;
+    items?: string[];
+    /** The terms. */
+    note?: string;
+    /** Button text. @default the estimate label */
+    ctaLabel?: string;
+  };
+
+  /** The business's own job photos, captioned with the town (RecentWork). */
+  recentWork?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    items: {
+      image: HomeImage;
+      imageAlt: string;
+      title: string;
+      place?: string;
+    }[];
+  };
+
+  /** A named guarantee the business really gives (Guarantee). */
+  guarantee?: {
+    eyebrow?: string;
+    name: string;
+    text?: string;
+    items?: string[];
+    sealLabel?: string;
+  };
+
+  /** Us vs. a typical contractor, honestly (ComparisonTable). */
+  comparison?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    themLabel?: string;
+    rows: { label: string; us: string; them: string }[];
+  };
 
   serviceArea: {
     heading: string;

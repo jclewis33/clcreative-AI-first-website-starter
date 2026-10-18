@@ -57,6 +57,42 @@
       "heading": "Every electrical job, one crew",
       "intro": "From a single outlet to a full panel upgrade."
     },
+    "symptoms": {
+      "intro": "If any of these sound like your house, it is worth a look before it gets worse.",
+      "items": [
+        {
+          "title": "Breaker keeps tripping",
+          "text": "Every time the microwave and the dryer run together.",
+          "icon": "bolt"
+        },
+        {
+          "title": "Lights flicker or dim",
+          "text": "Especially when the AC kicks on.",
+          "icon": "alert"
+        },
+        {
+          "title": "Warm outlets or switches",
+          "text": "A plate that feels warm to the touch is a warning sign.",
+          "icon": "alert"
+        },
+        {
+          "title": "No outlet where you need it",
+          "text": "Extension cords running across the room.",
+          "icon": "tools"
+        }
+      ]
+    },
+    "offer": {
+      "seal": {
+        "value": "$50",
+        "label": "Off"
+      },
+      "eyebrow": "New customers",
+      "heading": "<strong>$50 off</strong> your first service call",
+      "text": "Book any repair or install and we take $50 off the invoice.",
+      "items": ["Any repair or install", "Written price before we start"],
+      "note": "One per household. Not combinable with other offers. Fictional example offer."
+    },
     "serviceArea": {
       "heading": "Serving Austin and nearby",
       "text": "Same-week appointments across the metro."
@@ -81,6 +117,30 @@
       "image": "../../../src/assets/placeholder-images/ai-first-starter-4.webp",
       "imageAlt": "An electrician explaining a quote to a homeowner"
     },
+    "recentWork": {
+      "eyebrow": "Recent work",
+      "heading": "Done this year, near you",
+      "items": [
+        {
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-1.webp",
+          "imageAlt": "A new labelled breaker panel",
+          "title": "200-amp panel upgrade",
+          "place": "Round Rock"
+        },
+        {
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-6.webp",
+          "imageAlt": "An EV charger mounted in a garage",
+          "title": "Level 2 EV charger",
+          "place": "Cedar Park"
+        },
+        {
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-8.webp",
+          "imageAlt": "New recessed lighting in a living room",
+          "title": "Recessed lighting",
+          "place": "Austin"
+        }
+      ]
+    },
     "story": {
       "eyebrow": "Why choose us",
       "heading": "A local shop that answers the phone",
@@ -98,6 +158,15 @@
           "title": "Licensed",
           "text": "Every job, every electrician."
         }
+      ]
+    },
+    "guarantee": {
+      "name": "The <strong>Done-Right</strong> Guarantee",
+      "text": "If something we installed is not right, we come back and fix it, free, for a full year.",
+      "items": [
+        "Every job",
+        "Parts and labor",
+        "No trip fee for warranty calls"
       ]
     },
     "leadForm": {
@@ -145,6 +214,37 @@
           "meta": "Repair · Austin"
         }
       ]
+    },
+    "comparison": {
+      "heading": "Why Austin homeowners switch to us",
+      "rows": [
+        {
+          "label": "Pricing",
+          "us": "Written price before any work",
+          "them": "Hourly, open-ended"
+        },
+        {
+          "label": "Permits",
+          "us": "Pulled and inspected, every time",
+          "them": "Often skipped"
+        },
+        {
+          "label": "Scheduling",
+          "us": "Same-week appointments",
+          "them": "Two-week waits"
+        },
+        {
+          "label": "Clean-up",
+          "us": "Every site left clean",
+          "them": "Drywall dust left behind"
+        }
+      ]
+    },
+    "estimate": {
+      "label": "Get a free estimate",
+      "heading": "Get a free estimate",
+      "text": "Two quick steps. We call you back the same business day.",
+      "question": "What do you need help with?"
     }
   },
   "services": [
@@ -302,7 +402,7 @@
   ],
   "notes": {
     "confirmOrCut": [
-      "Fictional fixture — the reviews and offer are invented for the example; never do this for a real business."
+      "Fictional fixture: the reviews, offer, guarantee and comparison are invented for the example; never do this for a real business."
     ]
   }
 }

@@ -159,8 +159,11 @@
   pointer-events: none;
 }
 
+/* The space between field groups (a fieldset, the message box, the
+   button). Kept close to the fieldsets' own row gap so a form reads as one
+   evenly spaced list, not islands of fields. */
 .form_element {
-  gap: var(--space-8);
+  gap: var(--space-4);
   flex-flow: column;
   width: 100%;
   display: flex;
@@ -177,7 +180,9 @@
 }
 
 .form_field {
-  font-family: var(--font-primary);
+  /* The body face: a look's display font (condensed, serif) is wrong for
+     typed text. Same face as before on the studio look. */
+  font-family: var(--font-body);
   font-size: var(--text-large-size);
   line-height: var(--line-height-normal);
   font-weight: var(--font-weight-normal);
@@ -288,7 +293,7 @@
 /* ========= HELPER / ERROR TEXT ========= */
 
 .form_helper_text {
-  font-family: var(--font-primary);
+  font-family: var(--font-body);
   font-size: var(--text-small-size);
   line-height: var(--line-height-normal);
   color: color-mix(in srgb, var(--text) 60%, transparent);
@@ -325,7 +330,7 @@ select.form_field {
 }
 
 .form_ui_text {
-  font-family: var(--font-primary);
+  font-family: var(--font-body);
   font-size: var(--text-regular-size);
   line-height: var(--line-height-normal);
   cursor: pointer;
@@ -356,14 +361,14 @@ select.form_field {
 /* ========= SUCCESS / ERROR MESSAGE TEXT ========= */
 
 .form_success_text {
-  font-family: var(--font-primary);
+  font-family: var(--font-body);
   font-size: var(--text-regular-size);
   line-height: var(--line-height-normal);
   color: var(--color-success-green-dark);
 }
 
 .form_error_text {
-  font-family: var(--font-primary);
+  font-family: var(--font-body);
   font-size: var(--text-regular-size);
   line-height: var(--line-height-normal);
   color: var(--color-error-red-dark);
@@ -409,7 +414,7 @@ select.form_field {
 
 /* Value output element */
 .form_range_output {
-  font-family: var(--font-primary);
+  font-family: var(--font-body);
   font-size: var(--text-small-size);
   font-weight: var(--font-weight-medium);
   line-height: var(--line-height-normal);
@@ -532,7 +537,7 @@ select.form_field {
 
 .form_range_min,
 .form_range_max {
-  font-family: var(--font-primary);
+  font-family: var(--font-body);
   font-size: var(--text-tiny-size);
   line-height: var(--line-height-normal);
   color: color-mix(in srgb, var(--text) 60%, transparent);

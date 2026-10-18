@@ -25,7 +25,13 @@ const homeSchema = z.object({
   /** Defaults to seo.description. */
   description: text.optional(),
   estimate: z
-    .object({ label: text, heading: text, text: text.optional() })
+    .object({
+      label: text,
+      heading: text,
+      text: text.optional(),
+      /** The estimate form's first step, over the service tiles. */
+      question: text.optional(),
+    })
     .default({
       label: "Get a free estimate",
       heading: "Get a free estimate",
@@ -60,6 +66,70 @@ const homeSchema = z.object({
     heading: text,
     intro: text.optional(),
   }),
+  /** "Sound familiar?" — problems in the homeowner's words. */
+  symptoms: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      items: z
+        .array(z.object({ title: text, text, icon: text.optional() }))
+        .min(2)
+        .max(6),
+    })
+    .optional(),
+  /** One REAL offer from their site — never invent one. */
+  offer: z
+    .object({
+      seal: z.object({ value: text, label: text }).optional(),
+      eyebrow: text.optional(),
+      heading: text,
+      text: text.optional(),
+      items: z.array(text).optional(),
+      /** The terms — required: an offer without terms isn't shown. */
+      note: text,
+      ctaLabel: text.optional(),
+    })
+    .optional(),
+  /** Their own job photos only. */
+  recentWork: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      items: z
+        .array(
+          z.object({
+            image,
+            imageAlt: text,
+            title: text,
+            place: text.optional(),
+          }),
+        )
+        .min(3)
+        .max(9),
+    })
+    .optional(),
+  /** A guarantee they actually give, named. */
+  guarantee: z
+    .object({
+      eyebrow: text.optional(),
+      name: text,
+      text: text.optional(),
+      items: z.array(text).optional(),
+      sealLabel: text.optional(),
+    })
+    .optional(),
+  /** Us vs. a typical contractor — common practice, never a named competitor. */
+  comparison: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      themLabel: text.optional(),
+      rows: z.array(z.object({ label: text, us: text, them: text })).min(3),
+    })
+    .optional(),
   serviceArea: z.object({
     heading: text,
     text: text.optional(),

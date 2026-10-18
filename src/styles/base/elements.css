@@ -166,7 +166,11 @@ a:hover {
 mark {
   padding-inline: 0.12em;
   border-radius: var(--radius-xsmall);
-  background-color: color-mix(in srgb, var(--heading-accent) 16%, transparent);
+  /* Painted as a band, not the whole glyph box: a font's content box is
+     taller than a tight display line-height, so a full background crept up
+     behind the line above. The band covers cap height to baseline. */
+  background-color: transparent;
+  background-image: linear-gradient(to bottom, transparent 14%, color-mix(in srgb, var(--heading-accent) 16%, transparent) 14%, color-mix(in srgb, var(--heading-accent) 16%, transparent) 90%, transparent 90%);
   color: var(--heading-accent);
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
