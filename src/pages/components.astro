@@ -98,6 +98,9 @@ import OfferBand from "@/components/sections/OfferBand.astro";
 import RecentWork from "@/components/sections/RecentWork.astro";
 import Guarantee from "@/components/sections/Guarantee.astro";
 import ComparisonTable from "@/components/sections/ComparisonTable.astro";
+import EmergencyBand from "@/components/sections/EmergencyBand.astro";
+import MaintenancePlans from "@/components/sections/MaintenancePlans.astro";
+import TeamGrid from "@/components/sections/TeamGrid.astro";
 import TrustBadges from "@/components/ui/TrustBadges.astro";
 /* Real town boundaries for the street-map demo — the Brightline fixture's
    cache (scripts/lib/service-area-geo.mjs), so the page needs no lookup. */
@@ -422,6 +425,45 @@ const demoCompareRows = [
   },
   { label: "Clean-up", us: "Every site left clean", them: "Dust left behind" },
 ];
+const demoPlans = [
+  {
+    name: "Basic",
+    price: "$9",
+    period: "/mo",
+    perks: ["Annual inspection", "10% off repairs"],
+  },
+  {
+    name: "Plus",
+    price: "$15",
+    period: "/mo",
+    perks: ["Annual inspection", "Priority scheduling", "15% off repairs"],
+    featured: true,
+  },
+  {
+    name: "Premium",
+    price: "$25",
+    period: "/mo",
+    perks: ["Twice-yearly inspections", "Same-day priority", "20% off repairs"],
+  },
+];
+const demoTeam = [
+  {
+    name: "Marcus B.",
+    role: "Owner",
+    image: manCouch,
+    bio: "Twenty years in the trade.",
+  },
+  {
+    name: "Elena R.",
+    role: "Lead technician",
+    image: humanTouch,
+    bio: "Installs and code.",
+  },
+];
+const demoHiring = {
+  text: "We're hiring licensed technicians.",
+  cta: { label: "See openings", href: "/contact" },
+};
 ---
 
 <BaseLayout
@@ -2792,6 +2834,14 @@ const demoCompareRows = [
     items={demoGuaranteeItems}
   />
   <ComparisonTable heading="How we compare" rows={demoCompareRows} />
+  <EmergencyBand text="A licensed technician answers, day or night." />
+  <MaintenancePlans
+    heading="Maintenance plans"
+    plans={demoPlans}
+    cta={demoEstimateCta}
+    note="Billed yearly. Example plans."
+  />
+  <TeamGrid heading="Meet the team" members={demoTeam} hiring={demoHiring} />
 
   <Section theme="light" padding="small" id="cta-section-cta">
     <Heading variant="eyebrow">CTASection with SectionCta</Heading>

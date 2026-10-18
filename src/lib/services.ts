@@ -18,6 +18,24 @@ export function servicePath(id: string): string {
   return `/services/${id}`;
 }
 
+/** A town as a URL segment: "Round Rock" → "round-rock". */
+export function citySlug(city: string): string {
+  return city
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * A service's page for one town (only built when SITE.cityPages is on):
+ * /services/<service>/<town>.
+ */
+export function serviceCityPath(id: string, city: string): string {
+  return `${servicePath(id)}/${citySlug(city)}`;
+}
+
 /** Every service, sorted by `order`, then title. */
 export async function getServices(): Promise<Service[]> {
   const all = await getCollection("services");

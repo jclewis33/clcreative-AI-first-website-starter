@@ -288,6 +288,7 @@ const STRUCTURED_SITE_KEYS = [
   "look",
   "quote",
   "license",
+  "cityPages",
 ];
 
 const currentString = (src, key) => {

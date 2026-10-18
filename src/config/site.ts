@@ -145,6 +145,15 @@ export const SITE = {
     question?: string;
   } | null,
 
+  /**
+   * Build a page for every service in every town of `serviceAreas`
+   * (/services/<service>/<town>): the service page with the town in its
+   * title, heading, breadcrumbs, schema and a "Do you serve <town>?"
+   * answer. Each one must earn its place — turn it on when the towns are
+   * real and the business genuinely works there.
+   */
+  cityPages: false as boolean,
+
   /** Contractor license, shown in the footer's bottom line (e.g. "TECL #25414"). Blank = none. */
   license: "",
 

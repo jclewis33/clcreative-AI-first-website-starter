@@ -28,6 +28,14 @@ description: Per-page SEO, structured data, and LLM discoverability reference fo
   with `SITE_NOINDEX=1` (staging): noindex on every page, `Disallow: /`, no
   sitemap, stub llms files, and `X-Robots-Tag` added to the built `_headers`.
 
+- **Town pages** (`SITE.cityPages`): `/services/<service>/<town>` for
+  every service × `SITE.serviceAreas`, prerendered and in the sitemap
+  automatically (no `PAGES` entry — like service pages). Each carries a
+  Service schema with `areaServed` = that town and its own FAQ. Off by
+  default: they rank only when the business truly serves the town, and
+  near-identical pages across many towns are thin content — add real local
+  detail before turning them on for a client.
+
 Most pages need nothing here. Reach for the per-page graph only when a page
 should advertise a specific **Service** (and optionally an **FAQ**) — a
 marketing/service/landing page.

@@ -106,6 +106,40 @@ export interface LocalServiceHomeData {
     }[];
   };
 
+  /** Real round-the-clock (or after-hours) service only (EmergencyBand). */
+  emergency?: { heading?: string; text?: string };
+
+  /** Maintenance / membership plans at real prices (MaintenancePlans). */
+  plans?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    note?: string;
+    items: {
+      name: string;
+      price: string;
+      period?: string;
+      description?: string;
+      perks: string[];
+      featured?: boolean;
+      ctaLabel?: string;
+    }[];
+  };
+
+  /** The real people who show up (TeamGrid). */
+  team?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    members: {
+      name: string;
+      role: string;
+      image: HomeImage;
+      imageAlt?: string;
+      bio?: string;
+    }[];
+  };
+
   /** A named guarantee the business really gives (Guarantee). */
   guarantee?: {
     eyebrow?: string;

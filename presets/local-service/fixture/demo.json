@@ -52,6 +52,10 @@
         }
       ]
     },
+    "emergency": {
+      "heading": "Power out? Sparks? <strong>Call now.</strong>",
+      "text": "A licensed electrician answers, day or night."
+    },
     "services": {
       "eyebrow": "What we do",
       "heading": "Every electrical job, one crew",
@@ -92,6 +96,46 @@
       "text": "Book any repair or install and we take $50 off the invoice.",
       "items": ["Any repair or install", "Written price before we start"],
       "note": "One per household. Not combinable with other offers. Fictional example offer."
+    },
+    "plans": {
+      "eyebrow": "Peace of mind",
+      "heading": "Electrical safety plans",
+      "intro": "A yearly check-up that catches problems before they become emergencies.",
+      "note": "Billed yearly. Cancel anytime. Fictional example plans.",
+      "items": [
+        {
+          "name": "Basic",
+          "price": "$9",
+          "period": "/mo",
+          "description": "For newer homes.",
+          "perks": ["Annual safety inspection", "10% off repairs"]
+        },
+        {
+          "name": "Plus",
+          "price": "$15",
+          "period": "/mo",
+          "description": "Our most popular plan.",
+          "perks": [
+            "Annual safety inspection",
+            "Priority scheduling",
+            "15% off repairs",
+            "Surge protector check"
+          ],
+          "featured": true
+        },
+        {
+          "name": "Premium",
+          "price": "$25",
+          "period": "/mo",
+          "description": "For older homes and big families.",
+          "perks": [
+            "Twice-yearly inspections",
+            "Same-day priority",
+            "20% off repairs",
+            "No trip fees"
+          ]
+        }
+      ]
     },
     "serviceArea": {
       "heading": "Serving Austin and nearby",
@@ -157,6 +201,30 @@
         {
           "title": "Licensed",
           "text": "Every job, every electrician."
+        }
+      ]
+    },
+    "team": {
+      "eyebrow": "Meet the team",
+      "heading": "The people at your door",
+      "members": [
+        {
+          "name": "Marcus B.",
+          "role": "Owner · Master electrician",
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-16.webp",
+          "bio": "Twenty years wiring Austin homes."
+        },
+        {
+          "name": "Elena R.",
+          "role": "Lead electrician",
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-15.webp",
+          "bio": "Panels, EV chargers and code."
+        },
+        {
+          "name": "Sam T.",
+          "role": "Service technician",
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-19.webp",
+          "bio": "Repairs and troubleshooting."
         }
       ]
     },

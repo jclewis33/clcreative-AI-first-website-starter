@@ -1,0 +1,214 @@
+---
+/**
+ * Service page template — one service, optionally for one town.
+ *
+ * Every section comes from the local-service sections; the copy comes from
+ * the service's JSON (src/content/services/<slug>.json). Used by
+ * /services/[slug] and, when SITE.cityPages is on, by
+ * /services/[slug]/[city], which passes `city`: the town then appears in the
+ * title, description, eyebrow, breadcrumbs, schema `areaServed`, a "Do you
+ * serve <town>?" answer at the top of the FAQ, and the service-area map,
+ * and the area chips link to the same service in the other towns.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import IncludedList from "@/components/sections/IncludedList.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import FAQ from "@/components/sections/FAQ.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import { SITE } from "@/config/site";
+import { DEFAULT_PROCESS } from "@/data/process";
+import { serviceFaqJsonLd } from "@/lib/jsonld";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { geoFor } from "@/lib/service-area-geo";
+import {
+  relatedServices,
+  servicePath,
+  serviceCityPath,
+  SERVICES_INDEX_PATH,
+  type Service,
+} from "@/lib/services";
+
+interface Props {
+  /**
+   * **ServicePage** — a full service page from one services entry. Pass
+   * `city` for the town version (SITE.cityPages).
+   *
+   * @example
+   * <ServicePage service={service} all={all} city="Round Rock" />
+   */
+  docs?: string;
+
+  /** The service (a src/content/services entry). */
+  service: Service;
+
+  /** Every service — for related services and the estimate choices. */
+  all: Service[];
+
+  /** The town this page is for (one of SITE.serviceAreas). */
+  city?: string;
+}
+
+const { service, all, city } = Astro.props;
+const s = service.data;
+const basePath = servicePath(service.id);
+const path = city ? serviceCityPath(service.id, city) : basePath;
+const pageUrl = `${SITE.url}${path}`;
+const related = relatedServices(all, service.id);
+const process = s.process ?? DEFAULT_PROCESS;
+const place = city ? `${city}, ${SITE.address.region}` : "";
+
+const title = city
+  ? /* The plain service name: a seoTitle often names a city already. */
+    `${s.title} in ${place} | ${SITE.name}`
+  : `${s.seoTitle} | ${SITE.name}`;
+/* Meta descriptions stop at 160 characters. */
+const clip = (text: string) =>
+  text.length <= 160 ? text : `${text.slice(0, 157).trimEnd()}…`;
+const description = city
+  ? clip(`${s.title} in ${place}. ${s.cardText}`)
+  : s.seoDescription;
+
+const crumbs = [
+  { label: "Home", href: "/" },
+  { label: "Services", href: SERVICES_INDEX_PATH },
+  ...(city
+    ? [{ label: s.title, href: basePath }, { label: city }]
+    : [{ label: s.title }]),
+];
+const schemaCrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Services", path: SERVICES_INDEX_PATH },
+  { name: s.title, path: basePath },
+  ...(city ? [{ name: city, path }] : []),
+];
+
+/* The town version answers the question its visitor came with first. */
+const faqs = city
+  ? [
+      {
+        question: `Do you offer ${s.title.toLowerCase()} in ${city}?`,
+        answer: `Yes. ${SITE.name} works in ${city} and across ${SITE.serviceAreas.filter((a) => a !== city).join(", ") || "the surrounding area"}. Call ${SITE.phone.display} or send the form for a free estimate.`,
+      },
+      ...s.faqs,
+    ]
+  : s.faqs;
+
+/* The area section: the street map when outlines exist; chips link to this
+   service's town pages when those are built. */
+const areaGeo = geoFor(SITE.serviceAreas);
+const areaLinks = SITE.cityPages
+  ? Object.fromEntries(
+      SITE.serviceAreas.map((area) => [
+        area,
+        serviceCityPath(service.id, area),
+      ]),
+    )
+  : {};
+const showArea = areaGeo.length > 0 || SITE.cityPages;
+
+const estimateCta = { label: "Get a free estimate", modal: ESTIMATE_MODAL_ID };
+/* With SITE.quote, BaseLayout renders the site-wide estimate form. */
+const ownModal = !SITE.quote;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={pageUrl}
+  breadcrumbs={schemaCrumbs}
+  schema={serviceFaqJsonLd({
+    pageUrl,
+    serviceType: s.title,
+    name: city ? `${s.title} in ${city}` : s.title,
+    description,
+    areaServed: city ? [{ type: "City", name: city }] : [...SITE.areaServed],
+    faqs,
+  })}
+>
+  <Hero
+    variant="split"
+    breadcrumbs={crumbs}
+    eyebrow={city ? `${s.title} in ${city}` : s.hero.eyebrow}
+    heading={s.hero.heading}
+    text={s.hero.text}
+    image={s.hero.image}
+    imageAlt={s.hero.imageAlt}
+    primaryCta={estimateCta}
+  />
+
+  <StatsStrip items={s.highlights} />
+
+  <ServiceCards
+    heading={s.scope.heading}
+    intro={s.scope.intro}
+    items={s.scope.items}
+  />
+
+  <IncludedList
+    heading={s.included.heading}
+    text={s.included.text}
+    items={s.included.items}
+    images={s.included.images}
+  />
+
+  <ServiceArea
+    render={showArea}
+    heading={city
+      ? `Serving ${city} and nearby`
+      : `Where we do ${s.title.toLowerCase()}`}
+    areas={SITE.serviceAreas}
+    areaLinks={areaLinks}
+    currentArea={city}
+    geo={areaGeo}
+  />
+
+  <ProcessSteps
+    eyebrow="How it works"
+    heading={process.heading}
+    steps={process.steps}
+  />
+
+  <Reviews render={Boolean(s.reviews?.length)} reviews={s.reviews ?? []} />
+
+  <FAQ eyebrow="Questions" items={faqs} />
+
+  <ServiceCards
+    render={related.length > 0}
+    layout="swipe"
+    theme="dark"
+    heading="Related services"
+    moreLabel="View service"
+    items={related.map((r) => ({
+      title: r.data.title,
+      text: r.data.cardText,
+      image: r.data.cardImage,
+      imageAlt: r.data.cardImageAlt,
+      href: servicePath(r.id),
+    }))}
+  />
+
+  <CallBand
+    heading={s.cta.heading}
+    text={s.cta.text}
+    secondaryCta={estimateCta}
+  />
+
+  {
+    ownModal && (
+      <LeadFormModal
+        id={ESTIMATE_MODAL_ID}
+        formId="contact"
+        heading="Get a free estimate"
+        text="Tell us a little about the project and we'll be in touch."
+        fields="quote"
+        projectOptions={all.map((x) => ({ label: x.data.title, value: x.id }))}
+      />
+    )
+  }
+</BaseLayout>

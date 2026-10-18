@@ -120,6 +120,12 @@ git switch -c demo/<slug>
   - `guarantee`: their written guarantee or warranty, given a short name.
   - `comparison`: honest rows on how they work versus common industry
     practice. Never name a competitor.
+  - `emergency`: only if they really offer 24/7 or after-hours service.
+    Their own words go in `text`.
+  - `plans`: their maintenance or membership plans, at their real prices.
+  - `team`: their real people, with their own photos.
+- **Town pages:** `cityPages` is on by default, so every service gets a page
+  in every town. Keep `serviceAreas` to the towns they actually serve.
 - `home.estimate.question` heads step 1 of the estimate form, above the
   service tiles. The default is "What do you need help with?". Phrase it for
   their trade ("What's going on with your AC?").
