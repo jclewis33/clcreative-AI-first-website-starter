@@ -3,9 +3,15 @@
  * Home page — the local-service preset (presets/local-service), installed
  * by `npm run demo`. The content is src/data/home.ts, generated from
  * demo.json; edit demo.json and re-run the script rather than this file.
+ * `layout` in demo.json picks the template: contractor (LocalServiceHome)
+ * or showcase (LocalServiceShowcase).
  */
 import LocalServiceHome from "@/components/templates/LocalServiceHome.astro";
+import LocalServiceShowcase from "@/components/templates/LocalServiceShowcase.astro";
 import { HOME } from "@/data/home";
+
+const showcase = HOME.layout === "showcase";
 ---
 
-<LocalServiceHome home={HOME} />
+{showcase && <LocalServiceShowcase home={HOME} />}
+{!showcase && <LocalServiceHome home={HOME} />}

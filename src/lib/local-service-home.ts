@@ -32,6 +32,14 @@ type HomeAreaGeo = {
 };
 
 export interface LocalServiceHomeData {
+  /**
+   * The home page's layout: `contractor` (LocalServiceHome — conversion-led:
+   * quote panel, offer, symptoms, comparison) or `showcase`
+   * (LocalServiceShowcase — photo-led and editorial, after the Outdoor
+   * Living demo). @default 'contractor'
+   */
+  layout?: "contractor" | "showcase";
+
   /** Page `<title>` and meta description. */
   title: string;
   description: string;
@@ -186,6 +194,8 @@ export interface LocalServiceHomeData {
     image: HomeImage;
     imageAlt: string;
     reasons?: HomeItem[];
+    /** The showcase layout's text link to the estimate form ("Book time with me"). */
+    ctaLabel?: string;
   };
 
   /** Real, attributed reviews only. Absent = no Reviews section. */

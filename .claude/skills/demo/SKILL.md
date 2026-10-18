@@ -86,7 +86,19 @@ git switch -c demo/<slug>
   - `included.images`: exactly 2.
   - Service `faqs`: at least 2.
 
-### 3b. Pick the look and the home-service pieces (1 min)
+### 3b. Pick the layout, the look and the home-service pieces (1 min)
+
+- **`home.layout`** — the page's shape (any look works with either):
+  - `contractor` (default): conversion-led. Quote panel in the hero, offer
+    seal, symptom cards, comparison table. For call-driven trades —
+    electrical, plumbing, HVAC, pest, lawn.
+  - `showcase`: photo-led and editorial, after the Outdoor Living demo.
+    Full-bleed hero with a calmer headline, recent work on dark, the
+    owner's story with a "talk to us" link (`story.ctaLabel`), a cinematic
+    photo close. It skips `offer`, `symptoms`, `comparison` and the hero
+    panel/trust row. For work bought by looking at it — hardscape, decks,
+    remodeling, landscaping. Only pick it with strong real photos: it
+    leans on them.
 
 - **`look`**, by trade (see `src/config/looks.ts`):
   - `fresh`: lawn, pest, cleaning, pool

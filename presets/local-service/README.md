@@ -33,6 +33,9 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   `src/config/looks.ts`), and `license?` for the footer
 - `brand` — `color` (`#rrggbb`), `logo: { file, plate? }`, `favicon?`
 - `seo` — `tagline`, `description` (at most 160 characters)
+- `home.layout` — `contractor` (default; LocalServiceHome, conversion-led)
+  or `showcase` (LocalServiceShowcase, photo-led; skips offer, symptoms,
+  comparison and the hero panel)
 - `home` — `LocalServiceHomeData` (`src/lib/local-service-home.ts`) with image
   sources. The optional sections are `symptoms`, `offer`, `recentWork`,
   `guarantee`, `comparison` and `reviews`; each appears only when it's set,
