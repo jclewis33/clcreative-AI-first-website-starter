@@ -65,7 +65,7 @@ const DRY_RUN = flag("--dry-run");
 const PUBLIC_STARTER = /clcreative-AI-first-website-starter/i;
 const DEFAULT_BANNER_TEXT = "Built for {name} by CL Creative";
 const DEFAULT_BANNER_HREF =
-  "https://www.clcreative.co/see-how-it-works?from=demo&demo={slug}";
+  "https://www.clcreative.co/see-how-it-works-demo?demo={slug}";
 
 class DemoError extends Error {}
 const fail = (/** @type {string} */ message) => {

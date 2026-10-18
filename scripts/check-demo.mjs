@@ -152,7 +152,7 @@ try {
   assert.match(home, /Built for Brightline Electric by CL Creative/);
   assert.match(
     home,
-    /see-how-it-works\?from=demo&amp;demo=brightline-electric/,
+    /see-how-it-works-demo\?demo=brightline-electric/,
   );
   assert.match(home, /your first service call/);
   assert.match(home, /href="\/services\/panel-upgrades"/);

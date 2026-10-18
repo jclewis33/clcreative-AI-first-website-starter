@@ -214,7 +214,7 @@ git push -u origin demo/<slug>
    docs/demo-mode.md §2.
 4. Then check:
    - `curl -sI <url> | grep -i x-robots` shows `noindex`.
-   - The banner links to the see-how-it-works page.
+   - The banner links to the see-how-it-works-demo page (no quiz; the video and calendar show straight away).
    - **Send one test lead** from the form and confirm it arrived in the GHL
      demo sub-account. The form always shows success, so this is the only
      way to know.
