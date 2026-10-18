@@ -190,6 +190,11 @@ const services = defineCollection({
       scope: z.object({
         heading: z.string().min(1),
         intro: z.string().optional(),
+        /** 1-3 paragraphs about this kind of work, beside the photo. */
+        paragraphs: z.array(z.string().min(1)).optional(),
+        /** The photo beside them; falls back to cardImage. Needs imageAlt. */
+        image: image().optional(),
+        imageAlt: alt.optional(),
         items: z
           .array(
             z.object({

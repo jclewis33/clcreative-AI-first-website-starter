@@ -25,19 +25,19 @@ To remove a service, delete its file and its photos.
 
 ## Field guide
 
-| Field                                           | Shown as                                                                |
-| ----------------------------------------------- | ----------------------------------------------------------------------- |
-| `title`, `navLabel`, `order`                    | Page title / breadcrumb; nav & footer label; sort order                 |
-| `seoTitle`, `seoDescription`                    | `<title>` and meta description (≤ 160 characters)                       |
-| `cardText`, `cardImage`, `cardImageAlt`, `icon` | This service's card in other pages' "Related services"                  |
-| `hero`                                          | Split Hero with breadcrumbs (`heading` takes `<strong>` for the accent) |
-| `highlights`                                    | StatsStrip — exactly 4 `{ value, label }`                               |
-| `scope`                                         | ServiceCards "what we work on" (`icon` per item)                        |
-| `included`                                      | IncludedList — checklist + exactly 2 photos                             |
-| `process` (optional)                            | ProcessSteps; omit to use `src/data/process.ts`                         |
-| `reviews` (optional)                            | Reviews; omit to leave the section out                                  |
-| `faqs`                                          | FAQ section + FAQPage schema (2 or more, plain text)                    |
-| `cta`                                           | CallBand heading and line                                               |
+| Field                                           | Shown as                                                                                                                                      |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`, `navLabel`, `order`                    | Page title / breadcrumb; nav & footer label; sort order                                                                                       |
+| `seoTitle`, `seoDescription`                    | `<title>` and meta description (≤ 160 characters)                                                                                             |
+| `cardText`, `cardImage`, `cardImageAlt`, `icon` | This service's card in other pages' "Related services"                                                                                        |
+| `hero`                                          | Split Hero with breadcrumbs (`heading` takes `<strong>` for the accent)                                                                       |
+| `highlights`                                    | StatsStrip — exactly 4 `{ value, label }`                                                                                                     |
+| `scope`                                         | WorkScope "what we work on": `intro`, `paragraphs` (1–3, about THIS work), icon rows, and a tall photo (`image`/`imageAlt`, else `cardImage`) |
+| `included`                                      | IncludedList — checklist + exactly 2 photos                                                                                                   |
+| `process` (optional)                            | ProcessSteps; omit to use `src/data/process.ts`                                                                                               |
+| `reviews` (optional)                            | Reviews; omit to leave the section out                                                                                                        |
+| `faqs`                                          | FAQ section + FAQPage schema (2 or more, plain text)                                                                                          |
+| `cta`                                           | CallBand heading and line                                                                                                                     |
 
 Icon names are the keys of `src/data/service-icons.json`.
 

@@ -32,7 +32,7 @@ to it. `npm run demo` refuses to run there.
    ```json
    {
      "workersSubdomain": "<your account's workers.dev subdomain>",
-     "bannerHref": "https://www.clcreative.co/see-how-it-works?from=demo&demo={slug}",
+     "bannerHref": "https://www.clcreative.co/see-how-it-works-demo?demo={slug}",
      "bannerText": "Built for {name} by CL Creative"
    }
    ```

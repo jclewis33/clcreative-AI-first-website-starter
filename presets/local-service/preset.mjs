@@ -20,6 +20,8 @@ const image = text;
 const item = z.object({ title: text, text: text });
 
 const homeSchema = z.object({
+  /** contractor (conversion-led) or showcase (photo-led, editorial). */
+  layout: z.enum(["contractor", "showcase"]).default("contractor"),
   /** Defaults to "<name> | <tagline>". */
   title: text.optional(),
   /** Defaults to seo.description. */
@@ -205,6 +207,7 @@ const homeSchema = z.object({
       image,
       imageAlt: text,
       reasons: z.array(item).optional(),
+      ctaLabel: text.optional(),
     })
     .optional(),
   /** Real, attributed reviews only — leave it out otherwise. */
@@ -260,6 +263,7 @@ const serviceSchema = z
     title: text,
     cardImage: image,
     hero: z.object({ image }).passthrough(),
+    scope: z.object({ image: image.optional() }).passthrough(),
     included: z
       .object({
         images: z.array(z.object({ src: image, alt: text })).length(2),

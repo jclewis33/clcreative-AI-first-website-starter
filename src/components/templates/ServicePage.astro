@@ -13,6 +13,7 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Hero from "@/components/sections/Hero.astro";
 import StatsStrip from "@/components/sections/StatsStrip.astro";
+import WorkScope from "@/components/sections/WorkScope.astro";
 import ServiceCards from "@/components/sections/ServiceCards.astro";
 import IncludedList from "@/components/sections/IncludedList.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
@@ -144,10 +145,13 @@ const ownModal = !SITE.quote;
 
   <StatsStrip items={s.highlights} />
 
-  <ServiceCards
+  <WorkScope
     heading={s.scope.heading}
     intro={s.scope.intro}
+    paragraphs={s.scope.paragraphs}
     items={s.scope.items}
+    image={s.scope.image ?? s.cardImage}
+    imageAlt={s.scope.imageAlt ?? s.cardImageAlt}
   />
 
   <IncludedList

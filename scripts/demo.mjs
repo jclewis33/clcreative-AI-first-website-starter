@@ -65,7 +65,7 @@ const DRY_RUN = flag("--dry-run");
 const PUBLIC_STARTER = /clcreative-AI-first-website-starter/i;
 const DEFAULT_BANNER_TEXT = "Built for {name} by CL Creative";
 const DEFAULT_BANNER_HREF =
-  "https://www.clcreative.co/see-how-it-works?from=demo&demo={slug}";
+  "https://www.clcreative.co/see-how-it-works-demo?demo={slug}";
 
 class DemoError extends Error {}
 const fail = (/** @type {string} */ message) => {
@@ -448,6 +448,8 @@ async function main() {
     service.order ??= (index + 1) * 10;
     service.cardImage = await image(service.cardImage, "card", 1200);
     service.hero.image = await image(service.hero.image, "hero", 2000);
+    if (service.scope.image)
+      service.scope.image = await image(service.scope.image, "scope", 1200);
     for (const [i, pic] of service.included.images.entries())
       pic.src = await image(pic.src, `included-${i + 1}`);
     for (const [i, review] of (service.reviews ?? []).entries())

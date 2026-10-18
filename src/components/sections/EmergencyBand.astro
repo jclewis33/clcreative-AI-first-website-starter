@@ -74,12 +74,10 @@ const {
     >
       <div class="emergency-band_layout">
         <span class="emergency-band_dot" aria-hidden="true" />
-        <div class="emergency-band_content">
-          <Heading tag="h2" variant="h4" accent>
-            <Fragment set:html={heading} />
-          </Heading>
-          {text && <Text class="emergency-band_text">{text}</Text>}
-        </div>
+        <Heading tag="h2" variant="h4" accent class="emergency-band_title">
+          <Fragment set:html={heading} />
+        </Heading>
+        {text && <Text class="emergency-band_text">{text}</Text>}
         <div class="emergency-band_action">
           <CtaButton phone variant="secondary" size="large" />
         </div>
@@ -90,23 +88,49 @@ const {
 
 <style is:global>
   @layer components {
+    /* Dot, title and button share the first row, so the dot sits on the
+       heading's line (centred on it) whatever the text below does; the
+       line of text runs under the title; the button spans both rows. */
     .emergency-band_layout {
       display: grid;
-      grid-template-columns: var(
-        --_emergency-columns,
-        auto minmax(0, 1fr) auto
-      );
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        "dot title action"
+        ". text action";
       align-items: center;
-      gap: var(--space-5);
+      column-gap: var(--space-5);
+    }
+
+    .emergency-band_dot {
+      grid-area: dot;
+    }
+
+    .emergency-band_title {
+      grid-area: title;
+      margin-bottom: 0;
+    }
+
+    .emergency-band_text {
+      grid-area: text;
+      margin-top: var(--space-2);
+      margin-bottom: 0;
+    }
+
+    .emergency-band_action {
+      grid-area: action;
     }
 
     @container (width < 40em) {
       .emergency-band_layout {
-        --_emergency-columns: auto minmax(0, 1fr);
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas:
+          "dot title"
+          ". text"
+          "action action";
       }
 
       .emergency-band_action {
-        grid-column: 1 / -1;
+        padding-top: var(--space-5);
       }
     }
 
@@ -144,14 +168,6 @@ const {
       .emergency-band_dot::after {
         animation: none;
       }
-    }
-
-    .emergency-band_content {
-      min-width: 0;
-    }
-
-    .emergency-band_text {
-      margin-bottom: 0;
     }
   }
 </style>
