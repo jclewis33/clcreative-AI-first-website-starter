@@ -25,6 +25,33 @@
    ========================================================================== */
 
 /* =====================================================
+   HOME-SERVICE DENSITY — every look but studio
+   Home-service pages are long and scanned, not read: one step less air
+   between sections. `main` (the default) takes small's value, `large`
+   takes main's. The values are spacing.css's own, unchanged.
+   ===================================================== */
+
+:root[data-look="fresh"],
+:root[data-look="warm"],
+:root[data-look="rugged"],
+:root[data-look="natural"] {
+  --section-space-large: clamp(4rem, 4.286vw + 3.143rem, 7rem);
+  --section-space-main: clamp(3rem, 2.857vw + 2.429rem, 5rem);
+}
+
+/* Accent text on DARK sections: a lighter tint of the brand. The client's
+   brand colour is often dark itself (navy, deep red, a mid blue) and the
+   full-strength swatch disappears on a dark ground; the tint keeps the hue
+   and reads. Light islands inside a dark section (data-theme-invert) set
+   their own accent and keep the full brand colour. */
+:root[data-look="fresh"] :is([data-theme="dark"], .u-theme-dark),
+:root[data-look="warm"] :is([data-theme="dark"], .u-theme-dark),
+:root[data-look="rugged"] :is([data-theme="dark"], .u-theme-dark),
+:root[data-look="natural"] :is([data-theme="dark"], .u-theme-dark) {
+  --heading-accent: var(--color-brand-300);
+}
+
+/* =====================================================
    FRESH & FRIENDLY — lawn, pest, cleaning, pool (Hatch)
    White paper, warm brown ink, condensed uppercase headings, squared-off
    buttons, small radii, flat bordered cards.
@@ -33,8 +60,8 @@
 :root[data-look="fresh"] {
   --color-light-100: #ffffff;
   --color-light-200: #ffffff;
-  --color-dark-900: #2f2622;
-  --color-dark-800: #4a3f39;
+  --color-dark-900: #3d3330;
+  --color-dark-800: #574b45;
 
   --font-primary: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
   --font-secondary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;

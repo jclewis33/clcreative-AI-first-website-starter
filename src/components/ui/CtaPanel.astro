@@ -99,13 +99,22 @@ if (import.meta.env.DEV && render && !cta?.label) {
         align-self: stretch;
         width: 100%;
       }
+
+      .cta-panel_action {
+        min-width: 0;
+        width: 100%;
+      }
     }
 
     .cta-panel_action {
       display: grid;
       gap: var(--space-2);
       justify-items: center;
-      min-width: min(16rem, 100%);
+      /* A plain length, not min(16rem, 100%): a percentage minimum is left
+         out when the panel sizes itself to its content (fit-content), so
+         the panel came out narrower than its row and the number spilled
+         past its edge. Phones drop it (below). */
+      min-width: 16rem;
     }
 
     .cta-panel_note {

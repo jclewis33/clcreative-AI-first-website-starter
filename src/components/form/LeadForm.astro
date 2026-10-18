@@ -83,7 +83,7 @@ interface Props extends Omit<
   /** Placeholder inside the message box. */
   messagePlaceholder?: string;
 
-  /** Submit button text. @default 'Send' */
+  /** Submit button text. @default 'Send' ('Request my estimate' for `steps`) */
   submitLabel?: string;
 
   /** Shown in place of the fields once sent. */
@@ -116,7 +116,7 @@ const {
   ],
   messageLabel = "How can we help?",
   messagePlaceholder,
-  submitLabel = "Send",
+  submitLabel = fields === "steps" ? "Request my estimate" : "Send",
   successMessage = "Thanks — we got your message and will be in touch shortly.",
   errorMessage = `Something went wrong. Please try again, or call us at ${SITE.phone.display}.`,
   buttonWidth = "full",
@@ -425,10 +425,23 @@ const detailsProps = stepped
       min-width: 0;
     }
 
+    /* A text link, not a box: the base button reset leaves the browser's
+       border in place. */
     .lead-form_change {
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      font-weight: var(--font-weight-medium);
       color: var(--heading-accent);
       text-decoration: underline;
       text-underline-offset: 0.15em;
+    }
+
+    .lead-form_change:focus-visible {
+      border-radius: var(--radius-xsmall);
+      outline: var(--focus-width) solid var(--color-focus-state);
+      outline-offset: var(--focus-offset-outer);
     }
 
     @media (prefers-reduced-motion: reduce) {

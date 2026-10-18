@@ -7,6 +7,8 @@ import Card from "@/components/ui/Card.astro";
 import Button from "@/components/ui/Button.astro";
 import Quote from "@/components/ui/Quote.astro";
 import SectionHeader from "@/components/ui/SectionHeader.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
 import { SITE } from "@/config/site";
 
 type Review = {
@@ -137,19 +139,29 @@ const reviewAvatar = (review: Review) =>
       class:list={["reviews_wrap", className]}
       {...rest}
     >
-      <SectionHeader eyebrow={eyebrow} heading={heading}>
-        {allReviewsHref && (
-          <Button
-            slot="action"
-            variant="secondary"
-            href={allReviewsHref}
-            newTab
-            ariaLabel={allReviewsLabel}
-          >
-            {allReviewsLabel}
-          </Button>
-        )}
-      </SectionHeader>
+      {/* The cards layout centres its header over the centred rating; the
+          "Read all reviews" link moves under the cards. */}
+      {layout === "cards" && (
+        <Layout variant="stack-centered" class="reviews_header">
+          {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+          <Heading tag="h2">{heading}</Heading>
+        </Layout>
+      )}
+      {layout !== "cards" && (
+        <SectionHeader eyebrow={eyebrow} heading={heading}>
+          {allReviewsHref && (
+            <Button
+              slot="action"
+              variant="secondary"
+              href={allReviewsHref}
+              newTab
+              ariaLabel={allReviewsLabel}
+            >
+              {allReviewsLabel}
+            </Button>
+          )}
+        </SectionHeader>
+      )}
 
       {rating ? (
         <div class:list={["reviews_rating", layout === "cards" && "is-center"]}>
@@ -235,6 +247,18 @@ const reviewAvatar = (review: Review) =>
           ))}
         </Grid>
       )}
+      {layout === "cards" && allReviewsHref && (
+        <div class="reviews_more">
+          <Button
+            variant="secondary"
+            href={allReviewsHref}
+            newTab
+            ariaLabel={allReviewsLabel}
+          >
+            {allReviewsLabel}
+          </Button>
+        </div>
+      )}
       {layout !== "cards" && !(layout === "featured" && featured) && (
         <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={5}>
           {reviews.map((review) => (
@@ -287,11 +311,18 @@ const reviewAvatar = (review: Review) =>
       justify-content: center;
     }
 
+    .reviews_more {
+      display: flex;
+      justify-content: center;
+    }
+
     .reviews_stars.is-card {
       margin-bottom: var(--space-4);
     }
 
-    .reviews_stars.is-card .reviews_star {
+    /* Gold on the cards and on the centred summary alike. */
+    .reviews_stars.is-card .reviews_star,
+    .reviews_rating.is-center .reviews_star:not(.is-empty) {
       fill: var(--rating-star);
     }
 
