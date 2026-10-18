@@ -44,7 +44,7 @@ const estimateCta = SITE.quote
           iconPosition="start"
           ariaLabel={`Call ${SITE.phone.display}`}
         >
-          Call now
+          <span class="mobile-bar_call_text">Call now</span>
           <Icon slot="icon" src={phoneIcon} variant="small" />
         </Button>
         <CtaButton cta={estimateCta} fullWidth />
@@ -81,17 +81,34 @@ const estimateCta = SITE.quote
       }
     }
 
+    /* "Call now" takes only the width it needs and the estimate gets the
+       rest: an even split overflowed "GET A FREE ESTIMATE" in the looks
+       with wide uppercase buttons (rugged, at 390 wide). */
     .mobile-bar_layout {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: auto minmax(0, 1fr);
       gap: var(--space-2);
     }
 
-    /* One line per button: the labels are short, and a wrapped label
-       doubles the bar's height. */
+    /* One line per button: a wrapped label doubles the bar's height. The
+       looks' button tracking is dropped here for the same reason. */
     .mobile-bar_layout .button_main_element {
-      padding-inline: var(--space-3);
+      padding-inline: var(--space-2);
+      letter-spacing: normal;
       white-space: nowrap;
+    }
+
+    /* The narrowest phones (320 wide): the call button keeps only its icon;
+       its aria-label still names the number. */
+    @media (width < 22.5em) {
+      .mobile-bar_call_text {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
     }
   }
 </style>
