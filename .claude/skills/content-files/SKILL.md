@@ -33,10 +33,12 @@ the field reference; keep the two in step.
   `npm run format`.
 - **Publish:** commit and push to `main`. Cloudflare Workers Builds
   rebuilds from `main`; a failed build leaves the live site as it was. A
-  push goes live by itself only when the Workers Builds deploy command is
-  `npx wrangler deploy`; the default (`wrangler versions upload`) only
-  stages a version to promote in the dashboard
-  (`docs/new-project-checklist.md` §4a). CI (`.github/workflows/ci.yml`)
+  push goes live by itself when the Workers Builds deploy command is
+  `npx wrangler deploy` (the default for new Workers); an older Worker
+  still on `wrangler versions upload` only stages a version to promote in
+  the dashboard (`docs/new-project-checklist.md` §4a). To let a client
+  review content before it ships, push a branch instead: it gets its own
+  Preview URL (§4b). CI (`.github/workflows/ci.yml`)
   runs the same checks on pull requests and pushes to `main`.
 
 ## Where everything lives

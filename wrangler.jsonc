@@ -14,6 +14,18 @@
   // /api/* (plus a CMS add-on's editor-only preview routes).
   "main": "@astrojs/cloudflare/entrypoints/server",
   "name": "your-worker-name",
+  // URLs, stated explicitly — left out, Wrangler warns on every deploy and
+  // keeps whatever is already set. Since Worker Previews (Sept 2026) the two
+  // are configured separately:
+  //   workers_dev   the production URL, <worker>.<account>.workers.dev —
+  //                 the staging-first site before a custom domain exists
+  //                 (docs/new-project-checklist.md §4a). Once the real domain
+  //                 is attached you may set it to false; previews keep working.
+  //   preview_urls  every non-production branch's Preview URL,
+  //                 <branch>-<worker>.<account>.workers.dev — the links you
+  //                 send a client to review a change (§4b). Keep it true.
+  "workers_dev": true,
+  "preview_urls": true,
   "compatibility_date": "2026-04-16",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   // Public, non-secret runtime vars. None by default; a content add-on
@@ -49,8 +61,9 @@
   // and vars must be repeated here, and secrets live in the Previews Base
   // config (`npx wrangler preview base-config secret put NAME`). One KV
   // namespace can serve both. `npm run check:config` keeps the vars here in
-  // step with the top-level ones. Used by staging branches and by the
-  // prospect demos (docs/demo-mode.md).
+  // step with the top-level ones. Used by client review branches
+  // (docs/new-project-checklist.md §4b) and by the prospect demos
+  // (docs/demo-mode.md).
   "previews": {
     "vars": {},
     "kv_namespaces": [

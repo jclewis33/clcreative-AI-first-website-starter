@@ -19,10 +19,19 @@ Everything below is **one-time setup**, done once for the demos repo.
 This starter is a public template, so prospect data must never be committed
 to it. `npm run demo` refuses to run there.
 
-1. On GitHub, **Use this template** → new **private** repo `clcreative-demos`.
-2. Clone it, then point it at the starter so it can take updates:
+1. Create the **private** repo from the template, clone it, and point it at
+   the starter so it can take updates:
    ```sh
+   gh repo create jclewis33/clcreative-demos --private --template jclewis33/clcreative-AI-first-website-starter
+   git clone https://github.com/jclewis33/clcreative-demos.git && cd clcreative-demos
    git remote add upstream https://github.com/jclewis33/clcreative-AI-first-website-starter.git
+   ```
+2. **Rebase the new repo onto the starter's history — once, while it's
+   empty.** A template repo starts with a fresh "Initial commit" that shares
+   no history with the starter, so `git merge upstream/main` would refuse
+   ("unrelated histories"):
+   ```sh
+   git fetch upstream && git reset --hard upstream/main && git push --force origin main
    ```
    To update later: `git switch main && git fetch upstream && git merge upstream/main && git push`.
    Old demo branches don't need updating — they're throwaway.
@@ -45,7 +54,10 @@ to it. `npm run demo` refuses to run there.
    id in `wrangler.jsonc` in **both** `kv_namespaces[0].id` and
    `previews.kv_namespaces[0].id` (one namespace serves both). Commit to `main`.
 2. **Create the Worker** with Workers Builds connected to `clcreative-demos`,
-   production branch `main`.
+   production branch `main`. **Project name `cl-demos`** — it must match
+   `wrangler.jsonc` (the dashboard suggests the repo name). `workers_dev` and
+   `preview_urls` are already `true` in `wrangler.jsonc`; without them Wrangler
+   warns on every deploy.
 3. **Settings → Builds → Branch control:** turn on **Enable Preview Builds**.
    The Preview command must be `npx wrangler preview` (the default for new
    Workers; Wrangler 4.135+ is in package.json).

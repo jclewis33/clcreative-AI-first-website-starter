@@ -87,7 +87,18 @@ Full narrative for the Sanity add-on: its guide, `addons/sanity/README.md` (`npm
 
 ## 4. Cloudflare (🔁 per-fork — all dashboard work)
 
-1. **Workers Builds**: create the worker, connect the GitHub repo, production branch = `main`. Set `vars` from wrangler.jsonc. Secrets go in as **encrypted secrets**: the GoHighLevel ones (§6) and, Sanity add-on only, `SANITY_API_READ_TOKEN`.
+1. **Workers Builds**: create the worker, connect the GitHub repo, production branch = `main`. On the **Set up your application** screen:
+   - **Project name** must equal `"name"` in `wrangler.jsonc` (the dashboard suggests the repo name — change it). A mismatch fails the build or deploys under the wrong name.
+   - **Build command** `npm run build` · **Deploy command** `npx wrangler deploy` (pushes to `main` go live) · **Preview command** `npx wrangler preview`.
+   - **Enable Preview builds** ON — every other branch gets its own Preview URL (§4b). **Protect with Cloudflare Access** OFF unless every reviewer can log in to Access.
+   - Set `vars` from wrangler.jsonc. Secrets go in as **encrypted secrets**: the GoHighLevel ones (§6) and, Sanity add-on only, `SANITY_API_READ_TOKEN`. **Previews don't inherit them** — repeat each one for Previews from the repo folder (it prompts for the value; nothing echoes):
+     ```sh
+     npx wrangler preview base-config secret put GHL_API_TOKEN
+     npx wrangler preview base-config secret put GHL_LOCATION_ID
+     # Sanity add-on only:
+     npx wrangler preview base-config secret put SANITY_API_READ_TOKEN
+     ```
+     Base secrets reach Previews created **after** they're set, so do this before pushing the first review branch.
    - ⚠️ **Never add `limits: { cpu_ms }` to `wrangler.jsonc`** — CPU limits exist only on **Workers Paid**. On the Free plan the build stays green and then `wrangler versions upload` fails (`CPU limits are not supported for the Free plan. [code: 100328]`) — nothing ships and production silently keeps the previous build, which reads as "all my changes broke" during verification. It's unnecessary anyway: the content routes are prerendered, so the only SSR surface is `/api/*` and `/tools/*` (plus `/preview/*` with the Sanity add-on).
 2. **Custom domain** attached to the worker; DNS through Cloudflare.
 3. **SSL/TLS → Edge Certificates → "Always Use HTTPS" = On** (pairs with the HSTS header the code already sends).
@@ -116,7 +127,7 @@ You can stand up a fully working site — including, with the Sanity add-on, **P
    - A staging site that must stay out of search: build with `SITE_NOINDEX=1` (build variable). Every page gets the noindex meta, robots.txt disallows everything, and no sitemap ships — see `src/config/seo.shared.mjs`.
 3. **Sanity add-on only — add the read token secret:** create a **Viewer** token (manage.sanity.io → project → API → Tokens) and add it to the Worker as an **encrypted secret** named exactly `SANITY_API_READ_TOKEN` (Worker → Settings → Variables and Secrets).
 4. **Set the build var** `SITE_URL=https://<worker>.<account>.workers.dev` in the Worker's **build** environment (read at build time for canonical URLs / sitemap / Studio preview).
-5. **Make the site live:** Worker → **Domains** tab → toggle the **Production** `workers.dev` route ON. Then promote the latest version to 100% (Deployments tab), OR set the Workers Builds deploy command to `npx wrangler deploy` so pushes auto-go-live (default `wrangler versions upload` only stages a version).
+5. **Make the site live:** Worker → **Domains** tab → confirm the **Production** and **Preview** `workers.dev` URLs are ON (`workers_dev` / `preview_urls` in `wrangler.jsonc` set them on every deploy). With the deploy command `npx wrangler deploy` (§4 step 1) pushes to `main` go live by themselves; an older Worker whose deploy command is still `npx wrangler versions upload` only stages a version — change it, or promote the version to 100% on the Deployments tab.
 6. **Sanity add-on only — add the staging URL to Sanity CORS** with **Allow credentials** checked: manage.sanity.io → project → API → CORS Origins → add `https://<worker>.<account>.workers.dev`. (Or via Sanity MCP `add_cors_origin` with `allowCredentials: true`.)
 7. **Sanity add-on only — deploy the Studio pointed at staging** (locally, from the client repo, on the deployed branch):
    ```
@@ -124,6 +135,17 @@ You can stand up a fully working site — including, with the Sanity add-on, **P
    ```
    ⚠️ The env var **must** be on the same line before `npx`. A plain `npx sanity deploy` bakes in the `SITE_URL` fallback (the not-yet-existing production domain) and Presentation points there instead. If `sanity deploy` prints a NEW appId, write it into `sanity.cli.ts` → `deployment.appId` and commit.
 8. **Sanity add-on only — verify in Chrome:** open `<studioHost>.sanity.studio` → **Presentation** → confirm the staging site loads in the frame with click-to-edit overlays. (Safari/Brave can block the cross-site draft cookie — use Chrome.)
+
+### 4b. Preview links for client review (any branch that isn't `main`)
+
+Worker Previews give each branch its own live copy of the site, under the same Worker, so a client can review a change before it ships:
+
+1. Work on a branch (`git switch -c homepage-refresh`), push it. Workers Builds runs the build and then `npx wrangler preview`.
+2. The link is `https://<branch>-<worker>.<account>.workers.dev` (slashes become dashes: `feat/new-hero` → `feat-new-hero-…`). It's in the Worker's **Previews** section, and Workers Builds posts it on the branch's pull request. Every push to the branch updates the same link; each deploy also gets a fixed **Deployment URL** for comparing versions.
+3. Send the client the Preview link. It's public but kept out of search: Cloudflare adds `X-Robots-Tag: noindex` to workers.dev Preview URLs. (A Preview on a custom domain does NOT get that header — protect it with Access instead.)
+4. Merge the branch to ship it to production. Then delete the Preview: `npx wrangler preview delete --name <branch-name>` (the free plan allows 100 per Worker).
+
+What a Preview uses: the `previews` block in `wrangler.jsonc` (bindings and vars — `npm run check:config` keeps its vars matching the top level) and the Previews **base-config** secrets (§4 step 1). It does not use production's dashboard secrets. Forms on a Preview post to whatever GHL location the Preview secrets name — point them at a test sub-account if real leads must not mix with review clicks. Sanity add-on only: add `https://*.<account>.workers.dev` to Sanity CORS (with credentials) so Presentation and `/preview/*` work on Preview URLs.
 
 **At launch (real domain ready) — no code commit:**
 
