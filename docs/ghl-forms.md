@@ -149,7 +149,9 @@ start a staff automation.
 
 1. **Workers & Pages → the Worker → Settings → Variables and Secrets:** add
    `GHL_API_TOKEN` and `GHL_LOCATION_ID` as **Secret** (encrypted), never as
-   plain text. If you use Worker Previews, make them available there too.
+   plain text. Previews (review branches, §4b of the checklist) don't
+   inherit them: also run `npx wrangler preview base-config secret put
+GHL_API_TOKEN` and `… GHL_LOCATION_ID` from the repo folder.
 2. Add the WAF rate-limit rule for `/api/lead`
    (`docs/new-project-checklist.md` §2). The in-code limit is a soft backup
    only.

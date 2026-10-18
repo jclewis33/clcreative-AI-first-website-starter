@@ -24,8 +24,14 @@ deploy the Studio with `SANITY_STUDIO_PREVIEW_URL` pointed at it.
 
 Per §4 of the checklist:
 
-- Create the Worker and connect the repo (Workers Builds).
+- Create the Worker and connect the repo (Workers Builds). **Project name =
+  `"name"` in wrangler.jsonc**; deploy command `npx wrangler deploy`; preview
+  command `npx wrangler preview`; **Enable Preview builds** on.
 - Set the `vars` — including `SITE_URL`.
+- Secrets for **Previews** too: `npx wrangler preview base-config secret put
+NAME` for each secret (GHL, and `SANITY_API_READ_TOKEN` on Sanity forks) —
+  Previews inherit nothing from production. Then any pushed branch has a
+  client-review link (checklist §4b).
 - Add `SANITY_API_READ_TOKEN` as an **encrypted secret** (never a plain wrangler
   var). Sanity forks only.
 - Attach the domain, and turn **"Always Use HTTPS"** on.
