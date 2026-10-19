@@ -90,6 +90,8 @@ const homeSchema = z.object({
     eyebrow: text.optional(),
     heading: text,
     intro: text.optional(),
+    /** cards (photo grid) or showcase (auto-advancing accordion). */
+    layout: z.enum(["cards", "showcase"]).optional(),
   }),
   /** "Sound familiar?" — problems in the homeowner's words. */
   symptoms: z
