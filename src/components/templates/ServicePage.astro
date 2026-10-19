@@ -113,7 +113,12 @@ const areaLinks = SITE.cityPages
   : {};
 const showArea = areaGeo.length > 0 || SITE.cityPages;
 
-const estimateCta = { label: "Get a free estimate", modal: ESTIMATE_MODAL_ID };
+/* The site's own estimate label (SITE.quote, as the nav and mobile bar
+   use) — a hard-coded "free estimate" promised what a client may not offer. */
+const estimateCta = {
+  label: SITE.quote?.label ?? "Get a free estimate",
+  modal: ESTIMATE_MODAL_ID,
+};
 /* With SITE.quote, BaseLayout renders the site-wide estimate form. */
 const ownModal = !SITE.quote;
 ---

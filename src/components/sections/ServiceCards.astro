@@ -24,7 +24,7 @@ type ServiceCardItem = {
   icon?: ServiceIconName;
 };
 type ServiceCardsLayout =
-  /** 3 → 2 → 1 column grid */
+  /** 3 → 2 → 1 column grid (2 → 2 → 1 for two or four cards) */
   | "grid"
   /** Swipe row on phones — good for "related services" */
   | "swipe";
@@ -108,11 +108,14 @@ const cardLink = (item: ServiceCardItem): CardLink =>
 /* Typed loosely: the two containers take different props, and TS can't
    check a spread against a union of components. Both prop sets are fixed
    literals right below. */
+/* Two or four cards sit two to a row: three columns would strand the
+   fourth card alone on a second row (or leave a hole beside two). */
+const largeColumns = items.length === 2 || items.length === 4 ? 2 : 3;
 const Wrapper: any = layout === "swipe" ? SwipeRow : Grid;
 const wrapperProps =
   layout === "swipe"
     ? { columns: 3 as const, label: heading ?? "Services" }
-    : { largeColumns: 3, mediumColumns: 2, smallColumns: 1, rowGap: 6 };
+    : { largeColumns, mediumColumns: 2, smallColumns: 1, rowGap: 6 };
 
 if (import.meta.env.DEV && render) {
   if (!Astro.props.items?.length)
