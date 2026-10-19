@@ -138,7 +138,7 @@ function normalize(text) {
       /* Visual's crop hint (a sizing hint like srcset/sizes): only a local
        image knows its dimensions, so a remote Sanity image never carries
        it. */
-      .replace(/ data-crop=""/g, "")
+      .replace(/ data-crop(?:="")?(?=[\s>/])/g, "")
       .replace(/; --_crop: [\d.]+/g, "")
   );
 }
