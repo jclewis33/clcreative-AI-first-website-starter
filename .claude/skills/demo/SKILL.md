@@ -151,6 +151,13 @@ git switch -c demo/<slug>
 - `home.estimate.question` heads step 1 of the estimate form, above the
   service tiles. The default is "What do you need help with?". Phrase it for
   their trade ("What's going on with your AC?").
+- **`serviceRadius`:** when they describe their area as a distance ("within
+  60 miles of Palmer"), set `{ "center": "Palmer", "miles": 60 }`: the map
+  draws that circle and frames itself on it. Then pick `serviceAreas` from
+  the towns across the whole circle (their own map, Facebook areas), not just
+  the home county.
+- **`photoBand.position`:** `{ "x": 50, "y": 25 }` (percent) when the
+  people in the photo sit high in the frame; check heads aren't cropped.
 - **Service-area map:** automatic. `npm run demo` looks each service area
   up on OpenStreetMap and draws a street map with the towns outlined,
   caching the boundaries in `service-area.geo.json` beside demo.json. Commit

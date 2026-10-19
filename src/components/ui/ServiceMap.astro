@@ -208,8 +208,11 @@ const mapLabel =
               } as any,
               { style: () => style },
             );
+      // Every town named on the map while they fit; past eight the labels
+      // pile up at metro zoom, so they show on hover (the chips beside the
+      // map name them all) — except this page's own town.
       layer.bindTooltip(area.name, {
-        permanent: true,
+        permanent: areas.length <= 8 || area.name === wrap.dataset.current,
         direction: "center",
         className: "service-map_label",
       });
@@ -245,10 +248,19 @@ const mapLabel =
           miles: number;
         })
       : null;
+    // Frame the map first (the circle's box comes from its centre and size,
+    // so it needs no view), then draw the ring: a path can't be layered
+    // until the map has a view to render it in.
+    const meters = radius ? radius.miles * 1609.344 : 0;
     let bounds = areas.length ? group.getBounds() : null;
     if (radius) {
-      const ring = L.circle([radius.lat, radius.lng], {
-        radius: radius.miles * 1609.344,
+      const box = L.latLng(radius.lat, radius.lng).toBounds(meters * 2);
+      bounds = bounds ? bounds.extend(box) : box;
+    }
+    if (bounds) map.fitBounds(bounds, { padding: [24, 24] });
+    if (radius) {
+      L.circle([radius.lat, radius.lng], {
+        radius: meters,
         color: accent,
         weight: 2,
         opacity: 0.7,
@@ -256,11 +268,10 @@ const mapLabel =
         fillColor: accent,
         fillOpacity: 0.05,
         interactive: false,
-      }).addTo(map);
-      ring.bringToBack();
-      bounds = bounds ? bounds.extend(ring.getBounds()) : ring.getBounds();
+      })
+        .addTo(map)
+        .bringToBack();
     }
-    if (bounds) map.fitBounds(bounds, { padding: [24, 24] });
   }
 
   function initServiceMaps() {
