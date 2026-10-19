@@ -1,0 +1,444 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import { uid } from "@/lib/uid";
+
+type ServiceShowcaseItem = {
+  /** "Termite control". */
+  title: string;
+  /** One or two sentences shown when the row is open. */
+  text: string;
+  /** The photo on the right while this row is open. */
+  image: ImageMetadata | string;
+  /** Alt text for the photo. */
+  imageAlt: string;
+  /** Where "Learn more" goes (the service page). */
+  href?: string;
+};
+type ServiceShowcaseTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ServiceShowcase** — the services as an auto-advancing accordion: a
+   * numbered list on the left, one row open at a time with its text, a
+   * "Learn more" link and a progress line filling under it; when the line
+   * is full the next row opens and the photo on the right changes. After
+   * the last row it loops to the first. Clicking a row opens it.
+   *
+   * It only runs while on screen, pauses while the pointer or focus is
+   * inside, and doesn't auto-advance with reduced motion. On narrow
+   * screens each open row shows its photo inline.
+   *
+   * - `items` — `{ title, text, image, imageAlt, href? }[]`
+   * - `interval` — milliseconds per row (default 6000)
+   *
+   * @example
+   * <ServiceShowcase heading="What we treat" items={[{ title: "Termites", text: "…", image: termites, imageAlt: "…", href: "/services/termites" }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. Required. */
+  heading: string;
+
+  /** Intro under the heading. */
+  intro?: string;
+
+  /** The rows. Empty renders nothing. */
+  items: ServiceShowcaseItem[];
+
+  /** Milliseconds each row stays open before the next. @default 6000 */
+  interval?: number;
+
+  /** Section theme. */
+  theme?: ServiceShowcaseTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  intro,
+  items = [],
+  interval = 6000,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!heading)
+    console.warn("[ServiceShowcase] `heading` is required; nothing renders.");
+  if (!items.length)
+    console.warn("[ServiceShowcase] `items` is empty; nothing renders.");
+}
+
+const base = uid("service-showcase");
+---
+
+{
+  render && heading && items.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["service-showcase_wrap", className]}
+      {...rest}
+    >
+      <Layout ratio="6-6" verticalAlign="start" class="service-showcase_layout">
+        <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+        <ol
+          class="service-showcase_list"
+          data-service-showcase
+          style={`--_interval: ${interval}ms`}
+        >
+          {items.map((item, i) => (
+            <li
+              class:list={["service-showcase_item", { "is-active": i === 0 }]}
+              data-index={i}
+            >
+              <button
+                type="button"
+                class="service-showcase_trigger u-button-reset"
+                id={`${base}-t${i}`}
+                aria-expanded={i === 0 ? "true" : "false"}
+                aria-controls={`${base}-p${i}`}
+              >
+                <span class="service-showcase_number" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <Heading tag="h3" variant="h5" marginBottom={0}>
+                  {item.title}
+                </Heading>
+              </button>
+              <div
+                class="service-showcase_panel"
+                id={`${base}-p${i}`}
+                role="region"
+                aria-labelledby={`${base}-t${i}`}
+              >
+                <div class="service-showcase_panel_inner u-margin-trim">
+                  <div class="service-showcase_inline_media">
+                    <Visual src={item.image} alt={item.imageAlt} ratio="wide" />
+                  </div>
+                  <Text muted>{item.text}</Text>
+                  {item.href && (
+                    <a class="service-showcase_link" href={item.href}>
+                      Learn more
+                      <span class="u-sr-only"> about {item.title}</span>
+                      <span aria-hidden="true"> →</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+              <span class="service-showcase_progress" aria-hidden="true" />
+            </li>
+          ))}
+        </ol>
+        <div slot="column2" class="service-showcase_media" aria-hidden="true">
+          {items.map((item, i) => (
+            <div
+              class:list={["service-showcase_frame", { "is-active": i === 0 }]}
+              data-index={i}
+            >
+              <Visual
+                src={item.image}
+                alt={item.imageAlt}
+                variant="background"
+                loading={i === 0 ? "eager" : "lazy"}
+              />
+            </div>
+          ))}
+        </div>
+      </Layout>
+    </Section>
+  )
+}
+
+<script>
+  /* One row open at a time. The open row's progress line fills over
+     --_interval (a CSS animation); when it ends the next row opens and the
+     matching photo fades in. Runs only on screen, pauses on hover/focus,
+     never auto-advances with reduced motion. A click opens that row and the
+     cycle carries on from there. */
+  function initShowcase(list: HTMLElement) {
+    if (list.dataset.init) return;
+    list.dataset.init = "true";
+    const wrap = list.closest(".service-showcase_wrap")!;
+    const items = [
+      ...list.querySelectorAll<HTMLElement>(".service-showcase_item"),
+    ];
+    const frames = [
+      ...wrap.querySelectorAll<HTMLElement>(".service-showcase_frame"),
+    ];
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let current = 0;
+
+    const open = (index: number) => {
+      current = (index + items.length) % items.length;
+      items.forEach((item, i) => {
+        const on = i === current;
+        item.classList.toggle("is-active", on);
+        item
+          .querySelector(".service-showcase_trigger")!
+          .setAttribute("aria-expanded", on ? "true" : "false");
+        // Restart the progress animation on the newly opened row.
+        const bar = item.querySelector<HTMLElement>(
+          ".service-showcase_progress",
+        )!;
+        bar.style.animation = "none";
+        void bar.offsetWidth;
+        bar.style.animation = "";
+      });
+      frames.forEach((frame, i) =>
+        frame.classList.toggle("is-active", i === current),
+      );
+      window.dispatchEvent(new CustomEvent("scrolltrigger:refresh"));
+    };
+
+    items.forEach((item, i) => {
+      item
+        .querySelector(".service-showcase_trigger")!
+        .addEventListener("click", () => open(i));
+      item
+        .querySelector(".service-showcase_progress")!
+        .addEventListener("animationend", () => open(current + 1));
+    });
+
+    if (reduce) {
+      list.dataset.static = "true";
+      return;
+    }
+    const setRunning = (on: boolean) =>
+      list.toggleAttribute("data-running", on);
+    let inView = false;
+    let hovered = false;
+    const sync = () => setRunning(inView && !hovered);
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        sync();
+      },
+      { threshold: 0.35 },
+    ).observe(list);
+    wrap.addEventListener("pointerenter", () => ((hovered = true), sync()));
+    wrap.addEventListener("pointerleave", () => ((hovered = false), sync()));
+    wrap.addEventListener("focusin", () => ((hovered = true), sync()));
+    wrap.addEventListener("focusout", (e) => {
+      if (!wrap.contains((e as FocusEvent).relatedTarget as Node)) {
+        hovered = false;
+        sync();
+      }
+    });
+  }
+
+  function initAll() {
+    document
+      .querySelectorAll<HTMLElement>("[data-service-showcase]")
+      .forEach(initShowcase);
+  }
+  initAll();
+  document.addEventListener("astro:page-load", initAll);
+</script>
+
+<style is:global>
+  @layer components {
+    .service-showcase_list {
+      margin: var(--space-6) 0 0;
+      padding: 0;
+      list-style: none;
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .service-showcase_item {
+      position: relative;
+      border-bottom: var(--border-width-main) solid var(--border);
+    }
+
+    .service-showcase_trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      width: 100%;
+      padding-block: var(--space-5);
+      text-align: left;
+      color: color-mix(in srgb, var(--text) 70%, transparent);
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .service-showcase_item.is-active .service-showcase_trigger {
+      color: var(--text);
+    }
+
+    @media (hover: hover) {
+      .service-showcase_trigger:hover {
+        color: var(--text);
+      }
+    }
+
+    .service-showcase_number {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      width: 2.25rem;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-full);
+      background-color: color-mix(in srgb, var(--text) 12%, transparent);
+      color: var(--text);
+      font-size: var(--text-tiny-size);
+      font-weight: var(--font-weight-bold);
+      transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+    }
+
+    .service-showcase_item.is-active .service-showcase_number {
+      background-color: var(--button-primary-background);
+      color: var(--button-primary-text);
+    }
+
+    /* The open row grows to its content. */
+    .service-showcase_panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.4s ease;
+    }
+
+    .service-showcase_item.is-active .service-showcase_panel {
+      grid-template-rows: 1fr;
+    }
+
+    .service-showcase_panel_inner {
+      min-height: 0;
+      overflow: hidden;
+      padding-left: calc(2.25rem + var(--space-4));
+    }
+
+    .service-showcase_item.is-active .service-showcase_panel_inner {
+      padding-bottom: var(--space-5);
+    }
+
+    .service-showcase_link {
+      display: inline-block;
+      margin-top: var(--space-2);
+      color: var(--heading-accent);
+      font-weight: var(--font-weight-bold);
+      text-decoration: none;
+    }
+
+    @media (hover: hover) {
+      .service-showcase_link:hover {
+        text-decoration: underline;
+      }
+    }
+
+    /* The progress line, drawn over the open row's bottom border. */
+    .service-showcase_progress {
+      position: absolute;
+      left: 0;
+      bottom: calc(var(--border-width-main) * -1);
+      width: 100%;
+      height: calc(var(--border-width-main) * 2);
+      background-color: var(--heading-accent);
+      transform-origin: left;
+      scale: 0 1;
+    }
+
+    .service-showcase_item.is-active .service-showcase_progress {
+      animation: service-showcase_fill var(--_interval) linear forwards;
+      animation-play-state: paused;
+    }
+
+    .service-showcase_list[data-running]
+      .service-showcase_item.is-active
+      .service-showcase_progress {
+      animation-play-state: running;
+    }
+
+    /* Reduced motion: no timer; the open row just shows a full line. */
+    .service-showcase_list[data-static]
+      .service-showcase_item.is-active
+      .service-showcase_progress {
+      animation: none;
+      scale: 1 1;
+    }
+
+    @keyframes service-showcase_fill {
+      to {
+        scale: 1 1;
+      }
+    }
+
+    /* The photo column: every photo stacked, the open row's on top. */
+    .service-showcase_media {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      border-radius: var(--radius-main);
+      overflow: hidden;
+    }
+
+    .service-showcase_frame {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .service-showcase_frame.is-active {
+      opacity: 1;
+    }
+
+    .service-showcase_inline_media {
+      display: none;
+      margin-bottom: var(--space-4);
+    }
+
+    /* Narrow: the side photo goes; each open row shows its own. */
+    @container (width < 35em) {
+      .service-showcase_media {
+        display: none;
+      }
+
+      .service-showcase_inline_media {
+        display: block;
+      }
+
+      .service-showcase_panel_inner {
+        padding-left: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .service-showcase_panel,
+      .service-showcase_frame {
+        transition: none;
+      }
+    }
+  }
+</style>

@@ -114,7 +114,17 @@ export interface LocalServiceHomeData {
   stats?: HomeStat[];
 
   /** Heading for the service cards (the cards come from src/content/services). */
-  services: { eyebrow?: string; heading: string; intro?: string };
+  services: {
+    eyebrow?: string;
+    heading: string;
+    intro?: string;
+    /**
+     * `cards` — the photo card grid (ServiceCards); `showcase` — the
+     * auto-advancing accordion with the photo swapping beside it
+     * (ServiceShowcase). @default 'cards'
+     */
+    layout?: "cards" | "showcase";
+  };
 
   /** "Sound familiar?" — the problems, in the homeowner's words (SymptomCards). */
   symptoms?: {
