@@ -78,10 +78,12 @@ git switch -c demo/<slug>
 
 - Use the `cl-creative-storybrand-copywriter` skill for the home page (hero,
   story, call band) and each service (hero, scope, included, FAQs, CTA).
-- Each service's `scope` gets an `intro` line and 2 real `paragraphs` about
-  that work (what goes wrong, how they do it, what the customer gets), plus
-  a `scope.image` when they have a photo of the job; it falls back to the
-  card photo. A lone card there reads as an empty page.
+- Each service's `scope` gets an `intro` line, 2 real `paragraphs` about
+  that work (what goes wrong, how they do it, what the customer gets), and
+  a **required** `scope.image` + `imageAlt`.
+- **No photo twice on one page.** A service page shows its hero, its scope
+  photo and its two `included.images`: make all four different (the schema
+  can't see duplicates; check the list). Across services, reuse is fine.
 - Keep their real facts and their tone. A demo is their business on a better
   site, not a different business.
 - **Lengths:**

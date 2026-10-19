@@ -179,7 +179,11 @@ async function source(src, baseDir) {
   return buf;
 }
 /** A web-ready webp, capped at `width` (never enlarged). */
-async function webp(/** @type {Buffer} */ buf, width = 1600) {
+/* Photos keep up to 2400px: sections crop them (a landscape photo into a
+   tall portrait, a wide band), and a smaller source stretched into the
+   crop looked blurry. The build serves right-sized copies, so the size
+   here costs nothing at runtime. */
+async function webp(/** @type {Buffer} */ buf, width = 2400) {
   return sharp(buf)
     .rotate()
     .resize({ width, withoutEnlargement: true })
@@ -247,7 +251,7 @@ async function main() {
   /** @type {Array<[string, string]>} identifier → asset path */
   const homeImports = [];
   /** @param {any} holder @param {string} key @param {string} id */
-  async function homeImage(holder, key, id, width = 2000) {
+  async function homeImage(holder, key, id, width = 2400) {
     if (!holder?.[key]) return;
     const rel = `src/assets/demo/${id}.webp`;
     await write(rel, await webp(await img(holder[key]), width));
@@ -480,7 +484,7 @@ async function main() {
     const image = async (
       /** @type {string} */ src,
       /** @type {string} */ field,
-      width = 1600,
+      width = 2400,
     ) => {
       const file = `${id}-${field}.webp`;
       await write(
@@ -490,10 +494,10 @@ async function main() {
       return `./images/${file}`;
     };
     service.order ??= (index + 1) * 10;
-    service.cardImage = await image(service.cardImage, "card", 1200);
-    service.hero.image = await image(service.hero.image, "hero", 2000);
+    service.cardImage = await image(service.cardImage, "card", 2400);
+    service.hero.image = await image(service.hero.image, "hero", 2400);
     if (service.scope.image)
-      service.scope.image = await image(service.scope.image, "scope", 1200);
+      service.scope.image = await image(service.scope.image, "scope", 2400);
     for (const [i, pic] of service.included.images.entries())
       pic.src = await image(pic.src, `included-${i + 1}`);
     for (const [i, review] of (service.reviews ?? []).entries())

@@ -369,7 +369,9 @@
         "paragraphs": [
           "Plenty of Austin homes still run on a 100-amp panel that was sized for a house without central air, an EV or a home office. When breakers trip every time the dryer and AC run together, the panel is telling you it's out of room.",
           "We size the upgrade to what you run today and what you're likely to add, pull the City of Austin permit, coordinate the disconnect with Austin Energy, and stay until the inspector signs off. Most upgrades take one day, with the power off for about six hours."
-        ]
+        ],
+        "image": "../../../src/assets/placeholder-images/ai-first-starter-11.webp",
+        "imageAlt": "An electrician fitting breakers into a new panel"
       },
       "included": {
         "heading": "What's included",
@@ -447,7 +449,9 @@
         "paragraphs": [
           "A Level 2 charger adds about 25 to 30 miles of range an hour, so the car is full every morning. We check your panel first: if there's room, the install is usually a half day; if there isn't, we'll tell you before anything else happens.",
           "We install any brand, hardwired or on a 240-volt outlet, mounted where your cord actually reaches, and we'll point you to any Austin Energy rebate you qualify for."
-        ]
+        ],
+        "image": "../../../src/assets/placeholder-images/ai-first-starter-12.webp",
+        "imageAlt": "A charger cable plugged into an electric car"
       },
       "included": {
         "heading": "What's included",

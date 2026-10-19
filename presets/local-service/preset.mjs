@@ -289,7 +289,10 @@ const serviceSchema = z
     title: text,
     cardImage: image,
     hero: z.object({ image }).passthrough(),
-    scope: z.object({ image: image.optional() }).passthrough(),
+    /* Each service's "What we work on" photo, distinct from its hero:
+       without one the page fell back to the card photo — usually the hero
+       again, cropped tall and blurry. */
+    scope: z.object({ image, imageAlt: text }).passthrough(),
     included: z
       .object({
         images: z.array(z.object({ src: image, alt: text })).length(2),
