@@ -8,6 +8,11 @@ import type { HTMLAttributes } from "astro/types";
  *   dividers between steps (service pages, dark section).
  * - `cards` — one card per step in a row (the homepage "How it works"). The
  *   row wraps to fewer columns as the container narrows.
+ * - `timeline` — a vertical line with a numbered dot per step, the steps
+ *   alternating left and right of it; in a narrow container the line moves
+ *   to the left and every step sits on its right. Each segment of the line
+ *   draws in as it scrolls into view (scroll-driven CSS; a static line where
+ *   that isn't supported or motion is reduced).
  *
  * Numbers are generated (01, 02, …) and hidden from screen readers — the
  * `<ol>` already announces the order.
@@ -25,7 +30,9 @@ type StepListVariant =
   /** Vertical list with dividers */
   | "list"
   /** A row of cards */
-  | "cards";
+  | "cards"
+  /** Alternating steps along a vertical line */
+  | "timeline";
 
 export interface Props extends HTMLAttributes<"ol"> {
   /**
@@ -40,7 +47,7 @@ export interface Props extends HTMLAttributes<"ol"> {
   /** The steps, in order. Renders nothing when empty. */
   steps: Step[];
 
-  /** Ruled vertical list or a row of cards. @default "list" */
+  /** Ruled vertical list, a row of cards, or an alternating timeline. @default "list" */
   variant?: StepListVariant;
 
   /** Extra classes on the list. */
@@ -59,9 +66,9 @@ const {
 if (import.meta.env.DEV) {
   if (!steps?.length)
     console.warn("[StepList] `steps` is empty or missing; nothing renders.");
-  if (!["list", "cards"].includes(variant))
+  if (!["list", "cards", "timeline"].includes(variant))
     console.warn(
-      `[StepList] Unknown variant "${variant}". Use "list" or "cards".`,
+      `[StepList] Unknown variant "${variant}". Use "list", "cards" or "timeline".`,
     );
 }
 ---
@@ -146,6 +153,127 @@ if (import.meta.env.DEV) {
       border: var(--border-width-main) solid var(--border);
       border-radius: var(--radius-main);
       background-color: var(--background-2);
+    }
+
+    /* ── timeline ─────────────────────────────────────────────── */
+    /* Three columns — left text, the dot, right text — so the dots sit on
+       one centre line; odd steps read on the left (right-aligned), even
+       steps on the right. Each step draws its own segment of the line from
+       its dot to the next one, so the line ends at the last dot. */
+    .step-list_wrap[data-variant="timeline"] {
+      --_dot: 3rem;
+      --_gap: var(--space-7);
+      --_line: calc(var(--border-width-main) * 2);
+      --_line-x: 50%;
+      display: grid;
+      row-gap: var(--_gap);
+    }
+
+    .step-list_wrap[data-variant="timeline"] .step-list_item {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--_dot) minmax(0, 1fr);
+      column-gap: var(--space-6);
+      align-items: start;
+    }
+
+    .step-list_wrap[data-variant="timeline"]
+      .step-list_item:not(:last-child)::before,
+    .step-list_wrap[data-variant="timeline"]
+      .step-list_item:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: calc(var(--_dot) / 2);
+      left: var(--_line-x);
+      width: var(--_line);
+      height: calc(100% + var(--_gap));
+      translate: -50% 0;
+    }
+
+    .step-list_wrap[data-variant="timeline"]
+      .step-list_item:not(:last-child)::before {
+      background-color: var(--border);
+    }
+
+    .step-list_wrap[data-variant="timeline"]
+      .step-list_item:not(:last-child)::after {
+      background-color: var(--heading-accent);
+      transform-origin: top;
+    }
+
+    @supports (animation-timeline: view()) {
+      @media (prefers-reduced-motion: no-preference) {
+        .step-list_wrap[data-variant="timeline"]
+          .step-list_item:not(:last-child)::after {
+          animation: step-list_draw linear both;
+          animation-timeline: view();
+          animation-range: entry 60% cover 55%;
+        }
+      }
+    }
+
+    @keyframes step-list_draw {
+      from {
+        scale: 1 0;
+      }
+      to {
+        scale: 1 1;
+      }
+    }
+
+    .step-list_wrap[data-variant="timeline"] .step-list_number {
+      position: relative;
+      z-index: 1;
+      grid-row: 1;
+      grid-column: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: var(--_dot);
+      aspect-ratio: 1 / 1;
+      border: var(--_line) solid var(--heading-accent);
+      border-radius: var(--radius-full);
+      background-color: var(--background);
+      color: var(--heading-accent);
+      font-size: var(--text-large-size);
+    }
+
+    /* The title's first line sits level with the dot's centre. */
+    .step-list_wrap[data-variant="timeline"] .step-list_body {
+      grid-row: 1;
+      grid-column: 3;
+      padding-top: calc(var(--_dot) / 2 - 0.75em);
+    }
+
+    .step-list_wrap[data-variant="timeline"]
+      .step-list_item:nth-child(odd)
+      .step-list_body {
+      grid-column: 1;
+      text-align: right;
+    }
+
+    /* Narrow: the line moves to the left, every step reads on its right. */
+    @container (width < 35em) {
+      .step-list_wrap[data-variant="timeline"] {
+        --_line-x: calc(var(--_dot) / 2);
+      }
+
+      .step-list_wrap[data-variant="timeline"] .step-list_item {
+        grid-template-columns: var(--_dot) minmax(0, 1fr);
+        column-gap: var(--space-4);
+      }
+
+      .step-list_wrap[data-variant="timeline"] .step-list_number {
+        grid-column: 1;
+      }
+
+      .step-list_wrap[data-variant="timeline"] .step-list_body,
+      .step-list_wrap[data-variant="timeline"]
+        .step-list_item:nth-child(odd)
+        .step-list_body {
+        grid-column: 2;
+        text-align: left;
+      }
     }
   }
 </style>
