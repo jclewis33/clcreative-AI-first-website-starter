@@ -129,7 +129,9 @@ git switch -c demo/<slug>
   data (story, stats, team, guarantee, process, reviews, map, call band) and
   added to the nav and footer. Give it `home.about` — an `eyebrow`, an h1
   `heading`, an intro `text`, and longer story `paragraphs` in the owner's
-  own words (their About section, verbatim where you can). Without it the
+  own words (their About section, verbatim where you can), and an
+  `about.image` of its own (without one it borrows the home page's photo
+  band, which then shows twice across the site). Without `home.about` the
   page just leads with the story.
 - **`callBand`:** `variant: "photo-card"` with a wide texture-like job photo
   (a lawn, a roofline, a finished patio). Otherwise leave out `variant` for

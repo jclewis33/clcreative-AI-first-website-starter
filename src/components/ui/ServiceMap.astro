@@ -96,6 +96,18 @@ const mapLabel =
 
 <style is:global>
   @layer components {
+    /* A town outline is a focusable SVG path (it carries the hover label);
+       a mouse click focused it and the browser drew its default ring around
+       the path's bounding box — a stray blue rectangle. Keyboard focus keeps
+       a visible ring, in the brand colour. */
+    .service-map_wrap .leaflet-interactive:focus {
+      outline: none;
+    }
+
+    .service-map_wrap .leaflet-interactive:focus-visible {
+      outline: var(--border-width-main) solid var(--heading-accent);
+    }
+
     .service-map_wrap {
       position: relative;
       overflow: hidden;
