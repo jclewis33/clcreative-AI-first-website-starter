@@ -102,6 +102,17 @@
   object-position: calc(var(--_x, 50) * 1%) calc(var(--_y, 50) * 1%);
 }
 
+/* A photo cropped wider than its box (Visual sets [data-crop] and --_crop,
+   its drawn width over the box's): the img is laid out at that width,
+   shifted by the focal point, so `sizes="auto"` downloads a copy wide enough
+   to stay sharp. It still covers the box; the wrapper clips the overflow. */
+.u-image-wrapper .u-image[data-crop] {
+  right: auto;
+  left: calc((1 - var(--_crop)) * var(--_x, 50) * 1%);
+  width: calc(var(--_crop) * 100%);
+  max-width: none;
+}
+
 /* Background variant — makes wrapper itself absolute-fill.
    Use inside a Section background slot or any position: relative parent. */
 .u-image-wrapper.is-background {

@@ -78,10 +78,12 @@ git switch -c demo/<slug>
 
 - Use the `cl-creative-storybrand-copywriter` skill for the home page (hero,
   story, call band) and each service (hero, scope, included, FAQs, CTA).
-- Each service's `scope` gets an `intro` line and 2 real `paragraphs` about
-  that work (what goes wrong, how they do it, what the customer gets), plus
-  a `scope.image` when they have a photo of the job; it falls back to the
-  card photo. A lone card there reads as an empty page.
+- Each service's `scope` gets an `intro` line, 2 real `paragraphs` about
+  that work (what goes wrong, how they do it, what the customer gets), and
+  a **required** `scope.image` + `imageAlt`.
+- **No photo twice on one page.** A service page shows its hero, its scope
+  photo and its two `included.images`: make all four different (the schema
+  can't see duplicates; check the list). Across services, reuse is fine.
 - Keep their real facts and their tone. A demo is their business on a better
   site, not a different business.
 - **Lengths:**
@@ -127,7 +129,9 @@ git switch -c demo/<slug>
   data (story, stats, team, guarantee, process, reviews, map, call band) and
   added to the nav and footer. Give it `home.about` — an `eyebrow`, an h1
   `heading`, an intro `text`, and longer story `paragraphs` in the owner's
-  own words (their About section, verbatim where you can). Without it the
+  own words (their About section, verbatim where you can), and an
+  `about.image` of its own (without one it borrows the home page's photo
+  band, which then shows twice across the site). Without `home.about` the
   page just leads with the story.
 - **`callBand`:** `variant: "photo-card"` with a wide texture-like job photo
   (a lawn, a roofline, a finished patio). Otherwise leave out `variant` for

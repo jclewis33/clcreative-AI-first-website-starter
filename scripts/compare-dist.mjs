@@ -130,10 +130,17 @@ function list(dir) {
 }
 
 function normalize(text) {
-  return text
-    .replace(/\/_astro\/[^"'\s)&?#,]+/g, "/_astro/ASSET")
-    .replace(/%2F_astro%2F[^"'\s)&]+/g, "%2F_astro%2FASSET")
-    .replace(/data-astro-cid-[a-z0-9]+/g, "data-astro-cid-X");
+  return (
+    text
+      .replace(/\/_astro\/[^"'\s)&?#,]+/g, "/_astro/ASSET")
+      .replace(/%2F_astro%2F[^"'\s)&]+/g, "%2F_astro%2FASSET")
+      .replace(/data-astro-cid-[a-z0-9]+/g, "data-astro-cid-X")
+      /* Visual's crop hint (a sizing hint like srcset/sizes): only a local
+       image knows its dimensions, so a remote Sanity image never carries
+       it. */
+      .replace(/ data-crop(?:="")?(?=[\s>/])/g, "")
+      .replace(/; --_crop: [\d.]+/g, "")
+  );
 }
 
 /** Serialize a parsed node as a canonical DOM string (one tag per line). */
