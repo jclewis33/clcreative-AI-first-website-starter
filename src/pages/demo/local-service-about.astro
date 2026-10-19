@@ -1,0 +1,11 @@
+---
+/**
+ * Local-service sample About page — DEV ONLY (`/demo/local-service-about`
+ * is in DEV_ONLY_PATHS, so the build strips it). The LocalServiceAbout
+ * template on the same fictional remodeler as /demo/local-service.
+ */
+import LocalServiceAbout from "@/components/templates/LocalServiceAbout.astro";
+import { SAMPLE_HOME } from "@/data/local-service-sample";
+---
+
+<LocalServiceAbout home={SAMPLE_HOME} />

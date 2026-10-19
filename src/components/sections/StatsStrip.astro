@@ -37,7 +37,7 @@ interface Props extends HTMLAttributes<"section"> {
   /** Section theme. @default 'dark' */
   theme?: StatsStripTheme;
 
-  /** Section padding (top and bottom). @default 'small' */
+  /** Section padding (top and bottom). @default 'xsmall' — one row of figures needs little air */
   padding?: PaddingSize;
 
   /** Section id for anchor links. */
@@ -53,7 +53,7 @@ const {
   items = [],
   valueSize = "number",
   theme = "dark",
-  padding = "small",
+  padding = "xsmall",
   id,
   class: className,
   ...rest

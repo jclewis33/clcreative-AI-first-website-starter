@@ -22,6 +22,18 @@ const item = z.object({ title: text, text: text });
 const homeSchema = z.object({
   /** contractor (conversion-led) or showcase (photo-led, editorial). */
   layout: z.enum(["contractor", "showcase"]).default("contractor"),
+  /** The About page (/about). Optional: it leads with the story without it. */
+  about: z
+    .object({
+      title: text.optional(),
+      description: text.optional(),
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      text: text.optional(),
+      storyHeading: text.optional(),
+      paragraphs: z.array(text).optional(),
+    })
+    .optional(),
   /** Defaults to "<name> | <tagline>". */
   title: text.optional(),
   /** Defaults to seo.description. */
@@ -350,6 +362,7 @@ export const demoSchema = z.object({
 export const PAGES = [
   { from: "index.astro", to: "src/pages/index.astro" },
   { from: "contact.astro", to: "src/pages/contact.astro" },
+  { from: "about.astro", to: "src/pages/about.astro" },
 ];
 
 /** Nav and footer links a demo drops (the sample content stays unlinked). */

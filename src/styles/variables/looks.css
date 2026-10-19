@@ -77,6 +77,9 @@
 :root[data-look="natural"] .nav_wrap {
   --nav-banner-background: color-mix(in srgb, var(--color-dark-900) 7%, var(--color-light-200));
   --nav-banner-color: var(--color-dark-900);
+  /* Desktop links sit right, beside the phone and the button: a lone
+     "Services" floating mid-bar looked stranded. */
+  --nav-menu-justify: flex-end;
 }
 
 /* =====================================================
