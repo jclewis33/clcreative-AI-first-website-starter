@@ -118,6 +118,7 @@ import ServiceCards from "@/components/sections/ServiceCards.astro";
 import ProcessSteps from "@/components/sections/ProcessSteps.astro";
 import StorySplit from "@/components/sections/StorySplit.astro";
 import WorkScope from "@/components/sections/WorkScope.astro";
+import ServiceShowcase from "@/components/sections/ServiceShowcase.astro";
 import IncludedList from "@/components/sections/IncludedList.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import Reviews from "@/components/sections/Reviews.astro";
@@ -251,6 +252,7 @@ const COMPONENT_INDEX = [
   { slug: "process-steps", text: "ProcessSteps" },
   { slug: "story-split", text: "StorySplit" },
   { slug: "work-scope", text: "WorkScope" },
+  { slug: "service-showcase", text: "ServiceShowcase" },
   { slug: "included-list", text: "IncludedList" },
   { slug: "service-area", text: "ServiceArea" },
   { slug: "reviews", text: "Reviews" },
@@ -489,6 +491,29 @@ const workScopeItems: {
     title: "Lighting and electrical",
     text: "Recessed, under-cabinet and pendants.",
     icon: "bolt",
+  },
+];
+const showcaseDemoItems = [
+  {
+    title: "Kitchens",
+    text: "Layout, cabinets and counters, from a refresh to a full rebuild.",
+    image: demoPhoto4,
+    imageAlt: "A remodeled kitchen with an island",
+    href: "#",
+  },
+  {
+    title: "Bathrooms",
+    text: "Showers, tile and vanities, waterproofed properly.",
+    image: demoPhoto5,
+    imageAlt: "A remodeled bathroom with a walk-in shower",
+    href: "#",
+  },
+  {
+    title: "Additions",
+    text: "More room without moving, planned with you from the start.",
+    image: demoPhoto4,
+    imageAlt: "A new room addition on a house",
+    href: "#",
   },
 ];
 ---
@@ -2694,6 +2719,18 @@ const workScopeItems: {
     items={workScopeItems}
     image={demoPhoto5}
     imageAlt="A remodeled kitchen with an island and pendant lights"
+  />
+
+  <Section theme="light" padding="small" id="service-showcase">
+    <Heading variant="eyebrow">ServiceShowcase</Heading>
+    <Heading tag="h2"
+      >Services as an auto-advancing accordion, the photo swapping beside it</Heading
+    >
+  </Section>
+  <ServiceShowcase
+    heading="What we do"
+    intro="Click one, or let them roll by."
+    items={showcaseDemoItems}
   />
 
   <Section theme="light" padding="small" id="included-list">

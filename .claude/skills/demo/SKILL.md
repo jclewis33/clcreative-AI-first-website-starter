@@ -155,6 +155,9 @@ git switch -c demo/<slug>
 - `home.estimate.question` heads step 1 of the estimate form, above the
   service tiles. The default is "What do you need help with?". Phrase it for
   their trade ("What's going on with your AC?").
+- **`home.services.layout`:** `"cards"` (photo grid, default) or
+  `"showcase"` (an auto-advancing accordion with the photo swapping beside
+  it; it uses each service's `hero.text`, so write that as a full sentence).
 - **`serviceRadius`:** when they describe their area as a distance ("within
   60 miles of Palmer"), set `{ "center": "Palmer", "miles": 60 }`: the map
   draws that circle and frames itself on it. Then pick `serviceAreas` from
