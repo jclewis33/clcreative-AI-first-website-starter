@@ -54,6 +54,17 @@
   --color-dark-800: color-mix(in oklab, var(--color-brand-500) 22%, #1c1f25);
 }
 
+/* The footer one shade deeper than the dark sections, so a dark call band
+   or "related services" above it reads as its own block instead of running
+   straight into the footer. Same hue, a touch more black. */
+:root[data-look="fresh"],
+:root[data-look="warm"],
+:root[data-look="rugged"],
+:root[data-look="natural"],
+:root[data-look] [data-theme] {
+  --footer-background: color-mix(in oklab, var(--color-dark-900), black 35%);
+}
+
 /* Accent text on DARK sections: a lighter tint of the brand. The client's
    brand colour is often dark itself (navy, deep red, a mid blue) and the
    full-strength swatch disappears on a dark ground; the tint keeps the hue
@@ -77,6 +88,9 @@
 :root[data-look="natural"] .nav_wrap {
   --nav-banner-background: color-mix(in srgb, var(--color-dark-900) 7%, var(--color-light-200));
   --nav-banner-color: var(--color-dark-900);
+  /* Desktop links sit right, beside the phone and the button: a lone
+     "Services" floating mid-bar looked stranded. */
+  --nav-menu-justify: flex-end;
 }
 
 /* =====================================================

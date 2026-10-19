@@ -71,6 +71,7 @@
 
 import { DEMO } from "@/config/demo.shared.mjs";
 import { SERVICE_NAV } from "@/lib/service-nav";
+import { PRESET_FOOTER, PRESET_NAV, PRESET_PAGES } from "./preset-pages";
 
 /** llms.txt section a page belongs to (also its broad category). */
 
@@ -109,6 +110,8 @@ export const PAGES: SitePage[] = [
     desc: "Get in touch.",
     group: "main",
   },
+  // A preset's extra pages (src/data/preset-pages.ts) — empty unless a demo.
+  ...PRESET_PAGES,
 
   // ── Service pages — generated from src/content/services/*.json ──────────
   // Add or remove a service by adding or removing its file; nothing to edit
@@ -280,6 +283,7 @@ export const NAV_MENU: NavMenuItem[] = pruneNav([
   ...(SERVICE_NAV.length
     ? [{ label: "Services", children: SERVICE_NAV.map((s) => s.path) }]
     : []),
+  ...PRESET_NAV,
   { path: "/blog" },
   { path: "/case-studies" },
   ...DEV_NAV_LINKS,
@@ -330,7 +334,7 @@ export const FOOTER_GROUPS: FooterGroup[] = pruneFooter([
   },
   {
     title: "Company",
-    links: ["/contact"],
+    links: [...PRESET_FOOTER, "/contact"],
   },
 ]);
 

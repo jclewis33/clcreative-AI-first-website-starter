@@ -46,6 +46,9 @@ interface Props {
   /** The town this page is about: outlined and filled more strongly. */
   current?: string;
 
+  /** "Within N miles of home base": a dashed circle the map frames itself on. */
+  radius?: { lat: number; lng: number; miles: number } | null;
+
   /** Extra classes on the map. */
   class?: string;
 }
@@ -56,21 +59,30 @@ const {
   areas = [],
   label,
   current,
+  radius,
   class: className,
 } = Astro.props;
 
 const mapLabel =
   label ??
-  `Map of the areas ${SITE.name} serves: ${areas.map((a) => a.name).join(", ")}`;
+  [
+    `Map of the areas ${SITE.name} serves`,
+    radius ? `within ${radius.miles} miles` : "",
+    areas.length ? `: ${areas.map((a) => a.name).join(", ")}` : "",
+  ]
+    .join(" ")
+    .replace(" :", ":")
+    .trim();
 ---
 
 {
-  render && areas.length > 0 && (
+  render && (areas.length > 0 || radius) && (
     <div
       class:list={["service-map_wrap", className]}
       role="img"
       aria-label={mapLabel}
       data-current={current}
+      data-radius={radius ? JSON.stringify(radius) : undefined}
     >
       <div class="service-map_canvas" data-service-map />
       <script
@@ -196,8 +208,11 @@ const mapLabel =
               } as any,
               { style: () => style },
             );
+      // Every town named on the map while they fit; past eight the labels
+      // pile up at metro zoom, so they show on hover (the chips beside the
+      // map name them all) — except this page's own town.
       layer.bindTooltip(area.name, {
-        permanent: true,
+        permanent: areas.length <= 8 || area.name === wrap.dataset.current,
         direction: "center",
         className: "service-map_label",
       });
@@ -223,7 +238,40 @@ const mapLabel =
       });
     }
     group.addTo(map);
-    map.fitBounds(group.getBounds(), { padding: [24, 24] });
+
+    /* The radius: a dashed ring, faintly filled, under the town outlines;
+       the map frames itself on it so the whole area shows. */
+    const radius = wrap.dataset.radius
+      ? (JSON.parse(wrap.dataset.radius) as {
+          lat: number;
+          lng: number;
+          miles: number;
+        })
+      : null;
+    // Frame the map first (the circle's box comes from its centre and size,
+    // so it needs no view), then draw the ring: a path can't be layered
+    // until the map has a view to render it in.
+    const meters = radius ? radius.miles * 1609.344 : 0;
+    let bounds = areas.length ? group.getBounds() : null;
+    if (radius) {
+      const box = L.latLng(radius.lat, radius.lng).toBounds(meters * 2);
+      bounds = bounds ? bounds.extend(box) : box;
+    }
+    if (bounds) map.fitBounds(bounds, { padding: [24, 24] });
+    if (radius) {
+      L.circle([radius.lat, radius.lng], {
+        radius: meters,
+        color: accent,
+        weight: 2,
+        opacity: 0.7,
+        dashArray: "6 6",
+        fillColor: accent,
+        fillOpacity: 0.05,
+        interactive: false,
+      })
+        .addTo(map)
+        .bringToBack();
+    }
   }
 
   function initServiceMaps() {

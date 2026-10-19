@@ -12,7 +12,9 @@ type ProcessStepsVariant =
   /** Header (and optional photo) left, numbered list right */
   | "list"
   /** Header on top, numbered cards in a row */
-  | "cards";
+  | "cards"
+  /** Header on top, steps alternating along a vertical line (no photo) */
+  | "timeline";
 type ProcessStepsTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -24,7 +26,8 @@ interface Props extends HTMLAttributes<"section"> {
    * - `eyebrow`, `heading`, `text` — the intro
    * - `steps` — `{ title, text }[]` (numbers are generated)
    * - `image`, `imageAlt` — optional photo under the intro (`list` only)
-   * - `variant` — `'list'` (default) or `'cards'`
+   * - `variant` — `'list'` (default), `'cards'`, or `'timeline'` (steps
+   *   alternating along a line; the photo isn't shown)
    *
    * @example
    * <ProcessSteps heading="How it works" steps={[{ title: "Call", text: "Tell us what you need." }]} />
@@ -92,7 +95,7 @@ if (import.meta.env.DEV && render) {
     console.warn(
       "[ProcessSteps] `steps` is empty or missing; nothing renders.",
     );
-  if (!["list", "cards"].includes(variant))
+  if (!["list", "cards", "timeline"].includes(variant))
     console.warn(`[ProcessSteps] Unknown variant "${variant}".`);
 }
 ---
@@ -106,10 +109,10 @@ if (import.meta.env.DEV && render) {
       class:list={["process-steps_wrap", className]}
       {...rest}
     >
-      {variant === "cards" ? (
+      {variant === "cards" || variant === "timeline" ? (
         <>
           <SectionHeader eyebrow={eyebrow} heading={heading} intro={text} />
-          <StepList steps={steps} variant="cards" />
+          <StepList steps={steps} variant={variant} />
         </>
       ) : (
         <>

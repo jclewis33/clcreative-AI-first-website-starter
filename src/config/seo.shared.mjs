@@ -46,6 +46,7 @@ export const DEV_ONLY_PATHS = [
   "/demo/local-service",
   "/demo/local-service-contact",
   "/demo/local-service-showcase",
+  "/demo/local-service-about",
 ];
 
 /**

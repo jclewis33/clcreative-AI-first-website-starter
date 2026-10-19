@@ -40,6 +40,31 @@ export interface LocalServiceHomeData {
    */
   layout?: "contractor" | "showcase";
 
+  /**
+   * The About page (LocalServiceAbout, /about). Optional: without it the
+   * page leads with the story's heading and paragraphs.
+   */
+  about?: {
+    /** Page `<title>` and meta description. */
+    title?: string;
+    description?: string;
+    eyebrow?: string;
+    /** The h1. HTML allowed (`<strong>` = accent). */
+    heading?: string;
+    /** The intro line under it. */
+    text?: string;
+    /**
+     * The photo beside the intro. @default photoBand's image, else the home
+     * hero's — never the story photo, which sits right below.
+     */
+    image?: HomeImage;
+    imageAlt?: string;
+    /** The story section's heading on the About page. @default story.heading */
+    storyHeading?: string;
+    /** Longer story paragraphs for the About page. @default story.paragraphs */
+    paragraphs?: string[];
+  };
+
   /** Page `<title>` and meta description. */
   title: string;
   description: string;
@@ -185,7 +210,12 @@ export interface LocalServiceHomeData {
     imageAlt?: string;
   };
 
-  photoBand?: { image: HomeImage; alt: string };
+  photoBand?: {
+    image: HomeImage;
+    alt: string;
+    /** Focal point in percent — `{ x: 50, y: 25 }` keeps heads in frame. @default { x: 50, y: 35 } */
+    position?: { x: number; y: number };
+  };
 
   story?: {
     eyebrow?: string;

@@ -387,3 +387,14 @@ Each styles directory is its cascade layer, so the choice is one question:
 _must a component class be able to override this?_ Yes → `base/`. No →
 `utilities/`. Every file opens with an `Owns:` / `Does not:` header — read it
 before adding, extend it when you do.
+
+## Scroll-driven CSS animations (the minifier gotcha)
+
+Put `animation-timeline` / `animation-range` in a **separate, more specific
+rule** from the `animation` shorthand. The build's CSS minifier folds a
+same-rule `animation-timeline: view()` into the shorthand
+(`animation: x linear both view()`), which browsers reject, so nothing
+animates and nothing errors. See StepList's timeline variant. Wrap the
+whole thing in `@supports (animation-timeline: view())` and
+`prefers-reduced-motion: no-preference`, with the static end state as the
+default.

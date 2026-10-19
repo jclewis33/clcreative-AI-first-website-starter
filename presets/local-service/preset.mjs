@@ -22,6 +22,20 @@ const item = z.object({ title: text, text: text });
 const homeSchema = z.object({
   /** contractor (conversion-led) or showcase (photo-led, editorial). */
   layout: z.enum(["contractor", "showcase"]).default("contractor"),
+  /** The About page (/about). Optional: it leads with the story without it. */
+  about: z
+    .object({
+      title: text.optional(),
+      description: text.optional(),
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      text: text.optional(),
+      image: image.optional(),
+      imageAlt: text.optional(),
+      storyHeading: text.optional(),
+      paragraphs: z.array(text).optional(),
+    })
+    .optional(),
   /** Defaults to "<name> | <tagline>". */
   title: text.optional(),
   /** Defaults to seo.description. */
@@ -198,7 +212,19 @@ const homeSchema = z.object({
       path: ["imageAlt"],
     })
     .optional(),
-  photoBand: z.object({ image, alt: text }).optional(),
+  photoBand: z
+    .object({
+      image,
+      alt: text,
+      /** Focal point in percent; keep faces in the crop. */
+      position: z
+        .object({
+          x: z.number().min(0).max(100),
+          y: z.number().min(0).max(100),
+        })
+        .optional(),
+    })
+    .optional(),
   story: z
     .object({
       eyebrow: text.optional(),
@@ -312,6 +338,13 @@ export const demoSchema = z.object({
     region: text,
   }),
   serviceAreas: z.array(text).min(1),
+  /**
+   * When they describe their area as a distance ("within 60 miles of
+   * Palmer"): a circle on the street map, centred on that town.
+   */
+  serviceRadius: z
+    .object({ center: text, miles: z.number().positive().max(250) })
+    .optional(),
   founded: z.number().int().min(1800).max(2100).optional(),
   reviewsUrl: z.url().optional(),
   /** Footer profiles by label: { "Facebook": "https://…" }. */
@@ -350,6 +383,7 @@ export const demoSchema = z.object({
 export const PAGES = [
   { from: "index.astro", to: "src/pages/index.astro" },
   { from: "contact.astro", to: "src/pages/contact.astro" },
+  { from: "about.astro", to: "src/pages/about.astro" },
 ];
 
 /** Nav and footer links a demo drops (the sample content stays unlinked). */

@@ -164,8 +164,22 @@ if (import.meta.env.DEV && render) {
       border-top: var(--border-width-main) solid var(--border);
     }
 
+    /* The icon tile reads as a badge beside the heading: a brand tint (the
+       tile's default surface matches the page, which left a small icon
+       floating in white space) and a bigger icon, its top on the heading's
+       first line. */
     .work-scope_item .service-icon_wrap {
       flex-shrink: 0;
+      width: 3rem;
+      background-color: color-mix(
+        in srgb,
+        var(--heading-accent) 12%,
+        transparent
+      );
+    }
+
+    .work-scope_item .service-icon_svg {
+      width: 1.75rem;
     }
 
     .work-scope_item_body {

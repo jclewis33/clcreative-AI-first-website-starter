@@ -123,6 +123,12 @@ git switch -c demo/<slug>
     `<mark>`.
   - `trust`: only credentials they actually show (licensed & insured, BBB,
     manufacturer dealer), with the seal file as `image` when you have it.
+- **About page (`/about`):** generated for every demo from the same `home`
+  data (story, stats, team, guarantee, process, reviews, map, call band) and
+  added to the nav and footer. Give it `home.about` — an `eyebrow`, an h1
+  `heading`, an intro `text`, and longer story `paragraphs` in the owner's
+  own words (their About section, verbatim where you can). Without it the
+  page just leads with the story.
 - **`callBand`:** `variant: "photo-card"` with a wide texture-like job photo
   (a lawn, a roofline, a finished patio). Otherwise leave out `variant` for
   the dark band.
@@ -145,6 +151,13 @@ git switch -c demo/<slug>
 - `home.estimate.question` heads step 1 of the estimate form, above the
   service tiles. The default is "What do you need help with?". Phrase it for
   their trade ("What's going on with your AC?").
+- **`serviceRadius`:** when they describe their area as a distance ("within
+  60 miles of Palmer"), set `{ "center": "Palmer", "miles": 60 }`: the map
+  draws that circle and frames itself on it. Then pick `serviceAreas` from
+  the towns across the whole circle (their own map, Facebook areas), not just
+  the home county.
+- **`photoBand.position`:** `{ "x": 50, "y": 25 }` (percent) when the
+  people in the photo sit high in the frame; check heads aren't cropped.
 - **Service-area map:** automatic. `npm run demo` looks each service area
   up on OpenStreetMap and draws a street map with the towns outlined,
   caching the boundaries in `service-area.geo.json` beside demo.json. Commit

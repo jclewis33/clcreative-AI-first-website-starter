@@ -50,7 +50,8 @@ interface Props extends HTMLAttributes<"section"> {
    * - `heading` — the H1; HTML allowed, `<strong>` marks the accent words
    * - `primaryCta`, `secondaryCta` — `SectionCta` buttons (link or pop-up)
    * - `showPhone` — the `SITE.phone` call button (default `true`)
-   * - `breadcrumbs` — trail above the eyebrow (also pass it to BaseLayout's
+   * - `breadcrumbs` — trail in its own row at the top of the hero, just under
+   *   the nav (top padding drops to xsmall). Also pass it to BaseLayout's
    *   `breadcrumbs` prop so the schema matches)
    * - `proof` — a trust line, with optional star rating
    * - `badge` — a small card, e.g. `{ value: "Since 2009", label: "Family owned" }`.
@@ -178,12 +179,18 @@ const {
   badge: badgeProp,
   theme: themeProp,
   padding,
-  paddingTop = padding,
+  paddingTop: paddingTopProp,
   paddingBottom = padding,
   id,
   class: className,
   ...rest
 } = Astro.props;
+
+/* With breadcrumbs the trail sits in its own row right under the nav, so
+   the top padding drops to xsmall and the section's gap spaces the trail
+   from the content; otherwise the usual padding. */
+const paddingTop =
+  paddingTopProp ?? padding ?? (breadcrumbs?.length ? "xsmall" : undefined);
 
 /* SITE.founded supplies a default "Since …" badge; a page can override or
    pass `badge={false}` to hide it. */
@@ -247,13 +254,16 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
         </Fragment>
       )}
 
+      {breadcrumbs?.length ? (
+        <Breadcrumbs items={breadcrumbs} class="hero_crumbs" />
+      ) : null}
+
       <Layout
         variant={variant === "split" && hasPhoto ? "columns" : "stack"}
         ratio="6-6"
         verticalAlign="center"
         class="hero_layout u-hero-fade"
       >
-        {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} /> : null}
         {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
         <Heading
           tag="h1"

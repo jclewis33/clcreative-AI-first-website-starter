@@ -36,6 +36,8 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
 - `home.layout` — `contractor` (default; LocalServiceHome, conversion-led)
   or `showcase` (LocalServiceShowcase, photo-led; skips offer, symptoms,
   comparison and the hero panel)
+- `home.about` — the About page intro (`eyebrow`, `heading`, `text`) and
+  longer story `paragraphs`; optional (the page leads with `story` without it)
 - `home` — `LocalServiceHomeData` (`src/lib/local-service-home.ts`) with image
   sources. The optional sections are `symptoms`, `offer`, `recentWork`,
   `guarantee`, `comparison` and `reviews`; each appears only when it's set,

@@ -1,0 +1,12 @@
+---
+/**
+ * About page — the local-service preset (presets/local-service), installed
+ * by `npm run demo`. The content is src/data/home.ts (story, stats, team,
+ * guarantee, process, reviews, service area); `home.about` in demo.json sets
+ * the intro. Edit demo.json and re-run the script rather than this file.
+ */
+import LocalServiceAbout from "@/components/templates/LocalServiceAbout.astro";
+import { HOME } from "@/data/home";
+---
+
+<LocalServiceAbout home={HOME} />

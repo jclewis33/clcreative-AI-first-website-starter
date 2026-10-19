@@ -2059,9 +2059,12 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
    ===================================================== */
 
     @container nav (min-width: 77em) {
+      /* --nav-menu-justify: where the links sit between the logo and the
+         actions — centred by default; the home-service looks push them
+         right, beside the phone and the button (variables/looks.css). */
       .nav_menu_wrap {
         flex: 1;
-        justify-content: center;
+        justify-content: var(--nav-menu-justify, center);
         align-items: center;
         display: flex;
       }

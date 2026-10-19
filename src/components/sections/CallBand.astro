@@ -134,13 +134,8 @@ if (import.meta.env.DEV && render) {
         </Heading>
         {text && <Text muted>{text}</Text>}
         <div slot="column2" class="call-band_actions">
-          <CtaButton phone fullWidth size="large" />
-          <CtaButton
-            cta={secondaryCta}
-            variant="secondary"
-            fullWidth
-            size="large"
-          />
+          <CtaButton phone size="large" />
+          <CtaButton cta={secondaryCta} variant="secondary" size="large" />
         </div>
       </Layout>
     </Section>
@@ -228,12 +223,21 @@ if (import.meta.env.DEV && render) {
 
 <style is:global>
   @layer components {
+    /* The two buttons side by side, level with the heading; they wrap and
+       fill the row when it gets too narrow for both (stacked under the
+       heading on smaller screens). Stacked in a narrow column they made a
+       tall block beside a one-line heading. */
     .call-band_actions {
-      display: grid;
+      display: flex;
+      flex-wrap: wrap;
       gap: var(--space-3);
       width: 100%;
-      max-width: 22rem;
-      justify-self: var(--start-medium, end);
+      justify-content: var(--start-medium, flex-end);
+    }
+
+    .call-band_actions > * {
+      flex: 1 1 13rem;
+      max-width: var(--unset-medium, 18rem);
     }
 
     /* photo-card: a light card centred on the photo. */

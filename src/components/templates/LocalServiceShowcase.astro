@@ -162,7 +162,15 @@ const closeImageAlt = callBand.image ? callBand.imageAlt : hero.imageAlt;
     )
   }
 
-  {photoBand && <PhotoBand image={photoBand.image} alt={photoBand.alt} />}
+  {
+    photoBand && (
+      <PhotoBand
+        image={photoBand.image}
+        alt={photoBand.alt}
+        position={photoBand.position}
+      />
+    )
+  }
 
   {
     story && (

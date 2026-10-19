@@ -40,7 +40,8 @@ const {
   render = true,
   image,
   alt,
-  position,
+  /* People usually sit in a photo's upper half: favour it over dead centre. */
+  position = { x: 50, y: 35 },
   id,
   class: className,
   ...rest
@@ -77,7 +78,9 @@ if (import.meta.env.DEV && render) {
   @layer components {
     .photo-band_frame {
       position: relative;
-      block-size: clamp(11rem, 26vw, 24rem);
+      /* Tall enough for people to keep their heads: the old 24rem cap
+         cropped a family photo at the shoulders. */
+      block-size: clamp(14rem, 34vw, 32rem);
       overflow: hidden;
     }
   }

@@ -134,7 +134,12 @@ The whole stack is a template: **`LocalServiceHome`**
 from one `home` object (`LocalServiceHomeData`, `src/lib/local-service-home.ts`);
 optional sections (`stats`, `process`, `photoBand`, `story`, `reviews`, `faqs`)
 render only when their data is there, and the service cards come from
-`src/content/services`. Its photo-led sibling **`LocalServiceShowcase`** takes
+`src/content/services`. Step lists (`StepList`, `ProcessSteps`) have a **`timeline`** variant: numbered dots on a line, steps alternating sides (line left on narrow screens), each dot lighting up, text fading in and line drawing as it scrolls into view (scroll-driven CSS; fully lit without support or with reduced motion). Service pages and the About page use it. `ServiceArea` draws a dashed **radius** ring from `SERVICE_RADIUS` (`src/data/service-radius.json`, generated from demo.json's `serviceRadius`). The contact template (`LocalServiceContact`) never invents promises: its steps and FAQ come from the home data and drop out when absent.
+
+The About page is **`LocalServiceAbout`** (same `home` object; `home.about`
+sets the intro; dev page `/demo/local-service-about`); a preset adds it to
+the nav through the generated `src/data/preset-pages.ts`, which
+`site-structure.ts` merges into PAGES, NAV_MENU and the footer. Its photo-led sibling **`LocalServiceShowcase`** takes
 the same `home` object (`layout: "showcase"`; dev page
 `/demo/local-service-showcase`): background hero at `headingSize="h1"`,
 recent work on dark, the story with a text-link CTA, a `cinematic` CallBand,
