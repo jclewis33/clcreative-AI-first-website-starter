@@ -185,6 +185,15 @@ const estimateOptions = SITE.quote
 <html lang="en" data-theme={theme} data-look={SITE.look === "studio" ? undefined : SITE.look} class:list={[bannerText && "is-has-banner"]}>
   <head>
     <Head title={title} description={description} canonical={canonical} ogImage={ogImage} ogTitle={ogTitle} ogDescription={ogDescription} />
+    {/* How the visitor last moved focus — pointer or keyboard — for the
+        text-field focus ring in reset.css. */}
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        document.addEventListener("pointerdown", function () { root.dataset.inputModality = "pointer"; }, true);
+        document.addEventListener("keydown", function (e) { if (e.key === "Tab") root.dataset.inputModality = "keyboard"; }, true);
+      })();
+    </script>
     {/* Synchronous check: hide banner before first paint if previously dismissed.
         Adds a class that forces display:none on the banner, preventing any flicker
         from the grid-template-rows transition. */}
