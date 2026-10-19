@@ -460,8 +460,34 @@ const { style: userStyle, ...attrs } = rest;
 const wrapperStyle =
   [...wrapperParts, userStyle].filter(Boolean).join("; ") || undefined;
 
-// Image: focal-point custom properties
-const imageStyle = `--_x: ${focal.x}; --_y: ${focal.y}`;
+/* Crop factor: how much wider than its box a cover-cropped photo is drawn
+   (a wide photo in a tall box is scaled to the box's HEIGHT). `sizes="auto"`
+   picks the srcset candidate from the img's laid-out width, so with the img
+   laid out at the box's width a 2400x1137 photo in a 3:4 box downloaded the
+   547px copy and stretched it to 729px tall — the blur. Past 5% the img is
+   laid out at its true drawn width instead (visual-utilities.css,
+   [data-crop]), offset by the focal point, so the browser picks a copy that
+   is sharp. Only local images know their size; backgrounds have no ratio. */
+let crop = 1;
+if (
+  typeof src === "object" &&
+  src.width &&
+  src.height &&
+  resolvedRatio &&
+  variant !== "background"
+) {
+  const [a, b] = resolvedRatio.split("/").map((n) => Number(n.trim()));
+  if (a > 0 && b > 0) crop = src.width / src.height / (a / b);
+}
+const cropped = crop > 1.05;
+
+// Image: focal-point custom properties (and the crop factor, when cropped)
+const imageStyle = [
+  `--_x: ${focal.x}; --_y: ${focal.y}`,
+  cropped ? `--_crop: ${crop.toFixed(3)}` : "",
+]
+  .filter(Boolean)
+  .join("; ");
 
 /* ═══════════════════════════════════════════════════
    Detect remote URL vs imported image
@@ -480,6 +506,7 @@ const imageProps: Record<string, any> = {
   loading,
   fetchpriority,
   style: imageStyle,
+  "data-crop": cropped ? "" : undefined,
 };
 
 if (!isRemote) {
