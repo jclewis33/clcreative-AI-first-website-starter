@@ -1,13 +1,23 @@
 ---
 /**
  * Contact page — the local-service preset (presets/local-service), installed
- * by `npm run demo`. Everything on it comes from SITE and the services.
+ * by `npm run demo`. It comes from SITE, the services and src/data/home.ts
+ * (the hero photo, the process steps, the FAQ, the service-area copy).
  */
 import LocalServiceContact from "@/components/templates/LocalServiceContact.astro";
 import { SITE } from "@/config/site";
+import { HOME } from "@/data/home";
 
 const title = `Contact | ${SITE.name}`;
 const description = `Contact ${SITE.name}. Call ${SITE.phone.display} or send the form and we'll get back to you.`;
 ---
 
-<LocalServiceContact title={title} description={description} />
+<LocalServiceContact
+  title={title}
+  description={description}
+  image={HOME.hero.image}
+  imageAlt={HOME.hero.imageAlt}
+  steps={HOME.process?.steps}
+  faqs={HOME.faqs?.items}
+  serviceArea={HOME.serviceArea}
+/>

@@ -2,36 +2,47 @@
 /**
  * Local-service contact page template.
  *
- * Hero, the quote form beside the contact cards (service areas and hours
- * from SITE), what happens next, a list of the services, and a short FAQ.
- * Deliberately no map or street address: add them only when the client has
- * confirmed them. Everything it shows comes from SITE and the services
- * content, so it fits any local-service site as-is.
+ * Hero (with a photo when given) → the quote form beside a short sidebar
+ * (call now, hours) → what happens next → "Not sure what to ask for?" as
+ * photo service cards → where we work (the street map) → the FAQ.
+ *
+ * It promises nothing on the business's behalf: no response time, no free
+ * estimate. The steps and the FAQ are the business's own (from the home
+ * data) and are left out when not given; the hero line is neutral unless
+ * the caller writes one. No street address: add one only when the client
+ * has confirmed it.
  *
  * Used by the dev sample (/demo/local-service-contact) and by every
  * prospect demo generated with `npm run demo` (presets/local-service).
  */
+import type { ImageMetadata } from "astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
-import Text from "@/components/ui/Text.astro";
 import Hero from "@/components/sections/Hero.astro";
 import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
 import FAQ from "@/components/sections/FAQ.astro";
 import LeadForm from "@/components/form/LeadForm.astro";
 import ContactCards from "@/components/ui/ContactCards.astro";
-import LinkList from "@/components/ui/LinkList.astro";
 import { SITE } from "@/config/site";
 import { getServices, servicePath } from "@/lib/services";
+import { geoFor } from "@/lib/service-area-geo";
+import type { FAQItem } from "@/data/faqs";
+
+type ContactStep = { title: string; text: string };
 
 interface Props {
   /**
-   * **LocalServiceContact** — a local-service contact page. Needs nothing
-   * but a title and description; the rest comes from SITE and the services.
+   * **LocalServiceContact** — a local-service contact page. Needs only a
+   * title and description; the rest comes from SITE and the services. The
+   * optional props fill it in with the business's own material — nothing
+   * here invents a promise (response times, free estimates) for them.
    *
    * @example
-   * <LocalServiceContact title={`Contact | ${SITE.name}`} description="…" />
+   * <LocalServiceContact title={`Contact | ${SITE.name}`} description="…" image={HOME.hero.image} imageAlt={HOME.hero.imageAlt} steps={HOME.process?.steps} faqs={HOME.faqs?.items} />
    */
   docs?: string;
 
@@ -40,26 +51,65 @@ interface Props {
 
   /** Meta description. */
   description: string;
+
+  /** The hero line. @default "Send the form or call, and we'll get back to you." */
+  text?: string;
+
+  /** A photo beside the hero. Without one the hero is text only. */
+  image?: ImageMetadata | string;
+
+  /** Alt text for the hero photo. */
+  imageAlt?: string;
+
+  /** "What happens next" — the business's own steps. Left out when empty. */
+  steps?: ContactStep[];
+
+  /** The FAQ — the business's own questions. Left out when empty. */
+  faqs?: FAQItem[];
+
+  /** Heading and line for the map section. */
+  serviceArea?: { heading?: string; text?: string };
 }
 
-const { title, description } = Astro.props;
+const {
+  title,
+  description,
+  text = "Send the form or call, and we'll get back to you.",
+  image,
+  imageAlt,
+  steps = [],
+  faqs = [],
+  serviceArea,
+} = Astro.props;
 
 const services = await getServices();
+const serviceItems = services.map((s) => ({
+  title: s.data.title,
+  text: s.data.cardText,
+  image: s.data.cardImage,
+  imageAlt: s.data.cardImageAlt,
+  href: servicePath(s.id),
+}));
+const geo = geoFor(SITE.serviceAreas);
+const crumbs = [{ label: "Home", href: "/" }, { label: "Contact" }];
 ---
 
 <BaseLayout title={title} description={description}>
   <Hero
-    variant="text"
-    breadcrumbs={[{ label: "Home", href: "/" }, { label: "Contact" }]}
+    variant={image ? "split" : "text"}
+    headingSize="h1"
+    breadcrumbs={crumbs}
     eyebrow="Contact"
     heading="Talk to a <strong>real person</strong> today"
-    text="Send the form and we'll call you back within one business day, or call now."
+    text={text}
+    image={image}
+    imageAlt={imageAlt}
     badge={false}
   />
 
   <Section>
     <Layout ratio="7-5" verticalAlign="start">
-      <Heading tag="h2" variant="h3">Tell us about the project</Heading>
+      <Heading tag="h2" variant="h3">Tell us what's going on</Heading>
       <LeadForm
         formId="contact"
         id="contact-page-form"
@@ -75,56 +125,34 @@ const services = await getServices();
           heading: "Need help today?",
           text: "Call and we'll talk you through it.",
         }}
-        cards={[
-          { heading: "Service areas", chips: [...SITE.serviceAreas] },
-          { heading: "Hours", body: SITE.hours },
-        ]}
+        cards={[{ heading: "Hours", body: SITE.hours }]}
       />
     </Layout>
   </Section>
 
-  <ProcessSteps
-    variant="cards"
-    theme="dark"
-    heading="What happens next"
-    steps={[
-      { title: "We call you back", text: "Usually the same business day." },
-      {
-        title: "We visit",
-        text: "A free on-site estimate at a time that suits you.",
-      },
-      { title: "You decide", text: "A written, fixed quote with no pressure." },
-    ]}
-  />
-
-  <Section>
-    <Layout ratio="5-7" verticalAlign="start">
-      <Heading tag="h2">Not sure what to ask for?</Heading>
-      <Text muted
-        >Start with the closest match. We'll sort out the details together.</Text
-      >
-      <LinkList
-        slot="column2"
-        items={services.map((s) => ({
-          title: s.data.title,
-          text: s.data.cardText,
-          href: servicePath(s.id),
-        }))}
+  {
+    steps.length > 0 && (
+      <ProcessSteps
+        variant="cards"
+        theme="dark"
+        heading="What happens next"
+        steps={steps}
       />
-    </Layout>
-  </Section>
+    )
+  }
 
-  <FAQ
-    eyebrow="Before you reach out"
-    items={[
-      {
-        question: "Is the estimate free?",
-        answer: "Yes. We visit, measure and send a written price at no cost.",
-      },
-      {
-        question: "How soon will you call back?",
-        answer: "Usually the same business day, and always within one.",
-      },
-    ]}
+  <ServiceCards
+    eyebrow="Our services"
+    heading="Not sure what to ask for?"
+    intro="Start with the closest match. We'll sort out the details together."
+    items={serviceItems}
   />
+
+  <ServiceArea
+    heading={serviceArea?.heading ?? "Where we work"}
+    text={serviceArea?.text}
+    geo={geo}
+  />
+
+  {faqs.length > 0 && <FAQ eyebrow="Before you reach out" items={faqs} />}
 </BaseLayout>
