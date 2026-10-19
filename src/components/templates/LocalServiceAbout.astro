@@ -3,7 +3,7 @@
  * Local-service About page — the longer "who we are" page behind the home
  * page's story section, built from the same LocalServiceHomeData:
  *
- *   intro hero (breadcrumbs, the about heading and line, the estimate and
+ *   intro hero (the about heading and line, the estimate and
  *   phone buttons) → stats strip → the owner's story with its reasons → the
  *   team → the guarantee → how a job goes → reviews → where we work →
  *   the closing call band.
@@ -80,7 +80,6 @@ const heroImageAlt = about?.image
   : home.photoBand
     ? home.photoBand.alt
     : home.hero.imageAlt;
-const crumbs = [{ label: "Home", href: "/" }, { label: "About" }];
 const schemaCrumbs = [
   { name: "Home", path: "/" },
   { name: "About", path: "/about" },
@@ -96,7 +95,6 @@ const schemaCrumbs = [
   <Hero
     variant="split"
     headingSize="h1"
-    breadcrumbs={crumbs}
     eyebrow={about?.eyebrow ?? "About us"}
     heading={heading}
     text={about?.text}

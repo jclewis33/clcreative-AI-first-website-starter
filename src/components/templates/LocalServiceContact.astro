@@ -2,7 +2,8 @@
 /**
  * Local-service contact page template.
  *
- * Hero (with a photo when given) → the quote form beside a short sidebar
+ * A centred hero (no breadcrumbs: a one-level page doesn't need them) with
+ * a wide photo under it → the quote form beside a short sidebar
  * (call now, hours) → what happens next → "Not sure what to ask for?" as
  * photo service cards → where we work (the street map) → the FAQ.
  *
@@ -42,7 +43,7 @@ interface Props {
    * here invents a promise (response times, free estimates) for them.
    *
    * @example
-   * <LocalServiceContact title={`Contact | ${SITE.name}`} description="…" image={HOME.hero.image} imageAlt={HOME.hero.imageAlt} steps={HOME.process?.steps} faqs={HOME.faqs?.items} />
+   * <LocalServiceContact title={`Contact | ${SITE.name}`} description="…" steps={HOME.process?.steps} faqs={HOME.faqs?.items} />
    */
   docs?: string;
 
@@ -52,10 +53,16 @@ interface Props {
   /** Meta description. */
   description: string;
 
+  /**
+   * The headline — what the visitor gets, not "contact us". HTML allowed
+   * (`<strong>` = accent). @default 'Get the help your <strong>home</strong> needs'
+   */
+  heading?: string;
+
   /** The hero line. @default "Send the form or call, and we'll get back to you." */
   text?: string;
 
-  /** A photo beside the hero. Without one the hero is text only. */
+  /** The wide photo under the hero. Without one the hero is text only. */
   image?: ImageMetadata | string;
 
   /** Alt text for the hero photo. */
@@ -74,6 +81,7 @@ interface Props {
 const {
   title,
   description,
+  heading = "Get the help your <strong>home</strong> needs",
   text = "Send the form or call, and we'll get back to you.",
   image,
   imageAlt,
@@ -91,23 +99,22 @@ const serviceItems = services.map((s) => ({
   href: servicePath(s.id),
 }));
 const geo = geoFor(SITE.serviceAreas);
-const crumbs = [{ label: "Home", href: "/" }, { label: "Contact" }];
 ---
 
 <BaseLayout title={title} description={description}>
   <Hero
-    variant={image ? "split" : "text"}
-    headingSize="h1"
-    breadcrumbs={crumbs}
+    variant="centered"
+    paddingBottom="xsmall"
+    phoneVariant="primary"
     eyebrow="Contact"
-    heading="Talk to a <strong>real person</strong> today"
+    heading={heading}
     text={text}
     image={image}
     imageAlt={imageAlt}
     badge={false}
   />
 
-  <Section>
+  <Section paddingTop="xsmall">
     <Layout ratio="7-5" verticalAlign="start">
       <Heading tag="h2" variant="h3">Tell us what's going on</Heading>
       <LeadForm

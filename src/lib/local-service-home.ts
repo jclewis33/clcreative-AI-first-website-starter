@@ -65,6 +65,17 @@ export interface LocalServiceHomeData {
     paragraphs?: string[];
   };
 
+  /**
+   * The contact page hero: a headline about what the visitor gets, a line,
+   * and a wide photo (defaults to the home hero's).
+   */
+  contact?: {
+    heading?: string;
+    text?: string;
+    image?: HomeImage;
+    imageAlt?: string;
+  };
+
   /** Page `<title>` and meta description. */
   title: string;
   description: string;
