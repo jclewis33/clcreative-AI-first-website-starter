@@ -26,6 +26,7 @@ type HeroVariant =
   | "centered";
 type HeroTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+type HeroPhoneVariant = "secondary" | "primary";
 type HeroCrumb = { label: string; href?: string };
 type HeroProof = { rating?: number; text: string };
 type HeroBadge = { value: string; label: string };
@@ -123,6 +124,13 @@ interface Props extends HTMLAttributes<"section"> {
   /** Show the `SITE.phone` call button. @default true */
   showPhone?: boolean;
 
+  /**
+   * The phone button's style: the outlined `secondary` beside a primary
+   * CTA, or `primary` (brand fill) when it's the hero's only button.
+   * @default 'secondary'
+   */
+  phoneVariant?: HeroPhoneVariant;
+
   /** Optional third button. */
   secondaryCta?: SectionCta;
 
@@ -175,6 +183,7 @@ const {
   headingSize = "display",
   primaryCta,
   showPhone = true,
+  phoneVariant = "secondary",
   secondaryCta,
   breadcrumbs,
   proof,
@@ -294,7 +303,9 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
         {!panel && (primaryCta || showPhone || secondaryCta) && (
           <ButtonWrapper>
             {primaryCta && <CtaButton cta={primaryCta} size="large" />}
-            {showPhone && <CtaButton phone variant="secondary" size="large" />}
+            {showPhone && (
+              <CtaButton phone variant={phoneVariant} size="large" />
+            )}
             {secondaryCta && (
               <CtaButton cta={secondaryCta} variant="text" size="large" />
             )}
@@ -386,7 +397,7 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
     /* centered: the photo spans the column under the text. */
     .hero_media.is-wide {
       width: 100%;
-      margin-top: var(--space-5);
+      margin-top: var(--space-7);
     }
 
     .hero_media {

@@ -104,7 +104,8 @@ const geo = geoFor(SITE.serviceAreas);
 <BaseLayout title={title} description={description}>
   <Hero
     variant="centered"
-    headingSize="h1"
+    paddingBottom="xsmall"
+    phoneVariant="primary"
     eyebrow="Contact"
     heading={heading}
     text={text}
@@ -113,7 +114,7 @@ const geo = geoFor(SITE.serviceAreas);
     badge={false}
   />
 
-  <Section>
+  <Section paddingTop="xsmall">
     <Layout ratio="7-5" verticalAlign="start">
       <Heading tag="h2" variant="h3">Tell us what's going on</Heading>
       <LeadForm
