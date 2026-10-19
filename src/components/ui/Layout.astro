@@ -722,6 +722,15 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
       display: flex;
     }
 
+    /* A column2 slot passed conditionally (a Hero's photo, only on its split
+       variant) still counts as passed, so an empty column is emitted; it took
+       a grid row and its row-gap (64px under every text/background hero).
+       It holds whitespace, so :empty can't see it; a real column 2 always
+       holds elements. */
+    .u-layout-column-2:not(:has(*)) {
+      display: none;
+    }
+
     .u-layout-column-1,
     .u-layout-column-2 {
       align-self: center;
