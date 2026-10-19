@@ -123,6 +123,12 @@ git switch -c demo/<slug>
     `<mark>`.
   - `trust`: only credentials they actually show (licensed & insured, BBB,
     manufacturer dealer), with the seal file as `image` when you have it.
+- **About page (`/about`):** generated for every demo from the same `home`
+  data (story, stats, team, guarantee, process, reviews, map, call band) and
+  added to the nav and footer. Give it `home.about` — an `eyebrow`, an h1
+  `heading`, an intro `text`, and longer story `paragraphs` in the owner's
+  own words (their About section, verbatim where you can). Without it the
+  page just leads with the story.
 - **`callBand`:** `variant: "photo-card"` with a wide texture-like job photo
   (a lawn, a roofline, a finished patio). Otherwise leave out `variant` for
   the dark band.
