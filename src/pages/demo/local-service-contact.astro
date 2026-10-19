@@ -4,14 +4,22 @@
  * is in DEV_ONLY_PATHS, so the build strips it). The page itself is the
  * LocalServiceContact template, which prospect demos use too.
  */
+import type { LocalServiceHomeData } from "@/lib/local-service-home";
 import { SAMPLE_HOME } from "@/data/local-service-sample";
 import LocalServiceContact from "@/components/templates/LocalServiceContact.astro";
+/* Widened: the data is `satisfies`-typed, so optional fields it leaves out
+   don't exist on its literal type. */
+const home: LocalServiceHomeData = SAMPLE_HOME;
 ---
 
 <LocalServiceContact
   title="Local-service sample contact page"
   description="A sample contact page built from the local-service sections."
-  steps={SAMPLE_HOME.process?.steps}
-  faqs={SAMPLE_HOME.faqs?.items}
-  serviceArea={SAMPLE_HOME.serviceArea}
+  heading={home.contact?.heading}
+  text={home.contact?.text}
+  image={home.contact?.image ?? home.hero.image}
+  imageAlt={home.contact?.image ? home.contact.imageAlt : home.hero.imageAlt}
+  steps={home.process?.steps}
+  faqs={home.faqs?.items}
+  serviceArea={home.serviceArea}
 />

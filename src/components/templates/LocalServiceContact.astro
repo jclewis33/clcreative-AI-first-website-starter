@@ -2,8 +2,8 @@
 /**
  * Local-service contact page template.
  *
- * A compact hero in the brand colour (no photo, so it reads differently
- * from the photo heroes on every other page) → the quote form beside a short sidebar
+ * A centred hero (no breadcrumbs: a one-level page doesn't need them) with
+ * a wide photo under it → the quote form beside a short sidebar
  * (call now, hours) → what happens next → "Not sure what to ask for?" as
  * photo service cards → where we work (the street map) → the FAQ.
  *
@@ -16,6 +16,7 @@
  * Used by the dev sample (/demo/local-service-contact) and by every
  * prospect demo generated with `npm run demo` (presets/local-service).
  */
+import type { ImageMetadata } from "astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
@@ -52,8 +53,20 @@ interface Props {
   /** Meta description. */
   description: string;
 
+  /**
+   * The headline — what the visitor gets, not "contact us". HTML allowed
+   * (`<strong>` = accent). @default 'Get the help your <strong>home</strong> needs'
+   */
+  heading?: string;
+
   /** The hero line. @default "Send the form or call, and we'll get back to you." */
   text?: string;
+
+  /** The wide photo under the hero. Without one the hero is text only. */
+  image?: ImageMetadata | string;
+
+  /** Alt text for the hero photo. */
+  imageAlt?: string;
 
   /** "What happens next" — the business's own steps. Left out when empty. */
   steps?: ContactStep[];
@@ -68,7 +81,10 @@ interface Props {
 const {
   title,
   description,
+  heading = "Get the help your <strong>home</strong> needs",
   text = "Send the form or call, and we'll get back to you.",
+  image,
+  imageAlt,
   steps = [],
   faqs = [],
   serviceArea,
@@ -83,19 +99,17 @@ const serviceItems = services.map((s) => ({
   href: servicePath(s.id),
 }));
 const geo = geoFor(SITE.serviceAreas);
-const crumbs = [{ label: "Home", href: "/" }, { label: "Contact" }];
 ---
 
 <BaseLayout title={title} description={description}>
   <Hero
-    variant="text"
-    theme="brand"
+    variant="centered"
     headingSize="h1"
-    paddingBottom="small"
-    breadcrumbs={crumbs}
     eyebrow="Contact"
-    heading="Talk to a <strong>real person</strong> today"
+    heading={heading}
     text={text}
+    image={image}
+    imageAlt={imageAlt}
     badge={false}
   />
 

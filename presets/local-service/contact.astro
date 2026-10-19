@@ -4,18 +4,26 @@
  * by `npm run demo`. It comes from SITE, the services and src/data/home.ts
  * (the process steps, the FAQ, the service-area copy).
  */
+import type { LocalServiceHomeData } from "@/lib/local-service-home";
 import LocalServiceContact from "@/components/templates/LocalServiceContact.astro";
 import { SITE } from "@/config/site";
 import { HOME } from "@/data/home";
 
 const title = `Contact | ${SITE.name}`;
 const description = `Contact ${SITE.name}. Call ${SITE.phone.display} or send the form and we'll get back to you.`;
+/* Widened: the data is `satisfies`-typed, so optional fields it leaves out
+   don't exist on its literal type. */
+const home: LocalServiceHomeData = HOME;
 ---
 
 <LocalServiceContact
   title={title}
   description={description}
-  steps={HOME.process?.steps}
-  faqs={HOME.faqs?.items}
-  serviceArea={HOME.serviceArea}
+  heading={home.contact?.heading}
+  text={home.contact?.text}
+  image={home.contact?.image ?? home.hero.image}
+  imageAlt={home.contact?.image ? home.contact.imageAlt : home.hero.imageAlt}
+  steps={home.process?.steps}
+  faqs={home.faqs?.items}
+  serviceArea={home.serviceArea}
 />

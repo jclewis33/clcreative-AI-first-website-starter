@@ -36,6 +36,15 @@ const homeSchema = z.object({
       paragraphs: z.array(text).optional(),
     })
     .optional(),
+  /** The contact page hero: what the visitor gets, a line, a wide photo. */
+  contact: z
+    .object({
+      heading: text.optional(),
+      text: text.optional(),
+      image: image.optional(),
+      imageAlt: text.optional(),
+    })
+    .optional(),
   /** Defaults to "<name> | <tagline>". */
   title: text.optional(),
   /** Defaults to seo.description. */

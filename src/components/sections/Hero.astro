@@ -21,7 +21,9 @@ type HeroVariant =
   /** Text on the left, photo on the right */
   | "split"
   /** Text only — no photo */
-  | "text";
+  | "text"
+  /** Everything centred, with a wide photo underneath */
+  | "centered";
 type HeroTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 type HeroCrumb = { label: string; href?: string };
@@ -45,7 +47,8 @@ interface Props extends HTMLAttributes<"section"> {
    * **Hero** — the first section of a local-service page.
    *
    * - `variant` — `'background'` (photo behind the text), `'split'` (photo
-   *   on the right) or `'text'` (no photo). Defaults to `'background'` when
+   *   on the right), `'text'` (no photo) or `'centered'` (everything
+   *   centred, a wide photo underneath). Defaults to `'background'` when
    *   an `image` is given, else `'text'`.
    * - `heading` — the H1; HTML allowed, `<strong>` marks the accent words
    * - `primaryCta`, `secondaryCta` — `SectionCta` buttons (link or pop-up)
@@ -214,7 +217,10 @@ const stars = proof?.rating
 
 if (import.meta.env.DEV && render) {
   if (!heading) console.warn("[Hero] `heading` is required; nothing renders.");
-  if (variantProp && !["background", "split", "text"].includes(variantProp))
+  if (
+    variantProp &&
+    !["background", "split", "text", "centered"].includes(variantProp)
+  )
     console.warn(`[Hero] Unknown variant "${variantProp}".`);
   if (variant !== "text" && !image)
     console.warn(
@@ -259,7 +265,13 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
       ) : null}
 
       <Layout
-        variant={variant === "split" && hasPhoto ? "columns" : "stack"}
+        variant={
+          variant === "split" && hasPhoto
+            ? "columns"
+            : variant === "centered"
+              ? "stack-centered"
+              : "stack"
+        }
         ratio="6-6"
         verticalAlign="center"
         class="hero_layout u-hero-fade"
@@ -310,6 +322,18 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
           </p>
         )}
 
+        {variant === "centered" && hasPhoto && (
+          <div class="hero_media is-wide">
+            <Visual
+              src={image!}
+              alt={photoAlt}
+              ratio="21 / 9"
+              position={imagePosition}
+              priority
+            />
+          </div>
+        )}
+
         {variant === "split" && hasPhoto && (
           <div slot="column2" class="hero_media">
             <Visual
@@ -357,6 +381,12 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
 
     .hero_proof_text {
       min-width: 0;
+    }
+
+    /* centered: the photo spans the column under the text. */
+    .hero_media.is-wide {
+      width: 100%;
+      margin-top: var(--space-5);
     }
 
     .hero_media {
