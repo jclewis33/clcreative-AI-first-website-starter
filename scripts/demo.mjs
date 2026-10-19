@@ -291,6 +291,49 @@ async function main() {
   }
   await write("src/data/service-area-geo.json", `${JSON.stringify(areaGeo)}\n`);
 
+  // The service radius ("within 60 miles of Palmer"): its centre town looked
+  // up like the others (same cache), then the middle of its outline.
+  /** @type {{ lat: number; lng: number; miles: number } | null} */
+  let serviceRadius = null;
+  if (demo.serviceRadius) {
+    try {
+      const [hit] = await serviceAreaGeo(
+        [demo.serviceRadius.center],
+        demo.contact.region,
+        path.join(baseDir, "service-area.geo.json"),
+        (m) => console.warn(`! ${m}`),
+      );
+      if (hit) {
+        /** @type {number[][]} */
+        const points = [];
+        const walk = (/** @type {unknown} */ c) =>
+          Array.isArray(c) && typeof c[0] === "number"
+            ? points.push(/** @type {number[]} */ (c))
+            : Array.isArray(c) && c.forEach(walk);
+        walk(
+          /** @type {{ coordinates: unknown }} */ (hit.geometry).coordinates,
+        );
+        const lngs = points.map((p) => p[0]);
+        const lats = points.map((p) => p[1]);
+        const mid = (/** @type {number[]} */ v) =>
+          Math.round(((Math.min(...v) + Math.max(...v)) / 2) * 1e4) / 1e4;
+        serviceRadius = {
+          lat: mid(lats),
+          lng: mid(lngs),
+          miles: demo.serviceRadius.miles,
+        };
+      }
+    } catch (err) {
+      console.warn(
+        `! Service radius skipped: ${/** @type {Error} */ (err).message}`,
+      );
+    }
+  }
+  await write(
+    "src/data/service-radius.json",
+    `${JSON.stringify(serviceRadius)}\n`,
+  );
+
   // 1b. Logo, favicon, webclip, share image.
   const logoSrc = demo.brand.logo.file;
   const logoBuf = await img(logoSrc);

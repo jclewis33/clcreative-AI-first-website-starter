@@ -338,6 +338,13 @@ export const demoSchema = z.object({
     region: text,
   }),
   serviceAreas: z.array(text).min(1),
+  /**
+   * When they describe their area as a distance ("within 60 miles of
+   * Palmer"): a circle on the street map, centred on that town.
+   */
+  serviceRadius: z
+    .object({ center: text, miles: z.number().positive().max(250) })
+    .optional(),
   founded: z.number().int().min(1800).max(2100).optional(),
   reviewsUrl: z.url().optional(),
   /** Footer profiles by label: { "Facebook": "https://…" }. */

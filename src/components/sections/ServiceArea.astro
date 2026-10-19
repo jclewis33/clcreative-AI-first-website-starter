@@ -9,6 +9,7 @@ import ChipList from "@/components/ui/ChipList.astro";
 import ImagePair from "@/components/ui/ImagePair.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
 import ServiceMap from "@/components/ui/ServiceMap.astro";
+import { SERVICE_RADIUS, type ServiceRadius } from "@/lib/service-area-geo";
 import type { SectionCta } from "@/lib/cta";
 import { SITE } from "@/config/site";
 
@@ -79,6 +80,12 @@ interface Props extends HTMLAttributes<"section"> {
   /** Town boundaries: shows a street map with each town outlined. */
   geo?: ServiceAreaGeo[];
 
+  /**
+   * "Within N miles of home base": a circle on the street map, which frames
+   * the map around it. @default SERVICE_RADIUS (src/data/service-radius.json)
+   */
+  radius?: ServiceRadius | null;
+
   /** The client's map, imported as an SVG component. */
   map?: ServiceAreaMap;
 
@@ -114,6 +121,7 @@ const {
   areaLinks = {},
   currentArea,
   geo = [],
+  radius = SERVICE_RADIUS,
   map: Map,
   mapLabel,
   images = [],
@@ -130,7 +138,8 @@ const chips = areas.map((area) => ({
   key: area,
   href: areaLinks[area],
 }));
-const hasMedia = geo.length > 0 || Boolean(Map) || images.length === 2;
+const hasStreetMap = geo.length > 0 || Boolean(radius);
+const hasMedia = hasStreetMap || Boolean(Map) || images.length === 2;
 const hasContent = chips.length > 0 || hasMedia;
 
 if (import.meta.env.DEV && render) {
@@ -166,12 +175,17 @@ if (import.meta.env.DEV && render) {
         )}
         {cta && <CtaButton cta={cta} variant="secondary" />}
 
-        {geo.length > 0 && (
+        {hasStreetMap && (
           <div slot="column2" class="service-area_map is-street">
-            <ServiceMap areas={geo} label={mapLabel} current={currentArea} />
+            <ServiceMap
+              areas={geo}
+              radius={radius}
+              label={mapLabel}
+              current={currentArea}
+            />
           </div>
         )}
-        {geo.length === 0 && Map ? (
+        {!hasStreetMap && Map ? (
           <div slot="column2" class="service-area_map">
             <Map
               class="service-area_svg"
@@ -179,7 +193,7 @@ if (import.meta.env.DEV && render) {
               aria-label={mapLabel ?? `Map of ${areas.join(", ")}`}
             />
           </div>
-        ) : geo.length === 0 && images.length === 2 ? (
+        ) : !hasStreetMap && images.length === 2 ? (
           <ImagePair slot="column2" images={images} />
         ) : null}
       </Layout>
