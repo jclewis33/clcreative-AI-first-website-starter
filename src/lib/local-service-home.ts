@@ -210,7 +210,12 @@ export interface LocalServiceHomeData {
     imageAlt?: string;
   };
 
-  photoBand?: { image: HomeImage; alt: string };
+  photoBand?: {
+    image: HomeImage;
+    alt: string;
+    /** Focal point in percent — `{ x: 50, y: 25 }` keeps heads in frame. @default { x: 50, y: 35 } */
+    position?: { x: number; y: number };
+  };
 
   story?: {
     eyebrow?: string;

@@ -207,7 +207,15 @@ if (import.meta.env.DEV && !services.length)
     )
   }
 
-  {photoBand && <PhotoBand image={photoBand.image} alt={photoBand.alt} />}
+  {
+    photoBand && (
+      <PhotoBand
+        image={photoBand.image}
+        alt={photoBand.alt}
+        position={photoBand.position}
+      />
+    )
+  }
 
   {
     story && (
