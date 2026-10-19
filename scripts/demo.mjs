@@ -261,6 +261,7 @@ async function main() {
   await homeImage(home.process, "image", "process");
   await homeImage(home.photoBand, "image", "photo-band");
   await homeImage(home.story, "image", "story");
+  await homeImage(home.about, "image", "about");
   await homeImage(home.callBand, "image", "call-band");
   for (const [i, job] of (home.recentWork?.items ?? []).entries())
     await homeImage(job, "image", `work-${i + 1}`, 1600);

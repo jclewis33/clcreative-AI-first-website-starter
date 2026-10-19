@@ -53,6 +53,12 @@ export interface LocalServiceHomeData {
     heading?: string;
     /** The intro line under it. */
     text?: string;
+    /**
+     * The photo beside the intro. @default photoBand's image, else the home
+     * hero's — never the story photo, which sits right below.
+     */
+    image?: HomeImage;
+    imageAlt?: string;
     /** The story section's heading on the About page. @default story.heading */
     storyHeading?: string;
     /** Longer story paragraphs for the About page. @default story.paragraphs */

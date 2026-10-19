@@ -72,6 +72,14 @@ const title = about?.title ?? `About | ${SITE.name}`;
 const description =
   about?.description ?? `Who we are and how we work at ${SITE.name}.`;
 const heading = about?.heading ?? story?.heading ?? `About ${SITE.name}`;
+/* A photo beside the intro: the About one, else the photo band's, else the
+   home hero's (not the story photo, which is right below). */
+const heroImage = about?.image ?? home.photoBand?.image ?? home.hero.image;
+const heroImageAlt = about?.image
+  ? about.imageAlt
+  : home.photoBand
+    ? home.photoBand.alt
+    : home.hero.imageAlt;
 const crumbs = [{ label: "Home", href: "/" }, { label: "About" }];
 const schemaCrumbs = [
   { name: "Home", path: "/" },
@@ -86,12 +94,14 @@ const schemaCrumbs = [
   breadcrumbs={schemaCrumbs}
 >
   <Hero
-    variant="text"
+    variant="split"
     headingSize="h1"
     breadcrumbs={crumbs}
     eyebrow={about?.eyebrow ?? "About us"}
     heading={heading}
     text={about?.text}
+    image={heroImage}
+    imageAlt={heroImageAlt}
     primaryCta={estimateCta}
     showPhone
   />

@@ -30,6 +30,8 @@ const homeSchema = z.object({
       eyebrow: text.optional(),
       heading: text.optional(),
       text: text.optional(),
+      image: image.optional(),
+      imageAlt: text.optional(),
       storyHeading: text.optional(),
       paragraphs: z.array(text).optional(),
     })
