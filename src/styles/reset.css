@@ -193,6 +193,16 @@ select {
   outline: none;
 }
 
+/* Text fields are the exception the browser makes: a clicked text input,
+   textarea or select still matches :focus-visible (you're about to type),
+   so a mouse click drew the keyboard ring around it. The field's own border
+   already darkens on focus (components/forms.css), so after a pointer press
+   (BaseLayout tracks it as data-input-modality) the ring stays hidden; Tab
+   brings it back. Checkboxes, radios and ranges keep their own visuals. */
+[data-input-modality="pointer"] :is(input:not([type="checkbox"], [type="radio"], [type="range"]), textarea, select):focus-visible {
+  outline: none;
+}
+
 /* Focused, but the browser judged no indicator is warranted (mouse click on a
    button). Clear the UA default so no ring shows. */
 :is(a, button, [role="button"], [tabindex], input, textarea, select):focus:not(:focus-visible) {
