@@ -351,10 +351,27 @@ const serviceSchema = z
   })
   .passthrough();
 
+/**
+ * A service-area region: the content schema's fields (src/content.config.ts
+ * checks them fully at sync), plus its slug. Image fields are sources.
+ */
+const areaSchema = z
+  .object({
+    /** lowercase-kebab-case — the URL /service-areas/<slug>. */
+    slug: z
+      .string()
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "use lowercase-kebab-case"),
+    title: text,
+    towns: z.array(text).min(1),
+    hero: z.object({ image }).passthrough(),
+    jobs: z.array(z.object({ image, imageAlt: text }).passthrough()).optional(),
+  })
+  .passthrough();
+
 /** The looks (src/config/looks.ts) a demo can wear. */
 export const LOOK_NAMES = ["fresh", "warm", "rugged", "natural", "studio"];
 
-export const demoSchema = z.object({
+const demoObject = z.object({
   preset: z.literal("local-service"),
   /**
    * fresh (lawn, pest, cleaning) · warm (HVAC, insulation, remodeling) ·
@@ -363,8 +380,6 @@ export const demoSchema = z.object({
   look: z.enum(LOOK_NAMES).default("fresh"),
   /** Contractor license, shown in the footer, e.g. "TECL #25414". */
   license: text.optional(),
-  /** A page per service per town in `serviceAreas`. */
-  cityPages: z.boolean().default(true),
   prospect: z.object({
     name: text,
     legalName: text.optional(),
@@ -420,6 +435,12 @@ export const demoSchema = z.object({
   }),
   home: homeSchema,
   services: z.array(serviceSchema).min(1).max(8),
+  /**
+   * Service-area regions (/service-areas/<slug>): a few regions grouping
+   * every town in `serviceAreas`, never a page per town. Each town sits in
+   * exactly one region.
+   */
+  areas: z.array(areaSchema).max(8).optional(),
   notes: z
     .object({
       sourceUrl: z.url().optional(),
@@ -427,6 +448,35 @@ export const demoSchema = z.object({
       confirmOrCut: z.array(text).default([]),
     })
     .default({ confirmOrCut: [] }),
+});
+
+export const demoSchema = demoObject.superRefine((demo, ctx) => {
+  if (!demo.areas) return;
+  const seen = new Map();
+  demo.areas.forEach((area, i) =>
+    area.towns.forEach((town, j) => {
+      if (!demo.serviceAreas.includes(town))
+        ctx.addIssue({
+          code: "custom",
+          path: ["areas", i, "towns", j],
+          message: `"${town}" isn't in serviceAreas — add it there or fix the spelling`,
+        });
+      if (seen.has(town))
+        ctx.addIssue({
+          code: "custom",
+          path: ["areas", i, "towns", j],
+          message: `"${town}" is already in the "${seen.get(town)}" region`,
+        });
+      seen.set(town, area.title);
+    }),
+  );
+  for (const town of demo.serviceAreas)
+    if (!seen.has(town))
+      ctx.addIssue({
+        code: "custom",
+        path: ["areas"],
+        message: `"${town}" is in serviceAreas but in no region — every town needs one`,
+      });
 });
 
 /** Pages this preset installs, from this folder into src/pages. */

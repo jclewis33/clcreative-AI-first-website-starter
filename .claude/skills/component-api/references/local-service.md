@@ -118,19 +118,32 @@ Two `SITE` settings turn the agency chrome into contractor chrome, site-wide:
   insulation, remodeling; rugged = electrical, roofing, plumbing,
   commercial; natural = hardscape, landscaping, decks.
 
-### Town pages (`SITE.cityPages`)
+### Service areas (`src/content/service-areas/`)
 
-With `SITE.cityPages: true`, `/services/[slug]/[city]` builds every
-service × town in `SITE.serviceAreas` (`serviceCityPath`, `citySlug` in
-`@/lib/services`). Both routes render the `ServicePage` template
-(`src/components/templates/ServicePage.astro`); `city` adds the town to the
-title ("Panel upgrades in Round Rock, TX"), description, eyebrow,
-breadcrumbs, schema `areaServed`, a "Do you offer … in <town>?" FAQ first,
-and highlights it on the map; the area chips link to the other towns. The
-map's outlines are `src/data/service-area-geo.json` (`@/lib/service-area-geo`
-— `npm run demo` writes it). Off by default: on a real client site, turn it
-on only for towns the business genuinely serves, and consider adding real
-local detail per town — near-duplicate town pages are thin content.
+Towns are covered by **regions**, never a page per town or per service ×
+town (near-identical pages are doorway pages to Google; the old
+`SITE.cityPages` generator is gone). One JSON file per region builds
+`/service-areas/<file>` (`ServiceAreaPage` template); with any region the
+hub `/service-areas` builds too (every town on the radius map, each chip
+linking to its region, the region cards, the form). Both are registered in
+`PAGES` and the nav from the same files (`@/lib/area-nav`), and every town
+chip on a service page and in the footer links to its region (`TOWN_LINKS`).
+
+| Field                        | Shown as                                                                   |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| `title`, `order`, `cardText` | Region name; hub order; the line on its hub card                           |
+| `seoTitle`, `seoDescription` | `<title>` and meta description (≤ 160 characters)                          |
+| `towns`                      | Its towns (each one of `SITE.serviceAreas`): map, chips, schema            |
+| `hero`                       | Split hero with breadcrumbs and the estimate button                        |
+| `local`                      | `heading` + at least 2 `paragraphs` written for THIS region                |
+| `facts`, `reviews`, `jobs`   | Local proof — at least one is required (the sync refuses a region without) |
+| `faqs`                       | FAQ + FAQPage schema (2 or more)                                           |
+| `cta`                        | The on-page estimate form's heading and line                               |
+
+`reviews` and `jobs` carry a `town`, which must be one of the region's
+`towns`. Services show as cards linking to their own pages — never
+re-explain a service on a region page. Only real local material: a review
+or job from the region, or a fact the business gave you.
 
 ### Composing a page
 

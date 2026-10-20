@@ -156,6 +156,18 @@ try {
   assert.doesNotMatch(home, /href="\/blog"/);
   // The demo footer links the pages nothing else links to.
   assert.match(home, /href="\/leave-a-review"/);
+  // Service areas: a hub and one page per region, never per town.
+  assert.match(home, /href="\/service-areas"/);
+  for (const page of [
+    "service-areas/index.html",
+    "service-areas/austin-metro/index.html",
+    "service-areas/williamson-county/index.html",
+  ])
+    assert.ok(fs.existsSync(path.join(client, page)), `missing ${page}`);
+  assert.ok(
+    !fs.existsSync(path.join(client, "services/panel-upgrades/austin")),
+    "per-town service pages must not be built",
+  );
   assert.match(home, /href="\/get-your-discount"/);
   assert.match(home, /href="\/tools"/);
   // The local-service chrome: the fixture's look, the nav phone, the
@@ -191,25 +203,21 @@ try {
   // Service pages carry one estimate form (the site-wide one), not two.
   const service = html("services/panel-upgrades/index.html");
   assert.equal(service.match(/id="estimate-modal"/g)?.length, 1);
-  // A page per service per town, with the town in its title and FAQ, and
-  // the area chips linking to the other towns.
-  const town = html("services/panel-upgrades/round-rock/index.html");
+  // Region pages: their own title, the region's towns on the map, the
+  // services linking to their main pages, the form on the page; the
+  // service page's town chips link to the region.
+  const region = html("service-areas/williamson-county/index.html");
   assert.match(
-    town,
-    /<title>Panel upgrades in Round Rock, TX \| Brightline Electric/,
+    region,
+    /<title>Electricians in Round Rock, Cedar Park and Pflugerville \| Brightline Electric/,
   );
-  assert.match(town, /Do you offer panel upgrades in Round Rock\?/);
-  assert.match(town, /href="\/services\/panel-upgrades\/cedar-park"/);
-  assert.ok(
-    fs.existsSync(
-      path.join(
-        client,
-        "services",
-        "ev-chargers",
-        "pflugerville",
-        "index.html",
-      ),
-    ),
+  assert.match(region, /href="\/services\/panel-upgrades"/);
+  assert.match(region, /200-amp panel upgrade/);
+  assert.match(region, /class="[^"]*\bform_wrap\b/);
+  assert.match(service, /href="\/service-areas\/williamson-county"/);
+  assert.match(
+    html("service-areas/index.html"),
+    /href="\/service-areas\/austin-metro"/,
   );
   assert.ok(
     fs.existsSync(path.join(client, "services", "ev-chargers", "index.html")),
@@ -236,6 +244,18 @@ try {
     const r = bad((d) => d.services[0].highlights.pop());
     assert.equal(r.status, 1, out(r));
     assert.match(out(r), /panel-upgrades[\s\S]*highlights/);
+  }
+  {
+    // Every town needs a region: none quietly dropped.
+    const r = bad((d) => d.areas[1].towns.pop());
+    assert.equal(r.status, 1, out(r));
+    assert.match(out(r), /"Pflugerville" is in serviceAreas but in no region/);
+  }
+  {
+    // A region with no local proof is a doorway page: the sync refuses it.
+    const r = bad((d) => delete d.areas[0].facts);
+    assert.equal(r.status, 1, out(r));
+    assert.match(out(r), /austin-metro[\s\S]*local proof/);
   }
 
   console.log(

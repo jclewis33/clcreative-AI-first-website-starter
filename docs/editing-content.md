@@ -40,18 +40,19 @@ prints an error naming the file and the field (section 5), and prints
 
 ## 3. How the content folder is laid out
 
-| What          | File                                   | Its photos                         |
-| ------------- | -------------------------------------- | ---------------------------------- |
-| Blog posts    | `src/content/blog/<name>.mdx`          | `src/content/blog/images/`         |
-| Authors       | `src/content/authors/<name>.json`      | `src/content/authors/images/`      |
-| Case studies  | `src/content/case-studies/<name>.json` | `src/content/case-studies/images/` |
-| Projects      | `src/content/projects/<name>.json`     | `src/content/projects/images/`     |
-| Gallery       | `src/content/gallery.json` (one list)  | `src/content/gallery/images/`      |
-| Testimonials  | `src/content/testimonials/<name>.json` | `src/content/testimonials/images/` |
-| Blog CTAs     | `src/content/ctas/blog/<name>.json`    | `src/content/ctas/blog/images/`    |
-| CTA sections  | `src/content/ctas/section/<name>.json` | `src/content/ctas/section/images/` |
-| Default CTAs  | `src/content/settings.json`            | —                                  |
-| Service pages | `src/content/services/<name>.json`     | `src/content/services/images/`     |
+| What          | File                                    | Its photos                          |
+| ------------- | --------------------------------------- | ----------------------------------- |
+| Blog posts    | `src/content/blog/<name>.mdx`           | `src/content/blog/images/`          |
+| Authors       | `src/content/authors/<name>.json`       | `src/content/authors/images/`       |
+| Case studies  | `src/content/case-studies/<name>.json`  | `src/content/case-studies/images/`  |
+| Projects      | `src/content/projects/<name>.json`      | `src/content/projects/images/`      |
+| Gallery       | `src/content/gallery.json` (one list)   | `src/content/gallery/images/`       |
+| Testimonials  | `src/content/testimonials/<name>.json`  | `src/content/testimonials/images/`  |
+| Blog CTAs     | `src/content/ctas/blog/<name>.json`     | `src/content/ctas/blog/images/`     |
+| CTA sections  | `src/content/ctas/section/<name>.json`  | `src/content/ctas/section/images/`  |
+| Default CTAs  | `src/content/settings.json`             | —                                   |
+| Service pages | `src/content/services/<name>.json`      | `src/content/services/images/`      |
+| Service areas | `src/content/service-areas/<name>.json` | `src/content/service-areas/images/` |
 
 Service pages have their own guide:
 [`.claude/skills/component-api/references/service-pages.md`](../.claude/skills/component-api/references/service-pages.md).
@@ -312,6 +313,23 @@ check stops if it is missing or misspelled):
   }
 }
 ```
+
+### Add or edit a service area
+
+A service area is a **region** — a group of towns, like a county — not a
+single town. Each one is a file in `src/content/service-areas/` and becomes
+`/service-areas/<name>`. Copy a sibling file, rename it, and edit:
+
+- `towns`: the towns in it. Each town belongs to one region only.
+- `local`: a heading and at least two paragraphs written for this region
+  (its pests, homes, seasons). Don't copy another region's text.
+- At least one real local proof: `facts` (things only a local would know),
+  `reviews` (real, named, with the customer's `town`) or `jobs` (a photo, a
+  caption and the `town`). The site won't build a region without one.
+
+Don't make a page for each town, or for each service in each town. Pages
+that only swap the town name look like spam to Google and can hurt the
+whole site.
 
 ### Remove something
 

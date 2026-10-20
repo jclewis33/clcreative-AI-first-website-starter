@@ -33,6 +33,10 @@
       "url": "./.astro/collections/services.schema.json"
     },
     {
+      "fileMatch": ["**/src/content/service-areas/*.json"],
+      "url": "./.astro/collections/serviceAreas.schema.json"
+    },
+    {
       "fileMatch": ["**/src/content/authors/*.json"],
       "url": "./.astro/collections/authors.schema.json"
     },

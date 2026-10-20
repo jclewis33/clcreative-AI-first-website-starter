@@ -518,5 +518,86 @@
     "confirmOrCut": [
       "Fictional fixture: the reviews, offer, guarantee and comparison are invented for the example; never do this for a real business."
     ]
-  }
+  },
+  "areas": [
+    {
+      "slug": "austin-metro",
+      "title": "Austin",
+      "seoTitle": "Electricians in Austin, TX",
+      "seoDescription": "Licensed electrical work across Austin: panel upgrades, EV chargers and more, from a local Brightline crew.",
+      "towns": ["Austin"],
+      "cardText": "Central Austin and the older neighborhoods inside the loop.",
+      "hero": {
+        "heading": "Electricians for <strong>Austin</strong> homes",
+        "text": "Panel upgrades and EV chargers for Austin homes, old and new.",
+        "image": "../../../src/assets/placeholder-images/ai-first-starter-6.webp",
+        "imageAlt": "An electrician working at a home panel"
+      },
+      "local": {
+        "heading": "Working on Austin homes",
+        "paragraphs": [
+          "Fixture paragraph one about Austin homes.",
+          "Fixture paragraph two about Austin permits."
+        ]
+      },
+      "facts": ["Fixture fact: we pull City of Austin permits ourselves."],
+      "faqs": [
+        {
+          "question": "Do you work in Austin?",
+          "answer": "Yes."
+        },
+        {
+          "question": "Do you pull permits?",
+          "answer": "Yes."
+        }
+      ],
+      "cta": {
+        "heading": "Need an electrician in Austin?",
+        "text": "Send the form and we will call you back."
+      }
+    },
+    {
+      "slug": "williamson-county",
+      "title": "Williamson County",
+      "seoTitle": "Electricians in Round Rock, Cedar Park and Pflugerville",
+      "seoDescription": "Licensed electricians for Round Rock, Cedar Park and Pflugerville: panel upgrades and EV chargers for newer homes.",
+      "towns": ["Round Rock", "Cedar Park", "Pflugerville"],
+      "cardText": "Round Rock, Cedar Park and Pflugerville.",
+      "hero": {
+        "heading": "Electricians north of <strong>Austin</strong>",
+        "text": "Panel upgrades and EV chargers for Round Rock, Cedar Park and Pflugerville.",
+        "image": "../../../src/assets/placeholder-images/ai-first-starter-7.webp",
+        "imageAlt": "A finished EV charger in a garage"
+      },
+      "local": {
+        "heading": "Newer homes, bigger loads",
+        "paragraphs": [
+          "Fixture paragraph one about newer homes.",
+          "Fixture paragraph two about EV chargers."
+        ]
+      },
+      "jobs": [
+        {
+          "image": "../../../src/assets/placeholder-images/ai-first-starter-8.webp",
+          "imageAlt": "A new electrical panel",
+          "town": "Round Rock",
+          "caption": "200-amp panel upgrade"
+        }
+      ],
+      "faqs": [
+        {
+          "question": "Do you work in Round Rock?",
+          "answer": "Yes."
+        },
+        {
+          "question": "How soon can you come?",
+          "answer": "Call us."
+        }
+      ],
+      "cta": {
+        "heading": "Need an electrician north of Austin?",
+        "text": "Send the form and we will call you back."
+      }
+    }
+  ]
 }

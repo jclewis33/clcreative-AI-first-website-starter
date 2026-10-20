@@ -162,8 +162,14 @@ Facebook" }`). When set it takes the home page's process slot;
   - `why`: 3–5 reasons as icon rows (`icon` from
     src/data/service-icons.json) beside one big photo not used elsewhere on
     the home page. Sits after the story.
-- **Town pages:** `cityPages` is on by default, so every service gets a page
-  in every town. Keep `serviceAreas` to the towns they actually serve.
+- **Service areas (`areas`):** group every town in `serviceAreas` into 3–4
+  regions the way locals talk about the area (a county, "Best Southwest"),
+  never a page per town. Each town in exactly one region; keep every town
+  they really serve. Each region needs 2+ local paragraphs and at least one
+  real local proof (`facts` from their site or Casey, a `review` or `job`
+  from a town in it). Pests, soil, lakes: only what's true and general;
+  list anything inferred in `confirmOrCut`. Skip `areas` and there's no
+  hub or region page at all.
 - `home.estimate.question` heads step 1 of the estimate form, above the
   service tiles. The default is "What do you need help with?". Phrase it for
   their trade ("What's going on with your AC?").
