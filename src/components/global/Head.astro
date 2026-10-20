@@ -219,6 +219,35 @@ const resolvedTwitterImage = resolvedOgImage;
     />
   )
 }
+{
+  /* The widget lives in its own shadow root, so page CSS can't move it.
+     This adds one rule to that root: its bubble and window sit
+     --chat-widget-offset higher, which MobileActionBar sets on phones so
+     the bubble clears the call/estimate bar (0 everywhere else). */
+  SITE.integrations.ghlChatWidgetId && (
+    <script is:inline>
+(() => {
+  const css = ".lc_text-widget, .lc_text-widget--bubble { bottom: calc(1.25rem + var(--chat-widget-offset, 0rem)) !important; }";
+  const lift = (root) => {
+    if (root.__chatOffset) return true;
+    root.__chatOffset = true;
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(css);
+    root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+    return true;
+  };
+  const find = () => {
+    const root = document.querySelector("chat-widget")?.shadowRoot;
+    return root ? lift(root) : false;
+  };
+  if (find()) return;
+  const observer = new MutationObserver(() => find() && observer.disconnect());
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  setTimeout(() => observer.disconnect(), 30000);
+})();
+    </script>
+  )
+}
 
 <!-- Data Prevent Flicker Remove if No Script Loaded -->
 

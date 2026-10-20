@@ -79,6 +79,12 @@ const estimateCta = SITE.quote
       body:has(.mobile-bar_wrap) {
         padding-bottom: 5rem;
       }
+
+      /* Lifts the GHL chat bubble above the bar. Read by the widget rule
+         Head.astro adds inside the widget's shadow root. */
+      :root:has(.mobile-bar_wrap) {
+        --chat-widget-offset: 4.5rem;
+      }
     }
 
     /* "Call now" takes only the width it needs and the estimate gets the
