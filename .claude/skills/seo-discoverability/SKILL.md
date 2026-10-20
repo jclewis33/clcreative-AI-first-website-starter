@@ -34,7 +34,8 @@ description: Per-page SEO, structured data, and LLM discoverability reference fo
   (`group: "location"`, like service pages). Each carries a Service schema
   with `areaServed` = its towns, and its own FAQ. There are deliberately no
   per-town or per-service × town pages: near-duplicates are doorway pages.
-  A region won't build without its own local writing and real local proof.
+  A region needs its own local writing; add real local proof (reviews,
+  jobs, facts) as it comes in — never filler.
 
 Most pages need nothing here. Reach for the per-page graph only when a page
 should advertise a specific **Service** (and optionally an **FAQ**) — a

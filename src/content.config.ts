@@ -260,9 +260,9 @@ const services = defineCollection({
 /* `serviceAreas`: one JSON file per REGION the business serves
    (/service-areas/<filename>), grouping its towns. Never a page per town or
    per service × town: near-identical pages are doorway pages to Google.
-   A region page only builds with its own local writing and at least one
-   piece of real local proof (a review or job from one of its towns, or a
-   local fact from the business). Field guide:
+   A region page needs its own local writing (2+ paragraphs); real local
+   proof (a review or job from one of its towns, or a local fact from the
+   business) is what makes it rank — add it as it comes in, never filler. Field guide:
    .claude/skills/component-api/references/local-service.md. */
 const serviceAreas = defineCollection({
   loader: checked(
@@ -335,17 +335,6 @@ const serviceAreas = defineCollection({
         }),
       })
       .superRefine((area, ctx) => {
-        const proof =
-          (area.facts?.length ?? 0) +
-          (area.reviews?.length ?? 0) +
-          (area.jobs?.length ?? 0);
-        if (!proof)
-          ctx.addIssue({
-            code: "custom",
-            path: ["facts"],
-            message:
-              "Add real local proof — a review or job from one of its towns, or a local fact from the business. Without it the page is a doorway page.",
-          });
         for (const [key, list] of [
           ["reviews", area.reviews ?? []],
           ["jobs", area.jobs ?? []],

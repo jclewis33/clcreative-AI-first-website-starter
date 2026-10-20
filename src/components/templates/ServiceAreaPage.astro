@@ -53,6 +53,10 @@ const pageUrl = `${SITE.url}${path}`;
 const others = areas.filter((other) => other.id !== area.id);
 
 if (import.meta.env.DEV) {
+  if (!a.facts?.length && !a.reviews?.length && !a.jobs?.length)
+    console.warn(
+      `[ServiceAreaPage] ${area.id}: no local proof yet — add a real review or job from one of its towns (or a local fact) when there is one. Never filler.`,
+    );
   const served: readonly string[] = SITE.serviceAreas;
   const unknown = a.towns.filter((town) => !served.includes(town));
   if (unknown.length)
