@@ -21,6 +21,7 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.dev.vars*
 preview/.dev.vars
 preview/.env
 
