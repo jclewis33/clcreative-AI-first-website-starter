@@ -53,7 +53,11 @@ const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
    homeowner checks before calling a contractor. */
 const localService = Boolean(SITE.quote);
 const serviceAreas = localService ? SITE.serviceAreas : [];
-const linkColumns = FOOTER_GROUPS.length + (serviceAreas.length ? 1 : 0);
+/* A long town list takes two grid tracks and splits into two columns, so it
+   doesn't stretch the footer down the page. */
+const wideAreas = serviceAreas.length > 8;
+const linkColumns =
+  FOOTER_GROUPS.length + (serviceAreas.length ? (wideAreas ? 2 : 1) : 0);
 ---
 
 <footer class="footer_wrap">
@@ -292,7 +296,12 @@ const linkColumns = FOOTER_GROUPS.length + (serviceAreas.length ? 1 : 0);
           }
           {
             serviceAreas.length > 0 && (
-              <section class="footer_group_wrap">
+              <section
+                class:list={[
+                  "footer_group_wrap",
+                  { "is-areas-wide": wideAreas },
+                ]}
+              >
                 <h3 class="footer_group_title u-text-style-h6 u-margin-bottom-3">
                   Service area
                 </h3>
@@ -624,6 +633,23 @@ const linkColumns = FOOTER_GROUPS.length + (serviceAreas.length ? 1 : 0);
 
     .footer_group_item {
       display: flex;
+    }
+
+    /* The town list past eight towns: two grid tracks, two columns. */
+    .footer_group_wrap.is-areas-wide {
+      grid-column-end: span 2;
+    }
+
+    .footer_group_wrap.is-areas-wide .footer_group_list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--space-5);
+    }
+
+    @container (width < 20em) {
+      .footer_group_wrap.is-areas-wide {
+        grid-column-end: span 1;
+      }
     }
 
     /* Link row — padding + group-hover opacity */
