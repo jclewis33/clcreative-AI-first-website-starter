@@ -163,7 +163,8 @@ Facebook" }`). When set it takes the home page's process slot;
     src/data/service-icons.json) beside one big photo not used elsewhere on
     the home page. Sits after the story.
 - **Service areas (`areas`):** group every town in `serviceAreas` into 3–4
-  regions the way locals talk about the area (a county, "Best Southwest"),
+  regions with names anyone would recognise (a county, "Southwest DFW"; not
+  insider nicknames like "Best Southwest"),
   never a page per town. Each town in exactly one region; keep every town
   they really serve. Each region needs 2+ local paragraphs. Add `facts`,
   `reviews` or `jobs` only when they're real (from their site or Casey);
