@@ -35,6 +35,51 @@ Read first, once per session:
   pulled from the logo, a service you grouped or renamed, any AI-generated
   photo. Casey reads this list before sending.
 
+## Scope first: a demo is not a site build
+
+Ask Casey (or read from his message) what this demo needs before you
+research. A demo has one job: make the prospect say "I want that". The
+first real demo (Just A Dad's Pest Control, Oct 2026) grew into a full
+site over a day of back-and-forth. That was useful because every fix
+went into the starter, but it is not the target.
+
+- **Quick demo (default, about 30 minutes):** the home page, their 3–4
+  services as service pages, the contact page. On the home page, only
+  the sections their real material supports: hero, services, a story or
+  promises section, the service-area map, the form, the call band. Leave
+  out `about`, `areas`, `team`, `plans`, `expect`, `why` and any section
+  you would have to pad.
+- **Full demo (only when Casey asks):** add the About page, the
+  service-area regions (`areas`), and the optional home sections whose
+  material is real.
+- **Start from the closest previous demo.** Every demo's `demo.json` is
+  on its branch in the private repo
+  (`git show origin/demo/<slug>:demo/demo.json`). For the same trade,
+  copy it and replace the business: the structure, section choices and
+  service shapes carry over, and only the facts, copy and photos change.
+  Just A Dad's (`demo/just-a-dads-pest-control`) is the pest-control and
+  "fresh" look reference.
+- **Every fix and every new section goes into the starter**, never only
+  into the demo branch: branch the starter, PR, CI, merge, then
+  `git merge upstream/main` on the demo branch.
+
+## Copy rules learned on real demos
+
+- **Contact lines say "we" and "us"**: "Call or text us", "we'll get back
+  to you", "Tell us what you're seeing". The owner may not answer the
+  phone. Use the owner's name only where it's about them: the story, the
+  About page, their license, a "dad who…" line.
+- **No filler to fill a slot.** No distances from home base, no "we make
+  the drive", no restating the town list as a sentence. If a section has
+  nothing real to say, leave it out.
+- **Hero subtext is a benefit to the customer**, not a list of towns or
+  logistics: "Get your home back from ants, mosquitoes and mice, with
+  straight answers, a fair price and no hard sell."
+- **Region and section names anyone would recognise**, not insider
+  nicknames.
+- **No time promises** ("same day", "this week") unless their site makes
+  them.
+
 ## Workflow (target times in brackets)
 
 ### 1. Branch (1 min)
@@ -266,6 +311,8 @@ Give Casey:
 - **The preview URL.**
 - **Screenshots** (desktop and mobile).
 - **The `confirmOrCut` list,** as a short checklist to clear before sending.
+- **The chat widget** shows on every demo when `ghlChatWidgetId` is in
+  `demo.defaults.json` (chats land in the demo GHL inbox).
 - **The extras:** the footer's "Also included" column links the review
   request page (`/leave-a-review`), the follow-up discount page
   (`/get-your-discount`) and the client tools (`/tools`, behind
