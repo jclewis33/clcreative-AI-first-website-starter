@@ -34,8 +34,8 @@ interface Props extends HTMLAttributes<"section"> {
    *
    * It keeps playing while on screen (hover doesn't pause it; a click
    * jumps to that row and carries on) and doesn't auto-advance with
-   * reduced motion. On narrow
-   * screens each open row shows its photo inline.
+   * reduced motion. When the columns stack, the photo sits under the
+   * list as one square frame that swaps in place.
    *
    * - `items` — `{ title, text, image, imageAlt, href? }[]`
    * - `interval` — milliseconds per row (default 6000)
@@ -143,13 +143,6 @@ const base = uid("service-showcase");
                 aria-labelledby={`${base}-t${i}`}
               >
                 <div class="service-showcase_panel_inner u-margin-trim">
-                  <div class="service-showcase_inline_media">
-                    <Visual
-                      src={item.image}
-                      alt={item.imageAlt}
-                      ratio="square"
-                    />
-                  </div>
                   <Text muted class="service-showcase_text">
                     {item.text}
                   </Text>
@@ -411,27 +404,15 @@ const base = uid("service-showcase");
       opacity: 1;
     }
 
-    /* Square, but never taller than a phone screen's worth on a tablet. */
-    .service-showcase_inline_media {
-      display: none;
-      max-width: 28rem;
-      margin-bottom: var(--space-4);
-    }
-
-    /* Once the columns stack (tablet and phone) the side photo goes — it
-       became a full-width portrait under the list — and each open row
-       shows its own square photo. */
+    /* Once the columns stack (tablet and phone) the photo sits under the
+       list as one square frame that swaps in place, so the rows never
+       change height beyond their text (a photo inside each row made the
+       whole section jump). */
     @container (width < 58em) {
       .service-showcase_media {
-        display: none;
-      }
-
-      .service-showcase_inline_media {
-        display: block;
-      }
-
-      .service-showcase_panel_inner {
-        padding-left: 0;
+        aspect-ratio: 1 / 1;
+        max-width: 32rem;
+        margin-top: var(--space-6);
       }
     }
 
