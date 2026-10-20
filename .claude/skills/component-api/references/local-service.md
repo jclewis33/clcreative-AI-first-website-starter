@@ -129,16 +129,16 @@ linking to its region, the region cards, the form). Both are registered in
 `PAGES` and the nav from the same files (`@/lib/area-nav`), and every town
 chip on a service page and in the footer links to its region (`TOWN_LINKS`).
 
-| Field                        | Shown as                                                                   |
-| ---------------------------- | -------------------------------------------------------------------------- |
-| `title`, `order`, `cardText` | Region name; hub order; the line on its hub card                           |
-| `seoTitle`, `seoDescription` | `<title>` and meta description (≤ 160 characters)                          |
-| `towns`                      | Its towns (each one of `SITE.serviceAreas`): map, chips, schema            |
-| `hero`                       | Split hero with breadcrumbs and the estimate button                        |
-| `local`                      | `heading` + at least 2 `paragraphs` written for THIS region                |
-| `facts`, `reviews`, `jobs`   | Local proof — at least one is required (the sync refuses a region without) |
-| `faqs`                       | FAQ + FAQPage schema (2 or more)                                           |
-| `cta`                        | The on-page estimate form's heading and line                               |
+| Field                        | Shown as                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| `title`, `order`, `cardText` | Region name; hub order; the line on its hub card                                   |
+| `seoTitle`, `seoDescription` | `<title>` and meta description (≤ 160 characters)                                  |
+| `towns`                      | Its towns (each one of `SITE.serviceAreas`): map, chips, schema                    |
+| `hero`                       | Split hero with breadcrumbs and the estimate button                                |
+| `local`                      | `heading` + at least 2 `paragraphs` written for THIS region                        |
+| `facts`, `reviews`, `jobs`   | Local proof (optional; dev warns when a region has none) — real only, never filler |
+| `faqs`                       | FAQ + FAQPage schema (2 or more)                                                   |
+| `cta`                        | The on-page estimate form's heading and line                                       |
 
 `reviews` and `jobs` carry a `town`, which must be one of the region's
 `towns`. Services show as cards linking to their own pages — never

@@ -252,10 +252,15 @@ try {
     assert.match(out(r), /"Pflugerville" is in serviceAreas but in no region/);
   }
   {
-    // A region with no local proof is a doorway page: the sync refuses it.
-    const r = bad((d) => delete d.areas[0].facts);
+    // A review must come from one of the region's own towns.
+    const r = bad(
+      (d) =>
+        (d.areas[0].reviews = [
+          { text: "Great.", name: "Sam", town: "Round Rock" },
+        ]),
+    );
     assert.equal(r.status, 1, out(r));
-    assert.match(out(r), /austin-metro[\s\S]*local proof/);
+    assert.match(out(r), /"Round Rock" isn't one of this region's towns/);
   }
 
   console.log(

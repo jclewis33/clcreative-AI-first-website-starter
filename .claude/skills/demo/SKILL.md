@@ -165,9 +165,10 @@ Facebook" }`). When set it takes the home page's process slot;
 - **Service areas (`areas`):** group every town in `serviceAreas` into 3–4
   regions the way locals talk about the area (a county, "Best Southwest"),
   never a page per town. Each town in exactly one region; keep every town
-  they really serve. Each region needs 2+ local paragraphs and at least one
-  real local proof (`facts` from their site or Casey, a `review` or `job`
-  from a town in it). Pests, soil, lakes: only what's true and general;
+  they really serve. Each region needs 2+ local paragraphs. Add `facts`,
+  `reviews` or `jobs` only when they're real (from their site or Casey);
+  never filler like distances or "we drive there". Note missing proof in
+  `confirmOrCut`. Pests, soil, lakes: only what's true and general;
   list anything inferred in `confirmOrCut`. Skip `areas` and there's no
   hub or region page at all.
 - `home.estimate.question` heads step 1 of the estimate form, above the

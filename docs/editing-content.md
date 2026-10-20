@@ -323,9 +323,10 @@ single town. Each one is a file in `src/content/service-areas/` and becomes
 - `towns`: the towns in it. Each town belongs to one region only.
 - `local`: a heading and at least two paragraphs written for this region
   (its pests, homes, seasons). Don't copy another region's text.
-- At least one real local proof: `facts` (things only a local would know),
-  `reviews` (real, named, with the customer's `town`) or `jobs` (a photo, a
-  caption and the `town`). The site won't build a region without one.
+- Real local proof when you have it: `facts` (things only a local would
+  know), `reviews` (real, named, with the customer's `town`) or `jobs` (a
+  photo, a caption and the `town`). This is what helps the page rank. Never
+  fill it with generic lines just to have something.
 
 Don't make a page for each town, or for each service in each town. Pages
 that only swap the town name look like spam to Google and can hurt the
