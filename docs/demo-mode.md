@@ -98,6 +98,12 @@ never touch real client data.
    ```sh
    npx wrangler preview base-config secret put TOOLS_PASSWORD
    ```
+   A demo whose Preview already existed doesn't get it (base secrets only
+   reach Previews created afterwards); give that one its own copy, which
+   also redeploys it:
+   ```sh
+   npx wrangler preview secret put TOOLS_PASSWORD --name demo-<slug>
+   ```
    Without it `/tools` stays locked (503). With it, submitting really starts
    the automation in the demo sub-account, so on a call you can type in the
    prospect's own phone and they get the review request. Keep the password
