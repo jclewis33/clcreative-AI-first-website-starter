@@ -78,8 +78,6 @@ const estimateCta = {
   modal: ESTIMATE_MODAL_ID,
 };
 const ownModal = !SITE.quote;
-/* This page's own towns: plain chips, not links back to itself. */
-const NO_LINKS: Record<string, string> = {};
 const projectOptions = [
   ...services.map((s) => ({ label: s.data.title, value: s.id })),
   { label: "Something else", value: "other" },
@@ -114,10 +112,9 @@ const projectOptions = [
 
   <ServiceArea
     heading={a.local.heading}
-    paragraphs={a.local.paragraphs}
-    points={a.facts ?? []}
+    paragraphs={[...a.local.paragraphs, ...(a.facts ?? [])]}
     areas={a.towns}
-    areaLinks={NO_LINKS}
+    areaStyle="checklist"
     geo={geoFor(a.towns)}
     radius={null}
   />

@@ -26,6 +26,11 @@ type ServiceAreaGeo = {
     coordinates: unknown;
   };
 };
+type ServiceAreaListStyle =
+  /** A chip per place (links when `areaLinks` has one) */
+  | "chips"
+  /** A checklist of places, two columns past four (no links) */
+  | "checklist";
 type ServiceAreaTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -45,8 +50,9 @@ interface Props extends HTMLAttributes<"section"> {
    * (scripts/lib/service-area-geo.mjs) — and the column shows a street map
    * with the towns outlined (ServiceMap). It wins over `map` and `images`.
    *
-   * - `paragraphs`, `points` — more writing and a checklist of local facts
+   * - `paragraphs` — more writing after `text`
    * - `areas` — place names (default `SITE.serviceAreas`)
+   * - `areaStyle` — `chips` (default) or `checklist` (two columns past four)
    * - `areaLinks` — chip links (default: each town's region page)
    * - `geo` — town boundaries for the street map
    * - `map`, `mapLabel` — the SVG and its accessible description
@@ -74,11 +80,11 @@ interface Props extends HTMLAttributes<"section"> {
   /** More paragraphs after `text` (a region page's local writing). */
   paragraphs?: string[];
 
-  /** Short local facts, as a checklist under the paragraphs. */
-  points?: string[];
-
   /** Place names, one chip each. @default SITE.serviceAreas */
   areas?: readonly string[];
+
+  /** How the places show: chips, or a checklist. @default 'chips' */
+  areaStyle?: ServiceAreaListStyle;
 
   /** Make chips links: `{ "Round Rock": "/service-areas/williamson-county" }`. @default each town's region page (src/content/service-areas/) */
   areaLinks?: Record<string, string>;
@@ -127,8 +133,8 @@ const {
   heading,
   text,
   paragraphs = [],
-  points = [],
   areas = SITE.serviceAreas,
+  areaStyle = "chips",
   areaLinks = TOWN_LINKS,
   currentArea,
   geo = [],
@@ -184,9 +190,15 @@ if (import.meta.env.DEV && render) {
         {paragraphs.map((paragraph) => (
           <Text muted>{paragraph}</Text>
         ))}
-        {points.length > 0 && <CheckList items={points} variant="plain" />}
-        {chips.length > 0 && (
+        {areaStyle === "chips" && chips.length > 0 && (
           <ChipList items={chips} class="service-area_chips" />
+        )}
+        {areaStyle === "checklist" && areas.length > 0 && (
+          <CheckList
+            items={[...areas]}
+            variant="plain"
+            columns={areas.length > 4 ? 2 : 1}
+          />
         )}
         {cta && <CtaButton cta={cta} variant="secondary" />}
 
