@@ -32,8 +32,9 @@ interface Props extends HTMLAttributes<"section"> {
    * is full the next row opens and the photo on the right changes. After
    * the last row it loops to the first. Clicking a row opens it.
    *
-   * It only runs while on screen, pauses while the pointer or focus is
-   * inside, and doesn't auto-advance with reduced motion. On narrow
+   * It keeps playing while on screen (hover doesn't pause it; a click
+   * jumps to that row and carries on) and doesn't auto-advance with
+   * reduced motion. On narrow
    * screens each open row shows its photo inline.
    *
    * - `items` — `{ title, text, image, imageAlt, href? }[]`
@@ -182,9 +183,9 @@ const base = uid("service-showcase");
 <script>
   /* One row open at a time. The open row's progress line fills over
      --_interval (a CSS animation); when it ends the next row opens and the
-     matching photo fades in. Runs only on screen, pauses on hover/focus,
-     never auto-advances with reduced motion. A click opens that row and the
-     cycle carries on from there. */
+     matching photo fades in. Runs only while on screen and never
+     auto-advances with reduced motion. A click opens that row and the cycle
+     carries on from there. */
   function initShowcase(list: HTMLElement) {
     if (list.dataset.init) return;
     list.dataset.init = "true";
@@ -233,27 +234,12 @@ const base = uid("service-showcase");
       list.dataset.static = "true";
       return;
     }
-    const setRunning = (on: boolean) =>
-      list.toggleAttribute("data-running", on);
-    let inView = false;
-    let hovered = false;
-    const sync = () => setRunning(inView && !hovered);
+    // Keeps playing while on screen — hovering or clicking around inside
+    // doesn't stop it (a click just jumps to that row and carries on).
     new IntersectionObserver(
-      ([entry]) => {
-        inView = entry.isIntersecting;
-        sync();
-      },
+      ([entry]) => list.toggleAttribute("data-running", entry.isIntersecting),
       { threshold: 0.35 },
     ).observe(list);
-    wrap.addEventListener("pointerenter", () => ((hovered = true), sync()));
-    wrap.addEventListener("pointerleave", () => ((hovered = false), sync()));
-    wrap.addEventListener("focusin", () => ((hovered = true), sync()));
-    wrap.addEventListener("focusout", (e) => {
-      if (!wrap.contains((e as FocusEvent).relatedTarget as Node)) {
-        hovered = false;
-        sync();
-      }
-    });
   }
 
   function initAll() {
