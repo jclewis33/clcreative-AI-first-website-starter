@@ -433,6 +433,13 @@ const stars = [1, 2, 3, 4, 5];
       margin-bottom: 0;
     }
 
+    /* Quieter than the default muted text, but still AA-readable: the
+       public link must stay easy to find (see the review-gating note in
+       the header). Opacity rather than a colour so it works in any theme. */
+    .review_public {
+      opacity: 0.62;
+    }
+
     .review_redirect_link,
     .review_public_link {
       color: inherit;
