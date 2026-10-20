@@ -265,6 +265,7 @@ async function main() {
   await homeImage(home.process, "image", "process");
   await homeImage(home.photoBand, "image", "photo-band");
   await homeImage(home.story, "image", "story");
+  await homeImage(home.why, "image", "why");
   await homeImage(home.about, "image", "about");
   await homeImage(home.contact, "image", "contact");
   await homeImage(home.callBand, "image", "call-band");

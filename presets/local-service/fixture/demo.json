@@ -313,6 +313,38 @@
       "heading": "Get a free estimate",
       "text": "Two quick steps. We call you back the same business day.",
       "question": "What do you need help with?"
+    },
+    "promises": {
+      "heading": "No surprises. Just good work.",
+      "items": [
+        {
+          "title": "Upfront pricing",
+          "text": "A written price before any work starts."
+        },
+        {
+          "title": "Licensed",
+          "text": "Every job done by a licensed pro."
+        },
+        {
+          "title": "On time",
+          "text": "We show up when we say we will."
+        }
+      ]
+    },
+    "expect": {
+      "heading": "What to expect",
+      "steps": [
+        {
+          "label": "Today",
+          "title": "Call or send the form",
+          "text": "Tell us what is going on."
+        },
+        {
+          "label": "First visit",
+          "title": "We look before we quote",
+          "text": "A plan and a price before any work."
+        }
+      ]
     }
   },
   "services": [

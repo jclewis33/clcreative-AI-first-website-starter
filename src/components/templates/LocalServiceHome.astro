@@ -34,6 +34,9 @@ import ComparisonTable from "@/components/sections/ComparisonTable.astro";
 import EmergencyBand from "@/components/sections/EmergencyBand.astro";
 import MaintenancePlans from "@/components/sections/MaintenancePlans.astro";
 import TeamGrid from "@/components/sections/TeamGrid.astro";
+import PromiseCards from "@/components/sections/PromiseCards.astro";
+import ExpectTimeline from "@/components/sections/ExpectTimeline.astro";
+import WhyChooseUs from "@/components/sections/WhyChooseUs.astro";
 import { geoFor } from "@/lib/service-area-geo";
 import { getServices, servicePath } from "@/lib/services";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
@@ -101,6 +104,9 @@ const {
   emergency,
   plans,
   team,
+  promises,
+  expect,
+  why,
 } = home;
 /* The street map: the home data's own outlines (the dev sample's SVG map
    has none), else the generated src/data/service-area-geo.json. */
@@ -197,7 +203,20 @@ if (import.meta.env.DEV && !services.length)
   />
 
   {
-    process && (
+    expect && (
+      <ExpectTimeline
+        eyebrow={expect.eyebrow}
+        heading={expect.heading}
+        text={expect.text}
+        steps={expect.steps}
+        proof={expect.proof}
+        cta={estimateCta}
+      />
+    )
+  }
+
+  {
+    !expect && process && (
       <ProcessSteps
         eyebrow={process.eyebrow}
         heading={process.heading}
@@ -257,6 +276,19 @@ if (import.meta.env.DEV && !services.length)
   }
 
   {
+    why && (
+      <WhyChooseUs
+        eyebrow={why.eyebrow}
+        heading={why.heading}
+        intro={why.intro}
+        items={why.items}
+        image={why.image}
+        imageAlt={why.imageAlt}
+      />
+    )
+  }
+
+  {
     team && (
       <TeamGrid
         eyebrow={team.eyebrow}
@@ -275,6 +307,17 @@ if (import.meta.env.DEV && !services.length)
         text={guarantee.text}
         items={guarantee.items}
         sealLabel={guarantee.sealLabel}
+      />
+    )
+  }
+
+  {
+    promises && (
+      <PromiseCards
+        eyebrow={promises.eyebrow}
+        heading={promises.heading}
+        intro={promises.intro}
+        items={promises.items}
       />
     )
   }

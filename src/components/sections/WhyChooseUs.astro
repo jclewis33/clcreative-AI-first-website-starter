@@ -1,0 +1,187 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import ServiceIcon, {
+  type ServiceIconName,
+} from "@/components/ui/ServiceIcon.astro";
+
+type WhyReason = {
+  /** "A dad who gets it". */
+  title: string;
+  /** A line or two. */
+  text: string;
+  /** An icon from src/data/service-icons.json. */
+  icon?: ServiceIconName;
+};
+type WhyChooseUsTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **WhyChooseUs** — a centred headline and line, then the reasons as
+   * icon rows with dividers on the left and one big photo on the right
+   * (the photo goes under the list on narrow screens).
+   *
+   * - `items` — `{ title, text, icon? }[]` (3–4 read best)
+   * - `image` + `imageAlt` — required
+   *
+   * @example
+   * <WhyChooseUs heading="Why families pick us" items={[{ title: "On time", text: "When we say we'll be there, we're there.", icon: "check" }]} image={photo} imageAlt="…" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** The headline. HTML allowed (`<strong>` = accent). Required. */
+  heading: string;
+
+  /** The line under it. */
+  intro?: string;
+
+  /** The reasons. Empty renders nothing. */
+  items: WhyReason[];
+
+  /** The photo beside the list. Required. */
+  image: ImageMetadata | string;
+
+  /** Alt text for the photo. */
+  imageAlt: string;
+
+  /** Section theme. */
+  theme?: WhyChooseUsTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  intro,
+  items = [],
+  image,
+  imageAlt,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && (!heading || !items.length || !image))
+  console.warn(
+    "[WhyChooseUs] needs `heading`, `items` and `image`; nothing renders.",
+  );
+---
+
+{
+  render && heading && items.length > 0 && image && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["why-us_wrap", className]}
+      {...rest}
+    >
+      <div class="why-us_header u-margin-trim">
+        {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+        <Heading tag="h2" variant="h1" accent>
+          <Fragment set:html={heading} />
+        </Heading>
+        {intro && <Text muted>{intro}</Text>}
+      </div>
+      <Layout ratio="5-7" verticalAlign="center">
+        <ul class="why-us_list">
+          {items.map((item) => (
+            <li class="why-us_item">
+              {item.icon && <ServiceIcon name={item.icon} />}
+              <div class="why-us_item_body u-margin-trim">
+                <Heading tag="h3" variant="h5" marginBottom={2}>
+                  {item.title}
+                </Heading>
+                <Text muted>{item.text}</Text>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <Visual
+          slot="column2"
+          src={image}
+          alt={imageAlt || heading}
+          ratio="4 / 3"
+          class="why-us_img"
+        />
+      </Layout>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .why-us_header {
+      --_text-inline-margin: auto;
+      --_buttons-justify: center;
+      max-width: 48rem;
+      margin-inline: auto;
+      text-align: center;
+    }
+
+    .why-us_list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .why-us_item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+      padding-block: var(--space-5);
+    }
+
+    .why-us_item + .why-us_item {
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .why-us_item:first-child {
+      padding-top: 0;
+    }
+
+    .why-us_item .service-icon_wrap {
+      flex-shrink: 0;
+      width: 3rem;
+      background-color: color-mix(
+        in srgb,
+        var(--heading-accent) 12%,
+        transparent
+      );
+    }
+
+    .why-us_item_body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .why-us_img {
+      border-radius: var(--radius-main);
+      box-shadow: var(--box-shadow-large);
+    }
+  }
+</style>

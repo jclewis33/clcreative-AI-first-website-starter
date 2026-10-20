@@ -209,6 +209,42 @@ const homeSchema = z.object({
     text: text.optional(),
     areas: z.array(text).min(1).optional(),
   }),
+  /** Only promises the business really makes. */
+  promises: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      intro: text.optional(),
+      items: z.array(item).min(3).max(4),
+    })
+    .optional(),
+  /** Replaces the home page's process section; only real timings. */
+  expect: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      text: text.optional(),
+      steps: z
+        .array(z.object({ label: text, title: text, text }))
+        .min(2)
+        .max(4),
+      /** One real figure from their reviews or profile. */
+      proof: z.object({ value: text, label: text }).optional(),
+    })
+    .optional(),
+  why: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      intro: text.optional(),
+      items: z
+        .array(z.object({ title: text, text, icon: text.optional() }))
+        .min(3)
+        .max(5),
+      image,
+      imageAlt: text,
+    })
+    .optional(),
   process: z
     .object({
       eyebrow: text.optional(),

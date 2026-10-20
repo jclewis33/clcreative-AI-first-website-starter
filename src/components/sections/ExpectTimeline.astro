@@ -1,0 +1,245 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type ExpectStep = {
+  /** The when: "Today", "First visit", "Every season". */
+  label: string;
+  /** "Call or text Bradley". */
+  title: string;
+  /** A line or two. */
+  text: string;
+};
+type ExpectProof = {
+  /** "100%". */
+  value: string;
+  /** "Recommend us on Facebook". */
+  label: string;
+};
+type ExpectTimelineTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ExpectTimeline** — "what to expect": on the left the heading, a
+   * line, the CTA and phone buttons and an optional proof card (one real
+   * figure); on the right a bordered card with the steps on a vertical
+   * line, each with its when ("Today", "First visit", "Every season").
+   * Stacks with the card under the text on narrow screens.
+   *
+   * Only real timings — no "same day" unless the business promises it.
+   *
+   * @example
+   * <ExpectTimeline heading="From first call to pest-free" steps={[{ label: "Today", title: "Call or text", text: "Tell us what you're seeing." }]} proof={{ value: "100%", label: "Recommend us on Facebook" }} cta={{ label: "Request service", modal: "estimate-modal" }} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** The headline. HTML allowed (`<strong>` = accent). Required. */
+  heading: string;
+
+  /** The line under it. */
+  text?: string;
+
+  /** The steps. Empty renders nothing. */
+  steps: ExpectStep[];
+
+  /** One real figure under the buttons. */
+  proof?: ExpectProof;
+
+  /** The main button (e.g. the estimate form). */
+  cta?: SectionCta;
+
+  /** Show the phone button beside it. @default true */
+  showPhone?: boolean;
+
+  /** Section theme. */
+  theme?: ExpectTimelineTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  steps = [],
+  proof,
+  cta,
+  showPhone = true,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && (!heading || !steps.length))
+  console.warn(
+    "[ExpectTimeline] needs `heading` and `steps`; nothing renders.",
+  );
+---
+
+{
+  render && heading && steps.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["expect_wrap", className]}
+      {...rest}
+    >
+      <Layout ratio="5-7" verticalAlign="center">
+        {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+        <Heading tag="h2" variant="h1" accent>
+          <Fragment set:html={heading} />
+        </Heading>
+        {text && <Text muted>{text}</Text>}
+        {(cta || showPhone) && (
+          <ButtonWrapper>
+            {cta && <CtaButton cta={cta} size="large" />}
+            {showPhone && <CtaButton phone variant="secondary" size="large" />}
+          </ButtonWrapper>
+        )}
+        {proof && (
+          <div class="expect_proof">
+            <span class="expect_proof_value">{proof.value}</span>
+            <span class="expect_proof_label">{proof.label}</span>
+          </div>
+        )}
+        <ol slot="column2" class="expect_card">
+          {steps.map((step) => (
+            <li class="expect_step">
+              <span class="expect_step_label">{step.label}</span>
+              <div class="expect_step_body u-margin-trim">
+                <Heading
+                  tag="h3"
+                  variant="h4"
+                  marginBottom={2}
+                  class="expect_step_title"
+                >
+                  {step.title}
+                </Heading>
+                <Text muted>{step.text}</Text>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </Layout>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .expect_proof {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+      padding: var(--space-5) var(--space-6);
+      border-radius: var(--radius-main);
+      background-color: color-mix(
+        in srgb,
+        var(--heading-accent) 9%,
+        var(--background)
+      );
+    }
+
+    .expect_proof_value {
+      font-family: var(--font-primary);
+      font-size: var(--h2-size);
+      font-weight: var(--h2-weight);
+      line-height: 1;
+      color: var(--heading-accent);
+    }
+
+    .expect_proof_label {
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, var(--text) 75%, transparent);
+    }
+
+    /* The steps card: the when on the left, a line down beside it. */
+    .expect_card {
+      margin: 0;
+      padding: var(--space-7) var(--space-6);
+      list-style: none;
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-main);
+    }
+
+    .expect_step {
+      display: grid;
+      grid-template-columns: 7.5rem minmax(0, 1fr);
+      column-gap: var(--space-5);
+    }
+
+    .expect_step + .expect_step {
+      margin-top: var(--space-6);
+    }
+
+    .expect_step_label {
+      position: relative;
+      font-family: var(--font-primary);
+      font-size: var(--h5-size);
+      line-height: 1.2;
+      color: color-mix(in srgb, var(--text) 60%, transparent);
+    }
+
+    /* The line runs from under each label to the next step. */
+    .expect_step:not(:last-child) .expect_step_label::after {
+      content: "";
+      position: absolute;
+      top: calc(1.2em + var(--space-3));
+      bottom: calc(var(--space-6) * -1 + var(--space-3));
+      left: 0;
+      width: calc(var(--border-width-main) * 2);
+      background-color: var(--heading-accent);
+    }
+
+    .expect_step_title {
+      color: var(--heading-accent);
+    }
+
+    /* Phones: the when sits above its step; the line moves to the step's
+       left edge. */
+    @container (width < 35em) {
+      .expect_card {
+        padding: var(--space-6) var(--space-5);
+      }
+
+      .expect_step {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: var(--space-2);
+        padding-left: var(--space-4);
+        border-left: calc(var(--border-width-main) * 2) solid
+          var(--heading-accent);
+      }
+
+      .expect_step:not(:last-child) .expect_step_label::after {
+        content: none;
+      }
+    }
+  }
+</style>
