@@ -25,7 +25,7 @@ import { uid } from "@/lib/uid";
  *   `review-feedback` form (src/config/forms.ts), tagged by star count.
  *
  * The low-rating step still links to Google — one small, muted line
- * ("Prefer a review? Here") that hides once feedback is sent. Steering only
+ * ("Prefer a review?", itself the link) that hides once feedback is sent. Steering only
  * happy customers to a public review ("review gating") breaks Google's
  * review policy and the FTC's guidance on reviews; keep the link readable
  * and working.
@@ -101,13 +101,19 @@ if (import.meta.env.DEV && !reviewUrl) {
 
 const sms = SITE.smsOptIn;
 
-/* One string so formatting can't put spaces inside the link (they'd be
-   underlined). Screen readers hear "Here on Google". reviewUrl comes from
-   config, but escape it anyway. */
+/* The whole line is the link. One string so formatting can't add spaces
+   inside it. Screen readers also hear where it goes ("on Google", "on
+   Facebook"), from the link's host. reviewUrl comes from config, but
+   escape it anyway. */
 const safeReviewUrl = reviewUrl
   .replaceAll("&", "&amp;")
   .replaceAll('"', "&quot;");
-const publicReviewLine = `Prefer a review? <a href="${safeReviewUrl}" class="review_public_link">Here<span class="u-sr-only"> on Google</span></a>`;
+const reviewSite = /facebook\./i.test(reviewUrl)
+  ? "Facebook"
+  : /yelp\./i.test(reviewUrl)
+    ? "Yelp"
+    : "Google";
+const publicReviewLine = `<a href="${safeReviewUrl}" class="review_public_link">Prefer a review?<span class="u-sr-only"> Leave one on ${reviewSite}</span></a>`;
 const titleId = uid("review-title");
 const formId = uid("review-form");
 const stars = [1, 2, 3, 4, 5];
@@ -437,6 +443,18 @@ const stars = [1, 2, 3, 4, 5];
     .review_public_link {
       color: inherit;
       text-decoration: underline;
+    }
+
+    /* The public line is plain text until hovered; it must stay a working
+       link (see the review-gating note in the header). */
+    .review_public_link {
+      text-decoration: none;
+    }
+
+    @media (hover: hover) {
+      .review_public_link:hover {
+        text-decoration: underline;
+      }
     }
 
     .review_feedback_intro,
