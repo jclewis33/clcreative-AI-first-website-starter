@@ -13,6 +13,7 @@ import ServiceMap from "@/components/ui/ServiceMap.astro";
 import { SERVICE_RADIUS, type ServiceRadius } from "@/lib/service-area-geo";
 import type { SectionCta } from "@/lib/cta";
 import { SITE } from "@/config/site";
+import { TOWN_LINKS } from "@/lib/area-nav";
 
 type ServiceAreaImage = { src: ImageMetadata | string; alt: string };
 /** An SVG imported as a component: `import Map from "@/assets/maps/x.svg"`. */
@@ -46,7 +47,7 @@ interface Props extends HTMLAttributes<"section"> {
    *
    * - `paragraphs`, `points` — more writing and a checklist of local facts
    * - `areas` — place names (default `SITE.serviceAreas`)
-   * - `areaLinks` — make chips links (a page per place)
+   * - `areaLinks` — chip links (default: each town's region page)
    * - `geo` — town boundaries for the street map
    * - `map`, `mapLabel` — the SVG and its accessible description
    * - `images` — two photos, shown when there's no `map`
@@ -79,7 +80,7 @@ interface Props extends HTMLAttributes<"section"> {
   /** Place names, one chip each. @default SITE.serviceAreas */
   areas?: readonly string[];
 
-  /** Make chips links: a page per place, e.g. `{ "Round Rock": "/services/panels/round-rock" }`. */
+  /** Make chips links: `{ "Round Rock": "/service-areas/williamson-county" }`. @default each town's region page (src/content/service-areas/) */
   areaLinks?: Record<string, string>;
 
   /** The place this page is about: highlighted on the map. */
@@ -128,7 +129,7 @@ const {
   paragraphs = [],
   points = [],
   areas = SITE.serviceAreas,
-  areaLinks = {},
+  areaLinks = TOWN_LINKS,
   currentArea,
   geo = [],
   radius = SERVICE_RADIUS,

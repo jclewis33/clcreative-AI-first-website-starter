@@ -78,6 +78,8 @@ const estimateCta = {
   modal: ESTIMATE_MODAL_ID,
 };
 const ownModal = !SITE.quote;
+/* This page's own towns: plain chips, not links back to itself. */
+const NO_LINKS: Record<string, string> = {};
 const projectOptions = [
   ...services.map((s) => ({ label: s.data.title, value: s.id })),
   { label: "Something else", value: "other" },
@@ -111,11 +113,11 @@ const projectOptions = [
   />
 
   <ServiceArea
-    eyebrow={a.towns.join(" · ")}
     heading={a.local.heading}
     paragraphs={a.local.paragraphs}
     points={a.facts ?? []}
     areas={a.towns}
+    areaLinks={NO_LINKS}
     geo={geoFor(a.towns)}
     radius={null}
   />
@@ -158,19 +160,9 @@ const projectOptions = [
 
   <FAQ eyebrow="Questions" items={a.faqs} />
 
-  <LeadFormSection
-    eyebrow="Get help"
-    heading={a.cta.heading}
-    text={a.cta.text}
-    formId="contact"
-    fields="quote"
-    projectOptions={projectOptions}
-  />
-
   <ServiceCards
     render={others.length > 0}
     layout="swipe"
-    theme="dark"
     heading="Other areas we serve"
     moreLabel="See this area"
     items={others.map((other) => ({
@@ -180,6 +172,15 @@ const projectOptions = [
       imageAlt: other.data.hero.imageAlt,
       href: areaPath(other.id),
     }))}
+  />
+
+  <LeadFormSection
+    eyebrow="Get help"
+    heading={a.cta.heading}
+    text={a.cta.text}
+    formId="contact"
+    fields="quote"
+    projectOptions={projectOptions}
   />
 
   {

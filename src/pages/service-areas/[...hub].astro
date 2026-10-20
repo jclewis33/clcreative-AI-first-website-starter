@@ -19,7 +19,6 @@ import {
   areaPath,
   getServiceAreas,
   SERVICE_AREAS_PATH,
-  TOWN_LINKS,
   type ServiceAreaRegion,
 } from "@/lib/service-areas";
 import { getServices } from "@/lib/services";
@@ -79,7 +78,6 @@ const projectOptions = [
     heading="Find your town"
     text="Pick your town to see what we do in your area."
     areas={towns}
-    areaLinks={TOWN_LINKS}
     geo={geoFor(towns)}
   />
 
