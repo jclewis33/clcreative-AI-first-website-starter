@@ -110,7 +110,7 @@ The widget on `/leave-a-review`: headline + five stars. A rating at or above
 `threshold` sends the visitor to `reviewUrl` (default `SITE.googleReviewUrl`,
 then `SITE.reviewsUrl`). Lower ratings open a private feedback form (posts
 `review-feedback`, tagged `review feedback N-star`) **that still links to
-Google** (a small, muted "Prefer a review? Here" line that hides once the
+Google** (a small, muted "Prefer a review?" line, itself the link, that hides once the
 feedback is sent) — never remove that link: steering only happy customers to Google
 ("review gating") breaks Google's policy and FTC guidance. Prefills from
 `?first_name=`, `?last_name=`, `?email=`, `?phone=` (or `?name=`). Renders its
