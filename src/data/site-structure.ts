@@ -313,6 +313,23 @@ const DEV_FOOTER_LINKS: FooterLink[] = import.meta.env.DEV
   : [];
 
 /**
+ * Demo-only footer column: the pages every site gets but nothing links to
+ * (the customer review page and the sign-in-gated client tools), so a
+ * prospect can open them. Empty on a real site.
+ */
+const DEMO_FOOTER_GROUPS: FooterGroup[] = DEMO
+  ? [
+      {
+        title: "Also included",
+        links: [
+          { path: "/leave-a-review", label: "Review request page" },
+          { path: "/tools", label: "Client tools (sign in)" },
+        ],
+      },
+    ]
+  : [];
+
+/**
  * FOOTER — the footer link columns (one `{ title, links }` per column).
  * `links` are page paths (or `{ path, label?, href? }` for a custom label/anchor).
  * The Company group's `locations` renders the "Locations Served" dropdown.
@@ -336,6 +353,7 @@ export const FOOTER_GROUPS: FooterGroup[] = pruneFooter([
     title: "Company",
     links: [...PRESET_FOOTER, "/contact"],
   },
+  ...DEMO_FOOTER_GROUPS,
 ]);
 
 /** Resolve a FooterLink to a concrete { label, href } pair. */

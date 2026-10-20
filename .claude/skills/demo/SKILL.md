@@ -258,6 +258,11 @@ Give Casey:
 - **The preview URL.**
 - **Screenshots** (desktop and mobile).
 - **The `confirmOrCut` list,** as a short checklist to clear before sending.
+- **The extras:** the footer's "Also included" column links the review
+  request page (`/leave-a-review`) and the client tools (`/tools`, behind
+  the shared demo password from docs/demo-mode.md). Set `reviewsUrl` in
+  demo.json to their real review page (Google, else Facebook), or 5 stars
+  opens the feedback form instead of sending them there.
 - **A one-line message he can send the prospect** (e.g. "I put together a
   quick look at what your site could be — <url>").
 
