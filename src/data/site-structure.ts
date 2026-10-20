@@ -71,6 +71,7 @@
 
 import { DEMO } from "@/config/demo.shared.mjs";
 import { SERVICE_NAV } from "@/lib/service-nav";
+import { AREA_NAV, SERVICE_AREAS_PATH } from "@/lib/area-nav";
 import { PRESET_FOOTER, PRESET_NAV, PRESET_PAGES } from "./preset-pages";
 
 /** llms.txt section a page belongs to (also its broad category). */
@@ -123,6 +124,26 @@ export const PAGES: SitePage[] = [
     footerLabel: service.navLabel,
     desc: service.description,
     group: "service",
+  })),
+
+  // ── Service areas — generated from src/content/service-areas/*.json ─────
+  // The hub plus one page per region; none of it exists without the files.
+  ...(AREA_NAV.length
+    ? [
+        {
+          path: SERVICE_AREAS_PATH,
+          title: "Service areas",
+          footerLabel: "All service areas",
+          desc: "Every region and town we serve, on one map.",
+          group: "main" as const,
+        },
+      ]
+    : []),
+  ...AREA_NAV.map((area): SitePage => ({
+    path: area.path,
+    title: area.title,
+    desc: area.description,
+    group: "location",
   })),
 
   // ── Collection index / landing pages ─────────────────────────────────────
@@ -284,6 +305,7 @@ export const NAV_MENU: NavMenuItem[] = pruneNav([
     ? [{ label: "Services", children: SERVICE_NAV.map((s) => s.path) }]
     : []),
   ...PRESET_NAV,
+  ...(AREA_NAV.length ? [{ path: SERVICE_AREAS_PATH }] : []),
   { path: "/blog" },
   { path: "/case-studies" },
   ...DEV_NAV_LINKS,

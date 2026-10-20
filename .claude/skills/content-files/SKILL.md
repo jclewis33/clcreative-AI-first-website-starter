@@ -9,8 +9,10 @@ Every piece of site content lives in `src/content/`, one file per entry, and
 is checked when Astro syncs content (`npm run dev`, `check` and `build` all
 sync). Pages never read these files directly: they call `@/lib/content`,
 whose default backend (`src/lib/content/files/`) maps the entries to view
-models. Service pages are content collections too. Their guide is
-`component-api` → `references/service-pages.md`.
+models. Service pages and service-area regions are content collections too,
+read through `@/lib/services` and `@/lib/service-areas`. Their guides are
+`component-api` → `references/service-pages.md` and
+`references/local-service.md` ("Service areas").
 
 The plain, step-by-step guide for a client or editor (setup, recipes,
 reading errors, publishing) is
@@ -43,24 +45,25 @@ the field reference; keep the two in step.
 
 ## Where everything lives
 
-| Content        | File(s)                                | Becomes                                                            |
-| -------------- | -------------------------------------- | ------------------------------------------------------------------ |
-| Blog post      | `src/content/blog/<slug>.mdx`          | `/blog/<slug>`, cards, category pages, llms files                  |
-| Author         | `src/content/authors/<id>.json`        | The byline and photo on posts                                      |
-| Blog CTA       | `src/content/ctas/blog/<id>.json`      | The end-of-post CTA, and `<BlogCta id>` inside a post              |
-| CTA section    | `src/content/ctas/section/<id>.json`   | The bottom CTA band on blog, case-study and project pages          |
-| Site defaults  | `src/content/settings.json`            | Which blog CTA and CTA section a page gets when it names none      |
-| Case study     | `src/content/case-studies/<slug>.json` | `/case-studies/<slug>` (unless coming soon), cards, featured strip |
-| Project        | `src/content/projects/<slug>.json`     | `/projects/<slug>`, project cards                                  |
-| Gallery photos | `src/content/gallery.json` (one array) | `/gallery`, the /projects strip                                    |
-| Testimonial    | `src/content/testimonials/<id>.json`   | Testimonial sliders, grids, `<SingleTestimonial name>`             |
+| Content        | File(s)                                 | Becomes                                                            |
+| -------------- | --------------------------------------- | ------------------------------------------------------------------ |
+| Blog post      | `src/content/blog/<slug>.mdx`           | `/blog/<slug>`, cards, category pages, llms files                  |
+| Author         | `src/content/authors/<id>.json`         | The byline and photo on posts                                      |
+| Blog CTA       | `src/content/ctas/blog/<id>.json`       | The end-of-post CTA, and `<BlogCta id>` inside a post              |
+| CTA section    | `src/content/ctas/section/<id>.json`    | The bottom CTA band on blog, case-study and project pages          |
+| Site defaults  | `src/content/settings.json`             | Which blog CTA and CTA section a page gets when it names none      |
+| Case study     | `src/content/case-studies/<slug>.json`  | `/case-studies/<slug>` (unless coming soon), cards, featured strip |
+| Project        | `src/content/projects/<slug>.json`      | `/projects/<slug>`, project cards                                  |
+| Gallery photos | `src/content/gallery.json` (one array)  | `/gallery`, the /projects strip                                    |
+| Testimonial    | `src/content/testimonials/<id>.json`    | Testimonial sliders, grids, `<SingleTestimonial name>`             |
+| Service area   | `src/content/service-areas/<slug>.json` | `/service-areas/<slug>` (a region of towns), the hub, town links   |
 
 Photos go in an `images/` folder beside the entries, referenced as
 `"./images/<file>"`: `src/content/blog/images/`,
 `src/content/authors/images/`, `src/content/case-studies/images/`,
 `src/content/projects/images/`, `src/content/testimonials/images/`,
 `src/content/ctas/blog/images/`, `src/content/ctas/section/images/` (and
-`src/content/services/images/`). Gallery photos go in
+`src/content/services/images/`, `src/content/service-areas/images/`). Gallery photos go in
 `src/content/gallery/images/`, referenced as `"./gallery/images/<file>"`
 from `gallery.json`. The schemas are in `src/content.config.ts`. Enums
 (categories, industries, photo labels) come from `src/config/blog.ts`,

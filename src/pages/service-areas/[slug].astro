@@ -1,0 +1,32 @@
+---
+/**
+ * A service-area region page — /service-areas/<region>, one per file in
+ * src/content/service-areas/ (no files, no pages). Prerendered; the
+ * sitemap lists them.
+ */
+import type { GetStaticPaths } from "astro";
+import ServiceAreaPage from "@/components/templates/ServiceAreaPage.astro";
+import { getServiceAreas, type ServiceAreaRegion } from "@/lib/service-areas";
+import { getServices, type Service } from "@/lib/services";
+
+export const getStaticPaths = (async () => {
+  const [areas, services] = await Promise.all([
+    getServiceAreas(),
+    getServices(),
+  ]);
+  return areas.map((area) => ({
+    params: { slug: area.id },
+    props: { area, areas, services },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  area: ServiceAreaRegion;
+  areas: ServiceAreaRegion[];
+  services: Service[];
+}
+
+const { area, areas, services } = Astro.props;
+---
+
+<ServiceAreaPage area={area} areas={areas} services={services} />

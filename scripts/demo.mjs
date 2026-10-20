@@ -439,8 +439,6 @@ async function main() {
         : {}),
     },
     license: demo.license ?? "",
-    // A page per service per town (/services/<service>/<town>).
-    cityPages: demo.cityPages,
   };
   const answersFile = path.join(
     os.tmpdir(),
@@ -511,6 +509,33 @@ async function main() {
     await write(
       `src/content/services/${id}.json`,
       `${JSON.stringify(service, null, 2)}\n`,
+    );
+  }
+
+  // 3b. Service-area regions (never a page per town).
+  await emptyDir("src/content/service-areas", /^images$/);
+  await emptyDir("src/content/service-areas/images");
+  for (const [index, entry] of (demo.areas ?? []).entries()) {
+    const { slug: id, ...area } = structuredClone(entry);
+    const image = async (
+      /** @type {string} */ src,
+      /** @type {string} */ field,
+      width = 2400,
+    ) => {
+      const file = `${id}-${field}.webp`;
+      await write(
+        `src/content/service-areas/images/${file}`,
+        await webp(await img(src), width),
+      );
+      return `./images/${file}`;
+    };
+    area.order ??= (index + 1) * 10;
+    area.hero.image = await image(area.hero.image, "hero");
+    for (const [i, job] of (area.jobs ?? []).entries())
+      job.image = await image(job.image, `job-${i + 1}`, 1600);
+    await write(
+      `src/content/service-areas/${id}.json`,
+      `${JSON.stringify(area, null, 2)}\n`,
     );
   }
 

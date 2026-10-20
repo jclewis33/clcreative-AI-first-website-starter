@@ -1,0 +1,105 @@
+---
+/**
+ * The service-area hub — /service-areas: every region as a card, every town
+ * on the radius map (each chip linking to its region page), and the
+ * estimate form. Built only when src/content/service-areas/ has a region
+ * (a rest route, so it can produce no page at all); registered in PAGES by
+ * src/data/site-structure.ts from the same files.
+ */
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import { SITE } from "@/config/site";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { geoFor, SERVICE_RADIUS } from "@/lib/service-area-geo";
+import {
+  areaPath,
+  getServiceAreas,
+  SERVICE_AREAS_PATH,
+  type ServiceAreaRegion,
+} from "@/lib/service-areas";
+import { getServices } from "@/lib/services";
+
+export const getStaticPaths = (async () => {
+  const areas = await getServiceAreas();
+  return areas.length ? [{ params: { hub: undefined }, props: { areas } }] : [];
+}) satisfies GetStaticPaths;
+
+interface Props {
+  areas: ServiceAreaRegion[];
+}
+
+const { areas } = Astro.props;
+const services = await getServices();
+const towns = areas.flatMap((area) => area.data.towns);
+const regionNames = areas.map((area) => area.data.title);
+const listed =
+  regionNames.length > 1
+    ? `${regionNames.slice(0, -1).join(", ")} and ${regionNames.at(-1)}`
+    : regionNames[0];
+const reach = SERVICE_RADIUS
+  ? ` Everywhere within ${SERVICE_RADIUS.miles} miles of home.`
+  : "";
+const description = `${SITE.name} serves ${towns.length} towns across ${listed}.${reach}`;
+/* Hoisted: multi-line literal attributes break the Stacki editor. */
+const schemaCrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Service areas", path: SERVICE_AREAS_PATH },
+];
+const crumbs = [{ label: "Home", href: "/" }, { label: "Service areas" }];
+const estimateCta = SITE.quote
+  ? { label: SITE.quote.label, modal: ESTIMATE_MODAL_ID }
+  : undefined;
+const projectOptions = [
+  ...services.map((s) => ({ label: s.data.title, value: s.id })),
+  { label: "Something else", value: "other" },
+];
+---
+
+<BaseLayout
+  title={`Service areas | ${SITE.name}`}
+  description={description.slice(0, 160)}
+  canonical={`${SITE.url}${SERVICE_AREAS_PATH}`}
+  breadcrumbs={schemaCrumbs}
+>
+  <Hero
+    variant="centered"
+    breadcrumbs={crumbs}
+    eyebrow="Service areas"
+    heading="Where we <strong>work</strong>"
+    text={description}
+    primaryCta={estimateCta}
+  />
+
+  <ServiceArea
+    heading="Find your town"
+    text="Pick your town to see what we do in your area."
+    areas={towns}
+    geo={geoFor(towns)}
+  />
+
+  <ServiceCards
+    eyebrow="Regions"
+    heading="The areas we cover"
+    moreLabel="See this area"
+    items={areas.map((area) => ({
+      title: area.data.title,
+      text: area.data.cardText,
+      image: area.data.hero.image,
+      imageAlt: area.data.hero.imageAlt,
+      href: areaPath(area.id),
+    }))}
+  />
+
+  <LeadFormSection
+    eyebrow="Get help"
+    heading="Not sure if we cover you?"
+    text="Send your address and what you need, and we'll let you know."
+    formId="contact"
+    fields="quote"
+    projectOptions={projectOptions}
+  />
+</BaseLayout>

@@ -1,0 +1,198 @@
+---
+/**
+ * Service-area region page — one region from src/content/service-areas/,
+ * covering its towns and every service there. A destination page, not a
+ * doorway: its own local writing, real local proof (facts, reviews, jobs
+ * from its towns), the region on the map, the services linking to their
+ * main pages (never re-explained), FAQs, and the estimate form on the page.
+ * Used by /service-areas/[slug].
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import RecentWork from "@/components/sections/RecentWork.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import FAQ from "@/components/sections/FAQ.astro";
+import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import { SITE } from "@/config/site";
+import { serviceFaqJsonLd } from "@/lib/jsonld";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { geoFor } from "@/lib/service-area-geo";
+import { servicePath, type Service } from "@/lib/services";
+import {
+  areaPath,
+  SERVICE_AREAS_PATH,
+  type ServiceAreaRegion,
+} from "@/lib/service-areas";
+
+interface Props {
+  /**
+   * **ServiceAreaPage** — a full region page from one service-areas entry.
+   *
+   * @example
+   * <ServiceAreaPage area={area} areas={areas} services={services} />
+   */
+  docs?: string;
+
+  /** The region (a src/content/service-areas entry). */
+  area: ServiceAreaRegion;
+
+  /** Every region — for the "other areas" links. */
+  areas: ServiceAreaRegion[];
+
+  /** Every service — for the service cards and the estimate choices. */
+  services: Service[];
+}
+
+const { area, areas, services } = Astro.props;
+const a = area.data;
+const path = areaPath(area.id);
+const pageUrl = `${SITE.url}${path}`;
+const others = areas.filter((other) => other.id !== area.id);
+
+if (import.meta.env.DEV) {
+  const served: readonly string[] = SITE.serviceAreas;
+  const unknown = a.towns.filter((town) => !served.includes(town));
+  if (unknown.length)
+    console.warn(
+      `[ServiceAreaPage] ${area.id}: ${unknown.join(", ")} not in SITE.serviceAreas — add them there so the footer, schema and map agree.`,
+    );
+}
+
+const crumbs = [
+  { label: "Home", href: "/" },
+  { label: "Service areas", href: SERVICE_AREAS_PATH },
+  { label: a.title },
+];
+const schemaCrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Service areas", path: SERVICE_AREAS_PATH },
+  { name: a.title, path },
+];
+
+/* The site's own estimate label (SITE.quote), as the nav and mobile bar use. */
+const estimateCta = {
+  label: SITE.quote?.label ?? "Get a free estimate",
+  modal: ESTIMATE_MODAL_ID,
+};
+const ownModal = !SITE.quote;
+/* This page's own towns: plain chips, not links back to itself. */
+const NO_LINKS: Record<string, string> = {};
+const projectOptions = [
+  ...services.map((s) => ({ label: s.data.title, value: s.id })),
+  { label: "Something else", value: "other" },
+];
+---
+
+<BaseLayout
+  title={`${a.seoTitle} | ${SITE.name}`}
+  description={a.seoDescription}
+  canonical={pageUrl}
+  breadcrumbs={schemaCrumbs}
+  schema={serviceFaqJsonLd({
+    pageUrl,
+    serviceType:
+      services.map((s) => s.data.title).join(", ") || `${SITE.name} services`,
+    name: `${SITE.name} in ${a.title}`,
+    description: a.seoDescription,
+    areaServed: a.towns.map((town) => ({ type: "City", name: town })),
+    faqs: a.faqs,
+  })}
+>
+  <Hero
+    variant="split"
+    breadcrumbs={crumbs}
+    eyebrow={a.hero.eyebrow ?? a.title}
+    heading={a.hero.heading}
+    text={a.hero.text}
+    image={a.hero.image}
+    imageAlt={a.hero.imageAlt}
+    primaryCta={estimateCta}
+  />
+
+  <ServiceArea
+    heading={a.local.heading}
+    paragraphs={a.local.paragraphs}
+    points={a.facts ?? []}
+    areas={a.towns}
+    areaLinks={NO_LINKS}
+    geo={geoFor(a.towns)}
+    radius={null}
+  />
+
+  <ServiceCards
+    render={services.length > 0}
+    eyebrow="What we do here"
+    heading={`Our services in ${a.title}`}
+    moreLabel="View service"
+    items={services.map((s) => ({
+      title: s.data.title,
+      text: s.data.cardText,
+      image: s.data.cardImage,
+      imageAlt: s.data.cardImageAlt,
+      href: servicePath(s.id),
+    }))}
+  />
+
+  <RecentWork
+    render={Boolean(a.jobs?.length)}
+    eyebrow="Recent work"
+    heading={`Jobs in ${a.title}`}
+    items={(a.jobs ?? []).map((job) => ({
+      image: job.image,
+      imageAlt: job.imageAlt,
+      title: job.caption,
+      place: job.town,
+    }))}
+  />
+
+  <Reviews
+    render={Boolean(a.reviews?.length)}
+    heading={`What neighbors in ${a.title} say`}
+    reviews={(a.reviews ?? []).map((review) => ({
+      text: review.text,
+      name: review.name,
+      meta: review.town,
+    }))}
+  />
+
+  <FAQ eyebrow="Questions" items={a.faqs} />
+
+  <ServiceCards
+    render={others.length > 0}
+    layout="swipe"
+    heading="Other areas we serve"
+    moreLabel="See this area"
+    items={others.map((other) => ({
+      title: other.data.title,
+      text: other.data.towns.join(", "),
+      image: other.data.hero.image,
+      imageAlt: other.data.hero.imageAlt,
+      href: areaPath(other.id),
+    }))}
+  />
+
+  <LeadFormSection
+    eyebrow="Get help"
+    heading={a.cta.heading}
+    text={a.cta.text}
+    formId="contact"
+    fields="quote"
+    projectOptions={projectOptions}
+  />
+
+  {
+    ownModal && (
+      <LeadFormModal
+        id={ESTIMATE_MODAL_ID}
+        formId="contact"
+        heading="Get a free estimate"
+        text="Tell us a little about the project and we'll be in touch."
+        fields="quote"
+        projectOptions={projectOptions}
+      />
+    )
+  }
+</BaseLayout>

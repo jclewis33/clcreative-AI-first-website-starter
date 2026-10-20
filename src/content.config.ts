@@ -49,6 +49,7 @@ import { renderRichText } from "./lib/content/markdown";
 /** Where each folder-based collection lives (repo-relative). */
 const DIR = {
   services: "src/content/services",
+  serviceAreas: "src/content/service-areas",
   blog: "src/content/blog",
   authors: "src/content/authors",
   blogCtas: "src/content/ctas/blog",
@@ -254,6 +255,110 @@ const services = defineCollection({
         text: z.string().optional(),
       }),
     }),
+});
+
+/* `serviceAreas`: one JSON file per REGION the business serves
+   (/service-areas/<filename>), grouping its towns. Never a page per town or
+   per service × town: near-identical pages are doorway pages to Google.
+   A region page only builds with its own local writing and at least one
+   piece of real local proof (a review or job from one of its towns, or a
+   local fact from the business). Field guide:
+   .claude/skills/component-api/references/local-service.md. */
+const serviceAreas = defineCollection({
+  loader: checked(
+    filesIn(
+      DIR.serviceAreas,
+      "json",
+      '"ellis-county.json" — the filename becomes the URL /service-areas/<name>',
+    ),
+  ),
+  schema: ({ image }) =>
+    z
+      .object({
+        /** Region name: page title base, breadcrumb, card title. */
+        title: z.string().min(1),
+        /** Sort order on the hub and in the footer (lower first). */
+        order: z.number().default(100),
+        seoTitle: z.string().min(1),
+        seoDescription: z.string().min(1).max(160),
+        /** The towns in this region (each one of SITE.serviceAreas). */
+        towns: z.array(z.string().min(1)).min(1),
+        /** One line on the hub's region card. */
+        cardText: z.string().min(1),
+        hero: z.object({
+          eyebrow: z.string().optional(),
+          /** HTML allowed; wrap accent words in <strong>. */
+          heading: z.string().min(1),
+          text: z.string().min(1),
+          image: image(),
+          imageAlt: alt,
+        }),
+        /** Written for THIS region: its pests, homes, seasons. */
+        local: z.object({
+          heading: z.string().min(1),
+          paragraphs: z.array(z.string().min(1)).min(2),
+        }),
+        /** Local facts from the business (a neighbourhood, a landmark job). */
+        facts: z.array(z.string().min(1)).optional(),
+        /** Real, attributed reviews from customers in this region's towns. */
+        reviews: z
+          .array(
+            z.object({
+              text: z.string().min(1),
+              name: z.string().min(1),
+              town: z.string().min(1),
+            }),
+          )
+          .optional(),
+        /** Real jobs in this region: a photo and a line each. */
+        jobs: z
+          .array(
+            z.object({
+              image: image(),
+              imageAlt: alt,
+              town: z.string().min(1),
+              caption: z.string().min(1),
+            }),
+          )
+          .optional(),
+        faqs: z
+          .array(
+            z.object({
+              question: z.string().min(1),
+              answer: z.string().min(1),
+            }),
+          )
+          .min(2),
+        cta: z.object({
+          heading: z.string().min(1),
+          text: z.string().optional(),
+        }),
+      })
+      .superRefine((area, ctx) => {
+        const proof =
+          (area.facts?.length ?? 0) +
+          (area.reviews?.length ?? 0) +
+          (area.jobs?.length ?? 0);
+        if (!proof)
+          ctx.addIssue({
+            code: "custom",
+            path: ["facts"],
+            message:
+              "Add real local proof — a review or job from one of its towns, or a local fact from the business. Without it the page is a doorway page.",
+          });
+        for (const [key, list] of [
+          ["reviews", area.reviews ?? []],
+          ["jobs", area.jobs ?? []],
+        ] as const)
+          list.forEach((item, i) => {
+            if (!area.towns.includes(item.town))
+              ctx.addIssue({
+                code: "custom",
+                path: [key, i, "town"],
+                message: `"${item.town}" isn't one of this region's towns (${area.towns.join(", ")}).`,
+              });
+          });
+      }),
 });
 
 /** Blog posts: MDX — frontmatter here, the body is the post. */
@@ -628,6 +733,7 @@ const testimonials = defineCollection({
 
 export const collections = {
   services,
+  serviceAreas,
   blog,
   authors,
   blogCtas,

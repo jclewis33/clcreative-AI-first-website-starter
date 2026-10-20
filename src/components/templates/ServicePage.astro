@@ -1,14 +1,12 @@
 ---
 /**
- * Service page template — one service, optionally for one town.
+ * Service page template — one service.
  *
  * Every section comes from the local-service sections; the copy comes from
  * the service's JSON (src/content/services/<slug>.json). Used by
- * /services/[slug] and, when SITE.cityPages is on, by
- * /services/[slug]/[city], which passes `city`: the town then appears in the
- * title, description, eyebrow, breadcrumbs, schema `areaServed`, a "Do you
- * serve <town>?" answer at the top of the FAQ, and the service-area map,
- * and the area chips link to the same service in the other towns.
+ * /services/[slug]. There is deliberately no per-town version: towns are
+ * covered by the region pages (src/content/service-areas/), which the area
+ * chips here link to.
  */
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Hero from "@/components/sections/Hero.astro";
@@ -27,21 +25,20 @@ import { DEFAULT_PROCESS } from "@/data/process";
 import { serviceFaqJsonLd } from "@/lib/jsonld";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
 import { geoFor } from "@/lib/service-area-geo";
+import { TOWN_LINKS } from "@/lib/area-nav";
 import {
   relatedServices,
   servicePath,
-  serviceCityPath,
   SERVICES_INDEX_PATH,
   type Service,
 } from "@/lib/services";
 
 interface Props {
   /**
-   * **ServicePage** — a full service page from one services entry. Pass
-   * `city` for the town version (SITE.cityPages).
+   * **ServicePage** — a full service page from one services entry.
    *
    * @example
-   * <ServicePage service={service} all={all} city="Round Rock" />
+   * <ServicePage service={service} all={all} />
    */
   docs?: string;
 
@@ -50,68 +47,34 @@ interface Props {
 
   /** Every service — for related services and the estimate choices. */
   all: Service[];
-
-  /** The town this page is for (one of SITE.serviceAreas). */
-  city?: string;
 }
 
-const { service, all, city } = Astro.props;
+const { service, all } = Astro.props;
 const s = service.data;
 const basePath = servicePath(service.id);
-const path = city ? serviceCityPath(service.id, city) : basePath;
+const path = basePath;
 const pageUrl = `${SITE.url}${path}`;
 const related = relatedServices(all, service.id);
 const process = s.process ?? DEFAULT_PROCESS;
-const place = city ? `${city}, ${SITE.address.region}` : "";
-
-const title = city
-  ? /* The plain service name: a seoTitle often names a city already. */
-    `${s.title} in ${place} | ${SITE.name}`
-  : `${s.seoTitle} | ${SITE.name}`;
-/* Meta descriptions stop at 160 characters. */
-const clip = (text: string) =>
-  text.length <= 160 ? text : `${text.slice(0, 157).trimEnd()}…`;
-const description = city
-  ? clip(`${s.title} in ${place}. ${s.cardText}`)
-  : s.seoDescription;
+const title = `${s.seoTitle} | ${SITE.name}`;
+const description = s.seoDescription;
 
 const crumbs = [
   { label: "Home", href: "/" },
   { label: "Services", href: SERVICES_INDEX_PATH },
-  ...(city
-    ? [{ label: s.title, href: basePath }, { label: city }]
-    : [{ label: s.title }]),
+  { label: s.title },
 ];
 const schemaCrumbs = [
   { name: "Home", path: "/" },
   { name: "Services", path: SERVICES_INDEX_PATH },
   { name: s.title, path: basePath },
-  ...(city ? [{ name: city, path }] : []),
 ];
+const faqs = s.faqs;
 
-/* The town version answers the question its visitor came with first. */
-const faqs = city
-  ? [
-      {
-        question: `Do you offer ${s.title.toLowerCase()} in ${city}?`,
-        answer: `Yes. ${SITE.name} works in ${city} and across ${SITE.serviceAreas.filter((a) => a !== city).join(", ") || "the surrounding area"}. Call ${SITE.phone.display} or send the form for a free estimate.`,
-      },
-      ...s.faqs,
-    ]
-  : s.faqs;
-
-/* The area section: the street map when outlines exist; chips link to this
-   service's town pages when those are built. */
+/* The area section: the street map when outlines exist; each town chip
+   links to its region page when the site has them. */
 const areaGeo = geoFor(SITE.serviceAreas);
-const areaLinks = SITE.cityPages
-  ? Object.fromEntries(
-      SITE.serviceAreas.map((area) => [
-        area,
-        serviceCityPath(service.id, area),
-      ]),
-    )
-  : {};
-const showArea = areaGeo.length > 0 || SITE.cityPages;
+const showArea = areaGeo.length > 0 || Object.keys(TOWN_LINKS).length > 0;
 
 /* The site's own estimate label (SITE.quote, as the nav and mobile bar
    use) — a hard-coded "free estimate" promised what a client may not offer. */
@@ -131,16 +94,16 @@ const ownModal = !SITE.quote;
   schema={serviceFaqJsonLd({
     pageUrl,
     serviceType: s.title,
-    name: city ? `${s.title} in ${city}` : s.title,
+    name: s.title,
     description,
-    areaServed: city ? [{ type: "City", name: city }] : [...SITE.areaServed],
+    areaServed: [...SITE.areaServed],
     faqs,
   })}
 >
   <Hero
     variant="split"
     breadcrumbs={crumbs}
-    eyebrow={city ? `${s.title} in ${city}` : s.hero.eyebrow}
+    eyebrow={s.hero.eyebrow}
     heading={s.hero.heading}
     text={s.hero.text}
     image={s.hero.image}
@@ -168,12 +131,8 @@ const ownModal = !SITE.quote;
 
   <ServiceArea
     render={showArea}
-    heading={city
-      ? `Serving ${city} and nearby`
-      : `Where we do ${s.title.toLowerCase()}`}
+    heading={`Where we do ${s.title.toLowerCase()}`}
     areas={SITE.serviceAreas}
-    areaLinks={areaLinks}
-    currentArea={city}
     geo={areaGeo}
   />
 

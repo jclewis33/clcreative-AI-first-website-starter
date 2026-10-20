@@ -44,11 +44,12 @@ import {
   footerLabel,
   resolveFooterLink,
 } from "@/data/site-structure";
+import { SERVICE_AREAS_PATH, TOWN_LINKS } from "@/lib/area-nav";
 
 const visibleSocialLinks = SITE.social.filter((link) => link.href !== "#");
 
 /* Local-service mode (SITE.quote): a "Service area" column of the towns
-   served, and the business name and license on the bottom line — what a
+   served (each linking to its region page, src/content/service-areas/), and the business name and license on the bottom line — what a
    homeowner checks before calling a contractor. */
 const localService = Boolean(SITE.quote);
 const serviceAreas = localService ? SITE.serviceAreas : [];
@@ -298,11 +299,29 @@ const linkColumns = FOOTER_GROUPS.length + (serviceAreas.length ? 1 : 0);
                 <div role="list" class="footer_group_list">
                   {serviceAreas.map((area) => (
                     <div role="listitem" class="footer_group_item">
-                      <div class="footer_area_text u-text-style-small">
-                        {area}
-                      </div>
+                      {TOWN_LINKS[area] && (
+                        <a href={TOWN_LINKS[area]} class="footer_link_wrap">
+                          <div class="footer_link_text u-text-style-small">
+                            {area}
+                          </div>
+                        </a>
+                      )}
+                      {!TOWN_LINKS[area] && (
+                        <div class="footer_area_text u-text-style-small">
+                          {area}
+                        </div>
+                      )}
                     </div>
                   ))}
+                  {Object.keys(TOWN_LINKS).length > 0 && (
+                    <div role="listitem" class="footer_group_item">
+                      <a href={SERVICE_AREAS_PATH} class="footer_link_wrap">
+                        <div class="footer_link_text u-text-style-small">
+                          All service areas →
+                        </div>
+                      </a>
+                    </div>
+                  )}
                 </div>
               </section>
             )
