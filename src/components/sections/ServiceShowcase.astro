@@ -144,7 +144,11 @@ const base = uid("service-showcase");
               >
                 <div class="service-showcase_panel_inner u-margin-trim">
                   <div class="service-showcase_inline_media">
-                    <Visual src={item.image} alt={item.imageAlt} ratio="wide" />
+                    <Visual
+                      src={item.image}
+                      alt={item.imageAlt}
+                      ratio="square"
+                    />
                   </div>
                   <Text muted class="service-showcase_text">
                     {item.text}
@@ -407,13 +411,17 @@ const base = uid("service-showcase");
       opacity: 1;
     }
 
+    /* Square, but never taller than a phone screen's worth on a tablet. */
     .service-showcase_inline_media {
       display: none;
+      max-width: 28rem;
       margin-bottom: var(--space-4);
     }
 
-    /* Narrow: the side photo goes; each open row shows its own. */
-    @container (width < 35em) {
+    /* Once the columns stack (tablet and phone) the side photo goes — it
+       became a full-width portrait under the list — and each open row
+       shows its own square photo. */
+    @container (width < 58em) {
       .service-showcase_media {
         display: none;
       }
