@@ -146,7 +146,9 @@ const base = uid("service-showcase");
                   <div class="service-showcase_inline_media">
                     <Visual src={item.image} alt={item.imageAlt} ratio="wide" />
                   </div>
-                  <Text muted>{item.text}</Text>
+                  <Text muted class="service-showcase_text">
+                    {item.text}
+                  </Text>
                   {item.href && (
                     <a class="service-showcase_link" href={item.href}>
                       Learn more
@@ -277,8 +279,10 @@ const base = uid("service-showcase");
       transition: color 0.2s ease;
     }
 
+    /* Open: the title sits close to its text. */
     .service-showcase_item.is-active .service-showcase_trigger {
       color: var(--text);
+      padding-bottom: var(--space-2);
     }
 
     @media (hover: hover) {
@@ -330,9 +334,12 @@ const base = uid("service-showcase");
       padding-bottom: var(--space-5);
     }
 
+    .service-showcase_text {
+      margin-bottom: var(--space-2);
+    }
+
     .service-showcase_link {
       display: inline-block;
-      margin-top: var(--space-2);
       color: var(--heading-accent);
       font-weight: var(--font-weight-bold);
       text-decoration: none;
