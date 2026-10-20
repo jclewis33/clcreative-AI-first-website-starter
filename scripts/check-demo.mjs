@@ -154,6 +154,9 @@ try {
   assert.match(home, /your first service call/);
   assert.match(home, /href="\/services\/panel-upgrades"/);
   assert.doesNotMatch(home, /href="\/blog"/);
+  // The demo footer links the pages nothing else links to.
+  assert.match(home, /href="\/leave-a-review"/);
+  assert.match(home, /href="\/tools"/);
   // The local-service chrome: the fixture's look, the nav phone, the
   // site-wide estimate form (once per page), the mobile bar, the license.
   assert.match(home, /<html[^>]* data-look="rugged"/);

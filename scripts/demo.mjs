@@ -31,7 +31,7 @@
  * Defaults shared by every demo live in `demo.defaults.json` at the repo
  * root of the demos repo (never in the public starter):
  *   { "workersSubdomain": "clcreative", "bannerHref": "…", "bannerText": "…",
- *     "ghlTrackingId": "tk_…" }
+ *     "ghlTrackingId": "tk_…", "ghlChatWidgetId": "…" }
  * `{slug}`, `{name}` and `{worker}` are filled in where they appear.
  *
  * Usage:
@@ -404,6 +404,9 @@ async function main() {
     },
     ...(defaults.ghlTrackingId
       ? { ghlTrackingId: defaults.ghlTrackingId }
+      : {}),
+    ...(defaults.ghlChatWidgetId
+      ? { ghlChatWidgetId: defaults.ghlChatWidgetId }
       : {}),
     // Structured fields — always written whole, so a field removed from
     // demo.json is removed from the site on the next run.

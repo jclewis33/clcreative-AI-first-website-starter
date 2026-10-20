@@ -47,6 +47,12 @@ to it. `npm run demo` refuses to run there.
    ```
    Optional: `"ghlTrackingId": "tk_…"` — the GHL demo sub-account's External
    Tracking id, to see when a prospect opens their demo.
+   Optional: `"ghlChatWidgetId": "…"` — a chat widget from the GHL demo
+   sub-account (Sites → Chat Widget; the id is the `data-widget-id` in its
+   embed code). Every demo then shows it, and chats land in the demo
+   sub-account's inbox, so you can reply live while the prospect watches.
+   It carries the widget's own name and colour, so keep them generic
+   ("Hi! How can we help?") or change them in GHL before a call.
 
 ## 2. Cloudflare
 
@@ -86,7 +92,18 @@ never touch real client data.
    npx wrangler preview base-config secret put GHL_LOCATION_ID
    ```
    Base secrets apply to Previews created **after** they're set.
-3. Leads arrive with the source `Demo: <prospect> — <form>`.
+3. Set one shared password for the demo client tools (`/tools`, linked from
+   the demo footer's "Also included" column with the review request page):
+   ```sh
+   npx wrangler preview base-config secret put TOOLS_PASSWORD
+   ```
+   Without it `/tools` stays locked (503). With it, submitting really starts
+   the automation in the demo sub-account, so on a call you can type in the
+   prospect's own phone and they get the review request. Keep the password
+   to yourself: anyone who has it can text whoever they enter. The staff
+   forms' workflows (`src/config/forms.ts`) need to exist in the demo
+   sub-account for anything to send.
+4. Leads arrive with the source `Demo: <prospect> — <form>`.
 
 A demo's form always shows success, even if the secrets are missing or GHL
 fails (the Worker logs a warning). So after deploying each demo, send one
