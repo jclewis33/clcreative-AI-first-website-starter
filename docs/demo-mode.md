@@ -93,7 +93,8 @@ never touch real client data.
    ```
    Base secrets apply to Previews created **after** they're set.
 3. Set one shared password for the demo client tools (`/tools`, linked from
-   the demo footer's "Also included" column with the review request page):
+   the demo footer's "Also included" column with the review request and
+   discount pages):
    ```sh
    npx wrangler preview base-config secret put TOOLS_PASSWORD
    ```

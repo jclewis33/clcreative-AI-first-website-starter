@@ -314,7 +314,8 @@ const DEV_FOOTER_LINKS: FooterLink[] = import.meta.env.DEV
 
 /**
  * Demo-only footer column: the pages every site gets but nothing links to
- * (the customer review page and the sign-in-gated client tools), so a
+ * (the review page, the follow-up discount page and the sign-in-gated
+ * client tools), so a
  * prospect can open them. Empty on a real site.
  */
 const DEMO_FOOTER_GROUPS: FooterGroup[] = DEMO
@@ -323,6 +324,7 @@ const DEMO_FOOTER_GROUPS: FooterGroup[] = DEMO
         title: "Also included",
         links: [
           { path: "/leave-a-review", label: "Review request page" },
+          { path: "/get-your-discount", label: "Discount page" },
           { path: "/tools", label: "Client tools (sign in)" },
         ],
       },
