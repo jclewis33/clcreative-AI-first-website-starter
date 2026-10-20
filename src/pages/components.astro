@@ -119,6 +119,10 @@ import ProcessSteps from "@/components/sections/ProcessSteps.astro";
 import StorySplit from "@/components/sections/StorySplit.astro";
 import WorkScope from "@/components/sections/WorkScope.astro";
 import ServiceShowcase from "@/components/sections/ServiceShowcase.astro";
+import PromiseCards from "@/components/sections/PromiseCards.astro";
+import ExpectTimeline from "@/components/sections/ExpectTimeline.astro";
+import WhyChooseUs from "@/components/sections/WhyChooseUs.astro";
+import FeatureTiles from "@/components/sections/FeatureTiles.astro";
 import IncludedList from "@/components/sections/IncludedList.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import Reviews from "@/components/sections/Reviews.astro";
@@ -253,6 +257,10 @@ const COMPONENT_INDEX = [
   { slug: "story-split", text: "StorySplit" },
   { slug: "work-scope", text: "WorkScope" },
   { slug: "service-showcase", text: "ServiceShowcase" },
+  { slug: "promise-cards", text: "PromiseCards" },
+  { slug: "expect-timeline", text: "ExpectTimeline" },
+  { slug: "why-choose-us", text: "WhyChooseUs" },
+  { slug: "feature-tiles", text: "FeatureTiles" },
   { slug: "included-list", text: "IncludedList" },
   { slug: "service-area", text: "ServiceArea" },
   { slug: "reviews", text: "Reviews" },
@@ -514,6 +522,80 @@ const showcaseDemoItems = [
     image: demoPhoto4,
     imageAlt: "A new room addition on a house",
     href: "#",
+  },
+];
+const promiseDemoItems = [
+  {
+    title: "No hard sell",
+    text: "We tell you what the job needs, and that's it.",
+  },
+  { title: "No hidden fees", text: "The price we quote is the price you pay." },
+  { title: "Licensed and insured", text: "Every job done by a licensed pro." },
+  {
+    title: "On time",
+    text: "We show up when we say, and explain what we're doing.",
+  },
+];
+const expectDemoSteps = [
+  {
+    label: "Today",
+    title: "Call or send the form",
+    text: "Tell us what's going on. We'll answer your questions straight.",
+  },
+  {
+    label: "First visit",
+    title: "We look before we quote",
+    text: "A walk-through, a plain-English plan and a price before any work.",
+  },
+  {
+    label: "Every season",
+    title: "We keep it that way",
+    text: "Regular visits so the problem doesn't come back.",
+  },
+];
+const expectDemoProof = {
+  value: "4.9",
+  label: "Average rating from our customers",
+};
+const whyDemoItems = [
+  {
+    title: "Owner on every job",
+    text: "You deal with the person whose name is on the truck.",
+    icon: "house" as const,
+  },
+  {
+    title: "Upfront pricing",
+    text: "A written price before we start, never a surprise after.",
+    icon: "check" as const,
+  },
+  {
+    title: "Local to you",
+    text: "We live here too, so we're never far away.",
+    icon: "leaf" as const,
+  },
+];
+const tilesDemoItems = [
+  {
+    title: "Built around your home",
+    text: "Every plan starts with a walk-through.",
+    image: demoPhoto4,
+    imageAlt: "A remodeled kitchen with an island",
+  },
+  {
+    title: "Fair, written pricing",
+    text: "One price, agreed before the work starts.",
+    tone: "dark" as const,
+  },
+  {
+    title: "Finished properly",
+    text: "The details are the job.",
+    image: demoPhoto5,
+    imageAlt: "A remodeled bathroom with a walk-in shower",
+  },
+  {
+    title: "Here after the job",
+    text: "Call us any time something isn't right.",
+    tone: "tint" as const,
   },
 ];
 ---
@@ -2731,6 +2813,53 @@ const showcaseDemoItems = [
     heading="What we do"
     intro="Click one, or let them roll by."
     items={showcaseDemoItems}
+  />
+
+  <Section theme="light" padding="small" id="promise-cards">
+    <Heading variant="eyebrow">PromiseCards</Heading>
+    <Heading tag="h2"
+      >The promises a business really makes, as tinted cards</Heading
+    >
+  </Section>
+  <PromiseCards
+    heading="No gimmicks. Just <strong>straightforward</strong> service."
+    intro="What you can count on, every visit."
+    items={promiseDemoItems}
+  />
+
+  <Section theme="light" padding="small" id="expect-timeline">
+    <Heading variant="eyebrow">ExpectTimeline</Heading>
+    <Heading tag="h2"
+      >What to expect: the steps on a line beside the call to action</Heading
+    >
+  </Section>
+  <ExpectTimeline
+    heading="From first call to <strong>problem solved</strong>"
+    text="Here's how it goes, start to finish."
+    steps={expectDemoSteps}
+    proof={expectDemoProof}
+    cta={{ label: "Get a free estimate", href: "#" }}
+  />
+
+  <Section theme="light" padding="small" id="why-choose-us">
+    <Heading variant="eyebrow">WhyChooseUs</Heading>
+    <Heading tag="h2">Reasons as icon rows beside one big photo</Heading>
+  </Section>
+  <WhyChooseUs
+    heading="Why families <strong>pick us</strong>"
+    intro="Three things we never compromise on."
+    items={whyDemoItems}
+    image={demoPhoto4}
+    imageAlt="A remodeled kitchen with an island"
+  />
+
+  <Section theme="light" padding="small" id="feature-tiles">
+    <Heading variant="eyebrow">FeatureTiles</Heading>
+    <Heading tag="h2">Photo tiles mixed with solid colour tiles</Heading>
+  </Section>
+  <FeatureTiles
+    heading="Why it's <strong>different</strong> here"
+    items={tilesDemoItems}
   />
 
   <Section theme="light" padding="small" id="included-list">

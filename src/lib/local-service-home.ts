@@ -212,6 +212,39 @@ export interface LocalServiceHomeData {
     rows: { label: string; us: string; them: string }[];
   };
 
+  /** The promises the business really makes, as tinted cards (PromiseCards). */
+  promises?: {
+    eyebrow?: string;
+    heading: string;
+    intro?: string;
+    items: HomeItem[];
+  };
+
+  /**
+   * "What to expect" — the steps with their when ("Today", "First visit",
+   * "Every season") beside the CTA and one real figure (ExpectTimeline).
+   * When set it takes the home page's process slot; `process` still feeds
+   * the About and service pages.
+   */
+  expect?: {
+    eyebrow?: string;
+    heading: string;
+    text?: string;
+    steps: { label: string; title: string; text: string }[];
+    /** One real figure ("100%" / "Recommend us on Facebook"). Never invented. */
+    proof?: HomeStat;
+  };
+
+  /** Why customers pick them: icon rows beside one big photo (WhyChooseUs). */
+  why?: {
+    eyebrow?: string;
+    heading: string;
+    intro?: string;
+    items: { title: string; text: string; icon?: ServiceIconName }[];
+    image: HomeImage;
+    imageAlt: string;
+  };
+
   serviceArea: {
     heading: string;
     text?: string;

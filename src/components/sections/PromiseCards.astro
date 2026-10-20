@@ -1,0 +1,137 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+
+type PromiseItem = {
+  /** "No hard sell". */
+  title: string;
+  /** One or two lines that back it up. */
+  text: string;
+};
+type PromiseCardsTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **PromiseCards** — a centred headline and line, then the business's
+   * promises as soft tinted cards (title + a line or two). The "you risk
+   * nothing" section: only promises the business really makes.
+   *
+   * - `items` — `{ title, text }[]` (3 or 4 read best)
+   *
+   * @example
+   * <PromiseCards heading="No gimmicks. Just straightforward service." items={[{ title: "No hard sell", text: "We tell you what you need, and that's it." }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** The headline. HTML allowed (`<strong>` = accent). Required. */
+  heading: string;
+
+  /** The line under it. */
+  intro?: string;
+
+  /** The promises. Empty renders nothing. */
+  items: PromiseItem[];
+
+  /** Section theme. */
+  theme?: PromiseCardsTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  intro,
+  items = [],
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && (!heading || !items.length))
+  console.warn("[PromiseCards] needs `heading` and `items`; nothing renders.");
+
+const columns = items.length === 4 ? 4 : 3;
+---
+
+{
+  render && heading && items.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["promise-cards_wrap", className]}
+      {...rest}
+    >
+      <div class="promise-cards_header u-margin-trim">
+        {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+        <Heading tag="h2" variant="h1" accent>
+          <Fragment set:html={heading} />
+        </Heading>
+        {intro && <Text muted>{intro}</Text>}
+      </div>
+      <Grid
+        largeColumns={columns}
+        mediumColumns={2}
+        smallColumns={1}
+        class="promise-cards_list"
+      >
+        {items.map((item) => (
+          <div class="promise-cards_card u-margin-trim">
+            <Heading tag="h3" variant="h5" marginBottom={2}>
+              {item.title}
+            </Heading>
+            <Text variant="small" muted>
+              {item.text}
+            </Text>
+          </div>
+        ))}
+      </Grid>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .promise-cards_header {
+      --_text-inline-margin: auto;
+      --_buttons-justify: center;
+      max-width: 48rem;
+      margin-inline: auto;
+      text-align: center;
+    }
+
+    .promise-cards_card {
+      height: 100%;
+      padding: var(--space-6);
+      border-radius: var(--radius-main);
+      background-color: color-mix(
+        in srgb,
+        var(--heading-accent) 9%,
+        var(--background)
+      );
+      color: var(--text);
+    }
+  }
+</style>

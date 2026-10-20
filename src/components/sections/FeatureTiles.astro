@@ -1,0 +1,185 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Overlay from "@/components/ui/Overlay.astro";
+
+type FeatureTileTone =
+  /** Photo fills the tile, the text at the bottom over a dark gradient */
+  | "photo"
+  /** The dark ink colour */
+  | "dark"
+  /** A soft tint of the brand colour */
+  | "tint";
+type FeatureTile = {
+  title: string;
+  text: string;
+  /** How the tile is painted. @default 'photo' when it has an image, else 'tint' */
+  tone?: FeatureTileTone;
+  /** Background photo (tone 'photo'). */
+  image?: ImageMetadata | string;
+  /** Alt text for the photo. */
+  imageAlt?: string;
+};
+type FeatureTilesTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **FeatureTiles** — a centred headline over tall tiles that mix photo
+   * tiles (text over the picture) with solid dark and brand-tint tiles: a
+   * bento row for a business with good photography.
+   *
+   * - `items` — `{ title, text, tone?, image?, imageAlt? }[]` (4 read best)
+   *
+   * @example
+   * <FeatureTiles heading="Built for you" items={[{ title: "Local crew", text: "…", image: photo, imageAlt: "…" }, { title: "Fair pricing", text: "…", tone: "dark" }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** The headline. HTML allowed. Required. */
+  heading: string;
+
+  /** The line under it. */
+  intro?: string;
+
+  /** The tiles. Empty renders nothing. */
+  items: FeatureTile[];
+
+  /** Section theme. */
+  theme?: FeatureTilesTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  intro,
+  items = [],
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && (!heading || !items.length))
+  console.warn("[FeatureTiles] needs `heading` and `items`; nothing renders.");
+
+const tiles = items.map((item) => ({
+  ...item,
+  tone: item.tone ?? (item.image ? "photo" : "tint"),
+}));
+const columns = tiles.length === 4 ? 4 : 3;
+---
+
+{
+  render && heading && tiles.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["feature-tiles_wrap", className]}
+      {...rest}
+    >
+      <div class="feature-tiles_header u-margin-trim">
+        {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+        <Heading tag="h2" variant="h1" accent>
+          <Fragment set:html={heading} />
+        </Heading>
+        {intro && <Text muted>{intro}</Text>}
+      </div>
+      <Grid largeColumns={columns} mediumColumns={2} smallColumns={1}>
+        {tiles.map((tile) => (
+          <div
+            class:list={["feature-tiles_tile", `is-${tile.tone}`]}
+            data-theme={tile.tone === "tint" ? undefined : "dark"}
+          >
+            {tile.tone === "photo" && tile.image && (
+              <>
+                <Visual
+                  src={tile.image}
+                  alt={tile.imageAlt || tile.title}
+                  variant="background"
+                />
+                <Overlay
+                  variant="gradient"
+                  strengthTop={0}
+                  strengthBottom={85}
+                />
+              </>
+            )}
+            <div class="feature-tiles_body u-margin-trim">
+              <Heading tag="h3" variant="h4" marginBottom={2}>
+                {tile.title}
+              </Heading>
+              <Text variant="small">{tile.text}</Text>
+            </div>
+          </div>
+        ))}
+      </Grid>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .feature-tiles_header {
+      --_text-inline-margin: auto;
+      --_buttons-justify: center;
+      max-width: 48rem;
+      margin-inline: auto;
+      text-align: center;
+    }
+
+    .feature-tiles_tile {
+      position: relative;
+      overflow: hidden;
+      min-height: 26rem;
+      padding: var(--space-6);
+      border-radius: var(--radius-main);
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    /* Photo tiles: the text sits low, where the gradient is darkest. */
+    .feature-tiles_tile.is-photo {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .feature-tiles_tile.is-tint {
+      background-color: color-mix(
+        in srgb,
+        var(--heading-accent) 22%,
+        var(--background)
+      );
+    }
+
+    .feature-tiles_body {
+      position: relative;
+      z-index: 1;
+    }
+  }
+</style>

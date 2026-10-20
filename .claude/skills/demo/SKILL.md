@@ -150,6 +150,18 @@ git switch -c demo/<slug>
     Their own words go in `text`.
   - `plans`: their maintenance or membership plans, at their real prices.
   - `team`: their real people, with their own photos.
+  - `promises`: 3 or 4 promises they really make ("No hard sell", "No
+    hidden fees", their license), as tinted cards. Overlaps `comparison`
+    (same claims); use one or the other.
+  - `expect`: "what to expect" steps, each with its when (`label`: "Today",
+    "First visit", "Every season") beside the CTA. Only timings they
+    promise: no "same day" or "this week" unless their site says so.
+    `proof` is one real figure (`{ value: "100%", label: "Recommend us on
+Facebook" }`). When set it takes the home page's process slot;
+    `process` still feeds the About and service pages.
+  - `why`: 3–5 reasons as icon rows (`icon` from
+    src/data/service-icons.json) beside one big photo not used elsewhere on
+    the home page. Sits after the story.
 - **Town pages:** `cityPages` is on by default, so every service gets a page
   in every town. Keep `serviceAreas` to the towns they actually serve.
 - `home.estimate.question` heads step 1 of the estimate form, above the
