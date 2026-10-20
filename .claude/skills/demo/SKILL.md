@@ -259,7 +259,8 @@ Give Casey:
 - **Screenshots** (desktop and mobile).
 - **The `confirmOrCut` list,** as a short checklist to clear before sending.
 - **The extras:** the footer's "Also included" column links the review
-  request page (`/leave-a-review`) and the client tools (`/tools`, behind
+  request page (`/leave-a-review`), the follow-up discount page
+  (`/get-your-discount`) and the client tools (`/tools`, behind
   the shared demo password from docs/demo-mode.md). Set `reviewsUrl` in
   demo.json to their real review page (Google, else Facebook), or 5 stars
   opens the feedback form instead of sending them there.
