@@ -228,21 +228,27 @@ if (import.meta.env.DEV) {
         .step-list_wrap[data-variant="timeline"]
           .step-list_item
           .step-list_number {
-          animation-timeline: view();
-          animation-range: entry 70% cover 35%;
+          animation-timeline: view(block 60% 40%);
+          animation-range: cover 0% cover 100%;
         }
 
         .step-list_wrap[data-variant="timeline"]
           .step-list_item
           .step-list_body {
-          animation-timeline: view();
-          animation-range: entry 60% cover 35%;
+          animation-timeline: view(block 60% 40%);
+          animation-range: cover 0% cover 40%;
         }
 
+        /* Every part tracks the same line, 60% down the screen (the insets
+           shrink the scrollport to that line): a segment draws from its top
+           reaching the line to its bottom reaching it, which is when the
+           next dot arrives, so the segments fill one after another. Ranges
+           against the full viewport overlapped, so neighbouring segments
+           drew at once. */
         .step-list_wrap[data-variant="timeline"]
           .step-list_item.step-list_item:not(:last-child)::after {
-          animation-timeline: view();
-          animation-range: cover 30% cover 65%;
+          animation-timeline: view(block 60% 40%);
+          animation-range: cover 0% cover 100%;
         }
       }
     }
