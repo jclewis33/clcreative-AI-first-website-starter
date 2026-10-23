@@ -39,7 +39,7 @@ Read first, once per session:
 
 Ask Casey (or read from his message) what this demo needs before you
 research. A demo has one job: make the prospect say "I want that". The
-first real demo (Just A Dad's Pest Control, Oct 2026) grew into a full
+first real demo (a pest control company, Oct 2026) grew into a full
 site over a day of back-and-forth. That was useful because every fix
 went into the starter, but it is not the target.
 
@@ -57,8 +57,8 @@ went into the starter, but it is not the target.
   (`git show origin/demo/<slug>:demo/demo.json`). For the same trade,
   copy it and replace the business: the structure, section choices and
   service shapes carry over, and only the facts, copy and photos change.
-  Just A Dad's (`demo/just-a-dads-pest-control`) is the pest-control and
-  "fresh" look reference.
+  The fictional Ironwood Pest Control (`demo/ironwood-pest-control`) is
+  the pest-control and "fresh" look reference, safe to show anyone.
 - **Every fix and every new section goes into the starter**, never only
   into the demo branch: branch the starter, PR, CI, merge, then
   `git merge upstream/main` on the demo branch.
