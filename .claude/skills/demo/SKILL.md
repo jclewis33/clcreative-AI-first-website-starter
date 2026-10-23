@@ -69,6 +69,14 @@ went into the starter, but it is not the target.
   to you", "Tell us what you're seeing". The owner may not answer the
   phone. Use the owner's name only where it's about them: the story, the
   About page, their license, a "dad who…" line.
+- **Service copy is the company, not the owner.** Never say or imply the
+  owner does every job ("the owner on every visit", "he does the work
+  himself", "when he says he'll be there"): businesses grow and the site
+  has to still be true. Write "we": "We tell you what your home needs",
+  "When we say we'll be there, we're there". The owner's own story (why
+  they started, their family, their values) stays first person on the
+  story and About sections; credentials read as the company's ("Just A
+  Dad's is licensed…").
 - **No filler to fill a slot.** No distances from home base, no "we make
   the drive", no restating the town list as a sentence. If a section has
   nothing real to say, leave it out.
