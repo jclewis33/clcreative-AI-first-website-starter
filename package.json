@@ -31,9 +31,9 @@
     "check:demo": "node scripts/check-demo.mjs"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^14.3.1",
-    "@astrojs/markdown-satteri": "^0.4.4",
-    "@astrojs/mdx": "^8.1.0",
+    "@astrojs/cloudflare": "^14.4.2",
+    "@astrojs/markdown-satteri": "^0.4.5",
+    "@astrojs/mdx": "^8.1.1",
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.2",
     "gsap": "^3.15.0",
@@ -41,10 +41,10 @@
     "swiper": "^12.2.0"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
+    "@astrojs/check": "^0.9.12",
     "@types/leaflet": "^1.9.22",
     "node-html-parser": "^7.1.0",
-    "prettier": "^3.6.2",
+    "prettier": "^3.9.10",
     "prettier-plugin-astro": "^0.14.1",
     "sharp": "^0.35.4",
     "typescript": "^5.9.3",
