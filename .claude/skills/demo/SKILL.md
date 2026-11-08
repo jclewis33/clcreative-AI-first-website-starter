@@ -83,10 +83,12 @@ All go in `home.reviews.items`, each with `full` (the whole review, word for
 word), `rating`, and `meta` naming the platform ("Google review"). Never a
 review under 4 stars (the schema refuses them). Getting them all:
 
-- Google Maps loads reviews lazily: open the Reviews tab, keep scrolling the
-  review panel until the count stops growing, then click every "More".
-  Logged out, Google may stop short of the total — if the loaded count is
-  below the profile's number, say so and ask Casey for a logged-in pass.
+- **Google: use the search panel, not Maps.** Logged out, Google Maps shows
+  only a handful (on Jerry's: 5 of 14). Open their Google Business Profile
+  link (or search their name) in Playwright, click "View all Google
+  reviews" in the panel, keep scrolling that dialog until the count stops
+  growing, click every "More". It listed all 14. Check your count against
+  the profile's total before moving on.
 - Yelp blocks automated browsers (403); Facebook hides most reviews
   without a login. Ask Casey to paste those, or note them in
   `confirmOrCut`.
