@@ -13,6 +13,8 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
 import CtaPanel from "@/components/ui/CtaPanel.astro";
 import TrustBadges from "@/components/ui/TrustBadges.astro";
+import LeadForm from "@/components/form/LeadForm.astro";
+import type { FormId } from "@/config/forms";
 import type { SectionCta } from "@/lib/cta";
 import { SITE } from "@/config/site";
 
@@ -46,7 +48,25 @@ type HeroCtaStyle =
   /** The buttons in a row: main, phone, then the optional third */
   | "buttons"
   /** The main button, "or", and "Call or text us" + the number on one tinted panel */
-  | "panel";
+  | "panel"
+  /** The estimate form itself on a card beside the text (needs `form`), the phone button under the text */
+  | "form";
+type HeroForm = {
+  /** Which entry in src/config/forms.ts it submits as. */
+  formId: FormId;
+  /** @default 'Request a free estimate' */
+  heading?: string;
+  text?: string;
+  /** @default 'What can we help with?' */
+  messageLabel?: string;
+  /** @default 'Get my free estimate' */
+  submitLabel?: string;
+};
+type HeroProofPosition =
+  /** Under the buttons */
+  | "below"
+  /** A pill above the headline: proof before the pitch */
+  | "above";
 type HeroTrust = { label: string; image?: ImageMetadata | string };
 type HeroHeadingSize =
   /** The display size — a big, punchy headline */
@@ -145,12 +165,19 @@ interface Props extends HTMLAttributes<"section"> {
 
   /**
    * How the buttons show. `'panel'` = the main button, "or", and the phone
-   * on one panel (needs `primaryCta`). @default 'buttons'
+   * on one panel (needs `primaryCta`). `'form'` = the estimate form on a
+   * card beside the text (needs `form`). @default 'buttons'
    */
   ctaStyle?: HeroCtaStyle;
 
   /** Small line under the main button in the panel, e.g. "And claim $100 off". */
   ctaNote?: string;
+
+  /**
+   * `ctaStyle="form"` only: the form on the card beside the text. Takes the
+   * photo's place in `split`; over a `background` photo it sits on the right.
+   */
+  form?: HeroForm;
 
   /** Headline size: `'display'` (big) or `'h1'` (calmer, photo-led). @default 'display' */
   headingSize?: HeroHeadingSize;
@@ -176,6 +203,9 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Trust line under the buttons. `rating` adds that many of 5 stars. */
   proof?: HeroProof;
+
+  /** Where `proof` sits: `'below'` the buttons, or `'above'` the headline as a pill. @default 'below' */
+  proofPosition?: HeroProofPosition;
 
   /** Credential badges under the buttons — only ones the business holds. */
   trust?: HeroTrust[];
@@ -220,6 +250,7 @@ const {
   variant: variantProp,
   ctaStyle = "buttons",
   ctaNote,
+  form,
   headingSize = "display",
   primaryCta,
   showPhone = true,
@@ -227,6 +258,7 @@ const {
   secondaryCta,
   breadcrumbs,
   proof,
+  proofPosition = "below",
   trust,
   badge: badgeProp,
   theme: themeProp,
@@ -283,6 +315,12 @@ if (import.meta.env.DEV && render) {
     );
 }
 const panel = ctaStyle === "panel" && Boolean(primaryCta);
+if (import.meta.env.DEV && render && ctaStyle === "form" && !form)
+  console.warn('[Hero] ctaStyle="form" needs `form`; showing buttons.');
+/* The form card takes the second column; the text column keeps only the
+   phone button (the form is the main call to action). */
+const formCard = ctaStyle === "form" && form ? form : undefined;
+const proofPill = proofPosition === "above";
 /* The cut-out's texture is decoration, so it's a CSS background (no img,
    no alt), resized once here. */
 const backdropUrl =
@@ -305,6 +343,7 @@ const backdropUrl =
       class:list={[
         "hero_wrap",
         `is-${hasPhoto ? variant : "text"}`,
+        { "is-form": Boolean(formCard) },
         {
           "is-side": hasPhoto && variant === "background" && overlay === "side",
         },
@@ -352,16 +391,30 @@ const backdropUrl =
 
       <Layout
         variant={
-          variant === "split" && hasPhoto
+          formCard || (variant === "split" && hasPhoto)
             ? "columns"
             : variant === "centered"
               ? "stack-centered"
               : "stack"
         }
-        ratio="6-6"
+        ratio={formCard ? "7-5" : "6-6"}
         verticalAlign="center"
         class="hero_layout u-hero-fade"
       >
+        {proofPill && proof?.text && (
+          <p class="hero_proof is-pill">
+            {stars > 0 && (
+              <span
+                class="hero_stars"
+                role="img"
+                aria-label={`${proof.rating} out of 5 stars`}
+              >
+                {"★".repeat(stars)}
+              </span>
+            )}
+            <span class="hero_proof_text">{proof.text}</span>
+          </p>
+        )}
         {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
         <Heading
           tag="h1"
@@ -379,7 +432,9 @@ const backdropUrl =
         {panel && <CtaPanel cta={primaryCta!} note={ctaNote} />}
         {!panel && (primaryCta || showPhone || secondaryCta) && (
           <ButtonWrapper>
-            {primaryCta && <CtaButton cta={primaryCta} size="large" />}
+            {primaryCta && !formCard && (
+              <CtaButton cta={primaryCta} size="large" />
+            )}
             {showPhone && (
               <CtaButton phone variant={phoneVariant} size="large" />
             )}
@@ -388,7 +443,7 @@ const backdropUrl =
             )}
           </ButtonWrapper>
         )}
-        {proof?.text && (
+        {!proofPill && proof?.text && (
           <p class="hero_proof">
             {stars > 0 && (
               <span
@@ -422,7 +477,26 @@ const backdropUrl =
           </div>
         )}
 
-        {variant === "split" && hasPhoto && (
+        {formCard && (
+          <div slot="column2" class="hero_form" data-theme-invert>
+            <Heading tag="h2" variant="h4" marginBottom={2}>
+              {formCard.heading ?? "Request a free estimate"}
+            </Heading>
+            {formCard.text && (
+              <Text variant="small" muted>
+                {formCard.text}
+              </Text>
+            )}
+            <LeadForm
+              formId={formCard.formId}
+              id="hero-form"
+              messageLabel={formCard.messageLabel ?? "What can we help with?"}
+              submitLabel={formCard.submitLabel ?? "Get my free estimate"}
+            />
+          </div>
+        )}
+
+        {!formCard && variant === "split" && hasPhoto && (
           <div
             slot="column2"
             class:list={["hero_media", { "is-cutout": imageFit === "cutout" }]}
@@ -454,8 +528,30 @@ const backdropUrl =
 
 <style is:global>
   @layer components {
-    .hero_wrap.is-background .hero_layout {
+    .hero_wrap.is-background:not(.is-form) .hero_layout {
       max-width: 48rem;
+    }
+
+    /* ctaStyle="form": the form on its own contrasting card. */
+    .hero_form {
+      padding: var(--space-6);
+      border-radius: var(--radius-main);
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    /* proofPosition="above": the proof as a pill over the eyebrow. */
+    .hero_proof.is-pill {
+      align-self: flex-start;
+      margin: 0 0 var(--space-4);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-full);
+      background-color: color-mix(
+        in oklab,
+        var(--heading-accent) 18%,
+        transparent
+      );
+      font-weight: 600;
     }
 
     /* overlay="side": on wide screens the photo starts a third of the way
@@ -484,7 +580,7 @@ const backdropUrl =
       /* Section's background slot stretches its children to the full
          width; this one is the right two-thirds. */
       /* The text keeps to the dark third-and-a-bit the photo leaves. */
-      .hero_wrap.is-side .hero_layout {
+      .hero_wrap.is-side:not(.is-form) .hero_layout {
         max-width: min(48rem, 50vw);
       }
 

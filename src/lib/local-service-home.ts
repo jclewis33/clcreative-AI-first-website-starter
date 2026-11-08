@@ -119,8 +119,13 @@ export interface LocalServiceHomeData {
     imageBackdrop?: HomeImage;
     /** Hero colour theme; `dark` suits a cut-out. Default: dark for background, else the page's. */
     theme?: "light" | "dark" | "brand";
-    /** `panel` = the estimate button, "or", and the phone on one panel. */
-    ctaStyle?: "buttons" | "panel";
+    /** `panel` = the estimate button, "or", and the phone on one panel; `form` = the estimate form itself on a card beside the text. */
+    ctaStyle?: "buttons" | "panel" | "form";
+    /** `form` only: the card's heading and line. @default estimate.heading and estimate.text */
+    formHeading?: string;
+    formText?: string;
+    /** `above` = the proof line as a pill over the headline. @default 'below' */
+    proofPosition?: "below" | "above";
     /** Small line under the estimate button in the panel ("And claim $100 off"). */
     ctaNote?: string;
     /** Star line under the CTAs — only with a real rating to quote. */

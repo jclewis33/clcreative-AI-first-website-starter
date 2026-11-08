@@ -84,6 +84,11 @@ const showcaseItems = services.map((s) => ({
   href: servicePath(s.id),
 }));
 const servicesLayout = home.services.layout ?? "cards";
+const heroForm = {
+  formId: "contact" as const,
+  heading: home.hero.formHeading ?? home.estimate.heading,
+  text: home.hero.formText ?? home.estimate.text,
+};
 const projectOptions = home.leadForm.projectOptions ?? [
   ...services.map((s) => ({ label: s.data.title, value: s.id })),
   { label: "Something else", value: "other" },
@@ -137,8 +142,10 @@ if (import.meta.env.DEV && !services.length)
     variant={hero.variant}
     ctaStyle={hero.ctaStyle}
     ctaNote={hero.ctaNote}
+    form={heroForm}
     primaryCta={estimateCta}
     proof={hero.proof}
+    proofPosition={hero.proofPosition}
     trust={hero.trust}
   />
 

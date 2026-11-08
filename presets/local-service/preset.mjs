@@ -94,7 +94,12 @@ const homeSchema = z.object({
     /** "dark" suits a cut-out. */
     theme: z.enum(["light", "dark", "brand"]).optional(),
     /** "panel" = estimate button + "or" + "Call or text us". */
-    ctaStyle: z.enum(["buttons", "panel"]).default("panel"),
+    ctaStyle: z.enum(["buttons", "panel", "form"]).default("panel"),
+    /** "form" only: the form card's heading and line (default: the estimate's). */
+    formHeading: text.optional(),
+    formText: text.optional(),
+    /** "above" = the stars line as a pill over the headline. */
+    proofPosition: z.enum(["below", "above"]).optional(),
     ctaNote: text.optional(),
     proof: z
       .object({ rating: z.number().min(1).max(5).optional(), text })
