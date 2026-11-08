@@ -12,6 +12,10 @@ interface Props extends HTMLAttributes<"div"> {
    * Desktop shows the text and phone on the left and `areaLabel` on the
    * right. Phones get one full-width tap-to-call bar. It scrolls away with
    * the page; only the navbar below it is sticky.
+   *
+   * Every phone number written in `text` ("Dallas (972) 262-5113 ·
+   * Arlington (817) 832-4968") becomes its own tap-to-call link, and the
+   * trailing SITE.phone is left off when the text already has it.
    */
   docs?: string;
 
@@ -25,6 +29,23 @@ interface Props extends HTMLAttributes<"div"> {
 const { docs, render = true, class: className, ...rest } = Astro.props;
 const bar = SITE.utilityBar;
 const tel = `tel:${SITE.phone.tel}`;
+/* The text split into plain runs and phone numbers (US formats). */
+const PHONE_RE = /\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g;
+const digits = (v: string) => v.replace(/\D/g, "").slice(-10);
+const parts: { text: string; tel?: string }[] = [];
+if (bar?.text) {
+  let last = 0;
+  for (const m of bar.text.matchAll(PHONE_RE)) {
+    if (m.index > last) parts.push({ text: bar.text.slice(last, m.index) });
+    parts.push({ text: m[0], tel: `tel:+1${digits(m[0])}` });
+    last = m.index + m[0].length;
+  }
+  if (last < bar.text.length) parts.push({ text: bar.text.slice(last) });
+}
+const hasNumbers = parts.some((p) => p.tel);
+const hasMainPhone = parts.some(
+  (p) => p.tel && digits(p.text) === digits(SITE.phone.tel),
+);
 ---
 
 {
@@ -37,19 +58,52 @@ const tel = `tel:${SITE.phone.tel}`;
       <div class="utility-bar_contain">
         <p class="utility-bar_message">
           <span class="utility-bar_dot" aria-hidden="true" />
-          <span>{bar.text}</span>
-          <span class="utility-bar_sep" aria-hidden="true">
-            ·
+          <span>
+            {parts.map((p) =>
+              p.tel ? (
+                <a class="utility-bar_phone" href={p.tel}>
+                  {p.text}
+                </a>
+              ) : (
+                p.text
+              ),
+            )}
           </span>
-          <a class="utility-bar_phone" href={tel}>
-            {SITE.phone.display}
-          </a>
+          {!hasMainPhone && (
+            <span class="utility-bar_sep" aria-hidden="true">
+              ·
+            </span>
+          )}
+          {!hasMainPhone && (
+            <a class="utility-bar_phone" href={tel}>
+              {SITE.phone.display}
+            </a>
+          )}
         </p>
         {bar.areaLabel && <p class="utility-bar_area">{bar.areaLabel}</p>}
       </div>
-      <a class="utility-bar_mobile" href={tel}>
-        {bar.text} · Call {SITE.phone.display}
-      </a>
+      {/* Phones: one tap-to-call bar; with several numbers in the text,
+          each one is its own link instead. */}
+      {!hasNumbers && (
+        <a class="utility-bar_mobile" href={tel}>
+          {bar.text} · Call {SITE.phone.display}
+        </a>
+      )}
+      {hasNumbers && (
+        <p class="utility-bar_mobile">
+          <span>
+            {parts.map((p) =>
+              p.tel ? (
+                <a class="utility-bar_mobile_phone" href={p.tel}>
+                  {p.text}
+                </a>
+              ) : (
+                p.text
+              ),
+            )}
+          </span>
+        </p>
+      )}
     </div>
   )
 }
@@ -103,10 +157,18 @@ const tel = `tel:${SITE.phone.tel}`;
       color: color-mix(in srgb, var(--text) 60%, transparent);
     }
 
+    .utility-bar_mobile_phone {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+      white-space: nowrap;
+    }
+
     /* Phone width: one solid tap-to-call bar. */
     .utility-bar_mobile {
       display: var(--flex-small, none);
       justify-content: center;
+      margin: 0;
       padding: var(--space-2) var(--site-margin);
       background-color: var(--button-primary-background);
       color: var(--button-primary-text);
