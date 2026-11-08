@@ -1,6 +1,7 @@
 ---
 import type { HTMLAttributes, ComponentProps } from "astro/types";
 import type { ImageMetadata } from "astro";
+import { getImage } from "astro:assets";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
@@ -117,6 +118,14 @@ interface Props extends HTMLAttributes<"section"> {
    */
   imageFit?: HeroImageFit;
 
+  /**
+   * Cutout only: a texture behind the subject (diamond plate, brick, wood
+   * grain), drawn faint and fading out toward the text so the cut-out
+   * stands in a space instead of floating on a flat colour. The cut-out
+   * always gets a soft glow behind it; this adds the texture.
+   */
+  imageBackdrop?: ImageMetadata | string;
+
   /** Layout. @default 'background' with an image, else 'text' */
   variant?: HeroVariant;
 
@@ -192,6 +201,7 @@ const {
   imageAlt,
   imagePosition,
   imageFit = "cover",
+  imageBackdrop,
   variant: variantProp,
   ctaStyle = "buttons",
   ctaNote,
@@ -258,6 +268,15 @@ if (import.meta.env.DEV && render) {
     );
 }
 const panel = ctaStyle === "panel" && Boolean(primaryCta);
+/* The cut-out's texture is decoration, so it's a CSS background (no img,
+   no alt), resized once here. */
+const backdropUrl =
+  variant === "split" && hasPhoto && imageFit === "cutout" && imageBackdrop
+    ? typeof imageBackdrop === "string"
+      ? imageBackdrop
+      : (await getImage({ src: imageBackdrop, width: 1600, format: "webp" }))
+          .src
+    : undefined;
 ---
 
 {
@@ -282,6 +301,15 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
           />
           <Overlay variant="gradient" strengthTop={55} strengthBottom={80} />
         </Fragment>
+      )}
+
+      {backdropUrl && (
+        <div
+          slot="background"
+          class="hero_backdrop"
+          style={`--_hero-backdrop: url("${backdropUrl}")`}
+          aria-hidden="true"
+        />
       )}
 
       {breadcrumbs?.length ? (
@@ -460,6 +488,40 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
     .hero_media.is-cutout .u-image-wrapper {
       border-radius: 0;
       mask-image: linear-gradient(to bottom, black 78%, transparent);
+    }
+
+    /* A soft light behind the subject's head and shoulders, so a painted
+       or photographed subject reads as lit, not pasted on. */
+    .hero_media.is-cutout::before {
+      content: "";
+      position: absolute;
+      inset: 0 -10% 10%;
+      background: radial-gradient(
+        closest-side,
+        color-mix(in oklab, var(--text) 16%, transparent),
+        color-mix(in oklab, var(--heading-accent) 22%, transparent) 55%,
+        transparent
+      );
+      pointer-events: none;
+    }
+
+    .hero_media.is-cutout .u-image-wrapper {
+      position: relative;
+    }
+
+    /* The texture: faint, strongest behind the subject (right on desktop,
+       bottom on phones; the bottom-right ellipse covers both) and gone
+       before it reaches the text. */
+    .hero_backdrop {
+      position: absolute;
+      inset: 0;
+      background: var(--_hero-backdrop) center / cover;
+      opacity: 0.14;
+      mask-image: radial-gradient(
+        ellipse 75% 95% at 85% 100%,
+        black 30%,
+        transparent
+      );
     }
 
     .hero_badge {

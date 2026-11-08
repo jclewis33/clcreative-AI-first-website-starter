@@ -59,6 +59,12 @@ export interface LocalServiceHomeData {
      */
     image?: HomeImage;
     imageAlt?: string;
+    /** `cutout` = `image` is a transparent PNG (their mascot) shown whole, with no box. */
+    imageFit?: "cover" | "cutout";
+    /** Cutout only: a faint texture behind it (diamond plate, brick). */
+    imageBackdrop?: HomeImage;
+    /** Hero colour theme; `dark` suits a cut-out. */
+    theme?: "light" | "dark" | "brand";
     /** The story section's heading on the About page. @default story.heading */
     storyHeading?: string;
     /** Longer story paragraphs for the About page. @default story.paragraphs */
@@ -104,6 +110,8 @@ export interface LocalServiceHomeData {
     variant?: "background" | "split";
     /** Split only: a photo in a box (`cover`, default) or a transparent cut-out such as a mascot (`cutout`). */
     imageFit?: "cover" | "cutout";
+    /** Cutout only: a faint texture behind the cut-out (diamond plate, brick), fading toward the text. */
+    imageBackdrop?: HomeImage;
     /** Hero colour theme; `dark` suits a cut-out. Default: dark for background, else the page's. */
     theme?: "light" | "dark" | "brand";
     /** `panel` = the estimate button, "or", and the phone on one panel. */

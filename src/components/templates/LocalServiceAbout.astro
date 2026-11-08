@@ -100,6 +100,9 @@ const schemaCrumbs = [
     text={about?.text}
     image={heroImage}
     imageAlt={heroImageAlt}
+    imageFit={about?.image ? about.imageFit : undefined}
+    imageBackdrop={about?.image ? about.imageBackdrop : undefined}
+    theme={about?.theme}
     primaryCta={estimateCta}
     showPhone
   />

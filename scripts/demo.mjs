@@ -262,11 +262,13 @@ async function main() {
     holder[key] = `__IMAGE_${homeImports.length - 1}__`;
   }
   await homeImage(home.hero, "image", "hero");
+  await homeImage(home.hero, "imageBackdrop", "hero-backdrop", 1600);
   await homeImage(home.process, "image", "process");
   await homeImage(home.photoBand, "image", "photo-band");
   await homeImage(home.story, "image", "story");
   await homeImage(home.why, "image", "why");
   await homeImage(home.about, "image", "about");
+  await homeImage(home.about, "imageBackdrop", "about-backdrop", 1600);
   await homeImage(home.contact, "image", "contact");
   await homeImage(home.callBand, "image", "call-band");
   for (const [i, job] of (home.recentWork?.items ?? []).entries())
