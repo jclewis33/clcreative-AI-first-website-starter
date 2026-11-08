@@ -61,6 +61,13 @@ type HeroForm = {
   messageLabel?: string;
   /** @default 'Get my free estimate' */
   submitLabel?: string;
+  /**
+   * With choices, a two-step form: one tap on a tile (the project), then
+   * the contact fields. Without, the contact fields straight away.
+   */
+  projectOptions?: { label: string; value: string }[];
+  /** The step-1 question over the tiles. @default 'What can we help with?' */
+  stepQuestion?: string;
 };
 type HeroProofPosition =
   /** Under the buttons */
@@ -490,7 +497,15 @@ const backdropUrl =
             <LeadForm
               formId={formCard.formId}
               id="hero-form"
-              messageLabel={formCard.messageLabel ?? "What can we help with?"}
+              fields={formCard.projectOptions?.length ? "steps" : "contact"}
+              projectOptions={formCard.projectOptions}
+              stepQuestion={formCard.stepQuestion ?? "What can we help with?"}
+              messageLabel={
+                formCard.messageLabel ??
+                (formCard.projectOptions?.length
+                  ? "Anything we should know?"
+                  : "What can we help with?")
+              }
               submitLabel={formCard.submitLabel ?? "Get my free estimate"}
             />
           </div>

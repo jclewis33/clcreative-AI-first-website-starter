@@ -219,8 +219,10 @@ git switch -c demo/<slug>
     16:9; it can be moodier than the other photos.
   - Without the form (`ctaStyle: "panel"`), the photo can carry people:
     tech and homeowners on its right half, in the bright style below.
-  - `ctaStyle: "form"` (the default): the estimate form on a card beside
-    the headline, no click to start a quote. `"panel"` is the lighter
+  - `ctaStyle: "form"` (the default): the two-step estimate form on a card
+    beside the headline — step 1 is one tap on a service tile (under
+    `estimate.question`), step 2 the contact fields. Casey picked two-step
+    over a long form: one easy question first, and a lighter-looking hero. `"panel"` is the lighter
     alternative.
   - `proofPosition: "above"` (the default) with `proof: { rating, text:
 "5.0 on Google · 14 reviews" }`: the rating as a pill over the headline
