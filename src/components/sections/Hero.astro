@@ -31,6 +31,11 @@ type HeroCrumb = { label: string; href?: string };
 type HeroProof = { rating?: number; text: string };
 type HeroBadge = { value: string; label: string };
 type HeroFocus = { x: number; y: number };
+type HeroImageFit =
+  /** A photo filling its rounded box (cropped to fit) */
+  | "cover"
+  /** A transparent cut-out (a mascot, a person): no box, whole and anchored to the bottom, its bottom edge fading out */
+  | "cutout";
 type HeroCtaStyle =
   /** The buttons in a row: main, phone, then the optional third */
   | "buttons"
@@ -104,6 +109,13 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Focal point of the photo, as percentages. */
   imagePosition?: HeroFocus;
+
+  /**
+   * Split only: `'cover'` (a photo filling its box) or `'cutout'` (a
+   * transparent PNG shown whole with no box, sitting on the hero's
+   * background, its bottom edge fading out). @default 'cover'
+   */
+  imageFit?: HeroImageFit;
 
   /** Layout. @default 'background' with an image, else 'text' */
   variant?: HeroVariant;
@@ -179,6 +191,7 @@ const {
   image,
   imageAlt,
   imagePosition,
+  imageFit = "cover",
   variant: variantProp,
   ctaStyle = "buttons",
   ctaNote,
@@ -348,12 +361,20 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
         )}
 
         {variant === "split" && hasPhoto && (
-          <div slot="column2" class="hero_media">
+          <div
+            slot="column2"
+            class:list={["hero_media", { "is-cutout": imageFit === "cutout" }]}
+          >
             <Visual
               src={image!}
               alt={photoAlt}
               ratio="var(--_hero-photo-ratio)"
-              position={imagePosition}
+              position={
+                imagePosition ??
+                (imageFit === "cutout" ? { x: 50, y: 100 } : undefined)
+              }
+              fit={imageFit === "cutout" ? "contain" : "cover"}
+              transparent={imageFit === "cutout"}
               priority
             />
             {badge && (
@@ -431,6 +452,14 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
       .hero_wrap.is-split .hero_media .u-image-wrapper {
         height: 100%;
       }
+    }
+
+    /* cutout: the subject stands on the hero's own background (no box, no
+       corners) and its bottom edge fades out, so a cut-off waist or a
+       soft cut-out edge never reads as a hard line. */
+    .hero_media.is-cutout .u-image-wrapper {
+      border-radius: 0;
+      mask-image: linear-gradient(to bottom, black 78%, transparent);
     }
 
     .hero_badge {

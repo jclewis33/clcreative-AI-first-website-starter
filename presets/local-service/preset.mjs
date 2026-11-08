@@ -77,6 +77,10 @@ const homeSchema = z.object({
       })
       .optional(),
     variant: z.enum(["background", "split"]).optional(),
+    /** Split only: "cutout" = a transparent PNG (their mascot, a person cut out) with no box. */
+    imageFit: z.enum(["cover", "cutout"]).optional(),
+    /** "dark" suits a cut-out. */
+    theme: z.enum(["light", "dark", "brand"]).optional(),
     /** "panel" = estimate button + "or" + "Call or text us". */
     ctaStyle: z.enum(["buttons", "panel"]).default("panel"),
     ctaNote: text.optional(),

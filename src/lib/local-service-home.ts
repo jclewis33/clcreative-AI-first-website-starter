@@ -102,6 +102,10 @@ export interface LocalServiceHomeData {
     imagePosition?: { x: number; y: number };
     /** Photo behind the text (default) or beside it. */
     variant?: "background" | "split";
+    /** Split only: a photo in a box (`cover`, default) or a transparent cut-out such as a mascot (`cutout`). */
+    imageFit?: "cover" | "cutout";
+    /** Hero colour theme; `dark` suits a cut-out. Default: dark for background, else the page's. */
+    theme?: "light" | "dark" | "brand";
     /** `panel` = the estimate button, "or", and the phone on one panel. */
     ctaStyle?: "buttons" | "panel";
     /** Small line under the estimate button in the panel ("And claim $100 off"). */
