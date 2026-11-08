@@ -1,6 +1,7 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 import { SITE } from "@/config/site";
+import { PHONE_RE, telHref } from "@/lib/phone-links";
 
 interface Props extends HTMLAttributes<"div"> {
   /**
@@ -30,14 +31,13 @@ const { docs, render = true, class: className, ...rest } = Astro.props;
 const bar = SITE.utilityBar;
 const tel = `tel:${SITE.phone.tel}`;
 /* The text split into plain runs and phone numbers (US formats). */
-const PHONE_RE = /\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g;
 const digits = (v: string) => v.replace(/\D/g, "").slice(-10);
 const parts: { text: string; tel?: string }[] = [];
 if (bar?.text) {
   let last = 0;
   for (const m of bar.text.matchAll(PHONE_RE)) {
     if (m.index > last) parts.push({ text: bar.text.slice(last, m.index) });
-    parts.push({ text: m[0], tel: `tel:+1${digits(m[0])}` });
+    parts.push({ text: m[0], tel: telHref(m[0]) });
     last = m.index + m[0].length;
   }
   if (last < bar.text.length) parts.push({ text: bar.text.slice(last) });

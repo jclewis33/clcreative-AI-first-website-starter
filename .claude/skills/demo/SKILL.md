@@ -383,6 +383,11 @@ npm run build && npm run check:content-build
 npx wrangler dev   # serves the build locally
 ```
 
+**Every phone number must be clickable** (a `tel:` link) — the utility
+bar's numbers, the CTAs, FAQ answers, footer. Check it: on each page, at
+1440 and 390, no visible text matching a phone number outside an
+`a[href^="tel:"]`.
+
 Screenshot at 1440 and 390 wide with the Playwright MCP:
 
 - home
