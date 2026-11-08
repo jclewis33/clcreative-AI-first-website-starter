@@ -343,7 +343,7 @@ const backdropUrl =
   render && heading && (
     <Section
       theme={theme}
-      minHeight={variant === "background" && hasPhoto}
+      minHeight={variant === "background" && hasPhoto && !formCard}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
       id={id}
