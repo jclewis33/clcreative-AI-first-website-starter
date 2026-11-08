@@ -448,6 +448,12 @@ const demoObject = z.object({
     .optional(),
   founded: z.number().int().min(1800).max(2100).optional(),
   reviewsUrl: z.url().optional(),
+  /**
+   * Show the Phone field and SMS consent box on the demo's forms
+   * (SITE.smsOptIn). Off by default: on the real site it waits for the
+   * client's A2P texting approval (docs/ghl-forms.md).
+   */
+  smsOptIn: z.boolean().default(false),
   /** Footer profiles by label: { "Facebook": "https://…" }. */
   social: z.record(z.string(), z.url()).optional(),
   utilityBar: z.object({ text, areaLabel: text.optional() }).optional(),

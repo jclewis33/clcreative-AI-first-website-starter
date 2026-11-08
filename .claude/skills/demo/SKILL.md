@@ -239,6 +239,8 @@ Facebook" }`). When set it takes the home page's process slot;
   draws that circle and frames itself on it. Then pick `serviceAreas` from
   the towns across the whole circle (their own map, Facebook areas), not just
   the home county.
+- **`smsOptIn`:** `true` puts the Phone field (and the SMS consent box) on
+  the demo's forms, as on a real site after A2P approval. Off by default.
 - **`photoBand.position`:** `{ "x": 50, "y": 25 }` (percent) when the
   people in the photo sit high in the frame; check heads aren't cropped.
 - **Service-area map:** automatic. `npm run demo` looks each service area

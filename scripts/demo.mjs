@@ -483,6 +483,10 @@ async function main() {
         new RegExp(`(\\b${key}\\s*:\\s*)"(?:\\\\.|[^"])*"`),
         (_, lead) => `${lead}${JSON.stringify(value ?? "")}`,
       );
+    site = site.replace(
+      /(\bsmsOptIn\s*:\s*)(?:true|false)/,
+      (_, lead) => `${lead}${demo.smsOptIn ? "true" : "false"}`,
+    );
     await fs.writeFile(at("src/config/site.ts"), site);
   }
 
