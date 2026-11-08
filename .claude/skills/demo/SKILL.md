@@ -309,11 +309,11 @@ Facebook" }`). When set it takes the home page's process slot;
 
 Use the first source that works:
 
-1. **Theirs** (best): truck, job sites, crew, finished work. Upscale small
+1. **Theirs** (always first — their website, then their Facebook): truck, job sites, crew, finished work. Upscale small
    ones with Magnific `images_upscale` (`mode: "ultra-photo"`, 2x) and check
    any lettering survived unchanged. Brighten dark phone shots a little,
    don't restyle them.
-2. **Generated in one consistent style** (below), when theirs run out.
+2. **Generated** (below), only for the slots their own photos can't fill.
 3. **The starter's placeholders** (`src/assets/placeholder-images/`) — a last
    resort, and list it in `confirmOrCut`.
 
@@ -326,9 +326,11 @@ neutral colors, sharp focus, upbeat and natural, like a modern
 home-services brand campaign. No vintage grading, no film grain, no haze,
 no warm color cast. No text, no logos."
 
-- **One recurring tech** across the set ("a friendly plumber in his
-  thirties wearing a clean navy blue polo with no logo"), so the site
-  feels like one company.
+- **Vary the people and the angles.** Not the same tech in the same kind of
+  room in every shot: that sameness is what reads as AI. Different techs,
+  different ages, different camera angles (eye level, low, over the
+  shoulder, top-down), different settings — kitchen, garage, yard,
+  restaurant back lot, shop.
 - **Mix the framing:** wide scenes with the tech and homeowners, _and_
   close-ups — hands on a fitting, the faucet going in, tools, the finished
   work. Not every photo needs a person posing in the room.
@@ -336,8 +338,10 @@ no warm color cast. No text, no logos."
   (a perfectly square hole, tools laid out in rows). Prompt those as a
   "candid documentary photo taken on a phone by a plumber on the job" —
   rough edges, dust, gloves, no faces.
-- **Avoid:** Magnific One's filmic look (a vintage/AI wash Casey rejected),
-  cheesy stock poses (clipboard, thumbs up), older-looking leads in the
+- **Never Magnific One** (`magnific-one`) or any filmic grade: its
+  vintage/AI wash is the first thing Casey rejects. Realistic beats
+  stylized.
+- **Avoid:** cheesy stock poses (clipboard, thumbs up), older-looking leads in the
   hero, tilted or murky shots.
 - **Never** a street photo of their house, even when it's their listed
   address.
@@ -345,8 +349,13 @@ no warm color cast. No text, no logos."
 "cutout"`, transparent PNG via `images_remove_background`), not the home
   hero.
 - **Generate a few per slot (`count: 2–3`), make a contact sheet, pick.**
-  Check hands, tools, lettering and that heads aren't cropped at the sizes
-  the site uses (tall on desktop, square on phones).
+- **Check every photo for correctness at full size, not just the
+  thumbnail:** objects built right and in proportion (a trailer's bed square
+  on its frame, wheels and axles where they belong — the first Jerry's dump
+  trailer had its bed twisted sideways and shipped unnoticed), hands, tools,
+  pipes that connect, lettering, and heads not cropped at the sizes the site
+  uses (tall on desktop, square on phones). Reject and regenerate rather
+  than ship one that's "close".
 
 List every generated image in `confirmOrCut`. Every image needs real alt
 text.
