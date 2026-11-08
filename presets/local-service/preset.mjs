@@ -37,6 +37,9 @@ const homeSchema = z.object({
       /** Cutout only: a faint texture behind it (diamond plate, brick). */
       imageBackdrop: image.optional(),
       theme: z.enum(["light", "dark", "brand"]).optional(),
+      /** The About page's story photo (default: the home story's). */
+      storyImage: image.optional(),
+      storyImageAlt: text.optional(),
       storyHeading: text.optional(),
       paragraphs: z.array(text).optional(),
     })

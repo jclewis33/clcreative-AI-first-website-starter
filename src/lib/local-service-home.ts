@@ -65,6 +65,9 @@ export interface LocalServiceHomeData {
     imageBackdrop?: HomeImage;
     /** Hero colour theme; `dark` suits a cut-out. */
     theme?: "light" | "dark" | "brand";
+    /** The story section's photo on the About page. @default story.image */
+    storyImage?: HomeImage;
+    storyImageAlt?: string;
     /** The story section's heading on the About page. @default story.heading */
     storyHeading?: string;
     /** Longer story paragraphs for the About page. @default story.paragraphs */

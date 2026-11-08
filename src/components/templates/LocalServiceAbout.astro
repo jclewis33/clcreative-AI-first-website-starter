@@ -115,8 +115,8 @@ const schemaCrumbs = [
         eyebrow={story.eyebrow}
         heading={about?.storyHeading ?? story.heading}
         paragraphs={about?.paragraphs ?? story.paragraphs}
-        image={story.image}
-        imageAlt={story.imageAlt}
+        image={about?.storyImage ?? story.image}
+        imageAlt={about?.storyImage ? about.storyImageAlt : story.imageAlt}
         reasons={story.reasons}
       />
     )

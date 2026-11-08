@@ -269,6 +269,7 @@ async function main() {
   await homeImage(home.why, "image", "why");
   await homeImage(home.about, "image", "about");
   await homeImage(home.about, "imageBackdrop", "about-backdrop", 1600);
+  await homeImage(home.about, "storyImage", "about-story");
   await homeImage(home.contact, "image", "contact");
   await homeImage(home.callBand, "image", "call-band");
   for (const [i, job] of (home.recentWork?.items ?? []).entries())
