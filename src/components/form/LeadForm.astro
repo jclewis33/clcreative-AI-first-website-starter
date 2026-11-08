@@ -218,6 +218,7 @@ const detailsProps = stepped
             name="email"
             variant="email"
             id={`${id}-email`}
+            class={SITE.smsOptIn ? undefined : "lead-form_full"}
             required
           />
           {SITE.smsOptIn && (
@@ -351,6 +352,11 @@ const detailsProps = stepped
       font-weight: var(--h5-weight);
       text-transform: var(--h5-text-transform);
       line-height: var(--h5-line-height);
+    }
+
+    /* Without the phone field, email has the row to itself. */
+    .lead-form_full {
+      grid-column: 1 / -1;
     }
 
     .lead-form_tiles {
