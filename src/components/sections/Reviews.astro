@@ -377,9 +377,13 @@ const reviewAvatar = (review: Review) =>
       margin-inline: calc(50% - 50vw);
     }
 
+    /* Marquee keeps its items on one line and centred; a review card
+       wraps its quote and the cards in the row share one height. */
     .reviews_ticker_item {
       display: flex;
+      align-self: stretch;
       width: min(24rem, 82vw);
+      white-space: normal;
     }
 
     .reviews_ticker_item .reviews_card {
