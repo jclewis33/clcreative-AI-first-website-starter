@@ -399,6 +399,12 @@ const demoObject = z.object({
     /** Leave out when they don't publish one — the footer then shows none. */
     email: z.email().optional(),
     hours: text,
+    /**
+     * Only when their site or Google profile publishes one (a shop or
+     * office). Leave out for a home-based business — no street line shows.
+     */
+    street: text.optional(),
+    postalCode: text.optional(),
     locality: text,
     region: text,
   }),

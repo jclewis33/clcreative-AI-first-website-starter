@@ -29,7 +29,10 @@ Read first, once per session:
     from them. Otherwise use non-numeric highlights, such as "Licensed",
     "Upfront pricing", "Same-week".
   - No invented certifications, awards or warranties.
-- **No street address,** even if their site shows one.
+- **Street address: use the one their site or Google profile publishes**
+  (`contact.street` + `contact.postalCode`; it shows in the footer, the
+  contact page and the JSON-LD). Leave both out when they publish none,
+  as a home-based business usually doesn't. Never guess one from a map.
 - **Everything you inferred goes in `notes.confirmOrCut`:** service areas
   guessed from a city name, hours read from a Google listing, a brand colour
   pulled from the logo, a service you grouped or renamed, any AI-generated

@@ -148,8 +148,14 @@ export const SITE = {
   /** Contractor license, shown in the footer's bottom line (e.g. "TECL #25414"). Blank = none. */
   license: "",
 
-  /** Home-based — no street line by design. */
+  /**
+   * `street` and `postalCode` are optional: fill them only when the business
+   * publishes a street address (a shop or office). Blank = home-based, and no
+   * street line shows anywhere (footer, contact page, JSON-LD).
+   */
   address: {
+    street: "",
+    postalCode: "",
     locality: "Your City",
     region: "Your State",
     country: "US",
