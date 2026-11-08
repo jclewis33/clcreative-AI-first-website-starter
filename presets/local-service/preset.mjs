@@ -82,6 +82,8 @@ const homeSchema = z.object({
       })
       .optional(),
     variant: z.enum(["background", "split"]).optional(),
+    /** Background only: "side" = dark behind the text, the subject on the right stays bright. */
+    overlay: z.enum(["bottom", "side"]).optional(),
     /** Split only: "cutout" = a transparent PNG (their mascot, a person cut out) with no box. */
     imageFit: z.enum(["cover", "cutout"]).optional(),
     /** Cutout only: a faint texture behind it (diamond plate, brick), fading toward the text. */

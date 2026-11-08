@@ -106,6 +106,8 @@ export interface LocalServiceHomeData {
     imageAlt: string;
     /** Focal point in percent; keeps faces in the crop (the split photo is tall on desktop, square on phones). */
     imagePosition?: { x: number; y: number };
+    /** Background only: `side` = dark behind the text, clearing to the right so a truck or team there stays bright. */
+    overlay?: "bottom" | "side";
     /** Photo behind the text (default) or beside it. */
     variant?: "background" | "split";
     /** Split only: a photo in a box (`cover`, default) or a transparent cut-out such as a mascot (`cutout`). */
