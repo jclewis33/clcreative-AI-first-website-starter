@@ -210,9 +210,15 @@ git switch -c demo/<slug>
 
 - **Hero** (contractor layout). The recipe that landed on the Jerry's
   Plumbing demo, after Mike Healey Plumbing's site:
-  - `variant: "background"` + `overlay: "side"`: a bright photo on the right
-    two-thirds, melting into the dark background behind the text. Generate
-    it for this layout (people on the right half, room for the form card).
+  - `variant: "background"` + `overlay: "side"`: the photo on the right
+    two-thirds, melting into the dark background behind the text, with the
+    form card on top of it. **With the form, the photo is texture, not a
+    subject**: a close-up of the trade (a wrench on a P-trap, copper and
+    valves, an AC coil, a breaker panel), no posed person — anyone in it
+    ends up half behind the card or behind the headline. Generate it
+    16:9; it can be moodier than the other photos.
+  - Without the form (`ctaStyle: "panel"`), the photo can carry people:
+    tech and homeowners on its right half, in the bright style below.
   - `ctaStyle: "form"` (the default): the estimate form on a card beside
     the headline, no click to start a quote. `"panel"` is the lighter
     alternative.
