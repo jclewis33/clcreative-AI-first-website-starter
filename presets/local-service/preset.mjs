@@ -314,7 +314,7 @@ const homeSchema = z.object({
       items: z
         .array(z.object({ text, name: text, meta: text.optional() }))
         .min(1),
-      layout: z.enum(["cards", "featured", "grid"]).optional(),
+      layout: z.enum(["cards", "featured", "grid", "marquee"]).optional(),
     })
     .optional(),
   leadForm: z.object({

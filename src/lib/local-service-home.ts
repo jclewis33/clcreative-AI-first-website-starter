@@ -307,7 +307,7 @@ export interface LocalServiceHomeData {
     count?: number;
     items: HomeReview[];
     /** @default 'cards' (stars on every card) */
-    layout?: "cards" | "featured" | "grid";
+    layout?: "cards" | "featured" | "grid" | "marquee";
   };
 
   leadForm: {
