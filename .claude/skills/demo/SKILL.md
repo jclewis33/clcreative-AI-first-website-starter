@@ -75,10 +75,23 @@ the screen** → service-area map → how it works → story (their real photo,
 `story.imageSide: "right"`) → comparison → lead form → FAQ → call band.
 Service pages get the same reviews automatically.
 
-**Reviews page (`/reviews`, in the nav):** generated whenever there are
-reviews. Put every real 4- or 5-star written review in `home.reviews.items`
-(Google first, then Facebook recommendations), each with `full` (the whole
-review, word for word) and `rating`. Never a review under 4 stars.
+**Reviews page (`/reviews`, in the nav):** it exists to show off how many
+good reviews they have, so pull **every 4- and 5-star written review they
+have, as many as there are — 20 or 200** — from every platform: Google,
+Facebook recommendations, Yelp, Angi/HomeAdvisor, Nextdoor, Thumbtack, BBB.
+All go in `home.reviews.items`, each with `full` (the whole review, word for
+word), `rating`, and `meta` naming the platform ("Google review"). Never a
+review under 4 stars (the schema refuses them). Getting them all:
+
+- Google Maps loads reviews lazily: open the Reviews tab, keep scrolling the
+  review panel until the count stops growing, then click every "More".
+  Logged out, Google may stop short of the total — if the loaded count is
+  below the profile's number, say so and ask Casey for a logged-in pass.
+- Yelp blocks automated browsers (403); Facebook hides most reviews
+  without a login. Ask Casey to paste those, or note them in
+  `confirmOrCut`.
+- Star-only ratings (no text) can't be quoted; they still count in
+  `reviews.count`.
 
 **Reviews:** quote each reviewer's strongest line, not the whole review —
 cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
