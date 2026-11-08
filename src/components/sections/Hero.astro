@@ -40,7 +40,7 @@ type HeroImageFit =
 type HeroOverlay =
   /** Darkens toward the bottom, evenly across (any photo) */
   | "bottom"
-  /** Dark behind the text on the left, clearing to the right so the subject there stays bright; even on phones */
+  /** The photo sits on the right, its left edge melting into the background behind the text; a full, evenly tinted photo on phones */
   | "side";
 type HeroCtaStyle =
   /** The buttons in a row: main, phone, then the optional third */
@@ -132,8 +132,10 @@ interface Props extends HTMLAttributes<"section"> {
   imageBackdrop?: ImageMetadata | string;
 
   /**
-   * Background only: how the photo is darkened. `'side'` keeps a subject
-   * on the right (a truck, a team) bright while the text side goes dark.
+   * Background only: how the photo meets the text. `'side'` sets the photo
+   * on the right with its left edge fading into the background, so a
+   * subject there (a truck, a team) stays bright and the text sits on
+   * plain colour.
    * @default 'bottom'
    */
   overlay?: HeroOverlay;
@@ -303,7 +305,7 @@ const backdropUrl =
       class:list={["hero_wrap", `is-${hasPhoto ? variant : "text"}`, className]}
       {...rest}
     >
-      {variant === "background" && hasPhoto && (
+      {variant === "background" && hasPhoto && overlay === "bottom" && (
         <Fragment slot="background">
           <Visual
             src={image!}
@@ -312,12 +314,20 @@ const backdropUrl =
             position={imagePosition}
             priority
           />
-          {overlay === "side" ? (
-            <div class="hero_scrim" aria-hidden="true" />
-          ) : (
-            <Overlay variant="gradient" strengthTop={55} strengthBottom={80} />
-          )}
+          <Overlay variant="gradient" strengthTop={55} strengthBottom={80} />
         </Fragment>
+      )}
+      {variant === "background" && hasPhoto && overlay === "side" && (
+        <div slot="background" class="hero_photo">
+          <Visual
+            src={image!}
+            alt={photoAlt}
+            variant="background"
+            position={imagePosition}
+            priority
+          />
+          <div class="hero_scrim" aria-hidden="true" />
+        </div>
       )}
 
       {backdropUrl && (
@@ -441,27 +451,39 @@ const backdropUrl =
       max-width: 48rem;
     }
 
-    /* overlay="side": the hero's own background colour behind the text,
-       clearing toward the right. Phones stack everything over the photo,
-       so there it's an even, stronger tint. */
+    /* overlay="side": on wide screens the photo starts a third of the way
+       in and its left edge melts into the hero's background, so the text
+       sits on plain colour and the subject on the right stays bright.
+       Narrower, the text spans the photo, so it's full width under an even,
+       strong tint. 62em viewport is about where Layout's 58em container
+       has room for the text beside the subject. */
+    .hero_photo {
+      position: absolute;
+      inset: 0;
+    }
+
     .hero_scrim {
       position: absolute;
       inset: 0;
       background: linear-gradient(
-        to right,
-        color-mix(in oklab, var(--background) 94%, transparent) 0%,
-        color-mix(in oklab, var(--background) 82%, transparent) 38%,
-        color-mix(in oklab, var(--background) 25%, transparent) 70%,
-        color-mix(in oklab, var(--background) 10%, transparent) 100%
+        to bottom,
+        color-mix(in oklab, var(--background) 82%, transparent),
+        color-mix(in oklab, var(--background) 92%, transparent)
       );
     }
 
-    @media (width < 48em) {
+    @media (width >= 62em) {
+      .hero_photo {
+        inset-inline-start: 34%;
+      }
+
       .hero_scrim {
         background: linear-gradient(
-          to bottom,
-          color-mix(in oklab, var(--background) 78%, transparent),
-          color-mix(in oklab, var(--background) 90%, transparent)
+          to right,
+          var(--background) 0%,
+          color-mix(in oklab, var(--background) 80%, transparent) 22%,
+          color-mix(in oklab, var(--background) 25%, transparent) 50%,
+          color-mix(in oklab, var(--background) 5%, transparent) 100%
         );
       }
     }
