@@ -405,7 +405,7 @@ const backdropUrl =
               : "stack"
         }
         ratio={formCard ? "7-5" : "6-6"}
-        verticalAlign="center"
+        verticalAlign={formCard ? "start" : "center"}
         class="hero_layout u-hero-fade"
       >
         {proofPill && proof?.text && (

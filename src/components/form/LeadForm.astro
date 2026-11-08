@@ -361,7 +361,8 @@ const detailsProps = stepped
 
     .lead-form_tiles {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(9rem, 100%), 1fr));
+      /* Two across even on a phone, so the choices fit in one look. */
+      grid-template-columns: repeat(auto-fill, minmax(min(7.5rem, 100%), 1fr));
       gap: var(--space-3);
     }
 
