@@ -136,10 +136,14 @@ reasoning is documented in that file; don't "fix" it into `<Slider>`.
 
 ## `<Marquee>`
 
-Infinite horizontal ticker — pure CSS. Renders the slot twice (second copy
-`aria-hidden` + `inert`) and animates the track by -50%. Props: `speed`
-(seconds, default `20` — higher is slower), `direction` (`left`/`right`),
-`pauseOnHover` (default `true`), `gap` (`0`–`8`, default `6`). Each child
+Infinite horizontal ticker — pure CSS. Renders the slot three times (copies
+2 and 3 `aria-hidden` + `inert`) and animates the track by one copy. Props:
+`speed` (seconds, default `20` — higher is slower), `direction`
+(`left`/`right`), `pauseOnHover` (default `true`, pointer devices only),
+`gap` (`0`–`8`, default `6`), `swipe` (default `false`: a small script lets
+visitors drag it with a mouse or swipe it with a finger, scrubbing the CSS
+animation so it carries on from where they let go; vertical page scroll is
+untouched). Reviews' `marquee` layout turns `swipe` on. Each child
 takes the `marquee_item` class. Reduced motion: animation dropped, strip
 becomes scrollable. Images inside default to `max-height: 2.5rem` +
 `object-fit: contain`.

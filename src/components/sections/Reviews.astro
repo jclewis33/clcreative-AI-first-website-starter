@@ -263,7 +263,7 @@ const reviewAvatar = (review: Review) =>
       )}
       {layout === "marquee" && (
         <div class="reviews_ticker">
-          <Marquee speed={reviews.length * 12} gap={5}>
+          <Marquee speed={reviews.length * 12} gap={5} swipe>
             {reviews.map((review) => (
               <div class="marquee_item reviews_ticker_item">
                 <Card variant="stacked" class="reviews_card is-rated">

@@ -54,6 +54,7 @@ import type { HTMLAttributes } from "astro/types";
  * - `direction` — scroll direction: `'left'` or `'right'` (default: `'left'`)
  * - `pauseOnHover` — pause animation on mouse hover (default: `true`)
  * - `gap` — spacing between items, uses `--space-N` scale 0–8 (default: `6`)
+ * - `swipe` — let visitors drag the row with a mouse or swipe it with a finger (default: `false`)
  * - `class` — extra classes on the wrapper
  * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.)
  *
@@ -66,6 +67,7 @@ interface Props extends HTMLAttributes<"div"> {
    * - `direction` — 'left' or 'right' (default 'left')
    * - `pauseOnHover` — pause on hover (default true)
    * - `gap` — spacing scale 0–8 (default 6)
+   * - `swipe` — drag/swipe the row by hand (default false)
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
    *
@@ -102,6 +104,14 @@ interface Props extends HTMLAttributes<"div"> {
    */
   gap?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
+  /**
+   * Let visitors move the row themselves: drag it with a mouse or swipe it
+   * with a finger, either way, and it carries on from where they let go.
+   * Vertical page scrolling on phones is untouched.
+   * @default false
+   */
+  swipe?: boolean;
+
   /** Extra utility classes on the `.marquee_wrap` element. */
   class?: string;
 }
@@ -112,13 +122,15 @@ const {
   direction = "left",
   pauseOnHover = true,
   gap = 6,
+  swipe = false,
   class: className,
   ...rest
 } = Astro.props;
 
 const gapValue = gap === 0 ? "0px" : `var(--space-${gap})`;
 
-// Both are consumed by CSS only — there is no script in this component.
+// Both are consumed by CSS only. The small script below only acts on
+// `swipe` marquees.
 const trackStyle = `--marquee-gap: ${gapValue}; --marquee-duration: ${speed}s`;
 ---
 
@@ -127,6 +139,7 @@ const trackStyle = `--marquee-gap: ${gapValue}; --marquee-duration: ${speed}s`;
   data-marquee="component"
   data-marquee-direction={direction}
   data-marquee-pause={String(pauseOnHover)}
+  data-marquee-swipe={swipe ? "" : undefined}
   style={trackStyle}
   {...rest}
 >
@@ -144,6 +157,74 @@ const trackStyle = `--marquee-gap: ${gapValue}; --marquee-duration: ${speed}s`;
     <div class="marquee_inner" aria-hidden="true" inert><slot /></div>
   </div>
 </div>
+
+<script>
+  /* swipe: dragging scrubs the CSS animation itself (its currentTime), so
+     the loop, the copies and the speed stay exactly as the CSS defines them
+     and the row simply carries on from wherever it was let go. One cycle (a
+     third of the track) is one animation duration. */
+  function initSwipe(wrap: HTMLElement) {
+    const track = wrap.querySelector<HTMLElement>(".marquee_track");
+    if (!track) return;
+    const sign = wrap.dataset.marqueeDirection === "right" ? 1 : -1;
+    let startX = 0;
+    let startTime = 0;
+    let moved = false;
+    let anim: Animation | undefined;
+    let pointer: number | null = null;
+
+    wrap.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      // Reduced motion: no animation; the row scrolls natively instead.
+      anim = track.getAnimations()[0];
+      if (!anim) return;
+      pointer = e.pointerId;
+      startX = e.clientX;
+      startTime = Number(anim.currentTime ?? 0);
+      moved = false;
+      wrap.classList.add("is-dragging");
+    });
+
+    wrap.addEventListener("pointermove", (e) => {
+      if (e.pointerId !== pointer || !anim) return;
+      const dx = e.clientX - startX;
+      if (!moved && Math.abs(dx) > 4) {
+        moved = true;
+        wrap.setPointerCapture(e.pointerId);
+      }
+      if (!moved) return;
+      const cycle = track.scrollWidth / 3;
+      const duration = Number(anim.effect?.getTiming().duration) || 1;
+      const t = startTime + sign * (dx / cycle) * duration;
+      anim.currentTime = ((t % duration) + duration) % duration;
+    });
+
+    const end = (e: PointerEvent) => {
+      if (e.pointerId !== pointer) return;
+      pointer = null;
+      wrap.classList.remove("is-dragging");
+    };
+    wrap.addEventListener("pointerup", end);
+    wrap.addEventListener("pointercancel", end);
+
+    // A drag that ends over a link must not also click it.
+    wrap.addEventListener(
+      "click",
+      (e) => {
+        if (moved) {
+          e.preventDefault();
+          e.stopPropagation();
+          moved = false;
+        }
+      },
+      true,
+    );
+  }
+
+  document
+    .querySelectorAll<HTMLElement>("[data-marquee-swipe]")
+    .forEach(initSwipe);
+</script>
 
 <style is:global>
   /* Global styles (is:global — classes here are used across the site and by
@@ -244,8 +325,29 @@ const trackStyle = `--marquee-gap: ${gapValue}; --marquee-duration: ${speed}s`;
 
     /* Pause for pointer users on hover, and for keyboard users whenever focus
        lands inside (a marquee holding links is otherwise impossible to use). */
-    [data-marquee-pause="true"]:hover .marquee_track,
     [data-marquee-pause="true"]:focus-within .marquee_track {
+      animation-play-state: paused;
+    }
+
+    @media (hover: hover) {
+      [data-marquee-pause="true"]:hover .marquee_track {
+        animation-play-state: paused;
+      }
+    }
+
+    /* swipe: horizontal drags belong to the row, vertical ones still scroll
+       the page; the row holds still while it's held. */
+    [data-marquee-swipe] {
+      touch-action: pan-y;
+      cursor: grab;
+    }
+
+    [data-marquee-swipe].is-dragging {
+      cursor: grabbing;
+      user-select: none;
+    }
+
+    [data-marquee-swipe].is-dragging .marquee_track {
       animation-play-state: paused;
     }
 
