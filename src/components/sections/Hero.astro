@@ -455,8 +455,9 @@ const backdropUrl =
        in and its left edge melts into the hero's background, so the text
        sits on plain colour and the subject on the right stays bright.
        Narrower, the text spans the photo, so it's full width under an even,
-       strong tint. 62em viewport is about where Layout's 58em container
-       has room for the text beside the subject. */
+       strong tint. Below 75em the text column is too wide to leave the
+       subject clear. The scrim starts a hair left of the photo so its edge
+       never shows as a seam. */
     .hero_photo {
       position: absolute;
       inset: 0;
@@ -467,17 +468,18 @@ const backdropUrl =
       inset: 0;
       background: linear-gradient(
         to bottom,
-        color-mix(in oklab, var(--background) 82%, transparent),
-        color-mix(in oklab, var(--background) 92%, transparent)
+        color-mix(in oklab, var(--background) 74%, transparent),
+        color-mix(in oklab, var(--background) 88%, transparent)
       );
     }
 
-    @media (width >= 62em) {
+    @media (width >= 75em) {
       .hero_photo {
         inset-inline-start: 34%;
       }
 
       .hero_scrim {
+        inset-inline-start: -0.25rem;
         background: linear-gradient(
           to right,
           var(--background) 0%,
