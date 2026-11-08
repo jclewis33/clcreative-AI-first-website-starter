@@ -2,8 +2,8 @@
 /**
  * Local-service home page template.
  *
- * Stacks the local-service sections — hero, stats, service cards, service
- * area, process, photo band, story, reviews, lead form, FAQ, call band — into
+ * Stacks the local-service sections — hero, stats, service cards, symptoms,
+ * reviews, service area, process, photo band, story, lead form, FAQ, call band — into
  * a full home page from one `home` object (LocalServiceHomeData). The service
  * cards come from the services content (src/content/services), so the home
  * page and the service pages never disagree.
@@ -199,6 +199,18 @@ if (import.meta.env.DEV && !services.length)
     )
   }
 
+  {/* Proof right after the problems and the offer, before the map. */}
+  {
+    reviews && (
+      <Reviews
+        rating={reviews.rating}
+        count={reviews.count}
+        reviews={reviews.items}
+        layout={reviews.layout ?? "cards"}
+      />
+    )
+  }
+
   <ServiceArea
     heading={serviceArea.heading}
     text={serviceArea.text}
@@ -275,6 +287,7 @@ if (import.meta.env.DEV && !services.length)
         paragraphs={story.paragraphs}
         image={story.image}
         imageAlt={story.imageAlt}
+        imageSide={story.imageSide}
         reasons={story.reasons}
       />
     )
@@ -323,17 +336,6 @@ if (import.meta.env.DEV && !services.length)
         heading={promises.heading}
         intro={promises.intro}
         items={promises.items}
-      />
-    )
-  }
-
-  {
-    reviews && (
-      <Reviews
-        rating={reviews.rating}
-        count={reviews.count}
-        reviews={reviews.items}
-        layout={reviews.layout ?? "cards"}
       />
     )
   }

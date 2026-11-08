@@ -152,9 +152,11 @@ if (import.meta.env.DEV && render && !Astro.props.items?.length) {
       margin-bottom: 0;
     }
 
+    /* The button sits centred under the cards: it answers the whole row,
+       not the first card. */
     .symptom-cards_action {
       display: flex;
-      justify-content: var(--_buttons-justify, flex-start);
+      justify-content: center;
     }
   }
 </style>

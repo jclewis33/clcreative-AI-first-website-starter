@@ -303,6 +303,8 @@ const homeSchema = z.object({
       image,
       imageAlt: text,
       reasons: z.array(item).optional(),
+      /** "right" puts the photo on the right. */
+      imageSide: z.enum(["left", "right"]).optional(),
       ctaLabel: text.optional(),
     })
     .optional(),

@@ -297,6 +297,8 @@ export interface LocalServiceHomeData {
     image: HomeImage;
     imageAlt: string;
     reasons?: HomeItem[];
+    /** Which side the photo sits on. @default 'left' */
+    imageSide?: "left" | "right";
     /** The showcase layout's text link to the estimate form ("Book time with me"). */
     ctaLabel?: string;
   };
