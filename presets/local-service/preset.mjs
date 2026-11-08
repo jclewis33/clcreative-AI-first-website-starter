@@ -69,6 +69,13 @@ const homeSchema = z.object({
     text: text.optional(),
     image,
     imageAlt: text,
+    /** Focal point in percent; keep faces in the crop (split: tall on desktop, square on phones). */
+    imagePosition: z
+      .object({
+        x: z.number().min(0).max(100),
+        y: z.number().min(0).max(100),
+      })
+      .optional(),
     variant: z.enum(["background", "split"]).optional(),
     /** "panel" = estimate button + "or" + "Call or text us". */
     ctaStyle: z.enum(["buttons", "panel"]).default("panel"),

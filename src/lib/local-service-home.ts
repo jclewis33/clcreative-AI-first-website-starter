@@ -98,6 +98,8 @@ export interface LocalServiceHomeData {
     text?: string;
     image: HomeImage;
     imageAlt: string;
+    /** Focal point in percent; keeps faces in the crop (the split photo is tall on desktop, square on phones). */
+    imagePosition?: { x: number; y: number };
     /** Photo behind the text (default) or beside it. */
     variant?: "background" | "split";
     /** `panel` = the estimate button, "or", and the phone on one panel. */
