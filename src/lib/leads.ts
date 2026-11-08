@@ -93,7 +93,15 @@ function parseLead(input: unknown, access: FormAccess): Lead | null {
   const form = getForm(o.formId);
   if (!form || form.access !== access) return null;
 
-  const firstName = str(o.firstName, 100);
+  /* A compact form sends one "Name" field as firstName; with no last name
+     given, "Jane Smith" becomes first "Jane", last "Smith". */
+  let firstName = str(o.firstName, 100);
+  let lastName = str(o.lastName, 100);
+  if (!lastName && /\s/.test(firstName)) {
+    const [first, ...rest] = firstName.split(/\s+/);
+    firstName = first;
+    lastName = rest.join(" ");
+  }
   const email = str(o.email, 320).toLowerCase();
   const phone = str(o.phone, 40);
   if (!firstName) return null;
@@ -127,7 +135,7 @@ function parseLead(input: unknown, access: FormAccess): Lead | null {
   return {
     form,
     firstName,
-    lastName: str(o.lastName, 100),
+    lastName,
     email,
     phone,
     /* Only asked on public forms with a phone while texting is on. The

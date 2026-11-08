@@ -221,7 +221,7 @@ git switch -c demo/<slug>
     tech and homeowners on its right half, in the bright style below.
   - `ctaStyle: "form"` (the default): the two-step estimate form on a card
     beside the headline — step 1 is one tap on a service tile (under
-    `estimate.question`), step 2 the contact fields. Casey picked two-step
+    `estimate.question`), step 2 just Name, Phone and an optional note. Casey picked two-step
     over a long form: one easy question first, and a lighter-looking hero. `"panel"` is the lighter
     alternative.
   - `proofPosition: "above"` (the default) with `proof: { rating, text:

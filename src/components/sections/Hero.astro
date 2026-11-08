@@ -68,6 +68,8 @@ type HeroForm = {
   projectOptions?: { label: string; value: string }[];
   /** The step-1 question over the tiles. @default 'What can we help with?' */
   stepQuestion?: string;
+  /** Just Name, Phone and an optional note (LeadForm `compact`). @default true */
+  compact?: boolean;
 };
 type HeroProofPosition =
   /** Under the buttons */
@@ -500,10 +502,11 @@ const backdropUrl =
               fields={formCard.projectOptions?.length ? "steps" : "contact"}
               projectOptions={formCard.projectOptions}
               stepQuestion={formCard.stepQuestion ?? "What can we help with?"}
+              compact={formCard.compact ?? true}
               messageLabel={
                 formCard.messageLabel ??
                 (formCard.projectOptions?.length
-                  ? "Anything we should know?"
+                  ? "Anything we should know? (optional)"
                   : "What can we help with?")
               }
               submitLabel={formCard.submitLabel ?? "Get my free estimate"}

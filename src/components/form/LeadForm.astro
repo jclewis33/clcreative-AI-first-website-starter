@@ -41,6 +41,8 @@ interface Props extends Omit<
    * - `messageLabel`, `messagePlaceholder`, `submitLabel`, `successMessage`,
    *   `errorMessage` — copy
    * - `buttonWidth` — `'full'` (default) or `'auto'`
+   * - `compact` — just Name, Phone (Email while texting is off) and an
+   *   optional message
    *
    * *Phone only while `SITE.smsOptIn` is true.
    *
@@ -95,6 +97,14 @@ interface Props extends Omit<
   /** Submit button width. @default 'full' */
   buttonWidth?: LeadFormButtonWidth;
 
+  /**
+   * The shortest form: one Name field, Phone, and an optional message — no
+   * last name, email or timeline. While `SITE.smsOptIn` is off (no phone
+   * field allowed) Email takes Phone's place. The server splits the name.
+   * @default false
+   */
+  compact?: boolean;
+
   /** Unique prefix for field ids — needed when one page shows the form twice. */
   id?: string;
 
@@ -120,6 +130,7 @@ const {
   successMessage = "Thanks — we got your message and will be in touch shortly.",
   errorMessage = `Something went wrong. Please try again, or call us at ${SITE.phone.display}.`,
   buttonWidth = "full",
+  compact = false,
   id = `lead-${formId}`,
   class: className,
   ...rest
@@ -199,40 +210,72 @@ const detailsProps = stepped
           </p>
         )}
 
-        <FormFieldset columns={2}>
-          <FormField
-            label="First name"
-            name="firstName"
-            variant="first-name"
-            id={`${id}-first`}
-            required
-          />
-          <FormField
-            label="Last name"
-            name="lastName"
-            variant="last-name"
-            id={`${id}-last`}
-          />
-          <FormField
-            label="Email"
-            name="email"
-            variant="email"
-            id={`${id}-email`}
-            class={SITE.smsOptIn ? undefined : "lead-form_full"}
-            required
-          />
-          {SITE.smsOptIn && (
+        {compact && (
+          <FormFieldset columns={2}>
             <FormField
-              label="Phone"
-              name="phone"
-              variant="phone"
-              id={`${id}-phone`}
+              label="Name"
+              name="firstName"
+              variant="text"
+              autocomplete="name"
+              id={`${id}-name`}
               required
             />
-          )}
-        </FormFieldset>
+            {SITE.smsOptIn && (
+              <FormField
+                label="Phone"
+                name="phone"
+                variant="phone"
+                id={`${id}-phone`}
+                required
+              />
+            )}
+            {!SITE.smsOptIn && (
+              <FormField
+                label="Email"
+                name="email"
+                variant="email"
+                id={`${id}-email`}
+                required
+              />
+            )}
+          </FormFieldset>
+        )}
+        {!compact && (
+          <FormFieldset columns={2}>
+            <FormField
+              label="First name"
+              name="firstName"
+              variant="first-name"
+              id={`${id}-first`}
+              required
+            />
+            <FormField
+              label="Last name"
+              name="lastName"
+              variant="last-name"
+              id={`${id}-last`}
+            />
+            <FormField
+              label="Email"
+              name="email"
+              variant="email"
+              id={`${id}-email`}
+              class={SITE.smsOptIn ? undefined : "lead-form_full"}
+              required
+            />
+            {SITE.smsOptIn && (
+              <FormField
+                label="Phone"
+                name="phone"
+                variant="phone"
+                id={`${id}-phone`}
+                required
+              />
+            )}
+          </FormFieldset>
+        )}
 
-        {stepped && (
+        {stepped && !compact && (
           <FormSelect
             label="Timeline"
             name="timeline"
