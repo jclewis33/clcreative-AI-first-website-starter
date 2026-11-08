@@ -161,7 +161,7 @@ the nav through the generated `src/data/preset-pages.ts`, which
 the same `home` object (`layout: "showcase"`; dev page
 `/demo/local-service-showcase`): background hero at `headingSize="h1"`,
 recent work on dark, the story with a text-link CTA, a `cinematic` CallBand,
-and none of the offer/symptoms/comparison/hero panel. **`LocalServiceContact`** (same folder) is the matching
+and none of the offer/symptoms/comparison/hero panel. **`LocalServiceReviews`** (same folder) is `/reviews`: every `home.reviews` item in full (`full`, else `text`) with its own stars (`rating`, 4–5), the overall rating as a pill, and a link to all reviews on Google. **`LocalServiceContact`** (same folder) is the matching
 contact page — it needs only `title` and `description`. The dev-only
 `/demo/local-service` page feeds `LocalServiceHome` the sample in
 `src/data/local-service-sample.ts`; prospect demos (`npm run demo`,

@@ -20,6 +20,8 @@ type Review = {
   avatar?: ImageMetadata | string;
   /** Alt text for `avatar` — usually the reviewer's name. */
   avatarAlt?: string;
+  /** This review's stars, 1–5 (the starred cards and marquee). @default 5 */
+  rating?: number;
 };
 type ReviewsLayout =
   /** First review large on a dark card, the next two stacked beside it */
@@ -133,6 +135,10 @@ if (import.meta.env.DEV && render) {
     console.warn(`[Reviews] Unknown layout "${layoutProp}".`);
 }
 
+/** A starred card's stars: the review's own rating, else 5. */
+const cardStars = (review: Review) =>
+  Math.max(1, Math.min(5, Math.round(review.rating ?? 5)));
+
 /** A review's photo in the shape Quote takes (alt falls back to the name). */
 const reviewAvatar = (review: Review) =>
   review.avatar
@@ -236,11 +242,14 @@ const reviewAvatar = (review: Review) =>
               <span
                 class="reviews_stars is-card"
                 role="img"
-                aria-label="5 out of 5 stars"
+                aria-label={`${cardStars(review)} out of 5 stars`}
               >
-                {Array.from({ length: 5 }, () => (
+                {Array.from({ length: 5 }, (_, i) => (
                   <svg
-                    class="reviews_star"
+                    class:list={[
+                      "reviews_star",
+                      i >= cardStars(review) && "is-empty",
+                    ]}
                     viewBox="0 0 24 24"
                     aria-hidden="true"
                   >
@@ -270,11 +279,14 @@ const reviewAvatar = (review: Review) =>
                   <span
                     class="reviews_stars is-card"
                     role="img"
-                    aria-label="5 out of 5 stars"
+                    aria-label={`${cardStars(review)} out of 5 stars`}
                   >
-                    {Array.from({ length: 5 }, () => (
+                    {Array.from({ length: 5 }, (_, i) => (
                       <svg
-                        class="reviews_star"
+                        class:list={[
+                          "reviews_star",
+                          i >= cardStars(review) && "is-empty",
+                        ]}
                         viewBox="0 0 24 24"
                         aria-hidden="true"
                       >

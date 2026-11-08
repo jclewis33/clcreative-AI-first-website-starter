@@ -9,6 +9,7 @@ skill (`.claude/skills/demo/SKILL.md`) explains the whole workflow and
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `preset.mjs`    | The `demo.json` schema (validated before anything is written), the pages this preset installs, the nav links a demo hides      |
 | `index.astro`   | The home page: `LocalServiceHome` + the generated `src/data/home.ts`                                                           |
+| `reviews.astro` | The reviews page (`/reviews`, in the nav): `LocalServiceReviews` — only when `home.reviews` is set                             |
 | `contact.astro` | The contact page: `LocalServiceContact`                                                                                        |
 | `fixture/`      | A fictional prospect (Brightline Electric) — `npm run check:demo` builds it; also the worked example of a complete `demo.json` |
 

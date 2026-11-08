@@ -75,6 +75,11 @@ the screen** → service-area map → how it works → story (their real photo,
 `story.imageSide: "right"`) → comparison → lead form → FAQ → call band.
 Service pages get the same reviews automatically.
 
+**Reviews page (`/reviews`, in the nav):** generated whenever there are
+reviews. Put every real 4- or 5-star written review in `home.reviews.items`
+(Google first, then Facebook recommendations), each with `full` (the whole
+review, word for word) and `rating`. Never a review under 4 stars.
+
 **Reviews:** quote each reviewer's strongest line, not the whole review —
 cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
 `reviews.layout: "marquee"` scrolls them (swipeable, pauses on hover);

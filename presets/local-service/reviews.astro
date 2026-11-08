@@ -1,0 +1,12 @@
+---
+/**
+ * Reviews page — the local-service preset (presets/local-service), installed
+ * by `npm run demo` when demo.json has `home.reviews`. The reviews are
+ * src/data/home.ts; edit demo.json and re-run the script rather than this
+ * file.
+ */
+import LocalServiceReviews from "@/components/templates/LocalServiceReviews.astro";
+import { HOME } from "@/data/home";
+---
+
+<LocalServiceReviews home={HOME} />

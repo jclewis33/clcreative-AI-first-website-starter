@@ -319,7 +319,18 @@ const homeSchema = z.object({
       rating: z.number().min(1).max(5).optional(),
       count: z.number().int().positive().optional(),
       items: z
-        .array(z.object({ text, name: text, meta: text.optional() }))
+        .array(
+          z.object({
+            /** The line the home and service pages show (an excerpt is fine). */
+            text,
+            name: text,
+            meta: text.optional(),
+            /** The whole review, word for word, for /reviews. */
+            full: text.optional(),
+            /** 4 or 5 — worse reviews never go on the site. */
+            rating: z.number().int().min(4).max(5).optional(),
+          }),
+        )
         .min(1),
       layout: z.enum(["cards", "featured", "grid", "marquee"]).optional(),
     })
@@ -526,6 +537,13 @@ export const PAGES = [
   { from: "index.astro", to: "src/pages/index.astro" },
   { from: "contact.astro", to: "src/pages/contact.astro" },
   { from: "about.astro", to: "src/pages/about.astro" },
+  /* Only with reviews; otherwise the page (and its nav link) is removed. */
+  {
+    from: "reviews.astro",
+    to: "src/pages/reviews.astro",
+    when: (/** @type {any} */ demo) =>
+      Boolean(demo.home.reviews?.items?.length),
+  },
 ];
 
 /** Nav and footer links a demo drops (the sample content stays unlinked). */

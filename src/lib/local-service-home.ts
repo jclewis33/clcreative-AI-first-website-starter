@@ -18,7 +18,16 @@ import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
 type HomeImage = ImageMetadata | string;
 type HomeItem = { title: string; text: string };
 type HomeStat = { value: string; label: string };
-type HomeReview = { text: string; name: string; meta?: string };
+type HomeReview = {
+  /** The line the home page and service pages show (an excerpt is fine). */
+  text: string;
+  name: string;
+  meta?: string;
+  /** The whole review, word for word, for the /reviews page. @default text */
+  full?: string;
+  /** Its stars — 4 or 5 only; the site never shows a worse review. @default 5 */
+  rating?: number;
+};
 type HomeOption = { label: string; value: string };
 /** An SVG imported as a component (ServiceArea's interactive map). */
 type HomeMap = (props: Record<string, unknown>) => unknown;
