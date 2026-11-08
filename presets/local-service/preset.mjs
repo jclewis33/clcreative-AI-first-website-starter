@@ -94,12 +94,12 @@ const homeSchema = z.object({
     /** "dark" suits a cut-out. */
     theme: z.enum(["light", "dark", "brand"]).optional(),
     /** "panel" = estimate button + "or" + "Call or text us". */
-    ctaStyle: z.enum(["buttons", "panel", "form"]).default("panel"),
+    ctaStyle: z.enum(["buttons", "panel", "form"]).default("form"),
     /** "form" only: the form card's heading and line (default: the estimate's). */
     formHeading: text.optional(),
     formText: text.optional(),
     /** "above" = the stars line as a pill over the headline. */
-    proofPosition: z.enum(["below", "above"]).optional(),
+    proofPosition: z.enum(["below", "above"]).default("above"),
     ctaNote: text.optional(),
     proof: z
       .object({ rating: z.number().min(1).max(5).optional(), text })
@@ -450,10 +450,10 @@ const demoObject = z.object({
   reviewsUrl: z.url().optional(),
   /**
    * Show the Phone field and SMS consent box on the demo's forms
-   * (SITE.smsOptIn). Off by default: on the real site it waits for the
-   * client's A2P texting approval (docs/ghl-forms.md).
+   * (SITE.smsOptIn). On for demos (Casey wants the phone asked); the real
+   * site keeps it off until the client's A2P approval (docs/ghl-forms.md).
    */
-  smsOptIn: z.boolean().default(false),
+  smsOptIn: z.boolean().default(true),
   /** Footer profiles by label: { "Facebook": "https://…" }. */
   social: z.record(z.string(), z.url()).optional(),
   utilityBar: z.object({ text, areaLabel: text.optional() }).optional(),

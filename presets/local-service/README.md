@@ -28,8 +28,8 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
 - `contact` — `phone` (US), `email?` (leave out if they don't publish one),
   `hours`, `street?` + `postalCode?` (only a published shop or office
   address; leave out for a home-based business), `locality`, `region`
-- `smsOptIn?` — `true` shows the Phone field and SMS consent box on the
-  demo's forms (default off, as on a real site before A2P approval)
+- `smsOptIn?` — the Phone field and SMS consent box on the demo's forms
+  (default on; `false` for email-only, as on a real site before A2P approval)
 - `serviceAreas`, `founded?`, `reviewsUrl?`, `social?` (`{ "Facebook": url }`),
   `utilityBar?`
 - `look` — `fresh` | `warm` | `rugged` | `natural` (by trade; see

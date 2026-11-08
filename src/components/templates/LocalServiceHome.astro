@@ -213,7 +213,9 @@ if (import.meta.env.DEV && !services.length)
         rating={reviews.rating}
         count={reviews.count}
         reviews={reviews.items}
-        layout={reviews.layout ?? "cards"}
+        layout={
+          reviews.layout ?? (reviews.items.length >= 4 ? "marquee" : "cards")
+        }
       />
     )
   }

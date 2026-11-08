@@ -313,7 +313,7 @@ export interface LocalServiceHomeData {
     rating?: number;
     count?: number;
     items: HomeReview[];
-    /** @default 'cards' (stars on every card) */
+    /** @default 'marquee' with 4+ reviews (scrolling across the screen), else 'cards' */
     layout?: "cards" | "featured" | "grid" | "marquee";
   };
 

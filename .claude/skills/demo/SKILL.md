@@ -66,6 +66,32 @@ went into the starter, but it is not the target.
   into the demo branch: branch the starter, PR, CI, merge, then
   `git merge upstream/main` on the demo branch.
 
+## Page flow (contractor home)
+
+The template's order, settled on the Jerry's Plumbing demo — fill it, don't
+re-argue it: hero (rating pill, form) → stats → emergency → services →
+symptoms ("Sound familiar?", button centred) → **reviews scrolling across
+the screen** → service-area map → how it works → story (their real photo,
+`story.imageSide: "right"`) → comparison → lead form → FAQ → call band.
+Service pages get the same reviews automatically.
+
+**Reviews:** quote each reviewer's strongest line, not the whole review —
+cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
+`reviews.layout: "marquee"` scrolls them (swipeable, pauses on hover);
+5+ reviews fill it.
+
+## Working with Casey on a demo
+
+- **Show, then build.** For a visual call (hero treatment, a background,
+  mascot vs. photo) send 2–3 quick mockups or screenshots first; build the
+  one he picks.
+- **Screenshot every change** at 1440, 1200 and 390 wide and look before
+  reporting: crops, wrapping phone numbers, text over faces, overflow.
+- **Every claim traceable.** When he asks "where did this come from?",
+  answer with the line from their site.
+- **Fixes and new options go into the starter** (one PR branch per demo
+  session), merged into the demo branch as you go; never only the demo.
+
 ## Copy rules learned on real demos
 
 - **Contact lines say "we" and "us"**: "Call or text us", "we'll get back
@@ -120,15 +146,26 @@ git switch -c demo/<slug>
   - founded year
   - socials
   - their services: 3–4 core ones, merging tiny ones
-  - real reviews, with names as shown
-  - what makes them different, in their own words
+  - real reviews, with names as shown — **every written review**, not just
+    the first few: on Google Maps open the Reviews tab in Playwright, scroll
+    the panel and click each "More" (Google only shows text for some; the
+    rest are star-only and can't be quoted)
+  - what makes them different, in their own words — including any "us vs.
+    other companies" section (it feeds `comparison` almost verbatim)
+- **Save their site's text** (each page's HTML into the scratch folder).
+  Every claim on the demo gets checked against it later ("where did this
+  come from?" should take one grep, not a re-crawl).
 - **Brand:**
   - **Logo:** download their logo file, the largest PNG/SVG you can find.
     Set `plate: true` if it's dark-on-white.
   - **Colour:** the dominant brand colour from their CSS or logo, as `#rrggbb`.
 - **Photos:** pick real job/team photos large enough for a hero (1600px
   wide or more is ideal). Save them all into a scratch `assets/` folder next
-  to demo.json.
+  to demo.json. Go through their **Facebook photos** too — trucks, job
+  sites, crew, mascots live there, not on the website. The photo viewer
+  (`facebook.com/photo/?fbid=…`) serves full size without a login. Ask
+  Casey early whether the prospect has more (a wrapped truck, job photos, a
+  current logo file): real photos beat every generated one.
 
 ### 3. Write the copy (6–8 min)
 
@@ -171,11 +208,20 @@ git switch -c demo/<slug>
   If their current brand clearly fights the default for their trade, pick
   the closer look and say why in your report.
 
-- **Hero:**
-  - `ctaStyle: "panel"` is the default: the estimate button, "or", and
-    "Call or text us".
-  - `variant: "split"` when you have a strong portrait job photo; otherwise
-    the background photo.
+- **Hero** (contractor layout). The recipe that landed on the Jerry's
+  Plumbing demo, after Mike Healey Plumbing's site:
+  - `variant: "background"` + `overlay: "side"`: a bright photo on the right
+    two-thirds, melting into the dark background behind the text. Generate
+    it for this layout (people on the right half, room for the form card).
+  - `ctaStyle: "form"` (the default): the estimate form on a card beside
+    the headline, no click to start a quote. `"panel"` is the lighter
+    alternative.
+  - `proofPosition: "above"` (the default) with `proof: { rating, text:
+"5.0 on Google · 14 reviews" }`: the rating as a pill over the headline
+    — proof before the pitch. Only with a real rating; no rating, no `proof`.
+  - Forms ask for a phone number (`smsOptIn` is on by default for demos).
+  - `variant: "split"` when you have a strong portrait job photo instead;
+    `imageFit: "cutout"` + `imageBackdrop` for a transparent mascot.
   - Put a **real** offer from their site in `<mark>` in the heading
     ("Call today for <mark>$100 off</mark>"). No offer on their site means no
     `<mark>`.
@@ -239,8 +285,8 @@ Facebook" }`). When set it takes the home page's process slot;
   draws that circle and frames itself on it. Then pick `serviceAreas` from
   the towns across the whole circle (their own map, Facebook areas), not just
   the home county.
-- **`smsOptIn`:** `true` puts the Phone field (and the SMS consent box) on
-  the demo's forms, as on a real site after A2P approval. Off by default.
+- **`smsOptIn`:** on by default for demos (forms ask for a phone, with the
+  SMS consent box); `false` for email-only.
 - **`photoBand.position`:** `{ "x": 50, "y": 25 }` (percent) when the
   people in the photo sit high in the frame; check heads aren't cropped.
 - **Service-area map:** automatic. `npm run demo` looks each service area
@@ -255,13 +301,47 @@ Facebook" }`). When set it takes the home page's process slot;
 
 Use the first source that works:
 
-1. **Theirs** (best).
-2. **Magnific stock** that matches the trade and region.
+1. **Theirs** (best): truck, job sites, crew, finished work. Upscale small
+   ones with Magnific `images_upscale` (`mode: "ultra-photo"`, 2x) and check
+   any lettering survived unchanged. Brighten dark phone shots a little,
+   don't restyle them.
+2. **Generated in one consistent style** (below), when theirs run out.
 3. **The starter's placeholders** (`src/assets/placeholder-images/`) — a last
    resort, and list it in `confirmOrCut`.
 
-If you use any AI-generated images, check them for artifacts (hands, text,
-tools) and list them in `confirmOrCut`. Every image needs real alt text.
+**The generated style Casey approved** (Nano Banana 2.1:
+`mode: "imagen-nano-banana-2-1"`, `resolution: "2k"`, 3:2 for cards and
+pages, 21:9 for wide bands). Start every prompt with "Bright, modern
+commercial photograph shot on a Canon R5 with a 35mm lens, straight
+horizon." and end it with "Crisp, clean, high-key lighting, true-to-life
+neutral colors, sharp focus, upbeat and natural, like a modern
+home-services brand campaign. No vintage grading, no film grain, no haze,
+no warm color cast. No text, no logos."
+
+- **One recurring tech** across the set ("a friendly plumber in his
+  thirties wearing a clean navy blue polo with no logo"), so the site
+  feels like one company.
+- **Mix the framing:** wide scenes with the tech and homeowners, _and_
+  close-ups — hands on a fitting, the faucet going in, tools, the finished
+  work. Not every photo needs a person posing in the room.
+- **Repair shots must look like real jobs.** Neat, staged scenes read as AI
+  (a perfectly square hole, tools laid out in rows). Prompt those as a
+  "candid documentary photo taken on a phone by a plumber on the job" —
+  rough edges, dust, gloves, no faces.
+- **Avoid:** Magnific One's filmic look (a vintage/AI wash Casey rejected),
+  cheesy stock poses (clipboard, thumbs up), older-looking leads in the
+  hero, tilted or murky shots.
+- **Never** a street photo of their house, even when it's their listed
+  address.
+- **Their mascot or cartoon** goes on the About page hero (`about.imageFit:
+"cutout"`, transparent PNG via `images_remove_background`), not the home
+  hero.
+- **Generate a few per slot (`count: 2–3`), make a contact sheet, pick.**
+  Check hands, tools, lettering and that heads aren't cropped at the sizes
+  the site uses (tall on desktop, square on phones).
+
+List every generated image in `confirmOrCut`. Every image needs real alt
+text.
 
 ### 5. Write demo.json and run the script (2 min)
 
