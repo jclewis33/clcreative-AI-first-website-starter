@@ -302,7 +302,14 @@ const backdropUrl =
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
       id={id}
-      class:list={["hero_wrap", `is-${hasPhoto ? variant : "text"}`, className]}
+      class:list={[
+        "hero_wrap",
+        `is-${hasPhoto ? variant : "text"}`,
+        {
+          "is-side": hasPhoto && variant === "background" && overlay === "side",
+        },
+        className,
+      ]}
       {...rest}
     >
       {variant === "background" && hasPhoto && overlay === "bottom" && (
@@ -476,6 +483,11 @@ const backdropUrl =
     @media (width >= 75em) {
       /* Section's background slot stretches its children to the full
          width; this one is the right two-thirds. */
+      /* The text keeps to the dark third-and-a-bit the photo leaves. */
+      .hero_wrap.is-side .hero_layout {
+        max-width: min(48rem, 46vw);
+      }
+
       .hero_wrap .hero_photo {
         inset-inline: auto 0;
         width: 66%;
