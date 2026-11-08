@@ -10,8 +10,8 @@
  * It promises nothing on the business's behalf: no response time, no free
  * estimate. The steps and the FAQ are the business's own (from the home
  * data) and are left out when not given; the hero line is neutral unless
- * the caller writes one. No street address: add one only when the client
- * has confirmed it.
+ * the caller writes one. The street address shows only when
+ * `SITE.address.street` is set (a published shop or office address).
  *
  * Used by the dev sample (/demo/local-service-contact) and by every
  * prospect demo generated with `npm run demo` (presets/local-service).
@@ -29,6 +29,7 @@ import FAQ from "@/components/sections/FAQ.astro";
 import LeadForm from "@/components/form/LeadForm.astro";
 import ContactCards from "@/components/ui/ContactCards.astro";
 import { SITE } from "@/config/site";
+import { streetAddress } from "@/lib/address";
 import { getServices, servicePath } from "@/lib/services";
 import { geoFor } from "@/lib/service-area-geo";
 import type { FAQItem } from "@/data/faqs";
@@ -132,7 +133,10 @@ const geo = geoFor(SITE.serviceAreas);
           heading: "Need help today?",
           text: "Call and we'll talk you through it.",
         }}
-        cards={[{ heading: "Hours", body: SITE.hours }]}
+        cards={[
+          { heading: "Hours", body: SITE.hours },
+          { heading: "Address", body: streetAddress() },
+        ].filter((card) => card.body)}
       />
     </Layout>
   </Section>

@@ -26,7 +26,8 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
 - `prospect` — `name`, `legalName?`, `slug` (kebab-case, up to 30
   characters; the branch is `demo/<slug>`), `website?`, `owner?`
 - `contact` — `phone` (US), `email?` (leave out if they don't publish one),
-  `hours`, `locality`, `region`
+  `hours`, `street?` + `postalCode?` (only a published shop or office
+  address; leave out for a home-based business), `locality`, `region`
 - `serviceAreas`, `founded?`, `reviewsUrl?`, `social?` (`{ "Facebook": url }`),
   `utilityBar?`
 - `look` — `fresh` | `warm` | `rugged` | `natural` (by trade; see

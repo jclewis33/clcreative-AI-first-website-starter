@@ -84,6 +84,8 @@ export function localBusinessJsonLd(siteUrl: string = SITE.url) {
     founder: { "@type": "Person", name: SITE.founder },
     address: {
       "@type": "PostalAddress",
+      streetAddress: SITE.address.street || undefined,
+      postalCode: SITE.address.postalCode || undefined,
       addressLocality: SITE.address.locality,
       addressRegion: SITE.address.region,
       addressCountry: SITE.address.country,

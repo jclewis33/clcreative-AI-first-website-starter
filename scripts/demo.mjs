@@ -467,16 +467,20 @@ async function main() {
     "src/styles/variables/colors.css",
   ].forEach((f) => written.add(f));
   // setup keeps the current value for an empty answer; a prospect with no
-  // published email must not inherit the starter's placeholder.
+  // published email (or street address) must not inherit the starter's
+  // placeholder or a previous run's value.
   if (!DRY_RUN) {
-    const site = await fs.readFile(at("src/config/site.ts"), "utf8");
-    await fs.writeFile(
-      at("src/config/site.ts"),
-      site.replace(
-        /(\bemail\s*:\s*)"(?:\\.|[^"])*"/,
-        (_, lead) => `${lead}${JSON.stringify(demo.contact.email ?? "")}`,
-      ),
-    );
+    let site = await fs.readFile(at("src/config/site.ts"), "utf8");
+    for (const [key, value] of [
+      ["email", demo.contact.email],
+      ["street", demo.contact.street],
+      ["postalCode", demo.contact.postalCode],
+    ])
+      site = site.replace(
+        new RegExp(`(\\b${key}\\s*:\\s*)"(?:\\\\.|[^"])*"`),
+        (_, lead) => `${lead}${JSON.stringify(value ?? "")}`,
+      );
+    await fs.writeFile(at("src/config/site.ts"), site);
   }
 
   // 3. Services.
