@@ -169,6 +169,12 @@ interface Props extends HTMLAttributes<"section"> {
    */
   overlay?: HeroOverlay;
 
+  /**
+   * Background only: fill most of the screen. `false` for a short hero on
+   * an inner page (contact). @default true
+   */
+  minHeight?: boolean;
+
   /** Layout. @default 'background' with an image, else 'text' */
   variant?: HeroVariant;
 
@@ -256,6 +262,7 @@ const {
   imageFit = "cover",
   imageBackdrop,
   overlay = "bottom",
+  minHeight: minHeightProp = true,
   variant: variantProp,
   ctaStyle = "buttons",
   ctaNote,
@@ -345,7 +352,9 @@ const backdropUrl =
   render && heading && (
     <Section
       theme={theme}
-      minHeight={variant === "background" && hasPhoto && !formCard}
+      minHeight={
+        minHeightProp && variant === "background" && hasPhoto && !formCard
+      }
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
       id={id}

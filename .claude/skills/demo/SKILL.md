@@ -345,6 +345,9 @@ no warm color cast. No text, no logos."
   hero, tilted or murky shots.
 - **Never** a street photo of their house, even when it's their listed
   address.
+- **Contact page photo** (`home.contact.image`): sits behind the heading
+  under a dark overlay — a trade texture (copper and valves, tools), not a
+  person.
 - **Their mascot or cartoon** goes on the About page hero (`about.imageFit:
 "cutout"`, transparent PNG via `images_remove_background`), not the home
   hero.
