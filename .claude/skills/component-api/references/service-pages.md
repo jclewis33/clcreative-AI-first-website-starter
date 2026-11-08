@@ -35,7 +35,8 @@ To remove a service, delete its file and its photos.
 | `scope`                                         | WorkScope "what we work on": `intro`, `paragraphs` (1–3, about THIS work), icon rows, and a tall photo (`image`/`imageAlt`, else `cardImage`) |
 | `included`                                      | IncludedList — checklist + exactly 2 photos                                                                                                   |
 | `process` (optional)                            | ProcessSteps; omit to use `src/data/process.ts`                                                                                               |
-| `reviews` (optional)                            | Reviews; omit to leave the section out                                                                                                        |
+| `reviews` (optional)                            | Reviews; omit to leave the section out (a prospect demo fills it with the home reviews). 4+ scroll across the screen                          |
+| `reviewSummary` (optional)                      | `{ rating, count? }` — the summary line over the reviews                                                                                      |
 | `faqs`                                          | FAQ section + FAQPage schema (2 or more, plain text)                                                                                          |
 | `cta`                                           | CallBand heading and line                                                                                                                     |
 

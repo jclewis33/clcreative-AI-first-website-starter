@@ -504,6 +504,15 @@ async function main() {
       return `./images/${file}`;
     };
     service.order ??= (index + 1) * 10;
+    // A service with no reviews of its own shows the business's (home)
+    // reviews and rating: real reviews belong on every service page.
+    if (!service.reviews?.length && demo.home.reviews?.items?.length)
+      service.reviews = structuredClone(demo.home.reviews.items);
+    if (!service.reviewSummary && demo.home.reviews?.rating)
+      service.reviewSummary = {
+        rating: demo.home.reviews.rating,
+        ...(demo.home.reviews.count ? { count: demo.home.reviews.count } : {}),
+      };
     service.cardImage = await image(service.cardImage, "card", 2400);
     service.hero.image = await image(service.hero.image, "hero", 2400);
     if (service.scope.image)

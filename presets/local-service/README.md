@@ -45,6 +45,7 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   and only with real material
 - `services` — 1 to 8 entries in the service-file shape
   (`src/content.config.ts`, guide: `.claude/skills/component-api/references/service-pages.md`)
-  plus a `slug`
+  plus a `slug`. A service without its own `reviews` gets the
+  `home.reviews` items and rating, so every service page carries real reviews
 - `notes.confirmOrCut` — everything inferred rather than found, for Casey to
   check before sending

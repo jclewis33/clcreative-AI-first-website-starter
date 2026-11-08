@@ -223,6 +223,13 @@ const services = defineCollection({
             .min(1),
         })
         .optional(),
+      /** The rating summary over the reviews ("5 out of 5 · Based on 14 reviews"). */
+      reviewSummary: z
+        .object({
+          rating: z.number().min(1).max(5),
+          count: z.number().int().positive().optional(),
+        })
+        .optional(),
       reviews: z
         .array(
           z
