@@ -474,8 +474,11 @@ const backdropUrl =
     }
 
     @media (width >= 75em) {
-      .hero_photo {
-        inset-inline-start: 34%;
+      /* Section's background slot stretches its children to the full
+         width; this one is the right two-thirds. */
+      .hero_wrap .hero_photo {
+        inset-inline: auto 0;
+        width: 66%;
       }
 
       .hero_scrim {
