@@ -621,9 +621,11 @@ const linkColumns =
       font-size: var(--text-small-size);
     }
 
-    /* Social section — pushed to bottom of the logo column */
+    /* Social section — pushed to the bottom of the logo column by its auto
+       top margin (in the grid and in the stacked flex column alike). No
+       align-self: in the stacked column that axis is horizontal, and "end"
+       pushed the block to the right edge on phones. */
     .footer_social_wrap {
-      align-self: end;
       margin-top: auto;
     }
 

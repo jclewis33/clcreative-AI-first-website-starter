@@ -22,12 +22,18 @@ interface Props {
 }
 
 const {
+  variant = "navbar",
   href = "/",
   class: className = "",
   ariaLabel = `${LOGO_LABEL} logo`,
   width = "100%",
   height = "100%",
 } = Astro.props as Props;
+
+/* A round or square logo (a badge, a seal) is roughly as tall as it is
+   wide, so at the wordmark's height its lettering is unreadable — it gets
+   a taller box. */
+const isBadge = LOGO_IMAGE ? LOGO_IMAGE.width / LOGO_IMAGE.height < 1.4 : false;
 ---
 
 <a href={href} aria-label={ariaLabel} class={className}>
@@ -40,7 +46,14 @@ const {
   {
     LOGO_IMAGE && (
       <span
-        class:list={["logo_img_wrap", { "is-plate": LOGO_IMAGE.plate }]}
+        class:list={[
+          "logo_img_wrap",
+          {
+            "is-plate": LOGO_IMAGE.plate,
+            "is-badge": isBadge,
+            "is-footer": isBadge && variant === "footer",
+          },
+        ]}
         data-theme={LOGO_IMAGE.plate ? "light" : undefined}
       >
         <img
@@ -95,6 +108,16 @@ const {
       width: auto;
       max-width: 100%;
       object-fit: contain;
+    }
+
+    /* A badge logo: taller, so its lettering reads. In the navbar it sets
+       the bar's height; in the footer it has room to be bigger. */
+    .logo_img_wrap.is-badge {
+      height: 3.75rem;
+    }
+
+    .logo_img_wrap.is-badge.is-footer {
+      height: 7rem;
     }
 
     .logo_img_wrap.is-plate {

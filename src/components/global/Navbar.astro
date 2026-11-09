@@ -1357,6 +1357,13 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
    NAV LOGO
    ===================================================== */
 
+    /* A badge logo (Logo's is-badge: a round or square file) is taller than
+       the default bar. The bar grows to hold it, set on the root so every
+       --nav-height consumer (page-top padding, the mobile menu) follows. */
+    :root:has(.nav_logo_wrap .logo_img_wrap.is-badge) {
+      --nav-height: 4.75rem;
+    }
+
     .nav_logo_wrap {
       flex: none;
       justify-content: flex-start;
