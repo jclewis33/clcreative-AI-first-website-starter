@@ -280,6 +280,10 @@ const content = await slotContent(Astro.slots);
   instructions (rewrite — the dangerous ones). Cross-file pairs — a custom
   property set in one file and read in another — have no compiler tying the
   ends together; change both in one commit.
+- **Every phone number on the site is a tap-to-call `tel:` link** — nav,
+  utility bar, CTAs, footer, FAQ answers, copy. Numbers typed into plain
+  text go through `linkPhones()` (`@/lib/phone-links`); a new component
+  that shows text with numbers in it must do the same.
 - **Site-wide values** (email, phone, URL, brand name, socials) come from
   `SITE` in `src/config/site.ts` — never hardcode. The site
   URL lives in `site.shared.mjs` (the config-context leaf). A content

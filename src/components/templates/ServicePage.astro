@@ -143,7 +143,14 @@ const ownModal = !SITE.quote;
     steps={process.steps}
   />
 
-  <Reviews render={Boolean(s.reviews?.length)} reviews={s.reviews ?? []} />
+  {/* Four or more reviews scroll across the screen; fewer sit as cards. */}
+  <Reviews
+    render={Boolean(s.reviews?.length)}
+    reviews={s.reviews ?? []}
+    rating={s.reviewSummary?.rating}
+    count={s.reviewSummary?.count}
+    layout={(s.reviews?.length ?? 0) >= 4 ? "marquee" : "cards"}
+  />
 
   <FAQ eyebrow="Questions" items={faqs} />
 

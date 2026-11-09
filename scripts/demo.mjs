@@ -262,11 +262,14 @@ async function main() {
     holder[key] = `__IMAGE_${homeImports.length - 1}__`;
   }
   await homeImage(home.hero, "image", "hero");
+  await homeImage(home.hero, "imageBackdrop", "hero-backdrop", 1600);
   await homeImage(home.process, "image", "process");
   await homeImage(home.photoBand, "image", "photo-band");
   await homeImage(home.story, "image", "story");
   await homeImage(home.why, "image", "why");
   await homeImage(home.about, "image", "about");
+  await homeImage(home.about, "imageBackdrop", "about-backdrop", 1600);
+  await homeImage(home.about, "storyImage", "about-story");
   await homeImage(home.contact, "image", "contact");
   await homeImage(home.callBand, "image", "call-band");
   for (const [i, job] of (home.recentWork?.items ?? []).entries())
@@ -480,6 +483,10 @@ async function main() {
         new RegExp(`(\\b${key}\\s*:\\s*)"(?:\\\\.|[^"])*"`),
         (_, lead) => `${lead}${JSON.stringify(value ?? "")}`,
       );
+    site = site.replace(
+      /(\bsmsOptIn\s*:\s*)(?:true|false)/,
+      (_, lead) => `${lead}${demo.smsOptIn ? "true" : "false"}`,
+    );
     await fs.writeFile(at("src/config/site.ts"), site);
   }
 
@@ -501,6 +508,15 @@ async function main() {
       return `./images/${file}`;
     };
     service.order ??= (index + 1) * 10;
+    // A service with no reviews of its own shows the business's (home)
+    // reviews and rating: real reviews belong on every service page.
+    if (!service.reviews?.length && demo.home.reviews?.items?.length)
+      service.reviews = structuredClone(demo.home.reviews.items);
+    if (!service.reviewSummary && demo.home.reviews?.rating)
+      service.reviewSummary = {
+        rating: demo.home.reviews.rating,
+        ...(demo.home.reviews.count ? { count: demo.home.reviews.count } : {}),
+      };
     service.cardImage = await image(service.cardImage, "card", 2400);
     service.hero.image = await image(service.hero.image, "hero", 2400);
     if (service.scope.image)
@@ -580,11 +596,17 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
   }
 
   // 5. The preset's pages, and their registry descriptions.
-  for (const page of preset.PAGES)
+  for (const page of preset.PAGES) {
+    if (page.when && !page.when(demo)) {
+      if (!DRY_RUN) await fs.rm(at(page.to), { force: true });
+      continue;
+    }
     await write(
       page.to,
       await fs.readFile(path.join(presetDir, page.from), "utf8"),
     );
+  }
+  const hasReviewsPage = Boolean(demo.home.reviews?.items?.length);
   {
     let structure = await fs.readFile(at("src/data/site-structure.ts"), "utf8");
     for (const [pagePath, desc] of [
@@ -623,10 +645,20 @@ export const PRESET_PAGES: SitePage[] = [
     title: "About",
     desc: ${JSON.stringify(aboutDesc)},
     group: "main",
-  },
+  },${
+    hasReviewsPage
+      ? `
+  {
+    path: "/reviews",
+    title: "Reviews",
+    desc: ${JSON.stringify(`What customers say about ${name}, in their own words.`)},
+    group: "main",
+  },`
+      : ""
+  }
 ];
-export const PRESET_NAV: NavMenuItem[] = [{ path: "/about" }];
-export const PRESET_FOOTER: FooterLink[] = ["/about"];
+export const PRESET_NAV: NavMenuItem[] = [{ path: "/about" }${hasReviewsPage ? ', { path: "/reviews" }' : ""}];
+export const PRESET_FOOTER: FooterLink[] = ["/about"${hasReviewsPage ? ', "/reviews"' : ""}];
 `,
     );
   }

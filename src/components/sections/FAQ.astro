@@ -84,6 +84,7 @@ const {
   class: className,
   ...rest
 } = Astro.props;
+import { linkPhones } from "@/lib/phone-links";
 ---
 
 <Section
@@ -110,7 +111,7 @@ const {
           items.map((faq) => (
             <AccordionItem data-fade-in question={faq.question}>
               <Text>
-                <Fragment set:html={faq.answer} />
+                <Fragment set:html={linkPhones(faq.answer)} />
               </Text>
             </AccordionItem>
           ))

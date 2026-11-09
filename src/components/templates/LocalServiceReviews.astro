@@ -1,0 +1,113 @@
+---
+/**
+ * Local-service reviews page (/reviews).
+ *
+ * Every review in `home.reviews` in full (`full`, else the short `text` the
+ * home page shows), each with its own star count, under a short hero with
+ * the overall rating → a link to all reviews on Google (SITE.reviewsUrl) →
+ * the call band. Real, attributed 4- and 5-star reviews only: the data
+ * never holds anything else, so the page never needs to filter.
+ *
+ * Installed by `npm run demo` (presets/local-service) when the demo has
+ * reviews; without them there is no page and no nav link.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import { getServices } from "@/lib/services";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { SITE } from "@/config/site";
+import type { LocalServiceHomeData } from "@/lib/local-service-home";
+
+interface Props {
+  /**
+   * **LocalServiceReviews** — the reviews page, from the same `home` data
+   * as the home page. Renders the reviews in full; nothing when there are
+   * none.
+   *
+   * @example
+   * <LocalServiceReviews home={HOME} />
+   */
+  docs?: string;
+
+  /** The site's content — see LocalServiceHomeData (src/lib/local-service-home.ts). */
+  home: LocalServiceHomeData;
+}
+
+const { home } = Astro.props;
+const { reviews, callBand } = home;
+const items = (reviews?.items ?? []).map((r) => ({
+  ...r,
+  text: r.full ?? r.text,
+}));
+const services = await getServices();
+const estimateCta = { label: home.estimate.label, modal: ESTIMATE_MODAL_ID };
+const ownModal = !SITE.quote;
+const projectOptions = home.leadForm.projectOptions ?? [
+  ...services.map((s) => ({ label: s.data.title, value: s.id })),
+  { label: "Something else", value: "other" },
+];
+const proof = reviews?.rating
+  ? {
+      rating: reviews.rating,
+      text: `${reviews.rating.toFixed(1)} on Google${
+        reviews.count ? ` · ${reviews.count} reviews` : ""
+      }`,
+    }
+  : undefined;
+
+if (import.meta.env.DEV && !items.length)
+  console.warn(
+    "[LocalServiceReviews] No reviews in home.reviews; the page is empty.",
+  );
+---
+
+<BaseLayout
+  title={`Reviews | ${SITE.name}`}
+  description={`What customers say about ${SITE.name}, in their own words.`}
+  canonical={`${SITE.url}/reviews`}
+>
+  <Hero
+    variant="text"
+    eyebrow="Reviews"
+    heading="What our customers <strong>say about us</strong>"
+    text="Real reviews from real customers, in their own words."
+    proof={proof}
+    proofPosition="above"
+    primaryCta={estimateCta}
+    badge={false}
+  />
+
+  <Reviews
+    heading="In their own words"
+    reviews={items}
+    layout="cards"
+    allReviewsLabel="See all our reviews on Google"
+  />
+
+  <CallBand
+    heading={callBand.heading}
+    text={callBand.text}
+    variant={callBand.variant}
+    image={callBand.image}
+    imageAlt={callBand.imageAlt}
+    ctaNote={callBand.ctaNote}
+    secondaryCta={estimateCta}
+  />
+
+  {
+    ownModal && (
+      <LeadFormModal
+        id={ESTIMATE_MODAL_ID}
+        formId="contact"
+        heading={home.estimate.heading}
+        text={home.estimate.text}
+        fields="steps"
+        stepQuestion={home.estimate.question}
+        projectOptions={projectOptions}
+      />
+    )
+  }
+</BaseLayout>

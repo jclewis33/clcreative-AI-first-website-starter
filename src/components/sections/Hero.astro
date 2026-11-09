@@ -1,6 +1,7 @@
 ---
 import type { HTMLAttributes, ComponentProps } from "astro/types";
 import type { ImageMetadata } from "astro";
+import { getImage } from "astro:assets";
 import Section from "@/components/ui/Section.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
@@ -12,6 +13,8 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
 import CtaPanel from "@/components/ui/CtaPanel.astro";
 import TrustBadges from "@/components/ui/TrustBadges.astro";
+import LeadForm from "@/components/form/LeadForm.astro";
+import type { FormId } from "@/config/forms";
 import type { SectionCta } from "@/lib/cta";
 import { SITE } from "@/config/site";
 
@@ -31,11 +34,48 @@ type HeroCrumb = { label: string; href?: string };
 type HeroProof = { rating?: number; text: string };
 type HeroBadge = { value: string; label: string };
 type HeroFocus = { x: number; y: number };
+type HeroImageFit =
+  /** A photo filling its rounded box (cropped to fit) */
+  | "cover"
+  /** A transparent cut-out (a mascot, a person): no box, whole and anchored to the bottom, its bottom edge fading out */
+  | "cutout";
+type HeroOverlay =
+  /** Darkens toward the bottom, evenly across (any photo) */
+  | "bottom"
+  /** The photo sits on the right, its left edge melting into the background behind the text; a full, evenly tinted photo on phones */
+  | "side";
 type HeroCtaStyle =
   /** The buttons in a row: main, phone, then the optional third */
   | "buttons"
   /** The main button, "or", and "Call or text us" + the number on one tinted panel */
-  | "panel";
+  | "panel"
+  /** The estimate form itself on a card beside the text (needs `form`), the phone button under the text */
+  | "form";
+type HeroForm = {
+  /** Which entry in src/config/forms.ts it submits as. */
+  formId: FormId;
+  /** @default 'Request a free estimate' */
+  heading?: string;
+  text?: string;
+  /** @default 'What can we help with?' */
+  messageLabel?: string;
+  /** @default 'Get my free estimate' */
+  submitLabel?: string;
+  /**
+   * With choices, a two-step form: one tap on a tile (the project), then
+   * the contact fields. Without, the contact fields straight away.
+   */
+  projectOptions?: { label: string; value: string }[];
+  /** The step-1 question over the tiles. @default 'What can we help with?' */
+  stepQuestion?: string;
+  /** Just Name, Phone and an optional note (LeadForm `compact`). @default true */
+  compact?: boolean;
+};
+type HeroProofPosition =
+  /** Under the buttons */
+  | "below"
+  /** A pill above the headline: proof before the pitch */
+  | "above";
 type HeroTrust = { label: string; image?: ImageMetadata | string };
 type HeroHeadingSize =
   /** The display size — a big, punchy headline */
@@ -48,7 +88,9 @@ interface Props extends HTMLAttributes<"section"> {
    * **Hero** — the first section of a local-service page.
    *
    * - `variant` — `'background'` (photo behind the text), `'split'` (photo
-   *   on the right), `'text'` (no photo) or `'centered'` (everything
+   *   on the right, as tall as the text beside it; square once the columns
+   *   stack — set `imagePosition` to keep faces in both crops), `'text'`
+   *   (no photo) or `'centered'` (everything
    *   centred, a wide photo underneath). Defaults to `'background'` when
    *   an `image` is given, else `'text'`.
    * - `heading` — the H1; HTML allowed, `<strong>` marks the accent words
@@ -103,17 +145,54 @@ interface Props extends HTMLAttributes<"section"> {
   /** Focal point of the photo, as percentages. */
   imagePosition?: HeroFocus;
 
+  /**
+   * Split only: `'cover'` (a photo filling its box) or `'cutout'` (a
+   * transparent PNG shown whole with no box, sitting on the hero's
+   * background, its bottom edge fading out). @default 'cover'
+   */
+  imageFit?: HeroImageFit;
+
+  /**
+   * Cutout only: a texture behind the subject (diamond plate, brick, wood
+   * grain), drawn faint and fading out toward the text so the cut-out
+   * stands in a space instead of floating on a flat colour. The cut-out
+   * always gets a soft glow behind it; this adds the texture.
+   */
+  imageBackdrop?: ImageMetadata | string;
+
+  /**
+   * Background only: how the photo meets the text. `'side'` sets the photo
+   * on the right with its left edge fading into the background, so a
+   * subject there (a truck, a team) stays bright and the text sits on
+   * plain colour.
+   * @default 'bottom'
+   */
+  overlay?: HeroOverlay;
+
+  /**
+   * Background only: fill most of the screen. `false` for a short hero on
+   * an inner page (contact). @default true
+   */
+  minHeight?: boolean;
+
   /** Layout. @default 'background' with an image, else 'text' */
   variant?: HeroVariant;
 
   /**
    * How the buttons show. `'panel'` = the main button, "or", and the phone
-   * on one panel (needs `primaryCta`). @default 'buttons'
+   * on one panel (needs `primaryCta`). `'form'` = the estimate form on a
+   * card beside the text (needs `form`). @default 'buttons'
    */
   ctaStyle?: HeroCtaStyle;
 
   /** Small line under the main button in the panel, e.g. "And claim $100 off". */
   ctaNote?: string;
+
+  /**
+   * `ctaStyle="form"` only: the form on the card beside the text. Takes the
+   * photo's place in `split`; over a `background` photo it sits on the right.
+   */
+  form?: HeroForm;
 
   /** Headline size: `'display'` (big) or `'h1'` (calmer, photo-led). @default 'display' */
   headingSize?: HeroHeadingSize;
@@ -139,6 +218,9 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Trust line under the buttons. `rating` adds that many of 5 stars. */
   proof?: HeroProof;
+
+  /** Where `proof` sits: `'below'` the buttons, or `'above'` the headline as a pill. @default 'below' */
+  proofPosition?: HeroProofPosition;
 
   /** Credential badges under the buttons — only ones the business holds. */
   trust?: HeroTrust[];
@@ -177,9 +259,14 @@ const {
   image,
   imageAlt,
   imagePosition,
+  imageFit = "cover",
+  imageBackdrop,
+  overlay = "bottom",
+  minHeight: minHeightProp = true,
   variant: variantProp,
   ctaStyle = "buttons",
   ctaNote,
+  form,
   headingSize = "display",
   primaryCta,
   showPhone = true,
@@ -187,6 +274,7 @@ const {
   secondaryCta,
   breadcrumbs,
   proof,
+  proofPosition = "below",
   trust,
   badge: badgeProp,
   theme: themeProp,
@@ -243,20 +331,45 @@ if (import.meta.env.DEV && render) {
     );
 }
 const panel = ctaStyle === "panel" && Boolean(primaryCta);
+if (import.meta.env.DEV && render && ctaStyle === "form" && !form)
+  console.warn('[Hero] ctaStyle="form" needs `form`; showing buttons.');
+/* The form card takes the second column; the text column keeps only the
+   phone button (the form is the main call to action). */
+const formCard = ctaStyle === "form" && form ? form : undefined;
+const proofPill = proofPosition === "above";
+/* The cut-out's texture is decoration, so it's a CSS background (no img,
+   no alt), resized once here. */
+const backdropUrl =
+  variant === "split" && hasPhoto && imageFit === "cutout" && imageBackdrop
+    ? typeof imageBackdrop === "string"
+      ? imageBackdrop
+      : (await getImage({ src: imageBackdrop, width: 1600, format: "webp" }))
+          .src
+    : undefined;
 ---
 
 {
   render && heading && (
     <Section
       theme={theme}
-      minHeight={variant === "background" && hasPhoto}
+      minHeight={
+        minHeightProp && variant === "background" && hasPhoto && !formCard
+      }
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
       id={id}
-      class:list={["hero_wrap", `is-${hasPhoto ? variant : "text"}`, className]}
+      class:list={[
+        "hero_wrap",
+        `is-${hasPhoto ? variant : "text"}`,
+        { "is-form": Boolean(formCard) },
+        {
+          "is-side": hasPhoto && variant === "background" && overlay === "side",
+        },
+        className,
+      ]}
       {...rest}
     >
-      {variant === "background" && hasPhoto && (
+      {variant === "background" && hasPhoto && overlay === "bottom" && (
         <Fragment slot="background">
           <Visual
             src={image!}
@@ -268,6 +381,27 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
           <Overlay variant="gradient" strengthTop={55} strengthBottom={80} />
         </Fragment>
       )}
+      {variant === "background" && hasPhoto && overlay === "side" && (
+        <div slot="background" class="hero_photo">
+          <Visual
+            src={image!}
+            alt={photoAlt}
+            variant="background"
+            position={imagePosition}
+            priority
+          />
+          <div class="hero_scrim" aria-hidden="true" />
+        </div>
+      )}
+
+      {backdropUrl && (
+        <div
+          slot="background"
+          class="hero_backdrop"
+          style={`--_hero-backdrop: url("${backdropUrl}")`}
+          aria-hidden="true"
+        />
+      )}
 
       {breadcrumbs?.length ? (
         <Breadcrumbs items={breadcrumbs} class="hero_crumbs" />
@@ -275,21 +409,36 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
 
       <Layout
         variant={
-          variant === "split" && hasPhoto
+          formCard || (variant === "split" && hasPhoto)
             ? "columns"
             : variant === "centered"
               ? "stack-centered"
               : "stack"
         }
-        ratio="6-6"
-        verticalAlign="center"
+        ratio={formCard ? "7-5" : "6-6"}
+        verticalAlign={formCard ? "start" : "center"}
         class="hero_layout u-hero-fade"
       >
+        {proofPill && proof?.text && (
+          <p class="hero_proof is-pill">
+            {stars > 0 && (
+              <span
+                class="hero_stars"
+                role="img"
+                aria-label={`${proof.rating} out of 5 stars`}
+              >
+                {"★".repeat(stars)}
+              </span>
+            )}
+            <span class="hero_proof_text">{proof.text}</span>
+          </p>
+        )}
         {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
         <Heading
           tag="h1"
           variant={headingSize === "h1" ? "h1" : "display-lg"}
           accent
+          marginBottom={4}
           class="hero_title"
         >
           <Fragment set:html={heading} />
@@ -302,7 +451,9 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
         {panel && <CtaPanel cta={primaryCta!} note={ctaNote} />}
         {!panel && (primaryCta || showPhone || secondaryCta) && (
           <ButtonWrapper>
-            {primaryCta && <CtaButton cta={primaryCta} size="large" />}
+            {primaryCta && !formCard && (
+              <CtaButton cta={primaryCta} size="large" />
+            )}
             {showPhone && (
               <CtaButton phone variant={phoneVariant} size="large" />
             )}
@@ -311,7 +462,7 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
             )}
           </ButtonWrapper>
         )}
-        {proof?.text && (
+        {!proofPill && proof?.text && (
           <p class="hero_proof">
             {stars > 0 && (
               <span
@@ -345,13 +496,49 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
           </div>
         )}
 
-        {variant === "split" && hasPhoto && (
-          <div slot="column2" class="hero_media">
+        {formCard && (
+          <div slot="column2" class="hero_form" data-theme-invert>
+            <Heading tag="h2" variant="h4" marginBottom={2}>
+              {formCard.heading ?? "Request a free estimate"}
+            </Heading>
+            {formCard.text && (
+              <Text variant="small" muted>
+                {formCard.text}
+              </Text>
+            )}
+            <LeadForm
+              formId={formCard.formId}
+              id="hero-form"
+              fields={formCard.projectOptions?.length ? "steps" : "contact"}
+              projectOptions={formCard.projectOptions}
+              stepQuestion={formCard.stepQuestion ?? "What can we help with?"}
+              compact={formCard.compact ?? true}
+              messageLabel={
+                formCard.messageLabel ??
+                (formCard.projectOptions?.length
+                  ? "Anything we should know? (optional)"
+                  : "What can we help with?")
+              }
+              submitLabel={formCard.submitLabel ?? "Get my free estimate"}
+            />
+          </div>
+        )}
+
+        {!formCard && variant === "split" && hasPhoto && (
+          <div
+            slot="column2"
+            class:list={["hero_media", { "is-cutout": imageFit === "cutout" }]}
+          >
             <Visual
               src={image!}
               alt={photoAlt}
-              ratio="landscape"
-              position={imagePosition}
+              ratio="var(--_hero-photo-ratio)"
+              position={
+                imagePosition ??
+                (imageFit === "cutout" ? { x: 50, y: 100 } : undefined)
+              }
+              fit={imageFit === "cutout" ? "contain" : "cover"}
+              transparent={imageFit === "cutout"}
               priority
             />
             {badge && (
@@ -369,8 +556,77 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
 
 <style is:global>
   @layer components {
-    .hero_wrap.is-background .hero_layout {
+    .hero_wrap.is-background:not(.is-form) .hero_layout {
       max-width: 48rem;
+    }
+
+    /* ctaStyle="form": the form on its own contrasting card. */
+    .hero_form {
+      padding: var(--space-6);
+      border-radius: var(--radius-main);
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    /* proofPosition="above": the proof as a pill over the eyebrow. */
+    .hero_proof.is-pill {
+      width: fit-content;
+      margin: 0 0 var(--space-4);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-full);
+      background-color: color-mix(
+        in oklab,
+        var(--heading-accent) 18%,
+        transparent
+      );
+      font-weight: 600;
+    }
+
+    /* overlay="side": on wide screens the photo starts a third of the way
+       in and its left edge melts into the hero's background, so the text
+       sits on plain colour and the subject on the right stays bright.
+       Narrower, the text spans the photo, so it's full width under an even,
+       strong tint. Below 75em the text column is too wide to leave the
+       subject clear. The scrim starts a hair left of the photo so its edge
+       never shows as a seam. */
+    .hero_photo {
+      position: absolute;
+      inset: 0;
+    }
+
+    .hero_scrim {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        color-mix(in oklab, var(--background) 74%, transparent),
+        color-mix(in oklab, var(--background) 88%, transparent)
+      );
+    }
+
+    @media (width >= 75em) {
+      /* Section's background slot stretches its children to the full
+         width; this one is the right two-thirds. */
+      /* The text keeps to the dark third-and-a-bit the photo leaves. */
+      .hero_wrap.is-side:not(.is-form) .hero_layout {
+        max-width: min(48rem, 50vw);
+      }
+
+      .hero_wrap .hero_photo {
+        inset-inline: auto 0;
+        width: 66%;
+      }
+
+      .hero_scrim {
+        inset-inline-start: -0.25rem;
+        background: linear-gradient(
+          to right,
+          var(--background) 0%,
+          color-mix(in oklab, var(--background) 80%, transparent) 22%,
+          color-mix(in oklab, var(--background) 25%, transparent) 50%,
+          color-mix(in oklab, var(--background) 5%, transparent) 100%
+        );
+      }
     }
 
     .hero_proof {
@@ -402,6 +658,75 @@ const panel = ctaStyle === "panel" && Boolean(primaryCta);
 
     .hero_media {
       position: relative;
+    }
+
+    /* split: a square photo once the columns stack. Side by side, the photo
+       column stretches to the text column's height and the photo fills it,
+       so a tall headline + panel isn't paired with a short landscape strip.
+       The photo is laid out absolutely there so its own size never sets the
+       row height: the text does (with a floor for short heroes). 58em is
+       Layout's default collapse width. */
+    .hero_wrap.is-split .hero_media {
+      --_hero-photo-ratio: 1 / 1;
+    }
+
+    @container (width >= 58em) {
+      .hero_wrap.is-split .hero_layout .u-layout-column-2 {
+        align-self: stretch;
+        min-height: 32rem;
+      }
+
+      .hero_wrap.is-split .hero_media {
+        --_hero-photo-ratio: auto;
+        position: absolute;
+        inset: 0;
+      }
+
+      .hero_wrap.is-split .hero_media .u-image-wrapper {
+        height: 100%;
+      }
+    }
+
+    /* cutout: the subject stands on the hero's own background (no box, no
+       corners) and its bottom edge fades out, so a cut-off waist or a
+       soft cut-out edge never reads as a hard line. */
+    .hero_media.is-cutout .u-image-wrapper {
+      border-radius: 0;
+      mask-image: linear-gradient(to bottom, black 78%, transparent);
+    }
+
+    /* A soft light behind the subject's head and shoulders, so a painted
+       or photographed subject reads as lit, not pasted on. */
+    .hero_media.is-cutout::before {
+      content: "";
+      position: absolute;
+      inset: 0 -10% 10%;
+      background: radial-gradient(
+        closest-side,
+        color-mix(in oklab, var(--text) 16%, transparent),
+        color-mix(in oklab, var(--heading-accent) 22%, transparent) 55%,
+        transparent
+      );
+      pointer-events: none;
+    }
+
+    .hero_media.is-cutout .u-image-wrapper {
+      position: relative;
+    }
+
+    /* The texture: faint, strongest behind the subject (right on desktop,
+       bottom on phones; the bottom-right ellipse covers both) and gone
+       before it reaches the text. */
+    .hero_backdrop {
+      position: absolute;
+      inset: 0;
+      background: var(--_hero-backdrop) center / cover;
+      opacity: 0.14;
+      mask-image: radial-gradient(
+        ellipse 75% 95% at 85% 100%,
+        black 30%,
+        transparent
+      );
     }
 
     .hero_badge {

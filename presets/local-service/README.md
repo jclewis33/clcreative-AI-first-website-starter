@@ -9,6 +9,7 @@ skill (`.claude/skills/demo/SKILL.md`) explains the whole workflow and
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `preset.mjs`    | The `demo.json` schema (validated before anything is written), the pages this preset installs, the nav links a demo hides      |
 | `index.astro`   | The home page: `LocalServiceHome` + the generated `src/data/home.ts`                                                           |
+| `reviews.astro` | The reviews page (`/reviews`, in the nav): `LocalServiceReviews` — only when `home.reviews` is set                             |
 | `contact.astro` | The contact page: `LocalServiceContact`                                                                                        |
 | `fixture/`      | A fictional prospect (Brightline Electric) — `npm run check:demo` builds it; also the worked example of a complete `demo.json` |
 
@@ -28,6 +29,8 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
 - `contact` — `phone` (US), `email?` (leave out if they don't publish one),
   `hours`, `street?` + `postalCode?` (only a published shop or office
   address; leave out for a home-based business), `locality`, `region`
+- `smsOptIn?` — the Phone field and SMS consent box on the demo's forms
+  (default on; `false` for email-only, as on a real site before A2P approval)
 - `serviceAreas`, `founded?`, `reviewsUrl?`, `social?` (`{ "Facebook": url }`),
   `utilityBar?`
 - `look` — `fresh` | `warm` | `rugged` | `natural` (by trade; see
@@ -45,6 +48,7 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   and only with real material
 - `services` — 1 to 8 entries in the service-file shape
   (`src/content.config.ts`, guide: `.claude/skills/component-api/references/service-pages.md`)
-  plus a `slug`
+  plus a `slug`. A service without its own `reviews` gets the
+  `home.reviews` items and rating, so every service page carries real reviews
 - `notes.confirmOrCut` — everything inferred rather than found, for Casey to
   check before sending

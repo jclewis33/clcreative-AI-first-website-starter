@@ -9,6 +9,7 @@ import Quote from "@/components/ui/Quote.astro";
 import SectionHeader from "@/components/ui/SectionHeader.astro";
 import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
+import Marquee from "@/components/ui/Marquee.astro";
 import { SITE } from "@/config/site";
 
 type Review = {
@@ -19,6 +20,8 @@ type Review = {
   avatar?: ImageMetadata | string;
   /** Alt text for `avatar` — usually the reviewer's name. */
   avatarAlt?: string;
+  /** This review's stars, 1–5 (the starred cards and marquee). @default 5 */
+  rating?: number;
 };
 type ReviewsLayout =
   /** First review large on a dark card, the next two stacked beside it */
@@ -26,7 +29,9 @@ type ReviewsLayout =
   /** Three across */
   | "grid"
   /** Three across, five stars on every card, the rating centred above — the home-service default */
-  | "cards";
+  | "cards"
+  /** The same starred cards in a row scrolling across the full width of the screen (pauses on hover; still with reduced motion) */
+  | "marquee";
 type ReviewsTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -37,7 +42,8 @@ interface Props extends HTMLAttributes<"section"> {
    * - `reviews` — `{ text, name, meta?, avatar?, avatarAlt? }[]`, typed in by you or from a service file
    * - `rating`, `count` — the summary badge ("4.9 out of 5 · Based on 127 reviews")
    * - `layout` — `'featured'` (default with 3+ reviews; the first review
-   *   sits large on a dark card) or `'grid'`
+   *   sits large on a dark card), `'grid'`, `'cards'` (starred cards) or
+   *   `'marquee'` (the starred cards scrolling across the full width)
    * - `allReviewsHref` — "Read all reviews" link (default `SITE.reviewsUrl`;
    *   hidden when empty)
    *
@@ -110,6 +116,9 @@ const {
 const layout: ReviewsLayout =
   layoutProp ?? (reviews.length >= 3 ? "featured" : "grid");
 const [featured, ...others] = reviews;
+/* cards and marquee share the centred header, gold card stars and the
+   "Read all reviews" button under the cards. */
+const rated = layout === "cards" || layout === "marquee";
 const stars = rating ? Math.max(0, Math.min(5, Math.round(rating))) : 0;
 
 if (import.meta.env.DEV && render) {
@@ -119,9 +128,16 @@ if (import.meta.env.DEV && render) {
     console.warn(
       `[Reviews] The featured layout shows 3 reviews; ${reviews.length - 3} more are hidden. Use layout="grid" to show them all.`,
     );
-  if (layoutProp && !["featured", "grid", "cards"].includes(layoutProp))
+  if (
+    layoutProp &&
+    !["featured", "grid", "cards", "marquee"].includes(layoutProp)
+  )
     console.warn(`[Reviews] Unknown layout "${layoutProp}".`);
 }
+
+/** A starred card's stars: the review's own rating, else 5. */
+const cardStars = (review: Review) =>
+  Math.max(1, Math.min(5, Math.round(review.rating ?? 5)));
 
 /** A review's photo in the shape Quote takes (alt falls back to the name). */
 const reviewAvatar = (review: Review) =>
@@ -136,18 +152,22 @@ const reviewAvatar = (review: Review) =>
       theme={theme}
       padding={padding}
       id={id}
-      class:list={["reviews_wrap", className]}
+      class:list={[
+        "reviews_wrap",
+        { "is-marquee": layout === "marquee" },
+        className,
+      ]}
       {...rest}
     >
       {/* The cards layout centres its header over the centred rating; the
           "Read all reviews" link moves under the cards. */}
-      {layout === "cards" && (
+      {rated && (
         <Layout variant="stack-centered" class="reviews_header">
           {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
           <Heading tag="h2">{heading}</Heading>
         </Layout>
       )}
-      {layout !== "cards" && (
+      {!rated && (
         <SectionHeader eyebrow={eyebrow} heading={heading}>
           {allReviewsHref && (
             <Button
@@ -164,7 +184,7 @@ const reviewAvatar = (review: Review) =>
       )}
 
       {rating ? (
-        <div class:list={["reviews_rating", layout === "cards" && "is-center"]}>
+        <div class:list={["reviews_rating", rated && "is-center"]}>
           <span class="reviews_stars" aria-hidden="true">
             {Array.from({ length: 5 }, (_, i) => (
               <svg
@@ -222,11 +242,14 @@ const reviewAvatar = (review: Review) =>
               <span
                 class="reviews_stars is-card"
                 role="img"
-                aria-label="5 out of 5 stars"
+                aria-label={`${cardStars(review)} out of 5 stars`}
               >
-                {Array.from({ length: 5 }, () => (
+                {Array.from({ length: 5 }, (_, i) => (
                   <svg
-                    class="reviews_star"
+                    class:list={[
+                      "reviews_star",
+                      i >= cardStars(review) && "is-empty",
+                    ]}
                     viewBox="0 0 24 24"
                     aria-hidden="true"
                   >
@@ -247,7 +270,46 @@ const reviewAvatar = (review: Review) =>
           ))}
         </Grid>
       )}
-      {layout === "cards" && allReviewsHref && (
+      {layout === "marquee" && (
+        <div class="reviews_ticker">
+          <Marquee speed={reviews.length * 12} gap={5} swipe>
+            {reviews.map((review) => (
+              <div class="marquee_item reviews_ticker_item">
+                <Card variant="stacked" class="reviews_card is-rated">
+                  <span
+                    class="reviews_stars is-card"
+                    role="img"
+                    aria-label={`${cardStars(review)} out of 5 stars`}
+                  >
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <svg
+                        class:list={[
+                          "reviews_star",
+                          i >= cardStars(review) && "is-empty",
+                        ]}
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" />
+                      </svg>
+                    ))}
+                  </span>
+                  <Quote
+                    text={review.text}
+                    name={review.name}
+                    meta={review.meta}
+                    avatar={reviewAvatar(review)}
+                    size="regular"
+                    mark="none"
+                    spread
+                  />
+                </Card>
+              </div>
+            ))}
+          </Marquee>
+        </div>
+      )}
+      {rated && allReviewsHref && (
         <div class="reviews_more">
           <Button
             variant="secondary"
@@ -259,7 +321,7 @@ const reviewAvatar = (review: Review) =>
           </Button>
         </div>
       )}
-      {layout !== "cards" && !(layout === "featured" && featured) && (
+      {!rated && !(layout === "featured" && featured) && (
         <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={5}>
           {reviews.map((review) => (
             <Card variant="stacked" class="reviews_card">
@@ -314,6 +376,30 @@ const reviewAvatar = (review: Review) =>
     .reviews_more {
       display: flex;
       justify-content: center;
+    }
+
+    /* marquee: the row runs edge to edge of the screen, outside the
+       section's container; the section clips the overhang. */
+    .reviews_wrap.is-marquee {
+      overflow-x: clip;
+    }
+
+    .reviews_ticker {
+      width: 100vw;
+      margin-inline: calc(50% - 50vw);
+    }
+
+    /* Marquee keeps its items on one line and centred; a review card
+       wraps its quote and the cards in the row share one height. */
+    .reviews_ticker_item {
+      display: flex;
+      align-self: stretch;
+      width: min(24rem, 82vw);
+      white-space: normal;
+    }
+
+    .reviews_ticker_item .reviews_card {
+      width: 100%;
     }
 
     .reviews_stars.is-card {

@@ -11,6 +11,11 @@ import CtaButton from "@/components/ui/CtaButton.astro";
 import type { SectionCta } from "@/lib/cta";
 
 type StoryReason = { title: string; text: string };
+type StorySplitImageSide =
+  /** Photo on the left, story on the right */
+  | "left"
+  /** Story on the left, photo on the right (story first on phones too) */
+  | "right";
 type StorySplitTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -21,7 +26,7 @@ interface Props extends HTMLAttributes<"section"> {
    * proof points under the story.
    *
    * - `eyebrow`, `heading`, `paragraphs` — the story
-   * - `image`, `imageAlt` — portrait photo on the left
+   * - `image`, `imageAlt` — portrait photo (left by default; `imageSide`)
    * - `reasons` — `{ title, text }[]` (four reads best)
    * - `cta` — optional text-style button
    *
@@ -47,6 +52,9 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Real alt text for the photo. Required. */
   imageAlt: string;
+
+  /** Which side the photo sits on. @default 'left' */
+  imageSide?: StorySplitImageSide;
 
   /** Optional 2×2 grid of proof points. */
   reasons?: StoryReason[];
@@ -75,6 +83,7 @@ const {
   paragraphs = [],
   image,
   imageAlt,
+  imageSide = "left",
   reasons = [],
   cta,
   theme,
@@ -103,9 +112,40 @@ if (import.meta.env.DEV && render) {
       class:list={["story-split_wrap", className]}
       {...rest}
     >
-      <Layout ratio="5-7" verticalAlign="center">
-        <Visual src={image} alt={imageAlt || heading} ratio="portrait" />
-        <Fragment slot="column2">
+      {imageSide === "left" && (
+        <Layout ratio="5-7" verticalAlign="center">
+          <Visual src={image} alt={imageAlt || heading} ratio="portrait" />
+          <Fragment slot="column2">
+            {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+            <Heading tag="h2">{heading}</Heading>
+            {paragraphs.map((p) => (
+              <Text muted>{p}</Text>
+            ))}
+            {reasons.length > 0 && (
+              <Grid
+                largeColumns={2}
+                mediumColumns={2}
+                smallColumns={1}
+                rowGap={5}
+              >
+                {reasons.map((reason) => (
+                  <div class="story-split_reason u-margin-trim">
+                    <Heading tag="h3" variant="h6" marginBottom={2}>
+                      {reason.title}
+                    </Heading>
+                    <Text variant="small" muted>
+                      {reason.text}
+                    </Text>
+                  </div>
+                ))}
+              </Grid>
+            )}
+            {cta && <CtaButton cta={cta} variant="text" />}
+          </Fragment>
+        </Layout>
+      )}
+      {imageSide === "right" && (
+        <Layout ratio="7-5" verticalAlign="center">
           {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
           <Heading tag="h2">{heading}</Heading>
           {paragraphs.map((p) => (
@@ -131,8 +171,11 @@ if (import.meta.env.DEV && render) {
             </Grid>
           )}
           {cta && <CtaButton cta={cta} variant="text" />}
-        </Fragment>
-      </Layout>
+          <Fragment slot="column2">
+            <Visual src={image} alt={imageAlt || heading} ratio="portrait" />
+          </Fragment>
+        </Layout>
+      )}
     </Section>
   )
 }

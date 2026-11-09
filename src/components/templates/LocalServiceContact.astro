@@ -2,16 +2,16 @@
 /**
  * Local-service contact page template.
  *
- * A centred hero (no breadcrumbs: a one-level page doesn't need them) with
- * a wide photo under it → the quote form beside a short sidebar
- * (call now, hours) → what happens next → "Not sure what to ask for?" as
- * photo service cards → where we work (the street map) → the FAQ.
+ * Kept short and simple: a compact hero with the photo behind the heading
+ * under a dark overlay and the call button → the two-step estimate form
+ * (a service tile, then name and phone) beside "Need help today?" and the
+ * hours → what happens next → where we work (the street map) → the FAQ.
  *
  * It promises nothing on the business's behalf: no response time, no free
  * estimate. The steps and the FAQ are the business's own (from the home
  * data) and are left out when not given; the hero line is neutral unless
- * the caller writes one. The street address shows only when
- * `SITE.address.street` is set (a published shop or office address).
+ * the caller writes one. The street address lives in the footer and the
+ * JSON-LD, not here: people on this page want to call or send the form.
  *
  * Used by the dev sample (/demo/local-service-contact) and by every
  * prospect demo generated with `npm run demo` (presets/local-service).
@@ -23,14 +23,12 @@ import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Hero from "@/components/sections/Hero.astro";
 import ProcessSteps from "@/components/sections/ProcessSteps.astro";
-import ServiceCards from "@/components/sections/ServiceCards.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import FAQ from "@/components/sections/FAQ.astro";
 import LeadForm from "@/components/form/LeadForm.astro";
 import ContactCards from "@/components/ui/ContactCards.astro";
 import { SITE } from "@/config/site";
-import { streetAddress } from "@/lib/address";
-import { getServices, servicePath } from "@/lib/services";
+import { getServices } from "@/lib/services";
 import { geoFor } from "@/lib/service-area-geo";
 import type { FAQItem } from "@/data/faqs";
 
@@ -63,7 +61,7 @@ interface Props {
   /** The hero line. @default "Send the form or call, and we'll get back to you." */
   text?: string;
 
-  /** The wide photo under the hero. Without one the hero is text only. */
+  /** The photo behind the heading (under a dark overlay). Without one the hero is text only. */
   image?: ImageMetadata | string;
 
   /** Alt text for the hero photo. */
@@ -92,20 +90,17 @@ const {
 } = Astro.props;
 
 const services = await getServices();
-const serviceItems = services.map((s) => ({
-  title: s.data.title,
-  text: s.data.cardText,
-  image: s.data.cardImage,
-  imageAlt: s.data.cardImageAlt,
-  href: servicePath(s.id),
-}));
+const projectOptions = [
+  ...services.map((s) => ({ label: s.data.title, value: s.id })),
+  { label: "Something else", value: "other" },
+];
 const geo = geoFor(SITE.serviceAreas);
 ---
 
 <BaseLayout title={title} description={description}>
   <Hero
-    variant="centered"
-    paddingBottom="xsmall"
+    variant={image ? "background" : "text"}
+    minHeight={false}
     phoneVariant="primary"
     eyebrow="Contact"
     heading={heading}
@@ -115,17 +110,18 @@ const geo = geoFor(SITE.serviceAreas);
     badge={false}
   />
 
-  <Section paddingTop="xsmall">
+  <Section>
     <Layout ratio="7-5" verticalAlign="start">
       <Heading tag="h2" variant="h3">Tell us what's going on</Heading>
       <LeadForm
         formId="contact"
         id="contact-page-form"
-        fields="quote"
-        projectOptions={services.map((s) => ({
-          label: s.data.title,
-          value: s.id,
-        }))}
+        fields="steps"
+        compact
+        stepQuestion="What can we help with?"
+        projectOptions={projectOptions}
+        messageLabel="Anything we should know? (optional)"
+        submitLabel="Send"
       />
       <ContactCards
         slot="column2"
@@ -133,10 +129,9 @@ const geo = geoFor(SITE.serviceAreas);
           heading: "Need help today?",
           text: "Call and we'll talk you through it.",
         }}
-        cards={[
-          { heading: "Hours", body: SITE.hours },
-          { heading: "Address", body: streetAddress() },
-        ].filter((card) => card.body)}
+        cards={[{ heading: "Hours", body: SITE.hours }].filter(
+          (card) => card.body,
+        )}
       />
     </Layout>
   </Section>
@@ -151,13 +146,6 @@ const geo = geoFor(SITE.serviceAreas);
       />
     )
   }
-
-  <ServiceCards
-    eyebrow="Our services"
-    heading="Not sure what to ask for?"
-    intro="Start with the closest match. We'll sort out the details together."
-    items={serviceItems}
-  />
 
   <ServiceArea
     heading={serviceArea?.heading ?? "Where we work"}

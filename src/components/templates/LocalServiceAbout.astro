@@ -100,6 +100,9 @@ const schemaCrumbs = [
     text={about?.text}
     image={heroImage}
     imageAlt={heroImageAlt}
+    imageFit={about?.image ? about.imageFit : undefined}
+    imageBackdrop={about?.image ? about.imageBackdrop : undefined}
+    theme={about?.theme}
     primaryCta={estimateCta}
     showPhone
   />
@@ -112,8 +115,9 @@ const schemaCrumbs = [
         eyebrow={story.eyebrow}
         heading={about?.storyHeading ?? story.heading}
         paragraphs={about?.paragraphs ?? story.paragraphs}
-        image={story.image}
-        imageAlt={story.imageAlt}
+        image={about?.storyImage ?? story.image}
+        imageAlt={(about?.storyImage && about.storyImageAlt) || story.imageAlt}
+        imageSide={story.imageSide}
         reasons={story.reasons}
       />
     )

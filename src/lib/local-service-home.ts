@@ -18,7 +18,16 @@ import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
 type HomeImage = ImageMetadata | string;
 type HomeItem = { title: string; text: string };
 type HomeStat = { value: string; label: string };
-type HomeReview = { text: string; name: string; meta?: string };
+type HomeReview = {
+  /** The line the home page and service pages show (an excerpt is fine). */
+  text: string;
+  name: string;
+  meta?: string;
+  /** The whole review, word for word, for the /reviews page. @default text */
+  full?: string;
+  /** Its stars — 4 or 5 only; the site never shows a worse review. @default 5 */
+  rating?: number;
+};
 type HomeOption = { label: string; value: string };
 /** An SVG imported as a component (ServiceArea's interactive map). */
 type HomeMap = (props: Record<string, unknown>) => unknown;
@@ -59,6 +68,15 @@ export interface LocalServiceHomeData {
      */
     image?: HomeImage;
     imageAlt?: string;
+    /** `cutout` = `image` is a transparent PNG (their mascot) shown whole, with no box. */
+    imageFit?: "cover" | "cutout";
+    /** Cutout only: a faint texture behind it (diamond plate, brick). */
+    imageBackdrop?: HomeImage;
+    /** Hero colour theme; `dark` suits a cut-out. */
+    theme?: "light" | "dark" | "brand";
+    /** The story section's photo on the About page. @default story.image */
+    storyImage?: HomeImage;
+    storyImageAlt?: string;
     /** The story section's heading on the About page. @default story.heading */
     storyHeading?: string;
     /** Longer story paragraphs for the About page. @default story.paragraphs */
@@ -98,10 +116,25 @@ export interface LocalServiceHomeData {
     text?: string;
     image: HomeImage;
     imageAlt: string;
+    /** Focal point in percent; keeps faces in the crop (the split photo is tall on desktop, square on phones). */
+    imagePosition?: { x: number; y: number };
+    /** Background only: `side` = dark behind the text, clearing to the right so a truck or team there stays bright. */
+    overlay?: "bottom" | "side";
     /** Photo behind the text (default) or beside it. */
     variant?: "background" | "split";
-    /** `panel` = the estimate button, "or", and the phone on one panel. */
-    ctaStyle?: "buttons" | "panel";
+    /** Split only: a photo in a box (`cover`, default) or a transparent cut-out such as a mascot (`cutout`). */
+    imageFit?: "cover" | "cutout";
+    /** Cutout only: a faint texture behind the cut-out (diamond plate, brick), fading toward the text. */
+    imageBackdrop?: HomeImage;
+    /** Hero colour theme; `dark` suits a cut-out. Default: dark for background, else the page's. */
+    theme?: "light" | "dark" | "brand";
+    /** `panel` = the estimate button, "or", and the phone on one panel; `form` = the estimate form itself on a card beside the text. */
+    ctaStyle?: "buttons" | "panel" | "form";
+    /** `form` only: the card's heading and line. @default estimate.heading and estimate.text */
+    formHeading?: string;
+    formText?: string;
+    /** `above` = the proof line as a pill over the headline. @default 'below' */
+    proofPosition?: "below" | "above";
     /** Small line under the estimate button in the panel ("And claim $100 off"). */
     ctaNote?: string;
     /** Star line under the CTAs — only with a real rating to quote. */
@@ -278,6 +311,8 @@ export interface LocalServiceHomeData {
     image: HomeImage;
     imageAlt: string;
     reasons?: HomeItem[];
+    /** Which side the photo sits on. @default 'left' */
+    imageSide?: "left" | "right";
     /** The showcase layout's text link to the estimate form ("Book time with me"). */
     ctaLabel?: string;
   };
@@ -287,8 +322,8 @@ export interface LocalServiceHomeData {
     rating?: number;
     count?: number;
     items: HomeReview[];
-    /** @default 'cards' (stars on every card) */
-    layout?: "cards" | "featured" | "grid";
+    /** @default 'marquee' with 4+ reviews (scrolling across the screen), else 'cards' */
+    layout?: "cards" | "featured" | "grid" | "marquee";
   };
 
   leadForm: {

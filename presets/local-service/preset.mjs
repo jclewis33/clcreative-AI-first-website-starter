@@ -32,6 +32,14 @@ const homeSchema = z.object({
       text: text.optional(),
       image: image.optional(),
       imageAlt: text.optional(),
+      /** "cutout" = `image` is a transparent PNG (their mascot) with no box. */
+      imageFit: z.enum(["cover", "cutout"]).optional(),
+      /** Cutout only: a faint texture behind it (diamond plate, brick). */
+      imageBackdrop: image.optional(),
+      theme: z.enum(["light", "dark", "brand"]).optional(),
+      /** The About page's story photo (default: the home story's). */
+      storyImage: image.optional(),
+      storyImageAlt: text.optional(),
       storyHeading: text.optional(),
       paragraphs: z.array(text).optional(),
     })
@@ -69,9 +77,29 @@ const homeSchema = z.object({
     text: text.optional(),
     image,
     imageAlt: text,
+    /** Focal point in percent; keep faces in the crop (split: tall on desktop, square on phones). */
+    imagePosition: z
+      .object({
+        x: z.number().min(0).max(100),
+        y: z.number().min(0).max(100),
+      })
+      .optional(),
     variant: z.enum(["background", "split"]).optional(),
+    /** Background only: "side" = dark behind the text, the subject on the right stays bright. */
+    overlay: z.enum(["bottom", "side"]).optional(),
+    /** Split only: "cutout" = a transparent PNG (their mascot, a person cut out) with no box. */
+    imageFit: z.enum(["cover", "cutout"]).optional(),
+    /** Cutout only: a faint texture behind it (diamond plate, brick), fading toward the text. */
+    imageBackdrop: image.optional(),
+    /** "dark" suits a cut-out. */
+    theme: z.enum(["light", "dark", "brand"]).optional(),
     /** "panel" = estimate button + "or" + "Call or text us". */
-    ctaStyle: z.enum(["buttons", "panel"]).default("panel"),
+    ctaStyle: z.enum(["buttons", "panel", "form"]).default("form"),
+    /** "form" only: the form card's heading and line (default: the estimate's). */
+    formHeading: text.optional(),
+    formText: text.optional(),
+    /** "above" = the stars line as a pill over the headline. */
+    proofPosition: z.enum(["below", "above"]).default("above"),
     ctaNote: text.optional(),
     proof: z
       .object({ rating: z.number().min(1).max(5).optional(), text })
@@ -280,6 +308,8 @@ const homeSchema = z.object({
       image,
       imageAlt: text,
       reasons: z.array(item).optional(),
+      /** "right" puts the photo on the right. */
+      imageSide: z.enum(["left", "right"]).optional(),
       ctaLabel: text.optional(),
     })
     .optional(),
@@ -289,9 +319,20 @@ const homeSchema = z.object({
       rating: z.number().min(1).max(5).optional(),
       count: z.number().int().positive().optional(),
       items: z
-        .array(z.object({ text, name: text, meta: text.optional() }))
+        .array(
+          z.object({
+            /** The line the home and service pages show (an excerpt is fine). */
+            text,
+            name: text,
+            meta: text.optional(),
+            /** The whole review, word for word, for /reviews. */
+            full: text.optional(),
+            /** 4 or 5 — worse reviews never go on the site. */
+            rating: z.number().int().min(4).max(5).optional(),
+          }),
+        )
         .min(1),
-      layout: z.enum(["cards", "featured", "grid"]).optional(),
+      layout: z.enum(["cards", "featured", "grid", "marquee"]).optional(),
     })
     .optional(),
   leadForm: z.object({
@@ -418,6 +459,12 @@ const demoObject = z.object({
     .optional(),
   founded: z.number().int().min(1800).max(2100).optional(),
   reviewsUrl: z.url().optional(),
+  /**
+   * Show the Phone field and SMS consent box on the demo's forms
+   * (SITE.smsOptIn). On for demos (Casey wants the phone asked); the real
+   * site keeps it off until the client's A2P approval (docs/ghl-forms.md).
+   */
+  smsOptIn: z.boolean().default(true),
   /** Footer profiles by label: { "Facebook": "https://…" }. */
   social: z.record(z.string(), z.url()).optional(),
   utilityBar: z.object({ text, areaLabel: text.optional() }).optional(),
@@ -490,6 +537,13 @@ export const PAGES = [
   { from: "index.astro", to: "src/pages/index.astro" },
   { from: "contact.astro", to: "src/pages/contact.astro" },
   { from: "about.astro", to: "src/pages/about.astro" },
+  /* Only with reviews; otherwise the page (and its nav link) is removed. */
+  {
+    from: "reviews.astro",
+    to: "src/pages/reviews.astro",
+    when: (/** @type {any} */ demo) =>
+      Boolean(demo.home.reviews?.items?.length),
+  },
 ];
 
 /** Nav and footer links a demo drops (the sample content stays unlinked). */
