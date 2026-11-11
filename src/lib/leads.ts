@@ -40,8 +40,11 @@ const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,24}$/;
 export const NOTE_FIELDS = {
   company: "Company",
   service: "Service",
+  audience: "Who's asking",
   projectType: "Project type",
+  projectSize: "Project size",
   timeline: "Timeline",
+  budget: "Budget set aside",
   message: "Message",
   rating: "Rating",
   referrer: "Referred by",

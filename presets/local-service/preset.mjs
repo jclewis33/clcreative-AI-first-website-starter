@@ -64,6 +64,38 @@ const homeSchema = z.object({
       text: text.optional(),
       /** The estimate form's first step, over the service tiles. */
       question: text.optional(),
+      /**
+       * A qualifying form instead: one-tap questions, one step each, before
+       * the contact fields (who's asking, project, size, timing, budget).
+       * Each `name` is the field its answer is saved as.
+       */
+      questions: z
+        .array(
+          z.object({
+            name: z.enum([
+              "audience",
+              "projectType",
+              "projectSize",
+              "timeline",
+              "budget",
+            ]),
+            question: text,
+            text: text.optional(),
+            options: z
+              .array(
+                z.object({
+                  label: text,
+                  value: text,
+                  description: text.optional(),
+                }),
+              )
+              .min(2)
+              .max(8),
+          }),
+        )
+        .min(1)
+        .max(6)
+        .optional(),
     })
     .default({
       label: "Get a free estimate",
@@ -113,6 +145,47 @@ const homeSchema = z.object({
   stats: z
     .array(z.object({ value: text, label: text }))
     .length(4)
+    .optional(),
+  /** Ways in for different visitors (homeowners / contractors), under the hero. */
+  paths: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      intro: text.optional(),
+      items: z
+        .array(
+          z.object({
+            label: text.optional(),
+            title: text,
+            text: text.optional(),
+            points: z.array(text).optional(),
+            cta: z.object({ label: text, href: text }).optional(),
+          }),
+        )
+        .min(2)
+        .max(3),
+    })
+    .optional(),
+  /** Their own before-and-after pairs: the same view, from a real job. */
+  beforeAfter: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      items: z
+        .array(
+          z.object({
+            before: image,
+            beforeAlt: text,
+            after: image,
+            afterAlt: text,
+            title: text,
+            text: text.optional(),
+          }),
+        )
+        .min(1)
+        .max(4),
+    })
     .optional(),
   services: z.object({
     eyebrow: text.optional(),
@@ -409,6 +482,115 @@ const areaSchema = z
   })
   .passthrough();
 
+const kebab = z
+  .string()
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "use lowercase-kebab-case");
+const iconItem = z.object({ title: text, text, icon: text.optional() });
+
+/**
+ * An audience page (LocalServiceAudienceData, src/lib/local-service-audience.ts)
+ * for a second kind of buyer — general contractors, property managers —
+ * at its own URL (keep the prospect's existing one).
+ */
+const audienceSchema = z.object({
+  /** The URL: "commercial-concrete-coatings" → /commercial-concrete-coatings. */
+  path: kebab,
+  navLabel: text,
+  title: text,
+  /** At most 160 characters. */
+  description: text.max(160),
+  hero: z.object({
+    eyebrow: text.optional(),
+    heading: text,
+    text: text.optional(),
+    image,
+    imageAlt: text,
+    ctaLabel: text.optional(),
+  }),
+  facts: z
+    .array(z.object({ value: text, label: text }))
+    .min(3)
+    .max(5)
+    .optional(),
+  scope: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      intro: text.optional(),
+      items: z.array(iconItem).min(3).max(8),
+      image,
+      imageAlt: text,
+    })
+    .optional(),
+  capability: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      intro: text.optional(),
+      items: z.array(iconItem).min(3).max(6),
+      image,
+      imageAlt: text,
+    })
+    .optional(),
+  /** Cards for their `projects` in this category. */
+  projects: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      category: z.enum(["residential", "commercial"]),
+    })
+    .optional(),
+  documents: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      text: text.optional(),
+      items: z.array(text).min(2),
+    })
+    .optional(),
+  /** Only steps the business confirms; unknowns in [brackets]. */
+  expect: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      text: text.optional(),
+      steps: z
+        .array(z.object({ label: text, title: text, text }))
+        .min(2)
+        .max(4),
+    })
+    .optional(),
+  form: z.object({
+    eyebrow: text.optional(),
+    heading: text,
+    text: text.optional(),
+    scopeOptions: z.array(z.object({ label: text, value: text })).optional(),
+    messageLabel: text.optional(),
+  }),
+  callBand: z.object({ heading: text, text: text.optional() }),
+});
+
+/** A project (src/content/projects): /projects/<slug>, their own job only. */
+const projectSchema = z
+  .object({
+    slug: kebab,
+    title: text,
+    category: z.enum(["residential", "commercial"]),
+    heroImage: image,
+    imageAlt: text,
+    photos: z
+      .array(
+        z.object({
+          src: image,
+          alt: text,
+          label: z.enum(["Before", "During", "After"]).optional(),
+        }),
+      )
+      .optional(),
+  })
+  .passthrough();
+
 /** The looks (src/config/looks.ts) a demo can wear. */
 export const LOOK_NAMES = ["fresh", "warm", "rugged", "natural", "studio"];
 
@@ -494,6 +676,16 @@ const demoObject = z.object({
    * exactly one region.
    */
   areas: z.array(areaSchema).max(8).optional(),
+  /**
+   * A page for a second kind of buyer (contractors, property managers) at
+   * its own URL, in the nav. Optional.
+   */
+  audience: audienceSchema.optional(),
+  /**
+   * Their real projects: /projects and /projects/<slug>, in the nav. They
+   * replace the starter's sample projects (and its sample gallery).
+   */
+  projects: z.array(projectSchema).min(1).max(24).optional(),
   notes: z
     .object({
       sourceUrl: z.url().optional(),
@@ -546,5 +738,8 @@ export const PAGES = [
   },
 ];
 
-/** Nav and footer links a demo drops (the sample content stays unlinked). */
+/**
+ * Nav and footer links a demo drops (the sample content stays unlinked).
+ * `/projects` stays when demo.json has `projects`.
+ */
 export const HIDDEN_PATHS = ["/blog", "/case-studies", "/projects", "/gallery"];

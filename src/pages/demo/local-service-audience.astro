@@ -1,0 +1,12 @@
+---
+/**
+ * Local-service sample AUDIENCE page — DEV ONLY
+ * (`/demo/local-service-audience` is in DEV_ONLY_PATHS, so the build strips
+ * it). The fictional remodeler's page for builders and property managers,
+ * on the LocalServiceAudience template.
+ */
+import LocalServiceAudience from "@/components/templates/LocalServiceAudience.astro";
+import { SAMPLE_AUDIENCE } from "@/data/local-service-sample";
+---
+
+<LocalServiceAudience audience={SAMPLE_AUDIENCE} />

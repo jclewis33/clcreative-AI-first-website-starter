@@ -13,6 +13,7 @@ import Visual from "@/components/ui/Visual.astro";
 import type { ImageMetadata } from "astro";
 import { FORMS, HONEYPOT_FIELD, type FormId } from "@/config/forms";
 import { SITE } from "@/config/site";
+import type { LeadQuestion } from "@/lib/lead-questions";
 
 /* Named on purpose — inline unions lose their editor tooltips. */
 type LeadFormFields = "contact" | "quote" | "steps";
@@ -57,6 +58,9 @@ interface Props extends Omit<
    *   project type and timeline selects) or `'steps'` (a two-step quote:
    *   the project type as big tiles first, under `stepQuestion`, then the
    *   contact fields — the home-service estimate pop-up)
+   * - `questions` — steps preset: several one-tap questions before the
+   *   contact fields (who's asking, project, size, timing, budget) — a
+   *   qualifying form that screens out tire kickers
    * - `projectOptions` / `timelineOptions` — the quote selects' choices;
    *   in the steps preset an option may carry an `image` (and
    *   `description`) to make photo tiles
@@ -98,6 +102,16 @@ interface Props extends Omit<
 
   /** Steps preset: the step-1 question over the tiles. @default 'What do you need help with?' */
   stepQuestion?: string;
+
+  /**
+   * Steps preset: the one-tap questions, one step each, before the contact
+   * fields — `{ name, question, text?, options }` (src/lib/lead-questions.ts).
+   * Each answer is saved as its `name` (audience, projectType, projectSize,
+   * timeline, budget). Replaces the single `stepQuestion` / `projectOptions`
+   * step; with a `timeline` question the details step drops its Timeline
+   * select. Progress reads "Step 2 of 5".
+   */
+  questions?: LeadQuestion[];
 
   /**
    * Quote preset: project-type choices. The chosen label is saved.
@@ -167,6 +181,7 @@ const {
   formId,
   fields = "contact",
   stepQuestion = "What do you need help with?",
+  questions,
   projectOptions = [],
   progress = "bar",
   progressLabels = ["Your project", "Your details"],
@@ -195,8 +210,18 @@ if (import.meta.env.DEV) {
     console.warn(
       `[LeadForm] "${formId}" is a staff form — it belongs on /tools, not a public page.`,
     );
-  if (fields !== "contact" && projectOptions.length === 0)
+  if (
+    fields !== "contact" &&
+    projectOptions.length === 0 &&
+    !(fields === "steps" && questions?.length)
+  )
     console.warn(`[LeadForm] fields="${fields}" without projectOptions.`);
+  if (questions?.length && fields !== "steps")
+    console.warn(`[LeadForm] questions apply to fields="steps" only.`);
+  if ((questions?.length ?? 0) > 1 && progress === "steps")
+    console.warn(
+      `[LeadForm] progress="steps" names two steps; with several questions use "bar".`,
+    );
   if (progress !== "bar" && progress !== "steps")
     console.warn(`[LeadForm] Unknown progress "${progress}"; using "bar".`);
   if (
@@ -207,14 +232,31 @@ if (import.meta.env.DEV) {
       `[LeadForm] progress and option images apply to fields="steps" only.`,
     );
 }
-const stepped = fields === "steps" && projectOptions.length > 0;
-const namedSteps = stepped && progress === "steps";
-const photoTiles = stepped && projectOptions.some((o) => o.image);
+/* The one-tap steps: the caller's questions, else the single project-type
+   step the steps preset has always had. */
+const choiceSteps: LeadQuestion[] =
+  fields !== "steps"
+    ? []
+    : questions?.length
+      ? questions
+      : projectOptions.length
+        ? [
+            {
+              name: "projectType",
+              question: stepQuestion,
+              options: projectOptions,
+            },
+          ]
+        : [];
+const stepped = choiceSteps.length > 0;
+const totalSteps = choiceSteps.length + 1;
+const namedSteps = stepped && progress === "steps" && choiceSteps.length === 1;
+const askedTimeline = choiceSteps.some((q) => q.name === "timeline");
 /* Step 2 wraps the details only in the steps preset; the other presets'
    markup stays exactly as it was. */
 const Details = stepped ? "div" : Fragment;
 const detailsProps = stepped
-  ? { class: "lead-form_step is-details", "data-step": "2" }
+  ? { class: "lead-form_step is-details", "data-step": String(totalSteps) }
   : {};
 ---
 
@@ -247,71 +289,104 @@ const detailsProps = stepped
       {stepped && !namedSteps && (
         <div class="lead-form_progress" aria-hidden="true">
           <span class="lead-form_progress_label">
-            Step <span data-step-number>1</span> of 2
+            Step <span data-step-number>1</span> of {totalSteps}
           </span>
           <span class="lead-form_progress_bar">
-            <span class="lead-form_progress_fill" />
+            <span
+              class="lead-form_progress_fill"
+              style={`width: ${100 / totalSteps}%`}
+            />
           </span>
         </div>
       )}
-      {stepped && (
-        <fieldset class="lead-form_step is-choice" data-step="1">
-          <legend class="lead-form_step_title">{stepQuestion}</legend>
-          {!photoTiles && (
-            <div class="lead-form_tiles">
-              {projectOptions.map((o) => (
-                <label class="lead-form_tile">
-                  <input
-                    class="lead-form_tile_input"
-                    type="radio"
-                    name="projectType"
-                    value={o.label}
-                  />
-                  <span class="lead-form_tile_label">{o.label}</span>
-                </label>
-              ))}
-            </div>
-          )}
-          {photoTiles && (
-            <div class="lead-form_tiles is-photo">
-              {projectOptions.map((o) => (
-                <label class="lead-form_tile is-photo">
-                  <input
-                    class="lead-form_tile_input"
-                    type="radio"
-                    name="projectType"
-                    value={o.label}
-                  />
-                  {o.image && (
-                    <Visual
-                      src={o.image}
-                      alt={o.imageAlt ?? o.label}
-                      ratio="landscape"
-                      radius="none"
-                      aria-hidden="true"
-                      class="lead-form_tile_img u-width-full"
+      {choiceSteps.map((q, i) => {
+        const photoTiles = q.options.some((o) => o.image);
+        return (
+          <fieldset class="lead-form_step is-choice" data-step={String(i + 1)}>
+            <legend class="lead-form_step_title">{q.question}</legend>
+            {q.text && (
+              <p class="lead-form_step_text u-text-style-small u-text-style-muted">
+                {q.text}
+              </p>
+            )}
+            {!photoTiles && (
+              <div
+                class:list={[
+                  "lead-form_tiles",
+                  q.options.some((o) => o.description) && "is-described",
+                ]}
+              >
+                {q.options.map((o) => (
+                  <label class="lead-form_tile">
+                    <input
+                      class="lead-form_tile_input"
+                      type="radio"
+                      name={q.name}
+                      value={o.label}
                     />
-                  )}
-                  <span class="lead-form_tile_body u-padding-4">
-                    <span class="lead-form_tile_label">{o.label}</span>
-                    {o.description && (
-                      <span class="lead-form_tile_text u-text-style-small u-text-style-muted">
-                        {o.description}
-                      </span>
+                    <span class="lead-form_tile_body">
+                      <span class="lead-form_tile_label">{o.label}</span>
+                      {o.description && (
+                        <span class="lead-form_tile_text u-text-style-small u-text-style-muted">
+                          {o.description}
+                        </span>
+                      )}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+            {photoTiles && (
+              <div class="lead-form_tiles is-photo">
+                {q.options.map((o) => (
+                  <label class="lead-form_tile is-photo">
+                    <input
+                      class="lead-form_tile_input"
+                      type="radio"
+                      name={q.name}
+                      value={o.label}
+                    />
+                    {o.image && (
+                      <Visual
+                        src={o.image}
+                        alt={o.imageAlt ?? o.label}
+                        ratio="landscape"
+                        radius="none"
+                        aria-hidden="true"
+                        class="lead-form_tile_img u-width-full"
+                      />
                     )}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-        </fieldset>
-      )}
+                    <span class="lead-form_tile_body u-padding-4">
+                      <span class="lead-form_tile_label">{o.label}</span>
+                      {o.description && (
+                        <span class="lead-form_tile_text u-text-style-small u-text-style-muted">
+                          {o.description}
+                        </span>
+                      )}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+            {i > 0 && (
+              <button
+                type="button"
+                class="lead-form_change lead-form_back"
+                data-step-prev
+              >
+                Back
+              </button>
+            )}
+          </fieldset>
+        );
+      })}
 
       <Details {...detailsProps}>
         {stepped && (
           <p class="lead-form_choice" data-step-choice hidden>
             <span class="lead-form_choice_text">
-              Your project: <strong data-step-label />
+              {choiceSteps.length > 1 ? "Your answers" : "Your project"}:{" "}
+              <strong data-step-label />
             </span>
             <button type="button" class="lead-form_change" data-step-back>
               Change
@@ -384,7 +459,7 @@ const detailsProps = stepped
           </FormFieldset>
         )}
 
-        {stepped && !compact && (
+        {stepped && !compact && !askedTimeline && (
           <FormSelect
             label="Timeline"
             name="timeline"
@@ -494,17 +569,13 @@ const detailsProps = stepped
       background-color: color-mix(in srgb, var(--text) 10%, transparent);
     }
 
+    /* Its width is set inline (one step's share) and moved by the script. */
     .lead-form_progress_fill {
       display: block;
-      width: 50%;
       height: 100%;
       border-radius: inherit;
       background-color: var(--heading-accent);
       transition: width 0.3s ease;
-    }
-
-    .lead-form_wrap.is-step-2 .lead-form_progress_fill {
-      width: 100%;
     }
 
     /* progress="steps": numbered step names; the current one gets the
@@ -575,8 +646,14 @@ const detailsProps = stepped
       gap: inherit;
     }
 
-    .lead-form_wrap.is-stepped:not(.is-step-2) .lead-form_step.is-details,
-    .lead-form_wrap.is-stepped.is-step-2 .lead-form_step.is-choice {
+    .lead-form_step.is-choice {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    /* The script shows one step at a time with `hidden`; without JS every
+       step shows. After the display rules above, which it must beat. */
+    .lead-form_step[hidden] {
       display: none;
     }
 
@@ -615,6 +692,27 @@ const detailsProps = stepped
       transition:
         border-color 0.2s ease,
         background-color 0.2s ease;
+    }
+
+    /* Tiles with a line under the label ("A project at my own home"): wider,
+       and read left to right. */
+    .lead-form_tiles.is-described {
+      grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
+    }
+
+    .lead-form_tiles.is-described .lead-form_tile {
+      align-items: start;
+      justify-content: start;
+      text-align: start;
+    }
+
+    /* The question's own line already spaces the tiles below it. */
+    .lead-form_step_text {
+      margin-top: calc(var(--space-2) * -1);
+    }
+
+    .lead-form_back {
+      justify-self: start;
     }
 
     .lead-form_tile_input {
@@ -706,8 +804,9 @@ const detailsProps = stepped
 </style>
 
 <script>
-  /* Steps preset: show one step at a time. Picking a tile moves to the
-     details (focusing the first field); "Change" goes back. */
+  /* Steps preset: show one step at a time. Picking a tile moves to the next
+     step; the last is the details (focusing the first field). "Back" goes
+     one step back, "Change" back to the first. */
   function initLeadSteps() {
     /* .lead-form_wrap is Form's outer wrapper (not the <form>); the step
        classes go on it, which is what the CSS keys off. */
@@ -720,22 +819,46 @@ const detailsProps = stepped
       form.classList.add("is-stepped");
       const label = form.querySelector<HTMLElement>("[data-step-label]");
       const number = form.querySelector<HTMLElement>("[data-step-number]");
+      const fill = form.querySelector<HTMLElement>(".lead-form_progress_fill");
+      const steps = [
+        ...form.querySelectorAll<HTMLElement>(".lead-form_step[data-step]"),
+      ].sort((a, b) => Number(a.dataset.step) - Number(b.dataset.step));
+      const total = steps.length;
+      let current = 1;
 
-      const go = (step: 1 | 2) => {
-        form.classList.toggle("is-step-2", step === 2);
+      const go = (step: number, focus = true) => {
+        current = step;
+        steps.forEach((el, i) => (el.hidden = i + 1 !== step));
+        /* is-step-2 = on the details step (the named-steps styling keys
+           off it). */
+        form.classList.toggle("is-step-2", step === total);
         if (number) number.textContent = String(step);
-        choice.hidden = step === 1;
-        if (step === 2)
-          form
-            .querySelector<HTMLElement>(
-              ".lead-form_step.is-details input:not([type=hidden]), .lead-form_step.is-details select",
+        if (fill) fill.style.width = `${(step / total) * 100}%`;
+        choice.hidden = step !== total;
+        if (step === total && label)
+          label.textContent = [
+            ...form.querySelectorAll<HTMLInputElement>(
+              ".lead-form_tile_input:checked",
+            ),
+          ]
+            .map((input) => input.value)
+            .join(" · ");
+        if (!focus) return;
+        const here = steps[step - 1];
+        if (step === total)
+          here
+            ?.querySelector<HTMLElement>(
+              "input:not([type=hidden]), select, textarea",
             )
             ?.focus();
         else
-          form
-            .querySelector<HTMLInputElement>(".lead-form_tile_input:checked")
-            ?.focus();
+          (
+            here?.querySelector<HTMLInputElement>(
+              ".lead-form_tile_input:checked",
+            ) ?? here?.querySelector<HTMLInputElement>(".lead-form_tile_input")
+          )?.focus();
       };
+      go(1, false);
 
       /* A click or tap on a tile moves on; so do Enter and Space. Arrow keys
          only select (radio groups select on every arrow press), so keyboard
@@ -744,16 +867,27 @@ const detailsProps = stepped
       for (const input of form.querySelectorAll<HTMLInputElement>(
         ".lead-form_tile_input",
       )) {
-        const choose = () => {
-          if (label) label.textContent = input.value;
-          go(2);
-        };
+        const step = Number(
+          input.closest<HTMLElement>(".lead-form_step")?.dataset.step ?? 1,
+        );
+        const choose = () => go(Math.min(step + 1, total));
+        /* After "Back", tapping the tile that's already picked fires no
+           change event; the click still moves on. */
+        let wasChecked = false;
         input
           .closest(".lead-form_tile")
-          ?.addEventListener("pointerdown", () => (pointer = true));
+          ?.addEventListener("pointerdown", () => {
+            pointer = true;
+            wasChecked = input.checked;
+          });
         input.addEventListener("change", () => {
           if (pointer) choose();
           pointer = false;
+        });
+        input.addEventListener("click", () => {
+          if (pointer && wasChecked) choose();
+          if (wasChecked) pointer = false;
+          wasChecked = false;
         });
         input.addEventListener("keydown", (event) => {
           if (event.key !== "Enter" && event.key !== " ") return;
@@ -765,6 +899,8 @@ const detailsProps = stepped
       form
         .querySelector("[data-step-back]")
         ?.addEventListener("click", () => go(1));
+      for (const back of form.querySelectorAll("[data-step-prev]"))
+        back.addEventListener("click", () => go(Math.max(current - 1, 1)));
     }
   }
 

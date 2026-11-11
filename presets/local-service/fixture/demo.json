@@ -312,7 +312,66 @@
       "label": "Get a free estimate",
       "heading": "Get a free estimate",
       "text": "Two quick steps. We call you back the same business day.",
-      "question": "What do you need help with?"
+      "question": "What do you need help with?",
+      "questions": [
+        {
+          "name": "audience",
+          "question": "First, who are we talking to?",
+          "options": [
+            {
+              "label": "Homeowner",
+              "value": "homeowner",
+              "description": "Work at my own home"
+            },
+            {
+              "label": "Builder or contractor",
+              "value": "contractor",
+              "description": "I need an electrical sub"
+            },
+            {
+              "label": "Property manager",
+              "value": "property-manager",
+              "description": "Buildings I manage"
+            }
+          ]
+        },
+        {
+          "name": "projectType",
+          "question": "What do you need help with?",
+          "options": [
+            { "label": "Panel or wiring", "value": "panel" },
+            { "label": "Lighting", "value": "lighting" },
+            { "label": "EV charger", "value": "ev" },
+            { "label": "Something else", "value": "other" }
+          ]
+        },
+        {
+          "name": "timeline",
+          "question": "When would you like the work done?",
+          "options": [
+            { "label": "As soon as possible", "value": "asap" },
+            { "label": "In the next month", "value": "month" },
+            { "label": "Just planning", "value": "planning" }
+          ]
+        }
+      ]
+    },
+    "paths": {
+      "heading": "Two ways to work with us",
+      "items": [
+        {
+          "label": "For homeowners",
+          "title": "Panels, lighting and EV chargers",
+          "text": "Safe, inspected work at home.",
+          "cta": { "label": "See our services", "href": "#services" }
+        },
+        {
+          "label": "For builders",
+          "title": "Electrical on your next project",
+          "text": "Licensed crews for new builds and remodels.",
+          "cta": { "label": "Contact us", "href": "/contact" }
+        }
+      ]
     },
     "promises": {
       "heading": "No surprises. Just good work.",

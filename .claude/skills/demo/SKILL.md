@@ -285,6 +285,25 @@ git switch -c demo/<slug>
     `<mark>`.
   - `trust`: only credentials they actually show (licensed & insured, BBB,
     manufacturer dealer), with the seal file as `image` when you have it.
+- **Two audiences (homeowners and contractors):** when a prospect sells
+  to both, add `home.paths` (two panels under the hero, each linking to its
+  side) and an `audience` page at the URL they already use for that side
+  (`"path": "commercial-concrete-coatings"`): scopes, equipment, their
+  commercial projects, the prequal paperwork, next steps and a bid form.
+  Equipment counts, crew size, square footage and GC names go in
+  [brackets] and `confirmOrCut` until they confirm them. Worked example:
+  the FDC Coatings demo.
+- **Qualifying form (screening tire kickers):** `home.estimate.questions`
+  turns the estimate pop-up into one-tap steps before the contact fields —
+  who's asking (homeowner / contractor / property manager / business
+  owner), the project, size, timing, and "What have you set aside for this
+  project?" with ranges. The ranges are the visitor's answer, not the
+  business's prices: pick sensible buckets for the trade, never a "starts
+  at" price they didn't publish, and list the buckets in `confirmOrCut` so
+  the owner can set them.
+- **Projects:** `projects` (their own jobs, with before/after `photos`)
+  builds `/projects` and a page per job, in the nav; `home.beforeAfter`
+  puts the best pairs on the home page as sliders.
 - **About page (`/about`):** generated for every demo from the same `home`
   data (story, stats, team, guarantee, process, reviews, map, call band) and
   added to the nav and footer. Give it `home.about` — an `eyebrow`, an h1

@@ -1,6 +1,7 @@
 import type { ImageMetadata } from "astro";
 import type { FAQItem } from "@/data/faqs";
 import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
+import type { LeadQuestion } from "@/lib/lead-questions";
 
 /**
  * The data a local-service home page is made of — everything
@@ -32,6 +33,22 @@ type HomeOption = { label: string; value: string };
 /** An SVG imported as a component (ServiceArea's interactive map). */
 type HomeMap = (props: Record<string, unknown>) => unknown;
 type HomeTrust = { label: string; image?: HomeImage };
+type HomeCta = { label: string; href?: string; modal?: string };
+type HomePath = {
+  label?: string;
+  title: string;
+  text?: string;
+  points?: string[];
+  cta?: HomeCta;
+};
+type HomeBeforeAfter = {
+  before: ImageMetadata;
+  beforeAlt: string;
+  after: ImageMetadata;
+  afterAlt: string;
+  title: string;
+  text?: string;
+};
 type HomeAreaGeo = {
   name: string;
   geometry: {
@@ -107,6 +124,8 @@ export interface LocalServiceHomeData {
     heading: string;
     text?: string;
     question?: string;
+    /** A qualifying form: one-tap steps before the contact fields (LeadForm `questions`). */
+    questions?: LeadQuestion[];
   };
 
   hero: {
@@ -145,6 +164,30 @@ export interface LocalServiceHomeData {
 
   /** Four short numbers or words. Leave out anything you can't back up. */
   stats?: HomeStat[];
+
+  /**
+   * Two (or three) ways in for different visitors — homeowners and
+   * contractors, say — as equal panels under the hero (PathCards). Each
+   * path's `cta` links to its own page.
+   */
+  paths?: {
+    eyebrow?: string;
+    heading: string;
+    intro?: string;
+    items: HomePath[];
+  };
+
+  /**
+   * The business's own before-and-after pairs as drag-to-compare sliders
+   * (BeforeAfterGallery), after the services. The same view, before and
+   * after, from a real job.
+   */
+  beforeAfter?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    items: HomeBeforeAfter[];
+  };
 
   /** Heading for the service cards (the cards come from src/content/services). */
   services: {
