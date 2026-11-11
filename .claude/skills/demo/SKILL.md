@@ -267,8 +267,10 @@ git switch -c demo/<slug>
   turns the estimate pop-up into one-tap steps before the contact fields —
   who's asking (homeowner / contractor / property manager / business
   owner), the project, size, timing, and "What have you set aside for this
-  project?" with ranges. Never invent their price ranges: bracket the
-  tiers and list them in `confirmOrCut`.
+  project?" with ranges. The ranges are the visitor's answer, not the
+  business's prices: pick sensible buckets for the trade, never a "starts
+  at" price they didn't publish, and list the buckets in `confirmOrCut` so
+  the owner can set them.
 - **Projects:** `projects` (their own jobs, with before/after `photos`)
   builds `/projects` and a page per job, in the nav; `home.beforeAfter`
   puts the best pairs on the home page as sliders.
