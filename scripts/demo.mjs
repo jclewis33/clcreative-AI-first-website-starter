@@ -623,7 +623,12 @@ async function main() {
       `audience.path "${demo.audience.path}" is already a page (${audiencePage}) — pick another path.`,
     );
   if (demo.audience) {
-    const audience = structuredClone(demo.audience);
+    // `group` and `navButton` are nav settings, not page data.
+    const {
+      group: _group,
+      navButton: _navButton,
+      ...audience
+    } = structuredClone(demo.audience);
     audience.path = `/${audience.path}`;
     /** @type {Array<[string, string]>} identifier → asset path */
     const audienceImports = [];
