@@ -646,6 +646,8 @@ async function main() {
     await audienceImage(audience.hero, "image", "hero");
     await audienceImage(audience.scope, "image", "scope");
     await audienceImage(audience.capability, "image", "capability");
+    for (const [i, extra] of (audience.projects?.extras ?? []).entries())
+      await audienceImage(extra, "image", `extra${i + 1}`);
     let audienceJson = JSON.stringify(audience, null, 2);
     audienceImports.forEach(([id], i) => {
       audienceJson = audienceJson.replace(`"__AUDIENCE_IMAGE_${i}__"`, id);

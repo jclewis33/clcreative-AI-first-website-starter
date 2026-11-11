@@ -178,11 +178,12 @@ export const SAMPLE_AUDIENCE = {
     text: "Tenant finish-outs, common areas and turnovers, on your schedule.",
     image: bandPhoto,
     imageAlt: "A finished open-plan commercial space",
+    secondaryCta: { label: "Capabilities statement", href: "#docs" },
   },
   facts: [
-    { value: "Since 2009", label: "In business" },
-    { value: "Insured", label: "COI on request" },
-    { value: "Nights", label: "And weekends available" },
+    { label: "In business", value: "Since 2009" },
+    { label: "Insurance", value: "COI on request" },
+    { label: "Scheduling", value: "Nights and weekends" },
   ],
   scope: {
     eyebrow: "Scopes we cover",
@@ -215,14 +216,10 @@ export const SAMPLE_AUDIENCE = {
     eyebrow: "Prequalification",
     heading: "Paperwork, ready to send",
     text: "Ask and we'll email the packet.",
-    items: ["Capabilities statement", "Certificate of insurance", "W-9"],
-  },
-  expect: {
-    heading: "What happens next",
-    steps: [
-      { label: "Day 1", title: "We confirm", text: "We confirm we have it." },
-      { label: "Day 2", title: "We review", text: "We review the scope." },
-      { label: "By the due date", title: "We bid", text: "You get a number." },
+    items: [
+      { title: "Capabilities statement", text: "Scopes, crew and capacity" },
+      { title: "Certificate of insurance", text: "Naming your company" },
+      { title: "W-9", text: "Current and signed" },
     ],
   },
   form: {
@@ -232,11 +229,8 @@ export const SAMPLE_AUDIENCE = {
     scopeOptions: [
       { label: "Tenant finish-out", value: "finish-out" },
       { label: "Common areas", value: "common" },
-      { label: "Something else", value: "other" },
     ],
+    steps: ["We confirm we have it.", "We review the scope."],
   },
-  callBand: {
-    heading: "Have a project <strong>coming up</strong>?",
-    text: "Send the plans and the due date.",
-  },
+  cities: { heading: "Commercial work by city", towns: ["Your City"] },
 } satisfies LocalServiceAudienceData;

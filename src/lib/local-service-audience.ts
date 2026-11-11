@@ -36,12 +36,14 @@ export interface LocalServiceAudienceData {
     imageAlt: string;
     /** The main button, which jumps to the form. @default 'Send a bid invitation' */
     ctaLabel?: string;
+    /** A second, outline button ("Capabilities statement (PDF)" → "#docs"). */
+    secondaryCta?: { label: string; href: string };
   };
 
-  /** Quick facts for the reader in a hurry (spec sections, insurance, area). 3 to 5. */
+  /** Quick facts for the reader in a hurry, label over value ("Insurance" / "Fully insured · COI on request"). 3 to 5. */
   facts?: { value: string; label: string }[];
 
-  /** What they cover for this audience, beside one photo (WorkScope). */
+  /** What they cover for this audience: ruled rows beside the heading and a photo (RuledList). */
   scope?: {
     eyebrow?: string;
     heading: string;
@@ -51,7 +53,7 @@ export interface LocalServiceAudienceData {
     imageAlt: string;
   };
 
-  /** Equipment, crew, capacity: icon rows beside one big photo (WhyChooseUs). */
+  /** Equipment, crew, capacity: a photo beside ruled cards, on dark (FeatureSpotlight). */
   capability?: {
     eyebrow?: string;
     heading: string;
@@ -62,45 +64,39 @@ export interface LocalServiceAudienceData {
   };
 
   /**
-   * Their projects in one category (src/config/projects.ts), as cards
-   * linking to /projects/<slug>. Absent or none in that category = no section.
+   * Their projects in one category (src/config/projects.ts) as case study
+   * cards, then more photos and a client quote (CaseStudyCards). Absent or
+   * none in that category = no section.
    */
   projects?: {
     eyebrow?: string;
     heading?: string;
-    intro?: string;
     category: string;
+    extras?: { image: AudienceImage; alt: string; caption: string }[];
+    quote?: { text: string; name: string; meta?: string };
   };
 
-  /** The paperwork they keep ready (prequal): one checklist. */
+  /** The paperwork they keep ready (prequal): ruled rows of what and why, with buttons (RuledList). */
   documents?: {
     eyebrow?: string;
     heading: string;
     text?: string;
-    items: string[];
+    items: { title: string; text: string }[];
+    cta?: { label: string; href: string };
+    secondaryCta?: { label: string; href: string };
   };
 
-  /** What happens after they reach out — only steps the business confirms (ExpectTimeline). */
-  expect?: {
-    eyebrow?: string;
-    heading: string;
-    text?: string;
-    steps: { label: string; title: string; text: string }[];
-  };
-
-  /** The page's own form (bid invitations, say). */
+  /** The page's own form: a bid invitation (LeadForm `bid`). */
   form: {
     eyebrow?: string;
     heading: string;
     text?: string;
-    /** The choices for "Scope" (the project-type select). */
+    /** The "Scope" checkboxes. */
     scopeOptions?: { label: string; value: string }[];
-    /** Label above the message box ("Project, location, due date and a link to the plans"). */
-    messageLabel?: string;
+    /** What happens after they send it — only steps the business follows. */
+    steps?: string[];
   };
 
-  callBand: {
-    heading: string;
-    text?: string;
-  };
+  /** Their pages by city, as one line under the form ("Commercial concrete coatings by city"). */
+  cities?: { heading: string; towns: string[] };
 }

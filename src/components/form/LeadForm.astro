@@ -6,6 +6,7 @@ import Accordion from "@/components/ui/Accordion.astro";
 import AccordionItem from "@/components/ui/AccordionItem.astro";
 import FormFieldset from "@/components/form/FormFieldset.astro";
 import FormSelect from "@/components/form/FormSelect.astro";
+import FormCheckbox from "@/components/form/FormCheckbox.astro";
 import FormTextarea from "@/components/form/FormTextarea.astro";
 import SmsConsent from "@/components/form/SmsConsent.astro";
 import Button from "@/components/ui/Button.astro";
@@ -16,7 +17,7 @@ import { SITE } from "@/config/site";
 import type { LeadQuestion } from "@/lib/lead-questions";
 
 /* Named on purpose — inline unions lose their editor tooltips. */
-type LeadFormFields = "contact" | "quote" | "steps";
+type LeadFormFields = "contact" | "quote" | "steps" | "bid";
 type LeadFormButtonWidth = "full" | "auto";
 type LeadFormOption = {
   /** What the visitor sees, and what is saved. */
@@ -57,7 +58,11 @@ interface Props extends Omit<
    * - `fields` — `'contact'` (name, email, phone*, message), `'quote'` (adds
    *   project type and timeline selects) or `'steps'` (a two-step quote:
    *   the project type as big tiles first, under `stepQuestion`, then the
-   *   contact fields — the home-service estimate pop-up)
+   *   contact fields — the home-service estimate pop-up) or `'bid'` (a
+   *   bid invitation from a contractor: company, name, role, email, the
+   *   project and city, square feet, the scopes as checkboxes from
+   *   `projectOptions`, the due date, a link to the plans, and "also send
+   *   the prequal packet")
    * - `questions` — steps preset: several one-tap questions before the
    *   contact fields (who's asking, project, size, timing, budget) — a
    *   qualifying form that screens out tire kickers
@@ -123,6 +128,9 @@ interface Props extends Omit<
   /** Quote preset: timeline choices. The chosen label is saved. */
   timelineOptions?: LeadFormOption[];
 
+  /** Bid preset: the "Your role" choices. @default estimator, PM, builder, property manager, owner */
+  roleOptions?: LeadFormOption[];
+
   /**
    * Steps preset: how progress shows. `bar` is "Step 1 of 2" over a thin
    * bar; `steps` names the steps ("01 Your project · 02 Your details") and
@@ -186,6 +194,13 @@ const {
   progress = "bar",
   progressLabels = ["Your project", "Your details"],
   insuranceDetails = false,
+  roleOptions = [
+    { label: "Estimator", value: "estimator" },
+    { label: "Project manager", value: "project-manager" },
+    { label: "Builder or developer", value: "builder" },
+    { label: "Property manager", value: "property-manager" },
+    { label: "Business owner", value: "owner" },
+  ],
   timelineOptions = [
     { label: "As soon as possible", value: "asap" },
     { label: "Within 1–3 months", value: "1-3-months" },
@@ -193,7 +208,11 @@ const {
   ],
   messageLabel = "How can we help?",
   messagePlaceholder,
-  submitLabel = fields === "steps" ? "Request my estimate" : "Send",
+  submitLabel = fields === "steps"
+    ? "Request my estimate"
+    : fields === "bid"
+      ? "Send bid invitation"
+      : "Send",
   successMessage = "Thanks — we got your message and will be in touch shortly.",
   errorMessage = `Something went wrong. Please try again, or call us at ${SITE.phone.display}.`,
   buttonWidth = "full",
@@ -394,7 +413,99 @@ const detailsProps = stepped
           </p>
         )}
 
-        {compact && (
+        {fields === "bid" && (
+          <FormFieldset columns={2}>
+            <FormField
+              label="Company"
+              name="company"
+              variant="text"
+              autocomplete="organization"
+              id={`${id}-company`}
+              required
+            />
+            <FormField
+              label="Your name"
+              name="firstName"
+              variant="text"
+              autocomplete="name"
+              id={`${id}-name`}
+              required
+            />
+            <FormSelect
+              label="Your role"
+              name="role"
+              options={roleOptions.map((o) => ({ ...o, value: o.label }))}
+              placeholderOption="Choose one"
+              id={`${id}-role`}
+            />
+            <FormField
+              label="Email"
+              name="email"
+              variant="email"
+              id={`${id}-email`}
+              required
+            />
+            {SITE.smsOptIn && (
+              <FormField
+                label="Phone"
+                name="phone"
+                variant="phone"
+                id={`${id}-phone`}
+              />
+            )}
+            <FormField
+              label="Project name and city"
+              name="projectName"
+              variant="text"
+              autocomplete="off"
+              id={`${id}-project`}
+            />
+            <FormField
+              label="Approximate square feet"
+              name="squareFeet"
+              variant="text"
+              autocomplete="off"
+              id={`${id}-sqft`}
+            />
+            <FormField
+              label="Bid due date"
+              name="dueDate"
+              variant="date"
+              id={`${id}-due`}
+            />
+            <FormField
+              label="Link to plans and specs"
+              name="plansUrl"
+              variant="text"
+              type="url"
+              autocomplete="off"
+              id={`${id}-plans`}
+              class={SITE.smsOptIn ? "lead-form_full" : undefined}
+            />
+          </FormFieldset>
+        )}
+        {fields === "bid" && projectOptions.length > 0 && (
+          <FormFieldset legend="Scope" class="lead-form_scope">
+            {projectOptions.map((o, i) => (
+              <FormCheckbox
+                label={o.label}
+                name="scope"
+                value={o.label}
+                id={`${id}-scope-${i + 1}`}
+              />
+            ))}
+          </FormFieldset>
+        )}
+        {fields === "bid" && (
+          <FormCheckbox
+            label="Also send me the prequal packet"
+            name="prequalPacket"
+            value="Yes"
+            id={`${id}-prequal`}
+          />
+        )}
+
+        {compact && fields !== "bid" && (
           <FormFieldset columns={2}>
             <FormField
               label="Name"
@@ -424,7 +535,7 @@ const detailsProps = stepped
             )}
           </FormFieldset>
         )}
-        {!compact && (
+        {!compact && fields !== "bid" && (
           <FormFieldset columns={2}>
             <FormField
               label="First name"
@@ -515,12 +626,14 @@ const detailsProps = stepped
           </Accordion>
         )}
 
-        <FormTextarea
-          label={messageLabel}
-          name="message"
-          placeholder={messagePlaceholder}
-          id={`${id}-message`}
-        />
+        {fields !== "bid" && (
+          <FormTextarea
+            label={messageLabel}
+            name="message"
+            placeholder={messagePlaceholder}
+            id={`${id}-message`}
+          />
+        )}
 
         {/* Bot trap: off-screen, out of the tab order, hidden from assistive
           tech. People never fill it; form-filling bots do. */}
@@ -709,6 +822,13 @@ const detailsProps = stepped
     /* The question's own line already spaces the tiles below it. */
     .lead-form_step_text {
       margin-top: calc(var(--space-2) * -1);
+    }
+
+    /* Bid preset: the scope checkboxes in a wrapping row. */
+    .lead-form_scope {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-5);
     }
 
     .lead-form_back {

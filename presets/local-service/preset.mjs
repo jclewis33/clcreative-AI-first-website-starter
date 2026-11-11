@@ -554,7 +554,9 @@ const audienceSchema = z.object({
     image,
     imageAlt: text,
     ctaLabel: text.optional(),
+    secondaryCta: z.object({ label: text, href: text }).optional(),
   }),
+  /** Label over value: { label: "Insurance", value: "Fully insured" }. */
   facts: z
     .array(z.object({ value: text, label: text }))
     .min(3)
@@ -580,13 +582,19 @@ const audienceSchema = z.object({
       imageAlt: text,
     })
     .optional(),
-  /** Cards for their `projects` in this category. */
+  /** Case study cards for their `projects` in this category. */
   projects: z
     .object({
       eyebrow: text.optional(),
       heading: text.optional(),
-      intro: text.optional(),
       category: z.enum(["residential", "commercial"]),
+      /** More photos for the row under the cards. */
+      extras: z
+        .array(z.object({ image, alt: text, caption: text }))
+        .max(5)
+        .optional(),
+      /** One real, attributed client quote. */
+      quote: z.object({ text, name: text, meta: text.optional() }).optional(),
     })
     .optional(),
   documents: z
@@ -594,29 +602,21 @@ const audienceSchema = z.object({
       eyebrow: text.optional(),
       heading: text,
       text: text.optional(),
-      items: z.array(text).min(2),
+      items: z.array(z.object({ title: text, text })).min(2),
+      cta: z.object({ label: text, href: text }).optional(),
+      secondaryCta: z.object({ label: text, href: text }).optional(),
     })
     .optional(),
-  /** Only steps the business confirms; unknowns in [brackets]. */
-  expect: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      text: text.optional(),
-      steps: z
-        .array(z.object({ label: text, title: text, text }))
-        .min(2)
-        .max(4),
-    })
-    .optional(),
+  /** The bid invitation form; `steps` only what the business really does. */
   form: z.object({
     eyebrow: text.optional(),
     heading: text,
     text: text.optional(),
     scopeOptions: z.array(z.object({ label: text, value: text })).optional(),
-    messageLabel: text.optional(),
+    steps: z.array(text).min(2).max(4).optional(),
   }),
-  callBand: z.object({ heading: text, text: text.optional() }),
+  /** Their pages by city, as one line. */
+  cities: z.object({ heading: text, towns: z.array(text).min(1) }).optional(),
 });
 
 /** A project (src/content/projects): /projects/<slug>, their own job only. */
