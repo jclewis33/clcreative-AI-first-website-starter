@@ -19,6 +19,8 @@ interface Props {
   /** Width/height forwarded to <svg> for sizing control */
   width?: string;
   height?: string;
+  /** The business name set beside an image logo (the estate look's nav). */
+  wordmark?: string;
 }
 
 const {
@@ -27,6 +29,7 @@ const {
   ariaLabel = `${LOGO_LABEL} logo`,
   width = "100%",
   height = "100%",
+  wordmark,
 } = Astro.props as Props;
 ---
 
@@ -58,6 +61,13 @@ const {
     /* An SVG is not anchor text — the sr-only span gives crawlers real text
       for this link, which sits in the nav/footer of every page. The svg is
       aria-hidden so screen readers don't announce the label twice. */
+  }
+  {
+    LOGO_IMAGE && wordmark && (
+      <span class="logo_wordmark" aria-hidden="true">
+        {wordmark}
+      </span>
+    )
   }
   {!LOGO_IMAGE && <span class="u-sr-only">{ariaLabel}</span>}
   {
@@ -95,6 +105,17 @@ const {
       width: auto;
       max-width: 100%;
       object-fit: contain;
+    }
+
+    /* The name beside the mark: in the heading face, one size, never
+       wrapping (the link stays one row). */
+    .logo_wordmark {
+      font-family: var(--font-primary);
+      font-size: 1.375rem;
+      letter-spacing: 0.02em;
+      line-height: 1;
+      white-space: nowrap;
+      color: var(--text);
     }
 
     .logo_img_wrap.is-plate {

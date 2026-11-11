@@ -12,6 +12,11 @@ type LeadFormSectionFields = ComponentProps<typeof LeadForm>["fields"];
 type LeadFormSectionOptions = ComponentProps<typeof LeadForm>["projectOptions"];
 type LeadFormSectionTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+type LeadFormSectionContact =
+  /** "Rather talk now? Call …" on one small line */
+  | "call"
+  /** "Prefer email or phone?" over the email and the number, one per line */
+  | "both";
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -21,7 +26,8 @@ interface Props extends HTMLAttributes<"section"> {
    *
    * - `formId` — which `src/config/forms.ts` entry it submits as (public)
    * - `fields`, `projectOptions` — passed to LeadForm
-   * - `showPhone` — the phone line (default `true`)
+   * - `showPhone` — the phone line (default `true`); `contact="both"`
+   *   gives the email and the number, one per line
    * - `theme` — default `'dark'`; the form panel always reads light
    *
    * @example
@@ -53,8 +59,17 @@ interface Props extends HTMLAttributes<"section"> {
   /** Label above the message box. @default LeadForm's 'How can we help?' */
   messageLabel?: string;
 
+  /** What happens after they send it, in order, under the text. Only steps the business follows. */
+  steps?: string[];
+
+  /** The label over `steps`. @default 'What happens next' */
+  stepsLabel?: string;
+
   /** Show the "Rather talk now? Call …" line. @default true */
   showPhone?: boolean;
+
+  /** How the phone line reads: `call` or `both` (email and phone). @default 'call' */
+  contact?: LeadFormSectionContact;
 
   /** Section theme. @default 'dark' */
   theme?: LeadFormSectionTheme;
@@ -83,7 +98,10 @@ const {
   fields,
   projectOptions,
   messageLabel,
+  steps = [],
+  stepsLabel = "What happens next",
   showPhone = true,
+  contact = "call",
   theme = "dark",
   padding,
   id = "lead-form-section",
@@ -114,7 +132,40 @@ if (import.meta.env.DEV && render) {
           <Fragment set:html={heading} />
         </Heading>
         {text && <Text muted>{text}</Text>}
-        {showPhone && (
+        {steps.length > 0 && (
+          <div class="lead-form-section_steps_wrap">
+            <Heading variant="eyebrow" tag="h3">
+              {stepsLabel}
+            </Heading>
+            <ol class="lead-form-section_steps">
+              {steps.map((step, i) => (
+                <li class="lead-form-section_step">
+                  <span
+                    class="lead-form-section_step_number"
+                    aria-hidden="true"
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+        {showPhone && contact === "both" && (
+          <Text muted class="lead-form-section_contact">
+            Prefer email or phone?
+            <br />
+            <a class="lead-form-section_phone" href={`mailto:${SITE.email}`}>
+              {SITE.email}
+            </a>
+            <br />
+            <a class="lead-form-section_phone" href={`tel:${SITE.phone.tel}`}>
+              {SITE.phone.display}
+            </a>
+          </Text>
+        )}
+        {showPhone && contact === "call" && (
           <Text variant="small" muted>
             Rather talk now? Call{" "}
             <a class="lead-form-section_phone" href={`tel:${SITE.phone.tel}`}>
@@ -138,6 +189,38 @@ if (import.meta.env.DEV && render) {
 
 <style is:global>
   @layer components {
+    .lead-form-section_steps_wrap {
+      display: grid;
+      gap: var(--space-3);
+      margin-top: var(--space-3);
+    }
+
+    .lead-form-section_contact {
+      margin-top: var(--space-3);
+    }
+
+    .lead-form-section_steps {
+      display: grid;
+      gap: var(--space-3);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .lead-form-section_step {
+      display: flex;
+      gap: var(--space-3);
+      color: color-mix(in srgb, var(--text) 85%, transparent);
+    }
+
+    .lead-form-section_step_number {
+      flex-shrink: 0;
+      font-family: var(--font-primary);
+      font-size: var(--h6-size);
+      line-height: 1.3;
+      color: var(--heading-accent);
+    }
+
     .lead-form-section_panel {
       padding: var(--space-5);
       border-radius: var(--radius-main);

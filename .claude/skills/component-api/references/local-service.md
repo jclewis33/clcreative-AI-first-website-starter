@@ -107,6 +107,40 @@ accepts `primaryCta` / `secondaryCta` and HTML headings.
 matching one of `areas` exactly. Everything else in the SVG is artwork and
 ignores the pointer. Example: `src/assets/maps/sample-service-area.svg`.
 
+### Estate pieces (the FDC Coatings design)
+
+Built for a high-end, two-sided business (homeowners and contractors). Each
+is a section with a demo on `/components`; they work in any look.
+
+| Section             | What it's for                                                                                | Key props                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PathPanels`        | Two or three doors pulled up over the hero, the last one dark                                | `panels: {label?, title, text?, href, linkLabel}[]`, `overlap`                                                                                               |
+| `FeatureSpotlight`  | One side of the business: photo collage beside heading, ruled items and two buttons          | `images` (1–3; one fills the column), `items: {label, meta?, text?}[]` (`text` = label over line), `cta`, `secondaryCta`, `theme: tint \| dark`              |
+| `ProjectHighlights` | Projects as plain cards ("Category · Service", title, line) with category pills              | `slugs`, `limit`, `showSummary`, `link`, `layout: section \| page` (`page` = a dark /projects header with the pills, then the cards)                         |
+| `ReviewCards`       | Google-style review cards: initial avatar, stars, the words; one review sits narrow          | `reviews: {name, text, meta?, rating?}[]`, `summary`, `limit`, `link`                                                                                        |
+| `QuoteBand`         | A dark closing band: heading and line, stacked buttons, "Or call us at", numbered next steps | `heading`, `text`, `image?` (photo under an overlay), `cta`, `secondaryCta`, `showPhone`, `steps: {text}[]`, `stepsLabel`                                    |
+| `RuledList`         | An intro (and a photo or buttons) beside ruled rows of a name and what it covers             | `items: {title, text}[]`, `image`, `cta` (ink) / `secondaryCta`, `tone: paper \| white`                                                                      |
+| `CaseStudyCards`    | Three white project cards with spec rows, a photo row, a client quote                        | `category`, `cards: {slug, specs: {label, value}[]}[]` (which and in what order), `extras: {image, alt, caption, href?}[]` (the row's first photos), `quote` |
+| `TownLinks`         | The towns as one wrapping line of links under a small heading                                | `towns`, `link` (a path with `{town}` → its kebab-case name)                                                                                                 |
+
+Variants added alongside: `StatsStrip` `variant: band | ruled | spec`
+(hairline-ruled serif words; label over value for a spec bar);
+`ServiceCards` `variant: plain` (photo, title, line, no card);
+`BeforeAfterGallery` `variant: switcher` (chips pick one pair);
+`ChoiceChips` `tone: brand`; `ProcessSteps` / `StepList` `variant: columns`;
+`Hero` `overlay: full` (the whole photo, darkest behind the text) and
+`secondaryVariant: secondary` (an outline button); `FAQ` `layout: stacked`;
+`LeadForm` `fields="bid"` (a contractor's bid invitation) and
+`LeadFormSection` `steps` + `contact: both`; a `SectionCta` takes
+`icon: "download"` for a PDF.
+
+The estate look's `pages: "estate"` swaps in its own templates:
+`ServicePageEstate` (services; `buyer: "contractor"` in a service file gives
+the contractor version — specs, benefits, equipment, work, maintenance) and
+`ProjectEstate` + the `page` ProjectHighlights on /projects. Their optional
+fields are in `src/content.config.ts` (services: `beforeAfter`, `options`,
+`gallery`, `cities`, `cta.steps`; projects: `summary`, `specs`, `story`).
+
 ### Local-service mode and looks
 
 Two `SITE` settings turn the agency chrome into contractor chrome, site-wide:
@@ -120,13 +154,16 @@ Two `SITE` settings turn the agency chrome into contractor chrome, site-wide:
   `LocalServiceHome` uses the site-wide modal when it exists and brings its
   own otherwise.
 - **`SITE.look`** — `studio` (the starter's own), `fresh`, `warm`, `rugged`,
-  `natural` (`src/config/looks.ts`; tokens in
+  `natural`, `estate` (`src/config/looks.ts`; tokens in
   `src/styles/variables/looks.css`). A look re-values tokens only — fonts,
   heading case and tracking, radii, button and nav/footer type, paper and
   ink — so every component follows; the brand colour stays the client's.
   Pick by trade: fresh = lawn, pest, cleaning, pool; warm = HVAC,
   insulation, remodeling; rugged = electrical, roofing, plumbing,
-  commercial; natural = hardscape, landscaping, decks.
+  commercial; natural = hardscape, landscaping, decks; estate = high-end
+  decorative work sold to homeowners and contractors (Fraunces, warm paper,
+  a dark nav with the name beside the logo, the brief footer and its own
+  service and project pages).
 
 ### Service areas (`src/content/service-areas/`)
 

@@ -3,6 +3,13 @@ import type { HTMLAttributes, ComponentProps } from "astro/types";
 import Section from "@/components/ui/Section.astro";
 
 type StatsStripItem = { value: string; label: string };
+type StatsStripVariant =
+  /** A slim band of accent figures (on dark by default) */
+  | "band"
+  /** On the page, each fact under a hairline rule, in the heading face */
+  | "ruled"
+  /** A spec bar: a small caps label OVER a bold value ("Insurance" / "Fully insured") */
+  | "spec";
 type StatsStripValueSize =
   /** Big figures — "15+", "4.9", "2,400" */
   | "number"
@@ -34,6 +41,13 @@ interface Props extends HTMLAttributes<"section"> {
   /** Value styling. @default 'number' */
   valueSize?: StatsStripValueSize;
 
+  /**
+   * `band` — accent figures in a slim band; `ruled` — facts under hairline
+   * rules on the page (theme inherits); `spec` — label over value, for
+   * readers in a hurry (estimators). @default 'band'
+   */
+  variant?: StatsStripVariant;
+
   /** Section theme. @default 'dark' */
   theme?: StatsStripTheme;
 
@@ -52,8 +66,9 @@ const {
   render = true,
   items = [],
   valueSize = "number",
-  theme = "dark",
-  padding = "xsmall",
+  variant = "band",
+  theme = variant === "ruled" ? undefined : "dark",
+  padding = variant === "ruled" ? "small" : "xsmall",
   id,
   class: className,
   ...rest
@@ -74,6 +89,7 @@ if (import.meta.env.DEV && render) {
       padding={padding}
       id={id}
       class:list={["stats-strip_wrap", className]}
+      data-variant={variant}
       {...rest}
     >
       <div class="stats-strip_contain">
@@ -129,6 +145,45 @@ if (import.meta.env.DEV && render) {
     .stats-strip_label {
       font-size: var(--text-small-size);
       color: color-mix(in srgb, var(--text) 70%, transparent);
+    }
+
+    /* variant="ruled": on the page, each fact under a hairline, the value
+       in the heading face and ink (not the accent), the label muted. */
+    .stats-strip_wrap[data-variant="ruled"] .stats-strip_item {
+      gap: var(--space-2);
+      padding-top: var(--space-4);
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .stats-strip_wrap[data-variant="ruled"] .stats-strip_value {
+      font-size: var(--h5-size);
+      font-weight: var(--h5-weight);
+      line-height: 1.15;
+      color: var(--text);
+    }
+
+    /* variant="spec": label over value — small caps label, plain bold value. */
+    .stats-strip_wrap[data-variant="spec"] .stats-strip_list {
+      grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+    }
+
+    .stats-strip_wrap[data-variant="spec"] .stats-strip_item {
+      flex-direction: column-reverse;
+      justify-content: flex-end;
+    }
+
+    .stats-strip_wrap[data-variant="spec"] .stats-strip_value {
+      font-family: var(--font-secondary);
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text);
+    }
+
+    .stats-strip_wrap[data-variant="spec"] .stats-strip_label {
+      font-size: var(--text-tiny-size);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
     }
 
     @container (max-width: 35em) {

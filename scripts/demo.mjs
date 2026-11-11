@@ -274,6 +274,8 @@ async function main() {
   await homeImage(home.callBand, "image", "call-band");
   for (const [i, job] of (home.recentWork?.items ?? []).entries())
     await homeImage(job, "image", `work-${i + 1}`, 1600);
+  for (const [i, pic] of (home.spotlight?.images ?? []).entries())
+    await homeImage(pic, "image", `spotlight-${i + 1}`, 1600);
   for (const [i, pair] of (home.beforeAfter?.items ?? []).entries()) {
     await homeImage(pair, "before", `before-${i + 1}`, 1600);
     await homeImage(pair, "after", `after-${i + 1}`, 1600);
@@ -385,7 +387,9 @@ async function main() {
   );
 
   // 2. Identity, through setup.mjs (one engine for forks and demos).
-  const lightBrand = luminance(demo.brand.color) > 0.4;
+  const lightBrand = demo.brand.text
+    ? demo.brand.text === "dark"
+    : luminance(demo.brand.color) > 0.4;
   const answers = {
     contentSource: "files",
     siteName: name,
@@ -449,6 +453,9 @@ async function main() {
         : {}),
     },
     license: demo.license ?? "",
+    navSecondaryCta: demo.audience?.navButton
+      ? { label: demo.audience.navButton, href: `/${demo.audience.path}` }
+      : null,
   };
   const answersFile = path.join(
     os.tmpdir(),
@@ -530,6 +537,22 @@ async function main() {
       service.scope.image = await image(service.scope.image, "scope", 2400);
     for (const [i, pic] of service.included.images.entries())
       pic.src = await image(pic.src, `included-${i + 1}`);
+    // The estate service page's photos (each section optional).
+    for (const [i, pair] of (service.beforeAfter?.items ?? []).entries()) {
+      pair.before = await image(pair.before, `before-${i + 1}`);
+      pair.after = await image(pair.after, `after-${i + 1}`);
+    }
+    for (const [i, option] of (service.options?.items ?? []).entries())
+      option.image = await image(option.image, `option-${i + 1}`, 1600);
+    for (const [i, pic] of (service.gallery?.images ?? []).entries())
+      pic.src = await image(pic.src, `gallery-${i + 1}`, 1600);
+    if (service.equipment?.image)
+      service.equipment.image = await image(
+        service.equipment.image,
+        "equipment",
+      );
+    for (const [i, item] of (service.work?.items ?? []).entries())
+      item.image = await image(item.image, `work-${i + 1}`, 1600);
     for (const [i, review] of (service.reviews ?? []).entries())
       if (review.avatar)
         review.avatar = await image(review.avatar, `review-${i + 1}`, 256);
@@ -616,7 +639,12 @@ async function main() {
       `audience.path "${demo.audience.path}" is already a page (${audiencePage}) — pick another path.`,
     );
   if (demo.audience) {
-    const audience = structuredClone(demo.audience);
+    // `group` and `navButton` are nav settings, not page data.
+    const {
+      group: _group,
+      navButton: _navButton,
+      ...audience
+    } = structuredClone(demo.audience);
     audience.path = `/${audience.path}`;
     /** @type {Array<[string, string]>} identifier → asset path */
     const audienceImports = [];
@@ -634,6 +662,8 @@ async function main() {
     await audienceImage(audience.hero, "image", "hero");
     await audienceImage(audience.scope, "image", "scope");
     await audienceImage(audience.capability, "image", "capability");
+    for (const [i, extra] of (audience.projects?.extras ?? []).entries())
+      await audienceImage(extra, "image", `extra${i + 1}`);
     let audienceJson = JSON.stringify(audience, null, 2);
     audienceImports.forEach(([id], i) => {
       audienceJson = audienceJson.replace(`"__AUDIENCE_IMAGE_${i}__"`, id);
@@ -731,13 +761,16 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
     const aboutDesc =
       demo.home.about?.description ?? `Who ${name} is and how we work.`;
     const audiencePath = demo.audience ? `/${demo.audience.path}` : null;
+    const audienceGroup = demo.audience?.group;
     const navPaths = [
-      ...(audiencePath ? [audiencePath] : []),
+      ...(audiencePath && !audienceGroup ? [audiencePath] : []),
       ...(demo.projects ? ["/projects"] : []),
       "/about",
       ...(hasReviewsPage ? ["/reviews"] : []),
     ];
     const footerPaths = navPaths.filter((p) => p !== "/projects");
+    const groupLinks =
+      audiencePath && audienceGroup ? { [audienceGroup]: [audiencePath] } : {};
     await write(
       "src/data/preset-pages.ts",
       `/**
@@ -745,6 +778,7 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
  * (scripts/demo.mjs) from demo.json. Don't edit; re-run the script.
  */
 import type { FooterLink, NavMenuItem, SitePage } from "./site-structure";
+import type { ProjectsPageCopy } from "./preset-pages-types";
 
 export const PRESET_PAGES: SitePage[] = [${
         demo.audience
@@ -774,8 +808,16 @@ export const PRESET_PAGES: SitePage[] = [${
       : ""
   }
 ];
-export const PRESET_NAV: NavMenuItem[] = ${JSON.stringify(navPaths.map((p) => ({ path: p })))};
+export const PRESET_NAV: NavMenuItem[] = ${JSON.stringify(
+        navPaths.map((p) =>
+          p === "/about" && demo.home.about?.navLabel
+            ? { path: p, label: demo.home.about.navLabel }
+            : { path: p },
+        ),
+      )};
 export const PRESET_FOOTER: FooterLink[] = ${JSON.stringify(footerPaths)};
+export const PRESET_GROUP_LINKS: Record<string, string[]> = ${JSON.stringify(groupLinks)};
+export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(demo.projectsPage ?? null)};
 `,
     );
   }

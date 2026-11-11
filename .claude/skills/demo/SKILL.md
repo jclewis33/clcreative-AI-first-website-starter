@@ -102,6 +102,20 @@ cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
 
 ## Working with Casey on a demo
 
+- **An approved design is the source of truth.** When Casey approves a
+  design (an Artifact design canvas, a mockup), build THAT: the same
+  sections in the same order, the same nav, buttons, banner and utility
+  bar, the same copy. Use an existing component only where it already
+  produces the design; otherwise add a variant or build a new component
+  (in the starter, reusable). Never bend the design to fit the components
+  we have — every demo built from a design should leave the starter with
+  more to pull from. Before reporting, compare the build to the design
+  section by section, side by side, and fix every difference. One
+  exception: the footer. Design boards often show a short one; the site
+  uses one consistent full footer (the home page design's) on every page.
+  (Casey,
+  Nov 2026, FDC Coatings: the first build swapped his approved design's
+  nav, banner order, buttons and sections for existing ones.)
 - **Show, then build.** For a visual call (hero treatment, a background,
   mascot vs. photo) send 2–3 quick mockups or screenshots first; build the
   one he picks.

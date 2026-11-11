@@ -213,9 +213,11 @@ const estimateOptions = SITE.quote
     )}
     <!--First tab stop on every page: skip link for keyboard users -->
     <SkipLink />
-    <UtilityBar />
-    <!--Navbar appears at the top of every page -->
-    <Navbar theme={look.nav} bannerText={bannerText} bannerHref={bannerHref} />
+    <!--Navbar appears at the top of every page; the utility bar sits in it,
+        under the announcement banner, and scrolls away with it -->
+    <Navbar theme={look.nav} bannerText={bannerText} bannerHref={bannerHref}>
+      <UtilityBar slot="utility" />
+    </Navbar>
     <!--tabindex="-1" lets the skip link move focus here in every browser -->
     <main id="main-content" tabindex="-1">
       <!--Rest of page content -->

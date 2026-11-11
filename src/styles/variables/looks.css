@@ -35,7 +35,8 @@
 :root[data-look="fresh"],
 :root[data-look="warm"],
 :root[data-look="rugged"],
-:root[data-look="natural"] {
+:root[data-look="natural"],
+:root[data-look="estate"] {
   --section-space-large: clamp(4rem, 4.286vw + 3.143rem, 7rem);
   --section-space-main: clamp(3rem, 2.857vw + 2.429rem, 5rem);
 }
@@ -61,6 +62,7 @@
 :root[data-look="warm"],
 :root[data-look="rugged"],
 :root[data-look="natural"],
+:root[data-look="estate"],
 :root[data-look] [data-theme] {
   --footer-background: color-mix(in oklab, var(--color-dark-900), black 35%);
 }
@@ -73,7 +75,8 @@
 :root[data-look="fresh"] :is([data-theme="dark"], .u-theme-dark),
 :root[data-look="warm"] :is([data-theme="dark"], .u-theme-dark),
 :root[data-look="rugged"] :is([data-theme="dark"], .u-theme-dark),
-:root[data-look="natural"] :is([data-theme="dark"], .u-theme-dark) {
+:root[data-look="natural"] :is([data-theme="dark"], .u-theme-dark),
+:root[data-look="estate"] :is([data-theme="dark"], .u-theme-dark) {
   --heading-accent: var(--color-brand-300);
 }
 
@@ -85,7 +88,8 @@
 :root[data-look="fresh"] .nav_wrap,
 :root[data-look="warm"] .nav_wrap,
 :root[data-look="rugged"] .nav_wrap,
-:root[data-look="natural"] .nav_wrap {
+:root[data-look="natural"] .nav_wrap,
+:root[data-look="estate"] .nav_wrap {
   --nav-banner-background: color-mix(in srgb, var(--color-dark-900) 7%, var(--color-light-200));
   --nav-banner-color: var(--color-dark-900);
   /* Desktop links sit right, beside the phone and the button: a lone
@@ -283,4 +287,65 @@
   --chrome-font-family: var(--font-secondary);
   --chrome-text-transform: none;
   --chrome-letter-spacing: normal;
+}
+
+/* =====================================================
+   ESTATE & REFINED — high-end finishes for homes and commercial work
+   (decorative concrete, custom builds, fine remodeling)
+   Warm paper, light Fraunces headings, Inter body, squared buttons and
+   corners, a dark nav, near-black ink warmed by the brand. Accents read a
+   step deeper than the brand on paper and a step lighter on dark.
+   ===================================================== */
+
+:root[data-look="estate"] {
+  --color-light-100: #ffffff;
+  --color-light-200: #f6f1ea;
+  --color-dark-900: color-mix(in oklab, var(--color-brand-500) 10%, #120e0c);
+  --color-dark-800: color-mix(in oklab, var(--color-brand-500) 12%, #241c17);
+
+  --font-primary: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-secondary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;
+  --font-tertiary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;
+  --font-body: var(--font-secondary);
+
+  --display-lg-min: 2.75;
+  --display-lg-max: 4.75;
+  --display-lg-weight: 300;
+  --display-lg-line-height: 1.04;
+  --h1-weight: 300;
+  --h2-weight: 400;
+  --h3-weight: 400;
+  --h4-weight: 400;
+  --h5-weight: 400;
+  --h6-weight: 400;
+  --heading-letter-spacing: -0.015em;
+
+  /* The hero's star line in Google gold, like the review cards. */
+  --hero-star: var(--color-star);
+
+  --radius-main: 0.25rem;
+  --button-radius: 0.125rem;
+  --button-font-family: var(--font-secondary);
+  --button-font-size: 0.9375rem;
+  --button-font-weight: 600;
+  --button-text-transform: none;
+  --button-letter-spacing: normal;
+
+  --eyebrow-font-family: var(--font-secondary);
+  --eyebrow-size: 0.75rem;
+  --eyebrow-weight: 600;
+  --eyebrow-tracking: 0.18em;
+
+  --chrome-font-family: var(--font-secondary);
+  --chrome-text-transform: none;
+  --chrome-letter-spacing: normal;
+}
+
+/* Accent text on paper: a step deeper than the brand, so a mid-tone brand
+   (copper, terracotta) still reads as text. Light sections and light
+   islands inside dark ones re-declare it (themes.css), so they're listed. */
+:root[data-look="estate"],
+:root[data-look="estate"] :is([data-theme="light"], [data-theme="base"]),
+:root[data-look="estate"] :is([data-theme="dark"], [data-theme="brand"]) [data-theme-invert] {
+  --heading-accent: var(--color-brand-600);
 }

@@ -6,7 +6,11 @@ import Grid from "@/components/ui/Grid.astro";
 import SectionHeader from "@/components/ui/SectionHeader.astro";
 import BeforeAfter from "@/components/ui/BeforeAfter.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import ChoiceChips from "@/components/ui/ChoiceChips.astro";
 import type { SectionCta } from "@/lib/cta";
+import { uid } from "@/lib/uid";
 
 type BeforeAfterGalleryItem = {
   /** The job before (an import). */
@@ -22,6 +26,11 @@ type BeforeAfterGalleryItem = {
   /** One line under the title. */
   text?: string;
 };
+type BeforeAfterGalleryVariant =
+  /** Every pair as a slider, two across */
+  | "grid"
+  /** The heading and pill buttons on the left, one large slider on the right showing the picked pair */
+  | "switcher";
 type BeforeAfterGalleryTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -61,6 +70,13 @@ interface Props extends HTMLAttributes<"section"> {
   /** Optional button under the sliders ("See all our projects"). */
   cta?: SectionCta;
 
+  /**
+   * `grid` — every pair as a slider, two across; `switcher` — heading and
+   * pills (one per pair, its `title`) on the left, one large slider on
+   * the right. Pure CSS: the pills are radios. Up to four pairs. @default 'grid'
+   */
+  variant?: BeforeAfterGalleryVariant;
+
   /** Section theme. */
   theme?: BeforeAfterGalleryTheme;
 
@@ -82,6 +98,7 @@ const {
   intro,
   items = [],
   cta,
+  variant = "grid",
   theme,
   padding,
   id,
@@ -95,6 +112,11 @@ if (import.meta.env.DEV && render && !Astro.props.items?.length) {
   );
 }
 const single = items.length === 1;
+const switchName = uid("before-after-switch");
+const pills = items.slice(0, 4).map((item, i) => ({
+  label: item.text ? `${item.title} · ${item.text}` : item.title,
+  value: String(i),
+}));
 ---
 
 {
@@ -106,33 +128,73 @@ const single = items.length === 1;
       class:list={["before-after-gallery_wrap", className]}
       {...rest}
     >
-      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
-      <Grid
-        largeColumns={single ? 1 : 2}
-        mediumColumns={single ? 1 : 2}
-        smallColumns={1}
-      >
-        {items.map((item) => (
-          <figure class="before-after-gallery_item">
-            <BeforeAfter
-              before={item.before}
-              beforeAlt={item.beforeAlt}
-              after={item.after}
-              afterAlt={item.afterAlt}
-              ratio={single ? "wide" : "landscape"}
-              label={`${item.title}: before and after`}
+      {variant === "switcher" && (
+        <div class="before-after-gallery_switch">
+          <div class="before-after-gallery_intro u-margin-trim">
+            {eyebrow && (
+              <Heading variant="eyebrow" marginBottom={4}>
+                {eyebrow}
+              </Heading>
+            )}
+            <Heading tag="h2" variant="h2" marginBottom={5}>
+              {heading}
+            </Heading>
+            {intro && <Text marginBottom={6}>{intro}</Text>}
+            <ChoiceChips
+              legend="Choose a project"
+              legendHidden
+              name={switchName}
+              options={pills}
+              tone="brand"
             />
-            <figcaption class="before-after-gallery_caption">
-              <span class="before-after-gallery_title">{item.title}</span>
-              {item.text && (
-                <span class="before-after-gallery_text u-text-style-small">
-                  {item.text}
-                </span>
-              )}
-            </figcaption>
-          </figure>
-        ))}
-      </Grid>
+          </div>
+          <div class="before-after-gallery_stage">
+            {items.slice(0, 4).map((item, i) => (
+              <div class="before-after-gallery_pair" data-pair={String(i)}>
+                <BeforeAfter
+                  before={item.before}
+                  beforeAlt={item.beforeAlt}
+                  after={item.after}
+                  afterAlt={item.afterAlt}
+                  ratio="landscape"
+                  label={`${item.title}: before and after`}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {variant !== "switcher" && (
+        <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      )}
+      {variant !== "switcher" && (
+        <Grid
+          largeColumns={single ? 1 : 2}
+          mediumColumns={single ? 1 : 2}
+          smallColumns={1}
+        >
+          {items.map((item) => (
+            <figure class="before-after-gallery_item">
+              <BeforeAfter
+                before={item.before}
+                beforeAlt={item.beforeAlt}
+                after={item.after}
+                afterAlt={item.afterAlt}
+                ratio={single ? "wide" : "landscape"}
+                label={`${item.title}: before and after`}
+              />
+              <figcaption class="before-after-gallery_caption">
+                <span class="before-after-gallery_title">{item.title}</span>
+                {item.text && (
+                  <span class="before-after-gallery_text u-text-style-small">
+                    {item.text}
+                  </span>
+                )}
+              </figcaption>
+            </figure>
+          ))}
+        </Grid>
+      )}
       {cta && (
         <div class="before-after-gallery_action">
           <CtaButton cta={cta} variant="secondary" size="large" />
@@ -164,6 +226,39 @@ const single = items.length === 1;
 
     .before-after-gallery_text {
       opacity: 0.75;
+    }
+
+    /* variant="switcher": text and pills left, one slider right; the
+       picked pill's pair shows (radios + :has, no script). */
+    .before-after-gallery_switch {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-7);
+      align-items: center;
+    }
+
+    /* Side by side once the section's container is wide enough. */
+    @container (min-width: 56em) {
+      .before-after-gallery_switch {
+        grid-template-columns: minmax(0, 5fr) minmax(0, 8fr);
+      }
+    }
+
+    .before-after-gallery_pair {
+      display: none;
+    }
+
+    .before-after-gallery_switch:not(:has(.choice-chips_radio:checked))
+      .before-after-gallery_pair[data-pair="0"],
+    .before-after-gallery_switch:has(.choice-chips_radio[value="0"]:checked)
+      .before-after-gallery_pair[data-pair="0"],
+    .before-after-gallery_switch:has(.choice-chips_radio[value="1"]:checked)
+      .before-after-gallery_pair[data-pair="1"],
+    .before-after-gallery_switch:has(.choice-chips_radio[value="2"]:checked)
+      .before-after-gallery_pair[data-pair="2"],
+    .before-after-gallery_switch:has(.choice-chips_radio[value="3"]:checked)
+      .before-after-gallery_pair[data-pair="3"] {
+      display: block;
     }
 
     .before-after-gallery_action {

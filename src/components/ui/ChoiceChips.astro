@@ -20,6 +20,11 @@ import type { HTMLAttributes } from "astro/types";
 
 /** One chip: the text on the pill and the radio's value. */
 type ChoiceChipOption = { label: string; value: string };
+type ChoiceChipsTone =
+  /** The picked chip in the ink colour */
+  | "ink"
+  /** The picked chip in the brand colour (like the main button) */
+  | "brand";
 
 export interface Props extends HTMLAttributes<"fieldset"> {
   /**
@@ -51,6 +56,9 @@ export interface Props extends HTMLAttributes<"fieldset"> {
   /** Hide the legend visually (screen readers still read it). @default false */
   legendHidden?: boolean;
 
+  /** The picked chip's colour: ink, or the brand (like the main button). @default 'ink' */
+  tone?: ChoiceChipsTone;
+
   /** Extra classes on the fieldset. */
   class?: string;
 }
@@ -63,6 +71,7 @@ const {
   options = [],
   checked = 0,
   legendHidden = false,
+  tone = "ink",
   class: className,
   ...rest
 } = Astro.props;
@@ -76,7 +85,14 @@ if (import.meta.env.DEV && render) {
 
 {
   render && options.length >= 2 && (
-    <fieldset class:list={["choice-chips_wrap", className]} {...rest}>
+    <fieldset
+      class:list={[
+        "choice-chips_wrap",
+        tone === "brand" && "is-brand",
+        className,
+      ]}
+      {...rest}
+    >
       <legend
         class:list={[
           "choice-chips_legend",
@@ -144,6 +160,12 @@ if (import.meta.env.DEV && render) {
       border-color: var(--text);
       background-color: var(--text);
       color: var(--background);
+    }
+
+    .choice-chips_wrap.is-brand .choice-chips_chip:has(:checked) {
+      border-color: var(--button-primary-background);
+      background-color: var(--button-primary-background);
+      color: var(--button-primary-text);
     }
 
     .choice-chips_chip:has(:focus-visible) {

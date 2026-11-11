@@ -97,6 +97,14 @@ import SymptomCards from "@/components/sections/SymptomCards.astro";
 import OfferBand from "@/components/sections/OfferBand.astro";
 import RecentWork from "@/components/sections/RecentWork.astro";
 import BeforeAfterGallery from "@/components/sections/BeforeAfterGallery.astro";
+import PathPanels from "@/components/sections/PathPanels.astro";
+import FeatureSpotlight from "@/components/sections/FeatureSpotlight.astro";
+import ProjectHighlights from "@/components/sections/ProjectHighlights.astro";
+import ReviewCards from "@/components/sections/ReviewCards.astro";
+import QuoteBand from "@/components/sections/QuoteBand.astro";
+import RuledList from "@/components/sections/RuledList.astro";
+import CaseStudyCards from "@/components/sections/CaseStudyCards.astro";
+import TownLinks from "@/components/sections/TownLinks.astro";
 import Guarantee from "@/components/sections/Guarantee.astro";
 import ComparisonTable from "@/components/sections/ComparisonTable.astro";
 import EmergencyBand from "@/components/sections/EmergencyBand.astro";
@@ -298,6 +306,14 @@ const COMPONENT_INDEX = [
   { slug: "option-cards", text: "OptionCards" },
   { slug: "reviews", text: "Reviews" },
   { slug: "lead-form-section", text: "LeadFormSection" },
+  { slug: "path-panels", text: "PathPanels" },
+  { slug: "feature-spotlight", text: "FeatureSpotlight" },
+  { slug: "project-highlights", text: "ProjectHighlights" },
+  { slug: "review-cards", text: "ReviewCards" },
+  { slug: "quote-band", text: "QuoteBand" },
+  { slug: "ruled-list", text: "RuledList" },
+  { slug: "case-study-cards", text: "CaseStudyCards" },
+  { slug: "town-links", text: "TownLinks" },
   { slug: "call-band", text: "CallBand" },
   { slug: "cta-section-cta", text: "CTASection with SectionCta" },
   { slug: "contact-cards", text: "ContactCards & LinkList" },
@@ -359,6 +375,8 @@ const demoProject1: ProjectCardData = {
   category: "remodel",
   categoryLabel: "Remodel",
   location: "Springfield, IL",
+  service: "",
+  summary: "",
   image: {
     src: demoPhoto1,
     alt: "A remodeled kitchen with white cabinets",
@@ -374,6 +392,8 @@ const demoProject2: ProjectCardData = {
   category: "commercial",
   categoryLabel: "Commercial",
   location: "",
+  service: "",
+  summary: "",
   image: {
     src: demoPhoto2,
     alt: "A refreshed storefront with new signage",
@@ -3066,6 +3086,202 @@ const leadPhotoOptions = [
     primaryCta={{ label: "Send a message", href: "#lead-form" }}
   />
 
+  <Section theme="light" padding="small" id="path-panels">
+    <Heading variant="eyebrow">PathPanels</Heading>
+    <Heading tag="h2">Two kinds of buyer, two doors (the last one dark)</Heading
+    >
+  </Section>
+  <PathPanels
+    panels={[
+      {
+        label: "For homeowners",
+        title: "Floors and patios for the home you love",
+        text: "Stamped overlays, stained floors and pool decks, finished by our own crew.",
+        href: "#path-panels",
+        linkLabel: "Explore residential",
+      },
+      {
+        label: "For contractors",
+        title: "A finish sub with the machines",
+        text: "Polished concrete and coatings on schedule, with the paperwork ready.",
+        href: "#path-panels",
+        linkLabel: "Commercial capabilities",
+      },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="feature-spotlight">
+    <Heading variant="eyebrow">FeatureSpotlight</Heading>
+    <Heading tag="h2">One side of the business in the spotlight</Heading>
+  </Section>
+  <FeatureSpotlight
+    eyebrow="Commercial"
+    heading="A finish sub <strong>with the machines</strong>"
+    text="Polished concrete and coatings for contractors and property managers."
+    images={[
+      { image: demoPhoto4, alt: "Placeholder — a wide commercial floor" },
+      { image: demoPhoto5, alt: "Placeholder — a lobby" },
+      { image: demoPhoto6, alt: "Placeholder — a corridor" },
+    ]}
+    items={[
+      { label: "Polished concrete", meta: "03 35 00" },
+      { label: "Epoxy and urethane", meta: "09 67 00" },
+    ]}
+    cta={{ label: "Commercial capabilities", href: "#feature-spotlight" }}
+    secondaryCta={{
+      label: "Capabilities statement",
+      href: "#feature-spotlight",
+      icon: "download",
+    }}
+  />
+  <FeatureSpotlight
+    theme="dark"
+    eyebrow="Equipment"
+    heading="Bigger areas need bigger machinery"
+    images={[{ image: demoPhoto7, alt: "Placeholder — a grinder on a slab" }]}
+    items={[
+      {
+        label: "Large-format grinders",
+        text: "For open floors, cutting labor hours.",
+      },
+      { label: "Our own generator", text: "No site power yet? We bring one." },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="project-highlights">
+    <Heading variant="eyebrow">ProjectHighlights</Heading>
+    <Heading tag="h2">Projects as plain cards, with category pills</Heading>
+  </Section>
+  <ProjectHighlights
+    eyebrow="Projects"
+    heading="Selected work"
+    showSummary
+    link={{ label: "View all projects", href: "/projects" }}
+  />
+
+  <Section theme="light" padding="small" id="review-cards">
+    <Heading variant="eyebrow">ReviewCards</Heading>
+    <Heading tag="h2">Google-style review cards</Heading>
+  </Section>
+  <ReviewCards
+    summary="78 five-star reviews on Google"
+    reviews={[
+      {
+        name: "Jordan Lee",
+        meta: "Google review",
+        rating: 5,
+        text: "They showed up when they said, explained every step and left the place cleaner than they found it.",
+      },
+      {
+        name: "Sam Rivera",
+        meta: "Google review",
+        rating: 5,
+        text: "Fair price, great work, and they answered every question we had.",
+      },
+      {
+        name: "Alex Kim",
+        meta: "Google review",
+        rating: 5,
+        text: "Our patio looks brand new. We have already recommended them to two neighbors.",
+      },
+    ]}
+    link={{ label: "Read all our Google reviews", href: "#review-cards" }}
+  />
+
+  <Section theme="light" padding="small" id="quote-band">
+    <Heading variant="eyebrow">QuoteBand</Heading>
+    <Heading tag="h2">A dark closing band with what happens next</Heading>
+  </Section>
+  <QuoteBand
+    heading="Find out what your slab can become."
+    text="Tell us about the room and send a few photos."
+    image={demoPhoto8}
+    imageAlt="Placeholder — a finished floor"
+    cta={{ label: "Request a quote", href: "#quote-band" }}
+    steps={[
+      { text: "We review your project details and photos." },
+      { text: "We call or text you to talk it through." },
+      { text: "If it is a fit, we visit and send a written quote." },
+    ]}
+  />
+
+  <Section theme="light" padding="small" id="ruled-list">
+    <Heading variant="eyebrow">RuledList</Heading>
+    <Heading tag="h2">A list a buyer scans, beside an intro</Heading>
+  </Section>
+  <RuledList
+    eyebrow="Scopes we cover"
+    heading="One sub for every concrete finish"
+    text="From the warehouse slab to the lobby floor."
+    image={demoPhoto9}
+    imageAlt="Placeholder — a polished floor"
+    items={[
+      {
+        title: "Warehouse and distribution slabs",
+        text: "Densifiers, sealers and joint fill",
+      },
+      {
+        title: "Offices and lobbies",
+        text: "Polished concrete, satin to mirror gloss",
+      },
+      {
+        title: "Break rooms and kitchens",
+        text: "Epoxy and urethane floor systems",
+      },
+    ]}
+  />
+  <RuledList
+    tone="white"
+    eyebrow="Prequalification"
+    heading="Everything your prequal asks for"
+    items={[
+      {
+        title: "Certificate of insurance",
+        text: "Issued by our agent, naming your company",
+      },
+      { title: "W-9", text: "Current and signed" },
+    ]}
+    cta={{ label: "Download capabilities statement", href: "#ruled-list" }}
+    secondaryCta={{ label: "Request prequal packet", href: "#ruled-list" }}
+  />
+
+  <Section theme="light" padding="small" id="case-study-cards">
+    <Heading variant="eyebrow">CaseStudyCards</Heading>
+    <Heading tag="h2">Projects for a buyer who checks the details</Heading>
+  </Section>
+  <CaseStudyCards
+    eyebrow="Commercial projects"
+    heading="Commercial work we have finished."
+    category="commercial"
+    extras={[
+      {
+        image: demoPhoto10,
+        alt: "Placeholder — a corridor",
+        caption: "Self-storage corridors",
+      },
+      {
+        image: demoPhoto11,
+        alt: "Placeholder — an office",
+        caption: "Office build-out",
+      },
+    ]}
+    quote={{
+      text: "The work was excellent, highly recommended.",
+      name: "A. Client",
+      meta: "Google review",
+    }}
+  />
+
+  <Section theme="light" padding="small" id="town-links">
+    <Heading variant="eyebrow">TownLinks</Heading>
+    <Heading tag="h2">The towns as one line of links</Heading>
+  </Section>
+  <TownLinks
+    heading="Polished concrete near you"
+    towns={["Argyle", "Carrollton", "Flower Mound", "Lewisville", "The Colony"]}
+    link="#town-links"
+  />
+
   <Section theme="light" padding="small" id="stats-strip">
     <Heading variant="eyebrow">StatsStrip</Heading>
     <Heading tag="h2">Proof points as numbers or as words</Heading>
@@ -3086,6 +3302,25 @@ const leadPhotoOptions = [
       { value: "Same week", label: "Estimates" },
       { value: "Fixed price", label: "No surprises" },
       { value: "Local", label: "Crews you'll see again" },
+    ]}
+  />
+  <StatsStrip
+    variant="ruled"
+    valueSize="word"
+    items={[
+      { value: "Your existing slab", label: "No new flooring to buy" },
+      { value: "Satin to high gloss", label: "You choose the shine" },
+      { value: "Made to match", label: "Dyes, scoring and logos" },
+      { value: "Easy to live with", label: "Sweep, then damp mop" },
+    ]}
+  />
+  <StatsStrip
+    variant="spec"
+    theme="dark"
+    items={[
+      { value: "03 35 00 · 09 67 00", label: "Spec sections" },
+      { value: "Fully insured", label: "Insurance" },
+      { value: "Nights and weekends", label: "Scheduling" },
     ]}
   />
 

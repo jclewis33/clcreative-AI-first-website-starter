@@ -11,7 +11,8 @@ interface Props extends HTMLAttributes<"div"> {
    * `SITE.utilityBar` to `null` (the starter default) and nothing renders.
    *
    * Desktop shows the text and phone on the left and `areaLabel` on the
-   * right. Phones get one full-width tap-to-call bar. It scrolls away with
+   * right; with `link`, the right side is that link and the phone, and the
+   * left is the text alone. Phones get one full-width tap-to-call bar. It scrolls away with
    * the page; only the navbar below it is sticky.
    *
    * Every phone number written in `text` ("Dallas (972) 262-5113 ·
@@ -46,6 +47,7 @@ const hasNumbers = parts.some((p) => p.tel);
 const hasMainPhone = parts.some(
   (p) => p.tel && digits(p.text) === digits(SITE.phone.tel),
 );
+const link = bar?.link;
 ---
 
 {
@@ -57,7 +59,7 @@ const hasMainPhone = parts.some(
     >
       <div class="utility-bar_contain">
         <p class="utility-bar_message">
-          <span class="utility-bar_dot" aria-hidden="true" />
+          {!link && <span class="utility-bar_dot" aria-hidden="true" />}
           <span>
             {parts.map((p) =>
               p.tel ? (
@@ -69,18 +71,32 @@ const hasMainPhone = parts.some(
               ),
             )}
           </span>
-          {!hasMainPhone && (
+          {!hasMainPhone && !link && (
             <span class="utility-bar_sep" aria-hidden="true">
               ·
             </span>
           )}
-          {!hasMainPhone && (
+          {!hasMainPhone && !link && (
             <a class="utility-bar_phone" href={tel}>
               {SITE.phone.display}
             </a>
           )}
         </p>
-        {bar.areaLabel && <p class="utility-bar_area">{bar.areaLabel}</p>}
+        {bar.areaLabel && !link && (
+          <p class="utility-bar_area">{bar.areaLabel}</p>
+        )}
+        {link && (
+          <div class="utility-bar_aside">
+            <a class="utility-bar_link" href={link.href}>
+              {link.label}
+            </a>
+            {!hasMainPhone && (
+              <a class="utility-bar_phone" href={tel}>
+                {SITE.phone.display}
+              </a>
+            )}
+          </div>
+        )}
       </div>
       {/* Phones: one tap-to-call bar; with several numbers in the text,
           each one is its own link instead. */}
@@ -152,6 +168,19 @@ const hasMainPhone = parts.some(
       text-decoration: none;
     }
 
+    .utility-bar_aside {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2) var(--space-5);
+    }
+
+    .utility-bar_link {
+      color: var(--heading-accent);
+      font-weight: var(--font-weight-medium);
+      text-decoration: none;
+    }
+
     .utility-bar_area {
       margin: 0;
       color: color-mix(in srgb, var(--text) 60%, transparent);
@@ -178,7 +207,8 @@ const hasMainPhone = parts.some(
     }
 
     @media (hover: hover) {
-      .utility-bar_phone:hover {
+      .utility-bar_phone:hover,
+      .utility-bar_link:hover {
         text-decoration: underline;
       }
     }
