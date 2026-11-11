@@ -503,6 +503,54 @@ const serviceSchema = z
     reviews: z
       .array(z.object({ avatar: image.optional() }).passthrough())
       .optional(),
+    /* The estate service page's sections (look "estate"); the content
+       schema checks the rest at sync. */
+    beforeAfter: z
+      .object({
+        items: z
+          .array(
+            z
+              .object({
+                before: image,
+                beforeAlt: text,
+                after: image,
+                afterAlt: text,
+              })
+              .passthrough(),
+          )
+          .min(1)
+          .max(4),
+      })
+      .passthrough()
+      .optional(),
+    options: z
+      .object({
+        items: z
+          .array(z.object({ image, imageAlt: text }).passthrough())
+          .min(2)
+          .max(4),
+      })
+      .passthrough()
+      .optional(),
+    gallery: z
+      .object({
+        images: z
+          .array(z.object({ src: image, alt: text }))
+          .min(2)
+          .max(4),
+      })
+      .passthrough()
+      .optional(),
+    equipment: z.object({ image, imageAlt: text }).passthrough().optional(),
+    work: z
+      .object({
+        items: z
+          .array(z.object({ image, imageAlt: text }).passthrough())
+          .min(2)
+          .max(4),
+      })
+      .passthrough()
+      .optional(),
   })
   .passthrough();
 

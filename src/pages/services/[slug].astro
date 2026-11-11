@@ -9,6 +9,9 @@
  */
 import type { GetStaticPaths } from "astro";
 import ServicePage from "@/components/templates/ServicePage.astro";
+import ServicePageEstate from "@/components/templates/ServicePageEstate.astro";
+import { SITE } from "@/config/site";
+import { lookChrome } from "@/config/looks";
 import { getServices, type Service } from "@/lib/services";
 
 export const getStaticPaths = (async () => {
@@ -25,6 +28,9 @@ interface Props {
 }
 
 const { service, all } = Astro.props;
+/* The look picks the page: the estate look has its own service layout. */
+const estate = lookChrome(SITE.look).servicePage === "estate";
 ---
 
-<ServicePage service={service} all={all} />
+{estate && <ServicePageEstate service={service} all={all} />}
+{!estate && <ServicePage service={service} all={all} />}

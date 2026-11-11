@@ -537,6 +537,22 @@ async function main() {
       service.scope.image = await image(service.scope.image, "scope", 2400);
     for (const [i, pic] of service.included.images.entries())
       pic.src = await image(pic.src, `included-${i + 1}`);
+    // The estate service page's photos (each section optional).
+    for (const [i, pair] of (service.beforeAfter?.items ?? []).entries()) {
+      pair.before = await image(pair.before, `before-${i + 1}`);
+      pair.after = await image(pair.after, `after-${i + 1}`);
+    }
+    for (const [i, option] of (service.options?.items ?? []).entries())
+      option.image = await image(option.image, `option-${i + 1}`, 1600);
+    for (const [i, pic] of (service.gallery?.images ?? []).entries())
+      pic.src = await image(pic.src, `gallery-${i + 1}`, 1600);
+    if (service.equipment?.image)
+      service.equipment.image = await image(
+        service.equipment.image,
+        "equipment",
+      );
+    for (const [i, item] of (service.work?.items ?? []).entries())
+      item.image = await image(item.image, `work-${i + 1}`, 1600);
     for (const [i, review] of (service.reviews ?? []).entries())
       if (review.avatar)
         review.avatar = await image(review.avatar, `review-${i + 1}`, 256);

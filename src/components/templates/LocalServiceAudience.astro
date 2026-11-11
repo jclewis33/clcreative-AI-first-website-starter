@@ -21,9 +21,7 @@ import RuledList from "@/components/sections/RuledList.astro";
 import FeatureSpotlight from "@/components/sections/FeatureSpotlight.astro";
 import CaseStudyCards from "@/components/sections/CaseStudyCards.astro";
 import LeadFormSection from "@/components/sections/LeadFormSection.astro";
-import Section from "@/components/ui/Section.astro";
-import Heading from "@/components/ui/Heading.astro";
-import Text from "@/components/ui/Text.astro";
+import TownLinks from "@/components/sections/TownLinks.astro";
 import type { LocalServiceAudienceData } from "@/lib/local-service-audience";
 
 interface Props {
@@ -51,14 +49,6 @@ const formCta = {
   label: hero.ctaLabel ?? "Send a bid invitation",
   href: `#${FORM_ID}`,
 };
-const townHref = (town: string) =>
-  cities?.link?.replace(
-    "{town}",
-    town
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, ""),
-  );
 const schemaCrumbs = [
   { name: "Home", path: "/" },
   { name: audience.navLabel, path: audience.path },
@@ -166,28 +156,12 @@ const schemaCrumbs = [
   />
 
   {
-    cities && cities.towns.length > 0 && (
-      <Section class="audience_cities">
-        <div class="u-margin-trim">
-          <Heading tag="h2" variant="h4" marginBottom={4}>
-            {cities.heading}
-          </Heading>
-          <p class="audience_cities_list">
-            {cities.towns.map((town, i) => (
-              <>
-                {i > 0 && " · "}
-                {cities.link ? (
-                  <a class="audience_cities_link" href={townHref(town)}>
-                    {town}
-                  </a>
-                ) : (
-                  town
-                )}
-              </>
-            ))}
-          </p>
-        </div>
-      </Section>
+    cities && (
+      <TownLinks
+        heading={cities.heading}
+        towns={cities.towns}
+        link={cities.link}
+      />
     )
   }
 </BaseLayout>
@@ -197,26 +171,6 @@ const schemaCrumbs = [
     /* The hero's own air, taller than a section's. */
     .audience_hero {
       padding-block: calc(var(--space-8) * 1.75) calc(var(--space-8) * 2);
-    }
-
-    /* The towns run on as one wrapping line, loosely spaced. */
-    .audience_cities_list {
-      margin: 0;
-      font-size: var(--text-small-size);
-      line-height: 2.1;
-      color: color-mix(in srgb, var(--text) 80%, transparent);
-    }
-
-    .audience_cities_link {
-      color: var(--heading-accent);
-      text-decoration: none;
-    }
-
-    @media (hover: hover) {
-      .audience_cities_link:hover {
-        text-decoration: underline;
-        text-underline-offset: 0.2em;
-      }
     }
 
     /* The spec bar sits a step lighter than the dark sections. */

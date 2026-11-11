@@ -1,0 +1,112 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **TownLinks** — the towns a service or page covers as one wrapping,
+   * loosely spaced line ("Addison · Bedford · Carrollton…") under a small
+   * heading. With `link`, each town links to its own page.
+   *
+   * - `towns` — the names, in order
+   * - `link` — a path with `{town}` for the town's kebab-case name
+   *   ("/polished-concrete-{town}-tx/"); without it, plain text
+   *
+   * @example
+   * <TownLinks heading="Polished concrete near you" towns={["Argyle", "Flower Mound"]} link="/polished-concrete-{town}-tx/" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The heading over the line. */
+  heading: string;
+
+  /** The town names. Empty renders nothing. */
+  towns: string[];
+
+  /** Each town's page, `{town}` = its kebab-case name. */
+  link?: string;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  heading,
+  towns = [],
+  link,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const kebab = (town: string) =>
+  town
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+if (import.meta.env.DEV && render && !towns.length) {
+  console.warn("[TownLinks] `towns` is empty; nothing renders.");
+}
+---
+
+{
+  render && heading && towns.length > 0 && (
+    <Section id={id} class:list={["town-links_wrap", className]} {...rest}>
+      <div class="u-margin-trim">
+        <Heading tag="h2" variant="h4" marginBottom={4}>
+          {heading}
+        </Heading>
+        <p class="town-links_list">
+          {towns.map((town, i) => (
+            <>
+              {i > 0 && " · "}
+              {link ? (
+                <a
+                  class="town-links_link"
+                  href={link.replace("{town}", kebab(town))}
+                >
+                  {town}
+                </a>
+              ) : (
+                town
+              )}
+            </>
+          ))}
+        </p>
+      </div>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .town-links_list {
+      margin: 0;
+      font-size: var(--text-small-size);
+      line-height: 2.1;
+      color: color-mix(in srgb, var(--text) 80%, transparent);
+    }
+
+    .town-links_link {
+      color: var(--heading-accent);
+      text-decoration: none;
+    }
+
+    @media (hover: hover) {
+      .town-links_link:hover {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+    }
+  }
+</style>

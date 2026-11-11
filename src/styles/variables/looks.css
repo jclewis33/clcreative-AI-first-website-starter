@@ -320,6 +320,9 @@
   --h6-weight: 400;
   --heading-letter-spacing: -0.015em;
 
+  /* The hero's star line in Google gold, like the review cards. */
+  --hero-star: var(--color-star);
+
   --radius-main: 0.25rem;
   --button-radius: 0.125rem;
   --button-font-family: var(--font-secondary);

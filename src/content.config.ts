@@ -189,12 +189,91 @@ const services = defineCollection({
         text: z.string().min(1),
         image: image(),
         imageAlt: alt,
+        /** Estate page: the main button, instead of the estimate pop-up. */
+        primaryCta: z
+          .object({ label: z.string().min(1), href: z.string().min(1) })
+          .optional(),
+        /** Estate page: a second, outline button (`icon: "download"` for a PDF). */
+        secondaryCta: z
+          .object({
+            label: z.string().min(1),
+            href: z.string().min(1),
+            icon: z.enum(["download"]).optional(),
+          })
+          .optional(),
       }),
+      /**
+       * Who the page sells to (estate page). `contractor`: a photo hero, a
+       * spec bar, benefits, equipment, projects and upkeep, no reviews or
+       * FAQ on the page (the design for a commercial service).
+       */
+      buyer: z.enum(["homeowner", "contractor"]).optional(),
+      /** Contractor page: label over value ("Spec section" / "03 35 00"). */
+      specs: z
+        .array(z.object({ label: z.string().min(1), value: z.string().min(1) }))
+        .optional(),
+      /** Contractor page: why owners pick it, ruled two or three across. */
+      benefits: z
+        .object({
+          eyebrow: z.string().optional(),
+          heading: z.string().min(1),
+          items: z
+            .array(
+              z.object({ title: z.string().min(1), text: z.string().min(1) }),
+            )
+            .min(2),
+        })
+        .optional(),
+      /** Contractor page: the machines and crew, beside a photo, on dark. */
+      equipment: z
+        .object({
+          eyebrow: z.string().optional(),
+          heading: z.string().min(1),
+          paragraphs: z.array(z.string().min(1)).min(1),
+          image: image(),
+          imageAlt: alt,
+          cta: z
+            .object({ label: z.string().min(1), href: z.string().min(1) })
+            .optional(),
+        })
+        .optional(),
+      /** Contractor page: finished floors as photo cards, a link beside the heading. */
+      work: z
+        .object({
+          heading: z.string().min(1),
+          link: z
+            .object({ label: z.string().min(1), href: z.string().min(1) })
+            .optional(),
+          items: z
+            .array(
+              z.object({
+                title: z.string().min(1),
+                caption: z.string().optional(),
+                image: image(),
+                imageAlt: alt,
+                href: z.string().optional(),
+              }),
+            )
+            .min(2)
+            .max(4),
+        })
+        .optional(),
+      /** Contractor page: the upkeep routine, numbered, beside an intro. */
+      maintenance: z
+        .object({
+          eyebrow: z.string().optional(),
+          heading: z.string().min(1),
+          text: z.string().optional(),
+          steps: z.array(z.string().min(1)).min(2),
+        })
+        .optional(),
       /** Exactly four proof points for the StatsStrip. */
       highlights: z
         .array(z.object({ value: z.string().min(1), label: z.string().min(1) }))
         .length(4),
       scope: z.object({
+        /** Small label over the heading (the estate page: "What it is"). */
+        eyebrow: z.string().optional(),
         heading: z.string().min(1),
         intro: z.string().optional(),
         /** 1-3 paragraphs about this kind of work, beside the photo. */
@@ -221,6 +300,7 @@ const services = defineCollection({
       /** Optional: falls back to DEFAULT_PROCESS in src/data/process.ts. */
       process: z
         .object({
+          eyebrow: z.string().optional(),
           heading: z.string().min(1),
           steps: z
             .array(
@@ -234,6 +314,8 @@ const services = defineCollection({
         .object({
           rating: z.number().min(1).max(5),
           count: z.number().int().positive().optional(),
+          /** The star line's words ("78 five-star reviews on Google"; estate page). */
+          text: z.string().min(1).optional(),
         })
         .optional(),
       reviews: z
@@ -266,7 +348,72 @@ const services = defineCollection({
       cta: z.object({
         heading: z.string().min(1),
         text: z.string().optional(),
+        /** What happens after they reach out, one line a step (estate page). */
+        steps: z.array(z.string().min(1)).optional(),
+        /** Estate page: the button, instead of the estimate pop-up. */
+        button: z
+          .object({ label: z.string().min(1), href: z.string().min(1) })
+          .optional(),
       }),
+      /* The estate service page's extra sections (the look's
+         servicePage: "estate"); each drops out when absent. */
+      /** Before-and-after pairs, picked with chips. */
+      beforeAfter: z
+        .object({
+          eyebrow: z.string().optional(),
+          heading: z.string().min(1),
+          text: z.string().optional(),
+          items: z
+            .array(
+              z.object({
+                title: z.string().min(1),
+                before: image(),
+                beforeAlt: alt,
+                after: image(),
+                afterAlt: alt,
+              }),
+            )
+            .min(1)
+            .max(4),
+        })
+        .optional(),
+      /** The choices a customer makes (sheen, color, pattern): photo cards. */
+      options: z
+        .object({
+          eyebrow: z.string().optional(),
+          heading: z.string().min(1),
+          items: z
+            .array(
+              z.object({
+                title: z.string().min(1),
+                text: z.string().min(1),
+                image: image(),
+                imageAlt: alt,
+              }),
+            )
+            .min(2)
+            .max(4),
+        })
+        .optional(),
+      /** Where it works: a heading, a line (HTML links allowed) and square photos. */
+      gallery: z
+        .object({
+          heading: z.string().min(1),
+          text: z.string().optional(),
+          images: z
+            .array(z.object({ src: image(), alt }))
+            .min(2)
+            .max(4),
+        })
+        .optional(),
+      /** Town links under the FAQ. `link`: each town's page, `{town}` = its kebab-case name. */
+      cities: z
+        .object({
+          heading: z.string().min(1),
+          towns: z.array(z.string().min(1)).min(1),
+          link: z.string().optional(),
+        })
+        .optional(),
     }),
 });
 

@@ -680,9 +680,10 @@ const backdropUrl =
       font-size: var(--text-small-size);
     }
 
+    /* A look can set --hero-star (estate: the rating gold). */
     .hero_stars {
       flex-shrink: 0;
-      color: var(--heading-accent);
+      color: var(--hero-star, var(--heading-accent));
       letter-spacing: 0.1em;
     }
 

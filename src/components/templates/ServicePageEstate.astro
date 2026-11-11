@@ -1,0 +1,611 @@
+---
+/**
+ * Service page, ESTATE layout — after the FDC Coatings service design
+ * (the estate look's `servicePage: "estate"`; ServicePage hands over).
+ * Same service entry as ServicePage; a different page:
+ *
+ *   a dark split hero (crumbs, two buttons, the star line) → quick facts
+ *   under hairline rules → what it is, beside a photo → before and after
+ *   on dark → the options as photo cards → the process in columns on
+ *   white → three Google-style reviews → where it works, with photos →
+ *   the questions on tan → the towns as links → a plain dark quote band
+ *   with what happens next.
+ *
+ * Optional sections (beforeAfter, options, gallery, cities) drop out when
+ * the entry has none.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import BeforeAfterGallery from "@/components/sections/BeforeAfterGallery.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import ReviewCards from "@/components/sections/ReviewCards.astro";
+import FAQ from "@/components/sections/FAQ.astro";
+import TownLinks from "@/components/sections/TownLinks.astro";
+import QuoteBand from "@/components/sections/QuoteBand.astro";
+import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import { SITE } from "@/config/site";
+import { DEFAULT_PROCESS } from "@/data/process";
+import { serviceFaqJsonLd } from "@/lib/jsonld";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { servicePath, SERVICES_INDEX_PATH, type Service } from "@/lib/services";
+
+interface Props {
+  /**
+   * **ServicePageEstate** — the estate layout of a service page: high-end,
+   * photo-led, with before-and-after, options and a gallery when the
+   * service entry has them.
+   *
+   * @example
+   * <ServicePageEstate service={service} all={all} />
+   */
+  docs?: string;
+
+  /** The service (a src/content/services entry). */
+  service: Service;
+
+  /** Every service — for the estimate choices. */
+  all: Service[];
+}
+
+const { service, all } = Astro.props;
+const s = service.data;
+const path = servicePath(service.id);
+const pageUrl = `${SITE.url}${path}`;
+const process = s.process ?? DEFAULT_PROCESS;
+const title = `${s.seoTitle} | ${SITE.name}`;
+const description = s.seoDescription;
+const crumbs = [
+  { label: "Home", href: "/" },
+  { label: s.group ?? "Services", href: SERVICES_INDEX_PATH },
+  { label: s.navLabel ?? s.title },
+];
+const schemaCrumbs = [
+  { name: "Home", path: "/" },
+  { name: "Services", path: SERVICES_INDEX_PATH },
+  { name: s.title, path },
+];
+const estimateCta = {
+  label: SITE.quote?.label ?? "Request a quote",
+  modal: ESTIMATE_MODAL_ID,
+};
+const ownModal = !SITE.quote;
+const contractor = s.buyer === "contractor";
+const heroCta = s.hero.primaryCta ?? estimateCta;
+const reviews = s.reviews ?? [];
+const proof = s.reviewSummary
+  ? {
+      rating: s.reviewSummary.rating,
+      text:
+        s.reviewSummary.text ??
+        `${s.reviewSummary.count ?? reviews.length} reviews on Google`,
+    }
+  : undefined;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={pageUrl}
+  breadcrumbs={schemaCrumbs}
+  schema={serviceFaqJsonLd({
+    pageUrl,
+    serviceType: s.title,
+    name: s.title,
+    description,
+    areaServed: [...SITE.areaServed],
+    audience: contractor
+      ? { audienceType: "General contractors and property managers" }
+      : undefined,
+    faqs: contractor ? [] : s.faqs,
+  })}
+>
+  {
+    !contractor && (
+      <>
+        <Hero
+          variant="split"
+          theme="dark"
+          headingSize="h1"
+          breadcrumbs={crumbs}
+          heading={s.hero.heading}
+          text={s.hero.text}
+          image={s.hero.image}
+          imageAlt={s.hero.imageAlt}
+          primaryCta={heroCta}
+          secondaryCta={
+            s.hero.secondaryCta ??
+            (s.beforeAfter
+              ? { label: "See before and after", href: "#compare" }
+              : undefined)
+          }
+          secondaryVariant="secondary"
+          showPhone={false}
+          proof={proof}
+          proofPosition="below"
+          badge={false}
+          minHeight={false}
+          class="service-estate_hero"
+        />
+
+        <StatsStrip
+          items={s.highlights}
+          variant="ruled"
+          valueSize="word"
+          class="service-estate_facts"
+        />
+
+        <Section class="service-estate_about">
+          <Layout variant="columns" verticalAlign="center">
+            <div class="u-margin-trim">
+              {s.scope.eyebrow && (
+                <Heading variant="eyebrow" marginBottom={4}>
+                  {s.scope.eyebrow}
+                </Heading>
+              )}
+              <Heading tag="h2" variant="h2" marginBottom={5}>
+                <Fragment set:html={s.scope.heading} />
+              </Heading>
+              {s.scope.intro && <Text>{s.scope.intro}</Text>}
+              {(s.scope.paragraphs ?? []).map((p) => (
+                <Text>{p}</Text>
+              ))}
+            </div>
+            <Visual
+              slot="column2"
+              src={s.scope.image ?? s.cardImage}
+              alt={s.scope.imageAlt ?? s.cardImageAlt}
+              ratio="4 / 3"
+            />
+          </Layout>
+        </Section>
+
+        {s.beforeAfter && (
+          <BeforeAfterGallery
+            id="compare"
+            theme="dark"
+            variant="switcher"
+            eyebrow={s.beforeAfter.eyebrow}
+            heading={s.beforeAfter.heading}
+            intro={s.beforeAfter.text}
+            items={s.beforeAfter.items}
+          />
+        )}
+
+        {s.options && (
+          <ServiceCards
+            variant="plain"
+            eyebrow={s.options.eyebrow}
+            heading={s.options.heading}
+            items={s.options.items}
+          />
+        )}
+
+        <ProcessSteps
+          id="process"
+          variant="columns"
+          class="u-background-2"
+          eyebrow={s.process?.eyebrow ?? "How it works"}
+          heading={process.heading}
+          steps={process.steps}
+        />
+
+        <ReviewCards
+          render={reviews.length > 0}
+          reviews={reviews}
+          limit={3}
+          link={{ label: "Read all our Google reviews", href: "/reviews" }}
+        />
+
+        {s.gallery && (
+          <Section class="service-estate_gallery">
+            <div class="service-estate_gallery_head">
+              <Heading
+                tag="h2"
+                variant="h2"
+                maxWidth="35rem"
+                class="service-estate_gallery_title"
+              >
+                {s.gallery.heading}
+              </Heading>
+              {s.gallery.text && (
+                <Text
+                  muted
+                  maxWidth="29rem"
+                  class="service-estate_gallery_text"
+                >
+                  <Fragment set:html={s.gallery.text} />
+                </Text>
+              )}
+            </div>
+            <div class="service-estate_gallery_list">
+              {s.gallery.images.map((img) => (
+                <Visual src={img.src} alt={img.alt} ratio="square" />
+              ))}
+            </div>
+          </Section>
+        )}
+
+        <FAQ
+          layout="stacked"
+          heading="Questions we hear most"
+          items={s.faqs}
+          openByDefault={1}
+          class="service-estate_faq"
+        />
+      </>
+    )
+  }
+
+  {
+    contractor && (
+      <>
+        <Hero
+          variant="background"
+          overlay="full"
+          headingSize="h1"
+          breadcrumbs={crumbs}
+          heading={s.hero.heading}
+          text={s.hero.text}
+          image={s.hero.image}
+          imageAlt={s.hero.imageAlt}
+          primaryCta={heroCta}
+          secondaryCta={s.hero.secondaryCta}
+          secondaryVariant="secondary"
+          showPhone={false}
+          badge={false}
+          minHeight={false}
+          class="service-estate_hero is-photo"
+        />
+
+        {s.specs && (
+          <StatsStrip
+            items={s.specs.map((x) => ({ value: x.value, label: x.label }))}
+            variant="spec"
+            padding="small"
+            class="service-estate_spec"
+          />
+        )}
+
+        {s.benefits && (
+          <Section class="service-estate_benefits">
+            <div class="u-margin-trim">
+              {s.benefits.eyebrow && (
+                <Heading variant="eyebrow" marginBottom={4}>
+                  {s.benefits.eyebrow}
+                </Heading>
+              )}
+              <Heading tag="h2" variant="h2">
+                {s.benefits.heading}
+              </Heading>
+            </div>
+            <ul class="service-estate_benefits_list">
+              {s.benefits.items.map((item) => (
+                <li class="service-estate_benefit">
+                  <h3 class="service-estate_benefit_title">{item.title}</h3>
+                  <p class="service-estate_benefit_text">{item.text}</p>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
+        {s.equipment && (
+          <Section theme="dark" class="service-estate_equipment">
+            <Layout variant="columns" verticalAlign="center">
+              <Visual
+                src={s.equipment.image}
+                alt={s.equipment.imageAlt}
+                ratio="5 / 4"
+              />
+              <div slot="column2" class="u-margin-trim">
+                {s.equipment.eyebrow && (
+                  <Heading variant="eyebrow" marginBottom={4}>
+                    {s.equipment.eyebrow}
+                  </Heading>
+                )}
+                <Heading tag="h2" variant="h2" marginBottom={5}>
+                  {s.equipment.heading}
+                </Heading>
+                {s.equipment.paragraphs.map((p) => (
+                  <Text muted>{p}</Text>
+                ))}
+                {s.equipment.cta && (
+                  <div class="service-estate_equipment_cta">
+                    <CtaButton cta={s.equipment.cta} variant="secondary" />
+                  </div>
+                )}
+              </div>
+            </Layout>
+          </Section>
+        )}
+
+        {s.work && (
+          <Section class="service-estate_work">
+            <div class="service-estate_work_head">
+              <Heading tag="h2" variant="h2" class="service-estate_work_title">
+                {s.work.heading}
+              </Heading>
+              {s.work.link && (
+                <a class="service-estate_work_link" href={s.work.link.href}>
+                  {s.work.link.label} <span aria-hidden="true">→</span>
+                </a>
+              )}
+            </div>
+            <ul class="service-estate_work_list">
+              {s.work.items.map((w) => {
+                const Tag = w.href ? "a" : "div";
+                return (
+                  <li>
+                    <Tag
+                      class="service-estate_work_card"
+                      {...(w.href ? { href: w.href } : {})}
+                    >
+                      <Visual src={w.image} alt={w.imageAlt} ratio="4 / 3" />
+                      <span class="service-estate_work_name">{w.title}</span>
+                      {w.caption && (
+                        <span class="service-estate_work_caption">
+                          {w.caption}
+                        </span>
+                      )}
+                    </Tag>
+                  </li>
+                );
+              })}
+            </ul>
+          </Section>
+        )}
+
+        {s.maintenance && (
+          <Section class="service-estate_upkeep">
+            <div class="service-estate_upkeep_layout">
+              <div class="service-estate_upkeep_intro u-margin-trim">
+                {s.maintenance.eyebrow && (
+                  <Heading variant="eyebrow" marginBottom={4}>
+                    {s.maintenance.eyebrow}
+                  </Heading>
+                )}
+                <Heading tag="h2" variant="h2" marginBottom={5}>
+                  {s.maintenance.heading}
+                </Heading>
+                {s.maintenance.text && <Text muted>{s.maintenance.text}</Text>}
+              </div>
+              <ol class="service-estate_upkeep_list">
+                {s.maintenance.steps.map((step, i) => (
+                  <li class="service-estate_upkeep_step">
+                    <span
+                      class="service-estate_upkeep_number"
+                      aria-hidden="true"
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </Section>
+        )}
+      </>
+    )
+  }
+
+  {
+    s.cities && (
+      <TownLinks
+        heading={s.cities.heading}
+        towns={s.cities.towns}
+        link={s.cities.link}
+      />
+    )
+  }
+
+  <QuoteBand
+    heading={s.cta.heading}
+    text={s.cta.text}
+    cta={s.cta.button ?? estimateCta}
+    showPhone
+    steps={(s.cta.steps ?? []).map((text) => ({ text }))}
+    stepsLabel="What happens when you reach out"
+  />
+
+  {
+    ownModal && (
+      <LeadFormModal
+        id={ESTIMATE_MODAL_ID}
+        formId="contact"
+        heading="Request a quote"
+        text="Tell us a little about the project and we'll be in touch."
+        fields="quote"
+        projectOptions={all.map((x) => ({ label: x.data.title, value: x.id }))}
+      />
+    )
+  }
+</BaseLayout>
+
+<style is:global>
+  @layer components {
+    /* The quick facts sit close under the hero, the next section's
+       padding gives the air below. */
+    .service-estate_facts {
+      padding-block: var(--space-7) 0;
+    }
+
+    /* Where it works: the heading and its line side by side, bottoms
+       aligned, the photos in a row under them. */
+    .service-estate_gallery_head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-5) var(--space-8);
+    }
+
+    .service-estate_gallery_title {
+      flex: 1 1 20rem;
+      margin: 0;
+    }
+
+    .service-estate_gallery_text {
+      flex: 0 1 29rem;
+      margin: 0;
+    }
+
+    .service-estate_gallery_text a {
+      font-weight: 600;
+      color: var(--heading-accent);
+      text-decoration: none;
+    }
+
+    .service-estate_gallery_list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+      gap: var(--space-3);
+    }
+
+    /* The contractor page's spec bar, a step lighter than the dark. */
+    .service-estate_spec {
+      background-color: var(--color-dark-800);
+    }
+
+    /* Why owners specify it: ruled items, up to three across. */
+    .service-estate_benefits_list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+      column-gap: var(--space-7);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .service-estate_benefit {
+      padding: var(--space-5) 0;
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .service-estate_benefit_title {
+      margin: 0 0 var(--space-1);
+      font-family: var(--font-secondary);
+      font-size: var(--text-large-size);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .service-estate_benefit_text {
+      margin: 0;
+      color: color-mix(in srgb, var(--text) 75%, transparent);
+    }
+
+    .service-estate_equipment_cta {
+      --button-secondary-border: color-mix(
+        in srgb,
+        var(--text) 55%,
+        transparent
+      );
+      margin-top: var(--space-6);
+    }
+
+    /* Finished floors: the heading with its link on the right. */
+    .service-estate_work_head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-4) var(--space-7);
+    }
+
+    .service-estate_work_title {
+      margin: 0;
+    }
+
+    .service-estate_work_link {
+      font-weight: 600;
+      color: var(--heading-accent);
+      text-decoration: none;
+    }
+
+    .service-estate_work_list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+      gap: var(--space-7) var(--space-5);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .service-estate_work_card {
+      display: grid;
+      gap: var(--space-3);
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .service-estate_work_name {
+      font-family: var(--font-primary);
+      font-size: var(--h5-size);
+      line-height: 1.2;
+    }
+
+    .service-estate_work_caption {
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, var(--text) 72%, transparent);
+    }
+
+    @media (hover: hover) {
+      a.service-estate_work_card:hover .service-estate_work_name {
+        text-decoration: underline;
+        text-underline-offset: 0.15em;
+      }
+    }
+
+    /* Upkeep: the intro on the left, the numbered routine on the right. */
+    .service-estate_upkeep {
+      background-color: var(--color-light-100);
+    }
+
+    .service-estate_upkeep_layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-7);
+    }
+
+    @container (min-width: 56em) {
+      .service-estate_upkeep_layout {
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      }
+    }
+
+    .service-estate_upkeep_list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .service-estate_upkeep_step {
+      display: flex;
+      gap: var(--space-5);
+      padding: var(--space-5) 0;
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .service-estate_upkeep_number {
+      flex-shrink: 0;
+      font-family: var(--font-primary);
+      font-size: var(--h5-size);
+      line-height: 1.2;
+      color: var(--heading-accent);
+    }
+
+    /* The questions on the soft tan band. */
+    .service-estate_faq {
+      background-color: color-mix(in srgb, var(--text) 6%, var(--background));
+    }
+  }
+</style>
