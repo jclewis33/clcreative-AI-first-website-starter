@@ -51,6 +51,14 @@ const formCta = {
   label: hero.ctaLabel ?? "Send a bid invitation",
   href: `#${FORM_ID}`,
 };
+const townHref = (town: string) =>
+  cities?.link?.replace(
+    "{town}",
+    town
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, ""),
+  );
 const schemaCrumbs = [
   { name: "Home", path: "/" },
   { name: audience.navLabel, path: audience.path },
@@ -64,7 +72,7 @@ const schemaCrumbs = [
 >
   <Hero
     variant="background"
-    overlay="side"
+    overlay="full"
     headingSize="h1"
     eyebrow={hero.eyebrow}
     heading={hero.heading}
@@ -77,6 +85,7 @@ const schemaCrumbs = [
     showPhone={false}
     minHeight={false}
     badge={false}
+    class="audience_hero"
   />
 
   {
@@ -122,6 +131,7 @@ const schemaCrumbs = [
         eyebrow={projects.eyebrow}
         heading={projects.heading ?? "Recent projects"}
         category={projects.category}
+        cards={projects.cards}
         extras={projects.extras}
         quote={projects.quote}
       />
@@ -152,16 +162,30 @@ const schemaCrumbs = [
     fields="bid"
     projectOptions={form.scopeOptions}
     steps={form.steps}
+    contact="both"
   />
 
   {
     cities && cities.towns.length > 0 && (
-      <Section padding="small" class="audience_cities">
+      <Section class="audience_cities">
         <div class="u-margin-trim">
           <Heading tag="h2" variant="h4" marginBottom={4}>
             {cities.heading}
           </Heading>
-          <Text muted>{cities.towns.join(" · ")}</Text>
+          <p class="audience_cities_list">
+            {cities.towns.map((town, i) => (
+              <>
+                {i > 0 && " · "}
+                {cities.link ? (
+                  <a class="audience_cities_link" href={townHref(town)}>
+                    {town}
+                  </a>
+                ) : (
+                  town
+                )}
+              </>
+            ))}
+          </p>
         </div>
       </Section>
     )
@@ -170,6 +194,31 @@ const schemaCrumbs = [
 
 <style is:global>
   @layer components {
+    /* The hero's own air, taller than a section's. */
+    .audience_hero {
+      padding-block: calc(var(--space-8) * 1.75) calc(var(--space-8) * 2);
+    }
+
+    /* The towns run on as one wrapping line, loosely spaced. */
+    .audience_cities_list {
+      margin: 0;
+      font-size: var(--text-small-size);
+      line-height: 2.1;
+      color: color-mix(in srgb, var(--text) 80%, transparent);
+    }
+
+    .audience_cities_link {
+      color: var(--heading-accent);
+      text-decoration: none;
+    }
+
+    @media (hover: hover) {
+      .audience_cities_link:hover {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+    }
+
     /* The spec bar sits a step lighter than the dark sections. */
     .audience_spec {
       background-color: var(--color-dark-800);

@@ -554,6 +554,11 @@ const linkColumns = brief
      wrapper slots them into the cascade defined in styles/global.css. */
   @layer components {
     /* ── Brief footer (the estate look) ───────────────────── */
+    /* A long email address breaks rather than widening the page. */
+    .footer_wrap.is-brief .footer_link_text {
+      overflow-wrap: anywhere;
+    }
+
     .footer_wrap.is-brief .footer_contact_wrap {
       display: none;
     }

@@ -445,14 +445,6 @@ const detailsProps = stepped
               id={`${id}-email`}
               required
             />
-            {SITE.smsOptIn && (
-              <FormField
-                label="Phone"
-                name="phone"
-                variant="phone"
-                id={`${id}-phone`}
-              />
-            )}
             <FormField
               label="Project name and city"
               name="projectName"
@@ -466,21 +458,6 @@ const detailsProps = stepped
               variant="text"
               autocomplete="off"
               id={`${id}-sqft`}
-            />
-            <FormField
-              label="Bid due date"
-              name="dueDate"
-              variant="date"
-              id={`${id}-due`}
-            />
-            <FormField
-              label="Link to plans and specs"
-              name="plansUrl"
-              variant="text"
-              type="url"
-              autocomplete="off"
-              id={`${id}-plans`}
-              class={SITE.smsOptIn ? "lead-form_full" : undefined}
             />
           </FormFieldset>
         )}
@@ -497,12 +474,22 @@ const detailsProps = stepped
           </FormFieldset>
         )}
         {fields === "bid" && (
-          <FormCheckbox
-            label="Also send me the prequal packet"
-            name="prequalPacket"
-            value="Yes"
-            id={`${id}-prequal`}
-          />
+          <FormFieldset columns={2}>
+            <FormField
+              label="Bid due date"
+              name="dueDate"
+              variant="date"
+              id={`${id}-due`}
+            />
+            <FormField
+              label="Link to plans and specs"
+              name="plansUrl"
+              variant="text"
+              type="url"
+              autocomplete="off"
+              id={`${id}-plans`}
+            />
+          </FormFieldset>
         )}
 
         {compact && fields !== "bid" && (
@@ -648,15 +635,30 @@ const detailsProps = stepped
           />
         </div>
 
-        <SmsConsent id={`${id}-consent`} />
+        {fields !== "bid" && <SmsConsent id={`${id}-consent`} />}
 
-        <Button
-          type="submit"
-          fullWidth={buttonWidth === "full"}
-          ariaLabel={submitLabel}
-        >
-          {submitLabel}
-        </Button>
+        {fields !== "bid" && (
+          <Button
+            type="submit"
+            fullWidth={buttonWidth === "full"}
+            ariaLabel={submitLabel}
+          >
+            {submitLabel}
+          </Button>
+        )}
+        {fields === "bid" && (
+          <div class="lead-form_send">
+            <FormCheckbox
+              label="Also send me the prequal packet"
+              name="prequalPacket"
+              value="Yes"
+              id={`${id}-prequal`}
+            />
+            <Button type="submit" ariaLabel={submitLabel}>
+              {submitLabel}
+            </Button>
+          </div>
+        )}
       </Details>
     </Form>
   )
@@ -825,9 +827,17 @@ const detailsProps = stepped
     }
 
     /* Bid preset: the scope checkboxes in a wrapping row. */
-    .lead-form_scope {
+    /* Bid preset: the prequal box, then the button on the right. */
+    .lead-form_send {
       display: flex;
       flex-wrap: wrap;
+      gap: var(--space-4) var(--space-5);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .lead-form_scope .form_fieldset_list {
+      flex-flow: row wrap;
       gap: var(--space-2) var(--space-5);
     }
 

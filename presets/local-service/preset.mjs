@@ -554,7 +554,14 @@ const audienceSchema = z.object({
     image,
     imageAlt: text,
     ctaLabel: text.optional(),
-    secondaryCta: z.object({ label: text, href: text }).optional(),
+    /** `icon: "download"` when it links to a PDF (a capabilities statement). */
+    secondaryCta: z
+      .object({
+        label: text,
+        href: text,
+        icon: z.enum(["download"]).optional(),
+      })
+      .optional(),
   }),
   /** Label over value: { label: "Insurance", value: "Fully insured" }. */
   facts: z
@@ -588,9 +595,21 @@ const audienceSchema = z.object({
       eyebrow: text.optional(),
       heading: text.optional(),
       category: z.enum(["residential", "commercial"]),
+      /** Which projects get a card, in order, with their spec rows. */
+      cards: z
+        .array(
+          z.object({
+            slug: kebab,
+            specs: z.array(z.object({ label: text, value: text })).min(1),
+          }),
+        )
+        .max(3)
+        .optional(),
       /** More photos for the row under the cards. */
       extras: z
-        .array(z.object({ image, alt: text, caption: text }))
+        .array(
+          z.object({ image, alt: text, caption: text, href: text.optional() }),
+        )
         .max(5)
         .optional(),
       /** One real, attributed client quote. */
@@ -616,7 +635,14 @@ const audienceSchema = z.object({
     steps: z.array(text).min(2).max(4).optional(),
   }),
   /** Their pages by city, as one line. */
-  cities: z.object({ heading: text, towns: z.array(text).min(1) }).optional(),
+  /** `link`: each town's page, `{town}` = its name in kebab-case ("/commercial-coatings-{town}-tx/"). */
+  cities: z
+    .object({
+      heading: text,
+      towns: z.array(text).min(1),
+      link: text.optional(),
+    })
+    .optional(),
 });
 
 /** A project (src/content/projects): /projects/<slug>, their own job only. */

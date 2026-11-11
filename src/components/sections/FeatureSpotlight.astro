@@ -195,6 +195,11 @@ if (import.meta.env.DEV && render && (!heading || !images.length)) {
       gap: var(--space-3);
     }
 
+    /* One photo fills the column. */
+    .feature-spotlight_collage:has(> :only-child) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
     .feature-spotlight_img.is-wide {
       grid-column-end: span 2;
     }

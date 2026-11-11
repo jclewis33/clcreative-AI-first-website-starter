@@ -12,6 +12,11 @@ type LeadFormSectionFields = ComponentProps<typeof LeadForm>["fields"];
 type LeadFormSectionOptions = ComponentProps<typeof LeadForm>["projectOptions"];
 type LeadFormSectionTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+type LeadFormSectionContact =
+  /** "Rather talk now? Call …" on one small line */
+  | "call"
+  /** "Prefer email or phone?" over the email and the number, one per line */
+  | "both";
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -21,7 +26,8 @@ interface Props extends HTMLAttributes<"section"> {
    *
    * - `formId` — which `src/config/forms.ts` entry it submits as (public)
    * - `fields`, `projectOptions` — passed to LeadForm
-   * - `showPhone` — the phone line (default `true`)
+   * - `showPhone` — the phone line (default `true`); `contact="both"`
+   *   gives the email and the number, one per line
    * - `theme` — default `'dark'`; the form panel always reads light
    *
    * @example
@@ -62,6 +68,9 @@ interface Props extends HTMLAttributes<"section"> {
   /** Show the "Rather talk now? Call …" line. @default true */
   showPhone?: boolean;
 
+  /** How the phone line reads: `call` or `both` (email and phone). @default 'call' */
+  contact?: LeadFormSectionContact;
+
   /** Section theme. @default 'dark' */
   theme?: LeadFormSectionTheme;
 
@@ -92,6 +101,7 @@ const {
   steps = [],
   stepsLabel = "What happens next",
   showPhone = true,
+  contact = "call",
   theme = "dark",
   padding,
   id = "lead-form-section",
@@ -142,7 +152,20 @@ if (import.meta.env.DEV && render) {
             </ol>
           </div>
         )}
-        {showPhone && (
+        {showPhone && contact === "both" && (
+          <Text muted class="lead-form-section_contact">
+            Prefer email or phone?
+            <br />
+            <a class="lead-form-section_phone" href={`mailto:${SITE.email}`}>
+              {SITE.email}
+            </a>
+            <br />
+            <a class="lead-form-section_phone" href={`tel:${SITE.phone.tel}`}>
+              {SITE.phone.display}
+            </a>
+          </Text>
+        )}
+        {showPhone && contact === "call" && (
           <Text variant="small" muted>
             Rather talk now? Call{" "}
             <a class="lead-form-section_phone" href={`tel:${SITE.phone.tel}`}>
@@ -169,6 +192,11 @@ if (import.meta.env.DEV && render) {
     .lead-form-section_steps_wrap {
       display: grid;
       gap: var(--space-3);
+      margin-top: var(--space-3);
+    }
+
+    .lead-form-section_contact {
+      margin-top: var(--space-3);
     }
 
     .lead-form-section_steps {

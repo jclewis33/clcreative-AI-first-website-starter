@@ -36,8 +36,8 @@ export interface LocalServiceAudienceData {
     imageAlt: string;
     /** The main button, which jumps to the form. @default 'Send a bid invitation' */
     ctaLabel?: string;
-    /** A second, outline button ("Capabilities statement (PDF)" → "#docs"). */
-    secondaryCta?: { label: string; href: string };
+    /** A second, outline button ("Capabilities statement (PDF)" → "#docs"); `icon: "download"` for a file. */
+    secondaryCta?: { label: string; href: string; icon?: "download" };
   };
 
   /** Quick facts for the reader in a hurry, label over value ("Insurance" / "Fully insured · COI on request"). 3 to 5. */
@@ -72,7 +72,14 @@ export interface LocalServiceAudienceData {
     eyebrow?: string;
     heading?: string;
     category: string;
-    extras?: { image: AudienceImage; alt: string; caption: string }[];
+    /** Which projects get a card, in order, with their spec rows. */
+    cards?: { slug: string; specs: { label: string; value: string }[] }[];
+    extras?: {
+      image: AudienceImage;
+      alt: string;
+      caption: string;
+      href?: string;
+    }[];
     quote?: { text: string; name: string; meta?: string };
   };
 
@@ -98,5 +105,6 @@ export interface LocalServiceAudienceData {
   };
 
   /** Their pages by city, as one line under the form ("Commercial concrete coatings by city"). */
-  cities?: { heading: string; towns: string[] };
+  /** `link`: each town's page; `{town}` becomes its name in kebab-case. */
+  cities?: { heading: string; towns: string[]; link?: string };
 }

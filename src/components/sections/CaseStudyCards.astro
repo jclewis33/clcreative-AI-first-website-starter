@@ -13,8 +13,17 @@ type CaseStudyExtra = {
   alt: string;
   /** The caption under it: "Self-storage corridors". */
   caption: string;
+  /** A page it links to (a project's own page). */
+  href?: string;
 };
 type CaseStudyQuote = { text: string; name: string; meta?: string };
+type CaseStudySpec = { label: string; value: string };
+type CaseStudyCard = {
+  /** The project's id (its file name): "arentco". */
+  slug: string;
+  /** The card's rows: { label: "Size", value: "12,000 sq ft" }. */
+  specs: CaseStudySpec[];
+};
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -25,7 +34,11 @@ interface Props extends HTMLAttributes<"section"> {
    * block. Reads the projects content (`getProjects()`), one category.
    *
    * - `category` — the projects to show ("commercial")
-   * - `extras` — more photos for the row (work without its own page)
+   * - `cards` — which three, in order, each with its own spec rows
+   *   (Scope, Size, Contractor…); without it, the first three with
+   *   Scope and Location
+   * - `extras` — the photo row's first photos (`href` to link one to its
+   *   page); the other projects fill the rest, five in all
    * - `quote` — `{ text, name, meta? }`, real and attributed
    *
    * @example
@@ -44,6 +57,9 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Which projects (a category value from src/config/projects.ts). */
   category: string;
+
+  /** Which projects get a card, in order, with their own spec rows. */
+  cards?: CaseStudyCard[];
 
   /** More photos for the row under the cards. */
   extras?: CaseStudyExtra[];
@@ -64,6 +80,7 @@ const {
   eyebrow,
   heading,
   category,
+  cards: cardPicks,
   extras = [],
   quote,
   id = "projects",
@@ -72,20 +89,45 @@ const {
 } = Astro.props;
 
 const projects = (await getProjects()).filter((p) => p.category === category);
-const cards = projects.slice(0, 3);
+const picked = (cardPicks ?? [])
+  .map((c) => ({
+    project: projects.find((p) => p.id === c.slug),
+    specs: c.specs,
+  }))
+  .filter((c) => c.project);
+if (import.meta.env.DEV && cardPicks && picked.length < cardPicks.length) {
+  console.warn(
+    "[CaseStudyCards] A `cards` slug isn't a project in that category.",
+  );
+}
+const cards = (
+  picked.length
+    ? picked
+    : projects.slice(0, 3).map((p) => ({
+        project: p,
+        specs: [
+          { label: "Scope", value: p.service },
+          { label: "Location", value: p.location },
+        ],
+      }))
+).map((c) => ({ ...c.project!, specs: c.specs.filter((s) => s.value) }));
+const cardIds = new Set(cards.map((c) => c.id));
+const extraLinks = new Set(extras.map((x) => x.href).filter(Boolean));
 const thumbs = [
-  ...projects.slice(3).map((p) => ({
-    image: p.image?.src,
-    alt: p.image?.alt ?? p.title,
-    caption: p.title,
-    href: p.href as string | undefined,
-  })),
   ...extras.map((x) => ({
     image: x.image,
     alt: x.alt,
     caption: x.caption,
-    href: undefined,
+    href: x.href,
   })),
+  ...projects
+    .filter((p) => !cardIds.has(p.id) && !extraLinks.has(p.href))
+    .map((p) => ({
+      image: p.image?.src,
+      alt: p.image?.alt ?? p.title,
+      caption: p.title,
+      href: p.href as string | undefined,
+    })),
 ]
   .filter((t) => t.image)
   .slice(0, 5);
@@ -123,20 +165,16 @@ const thumbs = [
             )}
             <div class="case-study-cards_body">
               <h3 class="case-study-cards_title">{project.title}</h3>
-              <dl class="case-study-cards_specs">
-                {project.service && (
-                  <div class="case-study-cards_spec">
-                    <dt>Scope</dt>
-                    <dd>{project.service}</dd>
-                  </div>
-                )}
-                {project.location && (
-                  <div class="case-study-cards_spec">
-                    <dt>Location</dt>
-                    <dd>{project.location}</dd>
-                  </div>
-                )}
-              </dl>
+              {project.specs.length > 0 && (
+                <dl class="case-study-cards_specs">
+                  {project.specs.map((spec) => (
+                    <div class="case-study-cards_spec">
+                      <dt>{spec.label}</dt>
+                      <dd>{spec.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
               <a class="case-study-cards_link" href={project.href}>
                 Read the case study <span aria-hidden="true">→</span>
                 <span class="u-sr-only">: {project.title}</span>
