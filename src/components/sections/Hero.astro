@@ -30,6 +30,11 @@ type HeroVariant =
 type HeroTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 type HeroPhoneVariant = "secondary" | "primary";
+type HeroSecondaryVariant =
+  /** A text link with an arrow */
+  | "text"
+  /** An outline button beside the main one */
+  | "secondary";
 type HeroCrumb = { label: string; href?: string };
 type HeroProof = { rating?: number; text: string };
 type HeroBadge = { value: string; label: string };
@@ -213,6 +218,9 @@ interface Props extends HTMLAttributes<"section"> {
   /** Optional third button. */
   secondaryCta?: SectionCta;
 
+  /** How `secondaryCta` looks: a text link with an arrow, or an outline button. @default 'text' */
+  secondaryVariant?: HeroSecondaryVariant;
+
   /** Breadcrumb trail above the eyebrow (service and detail pages). */
   breadcrumbs?: HeroCrumb[];
 
@@ -272,6 +280,7 @@ const {
   showPhone = true,
   phoneVariant = "secondary",
   secondaryCta,
+  secondaryVariant = "text",
   breadcrumbs,
   proof,
   proofPosition = "below",
@@ -458,7 +467,11 @@ const backdropUrl =
               <CtaButton phone variant={phoneVariant} size="large" />
             )}
             {secondaryCta && (
-              <CtaButton cta={secondaryCta} variant="text" size="large" />
+              <CtaButton
+                cta={secondaryCta}
+                variant={secondaryVariant}
+                size="large"
+              />
             )}
           </ButtonWrapper>
         )}

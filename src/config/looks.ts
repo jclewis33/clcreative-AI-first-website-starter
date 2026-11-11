@@ -44,6 +44,12 @@ type Look = {
   wordmark?: boolean;
   /** "Call or text" and the number in the desktop nav (the utility bar carries it otherwise). @default true */
   navPhone?: boolean;
+  /**
+   * `full` — contact list, social, every link column, the towns as a
+   * column; `brief` — the logo and a line, the service menus, a Contact
+   * column, the towns as one "Proudly serving" line. @default 'full'
+   */
+  footer?: "full" | "brief";
 };
 
 export const LOOKS = {
@@ -78,6 +84,7 @@ export const LOOKS = {
     nav: "dark",
     wordmark: true,
     navPhone: false,
+    footer: "brief",
   },
 } as const satisfies Record<string, Look>;
 
@@ -90,10 +97,12 @@ export const LOOK_NAMES = Object.keys(LOOKS) as SiteLook[];
 export function lookChrome(name: SiteLook): {
   wordmark: boolean;
   navPhone: boolean;
+  footer: "full" | "brief";
 } {
   const look: Look = LOOKS[name];
   return {
     wordmark: look.wordmark ?? false,
     navPhone: look.navPhone ?? true,
+    footer: look.footer ?? "full",
   };
 }
