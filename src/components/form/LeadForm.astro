@@ -646,15 +646,15 @@ const detailsProps = stepped
       gap: inherit;
     }
 
-    /* The script shows one step at a time with `hidden`; without JS every
-       step shows. */
-    .lead-form_step[hidden] {
-      display: none;
-    }
-
     .lead-form_step.is-choice {
       display: grid;
       gap: var(--space-4);
+    }
+
+    /* The script shows one step at a time with `hidden`; without JS every
+       step shows. After the display rules above, which it must beat. */
+    .lead-form_step[hidden] {
+      display: none;
     }
 
     .lead-form_step_title {
@@ -701,6 +701,7 @@ const detailsProps = stepped
     }
 
     .lead-form_tiles.is-described .lead-form_tile {
+      align-items: start;
       justify-content: start;
       text-align: start;
     }
