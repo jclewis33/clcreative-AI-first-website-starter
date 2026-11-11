@@ -137,6 +137,36 @@ cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
 - **No time promises** ("same day", "this week") unless their site makes
   them.
 
+## The four questions every page answers
+
+AI assistants (ChatGPT, Claude, Perplexity) and people both need these
+stated in plain sentences. Answer them **throughout the site**, on every
+page that can be an entry point, not on one dedicated page (Casey's call,
+Nov 2026, FDC Coatings):
+
+1. **What it does** — the service, in plain words.
+2. **Where it works** — the city or region, as a sentence, not only a
+   town list or a map.
+3. **Who it helps** — homeowners, builders, property managers, business
+   owners: whoever they really serve.
+4. **What happens when you call them** — the next steps after someone
+   calls or sends the form.
+
+How to cover them:
+
+- **One plain summary sentence per page**, in the intro paragraph (not the
+  headline): "FDC Coatings polishes existing concrete floors for
+  homeowners, builders and businesses across Dallas–Fort Worth, from
+  Flower Mound."
+- **A "what happens when you reach out" strip beside every main call to
+  action** — about three steps, only from what their site or the owner
+  says (reply time, call, site visit, written quote). Unknown steps get
+  [brackets] and go in `confirmOrCut`; the no-time-promises rule still
+  applies.
+- The home page, every service page, every area page and the contact page
+  each answer all four on their own.
+- Before reporting, check each page against the four and name any gap.
+
 ## Workflow (target times in brackets)
 
 ### 1. Branch (1 min)
