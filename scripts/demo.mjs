@@ -791,7 +791,9 @@ export const PRESET_FOOTER: FooterLink[] = ${JSON.stringify(footerPaths)};
       prospect: name,
       preset: demo.preset,
       hiddenPaths: demo.projects
-        ? preset.HIDDEN_PATHS.filter((p) => p !== "/projects")
+        ? preset.HIDDEN_PATHS.filter(
+            (/** @type {string} */ p) => p !== "/projects",
+          )
         : preset.HIDDEN_PATHS,
       bannerText: fill(defaults.bannerText ?? DEFAULT_BANNER_TEXT, vars),
       bannerHref: fill(defaults.bannerHref ?? DEFAULT_BANNER_HREF, vars),
