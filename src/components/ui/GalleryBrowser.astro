@@ -2,6 +2,7 @@
 import type { HTMLAttributes } from "astro/types";
 import Visual from "@/components/ui/Visual.astro";
 import Lightbox from "@/components/ui/Lightbox.astro";
+import ChoiceChips from "@/components/ui/ChoiceChips.astro";
 import { plainText, resolveImageUrl, type ContentImage } from "@/lib/content";
 import { galleryCaptionMeta } from "@/lib/project-format";
 
@@ -96,21 +97,15 @@ const lightboxSrcs = await Promise.all(
 {
   render && items.length > 0 && (
     <div class:list={["gallery-browser_wrap", className]} {...rest}>
-      <fieldset class="gallery-browser_chips">
-        <legend class="u-sr-only">Filter photos by type</legend>
-        {chips.map((chip, i) => (
-          <label class="gallery-browser_chip">
-            <input
-              class="gallery-browser_radio"
-              type="radio"
-              name="gallery-category"
-              value={chip.value}
-              checked={i === 0}
-            />
-            {chip.title}
-          </label>
-        ))}
-      </fieldset>
+      <ChoiceChips
+        legend="Filter photos by type"
+        legendHidden
+        name="gallery-category"
+        options={chips.map((chip) => ({
+          label: chip.title,
+          value: chip.value,
+        }))}
+      />
 
       <Lightbox label="Photo gallery">
         <ul class="gallery-browser_grid">
@@ -171,14 +166,14 @@ const lightboxSrcs = await Promise.all(
          photos out of step. */
       const apply = () => {
         const value =
-          wrap.querySelector<HTMLInputElement>(".gallery-browser_radio:checked")
+          wrap.querySelector<HTMLInputElement>(".choice-chips_radio:checked")
             ?.value ?? "";
         for (const item of items) {
           item.hidden = Boolean(value) && item.dataset.category !== value;
         }
       };
       wrap.addEventListener("change", (event) => {
-        if ((event.target as HTMLElement).matches(".gallery-browser_radio")) {
+        if ((event.target as HTMLElement).matches(".choice-chips_radio")) {
           apply();
         }
       });
@@ -201,48 +196,6 @@ const lightboxSrcs = await Promise.all(
       flex-direction: column;
       gap: var(--space-6);
       width: 100%;
-    }
-
-    /* ── Chips ─────────────────────────────────────────── */
-    .gallery-browser_chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-2);
-      margin: 0;
-      padding: 0;
-      border: 0;
-    }
-
-    .gallery-browser_chip {
-      position: relative;
-      padding: 0.75em 1.35em;
-      border: var(--border-width-main) solid var(--button-secondary-border);
-      border-radius: var(--radius-full);
-      background-color: var(--background-2);
-      color: var(--text);
-      font-weight: 600;
-      font-size: var(--text-small-size);
-      cursor: pointer;
-      transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
-    }
-
-    .gallery-browser_chip:has(:checked) {
-      border-color: var(--text);
-      background-color: var(--text);
-      color: var(--background);
-    }
-
-    .gallery-browser_chip:has(:focus-visible) {
-      outline: var(--border-width-main) solid var(--color-focus-state);
-      outline-offset: 0.2rem;
-    }
-
-    .gallery-browser_radio {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
     }
 
     /* ── Grid ──────────────────────────────────────────── */
@@ -300,10 +253,6 @@ const lightboxSrcs = await Promise.all(
     @media (hover: hover) {
       .gallery-browser_tile:hover .u-image {
         transform: scale(1.04);
-      }
-
-      .gallery-browser_chip:hover {
-        border-color: var(--text);
       }
     }
 

@@ -30,11 +30,23 @@ import { slotContent } from "@/lib/slots";
  * ```
  */
 
+/**
+ * Toggle size.
+ * - `'default'` — h5 type, roomy row (FAQ lists)
+ * - `'small'`   — small bold type, tighter row (a fold-out inside a card or panel)
+ */
+type AccordionItemSize = "default" | "small";
+
+/** The toggle label's element: a heading level, or `span` inside a form or card where a heading would be wrong. */
+type AccordionItemTag = "h2" | "h3" | "h4" | "h5" | "span";
+
 interface Props extends HTMLAttributes<"details"> {
   /**
    * **AccordionItem props:**
    * - `question` — toggle text (or use the `question` slot for rich text)
    * - `open` — start expanded (default false)
+   * - `size` — default (h5 toggle) or small (small bold toggle, tighter row)
+   * - `tag` — toggle label element: h2–h5 or span (default 'h3')
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to the `details` element
    *
@@ -56,11 +68,37 @@ interface Props extends HTMLAttributes<"details"> {
    */
   open?: boolean;
 
+  /**
+   * Toggle size: `small` for a fold-out inside a card or panel.
+   * @default 'default'
+   */
+  size?: AccordionItemSize;
+
+  /**
+   * The toggle label's element. Use `span` inside a form, or wherever a
+   * heading would break the page outline.
+   * @default 'h3'
+   */
+  tag?: AccordionItemTag;
+
   /** Extra utility classes to add to the `.accordion_item` element. */
   class?: string;
 }
 
-const { docs, question, open = false, class: className, ...rest } = Astro.props;
+const {
+  docs,
+  question,
+  open = false,
+  size = "default",
+  tag: Tag = "h3",
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && size !== "default" && size !== "small") {
+  console.warn(`[AccordionItem] Unknown size "${size}"; using "default".`);
+}
+const isSmall = size === "small";
 
 /* Capture ONCE, emit with set:html — render-once rule, see src/lib/slots.ts. */
 const questionContent = await slotContent(Astro.slots, "question");
@@ -68,17 +106,22 @@ const answerContent = await slotContent(Astro.slots);
 ---
 
 <details
-  class:list={["accordion_item", className]}
+  class:list={["accordion_item", { "is-small": isSmall }, className]}
   open={open}
   data-accordion-group
   {...rest}
 >
   <summary class="accordion_toggle">
-    <h3 class="accordion_toggle_heading">
-      <span class="accordion_toggle_text u-text-style-h5 u-margin-bottom-0">
+    <Tag class="accordion_toggle_heading">
+      <span
+        class:list={[
+          "accordion_toggle_text u-margin-bottom-0",
+          isSmall ? "u-text-style-small u-weight-bold" : "u-text-style-h5",
+        ]}
+      >
         {questionContent ? <Fragment set:html={questionContent} /> : question}
       </span>
-    </h3>
+    </Tag>
     <span class="accordion_toggle_icon" aria-hidden="true">
       <svg
         viewBox="0 0 24 24"

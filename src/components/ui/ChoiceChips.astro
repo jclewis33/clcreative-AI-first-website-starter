@@ -1,0 +1,160 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+/**
+ * ChoiceChips — a row of pill buttons where exactly one is picked: a
+ * filter ("All photos / Kitchens / Baths"), a region ("North / East"), a
+ * material ("Asphalt / Metal / Tile").
+ *
+ * They are real radio buttons in a fieldset, so arrow keys move between
+ * them and screen readers announce "2 of 5, selected". The radio itself is
+ * hidden; the label is the pill, and `:has(:checked)` fills it.
+ *
+ * The chips only render the choice. The component that uses them reads it:
+ * query `.choice-chips_radio:checked` inside your own wrapper and listen for
+ * `change`.
+ *
+ * @example
+ * <ChoiceChips legend="Filter photos by type" name="gallery" options={[{ label: "All photos", value: "" }, { label: "Kitchens", value: "kitchens" }]} />
+ */
+
+/** One chip: the text on the pill and the radio's value. */
+type ChoiceChipOption = { label: string; value: string };
+
+export interface Props extends HTMLAttributes<"fieldset"> {
+  /**
+   * **ChoiceChips** — pick-one pill buttons (real radios in a fieldset).
+   * - `legend` — what the choice is ("Filter by area"); required for screen readers
+   * - `legendHidden` — keep the legend for screen readers only (default false)
+   * - `name` — the radio group name; make it unique per instance
+   * - `options` — `{ label, value }[]`; fewer than 2 renders nothing
+   * - `checked` — index of the chip picked on load (default 0)
+   * Read the pick with `.choice-chips_radio:checked` from your own script.
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** What the choice is: "Filter by area". Read aloud even when hidden. */
+  legend: string;
+
+  /** The radio group name. Unique per instance, so two sets on a page stay independent. */
+  name: string;
+
+  /** The chips, in order. Fewer than 2 renders nothing. */
+  options: ChoiceChipOption[];
+
+  /** Index of the chip picked on load. @default 0 */
+  checked?: number;
+
+  /** Hide the legend visually (screen readers still read it). @default false */
+  legendHidden?: boolean;
+
+  /** Extra classes on the fieldset. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  legend,
+  name,
+  options = [],
+  checked = 0,
+  legendHidden = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!legend) console.warn("[ChoiceChips] Give the set a `legend`.");
+  if (options.length < 2)
+    console.warn("[ChoiceChips] Fewer than 2 `options`; nothing renders.");
+}
+---
+
+{
+  render && options.length >= 2 && (
+    <fieldset class:list={["choice-chips_wrap", className]} {...rest}>
+      <legend
+        class:list={[
+          "choice-chips_legend",
+          legendHidden
+            ? "u-sr-only"
+            : "u-text-style-small u-weight-bold u-margin-bottom-2",
+        ]}
+      >
+        {legend}
+      </legend>
+      <div class="choice-chips_list">
+        {options.map((option, i) => (
+          <label class="choice-chips_chip">
+            <input
+              class="choice-chips_radio u-sr-only"
+              type="radio"
+              name={name}
+              value={option.value}
+              checked={i === checked}
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .choice-chips_wrap {
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .choice-chips_legend {
+      padding: 0;
+    }
+
+    .choice-chips_list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .choice-chips_chip {
+      padding: 0.75em 1.35em;
+      border: var(--border-width-main) solid var(--button-secondary-border);
+      border-radius: var(--radius-full);
+      background-color: var(--background-2);
+      color: var(--text);
+      font-size: var(--text-small-size);
+      font-weight: var(--font-weight-bold);
+      line-height: 1.2;
+      cursor: pointer;
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+    }
+
+    .choice-chips_chip:has(:checked) {
+      border-color: var(--text);
+      background-color: var(--text);
+      color: var(--background);
+    }
+
+    .choice-chips_chip:has(:focus-visible) {
+      outline: var(--border-width-main) solid var(--color-focus-state);
+      outline-offset: 0.2rem;
+    }
+
+    @media (hover: hover) {
+      .choice-chips_chip:hover {
+        border-color: var(--text);
+      }
+    }
+  }
+</style>

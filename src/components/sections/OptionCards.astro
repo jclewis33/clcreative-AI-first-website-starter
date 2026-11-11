@@ -1,0 +1,249 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import CheckList from "@/components/ui/CheckList.astro";
+import Card from "@/components/ui/Card.astro";
+import Button from "@/components/ui/Button.astro";
+import Accordion from "@/components/ui/Accordion.astro";
+import AccordionItem from "@/components/ui/AccordionItem.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type OptionCard = {
+  /** Small label over the title: "Reflective single-ply membrane". */
+  label?: string;
+  /** The option's name: "TPO", "Heat pump", "Standing seam". */
+  title: string;
+  /** Photo of the option (an import or a URL). */
+  image?: ImageMetadata | string;
+  /** Real alt text for the photo. Required with `image`. */
+  imageAlt?: string;
+  /** Credit or caption line under the photo: "Photo: Johns Manville". */
+  credit?: string;
+  /** Makes the credit a link (the photo's source). */
+  creditHref?: string;
+  /** Two or three sentences: what it is and where it fits. */
+  text: string;
+  /** The disclosure's content: one paragraph, or short points (a checklist). */
+  details?: OptionCardDetails;
+  /** This card's link; falls back to the section `cta.href`. */
+  href?: string;
+};
+
+type OptionCardDetails = string | string[];
+type OptionCardsTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **OptionCards** — the options side by side, as numbered cards: roof
+   * systems (TPO, EPDM, PVC), materials (shingle, metal, tile), equipment
+   * (furnace, heat pump, mini-split), water heaters (tank, tankless). Each
+   * card: a small label, the option's name, a photo with an optional credit
+   * line, a short description, a "What matters" disclosure and a "Discuss
+   * this option" link.
+   *
+   * - `items` — `{ label?, title, image?, imageAlt?, credit?, creditHref?, text, details?, href? }[]`; empty renders nothing
+   * - `details` — a paragraph string, or an array of short points (checklist)
+   * - `detailsLabel` — the disclosure's toggle text, same on every card
+   * - `cta` — the link on every card: `{ label, href?, modal? }`; a card's own `href` overrides the target
+   * - `numbered` — the "01, 02…" index in each card's corner
+   * - `note` — fine print under the grid
+   *
+   * @example
+   * <OptionCards heading="Different roofs. One clear plan." items={[{ label: "Reflective single-ply membrane", title: "TPO", image: tpoPhoto, imageAlt: "TPO membrane being unrolled on a flat roof", text: "A thermoplastic membrane with heat-welded seams.", details: ["Reflective white surface", "Heat-welded seams"] }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. Required. */
+  heading: string;
+
+  /** Intro beside the heading. */
+  intro?: string;
+
+  /** The options. Empty renders nothing. */
+  items: OptionCard[];
+
+  /** The disclosure's toggle text on every card. @default 'What matters for your home' */
+  detailsLabel?: string;
+
+  /** The link on every card. A card's `href` overrides the target. @default { label: 'Discuss this option', href: '/contact' } */
+  cta?: SectionCta;
+
+  /** Show the "01, 02…" number on each card. @default true */
+  numbered?: boolean;
+
+  /** Fine print under the grid. */
+  note?: string;
+
+  /** Section theme. */
+  theme?: OptionCardsTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  intro,
+  items = [],
+  detailsLabel = "What matters for your home",
+  cta = { label: "Discuss this option", href: "/contact" },
+  numbered = true,
+  note,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!heading || !items?.length)
+    console.warn("[OptionCards] needs `heading` and `items`; nothing renders.");
+  items?.forEach((item) => {
+    if (item.image && !item.imageAlt)
+      console.warn(
+        `[OptionCards] "${item.title}" has an image but no \`imageAlt\`.`,
+      );
+  });
+}
+
+const columns = items.length === 2 || items.length === 4 ? 2 : 3;
+const pad = (n: number) => String(n + 1).padStart(2, "0");
+---
+
+{
+  render && heading && items.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["option-cards_wrap", className]}
+      {...rest}
+    >
+      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      <div class="option-cards_main">
+        <Grid largeColumns={columns} mediumColumns={2} smallColumns={1}>
+          {items.map((item, index) => (
+            <Card class="option-cards_card">
+              {item.image && (
+                <Visual
+                  slot="visual"
+                  src={item.image}
+                  alt={item.imageAlt ?? item.title}
+                />
+              )}
+              <Fragment slot="title">
+                {(numbered || item.label) && (
+                  <Heading tag="p" variant="eyebrow">
+                    {[numbered && pad(index), item.label]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </Heading>
+                )}
+                <Heading tag="h3" variant="h3">
+                  {item.title}
+                </Heading>
+              </Fragment>
+              <Text variant="small" muted>
+                {item.text}
+              </Text>
+              {item.credit && (
+                <Text variant="tiny" muted>
+                  {item.creditHref ? (
+                    <a
+                      href={item.creditHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {item.credit}
+                    </a>
+                  ) : (
+                    item.credit
+                  )}
+                </Text>
+              )}
+              <div slot="footer" class="option-cards_foot">
+                {item.details && item.details.length > 0 && (
+                  <Accordion closePrevious={false} class="u-width-full">
+                    <AccordionItem
+                      question={detailsLabel}
+                      size="small"
+                      tag="span"
+                    >
+                      {Array.isArray(item.details) ? (
+                        <CheckList items={item.details} variant="plain" />
+                      ) : (
+                        <Text variant="small" muted>
+                          {item.details}
+                        </Text>
+                      )}
+                    </AccordionItem>
+                  </Accordion>
+                )}
+                {cta?.label && (
+                  <Button
+                    variant="text"
+                    href={
+                      item.href ??
+                      (cta.modal ? undefined : (cta.href ?? "/contact"))
+                    }
+                    data-modal-trigger={item.href ? undefined : cta.modal}
+                    ariaLabel={`${cta.label}: ${item.title}`}
+                  >
+                    {cta.label}
+                  </Button>
+                )}
+              </div>
+            </Card>
+          ))}
+        </Grid>
+        {note && (
+          <Text variant="small" muted maxWidth="70ch">
+            {note}
+          </Text>
+        )}
+      </div>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* The grid and its fine print read as one block: a tighter gap than the
+       section's own. A grid, not flex — the note is text. */
+    .option-cards_main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--space-4);
+    }
+
+    /* Disclosure above the link, both floored by Card's footer. */
+    .option-cards_foot {
+      display: grid;
+      row-gap: var(--space-2);
+      justify-items: start;
+    }
+  }
+</style>
