@@ -17,6 +17,9 @@
  *            corners — electrical, roofing, plumbing, commercial (ACE)
  *   natural  stone paper, deep green-brown ink, Fraunces serif headings —
  *            hardscape, landscaping, decks, outdoor living
+ *   estate   warm paper, light Fraunces headings, squared buttons, a dark
+ *            nav with the name beside the logo — high-end finishes for
+ *            homes and commercial work (decorative concrete, custom builds)
  *
  * `fonts` lists the Astro Fonts API variables (astro.config.mjs) the look
  * uses; Head.astro preloads only those, so the other looks cost nothing.
@@ -37,6 +40,10 @@ type Look = {
   label: string;
   fonts: readonly LookFont[];
   nav: "light" | "dark";
+  /** The business name set beside the logo in the nav. @default false */
+  wordmark?: boolean;
+  /** "Call or text" and the number in the desktop nav (the utility bar carries it otherwise). @default true */
+  navPhone?: boolean;
 };
 
 export const LOOKS = {
@@ -65,9 +72,28 @@ export const LOOKS = {
     fonts: ["--font-fraunces", "--font-inter"],
     nav: "light",
   },
+  estate: {
+    label: "Estate & refined",
+    fonts: ["--font-fraunces", "--font-inter"],
+    nav: "dark",
+    wordmark: true,
+    navPhone: false,
+  },
 } as const satisfies Record<string, Look>;
 
 export type SiteLook = keyof typeof LOOKS;
 
 /** The look names, for validation (demo.json, setup). */
 export const LOOK_NAMES = Object.keys(LOOKS) as SiteLook[];
+
+/** A look's nav chrome: the name beside the logo, and the nav's phone. */
+export function lookChrome(name: SiteLook): {
+  wordmark: boolean;
+  navPhone: boolean;
+} {
+  const look: Look = LOOKS[name];
+  return {
+    wordmark: look.wordmark ?? false,
+    navPhone: look.navPhone ?? true,
+  };
+}

@@ -120,9 +120,21 @@ export const SITE = {
   /**
    * The thin bar above the nav (UtilityBar). `null` = off. `text` is the
    * message ("24/7 emergency service"); `areaLabel` sits on the right on
-   * desktop ("Serving Your City and nearby").
+   * desktop ("Serving Your City and nearby"); `link` puts a link there
+   * instead, with the phone beside it ("General contractors: send a bid
+   * invitation").
    */
-  utilityBar: null as { text: string; areaLabel?: string } | null,
+  utilityBar: null as {
+    text: string;
+    areaLabel?: string;
+    link?: { label: string; href: string };
+  } | null,
+
+  /**
+   * A second nav button beside the estimate button, for a second kind of
+   * buyer ("For Contractors" → the audience page). `null` = none.
+   */
+  navSecondaryCta: null as { label: string; href: string } | null,
 
   /**
    * The site's visual look (src/config/looks.ts): "studio" (the starter's

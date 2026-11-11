@@ -10,3 +10,5 @@ import type { FooterLink, NavMenuItem, SitePage } from "./site-structure";
 export const PRESET_PAGES: SitePage[] = [];
 export const PRESET_NAV: NavMenuItem[] = [];
 export const PRESET_FOOTER: FooterLink[] = [];
+/** Links that head a service group's menu ({ Commercial: ["/commercial"] }). */
+export const PRESET_GROUP_LINKS: Record<string, string[]> = {};

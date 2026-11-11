@@ -49,6 +49,7 @@ import Logo from "./Logo.astro";
 import Button from "@/components/ui/Button.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
 import { SITE } from "@/config/site";
+import { lookChrome } from "@/config/looks";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
 import { NAV_MENU, navLabel } from "@/data/site-structure";
 
@@ -117,6 +118,15 @@ const currentPath = Astro.url.pathname;
 const estimateCta = SITE.quote
   ? { label: SITE.quote.label, modal: ESTIMATE_MODAL_ID }
   : null;
+/** The look decides the nav's phone and the name beside the logo; a second
+ *  button (a second kind of buyer) comes from SITE.navSecondaryCta. */
+const chrome = lookChrome(SITE.look);
+const showNavPhone = chrome.navPhone;
+const wordmark = chrome.wordmark ? SITE.name : undefined;
+const secondaryCta = SITE.navSecondaryCta;
+/** UtilityBar passed in from BaseLayout: it sits under the banner, and both
+ *  scroll away while the bar below them stays pinned. */
+const hasUtility = Astro.slots.has("utility");
 
 // ── Feature Flags ──────────────────────────────────────────────────
 // Toggle these to show/hide nav features. When false, the markup is
@@ -307,10 +317,23 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
     )
   }
 
+  {
+    hasUtility && (
+      <div class="nav_utility_wrap">
+        <slot name="utility" />
+      </div>
+    )
+  }
+
   <div class="nav_inner">
     <div class="nav_contain">
       {/* Logo */}
-      <Logo variant="navbar" class="nav_logo_wrap" ariaLabel="Home" />
+      <Logo
+        variant="navbar"
+        class="nav_logo_wrap"
+        ariaLabel="Home"
+        wordmark={wordmark}
+      />
 
       {/* Desktop Menu */}
       {
@@ -568,7 +591,7 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
             a button that opens the site-wide estimate form. */
         }
         {
-          estimateCta && (
+          estimateCta && showNavPhone && (
             <a
               class="nav_phone_wrap"
               href={`tel:${SITE.phone.tel}`}
@@ -580,6 +603,18 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
           )
         }
         <div class="nav_actions_cta">
+          {
+            secondaryCta && (
+              <Button
+                variant="secondary"
+                size="small"
+                href={secondaryCta.href}
+                ariaLabel={secondaryCta.label}
+              >
+                {secondaryCta.label}
+              </Button>
+            )
+          }
           {
             estimateCta && (
               <CtaButton cta={estimateCta} size="small" id="main-cta-navbar" />
@@ -814,6 +849,18 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
 
     <div class="nav_mobile_cta">
       {
+        secondaryCta && (
+          <Button
+            variant="secondary"
+            fullWidth
+            href={secondaryCta.href}
+            ariaLabel={secondaryCta.label}
+          >
+            {secondaryCta.label}
+          </Button>
+        )
+      }
+      {
         estimateCta && (
           <CtaButton cta={estimateCta} fullWidth id="main-cta-navbar-mobile" />
         )
@@ -840,6 +887,23 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
   function initNavbar() {
     const nav = document.querySelector<HTMLElement>(".nav_wrap");
     if (!nav) return;
+
+    // With the utility bar inside the nav (under the banner), stick at
+    // minus their height so only the bar itself stays pinned. Re-measured
+    // when the banner is dismissed or the bar wraps.
+    const utility = nav.querySelector<HTMLElement>(".nav_utility_wrap");
+    const inner = nav.querySelector<HTMLElement>(".nav_inner");
+    if (utility && inner) {
+      const measure = () => {
+        const padding = parseFloat(getComputedStyle(nav).paddingTop) || 0;
+        nav.style.setProperty(
+          "--nav-pre-height",
+          `${Math.max(inner.offsetTop - padding, 0)}px`,
+        );
+      };
+      measure();
+      new ResizeObserver(measure).observe(nav);
+    }
 
     const hamburger = nav.querySelector<HTMLButtonElement>(
       ".nav_hamburger_wrap",
@@ -1126,6 +1190,21 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
       margin-bottom: var(--nav-spacing-outer-vertical);
     }
 
+    /* The utility bar (BaseLayout passes it in) — under the banner, full
+   bleed like it. The nav sticks at minus their combined height
+   (--nav-pre-height, measured by the script), so both scroll away and only
+   nav_inner stays pinned. */
+    .nav_utility_wrap {
+      pointer-events: auto;
+      margin-left: calc(var(--nav-spacing-outer-horizontal) * -1);
+      margin-right: calc(var(--nav-spacing-outer-horizontal) * -1);
+      margin-bottom: var(--nav-spacing-outer-vertical);
+    }
+
+    .nav_wrap:has(.nav_utility_wrap) {
+      top: calc(var(--nav-pre-height, 0rem) * -1);
+    }
+
     /* Expand banner when active (class on <html>) */
     html.is-has-banner .nav_banner_wrap {
       grid-template-rows: 1fr;
@@ -1361,7 +1440,10 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
       flex: none;
       justify-content: flex-start;
       align-items: center;
+      gap: 0.875rem;
       display: flex;
+      color: inherit;
+      text-decoration: none;
     }
 
     /* Target the SVG inside the Logo component anchor */
@@ -1732,6 +1814,8 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
 
     /* Mobile CTA — full-width button at bottom of mobile menu */
     .nav_mobile_cta {
+      display: grid;
+      gap: var(--space-3);
       padding-top: var(--space-4);
     }
 
@@ -1787,6 +1871,8 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
 
     .nav_actions_cta {
       flex: none;
+      display: flex;
+      gap: var(--space-3);
       margin-left: var(--space-2);
     }
 

@@ -1,0 +1,215 @@
+---
+import type { ImageMetadata } from "astro";
+import type { HTMLAttributes } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type FeatureSpotlightImage = {
+  /** The photo (an import or a URL). */
+  image: ImageMetadata | string;
+  /** Alt text. Required. */
+  alt: string;
+};
+type FeatureSpotlightItem = {
+  /** What it is: "Polished concrete". */
+  label: string;
+  /** A short code or note on the right: "03 35 00". */
+  meta?: string;
+};
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **FeatureSpotlight** — one side of the business in the spotlight on a
+   * soft tinted band: a photo collage (one wide over two square) beside an
+   * eyebrow, heading, a line, a ruled list (each with an optional code on
+   * the right) and two buttons. Built for "and we do commercial too" on a
+   * home page: the scopes and their spec sections, then a button to the
+   * commercial page.
+   *
+   * - `images` — 1 to 3; the first spans the width
+   * - `items` — `{ label, meta? }[]`, two columns
+   * - `cta` (dark) and `secondaryCta` (outline)
+   *
+   * @example
+   * <FeatureSpotlight eyebrow="Commercial" heading="A flooring sub with the machines" images={[{ image: office, alt: "A polished office floor" }]} items={[{ label: "Polished concrete", meta: "03 35 00" }]} cta={{ label: "Commercial capabilities", href: "/commercial" }} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** The heading. HTML allowed (`<strong>` = accent). */
+  heading: string;
+
+  /** The line under it. */
+  text?: string;
+
+  /** The collage photos, 1 to 3 (the first spans the width). */
+  images: FeatureSpotlightImage[];
+
+  /** The ruled list, two columns. */
+  items?: FeatureSpotlightItem[];
+
+  /** The main button (dark). */
+  cta?: SectionCta;
+
+  /** The second button (outline). */
+  secondaryCta?: SectionCta;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  images = [],
+  items = [],
+  cta,
+  secondaryCta,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && (!heading || !images.length)) {
+  console.warn(
+    "[FeatureSpotlight] Needs `heading` and at least one image; nothing renders.",
+  );
+}
+---
+
+{
+  render && heading && images.length > 0 && (
+    <Section
+      id={id}
+      class:list={["feature-spotlight_wrap", className]}
+      {...rest}
+    >
+      <div class="feature-spotlight_layout">
+        <div class="feature-spotlight_collage">
+          {images.slice(0, 3).map((img, i) => (
+            <Visual
+              src={img.image}
+              alt={img.alt}
+              ratio={i === 0 ? "16 / 10" : "square"}
+              class:list={[
+                "feature-spotlight_img",
+                i === 0 && images.length > 1 && "is-wide",
+              ]}
+            />
+          ))}
+        </div>
+        <div class="feature-spotlight_body u-margin-trim">
+          {eyebrow && (
+            <Heading variant="eyebrow" marginBottom={4}>
+              {eyebrow}
+            </Heading>
+          )}
+          <Heading tag="h2" variant="h2" marginBottom={5}>
+            <Fragment set:html={heading} />
+          </Heading>
+          {text && <Text marginBottom={6}>{text}</Text>}
+          {items.length > 0 && (
+            <ul class="feature-spotlight_list">
+              {items.map((item) => (
+                <li class="feature-spotlight_item">
+                  <span class="feature-spotlight_label">{item.label}</span>
+                  {item.meta && (
+                    <span class="feature-spotlight_meta">{item.meta}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {(cta || secondaryCta) && (
+            <div class="feature-spotlight_actions">
+              {cta && <CtaButton cta={cta} />}
+              {secondaryCta && (
+                <CtaButton cta={secondaryCta} variant="secondary" />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* A soft band a step darker than the page paper. */
+    .feature-spotlight_wrap {
+      background-color: color-mix(in srgb, var(--text) 6%, var(--background));
+    }
+
+    .feature-spotlight_layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr));
+      gap: var(--space-7);
+      align-items: center;
+    }
+
+    .feature-spotlight_collage {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-3);
+    }
+
+    .feature-spotlight_img.is-wide {
+      grid-column-end: span 2;
+    }
+
+    .feature-spotlight_list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+      column-gap: var(--space-6);
+      margin: 0 0 var(--space-6);
+      padding: 0;
+      list-style: none;
+    }
+
+    .feature-spotlight_item {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .feature-spotlight_label {
+      font-weight: 600;
+    }
+
+    .feature-spotlight_meta {
+      flex-shrink: 0;
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, var(--text) 70%, transparent);
+    }
+
+    /* The main button is the ink colour here, not the brand — the brand
+       button belongs to the estimate. */
+    .feature-spotlight_actions {
+      --button-primary-background: var(--text);
+      --button-primary-border: var(--text);
+      --button-primary-text: var(--background);
+      --button-secondary-border: var(--text);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+  }
+</style>

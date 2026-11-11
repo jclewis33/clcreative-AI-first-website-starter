@@ -52,6 +52,8 @@ export function toProjectCard(p: RawProjectCard): ProjectCardData | null {
     category,
     categoryLabel: categoryTitle(category),
     location: stegaClean(p.location)?.trim() ?? "",
+    service: stegaClean(p.service)?.trim() ?? "",
+    summary: "",
     image: image ? sizedImage(image, CARD_WIDTH) : null,
   };
 }

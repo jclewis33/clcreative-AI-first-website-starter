@@ -167,6 +167,12 @@ const services = defineCollection({
       title: z.string().min(1),
       /** Shorter label for the nav dropdown and footer (defaults to title). */
       navLabel: z.string().optional(),
+      /**
+       * Which menu the service sits in — "Residential", "Commercial". With
+       * any service grouped, the nav and footer show one dropdown/column per
+       * group (in order of first appearance) instead of one "Services".
+       */
+      group: z.string().min(1).optional(),
       /** Sort order in the nav, footer and related cards (lower first). */
       order: z.number().default(100),
       seoTitle: z.string().min(1),

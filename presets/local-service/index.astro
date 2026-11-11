@@ -4,17 +4,20 @@
  * by `npm run demo`. The content is src/data/home.ts, generated from
  * demo.json; edit demo.json and re-run the script rather than this file.
  * `layout` in demo.json picks the template: contractor (LocalServiceHome)
- * or showcase (LocalServiceShowcase).
+ * showcase (LocalServiceShowcase) or estate (LocalServiceEstate).
  */
 import LocalServiceHome from "@/components/templates/LocalServiceHome.astro";
 import LocalServiceShowcase from "@/components/templates/LocalServiceShowcase.astro";
+import LocalServiceEstate from "@/components/templates/LocalServiceEstate.astro";
 import { HOME } from "@/data/home";
 import type { LocalServiceHomeData } from "@/lib/local-service-home";
 
 /* Widened: home.ts is `satisfies`-typed, so its layout is a literal. */
 const layout = HOME.layout as LocalServiceHomeData["layout"];
 const showcase = layout === "showcase";
+const estate = layout === "estate";
 ---
 
 {showcase && <LocalServiceShowcase home={HOME} />}
-{!showcase && <LocalServiceHome home={HOME} />}
+{estate && <LocalServiceEstate home={HOME} />}
+{!showcase && !estate && <LocalServiceHome home={HOME} />}

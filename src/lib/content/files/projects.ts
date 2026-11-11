@@ -33,6 +33,8 @@ function toProjectCard(entry: Project): ProjectCardData {
     category: d.category,
     categoryLabel: categoryTitle(d.category),
     location: d.location?.trim() ?? "",
+    service: d.service?.trim() ?? "",
+    summary: d.description?.text?.trim() ?? "",
     image: sizedImage(localImage(d.heroImage, d.imageAlt), CARD_WIDTH),
   };
 }

@@ -21,7 +21,7 @@ const item = z.object({ title: text, text: text });
 
 const homeSchema = z.object({
   /** contractor (conversion-led) or showcase (photo-led, editorial). */
-  layout: z.enum(["contractor", "showcase"]).default("contractor"),
+  layout: z.enum(["contractor", "showcase", "estate"]).default("contractor"),
   /** The About page (/about). Optional: it leads with the story without it. */
   about: z
     .object({
@@ -136,6 +136,10 @@ const homeSchema = z.object({
     proof: z
       .object({ rating: z.number().min(1).max(5).optional(), text })
       .optional(),
+    /** Estate layout: a second hero button ("See our work" → "#projects"). */
+    secondaryCta: z.object({ label: text, href: text }).optional(),
+    /** The estimate button's text in the hero. @default estimate.label */
+    ctaLabel: text.optional(),
     /** Credentials they really hold; `image` is a logo source. */
     trust: z
       .array(z.object({ label: text, image: image.optional() }))
@@ -305,6 +309,33 @@ const homeSchema = z.object({
       rows: z.array(z.object({ label: text, us: text, them: text })).min(3),
     })
     .optional(),
+  /** Estate layout: the commercial side on a tinted band. */
+  spotlight: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      text: text.optional(),
+      images: z
+        .array(z.object({ image, alt: text }))
+        .min(1)
+        .max(3),
+      items: z
+        .array(z.object({ label: text, meta: text.optional() }))
+        .optional(),
+      cta: z.object({ label: text, href: text }).optional(),
+      secondaryCta: z.object({ label: text, href: text }).optional(),
+    })
+    .optional(),
+  /** Estate layout: projects with category pills (needs `projects`). */
+  projectHighlights: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      slugs: z.array(text).optional(),
+      limit: z.number().int().min(1).max(12).optional(),
+      linkLabel: text.optional(),
+    })
+    .optional(),
   serviceArea: z.object({
     heading: text,
     text: text.optional(),
@@ -406,6 +437,8 @@ const homeSchema = z.object({
         )
         .min(1),
       layout: z.enum(["cards", "featured", "grid", "marquee"]).optional(),
+      /** Estate layout: the star line ("78 five-star reviews on Google"). */
+      summary: text.optional(),
     })
     .optional(),
   leadForm: z.object({
@@ -432,6 +465,12 @@ const homeSchema = z.object({
       image: image.optional(),
       imageAlt: text.optional(),
       ctaNote: text.optional(),
+      /** Estate layout: a second button (another kind of buyer). */
+      secondaryCta: z.object({ label: text, href: text }).optional(),
+      /** The estimate button's text here. @default estimate.label */
+      ctaLabel: text.optional(),
+      /** Estate layout: what happens when they reach out, in order. */
+      steps: z.array(text).min(2).max(4).optional(),
     })
     .refine((c) => !c.image || c.imageAlt, {
       message: "imageAlt is required when image is set",
@@ -496,6 +535,13 @@ const audienceSchema = z.object({
   /** The URL: "commercial-concrete-coatings" → /commercial-concrete-coatings. */
   path: kebab,
   navLabel: text,
+  /**
+   * Put the page at the top of a service group's menu ("Commercial") rather
+   * than as its own nav link. Services join a group with their `group`.
+   */
+  group: text.optional(),
+  /** A second nav button to this page ("For Contractors"). */
+  navButton: text.optional(),
   title: text,
   /** At most 160 characters. */
   description: text.max(160),
@@ -592,7 +638,14 @@ const projectSchema = z
   .passthrough();
 
 /** The looks (src/config/looks.ts) a demo can wear. */
-export const LOOK_NAMES = ["fresh", "warm", "rugged", "natural", "studio"];
+export const LOOK_NAMES = [
+  "fresh",
+  "warm",
+  "rugged",
+  "natural",
+  "estate",
+  "studio",
+];
 
 const demoObject = z.object({
   preset: z.literal("local-service"),
@@ -649,7 +702,14 @@ const demoObject = z.object({
   smsOptIn: z.boolean().default(true),
   /** Footer profiles by label: { "Facebook": "https://…" }. */
   social: z.record(z.string(), z.url()).optional(),
-  utilityBar: z.object({ text, areaLabel: text.optional() }).optional(),
+  /** `link` (desktop, right side, beside the phone) replaces `areaLabel`. */
+  utilityBar: z
+    .object({
+      text,
+      areaLabel: text.optional(),
+      link: z.object({ label: text, href: text }).optional(),
+    })
+    .optional(),
   brand: z.object({
     color: z
       .string()
@@ -660,6 +720,12 @@ const demoObject = z.object({
       /** A light backing for a dark-on-white logo on the dark nav. */
       plate: z.boolean().default(false),
     }),
+    /**
+     * The text on brand-coloured buttons: "dark" or "light". Left out, it's
+     * picked from the colour's lightness. Mid-tone brands (copper,
+     * terracotta) read better with dark text.
+     */
+    text: z.enum(["dark", "light"]).optional(),
     /** A square icon; derived from the logo when left out. */
     favicon: image.optional(),
   }),

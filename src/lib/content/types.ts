@@ -155,6 +155,10 @@ export interface ProjectCardData {
   categoryLabel: string;
   /** As the editor wrote it, e.g. "Springfield, IL"; "" when not set. */
   location: string;
+  /** The service the job used, e.g. "Polished concrete"; "" when not set. */
+  service: string;
+  /** One line about the job (the write-up's plain text); "" when none. */
+  summary: string;
   /** Card-size hero photo. */
   image: ContentImage | null;
 }
