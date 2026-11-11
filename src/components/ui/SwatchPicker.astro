@@ -1,0 +1,477 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import type { ImageMetadata } from "astro";
+import Visual from "@/components/ui/Visual.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import BeforeAfter from "@/components/ui/BeforeAfter.astro";
+import ChoiceChips from "@/components/ui/ChoiceChips.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+import { uid } from "@/lib/uid";
+
+/** One colour of one material. */
+type SwatchColor = {
+  /** The colour's name: "Weathered Wood". */
+  name: string;
+  /** Brand and product line shown before the name: "CertainTeed Landmark". */
+  line?: string;
+  /** A close-up photo of the product in this colour (the swatch). */
+  swatch: ImageMetadata;
+  /** Alt text for the swatch photo. */
+  swatchAlt: string;
+  /** Optional whole-house render in this colour. With the picker's `before` set, it shows as a drag-to-compare. */
+  render?: ImageMetadata;
+  /** Alt text for the render. Required when `render` is set. */
+  renderAlt?: string;
+  /** One short line under the preview: "Impact-rated. Our most popular colour." */
+  note?: string;
+};
+
+/** One material and its colours. */
+type SwatchMaterial = {
+  /** The material's name on its button: "Asphalt shingles". */
+  name: string;
+  /** Its colours, in order. The first one is selected when the material is. */
+  colors: SwatchColor[];
+};
+
+interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **SwatchPicker** — "find your finish": the visitor picks a material
+   * (Asphalt shingles / Standing seam / Clay tile), then a colour from that
+   * material's swatches, and sees it large. For roofing, siding, paint,
+   * fencing, countertops — anything sold by the colour chart.
+   *
+   * - `materials` — `{ name, colors }[]`. Each colour is
+   *   `{ name, line?, swatch, swatchAlt, render?, renderAlt?, note? }`.
+   *   One material hides the material buttons.
+   * - **Renders are optional, per colour.** When a colour has a `render`
+   *   (the whole house in that colour) and the picker has a `before` photo,
+   *   the preview is a drag-to-compare (`<BeforeAfter>`) of the two. A
+   *   colour without one shows its swatch photo large instead, so a site can
+   *   start with swatches only and add renders as it gets them.
+   * - `title` — heading over the controls (default "Find your finish").
+   * - `cta` — optional button under the controls ("Talk through this color").
+   * - `disclaimer` — the fine print; pass `""` to drop it.
+   *
+   * Materials and colours are real radio buttons (keyboard and screen
+   * reader friendly); a small script swaps the preview. Without JS the first
+   * material's first colour shows. Wide: preview left, controls right.
+   * Narrow: preview on top, controls below.
+   *
+   * @example
+   * <SwatchPicker
+   *   before={houseNow}
+   *   beforeAlt="The sample home with its current grey roof"
+   *   materials={[{ name: "Asphalt shingles", colors: [{ name: "Weathered Wood", line: "CertainTeed Landmark", swatch: weatheredWood, swatchAlt: "Close-up of Weathered Wood shingles", render: houseWeatheredWood, renderAlt: "The sample home with a Weathered Wood roof" }] }]}
+   *   cta={{ label: "Talk through this color", modal: ESTIMATE_MODAL_ID }}
+   * />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The materials and their colours. Empty renders nothing. */
+  materials: SwatchMaterial[];
+
+  /** The house as it is today — the "before" side for colours that have a `render`. */
+  before?: ImageMetadata;
+
+  /** Alt text for the `before` photo. */
+  beforeAlt?: string;
+
+  /** Corner tag over the `before` photo in the compare view; the after side is tagged with the color's name. @default 'Today' */
+  beforeLabel?: string;
+
+  /** Heading over the controls. @default 'Find your finish' */
+  title?: string;
+
+  /** Optional button under the controls. */
+  cta?: SectionCta;
+
+  /** Fine print under the controls. Pass `""` to drop it. @default 'Screen colors are approximate. Confirm your choice with a physical sample.' */
+  disclaimer?: string;
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  materials = [],
+  before,
+  beforeAlt = "",
+  beforeLabel = "Today",
+  title = "Find your finish",
+  cta,
+  disclaimer = "Screen colors are approximate. Confirm your choice with a physical sample.",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const usable = materials.filter((m) => m.colors?.length > 0);
+
+if (import.meta.env.DEV && render) {
+  if (!usable.length)
+    console.warn(
+      "[SwatchPicker] `materials` has no material with colors; nothing renders.",
+    );
+  const hasRenders = usable.some((m) => m.colors.some((c) => c.render));
+  if (hasRenders && !before)
+    console.warn(
+      "[SwatchPicker] Some colors have a `render` but there is no `before` photo; they show their swatch instead.",
+    );
+  if (before && !beforeAlt)
+    console.warn(
+      "[SwatchPicker] Give the `before` photo real `beforeAlt` text.",
+    );
+  for (const m of usable)
+    for (const c of m.colors)
+      if (c.render && !c.renderAlt)
+        console.warn(
+          `[SwatchPicker] "${m.name} / ${c.name}" has a render but no \`renderAlt\`.`,
+        );
+}
+
+const id = uid("swatch-picker");
+const multiple = usable.length > 1;
+---
+
+{
+  render && usable.length > 0 && (
+    <div
+      class:list={["swatch-picker_wrap", className]}
+      data-swatch-picker
+      {...rest}
+    >
+      <div class="swatch-picker_preview" aria-live="polite">
+        {usable.map((material, m) =>
+          material.colors.map((color, c) => (
+            <figure
+              class="swatch-picker_view"
+              data-view={`${m}-${c}`}
+              hidden={m !== 0 || c !== 0}
+            >
+              {color.render && before ? (
+                <BeforeAfter
+                  before={before}
+                  beforeAlt={beforeAlt}
+                  after={color.render}
+                  afterAlt={color.renderAlt ?? color.swatchAlt}
+                  beforeLabel={beforeLabel}
+                  afterLabel={color.name}
+                  ratio="landscape"
+                  label={`Drag to compare ${color.name} ${material.name.toLowerCase()} with ${beforeLabel.toLowerCase()}`}
+                />
+              ) : (
+                <Visual
+                  src={color.swatch}
+                  alt={color.swatchAlt}
+                  ratio="landscape"
+                  loading="lazy"
+                  sizes="(min-width: 80rem) 48rem, 100vw"
+                  class="swatch-picker_photo"
+                />
+              )}
+              <figcaption class="swatch-picker_caption">
+                {color.render && before && (
+                  <Visual
+                    src={color.swatch}
+                    alt={color.swatchAlt}
+                    ratio="square"
+                    radius="small"
+                    loading="lazy"
+                    width={160}
+                    class="swatch-picker_caption_thumb"
+                  />
+                )}
+                <div class="swatch-picker_caption_body u-margin-trim">
+                  <Heading
+                    tag="p"
+                    variant="h6"
+                    marginBottom={1}
+                    maxWidth="none"
+                    class="swatch-picker_caption_title"
+                  >
+                    {color.line ? `${color.line} · ${color.name}` : color.name}
+                  </Heading>
+                  <Text
+                    variant="small"
+                    muted
+                    class="swatch-picker_caption_text"
+                  >
+                    {color.note ?? material.name}
+                  </Text>
+                </div>
+              </figcaption>
+            </figure>
+          )),
+        )}
+      </div>
+
+      <div class="swatch-picker_controls">
+        <Heading
+          tag="h3"
+          variant="h4"
+          class="swatch-picker_title u-margin-bottom-0"
+        >
+          {title}
+        </Heading>
+
+        {multiple && (
+          <ChoiceChips
+            legend="Material"
+            name={`${id}-material`}
+            options={usable.map((material, m) => ({
+              label: material.name,
+              value: String(m),
+            }))}
+          />
+        )}
+
+        {usable.map((material, m) => (
+          <fieldset
+            class="swatch-picker_colors"
+            data-material={m}
+            hidden={m !== 0}
+          >
+            <legend class="swatch-picker_legend u-text-style-small u-weight-bold u-margin-bottom-2">
+              {multiple ? `${material.name} colors` : "Color"}
+            </legend>
+            <div class="swatch-picker_color_list">
+              {material.colors.map((color, c) => (
+                <label class="swatch-picker_swatch">
+                  <input
+                    class="swatch-picker_radio u-sr-only"
+                    type="radio"
+                    name={`${id}-color-${m}`}
+                    value={`${m}-${c}`}
+                    checked={c === 0}
+                    data-color-radio
+                  />
+                  <Visual
+                    src={color.swatch}
+                    alt={color.swatchAlt}
+                    ratio="4/3"
+                    radius="small"
+                    loading="lazy"
+                    width={240}
+                    class="swatch-picker_swatch_img"
+                  />
+                  <span class="swatch-picker_swatch_name u-text-style-tiny u-line-height-small u-margin-bottom-0">
+                    {color.name}
+                  </span>
+                  <svg
+                    class="swatch-picker_check"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path d="m5 12.5 4.5 4.5L19 7.5" />
+                  </svg>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ))}
+
+        {disclaimer && (
+          <Text
+            variant="tiny"
+            muted
+            class="swatch-picker_disclaimer u-margin-bottom-0"
+          >
+            {disclaimer}
+          </Text>
+        )}
+
+        {cta && <CtaButton cta={cta} fullWidth class="swatch-picker_cta" />}
+      </div>
+    </div>
+  )
+}
+
+<script>
+  function initSwatchPickers() {
+    for (const wrap of document.querySelectorAll<HTMLElement>(
+      "[data-swatch-picker]",
+    )) {
+      if (wrap.dataset.init) continue;
+      wrap.dataset.init = "true";
+
+      const views = wrap.querySelectorAll<HTMLElement>(".swatch-picker_view");
+      const colorSets = wrap.querySelectorAll<HTMLElement>(
+        ".swatch-picker_colors",
+      );
+
+      /* Always read whichever radios are checked, not the event: browsers
+         restore checked radios on reload / back-forward cache without
+         firing `change`. */
+      const sync = () => {
+        const material =
+          wrap.querySelector<HTMLInputElement>(".choice-chips_radio:checked")
+            ?.value ?? "0";
+        for (const set of colorSets)
+          set.hidden = set.dataset.material !== material;
+        const color =
+          wrap.querySelector<HTMLInputElement>(
+            `.swatch-picker_colors[data-material="${material}"] [data-color-radio]:checked`,
+          )?.value ?? `${material}-0`;
+        for (const view of views) view.hidden = view.dataset.view !== color;
+      };
+
+      wrap.addEventListener("change", (event) => {
+        if (
+          (event.target as HTMLElement).matches(
+            ".swatch-picker_radio, .choice-chips_radio",
+          )
+        )
+          sync();
+      });
+      sync();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initSwatchPickers);
+  } else {
+    initSwatchPickers();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .swatch-picker_wrap {
+      display: var(--flex-medium, grid);
+      flex-direction: column;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--space-6);
+      align-items: start;
+      width: 100%;
+    }
+
+    /* ── Preview ───────────────────────────────────────── */
+    .swatch-picker_preview {
+      position: var(--relative-medium, sticky);
+      /* The offset only applies while sticky; stacked, it would push the
+         preview down onto the controls. */
+      top: calc(
+        (var(--nav-height-total, 0rem) + var(--space-4)) *
+          var(--responsive-large, 1)
+      );
+    }
+
+    .swatch-picker_view {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      margin: 0;
+    }
+
+    .swatch-picker_view[hidden] {
+      display: none;
+    }
+
+    .swatch-picker_caption {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .swatch-picker_caption_thumb {
+      width: 3.5rem;
+      flex-shrink: 0;
+    }
+
+    .swatch-picker_caption_body {
+      min-width: 0;
+    }
+
+    /* ── Controls ──────────────────────────────────────── */
+    .swatch-picker_controls {
+      display: grid;
+      gap: var(--space-6);
+      padding: var(--space-6);
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+    }
+
+    .swatch-picker_colors {
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    .swatch-picker_colors[hidden] {
+      display: none;
+    }
+
+    .swatch-picker_legend {
+      padding: 0;
+    }
+
+    /* Colour swatches */
+    .swatch-picker_color_list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr));
+      gap: var(--space-2);
+    }
+
+    .swatch-picker_swatch {
+      position: relative;
+      display: grid;
+      align-content: start;
+      gap: var(--space-2);
+      padding: var(--space-2);
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-small);
+      background-color: var(--background);
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+
+    .swatch-picker_swatch:has(:checked) {
+      border-color: var(--text);
+      box-shadow: 0 0 0 var(--border-width-main) var(--text);
+    }
+
+    .swatch-picker_check {
+      position: absolute;
+      top: var(--space-3);
+      right: var(--space-3);
+      width: 1.5em;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      padding: 0.2em;
+      border-radius: var(--radius-full);
+      background-color: var(--text);
+      stroke: var(--background);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .swatch-picker_swatch:has(:checked) .swatch-picker_check {
+      opacity: 1;
+    }
+
+    .swatch-picker_swatch:has(:focus-visible) {
+      outline: var(--border-width-main) solid var(--color-focus-state);
+      outline-offset: 0.2rem;
+    }
+
+    @media (hover: hover) {
+      .swatch-picker_swatch:hover:not(:has(:checked)) {
+        border-color: var(--text);
+      }
+    }
+  }
+</style>

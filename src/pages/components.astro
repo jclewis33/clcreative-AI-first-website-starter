@@ -139,6 +139,28 @@ import demoPhoto1 from "@/assets/placeholder-images/ai-first-starter-1.webp";
 import demoPhoto2 from "@/assets/placeholder-images/ai-first-starter-2.webp";
 import demoPhoto3 from "@/assets/placeholder-images/ai-first-starter-3.webp";
 import demoPhoto4 from "@/assets/placeholder-images/ai-first-starter-4.webp";
+import HotspotExplorer from "@/components/ui/HotspotExplorer.astro";
+import SwatchPicker from "@/components/ui/SwatchPicker.astro";
+import ChoiceChips from "@/components/ui/ChoiceChips.astro";
+import ConcernTabs from "@/components/sections/ConcernTabs.astro";
+import PathCards from "@/components/sections/PathCards.astro";
+import OptionCards from "@/components/sections/OptionCards.astro";
+import TownFinder from "@/components/sections/TownFinder.astro";
+import demoPhoto6 from "@/assets/placeholder-images/ai-first-starter-6.webp";
+import demoPhoto7 from "@/assets/placeholder-images/ai-first-starter-7.webp";
+import demoPhoto8 from "@/assets/placeholder-images/ai-first-starter-8.webp";
+import demoPhoto9 from "@/assets/placeholder-images/ai-first-starter-9.webp";
+import demoPhoto10 from "@/assets/placeholder-images/ai-first-starter-10.webp";
+import demoPhoto11 from "@/assets/placeholder-images/ai-first-starter-11.webp";
+import demoPhoto12 from "@/assets/placeholder-images/ai-first-starter-12.webp";
+import demoPhoto13 from "@/assets/placeholder-images/ai-first-starter-13.webp";
+import demoPhoto14 from "@/assets/placeholder-images/ai-first-starter-14.webp";
+import demoPhoto15 from "@/assets/placeholder-images/ai-first-starter-15.webp";
+import demoPhoto16 from "@/assets/placeholder-images/ai-first-starter-16.webp";
+import demoPhoto17 from "@/assets/placeholder-images/ai-first-starter-17.webp";
+import demoPhoto18 from "@/assets/placeholder-images/ai-first-starter-18.webp";
+import demoPhoto19 from "@/assets/placeholder-images/ai-first-starter-19.webp";
+import demoPhoto20 from "@/assets/placeholder-images/ai-first-starter-20.webp";
 import Visual from "@/components/ui/Visual.astro";
 import Overlay from "@/components/ui/Overlay.astro";
 import BlogPostGrid from "@/components/sections/BlogPostGrid.astro";
@@ -229,14 +251,18 @@ const COMPONENT_INDEX = [
   { slug: "accordion", text: "Accordion" },
   { slug: "forms", text: "Form components" },
   { slug: "lead-form", text: "LeadForm (GoHighLevel)" },
+  { slug: "lead-form-photo-steps", text: "LeadForm (photo steps)" },
   { slug: "discount-claim", text: "DiscountClaimForm" },
   { slug: "review-request", text: "ReviewRequest" },
   { slug: "section-header", text: "SectionHeader" },
   { slug: "check-list", text: "CheckList" },
   { slug: "chip-list", text: "ChipList" },
+  { slug: "choice-chips", text: "ChoiceChips" },
   { slug: "step-list", text: "StepList" },
   { slug: "quote", text: "Quote" },
   { slug: "before-after", text: "BeforeAfter" },
+  { slug: "swatch-picker", text: "SwatchPicker" },
+  { slug: "hotspot-explorer", text: "HotspotExplorer" },
   { slug: "fact-photo", text: "FactPhoto" },
   { slug: "swipe-row", text: "SwipeRow" },
   { slug: "lightbox", text: "Lightbox" },
@@ -246,6 +272,7 @@ const COMPONENT_INDEX = [
   { slug: "gallery-browser", text: "GalleryBrowser" },
   { slug: "cta-button", text: "CtaButton & LeadFormModal" },
   { slug: "image-pair", text: "ImagePair" },
+  { slug: "image-pair-polaroid", text: "ImagePair (polaroid)" },
   { slug: "service-icon", text: "ServiceIcon" },
   { slug: "hero-background", text: "Hero (background)" },
   { slug: "hero-split", text: "Hero (split)" },
@@ -263,6 +290,10 @@ const COMPONENT_INDEX = [
   { slug: "feature-tiles", text: "FeatureTiles" },
   { slug: "included-list", text: "IncludedList" },
   { slug: "service-area", text: "ServiceArea" },
+  { slug: "town-finder", text: "TownFinder" },
+  { slug: "concern-tabs", text: "ConcernTabs" },
+  { slug: "path-cards", text: "PathCards" },
+  { slug: "option-cards", text: "OptionCards" },
   { slug: "reviews", text: "Reviews" },
   { slug: "lead-form-section", text: "LeadFormSection" },
   { slug: "call-band", text: "CallBand" },
@@ -596,6 +627,241 @@ const tilesDemoItems = [
     title: "Here after the job",
     text: "Call us any time something isn't right.",
     tone: "tint" as const,
+  },
+];
+
+/* ── Home-service components (HotspotExplorer, SwatchPicker, ConcernTabs,
+   PathCards, OptionCards, TownFinder). The starter's placeholder photos are
+   all studio desk scenes, so the copy shows the intended home-service use
+   while every alt text describes the photo that is actually there. ── */
+const hotspotItems = [
+  {
+    title: "The main screen",
+    label: "Main screen",
+    eyebrow: "01 · Desktop",
+    text: "Where the whole page gets reviewed at full size before anything ships.",
+    x: 47,
+    y: 26,
+    thumb: demoPhoto8,
+    thumbAlt: "A monitor showing a website layout on a wooden desk",
+    detail: "A large screen catches spacing and type problems a laptop hides.",
+    cta: { label: "Book a review", href: "/contact" },
+  },
+  {
+    title: "The laptop view",
+    label: "Laptop",
+    eyebrow: "02 · Laptop",
+    text: "The size most visitors browse at, so layouts are tuned for it first.",
+    x: 17,
+    y: 62,
+    thumb: demoPhoto10,
+    thumbAlt: "An open laptop showing a file browser on a desk",
+  },
+  {
+    title: "The phone check",
+    label: "Phone",
+    eyebrow: "03 · Phone",
+    text: "Every page is checked at phone width so buttons stay easy to tap.",
+    x: 81,
+    y: 62,
+    thumb: demoPhoto9,
+    thumbAlt: "A tablet showing a website beside fabric swatches",
+    detail: "Most home-service visits come from a phone.",
+  },
+  {
+    title: "Keyboard and controls",
+    label: "Keyboard",
+    eyebrow: "04 · Keyboard",
+    text: "Everything works from the keyboard as well as the mouse.",
+    x: 55,
+    y: 86,
+    thumb: demoPhoto13,
+    thumbAlt: "A keyboard in front of a monitor showing code",
+  },
+];
+
+const swatchMaterials = [
+  {
+    name: "Asphalt shingles",
+    colors: [
+      {
+        name: "Weathered Wood",
+        line: "Landmark",
+        swatch: demoPhoto9,
+        swatchAlt: "A tablet and stone samples on a dark mat",
+        render: demoPhoto11,
+        renderAlt: "A laptop on a round table beside a framed print",
+        note: "Our most requested color.",
+      },
+      {
+        name: "Moire Black",
+        line: "Landmark",
+        swatch: demoPhoto12,
+        swatchAlt: "A notebook, tablet and color chips on a desk",
+        render: demoPhoto7,
+        renderAlt: "A laptop on a round table beside a plant",
+      },
+      {
+        name: "Driftwood",
+        line: "Duration",
+        swatch: demoPhoto18,
+        swatchAlt: "A tablet on fabric samples beside a glass",
+      },
+    ],
+  },
+  {
+    name: "Standing seam",
+    colors: [
+      {
+        name: "Charcoal",
+        swatch: demoPhoto2,
+        swatchAlt: "A tablet, notebook and business cards on a desk",
+      },
+      {
+        name: "Galvalume",
+        swatch: demoPhoto6,
+        swatchAlt: "Floating charts above a closed laptop",
+      },
+    ],
+  },
+];
+
+const concernItems = [
+  {
+    label: "Rain & leaks",
+    eyebrow: "Rain & drainage",
+    title: "Give water a clear path off the roof.",
+    text: "Shingles shed rain. Flashing directs it around walls and pipes, and gutters carry runoff away. Damaged details give water a way underneath.",
+    takeaway: "A stain on the ceiling is a reason to look for the source.",
+    image: demoPhoto4,
+    imageAlt: "Two people reviewing a design on a large monitor",
+    caption: "Company archive · Inspection",
+    checks: ["Flashing connections", "Roof-edge details", "Drainage paths"],
+    cta: { label: "Request a leak inspection", href: "/contact" },
+    link: { label: "See how gutters move water", href: "#concern-tabs" },
+  },
+  {
+    label: "Sun & granules",
+    eyebrow: "Heat & UV",
+    title: "Granules are the shingle's sunscreen.",
+    text: "Years of sun wear the granules away, and the asphalt underneath starts to dry and crack.",
+    takeaway: "Granules in the gutters mean the roof is ageing.",
+    image: demoPhoto14,
+    imageAlt: "Two people discussing a design at a desk",
+    checks: ["Granule loss", "Cracking", "Attic ventilation"],
+  },
+  {
+    label: "After hail",
+    eyebrow: "Storm damage",
+    title: "Hail damage hides in plain sight.",
+    text: "Bruised shingles look fine from the yard. The damage shows up years later as leaks.",
+    image: demoPhoto19,
+    imageAlt: "A man working on a laptop at a round table",
+    checks: ["Bruised shingles", "Dented vents", "Gutter damage"],
+  },
+];
+
+const pathItems = [
+  {
+    label: "Paying directly",
+    title: "Choose the roof. Know the scope.",
+    text: "Sometimes a repair is all you need. When it's time for a new roof, compare what each option includes and see the price before deciding.",
+    points: [
+      "Repair recommendations grounded in the roof's condition",
+      "Material, color and performance choices you can compare",
+      "Written work, price and payment milestones",
+    ],
+    cta: { label: "Compare my roof options", href: "/contact" },
+  },
+  {
+    label: "After a storm",
+    title: "A documented roof. A clearer path forward.",
+    text: "Start with an inspection. We photograph the damage, detail the repairs and explain our estimate to you and your adjuster.",
+    points: [
+      "Photos, measurements and an itemized repair scope",
+      "Clear answers for your adjuster",
+      "Property protection and cleanup",
+    ],
+    cta: { label: "Request my storm inspection", href: "/contact" },
+  },
+];
+const pathHelp = {
+  title: "Not sure where to start? Tell us what changed.",
+  text: "A leak, a recent storm or an aging roof is enough to start the conversation.",
+};
+
+const optionItems = [
+  {
+    label: "Reflective single-ply membrane",
+    title: "TPO",
+    image: demoPhoto15,
+    imageAlt: "A monitor, laptop, tablet and phone on one desk",
+    credit: "Photo: manufacturer case study",
+    text: "A thermoplastic membrane with heat-welded seams. White options reflect sunlight; the full assembly sets insulation performance.",
+    details: [
+      "Heat-welded seams",
+      "Reflective white surface",
+      "A common fit for low-slope retail",
+    ],
+  },
+  {
+    label: "Flexible rubber membrane",
+    title: "EPDM",
+    image: demoPhoto17,
+    imageAlt: "An open laptop showing a photo gallery on a desk",
+    text: "A synthetic-rubber membrane available in adhered, mechanically attached and ballasted assemblies.",
+    details:
+      "Seams and flashings use the materials specified for that EPDM system, so the whole assembly matters more than the sheet.",
+  },
+  {
+    label: "Welded single-ply membrane",
+    title: "PVC",
+    image: demoPhoto20,
+    imageAlt: "A laptop on a round table beside a vase",
+    text: "A thermoplastic option with heat-welded seams. Product choice should account for rooftop equipment and grease exposure.",
+  },
+];
+
+const finderTowns = [
+  { name: "Addison", region: "Center", miles: 13 },
+  { name: "Aledo", region: "West", miles: 36 },
+  { name: "Allen", region: "Northeast", miles: 26 },
+  { name: "Alvarado", region: "South", miles: 35 },
+  { name: "Argyle", region: "North", miles: 17 },
+  { name: "Arlington", region: "Center", miles: 14 },
+  { name: "Athens", region: "Southeast", miles: 85, edge: true },
+  { name: "Azle", region: "West", miles: 29 },
+  { name: "Burleson", region: "South", miles: 31 },
+  { name: "Celina", region: "North", miles: 33 },
+  { name: "Denton", region: "North", miles: 23 },
+  { name: "Ennis", region: "Southeast", miles: 46 },
+  { name: "Frisco", region: "Northeast", miles: 22 },
+  { name: "Granbury", region: "West", miles: 54 },
+  { name: "Keller", region: "Center", miles: 11 },
+  { name: "McKinney", region: "Northeast", miles: 30 },
+];
+
+const leadPhotoOptions = [
+  {
+    label: "Plan a new roof",
+    value: "new-roof",
+    image: demoPhoto1,
+    imageAlt: "A laptop on a round table in a bright room",
+    description: "Explore the look, protection and price.",
+  },
+  {
+    label: "Check storm damage",
+    value: "storm",
+    image: demoPhoto3,
+    imageAlt: "A man thinking in front of a laptop",
+    description: "Find out what needs attention after wind or hail.",
+  },
+  {
+    label: "Solve a leak or repair",
+    value: "repair",
+    image: demoPhoto16,
+    imageAlt: "Floating charts above a closed laptop and notebook",
+    description: "Start with the problem.",
   },
 ];
 ---
@@ -1649,6 +1915,29 @@ const tilesDemoItems = [
       </TabPanel>
     </Tab>
 
+    <!-- ── Pill Tabs ── -->
+    <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
+      >pills</Heading
+    >
+    <Tab variant="pills">
+      <TabButton slot="buttons" label="Rain & leaks" />
+      <TabButton slot="buttons" label="Sun & granules" />
+      <TabButton slot="buttons" label="After hail" />
+
+      <TabPanel>
+        <Text muted>
+          A pill track with the active pill raised. ConcernTabs uses it; any
+          short set of tabs can.
+        </Text>
+      </TabPanel>
+      <TabPanel>
+        <Text muted>Years of sun wear the granules away.</Text>
+      </TabPanel>
+      <TabPanel>
+        <Text muted>Bruised shingles look fine from the yard.</Text>
+      </TabPanel>
+    </Tab>
+
     <!-- ── Side Tabs ── -->
     <Heading variant="eyebrow" class="u-margin-top-8 u-margin-bottom-4"
       >side</Heading
@@ -2159,6 +2448,30 @@ const tilesDemoItems = [
     </Layout>
   </Section>
 
+  <Section theme="light" id="lead-form-photo-steps">
+    <Layout variant="columns" ratio="5-7" verticalAlign="start">
+      <Heading variant="eyebrow">LeadForm · steps with photo tiles</Heading>
+      <Heading tag="h2"
+        >Optional: photo tiles, named steps, insurance details</Heading
+      >
+      <Text variant="regular" muted
+        >All opt-in. Give projectOptions an image (and a description) for photo
+        tiles; progress="steps" names the two steps; insuranceDetails adds a
+        collapsed insurance company and claim number box, saved to the note.</Text
+      >
+      <LeadForm
+        slot="column2"
+        formId="contact"
+        id="demo-lead-photo-steps"
+        fields="steps"
+        progress="steps"
+        insuranceDetails
+        stepQuestion="What brings you to us?"
+        projectOptions={leadPhotoOptions}
+      />
+    </Layout>
+  </Section>
+
   <Section theme="light" id="discount-claim">
     <Layout variant="columns" ratio="5-7" verticalAlign="start">
       <Heading variant="eyebrow">DiscountClaimForm</Heading>
@@ -2255,6 +2568,26 @@ const tilesDemoItems = [
     />
   </Section>
 
+  <Section theme="light" id="choice-chips">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">ChoiceChips</Heading>
+      <Heading tag="h2"
+        >Pick-one pill buttons: real radios in a fieldset</Heading
+      >
+    </Layout>
+    <ChoiceChips
+      legend="Filter by area"
+      name="demo-choice-chips"
+      options={[
+        { label: "All areas", value: "" },
+        { label: "North", value: "north" },
+        { label: "East", value: "east" },
+        { label: "South", value: "south" },
+        { label: "West", value: "west" },
+      ]}
+    />
+  </Section>
+
   <Section theme="light" id="step-list">
     <Layout variant="stack">
       <Heading variant="eyebrow">StepList</Heading>
@@ -2331,6 +2664,38 @@ const tilesDemoItems = [
       after={demoPhoto2}
       afterAlt="The same space after the project, fully finished"
     />
+  </Section>
+
+  <Section theme="light" id="swatch-picker">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">SwatchPicker</Heading>
+      <Heading tag="h2">Pick a material, then a color, and see it large</Heading
+      >
+    </Layout>
+    <SwatchPicker
+      before={demoPhoto1}
+      beforeAlt="A laptop on a round table in a bright room"
+      materials={swatchMaterials}
+      cta={{ label: "Talk through this color", href: "/contact" }}
+    />
+  </Section>
+
+  <Section theme="light" id="hotspot-explorer">
+    <Layout variant="stack">
+      <Heading variant="eyebrow">HotspotExplorer</Heading>
+      <Heading tag="h2">A photo with numbered parts to explore</Heading>
+    </Layout>
+    <HotspotExplorer
+      image={demoPhoto5}
+      imageAlt="A desk with a monitor, laptop, tablet and phone each showing the same website"
+      items={hotspotItems}
+    >
+      <Heading tag="p" variant="eyebrow">Explore every layer</Heading>
+      <Heading tag="h3" variant="h2">Every screen, checked.</Heading>
+      <Text variant="large" muted
+        >Tap a number to see what we check on each device.</Text
+      >
+    </HotspotExplorer>
   </Section>
 
   <Section theme="light" id="fact-photo">
@@ -2563,6 +2928,33 @@ const tilesDemoItems = [
           {
             src: demoPhoto2,
             alt: "A close view of new cabinetry and lighting",
+          },
+        ]}
+      />
+    </Layout>
+  </Section>
+
+  <Section theme="light" id="image-pair-polaroid">
+    <Layout variant="columns" ratio="6-6" verticalAlign="center">
+      <Heading variant="eyebrow">ImagePair · polaroid</Heading>
+      <Heading tag="h2">Two tilted prints with captions</Heading>
+      <Text muted
+        >The photo-journal look: it makes everyday job photos look intentional.
+        Captions sit on the thick bottom edge of each print.</Text
+      >
+      <ImagePair
+        slot="column2"
+        variant="polaroid"
+        images={[
+          {
+            src: demoPhoto1,
+            alt: "A laptop on a round table in a bright room",
+            caption: "Installation in progress",
+          },
+          {
+            src: demoPhoto3,
+            alt: "A man thinking in front of a laptop",
+            caption: "A closer look",
           },
         ]}
       />
@@ -2912,6 +3304,58 @@ const tilesDemoItems = [
       { src: demoPhoto3, alt: "A finished home exterior on a quiet street" },
       { src: demoPhoto4, alt: "A crew member loading tools into a truck" },
     ]}
+  />
+
+  <Section theme="light" padding="small" id="town-finder">
+    <Heading variant="eyebrow">TownFinder</Heading>
+    <Heading tag="h2">Searchable town directory with region chips</Heading>
+  </Section>
+  <TownFinder
+    eyebrow="Where we work"
+    heading="Find your town."
+    intro="Find your town, then tell us what you need."
+    towns={finderTowns}
+    note="Distances are approximate straight-line miles from our shop. Confirm your address with us."
+  />
+
+  <Section theme="light" padding="small" id="concern-tabs">
+    <Heading variant="eyebrow">ConcernTabs</Heading>
+    <Heading tag="h2"
+      >Warning signs as pill tabs, each a photo and a "what we look at" card</Heading
+    >
+  </Section>
+  <ConcernTabs
+    eyebrow="A closer look changes the decision"
+    heading="What is your roof telling you?"
+    intro="Explore a concern. Understand why it matters."
+    items={concernItems}
+    cta={{ label: "Book an inspection", href: "/contact" }}
+  />
+
+  <Section theme="light" padding="small" id="path-cards">
+    <Heading variant="eyebrow">PathCards</Heading>
+    <Heading tag="h2">Two ways forward, side by side</Heading>
+  </Section>
+  <PathCards
+    eyebrow="Your roof. Your next step."
+    heading="A repair when it makes sense. A complete system when it's time."
+    intro="Before you decide, know what your roof needs. We'll show you what we find and put the work and price in writing."
+    paths={pathItems}
+    note="We provide the construction scope and supporting documentation. Your insurer determines coverage and payment."
+    help={pathHelp}
+  />
+
+  <Section theme="light" padding="small" id="option-cards">
+    <Heading variant="eyebrow">OptionCards</Heading>
+    <Heading tag="h2">Numbered option cards with a fold-out</Heading>
+  </Section>
+  <OptionCards
+    eyebrow="A system for the building"
+    heading="Different roofs. One clear plan."
+    intro="The right choice depends on the roof you have and how the building is used."
+    items={optionItems}
+    detailsLabel="What matters for your roof"
+    note="Products and warranty options are selected for the actual building."
   />
 
   <Section theme="light" padding="small" id="reviews">

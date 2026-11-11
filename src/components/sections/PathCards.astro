@@ -1,0 +1,195 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import CheckList from "@/components/ui/CheckList.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import Card from "@/components/ui/Card.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type PathCard = {
+  /** Small label over the title: "Paying directly", "After a storm". */
+  label?: string;
+  /** The path in a line or two: "Choose the roof. Know the scope." */
+  title: string;
+  /** Two or three sentences on how this path works. */
+  text?: string;
+  /** What the homeowner gets on this path, one short line each. */
+  points?: string[];
+  /** This path's own button. */
+  cta?: SectionCta;
+};
+
+type PathCardsHelp = {
+  /** "Not sure where to start? Tell us what changed." */
+  title: string;
+  /** One line under it. */
+  text?: string;
+};
+
+type PathCardsTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **PathCards** — two (or three) ways forward, side by side, as equal
+   * panels: "Paying directly" vs "After a storm", "Repair" vs "Replace",
+   * "Finance it" vs "Pay upfront". Each panel has a label, a title, a short
+   * text, a checklist and its own button. Under them: an optional fine-print
+   * `note` (e.g. "Your insurer determines coverage…") and an optional `help`
+   * strip — "Not sure where to start?" on the left, the click-to-call number
+   * from `SITE.phone` on the right.
+   *
+   * - `paths` — `{ label?, title, text?, points?, cta? }[]`, 2 or 3; empty renders nothing
+   * - `eyebrow`, `heading` (required), `intro` — the SectionHeader
+   * - `note` — fine print under the panels
+   * - `help` — `{ title, text? }` for the call strip (the button is `SITE.phone`)
+   *
+   * @example
+   * <PathCards heading="A repair when it makes sense. A new roof when it's time." paths={[{ label: "Paying directly", title: "Choose the roof. Know the scope.", points: ["Written price"], cta: { label: "Compare my options", href: "/contact" } }, { label: "After a storm", title: "A documented roof.", cta: { label: "Request a storm inspection", href: "/contact" } }]} help={{ title: "Not sure where to start?" }} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. Required. */
+  heading: string;
+
+  /** Intro beside the heading. */
+  intro?: string;
+
+  /** The paths: 2 reads best, 3 is fine. Empty renders nothing. */
+  paths: PathCard[];
+
+  /** Fine print under the panels. */
+  note?: string;
+
+  /** The "Not sure where to start?" strip with the phone number. Omit to hide. */
+  help?: PathCardsHelp;
+
+  /** Section theme. */
+  theme?: PathCardsTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  intro,
+  paths = [],
+  note,
+  help,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!heading || !paths?.length)
+    console.warn("[PathCards] needs `heading` and `paths`; nothing renders.");
+  else if (paths.length > 3)
+    console.warn("[PathCards] reads best with 2 or 3 `paths`.");
+}
+
+const columns = paths.length >= 3 ? 3 : paths.length === 1 ? 1 : 2;
+---
+
+{
+  render && heading && paths.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["path-cards_wrap", className]}
+      {...rest}
+    >
+      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      <div class="path-cards_main">
+        <Grid
+          largeColumns={columns}
+          mediumColumns={columns === 2 ? 2 : 1}
+          smallColumns={1}
+        >
+          {paths.map((path) => (
+            <Card variant="stacked" padding="large" class="path-cards_card">
+              <Fragment slot="title">
+                {path.label && (
+                  <Heading tag="p" variant="eyebrow">
+                    {path.label}
+                  </Heading>
+                )}
+                <Heading tag="h3" variant="h3" class="u-text-wrap-balance">
+                  {path.title}
+                </Heading>
+              </Fragment>
+              {path.text && <Text muted>{path.text}</Text>}
+              {path.points && path.points.length > 0 && (
+                <CheckList items={path.points} />
+              )}
+              {path.cta && <CtaButton slot="footer" cta={path.cta} />}
+            </Card>
+          ))}
+        </Grid>
+        {note && (
+          <Text variant="small" muted maxWidth="70ch">
+            {note}
+          </Text>
+        )}
+      </div>
+      {help && (
+        <div class="path-cards_help">
+          <div class="path-cards_help_copy u-margin-trim">
+            <Heading tag="h3" variant="h5" marginBottom={1}>
+              {help.title}
+            </Heading>
+            {help.text && <Text muted>{help.text}</Text>}
+          </div>
+          <CtaButton phone variant="secondary" />
+        </div>
+      )}
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* The panels and their fine print read as one block: a tighter gap than
+       the section's own. A grid, not flex — the note is text. */
+    .path-cards_main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: var(--space-4);
+    }
+
+    /* "Not sure where to start?" on the left, the call button on the right;
+       stacks on small containers. */
+    .path-cards_help {
+      display: flex;
+      flex-direction: var(--column-small, row);
+      align-items: var(--start-small, center);
+      justify-content: space-between;
+      gap: var(--space-4) var(--space-6);
+      padding-top: var(--space-6);
+      border-top: var(--border-width-main) solid var(--border);
+    }
+  }
+</style>

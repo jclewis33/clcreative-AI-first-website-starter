@@ -285,16 +285,17 @@ The `actions` prop (`'single'`|`'multiple'`) overrides the count when the
 markup reads wrong (e.g. a decorative anchor). A CSS safety net also drops the
 stretch whenever the footer really holds 2+ controls.
 
-| Prop                  | Type                                       | Default     | Description                                 |
-| --------------------- | ------------------------------------------ | ----------- | ------------------------------------------- |
-| `variant`             | `'default'`\|`'stacked'`\|`'cover'`        | `'default'` | Image-top / text-only / image-fills         |
-| `href`                | `string`                                   | —           | Whole-card link                             |
-| `newTab`              | `boolean`                                  | `false`     | Link-only                                   |
-| `ariaLabel`           | `string`                                   | —           | Card-link label (title text is anchor text) |
-| `title`               | `string`                                   | —           | Convenience title (`u-text-style-h5`)       |
-| `theme`               | `'light'`\|`'dark'`\|`'brand'`\|`'invert'` | —           | Whole-theme pin or relative flip            |
-| `rowSpan` / `colSpan` | `1`–`4`                                    | —           | Grid spans                                  |
-| `radius`              | `string`                                   | —           | Radius utility override                     |
+| Prop                  | Type                                       | Default     | Description                                                                  |
+| --------------------- | ------------------------------------------ | ----------- | ---------------------------------------------------------------------------- |
+| `variant`             | `'default'`\|`'stacked'`\|`'cover'`        | `'default'` | Image-top / text-only / image-fills                                          |
+| `href`                | `string`                                   | —           | Whole-card link                                                              |
+| `newTab`              | `boolean`                                  | `false`     | Link-only                                                                    |
+| `ariaLabel`           | `string`                                   | —           | Card-link label (title text is anchor text)                                  |
+| `title`               | `string`                                   | —           | Convenience title (`u-text-style-h5`)                                        |
+| `theme`               | `'light'`\|`'dark'`\|`'brand'`\|`'invert'` | —           | Whole-theme pin or relative flip                                             |
+| `rowSpan` / `colSpan` | `1`–`4`                                    | —           | Grid spans                                                                   |
+| `radius`              | `string`                                   | —           | Radius utility override                                                      |
+| `padding`             | `'default'`\|`'large'`                     | `'default'` | Content padding; `large` (space-7) for a panel that makes a case (PathCards) |
 
 **Slots:** `visual`, `title` (custom heading — use a `Heading` with its own
 variant), default (body), `footer`.

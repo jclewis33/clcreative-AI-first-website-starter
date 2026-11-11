@@ -45,6 +45,8 @@ export const NOTE_FIELDS = {
   message: "Message",
   rating: "Rating",
   referrer: "Referred by",
+  insuranceCompany: "Insurance company",
+  claimNumber: "Claim number",
 } as const;
 
 /* Soft, per-isolate limit — Workers recycle isolates, so this only slows a

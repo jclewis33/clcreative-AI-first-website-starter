@@ -18,10 +18,21 @@ import Visual from "@/components/ui/Visual.astro";
  * <BeforeAfter before={beforeImg} beforeAlt="…" after={afterImg} afterAlt="…" />
  */
 
+/**
+ * Frame shape.
+ * - `'wide'`      — 8:3 band (default; rooms and long exteriors)
+ * - `'landscape'` — 3:2 (a whole house, a single object)
+ * - `'standard'`  — 4:3
+ * Every shape drops to 4:3 in a narrow container.
+ */
+type BeforeAfterRatio = "wide" | "landscape" | "standard";
+
 export interface Props extends HTMLAttributes<"div"> {
   /**
    * **BeforeAfter** — drag-to-compare photos. `before` / `after` are imported
    * images with their alt text; `label` names the slider for screen readers.
+   * `beforeLabel` / `afterLabel` change the corner tags ("Today" / "Your
+   * roof concept"); `ratio` sets the frame shape (wide, landscape, standard).
    */
   docs?: string;
 
@@ -40,6 +51,15 @@ export interface Props extends HTMLAttributes<"div"> {
   /** Alt text for the after photo. */
   afterAlt: string;
 
+  /** Corner tag over the before photo. @default "Before" */
+  beforeLabel?: string;
+
+  /** Corner tag over the after photo. @default "After" */
+  afterLabel?: string;
+
+  /** Frame shape: wide (8:3), landscape (3:2) or standard (4:3). @default 'wide' */
+  ratio?: BeforeAfterRatio;
+
   /** Accessible name for the slider. @default "Drag to compare before and after" */
   label?: string;
 
@@ -54,12 +74,17 @@ const {
   beforeAlt,
   after,
   afterAlt,
+  beforeLabel = "Before",
+  afterLabel = "After",
+  ratio = "wide",
   label = "Drag to compare before and after",
   class: className,
   ...rest
 } = Astro.props;
 
 if (import.meta.env.DEV) {
+  if (!["wide", "landscape", "standard"].includes(ratio))
+    console.warn(`[BeforeAfter] Unknown ratio "${ratio}"; using "wide".`);
   if (!before || !after)
     console.warn(
       "[BeforeAfter] Both `before` and `after` images are required; nothing renders without them.",
@@ -73,7 +98,14 @@ if (import.meta.env.DEV) {
 
 {
   render && before && after && (
-    <div class:list={["before-after_wrap", className]} {...rest}>
+    <div
+      class:list={[
+        "before-after_wrap",
+        { [`is-${ratio}`]: ratio !== "wide" },
+        className,
+      ]}
+      {...rest}
+    >
       <div class="before-after_frame" data-theme="dark">
         <div class="before-after_layer">
           <Visual
@@ -94,14 +126,14 @@ if (import.meta.env.DEV) {
           />
         </div>
         <span class="before-after_label is-before" aria-hidden="true">
-          Before
+          {beforeLabel}
         </span>
         <span
           class="before-after_label is-after"
           data-theme="light"
           aria-hidden="true"
         >
-          After
+          {afterLabel}
         </span>
         <span class="before-after_handle" data-theme="light" aria-hidden="true">
           <span class="before-after_knob">
@@ -155,11 +187,19 @@ if (import.meta.env.DEV) {
     .before-after_frame {
       --_pos: 50%;
       position: relative;
-      aspect-ratio: 8 / 3;
+      aspect-ratio: var(--_ratio, 8 / 3);
       border-radius: calc(var(--radius-main) + 0.25rem);
       overflow: hidden;
       isolation: isolate;
       user-select: none;
+    }
+
+    .before-after_wrap.is-landscape {
+      --_ratio: 3 / 2;
+    }
+
+    .before-after_wrap.is-standard {
+      --_ratio: 4 / 3;
     }
 
     @container (width < 35em) {
