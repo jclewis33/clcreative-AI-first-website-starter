@@ -1,6 +1,7 @@
 import type { ImageMetadata } from "astro";
 import type { FAQItem } from "@/data/faqs";
 import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
+import type { LeadQuestion } from "@/lib/lead-questions";
 
 /**
  * The data a local-service home page is made of — everything
@@ -123,6 +124,8 @@ export interface LocalServiceHomeData {
     heading: string;
     text?: string;
     question?: string;
+    /** A qualifying form: one-tap steps before the contact fields (LeadForm `questions`). */
+    questions?: LeadQuestion[];
   };
 
   hero: {
