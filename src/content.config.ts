@@ -356,7 +356,7 @@ const services = defineCollection({
           .optional(),
       }),
       /* The estate service page's extra sections (the look's
-         servicePage: "estate"); each drops out when absent. */
+         pages: "estate"); each drops out when absent. */
       /** Before-and-after pairs, picked with chips. */
       beforeAfter: z
         .object({
@@ -803,6 +803,16 @@ const projects = defineCollection({
       service: z.string().min(1).optional(),
       /** The write-up (Markdown). */
       description: richText.optional(),
+      /** One line for its card ("Carpet glue removed, then acid stained."); else the write-up. */
+      summary: z.string().min(1).optional(),
+      /** Label over value facts on its page ("Scope", "Size", "Completed"). */
+      specs: z
+        .array(z.object({ label: z.string().min(1), value: z.string().min(1) }))
+        .optional(),
+      /** The job in steps, numbered on its page ("What we did" / "…"). */
+      story: z
+        .array(z.object({ title: z.string().min(1), text: z.string().min(1) }))
+        .optional(),
       quote: z
         .object({
           text: z.string().min(1),

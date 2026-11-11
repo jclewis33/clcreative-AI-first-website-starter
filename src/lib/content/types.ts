@@ -193,6 +193,12 @@ export interface ProjectDetail {
   descriptionText: string;
   quote: ProjectQuote | null;
   seoDescription: string | null;
+  /** One line about the job (cards and the page's intro); "" when none. */
+  summary: string;
+  /** Label over value facts ("Scope" / "Polished concrete"); [] when none. */
+  specs: { label: string; value: string }[];
+  /** The job in steps ("The floor we started with", "What we did", …); [] when none. */
+  story: { title: string; text: string }[];
 }
 
 /** `getProject()`: the project, related cards and the CTA section. */

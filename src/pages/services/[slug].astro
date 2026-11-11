@@ -29,7 +29,7 @@ interface Props {
 
 const { service, all } = Astro.props;
 /* The look picks the page: the estate look has its own service layout. */
-const estate = lookChrome(SITE.look).servicePage === "estate";
+const estate = lookChrome(SITE.look).pages === "estate";
 ---
 
 {estate && <ServicePageEstate service={service} all={all} />}

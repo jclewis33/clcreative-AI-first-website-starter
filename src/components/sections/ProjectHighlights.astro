@@ -11,6 +11,11 @@ import { uid } from "@/lib/uid";
 
 type ProjectHighlightsTheme = ComponentProps<typeof Section>["theme"];
 type ProjectHighlightsTag = "h1" | "h2";
+type ProjectHighlightsLayout =
+  /** One section: the heading and pills over the cards */
+  | "section"
+  /** A /projects page: a dark header (h1, a line, the pills) then the cards on the page paper */
+  | "page";
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -55,6 +60,9 @@ interface Props extends HTMLAttributes<"section"> {
   /** Category filter pills. @default true */
   filters?: boolean;
 
+  /** `section`, or `page` — a dark header with the pills, then the cards. @default 'section' */
+  layout?: ProjectHighlightsLayout;
+
   /** A link under the cards ("View all projects"). */
   link?: { label: string; href: string };
 
@@ -79,6 +87,7 @@ const {
   limit = 6,
   showSummary = false,
   filters = true,
+  layout = "section",
   link,
   theme,
   id = "projects",
@@ -98,13 +107,13 @@ const used = PROJECT_CATEGORIES.filter((c) =>
 const showFilters = filters && used.length > 1;
 const filterName = uid("project-filter");
 const options = [
-  { label: "All", value: "all" },
+  { label: layout === "page" ? "All projects" : "All", value: "all" },
   ...used.map((c) => ({ label: c.title, value: c.value })),
 ];
 ---
 
 {
-  render && projects.length > 0 && (
+  render && projects.length > 0 && layout === "section" && (
     <Section
       theme={theme}
       id={id}
@@ -178,6 +187,77 @@ const options = [
   )
 }
 
+{
+  render && projects.length > 0 && layout === "page" && (
+    <div class="project-highlights_filterable is-page">
+      <Section theme="dark" class="project-highlights_page_head">
+        <div class="u-margin-trim">
+          {eyebrow && (
+            <Heading variant="eyebrow" marginBottom={5}>
+              {eyebrow}
+            </Heading>
+          )}
+          <Heading tag={tag} variant="h1" maxWidth="52rem" marginBottom={5}>
+            {heading}
+          </Heading>
+          {intro && <Text variant="large">{intro}</Text>}
+        </div>
+        {showFilters && (
+          <ChoiceChips
+            legend="Filter projects"
+            legendHidden
+            name={filterName}
+            options={options}
+            tone="brand"
+          />
+        )}
+      </Section>
+      <Section
+        id={id}
+        class:list={["project-highlights_wrap", className]}
+        {...rest}
+      >
+        <ul class="project-highlights_list">
+          {projects.map((project) => (
+            <li
+              class="project-highlights_item"
+              data-category={project.category}
+            >
+              <a class="project-highlights_card_wrap" href={project.href}>
+                {project.image && (
+                  <Visual
+                    src={project.image.src}
+                    alt={project.image.alt}
+                    width={project.image.width}
+                    height={project.image.height}
+                    ratio="4 / 3"
+                  />
+                )}
+                <span class="project-highlights_meta">
+                  {[project.categoryLabel, project.service]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+                <span class="project-highlights_title">{project.title}</span>
+                {showSummary && project.summary && (
+                  <span class="project-highlights_summary">
+                    {project.summary}
+                  </span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ul>
+        {link && (
+          <a class="project-highlights_link" href={link.href}>
+            {link.label} <span aria-hidden="true">→</span>
+          </a>
+        )}
+      </Section>
+    </div>
+  )
+}
+
 <style is:global>
   @layer components {
     .project-highlights_filterable {
@@ -200,6 +280,11 @@ const options = [
       margin: 0;
       padding: 0;
       list-style: none;
+    }
+
+    /* layout="page": the two sections meet with no gap. */
+    .project-highlights_filterable.is-page {
+      display: block;
     }
 
     .project-highlights_item[hidden] {

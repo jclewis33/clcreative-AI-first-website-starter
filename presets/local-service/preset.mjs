@@ -828,6 +828,32 @@ const demoObject = z.object({
    * replace the starter's sample projects (and its sample gallery).
    */
   projects: z.array(projectSchema).min(1).max(24).optional(),
+  /** The /projects page's words (estate look); the content schema checks them. */
+  projectsPage: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      text: text.optional(),
+      order: z.array(text).optional(),
+      cta: z.object({
+        heading: text,
+        text: text.optional(),
+        label: text.optional(),
+        secondaryCta: z.object({ label: text, href: text }).optional(),
+      }),
+      projectCta: z
+        .record(
+          z.string(),
+          z.object({
+            heading: text,
+            text: text.optional(),
+            cta: z.object({ label: text, href: text }).optional(),
+            secondaryCta: z.object({ label: text, href: text }).optional(),
+          }),
+        )
+        .optional(),
+    })
+    .optional(),
   notes: z
     .object({
       sourceUrl: z.url().optional(),

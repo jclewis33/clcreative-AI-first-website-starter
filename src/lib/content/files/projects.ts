@@ -34,7 +34,7 @@ function toProjectCard(entry: Project): ProjectCardData {
     categoryLabel: categoryTitle(d.category),
     location: d.location?.trim() ?? "",
     service: d.service?.trim() ?? "",
-    summary: d.description?.text?.trim() ?? "",
+    summary: d.summary ?? d.description?.text?.trim() ?? "",
     image: sizedImage(localImage(d.heroImage, d.imageAlt), CARD_WIDTH),
   };
 }
@@ -58,6 +58,9 @@ function toProjectDetail(entry: Project): ProjectDetail {
     descriptionText: d.description?.text ?? "",
     quote: d.quote ? { text: d.quote.text, name: d.quote.name ?? null } : null,
     seoDescription: d.seoDescription ?? null,
+    summary: d.summary ?? d.description?.text?.trim() ?? "",
+    specs: d.specs ?? [],
+    story: d.story ?? [],
   };
 }
 

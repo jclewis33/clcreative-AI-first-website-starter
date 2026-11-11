@@ -51,11 +51,12 @@ type Look = {
    */
   footer?: "full" | "brief";
   /**
-   * The service page: `standard` (ServicePage) or `estate` (a dark split
-   * hero, before-and-after, options, a gallery and a plain quote band —
-   * ServicePageEstate). @default 'standard'
+   * The page templates: `standard`, or `estate` — the service pages
+   * (ServicePageEstate: a dark split hero, before-and-after, options, a
+   * gallery, a plain quote band) and /projects (a dark header with the
+   * category pills, ProjectsEstate). @default 'standard'
    */
-  servicePage?: "standard" | "estate";
+  pages?: "standard" | "estate";
 };
 
 export const LOOKS = {
@@ -91,7 +92,7 @@ export const LOOKS = {
     wordmark: true,
     navPhone: false,
     footer: "brief",
-    servicePage: "estate",
+    pages: "estate",
   },
 } as const satisfies Record<string, Look>;
 
@@ -105,13 +106,13 @@ export function lookChrome(name: SiteLook): {
   wordmark: boolean;
   navPhone: boolean;
   footer: "full" | "brief";
-  servicePage: "standard" | "estate";
+  pages: "standard" | "estate";
 } {
   const look: Look = LOOKS[name];
   return {
     wordmark: look.wordmark ?? false,
     navPhone: look.navPhone ?? true,
     footer: look.footer ?? "full",
-    servicePage: look.servicePage ?? "standard",
+    pages: look.pages ?? "standard",
   };
 }

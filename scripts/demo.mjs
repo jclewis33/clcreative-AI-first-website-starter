@@ -778,6 +778,7 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
  * (scripts/demo.mjs) from demo.json. Don't edit; re-run the script.
  */
 import type { FooterLink, NavMenuItem, SitePage } from "./site-structure";
+import type { ProjectsPageCopy } from "./preset-pages-types";
 
 export const PRESET_PAGES: SitePage[] = [${
         demo.audience
@@ -816,6 +817,7 @@ export const PRESET_NAV: NavMenuItem[] = ${JSON.stringify(
       )};
 export const PRESET_FOOTER: FooterLink[] = ${JSON.stringify(footerPaths)};
 export const PRESET_GROUP_LINKS: Record<string, string[]> = ${JSON.stringify(groupLinks)};
+export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(demo.projectsPage ?? null)};
 `,
     );
   }

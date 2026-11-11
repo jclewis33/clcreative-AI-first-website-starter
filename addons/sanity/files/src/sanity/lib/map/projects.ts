@@ -92,6 +92,9 @@ export function toProjectDetail(p: RawProject): ProjectDetail {
     ),
     quote: p.quote?.text ? { text: p.quote.text, name: p.quote.name } : null,
     seoDescription: stegaClean(p.seoDescription),
+    summary: "",
+    specs: [],
+    story: [],
   };
 }
 
