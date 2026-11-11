@@ -566,6 +566,7 @@ const audienceSchema = z.object({
     heading: text,
     text: text.optional(),
     scopeOptions: z.array(z.object({ label: text, value: text })).optional(),
+    messageLabel: text.optional(),
   }),
   callBand: z.object({ heading: text, text: text.optional() }),
 });

@@ -50,6 +50,9 @@ interface Props extends HTMLAttributes<"section"> {
   /** Quote preset: project-type choices. */
   projectOptions?: LeadFormSectionOptions;
 
+  /** Label above the message box. @default LeadForm's 'How can we help?' */
+  messageLabel?: string;
+
   /** Show the "Rather talk now? Call …" line. @default true */
   showPhone?: boolean;
 
@@ -79,6 +82,7 @@ const {
   formId,
   fields,
   projectOptions,
+  messageLabel,
   showPhone = true,
   theme = "dark",
   padding,
@@ -124,6 +128,7 @@ if (import.meta.env.DEV && render) {
             id={`${id}-form`}
             fields={fields}
             projectOptions={projectOptions}
+            messageLabel={messageLabel}
           />
         </div>
       </Layout>

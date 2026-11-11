@@ -22,7 +22,6 @@ import ExpectTimeline from "@/components/sections/ExpectTimeline.astro";
 import LeadFormSection from "@/components/sections/LeadFormSection.astro";
 import CallBand from "@/components/sections/CallBand.astro";
 import Section from "@/components/ui/Section.astro";
-import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
 import SectionHeader from "@/components/ui/SectionHeader.astro";
 import CheckList from "@/components/ui/CheckList.astro";
@@ -144,15 +143,12 @@ const projects = audience.projects
   {
     documents && (
       <Section theme="light" class="audience_documents_wrap">
-        <Layout variant="columns" ratio="5-7">
-          <SectionHeader
-            eyebrow={documents.eyebrow}
-            heading={documents.heading}
-            intro={documents.text}
-            tag="h2"
-          />
-          <CheckList slot="column2" items={documents.items} variant="ruled" />
-        </Layout>
+        <SectionHeader
+          eyebrow={documents.eyebrow}
+          heading={documents.heading}
+          intro={documents.text}
+        />
+        <CheckList items={documents.items} variant="ruled" columns={2} />
       </Section>
     )
   }
@@ -177,6 +173,7 @@ const projects = audience.projects
     formId="contact"
     fields={form.scopeOptions?.length ? "quote" : "contact"}
     projectOptions={form.scopeOptions}
+    messageLabel={form.messageLabel}
   />
 
   <CallBand

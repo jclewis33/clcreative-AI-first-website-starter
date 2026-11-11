@@ -95,6 +95,8 @@ export interface LocalServiceAudienceData {
     text?: string;
     /** The choices for "Scope" (the project-type select). */
     scopeOptions?: { label: string; value: string }[];
+    /** Label above the message box ("Project, location, due date and a link to the plans"). */
+    messageLabel?: string;
   };
 
   callBand: {
