@@ -75,6 +75,8 @@ export interface LocalServiceHomeData {
    * page leads with the story's heading and paragraphs.
    */
   about?: {
+    /** Its name in the nav ("Our Process"). @default 'About' */
+    navLabel?: string;
     /** Page `<title>` and meta description. */
     title?: string;
     description?: string;

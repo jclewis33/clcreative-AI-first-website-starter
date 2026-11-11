@@ -789,7 +789,13 @@ export const PRESET_PAGES: SitePage[] = [${
       : ""
   }
 ];
-export const PRESET_NAV: NavMenuItem[] = ${JSON.stringify(navPaths.map((p) => ({ path: p })))};
+export const PRESET_NAV: NavMenuItem[] = ${JSON.stringify(
+        navPaths.map((p) =>
+          p === "/about" && demo.home.about?.navLabel
+            ? { path: p, label: demo.home.about.navLabel }
+            : { path: p },
+        ),
+      )};
 export const PRESET_FOOTER: FooterLink[] = ${JSON.stringify(footerPaths)};
 export const PRESET_GROUP_LINKS: Record<string, string[]> = ${JSON.stringify(groupLinks)};
 `,

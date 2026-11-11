@@ -100,6 +100,7 @@ const panels = (paths?.items ?? [])
     primaryCta={{ ...estimateCta, label: hero.ctaLabel ?? estimateCta.label }}
     secondaryCta={hero.secondaryCta}
     secondaryVariant="secondary"
+    showPhone={false}
     proof={hero.proof}
     proofPosition="above"
     badge={false}
@@ -212,3 +213,13 @@ const panels = (paths?.items ?? [])
     )
   }
 </BaseLayout>
+
+<style is:global>
+  @layer components {
+    /* Room under the hero's buttons for the path panels pulled up over
+       its bottom edge (PathPanels' overlap is twice --space-8). */
+    .estate_hero {
+      padding-bottom: calc(var(--space-8) * 3.5);
+    }
+  }
+</style>

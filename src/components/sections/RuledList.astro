@@ -1,0 +1,205 @@
+---
+import type { ImageMetadata } from "astro";
+import type { HTMLAttributes } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type RuledListItem = {
+  /** The row's name, in the heading face: "Warehouse and distribution slabs". */
+  title: string;
+  /** What it covers: "Densifiers, sealers and joint fill". */
+  text: string;
+};
+type RuledListTone =
+  /** On the page paper */
+  | "paper"
+  /** On the card white (a band that parts from the paper around it) */
+  | "white";
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **RuledList** — a list a buyer scans: the eyebrow, heading and a line
+   * (and an optional photo or buttons) in a column on the left; on the
+   * right, ruled rows of a name and what it covers. Scopes a contractor
+   * covers, the paperwork they keep ready for a prequal, what's included.
+   *
+   * - `items` — `{ title, text }[]`
+   * - `image` + `imageAlt` under the text, or `cta` / `secondaryCta`
+   * - `tone` — `paper` (default) or `white`
+   *
+   * @example
+   * <RuledList eyebrow="Scopes we cover" heading="One sub for every concrete finish" items={[{ title: "Warehouse slabs", text: "Densifiers, sealers and joint fill" }]} image={gym} imageAlt="A polished gym floor" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** The heading. */
+  heading: string;
+
+  /** The line under it. */
+  text?: string;
+
+  /** The rows. Empty renders nothing. */
+  items: RuledListItem[];
+
+  /** A photo under the text (an import or a URL). */
+  image?: ImageMetadata | string;
+
+  /** Alt text for the photo. */
+  imageAlt?: string;
+
+  /** A button under the text (dark). */
+  cta?: SectionCta;
+
+  /** A second button (outline). */
+  secondaryCta?: SectionCta;
+
+  /** The band. @default 'paper' */
+  tone?: RuledListTone;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  text,
+  items = [],
+  image,
+  imageAlt = "",
+  cta,
+  secondaryCta,
+  tone = "paper",
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !Astro.props.items?.length) {
+  console.warn("[RuledList] `items` is empty or missing; nothing renders.");
+}
+---
+
+{
+  render && heading && items.length > 0 && (
+    <Section
+      id={id}
+      class:list={[
+        "ruled-list_wrap",
+        tone === "white" && "is-white",
+        className,
+      ]}
+      {...rest}
+    >
+      <div class="ruled-list_layout">
+        <div class="ruled-list_intro">
+          <div class="u-margin-trim">
+            {eyebrow && (
+              <Heading variant="eyebrow" marginBottom={4}>
+                {eyebrow}
+              </Heading>
+            )}
+            <Heading tag="h2" variant="h2" marginBottom={5}>
+              {heading}
+            </Heading>
+            {text && <Text>{text}</Text>}
+          </div>
+          {image && <Visual src={image} alt={imageAlt} ratio="4 / 3" />}
+          {(cta || secondaryCta) && (
+            <div class="ruled-list_actions">
+              {cta && <CtaButton cta={cta} />}
+              {secondaryCta && (
+                <CtaButton cta={secondaryCta} variant="secondary" />
+              )}
+            </div>
+          )}
+        </div>
+        <ul class="ruled-list_list">
+          {items.map((item) => (
+            <li class="ruled-list_item">
+              <span class="ruled-list_title">{item.title}</span>
+              <span class="ruled-list_text">{item.text}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .ruled-list_wrap.is-white {
+      background-color: var(--color-light-100);
+    }
+
+    .ruled-list_layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-7);
+    }
+
+    @container (min-width: 56em) {
+      .ruled-list_layout {
+        grid-template-columns: minmax(0, 5fr) minmax(0, 8fr);
+        align-items: start;
+      }
+    }
+
+    .ruled-list_intro {
+      display: grid;
+      gap: var(--space-6);
+    }
+
+    .ruled-list_list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-bottom: var(--border-width-main) solid var(--border);
+    }
+
+    .ruled-list_item {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+      gap: var(--space-2) var(--space-6);
+      padding: var(--space-5) 0;
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .ruled-list_title {
+      font-family: var(--font-primary);
+      font-size: var(--h6-size);
+      line-height: 1.25;
+    }
+
+    .ruled-list_text {
+      color: color-mix(in srgb, var(--text) 75%, transparent);
+    }
+
+    /* The main button in ink, the outline beside it. */
+    .ruled-list_actions {
+      --button-primary-background: var(--text);
+      --button-primary-border: var(--text);
+      --button-primary-text: var(--background);
+      --button-secondary-border: var(--text);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+  }
+</style>

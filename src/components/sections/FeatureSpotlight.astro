@@ -19,7 +19,14 @@ type FeatureSpotlightItem = {
   label: string;
   /** A short code or note on the right: "03 35 00". */
   meta?: string;
+  /** A line under the label (the items become ruled cards: "Our own generator" / "No site power yet? We bring one."). */
+  text?: string;
 };
+type FeatureSpotlightTheme =
+  /** A soft band a step darker than the page */
+  | "tint"
+  /** The dark section colours */
+  | "dark";
 
 interface Props extends HTMLAttributes<"section"> {
   /**
@@ -63,6 +70,9 @@ interface Props extends HTMLAttributes<"section"> {
   /** The second button (outline). */
   secondaryCta?: SectionCta;
 
+  /** The band: soft tint or dark. @default 'tint' */
+  theme?: FeatureSpotlightTheme;
+
   /** Section id for anchor links. */
   id?: string;
 
@@ -80,6 +90,7 @@ const {
   items = [],
   cta,
   secondaryCta,
+  theme = "tint",
   id,
   class: className,
   ...rest
@@ -96,7 +107,12 @@ if (import.meta.env.DEV && render && (!heading || !images.length)) {
   render && heading && images.length > 0 && (
     <Section
       id={id}
-      class:list={["feature-spotlight_wrap", className]}
+      theme={theme === "dark" ? "dark" : undefined}
+      class:list={[
+        "feature-spotlight_wrap",
+        theme === "tint" && "is-tint",
+        className,
+      ]}
       {...rest}
     >
       <div class="feature-spotlight_layout">
@@ -105,7 +121,9 @@ if (import.meta.env.DEV && render && (!heading || !images.length)) {
             <Visual
               src={img.image}
               alt={img.alt}
-              ratio={i === 0 ? "16 / 10" : "square"}
+              ratio={
+                i === 0 ? (images.length > 1 ? "16 / 10" : "5 / 4") : "square"
+              }
               class:list={[
                 "feature-spotlight_img",
                 i === 0 && images.length > 1 && "is-wide",
@@ -126,10 +144,18 @@ if (import.meta.env.DEV && render && (!heading || !images.length)) {
           {items.length > 0 && (
             <ul class="feature-spotlight_list">
               {items.map((item) => (
-                <li class="feature-spotlight_item">
+                <li
+                  class:list={[
+                    "feature-spotlight_item",
+                    item.text && "has-text",
+                  ]}
+                >
                   <span class="feature-spotlight_label">{item.label}</span>
                   {item.meta && (
                     <span class="feature-spotlight_meta">{item.meta}</span>
+                  )}
+                  {item.text && (
+                    <span class="feature-spotlight_text">{item.text}</span>
                   )}
                 </li>
               ))}
@@ -152,7 +178,7 @@ if (import.meta.env.DEV && render && (!heading || !images.length)) {
 <style is:global>
   @layer components {
     /* A soft band a step darker than the page paper. */
-    .feature-spotlight_wrap {
+    .feature-spotlight_wrap.is-tint {
       background-color: color-mix(in srgb, var(--text) 6%, var(--background));
     }
 
@@ -192,6 +218,19 @@ if (import.meta.env.DEV && render && (!heading || !images.length)) {
 
     .feature-spotlight_label {
       font-weight: 600;
+    }
+
+    /* Items with a line: the label over it, a little more air. */
+    .feature-spotlight_item.has-text {
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: var(--space-1);
+      padding: var(--space-4) 0 var(--space-5);
+    }
+
+    .feature-spotlight_text {
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, var(--text) 75%, transparent);
     }
 
     .feature-spotlight_meta {

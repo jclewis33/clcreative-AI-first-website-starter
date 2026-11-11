@@ -25,6 +25,8 @@ const homeSchema = z.object({
   /** The About page (/about). Optional: it leads with the story without it. */
   about: z
     .object({
+      /** Its name in the nav ("Our Process"). @default 'About' */
+      navLabel: text.optional(),
       title: text.optional(),
       description: text.optional(),
       eyebrow: text.optional(),
