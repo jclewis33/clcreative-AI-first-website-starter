@@ -1,0 +1,187 @@
+---
+/**
+ * Local-service AUDIENCE page — a landing page for a second kind of buyer
+ * (general contractors and property managers, for a trade that mostly sells
+ * to homeowners). Same chrome as the home page; its own story:
+ *
+ *   background hero with breadcrumbs and a button to the form → quick facts
+ *   → scopes beside a photo → equipment and capacity → their projects in
+ *   one category → the paperwork they keep ready → what happens next → the
+ *   page's own form → the call band.
+ *
+ * Data: LocalServiceAudienceData (src/lib/local-service-audience.ts). A
+ * demo's `audience` in demo.json becomes src/data/audience.ts and a page at
+ * its own `path`; the dev sample is /demo/local-service-audience.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import WorkScope from "@/components/sections/WorkScope.astro";
+import WhyChooseUs from "@/components/sections/WhyChooseUs.astro";
+import ExpectTimeline from "@/components/sections/ExpectTimeline.astro";
+import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
+import Grid from "@/components/ui/Grid.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import CheckList from "@/components/ui/CheckList.astro";
+import ProjectCard from "@/components/ui/ProjectCard.astro";
+import Button from "@/components/ui/Button.astro";
+import { getProjects } from "@/lib/content";
+import type { LocalServiceAudienceData } from "@/lib/local-service-audience";
+
+interface Props {
+  /**
+   * **LocalServiceAudience** — a landing page for a second kind of buyer
+   * (contractors, property managers): scopes, equipment, projects,
+   * paperwork and its own form. Optional sections drop out when absent.
+   *
+   * @example
+   * <LocalServiceAudience audience={AUDIENCE} />
+   */
+  docs?: string;
+
+  /** The page's content — see LocalServiceAudienceData (src/lib/local-service-audience.ts). */
+  audience: LocalServiceAudienceData;
+}
+
+const { audience } = Astro.props;
+const { hero, facts, scope, capability, documents, expect, form, callBand } =
+  audience;
+
+const FORM_ID = "bid";
+const formCta = {
+  label: hero.ctaLabel ?? "Send a bid invitation",
+  href: `#${FORM_ID}`,
+};
+const crumbs = [{ label: "Home", href: "/" }, { label: audience.navLabel }];
+const schemaCrumbs = [
+  { name: "Home", path: "/" },
+  { name: audience.navLabel, path: audience.path },
+];
+const projects = audience.projects
+  ? (await getProjects())
+      .filter((p) => p.category === audience.projects?.category)
+      .slice(0, 6)
+  : [];
+---
+
+<BaseLayout
+  title={audience.title}
+  description={audience.description}
+  breadcrumbs={schemaCrumbs}
+>
+  <Hero
+    variant="background"
+    headingSize="h1"
+    eyebrow={hero.eyebrow}
+    heading={hero.heading}
+    text={hero.text}
+    image={hero.image}
+    imageAlt={hero.imageAlt}
+    primaryCta={formCta}
+    showPhone
+    breadcrumbs={crumbs}
+    badge={false}
+  />
+
+  {facts && <StatsStrip items={facts} valueSize="word" />}
+
+  {
+    scope && (
+      <WorkScope
+        eyebrow={scope.eyebrow}
+        heading={scope.heading}
+        intro={scope.intro}
+        items={scope.items}
+        image={scope.image}
+        imageAlt={scope.imageAlt}
+      />
+    )
+  }
+
+  {
+    capability && (
+      <WhyChooseUs
+        theme="dark"
+        eyebrow={capability.eyebrow}
+        heading={capability.heading}
+        intro={capability.intro}
+        items={capability.items}
+        image={capability.image}
+        imageAlt={capability.imageAlt}
+      />
+    )
+  }
+
+  {
+    projects.length > 0 && (
+      <Section class="audience_projects_wrap">
+        <SectionHeader
+          eyebrow={audience.projects?.eyebrow}
+          heading={audience.projects?.heading ?? "Recent projects"}
+          intro={audience.projects?.intro}
+        >
+          <Button
+            slot="action"
+            variant="secondary"
+            href="/projects"
+            ariaLabel="See all projects"
+          >
+            See all projects
+          </Button>
+        </SectionHeader>
+        <Grid largeColumns={3} mediumColumns={2} smallColumns={1} rowGap={6}>
+          {projects.map((project) => (
+            <ProjectCard project={project} headingTag="h3" />
+          ))}
+        </Grid>
+      </Section>
+    )
+  }
+
+  {
+    documents && (
+      <Section theme="light" class="audience_documents_wrap">
+        <Layout variant="columns" ratio="5-7">
+          <SectionHeader
+            eyebrow={documents.eyebrow}
+            heading={documents.heading}
+            intro={documents.text}
+            tag="h2"
+          />
+          <CheckList slot="column2" items={documents.items} variant="ruled" />
+        </Layout>
+      </Section>
+    )
+  }
+
+  {
+    expect && (
+      <ExpectTimeline
+        eyebrow={expect.eyebrow}
+        heading={expect.heading}
+        text={expect.text}
+        steps={expect.steps}
+        cta={formCta}
+      />
+    )
+  }
+
+  <LeadFormSection
+    id={FORM_ID}
+    eyebrow={form.eyebrow}
+    heading={form.heading}
+    text={form.text}
+    formId="contact"
+    fields={form.scopeOptions?.length ? "quote" : "contact"}
+    projectOptions={form.scopeOptions}
+  />
+
+  <CallBand
+    heading={callBand.heading}
+    text={callBand.text}
+    secondaryCta={formCta}
+  />
+</BaseLayout>

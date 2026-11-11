@@ -96,6 +96,7 @@ import CtaPanel from "@/components/ui/CtaPanel.astro";
 import SymptomCards from "@/components/sections/SymptomCards.astro";
 import OfferBand from "@/components/sections/OfferBand.astro";
 import RecentWork from "@/components/sections/RecentWork.astro";
+import BeforeAfterGallery from "@/components/sections/BeforeAfterGallery.astro";
 import Guarantee from "@/components/sections/Guarantee.astro";
 import ComparisonTable from "@/components/sections/ComparisonTable.astro";
 import EmergencyBand from "@/components/sections/EmergencyBand.astro";
@@ -261,6 +262,7 @@ const COMPONENT_INDEX = [
   { slug: "step-list", text: "StepList" },
   { slug: "quote", text: "Quote" },
   { slug: "before-after", text: "BeforeAfter" },
+  { slug: "before-after-gallery", text: "BeforeAfterGallery" },
   { slug: "swatch-picker", text: "SwatchPicker" },
   { slug: "hotspot-explorer", text: "HotspotExplorer" },
   { slug: "fact-photo", text: "FactPhoto" },
@@ -430,6 +432,24 @@ const demoOfferItems = [
   "Any repair or install",
   "Written price before we start",
 ];
+const demoBeforeAfterPairs = [
+  {
+    before: demoPhoto1,
+    beforeAlt: "The first space before the project",
+    after: demoPhoto2,
+    afterAlt: "The first space after the project",
+    title: "Kitchen remodel",
+    text: "New cabinets, counters and lighting.",
+  },
+  {
+    before: demoPhoto2,
+    beforeAlt: "The second space before the project",
+    after: demoPhoto1,
+    afterAlt: "The second space after the project",
+    title: "Living room floors",
+  },
+];
+
 const demoWork = [
   {
     image: demoPhoto1,
@@ -2665,6 +2685,17 @@ const leadPhotoOptions = [
       afterAlt="The same space after the project, fully finished"
     />
   </Section>
+
+  <Section theme="light" padding="small" id="before-after-gallery">
+    <Heading variant="eyebrow">BeforeAfterGallery</Heading>
+    <Heading tag="h2">Before-and-after pairs, captioned, two across</Heading>
+  </Section>
+  <BeforeAfterGallery
+    theme="dark"
+    heading="Same space, new life"
+    intro="Drag the handle on each pair to compare."
+    items={demoBeforeAfterPairs}
+  />
 
   <Section theme="light" id="swatch-picker">
     <Layout variant="stack">

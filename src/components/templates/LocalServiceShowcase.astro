@@ -6,10 +6,11 @@
  * different page:
  *
  *   a cinematic full-bleed hero with a calmer h1 → a dark stats strip
- *   under it → photo service cards → where we work → recent work on dark →
- *   the process → a full-width photo band → the owner's story → the team →
- *   reviews → maintenance plans → the estimate form on dark → FAQ → a
- *   cinematic photo close.
+ *   under it → the visitor paths (homeowner / contractor) → photo service
+ *   cards → before-and-after sliders on dark → where we work → recent work
+ *   on dark → why us → the process → a full-width photo band → the owner's
+ *   story → the team → reviews → maintenance plans → what to expect → the
+ *   estimate form on dark → FAQ → a cinematic photo close.
  *
  * It sells with photography and one clear CTA, so it leaves out the
  * conversion-heavy sections the contractor layout carries (the offer seal,
@@ -23,6 +24,10 @@ import Hero from "@/components/sections/Hero.astro";
 import StatsStrip from "@/components/sections/StatsStrip.astro";
 import EmergencyBand from "@/components/sections/EmergencyBand.astro";
 import ServiceCards from "@/components/sections/ServiceCards.astro";
+import PathCards from "@/components/sections/PathCards.astro";
+import BeforeAfterGallery from "@/components/sections/BeforeAfterGallery.astro";
+import WhyChooseUs from "@/components/sections/WhyChooseUs.astro";
+import ExpectTimeline from "@/components/sections/ExpectTimeline.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import RecentWork from "@/components/sections/RecentWork.astro";
 import ProcessSteps from "@/components/sections/ProcessSteps.astro";
@@ -87,6 +92,10 @@ const {
   plans,
   team,
   callBand,
+  paths,
+  beforeAfter,
+  why,
+  expect,
 } = home;
 const areaGeo =
   serviceArea.geo ?? geoFor(serviceArea.areas ?? SITE.serviceAreas);
@@ -117,6 +126,17 @@ const closeImageAlt = callBand.image ? callBand.imageAlt : hero.imageAlt;
   {home.stats && <StatsStrip items={home.stats} />}
 
   {
+    paths && (
+      <PathCards
+        eyebrow={paths.eyebrow}
+        heading={paths.heading}
+        intro={paths.intro}
+        paths={paths.items}
+      />
+    )
+  }
+
+  {
     emergency && (
       <EmergencyBand heading={emergency.heading} text={emergency.text} />
     )
@@ -129,6 +149,18 @@ const closeImageAlt = callBand.image ? callBand.imageAlt : hero.imageAlt;
     intro={home.services.intro}
     items={serviceItems}
   />
+
+  {
+    beforeAfter && (
+      <BeforeAfterGallery
+        theme={"dark"}
+        eyebrow={beforeAfter.eyebrow}
+        heading={beforeAfter.heading}
+        intro={beforeAfter.intro}
+        items={beforeAfter.items}
+      />
+    )
+  }
 
   <ServiceArea
     heading={serviceArea.heading}
@@ -146,6 +178,19 @@ const closeImageAlt = callBand.image ? callBand.imageAlt : hero.imageAlt;
         heading={recentWork.heading}
         intro={recentWork.intro}
         items={recentWork.items}
+      />
+    )
+  }
+
+  {
+    why && (
+      <WhyChooseUs
+        eyebrow={why.eyebrow}
+        heading={why.heading}
+        intro={why.intro}
+        items={why.items}
+        image={why.image}
+        imageAlt={why.imageAlt}
       />
     )
   }
@@ -228,6 +273,19 @@ const closeImageAlt = callBand.image ? callBand.imageAlt : hero.imageAlt;
         intro={plans.intro}
         note={plans.note}
         plans={plans.items}
+        cta={estimateCta}
+      />
+    )
+  }
+
+  {
+    expect && (
+      <ExpectTimeline
+        eyebrow={expect.eyebrow}
+        heading={expect.heading}
+        text={expect.text}
+        steps={expect.steps}
+        proof={expect.proof}
         cta={estimateCta}
       />
     )

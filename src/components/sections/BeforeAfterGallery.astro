@@ -1,0 +1,174 @@
+---
+import type { ImageMetadata } from "astro";
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Grid from "@/components/ui/Grid.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import BeforeAfter from "@/components/ui/BeforeAfter.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { SectionCta } from "@/lib/cta";
+
+type BeforeAfterGalleryItem = {
+  /** The job before (an import). */
+  before: ImageMetadata;
+  /** Alt text for the before photo. Required. */
+  beforeAlt: string;
+  /** The same view after (an import). */
+  after: ImageMetadata;
+  /** Alt text for the after photo. Required. */
+  afterAlt: string;
+  /** What was done: "Kitchen, polished concrete". */
+  title: string;
+  /** One line under the title. */
+  text?: string;
+};
+type BeforeAfterGalleryTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **BeforeAfterGallery** — "Same slab. Different room.": the business's
+   * own before-and-after pairs as drag-to-compare sliders (BeforeAfter),
+   * each captioned with what was done. One pair fills the width; two or
+   * more sit two across.
+   *
+   * Real job photos only: the same view, before and after.
+   *
+   * - `items` — `{ before, beforeAlt, after, afterAlt, title, text? }[]`;
+   *   empty renders nothing
+   * - `eyebrow`, `heading` (default "Before and after"), `intro`, `cta`
+   *
+   * @example
+   * <BeforeAfterGallery items={[{ before: kitchenBefore, beforeAlt: "The kitchen floor before", after: kitchenAfter, afterAlt: "The same floor polished", title: "Kitchen, polished concrete" }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. @default 'Before and after' */
+  heading?: string;
+
+  /** Intro beside the heading. */
+  intro?: string;
+
+  /** The pairs. Empty renders nothing. */
+  items: BeforeAfterGalleryItem[];
+
+  /** Optional button under the sliders ("See all our projects"). */
+  cta?: SectionCta;
+
+  /** Section theme. */
+  theme?: BeforeAfterGalleryTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading = "Before and after",
+  intro,
+  items = [],
+  cta,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !Astro.props.items?.length) {
+  console.warn(
+    "[BeforeAfterGallery] `items` is empty or missing; nothing renders.",
+  );
+}
+const single = items.length === 1;
+---
+
+{
+  render && items.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["before-after-gallery_wrap", className]}
+      {...rest}
+    >
+      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      <Grid
+        largeColumns={single ? 1 : 2}
+        mediumColumns={single ? 1 : 2}
+        smallColumns={1}
+      >
+        {items.map((item) => (
+          <figure class="before-after-gallery_item">
+            <BeforeAfter
+              before={item.before}
+              beforeAlt={item.beforeAlt}
+              after={item.after}
+              afterAlt={item.afterAlt}
+              ratio={single ? "wide" : "landscape"}
+              label={`${item.title}: before and after`}
+            />
+            <figcaption class="before-after-gallery_caption">
+              <span class="before-after-gallery_title">{item.title}</span>
+              {item.text && (
+                <span class="before-after-gallery_text u-text-style-small">
+                  {item.text}
+                </span>
+              )}
+            </figcaption>
+          </figure>
+        ))}
+      </Grid>
+      {cta && (
+        <div class="before-after-gallery_action">
+          <CtaButton cta={cta} variant="secondary" size="large" />
+        </div>
+      )}
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .before-after-gallery_item {
+      display: grid;
+      gap: var(--space-3);
+      margin: 0;
+    }
+
+    .before-after-gallery_caption {
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .before-after-gallery_title {
+      font-family: var(--font-primary);
+      font-size: var(--h6-size);
+      font-weight: var(--h6-weight);
+      line-height: 1.2;
+    }
+
+    .before-after-gallery_text {
+      opacity: 0.75;
+    }
+
+    .before-after-gallery_action {
+      display: flex;
+      justify-content: var(--_buttons-justify, flex-start);
+    }
+  }
+</style>
