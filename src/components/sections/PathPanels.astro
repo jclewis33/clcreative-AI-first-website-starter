@@ -124,12 +124,12 @@ if (import.meta.env.DEV && render && !Astro.props.panels?.length) {
       background-color: var(--background);
       color: var(--text);
       border-radius: var(--radius-main);
-      box-shadow: 0 1.5rem 3.75rem
-        color-mix(in srgb, var(--color-dark-900) 20%, transparent);
     }
 
     .path-panels_item[data-theme="light"] {
       background-color: var(--color-light-100);
+      outline: var(--border-width-main) solid var(--border);
+      outline-offset: calc(var(--border-width-main) * -1);
     }
 
     .path-panels_item[data-theme="dark"] {
