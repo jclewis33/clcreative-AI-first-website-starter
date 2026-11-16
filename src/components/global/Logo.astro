@@ -5,6 +5,8 @@ import {
   LOGO_ALL_PATHS,
   LOGO_IMAGE,
 } from "@/config/logo-paths";
+import { SITE } from "@/config/site";
+import { lookChrome } from "@/config/looks";
 
 interface Props {
   /** Choose which logo to render. Both variants share the same artwork —
@@ -35,8 +37,13 @@ const {
 
 /* A round or square logo (a badge, a seal) is roughly as tall as it is
    wide, so at the wordmark's height its lettering is unreadable — it gets
-   a taller box. */
-const isBadge = LOGO_IMAGE ? LOGO_IMAGE.width / LOGO_IMAGE.height < 1.4 : false;
+   a taller box. Not in a look that sets the business name beside the mark
+   (estate): there the name carries the lettering and the design sizes the
+   mark, in the nav and the footer alike. */
+const isBadge =
+  LOGO_IMAGE && !lookChrome(SITE.look).wordmark
+    ? LOGO_IMAGE.width / LOGO_IMAGE.height < 1.4
+    : false;
 ---
 
 <a href={href} aria-label={ariaLabel} class={className}>
