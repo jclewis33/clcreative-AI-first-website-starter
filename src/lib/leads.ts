@@ -40,11 +40,23 @@ const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,24}$/;
 export const NOTE_FIELDS = {
   company: "Company",
   service: "Service",
+  audience: "Who's asking",
   projectType: "Project type",
+  projectSize: "Project size",
   timeline: "Timeline",
+  budget: "Budget set aside",
+  role: "Role",
+  projectName: "Project",
+  squareFeet: "Approx. square feet",
+  scope: "Scope",
+  dueDate: "Bid due date",
+  plansUrl: "Plans and specs",
+  prequalPacket: "Send the prequal packet",
   message: "Message",
   rating: "Rating",
   referrer: "Referred by",
+  insuranceCompany: "Insurance company",
+  claimNumber: "Claim number",
 } as const;
 
 /* Soft, per-isolate limit — Workers recycle isolates, so this only slows a
@@ -115,7 +127,16 @@ function parseLead(input: unknown, access: FormAccess): Lead | null {
     ...Object.keys(form.customFields ?? {}),
   ]);
   for (const name of names) {
-    const value = str(o[name], 5_000);
+    /* A checkbox group arrives as an array: keep every pick. */
+    const raw = o[name];
+    const value = Array.isArray(raw)
+      ? raw
+          .filter((v): v is string => typeof v === "string")
+          .map((v) => v.trim())
+          .filter(Boolean)
+          .join(", ")
+          .slice(0, 5_000)
+      : str(raw, 5_000);
     if (value) fields[name] = value;
   }
 

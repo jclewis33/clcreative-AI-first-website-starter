@@ -52,6 +52,8 @@ export function toProjectCard(p: RawProjectCard): ProjectCardData | null {
     category,
     categoryLabel: categoryTitle(category),
     location: stegaClean(p.location)?.trim() ?? "",
+    service: stegaClean(p.service)?.trim() ?? "",
+    summary: stegaClean(p.summary)?.trim() ?? "",
     image: image ? sizedImage(image, CARD_WIDTH) : null,
   };
 }
@@ -59,6 +61,13 @@ export function toProjectCard(p: RawProjectCard): ProjectCardData | null {
 export function toProjectDetail(p: RawProject): ProjectDetail {
   const title = p.title ?? "Project";
   const category = stegaClean(p.category) ?? "";
+  const descriptionText = stegaClean(
+    (p.description ?? [])
+      .flatMap((block) => block.children ?? [])
+      .map((span) => span.text ?? "")
+      .join("")
+      .trim(),
+  );
   return {
     slug: stegaClean(p.slug) ?? "",
     title,
@@ -81,15 +90,12 @@ export function toProjectDetail(p: RawProject): ProjectDetail {
       return image ? [{ image, label: stegaClean(photo.label) }] : [];
     }),
     descriptionHtml: portableTextToHtml(p.description),
-    descriptionText: stegaClean(
-      (p.description ?? [])
-        .flatMap((block) => block.children ?? [])
-        .map((span) => span.text ?? "")
-        .join("")
-        .trim(),
-    ),
+    descriptionText,
     quote: p.quote?.text ? { text: p.quote.text, name: p.quote.name } : null,
     seoDescription: stegaClean(p.seoDescription),
+    summary: descriptionText,
+    specs: [],
+    story: [],
   };
 }
 

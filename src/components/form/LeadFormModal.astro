@@ -5,6 +5,7 @@ import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import LeadForm from "@/components/form/LeadForm.astro";
 import type { FormId } from "@/config/forms";
+import type { LeadQuestion } from "@/lib/lead-questions";
 
 /* Borrow LeadForm's own option types so the two can never drift. */
 type LeadFormModalFields = ComponentProps<typeof LeadForm>["fields"];
@@ -51,6 +52,9 @@ interface Props {
 
   /** Steps preset: the step-1 question over the tiles. */
   stepQuestion?: string;
+
+  /** Steps preset: several one-tap questions before the contact fields (LeadForm `questions`). */
+  questions?: LeadQuestion[];
 }
 
 const {
@@ -63,6 +67,7 @@ const {
   fields,
   projectOptions,
   stepQuestion,
+  questions,
 } = Astro.props;
 
 if (import.meta.env.DEV && render && (!id || !formId || !heading)) {
@@ -85,6 +90,7 @@ if (import.meta.env.DEV && render && (!id || !formId || !heading)) {
         fields={fields}
         projectOptions={projectOptions}
         stepQuestion={stepQuestion}
+        questions={questions}
       />
     </Modal>
   )

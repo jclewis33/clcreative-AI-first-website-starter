@@ -1,0 +1,181 @@
+---
+/**
+ * Local-service AUDIENCE page — a landing page for a second kind of buyer
+ * (general contractors and property managers, for a trade that mostly sells
+ * to homeowners), after the FDC Coatings commercial design:
+ *
+ *   a photo hero (bid invitation + capabilities buttons) → a spec bar of
+ *   label-over-value facts → the scopes as ruled rows beside a photo →
+ *   equipment and capacity on dark → case study cards, more photos and a
+ *   client quote → the prequal paperwork → the bid invitation form with
+ *   what happens next → their pages by city.
+ *
+ * Data: LocalServiceAudienceData (src/lib/local-service-audience.ts). A
+ * demo's `audience` in demo.json becomes src/data/audience.ts and a page at
+ * its own `path`; the dev sample is /demo/local-service-audience.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import RuledList from "@/components/sections/RuledList.astro";
+import FeatureSpotlight from "@/components/sections/FeatureSpotlight.astro";
+import CaseStudyCards from "@/components/sections/CaseStudyCards.astro";
+import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import TownLinks from "@/components/sections/TownLinks.astro";
+import type { LocalServiceAudienceData } from "@/lib/local-service-audience";
+
+interface Props {
+  /**
+   * **LocalServiceAudience** — a landing page for a second kind of buyer
+   * (contractors, property managers): spec bar, scopes, equipment, case
+   * studies, prequal paperwork and a bid invitation form. Optional sections
+   * drop out when absent.
+   *
+   * @example
+   * <LocalServiceAudience audience={AUDIENCE} />
+   */
+  docs?: string;
+
+  /** The page's content — see LocalServiceAudienceData (src/lib/local-service-audience.ts). */
+  audience: LocalServiceAudienceData;
+}
+
+const { audience } = Astro.props;
+const { hero, facts, scope, capability, projects, documents, form, cities } =
+  audience;
+
+const FORM_ID = "bid";
+const formCta = {
+  label: hero.ctaLabel ?? "Send a bid invitation",
+  href: `#${FORM_ID}`,
+};
+const schemaCrumbs = [
+  { name: "Home", path: "/" },
+  { name: audience.navLabel, path: audience.path },
+];
+---
+
+<BaseLayout
+  title={audience.title}
+  description={audience.description}
+  breadcrumbs={schemaCrumbs}
+>
+  <Hero
+    variant="background"
+    overlay="full"
+    headingSize="h1"
+    eyebrow={hero.eyebrow}
+    heading={hero.heading}
+    text={hero.text}
+    image={hero.image}
+    imageAlt={hero.imageAlt}
+    primaryCta={formCta}
+    secondaryCta={hero.secondaryCta}
+    secondaryVariant="secondary"
+    showPhone={false}
+    minHeight={false}
+    badge={false}
+    class="audience_hero"
+  />
+
+  {
+    facts && (
+      <StatsStrip
+        items={facts}
+        variant="spec"
+        class="audience_spec"
+        padding="small"
+      />
+    )
+  }
+
+  {
+    scope && (
+      <RuledList
+        eyebrow={scope.eyebrow}
+        heading={scope.heading}
+        text={scope.intro}
+        items={scope.items}
+        image={scope.image}
+        imageAlt={scope.imageAlt}
+      />
+    )
+  }
+
+  {
+    capability && (
+      <FeatureSpotlight
+        theme="dark"
+        eyebrow={capability.eyebrow}
+        heading={capability.heading}
+        text={capability.intro}
+        images={[{ image: capability.image, alt: capability.imageAlt }]}
+        items={capability.items.map((i) => ({ label: i.title, text: i.text }))}
+      />
+    )
+  }
+
+  {
+    projects && (
+      <CaseStudyCards
+        eyebrow={projects.eyebrow}
+        heading={projects.heading ?? "Recent projects"}
+        category={projects.category}
+        cards={projects.cards}
+        extras={projects.extras}
+        quote={projects.quote}
+      />
+    )
+  }
+
+  {
+    documents && (
+      <RuledList
+        id="docs"
+        tone="white"
+        eyebrow={documents.eyebrow}
+        heading={documents.heading}
+        text={documents.text}
+        items={documents.items}
+        cta={documents.cta}
+        secondaryCta={documents.secondaryCta}
+      />
+    )
+  }
+
+  <LeadFormSection
+    id={FORM_ID}
+    eyebrow={form.eyebrow}
+    heading={form.heading}
+    text={form.text}
+    formId="contact"
+    fields="bid"
+    projectOptions={form.scopeOptions}
+    steps={form.steps}
+    contact="both"
+  />
+
+  {
+    cities && (
+      <TownLinks
+        heading={cities.heading}
+        towns={cities.towns}
+        link={cities.link}
+      />
+    )
+  }
+</BaseLayout>
+
+<style is:global>
+  @layer components {
+    /* The hero's own air, taller than a section's. */
+    .audience_hero {
+      padding-block: calc(var(--space-8) * 1.75) calc(var(--space-8) * 2);
+    }
+
+    /* The spec bar sits a step lighter than the dark sections. */
+    .audience_spec {
+      background-color: var(--color-dark-800);
+    }
+  }
+</style>

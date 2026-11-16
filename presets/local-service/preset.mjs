@@ -21,10 +21,12 @@ const item = z.object({ title: text, text: text });
 
 const homeSchema = z.object({
   /** contractor (conversion-led) or showcase (photo-led, editorial). */
-  layout: z.enum(["contractor", "showcase"]).default("contractor"),
+  layout: z.enum(["contractor", "showcase", "estate"]).default("contractor"),
   /** The About page (/about). Optional: it leads with the story without it. */
   about: z
     .object({
+      /** Its name in the nav ("Our Process"). @default 'About' */
+      navLabel: text.optional(),
       title: text.optional(),
       description: text.optional(),
       eyebrow: text.optional(),
@@ -64,6 +66,38 @@ const homeSchema = z.object({
       text: text.optional(),
       /** The estimate form's first step, over the service tiles. */
       question: text.optional(),
+      /**
+       * A qualifying form instead: one-tap questions, one step each, before
+       * the contact fields (who's asking, project, size, timing, budget).
+       * Each `name` is the field its answer is saved as.
+       */
+      questions: z
+        .array(
+          z.object({
+            name: z.enum([
+              "audience",
+              "projectType",
+              "projectSize",
+              "timeline",
+              "budget",
+            ]),
+            question: text,
+            text: text.optional(),
+            options: z
+              .array(
+                z.object({
+                  label: text,
+                  value: text,
+                  description: text.optional(),
+                }),
+              )
+              .min(2)
+              .max(8),
+          }),
+        )
+        .min(1)
+        .max(6)
+        .optional(),
     })
     .default({
       label: "Get a free estimate",
@@ -104,6 +138,10 @@ const homeSchema = z.object({
     proof: z
       .object({ rating: z.number().min(1).max(5).optional(), text })
       .optional(),
+    /** Estate layout: a second hero button ("See our work" → "#projects"). */
+    secondaryCta: z.object({ label: text, href: text }).optional(),
+    /** The estimate button's text in the hero. @default estimate.label */
+    ctaLabel: text.optional(),
     /** Credentials they really hold; `image` is a logo source. */
     trust: z
       .array(z.object({ label: text, image: image.optional() }))
@@ -113,6 +151,47 @@ const homeSchema = z.object({
   stats: z
     .array(z.object({ value: text, label: text }))
     .length(4)
+    .optional(),
+  /** Ways in for different visitors (homeowners / contractors), under the hero. */
+  paths: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      intro: text.optional(),
+      items: z
+        .array(
+          z.object({
+            label: text.optional(),
+            title: text,
+            text: text.optional(),
+            points: z.array(text).optional(),
+            cta: z.object({ label: text, href: text }).optional(),
+          }),
+        )
+        .min(2)
+        .max(3),
+    })
+    .optional(),
+  /** Their own before-and-after pairs: the same view, from a real job. */
+  beforeAfter: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      items: z
+        .array(
+          z.object({
+            before: image,
+            beforeAlt: text,
+            after: image,
+            afterAlt: text,
+            title: text,
+            text: text.optional(),
+          }),
+        )
+        .min(1)
+        .max(4),
+    })
     .optional(),
   services: z.object({
     eyebrow: text.optional(),
@@ -232,6 +311,33 @@ const homeSchema = z.object({
       rows: z.array(z.object({ label: text, us: text, them: text })).min(3),
     })
     .optional(),
+  /** Estate layout: the commercial side on a tinted band. */
+  spotlight: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      text: text.optional(),
+      images: z
+        .array(z.object({ image, alt: text }))
+        .min(1)
+        .max(3),
+      items: z
+        .array(z.object({ label: text, meta: text.optional() }))
+        .optional(),
+      cta: z.object({ label: text, href: text }).optional(),
+      secondaryCta: z.object({ label: text, href: text }).optional(),
+    })
+    .optional(),
+  /** Estate layout: projects with category pills (needs `projects`). */
+  projectHighlights: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      slugs: z.array(text).optional(),
+      limit: z.number().int().min(1).max(12).optional(),
+      linkLabel: text.optional(),
+    })
+    .optional(),
   serviceArea: z.object({
     heading: text,
     text: text.optional(),
@@ -333,6 +439,8 @@ const homeSchema = z.object({
         )
         .min(1),
       layout: z.enum(["cards", "featured", "grid", "marquee"]).optional(),
+      /** Estate layout: the star line ("78 five-star reviews on Google"). */
+      summary: text.optional(),
     })
     .optional(),
   leadForm: z.object({
@@ -359,6 +467,12 @@ const homeSchema = z.object({
       image: image.optional(),
       imageAlt: text.optional(),
       ctaNote: text.optional(),
+      /** Estate layout: a second button (another kind of buyer). */
+      secondaryCta: z.object({ label: text, href: text }).optional(),
+      /** The estimate button's text here. @default estimate.label */
+      ctaLabel: text.optional(),
+      /** Estate layout: what happens when they reach out, in order. */
+      steps: z.array(text).min(2).max(4).optional(),
     })
     .refine((c) => !c.image || c.imageAlt, {
       message: "imageAlt is required when image is set",
@@ -389,6 +503,54 @@ const serviceSchema = z
     reviews: z
       .array(z.object({ avatar: image.optional() }).passthrough())
       .optional(),
+    /* The estate service page's sections (look "estate"); the content
+       schema checks the rest at sync. */
+    beforeAfter: z
+      .object({
+        items: z
+          .array(
+            z
+              .object({
+                before: image,
+                beforeAlt: text,
+                after: image,
+                afterAlt: text,
+              })
+              .passthrough(),
+          )
+          .min(1)
+          .max(4),
+      })
+      .passthrough()
+      .optional(),
+    options: z
+      .object({
+        items: z
+          .array(z.object({ image, imageAlt: text }).passthrough())
+          .min(2)
+          .max(4),
+      })
+      .passthrough()
+      .optional(),
+    gallery: z
+      .object({
+        images: z
+          .array(z.object({ src: image, alt: text }))
+          .min(2)
+          .max(4),
+      })
+      .passthrough()
+      .optional(),
+    equipment: z.object({ image, imageAlt: text }).passthrough().optional(),
+    work: z
+      .object({
+        items: z
+          .array(z.object({ image, imageAlt: text }).passthrough())
+          .min(2)
+          .max(4),
+      })
+      .passthrough()
+      .optional(),
   })
   .passthrough();
 
@@ -409,8 +571,157 @@ const areaSchema = z
   })
   .passthrough();
 
+const kebab = z
+  .string()
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "use lowercase-kebab-case");
+const iconItem = z.object({ title: text, text, icon: text.optional() });
+
+/**
+ * An audience page (LocalServiceAudienceData, src/lib/local-service-audience.ts)
+ * for a second kind of buyer — general contractors, property managers —
+ * at its own URL (keep the prospect's existing one).
+ */
+const audienceSchema = z.object({
+  /** The URL: "commercial-concrete-coatings" → /commercial-concrete-coatings. */
+  path: kebab,
+  navLabel: text,
+  /**
+   * Put the page at the top of a service group's menu ("Commercial") rather
+   * than as its own nav link. Services join a group with their `group`.
+   */
+  group: text.optional(),
+  /** A second nav button to this page ("For Contractors"). */
+  navButton: text.optional(),
+  title: text,
+  /** At most 160 characters. */
+  description: text.max(160),
+  hero: z.object({
+    eyebrow: text.optional(),
+    heading: text,
+    text: text.optional(),
+    image,
+    imageAlt: text,
+    ctaLabel: text.optional(),
+    /** `icon: "download"` when it links to a PDF (a capabilities statement). */
+    secondaryCta: z
+      .object({
+        label: text,
+        href: text,
+        icon: z.enum(["download"]).optional(),
+      })
+      .optional(),
+  }),
+  /** Label over value: { label: "Insurance", value: "Fully insured" }. */
+  facts: z
+    .array(z.object({ value: text, label: text }))
+    .min(3)
+    .max(5)
+    .optional(),
+  scope: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      intro: text.optional(),
+      items: z.array(iconItem).min(3).max(8),
+      image,
+      imageAlt: text,
+    })
+    .optional(),
+  capability: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      intro: text.optional(),
+      items: z.array(iconItem).min(3).max(6),
+      image,
+      imageAlt: text,
+    })
+    .optional(),
+  /** Case study cards for their `projects` in this category. */
+  projects: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      category: z.enum(["residential", "commercial"]),
+      /** Which projects get a card, in order, with their spec rows. */
+      cards: z
+        .array(
+          z.object({
+            slug: kebab,
+            specs: z.array(z.object({ label: text, value: text })).min(1),
+          }),
+        )
+        .max(3)
+        .optional(),
+      /** More photos for the row under the cards. */
+      extras: z
+        .array(
+          z.object({ image, alt: text, caption: text, href: text.optional() }),
+        )
+        .max(5)
+        .optional(),
+      /** One real, attributed client quote. */
+      quote: z.object({ text, name: text, meta: text.optional() }).optional(),
+    })
+    .optional(),
+  documents: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      text: text.optional(),
+      items: z.array(z.object({ title: text, text })).min(2),
+      cta: z.object({ label: text, href: text }).optional(),
+      secondaryCta: z.object({ label: text, href: text }).optional(),
+    })
+    .optional(),
+  /** The bid invitation form; `steps` only what the business really does. */
+  form: z.object({
+    eyebrow: text.optional(),
+    heading: text,
+    text: text.optional(),
+    scopeOptions: z.array(z.object({ label: text, value: text })).optional(),
+    steps: z.array(text).min(2).max(4).optional(),
+  }),
+  /** Their pages by city, as one line. */
+  /** `link`: each town's page, `{town}` = its name in kebab-case ("/commercial-coatings-{town}-tx/"). */
+  cities: z
+    .object({
+      heading: text,
+      towns: z.array(text).min(1),
+      link: text.optional(),
+    })
+    .optional(),
+});
+
+/** A project (src/content/projects): /projects/<slug>, their own job only. */
+const projectSchema = z
+  .object({
+    slug: kebab,
+    title: text,
+    category: z.enum(["residential", "commercial"]),
+    heroImage: image,
+    imageAlt: text,
+    photos: z
+      .array(
+        z.object({
+          src: image,
+          alt: text,
+          label: z.enum(["Before", "During", "After"]).optional(),
+        }),
+      )
+      .optional(),
+  })
+  .passthrough();
+
 /** The looks (src/config/looks.ts) a demo can wear. */
-export const LOOK_NAMES = ["fresh", "warm", "rugged", "natural", "studio"];
+export const LOOK_NAMES = [
+  "fresh",
+  "warm",
+  "rugged",
+  "natural",
+  "estate",
+  "studio",
+];
 
 const demoObject = z.object({
   preset: z.literal("local-service"),
@@ -467,7 +778,14 @@ const demoObject = z.object({
   smsOptIn: z.boolean().default(true),
   /** Footer profiles by label: { "Facebook": "https://…" }. */
   social: z.record(z.string(), z.url()).optional(),
-  utilityBar: z.object({ text, areaLabel: text.optional() }).optional(),
+  /** `link` (desktop, right side, beside the phone) replaces `areaLabel`. */
+  utilityBar: z
+    .object({
+      text,
+      areaLabel: text.optional(),
+      link: z.object({ label: text, href: text }).optional(),
+    })
+    .optional(),
   brand: z.object({
     color: z
       .string()
@@ -478,6 +796,12 @@ const demoObject = z.object({
       /** A light backing for a dark-on-white logo on the dark nav. */
       plate: z.boolean().default(false),
     }),
+    /**
+     * The text on brand-coloured buttons: "dark" or "light". Left out, it's
+     * picked from the colour's lightness. Mid-tone brands (copper,
+     * terracotta) read better with dark text.
+     */
+    text: z.enum(["dark", "light"]).optional(),
     /** A square icon; derived from the logo when left out. */
     favicon: image.optional(),
   }),
@@ -494,6 +818,42 @@ const demoObject = z.object({
    * exactly one region.
    */
   areas: z.array(areaSchema).max(8).optional(),
+  /**
+   * A page for a second kind of buyer (contractors, property managers) at
+   * its own URL, in the nav. Optional.
+   */
+  audience: audienceSchema.optional(),
+  /**
+   * Their real projects: /projects and /projects/<slug>, in the nav. They
+   * replace the starter's sample projects (and its sample gallery).
+   */
+  projects: z.array(projectSchema).min(1).max(24).optional(),
+  /** The /projects page's words (estate look); the content schema checks them. */
+  projectsPage: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text,
+      text: text.optional(),
+      order: z.array(text).optional(),
+      cta: z.object({
+        heading: text,
+        text: text.optional(),
+        label: text.optional(),
+        secondaryCta: z.object({ label: text, href: text }).optional(),
+      }),
+      projectCta: z
+        .record(
+          z.string(),
+          z.object({
+            heading: text,
+            text: text.optional(),
+            cta: z.object({ label: text, href: text }).optional(),
+            secondaryCta: z.object({ label: text, href: text }).optional(),
+          }),
+        )
+        .optional(),
+    })
+    .optional(),
   notes: z
     .object({
       sourceUrl: z.url().optional(),
@@ -546,5 +906,8 @@ export const PAGES = [
   },
 ];
 
-/** Nav and footer links a demo drops (the sample content stays unlinked). */
+/**
+ * Nav and footer links a demo drops (the sample content stays unlinked).
+ * `/projects` stays when demo.json has `projects`.
+ */
 export const HIDDEN_PATHS = ["/blog", "/case-studies", "/projects", "/gallery"];

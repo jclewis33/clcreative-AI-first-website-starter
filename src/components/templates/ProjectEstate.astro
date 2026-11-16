@@ -1,0 +1,408 @@
+---
+/**
+ * Project page, ESTATE layout — after the FDC Coatings project design
+ * (the estate look's `pages: "estate"`; /projects/[slug] hands over).
+ * Same data as ProjectTemplate (getProject()):
+ *
+ *   a dark title band (back link, "Category · Service", the name, its
+ *   line) → the hero photo pulled up over it, with the facts under it →
+ *   the job in numbered steps → one before-and-after pair on dark → the
+ *   client's words → more projects like it → a closing band.
+ *
+ * Optional parts drop out: no story = the write-up instead; no labelled
+ * Before and After photos = no pair; no quote = no quote.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import QuoteBand from "@/components/sections/QuoteBand.astro";
+import { SITE } from "@/config/site";
+import { projectPath } from "@/lib/projects";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { PRESET_PROJECTS_PAGE } from "@/data/preset-pages";
+import {
+  plainText,
+  sizedImage,
+  type ProjectCardData,
+  type ProjectDetail,
+} from "@/lib/content";
+
+interface Props {
+  /**
+   * **ProjectEstate** — the estate layout of a project page. Pass the
+   * fields of `getProject()`'s ProjectPage.
+   */
+  docs?: string;
+
+  /** The project to render. */
+  project: ProjectDetail;
+
+  /** Up to three "More projects" cards (same category first). */
+  relatedProjects: ProjectCardData[];
+}
+
+const { project, relatedProjects } = Astro.props;
+const plainTitle = plainText(project.title);
+const path = projectPath(project.slug);
+const hero = project.hero && sizedImage(project.hero, 2000);
+const meta = [project.categoryLabel, project.service]
+  .filter(Boolean)
+  .join(" · ");
+const description =
+  project.seoDescription ||
+  project.summary.slice(0, 155) ||
+  `${plainTitle}, a project by ${SITE.name}.`;
+
+/* The facts: the entry's own, else what the fields say. */
+const year = project.completed?.slice(0, 4);
+const specs = project.specs.length
+  ? project.specs
+  : [
+      project.service && { label: "Scope", value: project.service },
+      project.location && { label: "Location", value: project.location },
+      year && { label: "Completed", value: year },
+    ].filter((x): x is { label: string; value: string } => Boolean(x));
+
+/* One pair: the first Before and the first After photo. */
+const before = project.photos.find((p) => p.label === "Before");
+const after = project.photos.find((p) => p.label === "After");
+
+/* More like it: same category first (getProject orders them). */
+const related = relatedProjects
+  .filter((p) => p.category === project.category)
+  .slice(0, 3);
+const relatedHeading = `More ${project.categoryLabel.toLowerCase()} projects`;
+
+const band = PRESET_PROJECTS_PAGE?.projectCta?.[project.category];
+const estimateCta = {
+  label: SITE.quote?.label ?? "Request a quote",
+  modal: ESTIMATE_MODAL_ID,
+};
+---
+
+<BaseLayout
+  title={`${plainTitle} | ${SITE.name}`}
+  description={description}
+  canonical={`${SITE.url}${path}`}
+  breadcrumbs={[
+    { name: "Home", path: "/" },
+    { name: "Projects", path: "/projects" },
+    { name: plainTitle, path },
+  ]}
+>
+  <Section theme="dark" class="project-estate_head">
+    <div class="u-margin-trim">
+      <a class="project-estate_back" href="/projects">
+        <span aria-hidden="true">←</span> All projects
+      </a>
+      {
+        meta && (
+          <Heading variant="eyebrow" marginBottom={4}>
+            {meta}
+          </Heading>
+        )
+      }
+      <Heading tag="h1" variant="h1" marginBottom={5}>
+        {project.title}
+      </Heading>
+      {project.summary && <Text variant="large">{project.summary}</Text>}
+    </div>
+  </Section>
+
+  <Section paddingTop="none" paddingBottom="none" class="project-estate_lead">
+    {
+      hero && (
+        <Visual
+          src={hero.src}
+          alt={hero.alt}
+          width={hero.width}
+          height={hero.height}
+          ratio="2 / 1"
+          priority
+          class="project-estate_hero"
+        />
+      )
+    }
+    {
+      specs.length > 0 && (
+        <dl class="project-estate_specs">
+          {specs.map((spec) => (
+            <div class="project-estate_spec">
+              <dt>{spec.label}</dt>
+              <dd>{spec.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )
+    }
+  </Section>
+
+  {
+    project.story.length > 0 && (
+      <Section>
+        <ol class="project-estate_story">
+          {project.story.map((step, i) => (
+            <li class="project-estate_step u-margin-trim">
+              <span class="project-estate_step_number" aria-hidden="true">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <Heading tag="h2" variant="h4" marginBottom={3}>
+                {step.title}
+              </Heading>
+              <Text muted>{step.text}</Text>
+            </li>
+          ))}
+        </ol>
+      </Section>
+    )
+  }
+  {
+    project.story.length === 0 && project.descriptionHtml && (
+      <Section>
+        <div class="project-estate_writeup u-margin-trim">
+          <Fragment set:html={project.descriptionHtml} />
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    before && after && (
+      <Section theme="dark">
+        <Heading tag="h2" variant="h2">
+          Before and after
+        </Heading>
+        <div class="project-estate_pair">
+          {[
+            { photo: before, label: "Before" },
+            { photo: after, label: "After" },
+          ].map(({ photo, label }) => {
+            const img = sizedImage(photo.image, 1200);
+            return (
+              <figure class="project-estate_figure">
+                <Visual
+                  src={img.src}
+                  alt={img.alt}
+                  width={img.width}
+                  height={img.height}
+                  ratio="16 / 10"
+                />
+                <figcaption
+                  class:list={[
+                    "project-estate_label",
+                    label === "After" && "is-after",
+                  ]}
+                >
+                  {label}
+                </figcaption>
+              </figure>
+            );
+          })}
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    project.quote && (
+      <Section>
+        <figure class="project-estate_quote">
+          <blockquote class="project-estate_quote_text">
+            “{project.quote.text}”
+          </blockquote>
+          {project.quote.name && (
+            <figcaption class="project-estate_quote_who">
+              {project.quote.name}
+            </figcaption>
+          )}
+        </figure>
+      </Section>
+    )
+  }
+
+  {
+    related.length > 0 && (
+      <Section class="project-estate_related">
+        <Heading tag="h2" variant="h3">
+          {relatedHeading}
+        </Heading>
+        <ul class="project-estate_related_list">
+          {related.map((p) => (
+            <li>
+              <a class="project-estate_card" href={p.href}>
+                {p.image && (
+                  <Visual
+                    src={p.image.src}
+                    alt={p.image.alt}
+                    width={p.image.width}
+                    height={p.image.height}
+                    ratio="4 / 3"
+                  />
+                )}
+                <span class="project-estate_card_title">{p.title}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  <QuoteBand
+    heading={band?.heading ?? "Want a floor like this?"}
+    text={band?.text}
+    cta={band?.cta ?? estimateCta}
+    secondaryCta={band?.secondaryCta}
+    showPhone={false}
+  />
+</BaseLayout>
+
+<style is:global>
+  @layer components {
+    .project-estate_back {
+      display: inline-block;
+      margin-bottom: var(--space-6);
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, var(--text) 80%, transparent);
+      text-decoration: none;
+    }
+
+    /* The photo sits over the title band's bottom edge: the top strip of
+       its own section is painted the band's colour (a section clips, so a
+       negative margin would be cut off). */
+    .project-estate_lead {
+      background: linear-gradient(
+        var(--color-dark-900) var(--space-6),
+        transparent var(--space-6)
+      );
+    }
+
+    .project-estate_head {
+      padding-bottom: var(--space-7);
+    }
+
+    .project-estate_specs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(10rem, 100%), 1fr));
+      gap: var(--space-5) var(--space-6);
+      margin: 0;
+      padding: var(--space-6) 0;
+      border-bottom: var(--border-width-main) solid var(--border);
+    }
+
+    .project-estate_spec dt {
+      font-size: var(--eyebrow-size, 0.75rem);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: color-mix(in srgb, var(--text) 72%, transparent);
+    }
+
+    .project-estate_spec dd {
+      margin: var(--space-1) 0 0;
+      font-weight: 600;
+    }
+
+    .project-estate_story {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+      gap: var(--space-7);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .project-estate_step_number {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-family: var(--font-primary);
+      font-size: var(--h5-size);
+      color: var(--heading-accent);
+    }
+
+    .project-estate_writeup {
+      max-width: 44rem;
+    }
+
+    .project-estate_pair {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+      gap: var(--space-5);
+    }
+
+    .project-estate_figure {
+      position: relative;
+      margin: 0;
+    }
+
+    .project-estate_label {
+      position: absolute;
+      inset-block-start: var(--space-4);
+      inset-inline-start: var(--space-4);
+      padding: var(--space-1) var(--space-3);
+      font-size: var(--eyebrow-size, 0.75rem);
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text);
+      background-color: color-mix(in srgb, var(--background) 80%, transparent);
+    }
+
+    .project-estate_label.is-after {
+      color: var(--button-primary-text);
+      background-color: var(--button-primary-background);
+    }
+
+    .project-estate_quote {
+      display: grid;
+      gap: var(--space-4);
+      margin: 0;
+      padding: var(--space-7);
+      border-radius: var(--radius-main);
+      background-color: color-mix(in srgb, var(--text) 6%, var(--background));
+    }
+
+    .project-estate_quote_text {
+      max-width: 52rem;
+      margin: 0;
+      font-family: var(--font-primary);
+      font-size: var(--h4-size);
+      line-height: 1.3;
+    }
+
+    .project-estate_quote_who {
+      font-weight: 600;
+    }
+
+    .project-estate_related_list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+      gap: var(--space-6);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .project-estate_card {
+      display: grid;
+      gap: var(--space-3);
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .project-estate_card_title {
+      font-family: var(--font-primary);
+      font-size: var(--h5-size);
+      line-height: 1.2;
+    }
+
+    @media (hover: hover) {
+      .project-estate_back:hover,
+      .project-estate_card:hover .project-estate_card_title {
+        text-decoration: underline;
+        text-underline-offset: 0.15em;
+      }
+    }
+  }
+</style>

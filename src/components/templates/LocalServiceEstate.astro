@@ -1,0 +1,225 @@
+---
+/**
+ * Local-service home page, ESTATE layout — high-end and two-sided, after the
+ * FDC Coatings design (decorative concrete for fine homes and commercial
+ * projects). Same data (LocalServiceHomeData); a different page:
+ *
+ *   a full-bleed photo hero (rating pill, two buttons) → homeowner /
+ *   contractor panels pulled up over it → facts under hairline rules →
+ *   the services as plain photo cards → a before-and-after switcher on
+ *   dark → the commercial side in the spotlight → projects with category
+ *   pills → the process in columns → Google-style reviews → a quote band
+ *   with what happens next.
+ *
+ * Pick it with `layout: "estate"` (demo.json → HOME.layout), usually with
+ * the `estate` look.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import PathPanels from "@/components/sections/PathPanels.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import BeforeAfterGallery from "@/components/sections/BeforeAfterGallery.astro";
+import FeatureSpotlight from "@/components/sections/FeatureSpotlight.astro";
+import ProjectHighlights from "@/components/sections/ProjectHighlights.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import ReviewCards from "@/components/sections/ReviewCards.astro";
+import QuoteBand from "@/components/sections/QuoteBand.astro";
+import LeadFormModal from "@/components/form/LeadFormModal.astro";
+import { getServices, servicePath } from "@/lib/services";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { SITE } from "@/config/site";
+import type { LocalServiceHomeData } from "@/lib/local-service-home";
+
+interface Props {
+  /**
+   * **LocalServiceEstate** — the estate layout of the local-service home
+   * page: high-end, two-sided (homeowners and contractors). Same data as
+   * LocalServiceHome.
+   *
+   * @example
+   * <LocalServiceEstate home={HOME} />
+   */
+  docs?: string;
+
+  /** The page's content — see LocalServiceHomeData (src/lib/local-service-home.ts). */
+  home: LocalServiceHomeData;
+}
+
+const { home } = Astro.props;
+
+const services = await getServices();
+const ownModal = !SITE.quote;
+const estimateCta = { label: home.estimate.label, modal: ESTIMATE_MODAL_ID };
+const serviceItems = services
+  .filter((s) => (s.data.group ?? "") !== "Commercial")
+  .map((s) => ({
+    title: s.data.title,
+    text: s.data.cardText,
+    image: s.data.cardImage,
+    imageAlt: s.data.cardImageAlt,
+    href: servicePath(s.id),
+  }));
+const projectOptions = home.leadForm.projectOptions ?? [
+  ...services.map((s) => ({ label: s.data.title, value: s.id })),
+  { label: "Something else", value: "other" },
+];
+const {
+  hero,
+  paths,
+  stats,
+  beforeAfter,
+  spotlight,
+  projectHighlights,
+  process,
+  reviews,
+  callBand,
+} = home;
+const panels = (paths?.items ?? [])
+  .filter((p) => p.cta?.href)
+  .map((p) => ({
+    label: p.label,
+    title: p.title,
+    text: p.text,
+    href: p.cta?.href ?? "#",
+    linkLabel: p.cta?.label ?? "Learn more",
+  }));
+---
+
+<BaseLayout title={home.title} description={home.description}>
+  <Hero
+    variant="background"
+    overlay="side"
+    headingSize="h1"
+    eyebrow={hero.eyebrow}
+    heading={hero.heading}
+    text={hero.text}
+    image={hero.image}
+    imageAlt={hero.imageAlt}
+    imagePosition={hero.imagePosition}
+    primaryCta={{ ...estimateCta, label: hero.ctaLabel ?? estimateCta.label }}
+    secondaryCta={hero.secondaryCta}
+    secondaryVariant="secondary"
+    showPhone={false}
+    proof={hero.proof}
+    proofPosition="above"
+    badge={false}
+    minHeight={false}
+    paddingBottom="large"
+    class="estate_hero"
+  />
+
+  <PathPanels panels={panels} render={panels.length > 1} />
+
+  {stats && <StatsStrip items={stats} variant="ruled" valueSize="word" />}
+
+  <ServiceCards
+    id="services"
+    variant="plain"
+    eyebrow={home.services.eyebrow}
+    heading={home.services.heading}
+    intro={home.services.intro}
+    items={serviceItems}
+  />
+
+  {
+    beforeAfter && (
+      <BeforeAfterGallery
+        theme="dark"
+        variant="switcher"
+        eyebrow={beforeAfter.eyebrow}
+        heading={beforeAfter.heading}
+        intro={beforeAfter.intro}
+        items={beforeAfter.items}
+      />
+    )
+  }
+
+  {
+    spotlight && (
+      <FeatureSpotlight
+        eyebrow={spotlight.eyebrow}
+        heading={spotlight.heading}
+        text={spotlight.text}
+        images={spotlight.images}
+        items={spotlight.items}
+        cta={spotlight.cta}
+        secondaryCta={spotlight.secondaryCta}
+      />
+    )
+  }
+
+  {
+    projectHighlights && (
+      <ProjectHighlights
+        eyebrow={projectHighlights.eyebrow}
+        heading={projectHighlights.heading}
+        slugs={projectHighlights.slugs}
+        limit={projectHighlights.limit}
+        link={{
+          label: projectHighlights.linkLabel ?? "View all projects",
+          href: "/projects",
+        }}
+      />
+    )
+  }
+
+  {
+    process && (
+      <ProcessSteps
+        variant="columns"
+        class="u-background-2"
+        eyebrow={process.eyebrow}
+        heading={process.heading}
+        text={process.text}
+        steps={process.steps}
+      />
+    )
+  }
+
+  {
+    reviews && (
+      <ReviewCards
+        id="reviews"
+        summary={reviews.summary}
+        reviews={reviews.items}
+        link={{ label: "Read all our Google reviews", href: "/reviews" }}
+      />
+    )
+  }
+
+  <QuoteBand
+    heading={callBand.heading}
+    text={callBand.text}
+    image={callBand.image}
+    imageAlt={callBand.imageAlt}
+    cta={{ ...estimateCta, label: callBand.ctaLabel ?? estimateCta.label }}
+    secondaryCta={callBand.secondaryCta}
+    steps={(callBand.steps ?? []).map((text) => ({ text }))}
+  />
+
+  {
+    ownModal && (
+      <LeadFormModal
+        id={ESTIMATE_MODAL_ID}
+        formId="contact"
+        heading={home.estimate.heading}
+        text={home.estimate.text}
+        fields="steps"
+        stepQuestion={home.estimate.question}
+        questions={home.estimate.questions}
+        projectOptions={projectOptions}
+      />
+    )
+  }
+</BaseLayout>
+
+<style is:global>
+  @layer components {
+    /* Room under the hero's buttons for the path panels pulled up over
+       its bottom edge (PathPanels' overlap is twice --space-8). */
+    .estate_hero {
+      padding-bottom: calc(var(--space-8) * 3.5);
+    }
+  }
+</style>

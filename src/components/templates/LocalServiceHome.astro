@@ -35,6 +35,8 @@ import EmergencyBand from "@/components/sections/EmergencyBand.astro";
 import MaintenancePlans from "@/components/sections/MaintenancePlans.astro";
 import TeamGrid from "@/components/sections/TeamGrid.astro";
 import PromiseCards from "@/components/sections/PromiseCards.astro";
+import PathCards from "@/components/sections/PathCards.astro";
+import BeforeAfterGallery from "@/components/sections/BeforeAfterGallery.astro";
 import ExpectTimeline from "@/components/sections/ExpectTimeline.astro";
 import WhyChooseUs from "@/components/sections/WhyChooseUs.astro";
 import { geoFor } from "@/lib/service-area-geo";
@@ -117,6 +119,8 @@ const {
   promises,
   expect,
   why,
+  paths,
+  beforeAfter,
 } = home;
 /* The street map: the home data's own outlines (the dev sample's SVG map
    has none), else the generated src/data/service-area-geo.json. */
@@ -157,6 +161,17 @@ if (import.meta.env.DEV && !services.length)
   {home.stats && <StatsStrip items={home.stats} />}
 
   {
+    paths && (
+      <PathCards
+        eyebrow={paths.eyebrow}
+        heading={paths.heading}
+        intro={paths.intro}
+        paths={paths.items}
+      />
+    )
+  }
+
+  {
     emergency && (
       <EmergencyBand heading={emergency.heading} text={emergency.text} />
     )
@@ -181,6 +196,18 @@ if (import.meta.env.DEV && !services.length)
         heading={home.services.heading}
         intro={home.services.intro}
         items={showcaseItems}
+      />
+    )
+  }
+
+  {
+    beforeAfter && (
+      <BeforeAfterGallery
+        theme={"dark"}
+        eyebrow={beforeAfter.eyebrow}
+        heading={beforeAfter.heading}
+        intro={beforeAfter.intro}
+        items={beforeAfter.items}
       />
     )
   }
@@ -396,6 +423,7 @@ if (import.meta.env.DEV && !services.length)
         text={home.estimate.text}
         fields="steps"
         stepQuestion={home.estimate.question}
+        questions={home.estimate.questions}
         projectOptions={projectOptions}
       />
     )

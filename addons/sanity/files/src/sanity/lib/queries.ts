@@ -389,6 +389,8 @@ const PROJECT_CARD_PROJECTION = `{
   "slug": slug.current,
   category,
   location,
+  service,
+  "summary": pt::text(description),
   heroImage,
   "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),
   "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },

@@ -3,6 +3,7 @@ import type { ComponentProps } from "astro/types";
 import Button from "@/components/ui/Button.astro";
 import Icon from "@/components/ui/Icon.astro";
 import phoneIcon from "@/assets/icons/phone.svg";
+import downloadIcon from "@/assets/icons/download.svg";
 import type { SectionCta } from "@/lib/cta";
 import { SITE } from "@/config/site";
 
@@ -14,7 +15,8 @@ interface Props {
   /**
    * **CtaButton** — renders a section's `SectionCta` as a `<Button>`.
    *
-   * - `cta` — `{ label, href?, modal? }`. With `modal`, the button opens the
+   * - `cta` — `{ label, href?, modal?, icon? }`; `icon: "download"` puts a
+   *   download arrow before the label. With `modal`, the button opens the
    *   `<Modal>` of that id (e.g. a `<LeadFormModal>`); otherwise it links to
    *   `href`.
    * - `phone` — ignore `cta` and render the click-to-call button from
@@ -108,9 +110,13 @@ if (import.meta.env.DEV && render && !phone && !cta?.label) {
         fullWidth={fullWidth}
         id={id}
         ariaLabel={cta.label}
+        iconPosition={cta.icon ? "start" : undefined}
         class={className}
       >
         {cta.label}
+        {cta.icon === "download" && (
+          <Icon slot="icon" src={downloadIcon} variant="small" />
+        )}
       </Button>
     ) : null)
 }

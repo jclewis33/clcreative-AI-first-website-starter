@@ -5,6 +5,11 @@
  * (`modal` = the modal's id, e.g. a `<LeadFormModal id="estimate-modal">`). With
  * `modal` set, `href` is ignored. Render one with `<CtaButton cta={…} />`.
  */
+/** An icon before a CTA's label. */
+export type SectionCtaIcon =
+  /** A down arrow over a line: the link is a file to save (a PDF) */
+  "download";
+
 export interface SectionCta {
   /** Button text. */
   label: string;
@@ -12,6 +17,8 @@ export interface SectionCta {
   href?: string;
   /** Id of a `<Modal>` to open instead of navigating. */
   modal?: string;
+  /** An icon before the label ("download" for a PDF). */
+  icon?: SectionCtaIcon;
 }
 
 /**

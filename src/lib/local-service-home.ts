@@ -1,6 +1,7 @@
 import type { ImageMetadata } from "astro";
 import type { FAQItem } from "@/data/faqs";
 import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
+import type { LeadQuestion } from "@/lib/lead-questions";
 
 /**
  * The data a local-service home page is made of — everything
@@ -32,6 +33,22 @@ type HomeOption = { label: string; value: string };
 /** An SVG imported as a component (ServiceArea's interactive map). */
 type HomeMap = (props: Record<string, unknown>) => unknown;
 type HomeTrust = { label: string; image?: HomeImage };
+type HomeCta = { label: string; href?: string; modal?: string };
+type HomePath = {
+  label?: string;
+  title: string;
+  text?: string;
+  points?: string[];
+  cta?: HomeCta;
+};
+type HomeBeforeAfter = {
+  before: ImageMetadata;
+  beforeAlt: string;
+  after: ImageMetadata;
+  afterAlt: string;
+  title: string;
+  text?: string;
+};
 type HomeAreaGeo = {
   name: string;
   geometry: {
@@ -45,15 +62,21 @@ export interface LocalServiceHomeData {
    * The home page's layout: `contractor` (LocalServiceHome — conversion-led:
    * quote panel, offer, symptoms, comparison) or `showcase`
    * (LocalServiceShowcase — photo-led and editorial, after the Outdoor
-   * Living demo). @default 'contractor'
+   * Living demo) or `estate` (LocalServiceEstate — high-end and two-sided:
+   * homeowner / contractor panels over the hero, finishes, a before-and-after
+   * switcher, a commercial spotlight, projects, process, Google-style
+   * reviews and a quote band; after the FDC Coatings design).
+   * @default 'contractor'
    */
-  layout?: "contractor" | "showcase";
+  layout?: "contractor" | "showcase" | "estate";
 
   /**
    * The About page (LocalServiceAbout, /about). Optional: without it the
    * page leads with the story's heading and paragraphs.
    */
   about?: {
+    /** Its name in the nav ("Our Process"). @default 'About' */
+    navLabel?: string;
     /** Page `<title>` and meta description. */
     title?: string;
     description?: string;
@@ -107,6 +130,8 @@ export interface LocalServiceHomeData {
     heading: string;
     text?: string;
     question?: string;
+    /** A qualifying form: one-tap steps before the contact fields (LeadForm `questions`). */
+    questions?: LeadQuestion[];
   };
 
   hero: {
@@ -141,10 +166,38 @@ export interface LocalServiceHomeData {
     proof?: { rating?: number; text: string };
     /** Credentials the business really holds. */
     trust?: HomeTrust[];
+    /** Estate layout: a second hero button ("See our work" → #projects). */
+    secondaryCta?: { label: string; href: string };
+    /** The estimate button's text here. @default estimate.label */
+    ctaLabel?: string;
   };
 
   /** Four short numbers or words. Leave out anything you can't back up. */
   stats?: HomeStat[];
+
+  /**
+   * Two (or three) ways in for different visitors — homeowners and
+   * contractors, say — as equal panels under the hero (PathCards). Each
+   * path's `cta` links to its own page.
+   */
+  paths?: {
+    eyebrow?: string;
+    heading: string;
+    intro?: string;
+    items: HomePath[];
+  };
+
+  /**
+   * The business's own before-and-after pairs as drag-to-compare sliders
+   * (BeforeAfterGallery), after the services. The same view, before and
+   * after, from a real job.
+   */
+  beforeAfter?: {
+    eyebrow?: string;
+    heading?: string;
+    intro?: string;
+    items: HomeBeforeAfter[];
+  };
 
   /** Heading for the service cards (the cards come from src/content/services). */
   services: {
@@ -278,6 +331,34 @@ export interface LocalServiceHomeData {
     imageAlt: string;
   };
 
+  /**
+   * Estate layout: one side of the business in the spotlight on a tinted
+   * band (FeatureSpotlight) — the commercial work on a mostly-residential
+   * home page. Up to 3 photos, a ruled list with optional codes, two buttons.
+   */
+  spotlight?: {
+    eyebrow?: string;
+    heading: string;
+    text?: string;
+    images: { image: HomeImage; alt: string }[];
+    items?: { label: string; meta?: string }[];
+    cta?: { label: string; href: string };
+    secondaryCta?: { label: string; href: string };
+  };
+
+  /**
+   * Estate layout: projects from the projects content (ProjectHighlights),
+   * with category pills. `slugs` picks and orders them.
+   */
+  projectHighlights?: {
+    eyebrow?: string;
+    heading?: string;
+    slugs?: string[];
+    limit?: number;
+    /** The link under the cards. @default 'View all projects' */
+    linkLabel?: string;
+  };
+
   serviceArea: {
     heading: string;
     text?: string;
@@ -324,6 +405,8 @@ export interface LocalServiceHomeData {
     items: HomeReview[];
     /** @default 'marquee' with 4+ reviews (scrolling across the screen), else 'cards' */
     layout?: "cards" | "featured" | "grid" | "marquee";
+    /** Estate layout: the star line under the heading ("78 five-star reviews on Google"). */
+    summary?: string;
   };
 
   leadForm: {
@@ -345,5 +428,11 @@ export interface LocalServiceHomeData {
     image?: HomeImage;
     imageAlt?: string;
     ctaNote?: string;
+    /** Estate layout: a second button (another kind of buyer). */
+    secondaryCta?: { label: string; href: string };
+    /** The estimate button's text here. @default estimate.label */
+    ctaLabel?: string;
+    /** Estate layout: "What happens when you reach out", in order. */
+    steps?: string[];
   };
 }

@@ -20,8 +20,12 @@ Chromium today; other engines open instantly with identical behavior
 | `openByDefault` | `number`  | `0`     | 1-based index to open on load; `0` = all closed           |
 
 **AccordionItem props:** `question` (toggle text — or the `question` slot for
-rich text), `open` (start expanded), `class`, plus any `details` attribute
-(e.g. `data-fade-in`). Slots: `question`, default (answer).
+rich text), `open` (start expanded), `size` (`'default'` h5 toggle, or
+`'small'` — small bold toggle, tighter row, for a fold-out inside a card,
+panel or form), `tag` (the toggle label's element: `h2`–`h5` or `span`,
+default `h3`; use `span` inside a form or card where a heading would break
+the outline), `class`, plus any `details` attribute (e.g. `data-fade-in`).
+Slots: `question`, default (answer).
 
 ```astro
 <Accordion openByDefault={1}>
@@ -44,16 +48,16 @@ Tabbed interface — panel transitions and the autoplay progress line are pure
 CSS (keyframes selected by `data-tab-transition`; progress paused via
 `animation-play-state`), no animation library.
 
-| Prop               | Type                                    | Default | Description                                                                                                                                                                  |
-| ------------------ | --------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `variant`          | `'top'`\|`'side'`\|`'slider'`\|`'fade'` | `'top'` | top/fade: horizontal + fade · side: vertical pills in a 12-col grid · slider: slide transition + autoplay controls                                                           |
-| `duration`         | `number`                                | `0.6`   | Panel transition seconds (drives the CSS keyframes)                                                                                                                          |
-| `autoplayDuration` | `number`                                | `6`     | Autoplay interval seconds (slider only; `0` disables)                                                                                                                        |
-| `pauseOnHover`     | `boolean`                               | `true`  | Hover **holds** the progress (resumes where it left off)                                                                                                                     |
-| `loopControls`     | `boolean`                               | `true`  | Arrows and autoplay wrap around                                                                                                                                              |
-| `activeTab`        | `number`                                | `1`     | 1-based initially active tab                                                                                                                                                 |
-| `id`               | `string`                                | —       | Wrapper id; doubles as the deep-link query key                                                                                                                               |
-| `deepLink`         | `boolean`                               | `false` | Mirror the active tab in the URL (`?<id>=<label-slug>`, `history.replaceState`). On arrival with a matching param: that tab activates, scrolls into view, autoplay stays off |
+| Prop               | Type                                               | Default | Description                                                                                                                                                                                  |
+| ------------------ | -------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `variant`          | `'top'`\|`'side'`\|`'slider'`\|`'fade'`\|`'pills'` | `'top'` | top/fade: horizontal + fade · side: vertical pills in a 12-col grid · slider: slide transition + autoplay controls · pills: a segmented pill track, active pill raised (ConcernTabs uses it) |
+| `duration`         | `number`                                           | `0.6`   | Panel transition seconds (drives the CSS keyframes)                                                                                                                                          |
+| `autoplayDuration` | `number`                                           | `6`     | Autoplay interval seconds (slider only; `0` disables)                                                                                                                                        |
+| `pauseOnHover`     | `boolean`                                          | `true`  | Hover **holds** the progress (resumes where it left off)                                                                                                                                     |
+| `loopControls`     | `boolean`                                          | `true`  | Arrows and autoplay wrap around                                                                                                                                                              |
+| `activeTab`        | `number`                                           | `1`     | 1-based initially active tab                                                                                                                                                                 |
+| `id`               | `string`                                           | —       | Wrapper id; doubles as the deep-link query key                                                                                                                                               |
+| `deepLink`         | `boolean`                                          | `false` | Mirror the active tab in the URL (`?<id>=<label-slug>`, `history.replaceState`). On arrival with a matching param: that tab activates, scrolls into view, autoplay stays off                 |
 
 **Slots:** `heading` (above the button list), `buttons` (`TabButton`s),
 default (`TabPanel`s — matched to buttons by DOM order).

@@ -1,0 +1,277 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import Tab from "@/components/ui/Tab.astro";
+import TabButton from "@/components/ui/TabButton.astro";
+import TabPanel from "@/components/ui/TabPanel.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import ChipList from "@/components/ui/ChipList.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import Button from "@/components/ui/Button.astro";
+import type { SectionCta } from "@/lib/cta";
+
+/** A plain text link under the button: "See how gutters move water". */
+type ConcernTabsLink = {
+  /** Link text. */
+  label: string;
+  /** Link target (a page or an in-page anchor). */
+  href: string;
+};
+
+type ConcernTabsItem = {
+  /** The tab's pill text, short: "Rain & leaks", "High bills". */
+  label: string;
+  /** Small label above the title: "Rain & drainage". */
+  eyebrow?: string;
+  /** The panel title: "Give water a clear path off the roof." */
+  title: string;
+  /** One or two sentences on why it happens. */
+  text: string;
+  /** One bold line: "A stain on the ceiling is a reason to investigate the source." */
+  takeaway?: string;
+  /** The photo (an import or a URL). */
+  image: ImageMetadata | string;
+  /** Real alt text for the photo. */
+  imageAlt: string;
+  /** Small caption on the photo: "Company archive · Commercial roof inspection". */
+  caption?: string;
+  /** What the tech checks, as chips: ["Flashing connections", "Drainage paths"]. */
+  checks?: string[];
+  /** This tab's button. Falls back to the section `cta`. */
+  cta?: SectionCta;
+  /** Optional text link beside the button. */
+  link?: ConcernTabsLink;
+};
+type ConcernTabsTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ConcernTabs** — "What is your roof telling you?": the warning signs a
+   * homeowner notices, one pill tab each ("Rain & leaks", "After hail" — or
+   * "Strange noises", "High bills", "Uneven temps"). Each tab shows a split
+   * card: the photo on one side; on the other the explanation, one bold
+   * takeaway, a "What we look at" chip row, and that concern's button.
+   * Built on `<Tab>`, so tabs are keyboard- and screen-reader-ready.
+   *
+   * - `items` — `{ label, title, text, image, imageAlt, eyebrow?, takeaway?, caption?, checks?, cta?, link? }[]`; empty renders nothing
+   * - `eyebrow`, `heading` (default "What is your home telling you?"), `intro`
+   * - `checksLabel` — label over the chips (default "What we look at")
+   * - `cta` — the button for every tab without its own `cta`
+   * - Phones: the photo stacks above the text; the pills scroll sideways.
+   *
+   * @example
+   * <ConcernTabs heading="What is your roof telling you?" cta={inspectionCta} items={[{ label: "Rain & leaks", title: "Give water a clear path off the roof.", text: "…", image: leakPhoto, imageAlt: "Inspector on a flat roof", checks: ["Flashing", "Drainage paths"] }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. @default 'What is your home telling you?' */
+  heading?: string;
+
+  /** Intro beside the heading. */
+  intro?: string;
+
+  /** The concerns, one tab each. Empty renders nothing. */
+  items: ConcernTabsItem[];
+
+  /** Label above each tab's chip row. @default 'What we look at' */
+  checksLabel?: string;
+
+  /** Button for every tab that has no `cta` of its own. */
+  cta?: SectionCta;
+
+  /** Section theme. */
+  theme?: ConcernTabsTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading = "What is your home telling you?",
+  intro,
+  items = [],
+  checksLabel = "What we look at",
+  cta,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !Astro.props.items?.length) {
+  console.warn("[ConcernTabs] `items` is empty or missing; nothing renders.");
+}
+---
+
+{
+  render && items.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["concern-tabs_wrap", className]}
+      {...rest}
+    >
+      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      <Tab variant="pills" class="concern-tabs_tabs">
+        {items.map((item) => (
+          <TabButton slot="buttons" label={item.label} />
+        ))}
+        {items.map((item) => {
+          const itemCta = item.cta ?? cta;
+          return (
+            <TabPanel>
+              <div class="concern-tabs_card">
+                <div class="concern-tabs_media">
+                  <Visual
+                    src={item.image}
+                    alt={item.imageAlt}
+                    variant="background"
+                    loading="lazy"
+                    radius="none"
+                    class="concern-tabs_img"
+                  />
+                  {item.caption && (
+                    <p class="concern-tabs_caption u-text-style-tiny">
+                      {item.caption}
+                    </p>
+                  )}
+                </div>
+                <div class="concern-tabs_body u-margin-trim">
+                  {item.eyebrow && (
+                    <Heading
+                      tag="p"
+                      variant="eyebrow"
+                      class="concern-tabs_eyebrow"
+                    >
+                      {item.eyebrow}
+                    </Heading>
+                  )}
+                  <Heading tag="h3" variant="h4" class="concern-tabs_title">
+                    {item.title}
+                  </Heading>
+                  <Text muted class="concern-tabs_text">
+                    {item.text}
+                  </Text>
+                  {item.takeaway && (
+                    <Text weight="bold" class="concern-tabs_takeaway">
+                      {item.takeaway}
+                    </Text>
+                  )}
+                  {item.checks && item.checks.length > 0 && (
+                    <div class="concern-tabs_checks u-margin-trim">
+                      <Heading
+                        tag="p"
+                        variant="eyebrow"
+                        class="concern-tabs_checks_label"
+                      >
+                        {checksLabel}
+                      </Heading>
+                      <ChipList
+                        items={item.checks.map((label) => ({ label }))}
+                        class="concern-tabs_chips"
+                      />
+                    </div>
+                  )}
+                  {(itemCta || item.link) && (
+                    <div class="concern-tabs_actions">
+                      {itemCta && <CtaButton cta={itemCta} />}
+                      {item.link && (
+                        <Button variant="text" href={item.link.href}>
+                          {item.link.label}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabPanel>
+          );
+        })}
+      </Tab>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* ── The split card: photo beside the text, stacked below ~928px ── */
+    .concern-tabs_card {
+      display: var(--flex-medium, grid);
+      flex-direction: column;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      overflow: clip;
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+    }
+
+    /* The photo fills its column's height beside the text; stacked, it
+       takes a landscape ratio instead. */
+    .concern-tabs_media {
+      position: relative;
+      min-height: 22rem;
+    }
+
+    @container (width < 58em) {
+      .concern-tabs_media {
+        min-height: 0;
+        aspect-ratio: 3 / 2;
+      }
+    }
+
+    .concern-tabs_caption {
+      position: absolute;
+      left: var(--space-4);
+      bottom: var(--space-4);
+      max-width: calc(100% - var(--space-4) * 2);
+      margin: 0;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      background-color: color-mix(in srgb, var(--background) 88%, transparent);
+      color: var(--text);
+    }
+
+    .concern-tabs_body {
+      padding: var(--space-6);
+    }
+
+    .concern-tabs_checks {
+      margin-top: var(--space-5);
+      margin-bottom: var(--space-6);
+      padding-top: var(--space-5);
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .concern-tabs_checks .concern-tabs_checks_label {
+      margin-bottom: var(--space-3);
+    }
+
+    .concern-tabs_actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3) var(--space-5);
+    }
+  }
+</style>

@@ -30,6 +30,11 @@ type HeroVariant =
 type HeroTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 type HeroPhoneVariant = "secondary" | "primary";
+type HeroSecondaryVariant =
+  /** A text link with an arrow */
+  | "text"
+  /** An outline button beside the main one */
+  | "secondary";
 type HeroCrumb = { label: string; href?: string };
 type HeroProof = { rating?: number; text: string };
 type HeroBadge = { value: string; label: string };
@@ -43,7 +48,9 @@ type HeroOverlay =
   /** Darkens toward the bottom, evenly across (any photo) */
   | "bottom"
   /** The photo sits on the right, its left edge melting into the background behind the text; a full, evenly tinted photo on phones */
-  | "side";
+  | "side"
+  /** The photo fills the hero, darkest behind the text on the left and lightest on the right */
+  | "full";
 type HeroCtaStyle =
   /** The buttons in a row: main, phone, then the optional third */
   | "buttons"
@@ -164,7 +171,8 @@ interface Props extends HTMLAttributes<"section"> {
    * Background only: how the photo meets the text. `'side'` sets the photo
    * on the right with its left edge fading into the background, so a
    * subject there (a truck, a team) stays bright and the text sits on
-   * plain colour.
+   * plain colour. `'full'` keeps the whole photo, darkest behind the text
+   * on the left and lightest on the right.
    * @default 'bottom'
    */
   overlay?: HeroOverlay;
@@ -212,6 +220,9 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Optional third button. */
   secondaryCta?: SectionCta;
+
+  /** How `secondaryCta` looks: a text link with an arrow, or an outline button. @default 'text' */
+  secondaryVariant?: HeroSecondaryVariant;
 
   /** Breadcrumb trail above the eyebrow (service and detail pages). */
   breadcrumbs?: HeroCrumb[];
@@ -272,6 +283,7 @@ const {
   showPhone = true,
   phoneVariant = "secondary",
   secondaryCta,
+  secondaryVariant = "text",
   breadcrumbs,
   proof,
   proofPosition = "below",
@@ -381,12 +393,26 @@ const backdropUrl =
           <Overlay variant="gradient" strengthTop={55} strengthBottom={80} />
         </Fragment>
       )}
+      {variant === "background" && hasPhoto && overlay === "full" && (
+        <div slot="background" class="hero_photo">
+          <Visual
+            src={image!}
+            alt={photoAlt}
+            variant="background"
+            radius="none"
+            position={imagePosition}
+            priority
+          />
+          <div class="hero_scrim is-full" aria-hidden="true" />
+        </div>
+      )}
       {variant === "background" && hasPhoto && overlay === "side" && (
         <div slot="background" class="hero_photo">
           <Visual
             src={image!}
             alt={photoAlt}
             variant="background"
+            radius="none"
             position={imagePosition}
             priority
           />
@@ -458,7 +484,11 @@ const backdropUrl =
               <CtaButton phone variant={phoneVariant} size="large" />
             )}
             {secondaryCta && (
-              <CtaButton cta={secondaryCta} variant="text" size="large" />
+              <CtaButton
+                cta={secondaryCta}
+                variant={secondaryVariant}
+                size="large"
+              />
             )}
           </ButtonWrapper>
         )}
@@ -604,6 +634,16 @@ const backdropUrl =
       );
     }
 
+    /* overlay="full": the whole photo, darkest behind the text. */
+    .hero_scrim.is-full {
+      background: linear-gradient(
+        to right,
+        color-mix(in oklab, var(--background) 94%, transparent) 0%,
+        color-mix(in oklab, var(--background) 78%, transparent) 50%,
+        color-mix(in oklab, var(--background) 35%, transparent) 100%
+      );
+    }
+
     @media (width >= 75em) {
       /* Section's background slot stretches its children to the full
          width; this one is the right two-thirds. */
@@ -612,12 +652,12 @@ const backdropUrl =
         max-width: min(48rem, 50vw);
       }
 
-      .hero_wrap .hero_photo {
+      .hero_wrap.is-side .hero_photo {
         inset-inline: auto 0;
         width: 66%;
       }
 
-      .hero_scrim {
+      .hero_wrap.is-side .hero_scrim {
         inset-inline-start: -0.25rem;
         background: linear-gradient(
           to right,
@@ -640,9 +680,10 @@ const backdropUrl =
       font-size: var(--text-small-size);
     }
 
+    /* A look can set --hero-star (estate: the rating gold). */
     .hero_stars {
       flex-shrink: 0;
-      color: var(--heading-accent);
+      color: var(--hero-star, var(--heading-accent));
       letter-spacing: 0.1em;
     }
 

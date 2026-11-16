@@ -5,13 +5,14 @@ roofing, remodeling, outdoor living). `npm run demo` reads it; the `demo`
 skill (`.claude/skills/demo/SKILL.md`) explains the whole workflow and
 `docs/demo-mode.md` the one-time setup.
 
-| File            | What it is                                                                                                                     |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `preset.mjs`    | The `demo.json` schema (validated before anything is written), the pages this preset installs, the nav links a demo hides      |
-| `index.astro`   | The home page: `LocalServiceHome` + the generated `src/data/home.ts`                                                           |
-| `reviews.astro` | The reviews page (`/reviews`, in the nav): `LocalServiceReviews` — only when `home.reviews` is set                             |
-| `contact.astro` | The contact page: `LocalServiceContact`                                                                                        |
-| `fixture/`      | A fictional prospect (Brightline Electric) — `npm run check:demo` builds it; also the worked example of a complete `demo.json` |
+| File             | What it is                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `preset.mjs`     | The `demo.json` schema (validated before anything is written), the pages this preset installs, the nav links a demo hides      |
+| `index.astro`    | The home page: `LocalServiceHome` + the generated `src/data/home.ts`                                                           |
+| `reviews.astro`  | The reviews page (`/reviews`, in the nav): `LocalServiceReviews` — only when `home.reviews` is set                             |
+| `contact.astro`  | The contact page: `LocalServiceContact`                                                                                        |
+| `audience.astro` | The audience page (`LocalServiceAudience`), installed at demo.json's `audience.path` — only with `audience`                    |
+| `fixture/`       | A fictional prospect (Brightline Electric) — `npm run check:demo` builds it; also the worked example of a complete `demo.json` |
 
 The page markup lives in `src/components/templates/` (LocalServiceHome,
 LocalServiceContact), not here, so the starter's own CI type-checks and
@@ -50,5 +51,15 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   (`src/content.config.ts`, guide: `.claude/skills/component-api/references/service-pages.md`)
   plus a `slug`. A service without its own `reviews` gets the
   `home.reviews` items and rating, so every service page carries real reviews
+- `home.estimate.questions` — a qualifying estimate form: one-tap steps
+  (who's asking, project, size, timing, budget) before the contact fields
+- `home.paths` (homeowner / contractor panels under the hero) and
+  `home.beforeAfter` (their own before-and-after pairs)
+- `audience` — a page for contractors or property managers at its own
+  `path` (keep the prospect's URL), in the nav: hero, facts, scopes,
+  equipment, projects, prequal paperwork, next steps, its own form
+- `projects` — their real jobs (the projects-file shape plus a `slug`):
+  `/projects` and `/projects/<slug>`, in the nav; they replace the sample
+  projects and the sample gallery
 - `notes.confirmOrCut` — everything inferred rather than found, for Casey to
   check before sending

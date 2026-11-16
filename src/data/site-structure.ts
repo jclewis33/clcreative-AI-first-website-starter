@@ -70,9 +70,14 @@
  */
 
 import { DEMO } from "@/config/demo.shared.mjs";
-import { SERVICE_NAV } from "@/lib/service-nav";
+import { SERVICE_NAV, serviceMenus } from "@/lib/service-nav";
 import { AREA_NAV, SERVICE_AREAS_PATH } from "@/lib/area-nav";
-import { PRESET_FOOTER, PRESET_NAV, PRESET_PAGES } from "./preset-pages";
+import {
+  PRESET_FOOTER,
+  PRESET_GROUP_LINKS,
+  PRESET_NAV,
+  PRESET_PAGES,
+} from "./preset-pages";
 
 /** llms.txt section a page belongs to (also its broad category). */
 
@@ -301,9 +306,10 @@ const DEV_NAV_LINKS: NavMenuItem[] = import.meta.env.DEV
  * See "Add a link to the NAVBAR" in the header for the recipe.
  */
 export const NAV_MENU: NavMenuItem[] = pruneNav([
-  ...(SERVICE_NAV.length
-    ? [{ label: "Services", children: SERVICE_NAV.map((s) => s.path) }]
-    : []),
+  ...serviceMenus(PRESET_GROUP_LINKS).map((m) => ({
+    label: m.label,
+    children: m.paths,
+  })),
   ...PRESET_NAV,
   ...(AREA_NAV.length ? [{ path: SERVICE_AREAS_PATH }] : []),
   { path: "/blog" },
@@ -360,9 +366,10 @@ const DEMO_FOOTER_GROUPS: FooterGroup[] = DEMO
  * See "Add a link to the FOOTER" in the header for the recipe.
  */
 export const FOOTER_GROUPS: FooterGroup[] = pruneFooter([
-  ...(SERVICE_NAV.length
-    ? [{ title: "Services", links: SERVICE_NAV.map((s) => s.path) }]
-    : []),
+  ...serviceMenus(PRESET_GROUP_LINKS).map((m) => ({
+    title: m.label,
+    links: m.paths,
+  })),
   {
     title: "Resources",
     links: [

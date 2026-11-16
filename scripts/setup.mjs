@@ -288,6 +288,8 @@ const STRUCTURED_SITE_KEYS = [
   "look",
   "quote",
   "license",
+  // A second nav button ({ label, href } or null).
+  "navSecondaryCta",
 ];
 
 const currentString = (src, key) => {

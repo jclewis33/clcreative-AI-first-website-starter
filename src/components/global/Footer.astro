@@ -38,6 +38,7 @@
 
 import Logo from "./Logo.astro";
 import { SITE } from "@/config/site";
+import { lookChrome } from "@/config/looks";
 import {
   FOOTER_GROUPS,
   OPTIONAL_PAGES,
@@ -59,11 +60,20 @@ const serviceAreas = localService ? SITE.serviceAreas : [];
 /* A long town list takes two grid tracks and splits into two columns, so it
    doesn't stretch the footer down the page. */
 const wideAreas = serviceAreas.length > 8;
-const linkColumns =
-  FOOTER_GROUPS.length + (serviceAreas.length ? (wideAreas ? 2 : 1) : 0);
+/* The brief footer (the estate look): the logo and a line, the service
+   menus and any demo column, a Contact column, and the towns as one
+   "Proudly serving" line under it all — no Resources / Company columns,
+   contact list or social row. */
+const brief = lookChrome(SITE.look).footer === "brief";
+const groups = brief
+  ? FOOTER_GROUPS.filter((g) => !["Resources", "Company"].includes(g.title))
+  : FOOTER_GROUPS;
+const linkColumns = brief
+  ? groups.length + 1
+  : FOOTER_GROUPS.length + (serviceAreas.length ? (wideAreas ? 2 : 1) : 0);
 ---
 
-<footer class="footer_wrap">
+<footer class:list={["footer_wrap", brief && "is-brief"]}>
   <h2 class="footer_title u-sr-only">Footer</h2>
 
   <div class="footer_contain u-container">
@@ -71,6 +81,12 @@ const linkColumns =
       <!-- ── Left column: Logo + Contact + Social ────────────── -->
       <div class="footer_content">
         <Logo variant="footer" class="footer_logo_wrap" />
+
+        {
+          brief && (
+            <p class="footer_summary u-text-style-small">{SITE.summary}</p>
+          )
+        }
 
         <div class="footer_contact_wrap">
           {/* No published email (common for trades) = no email row. */}
@@ -208,7 +224,7 @@ const linkColumns =
         </div>
 
         {
-          visibleSocialLinks.length > 0 && (
+          !brief && visibleSocialLinks.length > 0 && (
             <div class="footer_social_wrap">
               <h3 class="footer_social_title u-text-style-h6 u-margin-bottom-4">
                 Follow us
@@ -259,7 +275,7 @@ const linkColumns =
           class="u-grid"
         >
           {
-            FOOTER_GROUPS.map((group) => (
+            groups.map((group) => (
               <section class="footer_group_wrap">
                 <h3 class="footer_group_title u-text-style-h6 u-margin-bottom-3">
                   {group.title}
@@ -339,7 +355,40 @@ const linkColumns =
             ))
           }
           {
-            serviceAreas.length > 0 && (
+            brief && (
+              <section class="footer_group_wrap">
+                <h3 class="footer_group_title u-text-style-h6 u-margin-bottom-3">
+                  Contact
+                </h3>
+                <div role="list" class="footer_group_list">
+                  <div role="listitem" class="footer_group_item">
+                    <a href={`tel:${SITE.phone.tel}`} class="footer_link_wrap">
+                      <div class="footer_link_text u-text-style-small">
+                        {SITE.phone.display}
+                      </div>
+                    </a>
+                  </div>
+                  {SITE.email && (
+                    <div role="listitem" class="footer_group_item">
+                      <a href={`mailto:${SITE.email}`} class="footer_link_wrap">
+                        <div class="footer_link_text u-text-style-small">
+                          {SITE.email}
+                        </div>
+                      </a>
+                    </div>
+                  )}
+                  <div role="listitem" class="footer_group_item">
+                    <div class="footer_area_text u-text-style-small">
+                      {address ||
+                        `${SITE.address.locality}, ${SITE.address.region}`}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )
+          }
+          {
+            !brief && serviceAreas.length > 0 && (
               <section
                 class:list={[
                   "footer_group_wrap",
@@ -382,6 +431,25 @@ const linkColumns =
         </div>
       </div>
     </div>
+    {
+      brief && serviceAreas.length > 0 && (
+        <p class="footer_areas_line u-text-style-small">
+          Proudly serving{" "}
+          {serviceAreas.map((area, i) => (
+            <Fragment>
+              {i > 0 && <span aria-hidden="true"> · </span>}
+              {TOWN_LINKS[area] ? (
+                <a href={TOWN_LINKS[area]} class="footer_areas_link">
+                  {area}
+                </a>
+              ) : (
+                area
+              )}
+            </Fragment>
+          ))}
+        </p>
+      )
+    }
   </div>
 
   <!-- ── Bottom bar ────────────────────────────────────────── -->
@@ -485,6 +553,45 @@ const linkColumns =
      child slots), moved from src/styles/components/footer.css. The layer
      wrapper slots them into the cascade defined in styles/global.css. */
   @layer components {
+    /* ── Brief footer (the estate look) ───────────────────── */
+    /* A long email address breaks rather than widening the page. */
+    .footer_wrap.is-brief .footer_link_text {
+      overflow-wrap: anywhere;
+    }
+
+    .footer_wrap.is-brief .footer_contact_wrap {
+      display: none;
+    }
+
+    .footer_wrap.is-brief .footer_logo_wrap .logo_img_wrap {
+      height: 5.25rem;
+    }
+
+    .footer_summary {
+      max-width: 34ch;
+      margin: var(--space-4) 0 0;
+      opacity: 0.85;
+    }
+
+    .footer_areas_line {
+      margin: var(--space-7) 0 0;
+      padding-top: var(--space-5);
+      border-top: var(--border-width-main) solid var(--footer-border);
+      line-height: 1.9;
+      opacity: 0.85;
+    }
+
+    .footer_areas_link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    @media (hover: hover) {
+      .footer_areas_link:hover {
+        text-decoration: underline;
+      }
+    }
+
     /* ==========================================================================
    FOOTER COMPONENT STYLES
    ==========================================================================

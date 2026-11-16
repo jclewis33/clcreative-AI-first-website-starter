@@ -14,6 +14,7 @@
 
 import { SITE_URL as SHARED_SITE_URL } from "./site.shared.mjs";
 import type { SiteLook } from "./looks";
+import type { LeadQuestion } from "@/lib/lead-questions";
 
 export interface SocialLink {
   /** Accessible label / platform name. */
@@ -119,9 +120,21 @@ export const SITE = {
   /**
    * The thin bar above the nav (UtilityBar). `null` = off. `text` is the
    * message ("24/7 emergency service"); `areaLabel` sits on the right on
-   * desktop ("Serving Your City and nearby").
+   * desktop ("Serving Your City and nearby"); `link` puts a link there
+   * instead, with the phone beside it ("General contractors: send a bid
+   * invitation").
    */
-  utilityBar: null as { text: string; areaLabel?: string } | null,
+  utilityBar: null as {
+    text: string;
+    areaLabel?: string;
+    link?: { label: string; href: string };
+  } | null,
+
+  /**
+   * A second nav button beside the estimate button, for a second kind of
+   * buyer ("For Contractors" → the audience page). `null` = none.
+   */
+  navSecondaryCta: null as { label: string; href: string } | null,
 
   /**
    * The site's visual look (src/config/looks.ts): "studio" (the starter's
@@ -136,13 +149,17 @@ export const SITE = {
    * estimate bar, and the footer lists the service areas. `label` is the
    * button text everywhere, `heading`/`text` head the form, `question` is
    * the form's first step over the service tiles (default "What do you
-   * need help with?"). `null` = the agency chrome (a "Contact" link).
+   * need help with?"); `questions` replaces that step with several
+   * (who's asking, project, size, timing, budget). `null` = the agency
+   * chrome (a "Contact" link).
    */
   quote: null as {
     label: string;
     heading: string;
     text?: string;
     question?: string;
+    /** A qualifying form: several one-tap questions before the contact fields (LeadForm `questions`). */
+    questions?: LeadQuestion[];
   } | null,
 
   /** Contractor license, shown in the footer's bottom line (e.g. "TECL #25414"). Blank = none. */

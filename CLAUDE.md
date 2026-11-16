@@ -280,6 +280,13 @@ const content = await slotContent(Astro.slots);
   instructions (rewrite — the dangerous ones). Cross-file pairs — a custom
   property set in one file and read in another — have no compiler tying the
   ends together; change both in one commit.
+- **A new field on a content view model** (`ProjectCardData`,
+  `ProjectDetail`… in `src/lib/content/types.ts`) needs the Sanity add-on
+  to carry it too: the map (`addons/sanity/files/src/sanity/lib/map/`),
+  the GROQ projection in `queries.ts`, the hand-built fixture shapes in
+  `lib/fixtures/index.ts`, and `sanity.types.ts` (the result type AND the
+  query-string key). `npm run check:addon` (minutes, needs the network)
+  catches a miss; run it before the PR, because CI's add-on job will.
 - **Every phone number on the site is a tap-to-call `tel:` link** — nav,
   utility bar, CTAs, footer, FAQ answers, copy. Numbers typed into plain
   text go through `linkPhones()` (`@/lib/phone-links`); a new component

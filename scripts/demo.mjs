@@ -274,6 +274,12 @@ async function main() {
   await homeImage(home.callBand, "image", "call-band");
   for (const [i, job] of (home.recentWork?.items ?? []).entries())
     await homeImage(job, "image", `work-${i + 1}`, 1600);
+  for (const [i, pic] of (home.spotlight?.images ?? []).entries())
+    await homeImage(pic, "image", `spotlight-${i + 1}`, 1600);
+  for (const [i, pair] of (home.beforeAfter?.items ?? []).entries()) {
+    await homeImage(pair, "before", `before-${i + 1}`, 1600);
+    await homeImage(pair, "after", `after-${i + 1}`, 1600);
+  }
   for (const [i, member] of (home.team?.members ?? []).entries())
     await homeImage(member, "image", `team-${i + 1}`, 800);
   for (const [i, badge] of (home.hero.trust ?? []).entries())
@@ -381,7 +387,9 @@ async function main() {
   );
 
   // 2. Identity, through setup.mjs (one engine for forks and demos).
-  const lightBrand = luminance(demo.brand.color) > 0.4;
+  const lightBrand = demo.brand.text
+    ? demo.brand.text === "dark"
+    : luminance(demo.brand.color) > 0.4;
   const answers = {
     contentSource: "files",
     siteName: name,
@@ -440,8 +448,14 @@ async function main() {
       ...(demo.home.estimate.question
         ? { question: demo.home.estimate.question }
         : {}),
+      ...(demo.home.estimate.questions
+        ? { questions: demo.home.estimate.questions }
+        : {}),
     },
     license: demo.license ?? "",
+    navSecondaryCta: demo.audience?.navButton
+      ? { label: demo.audience.navButton, href: `/${demo.audience.path}` }
+      : null,
   };
   const answersFile = path.join(
     os.tmpdir(),
@@ -523,6 +537,22 @@ async function main() {
       service.scope.image = await image(service.scope.image, "scope", 2400);
     for (const [i, pic] of service.included.images.entries())
       pic.src = await image(pic.src, `included-${i + 1}`);
+    // The estate service page's photos (each section optional).
+    for (const [i, pair] of (service.beforeAfter?.items ?? []).entries()) {
+      pair.before = await image(pair.before, `before-${i + 1}`);
+      pair.after = await image(pair.after, `after-${i + 1}`);
+    }
+    for (const [i, option] of (service.options?.items ?? []).entries())
+      option.image = await image(option.image, `option-${i + 1}`, 1600);
+    for (const [i, pic] of (service.gallery?.images ?? []).entries())
+      pic.src = await image(pic.src, `gallery-${i + 1}`, 1600);
+    if (service.equipment?.image)
+      service.equipment.image = await image(
+        service.equipment.image,
+        "equipment",
+      );
+    for (const [i, item] of (service.work?.items ?? []).entries())
+      item.image = await image(item.image, `work-${i + 1}`, 1600);
     for (const [i, review] of (service.reviews ?? []).entries())
       if (review.avatar)
         review.avatar = await image(review.avatar, `review-${i + 1}`, 256);
@@ -557,6 +587,105 @@ async function main() {
       `src/content/service-areas/${id}.json`,
       `${JSON.stringify(area, null, 2)}\n`,
     );
+  }
+
+  // 3c. Projects — their own jobs, replacing the starter's samples (and the
+  // sample gallery, whose photos point at those samples).
+  if (demo.projects) {
+    await emptyDir("src/content/projects", /^images$/);
+    await emptyDir("src/content/projects/images");
+    for (const entry of demo.projects) {
+      const { slug: id, ...project } = structuredClone(entry);
+      const image = async (
+        /** @type {string} */ src,
+        /** @type {string} */ field,
+        width = 2400,
+      ) => {
+        const file = `${id}-${field}.webp`;
+        await write(
+          `src/content/projects/images/${file}`,
+          await webp(await img(src), width),
+        );
+        return `./images/${file}`;
+      };
+      project.heroImage = await image(project.heroImage, "hero");
+      for (const [i, photo] of (project.photos ?? []).entries())
+        photo.src = await image(photo.src, `photo-${i + 1}`, 1600);
+      await write(
+        `src/content/projects/${id}.json`,
+        `${JSON.stringify(project, null, 2)}\n`,
+      );
+    }
+    await write("src/content/gallery.json", "[]\n");
+  }
+
+  // 3d. The audience page (contractors, property managers): its data in
+  // src/data/audience.ts and the page at its own path. A page from an
+  // earlier run (marked GENERATED AUDIENCE PAGE) goes first, so a changed
+  // path leaves nothing behind.
+  const AUDIENCE_MARK = "GENERATED AUDIENCE PAGE";
+  if (!DRY_RUN)
+    for (const f of await fs.readdir(at("src/pages")))
+      if (
+        f.endsWith(".astro") &&
+        (await fs.readFile(at("src/pages", f), "utf8")).includes(AUDIENCE_MARK)
+      )
+        await fs.rm(at("src/pages", f));
+  const audiencePage = demo.audience
+    ? `src/pages/${demo.audience.path}.astro`
+    : null;
+  if (audiencePage && existsSync(at(audiencePage)) && !DRY_RUN)
+    fail(
+      `audience.path "${demo.audience.path}" is already a page (${audiencePage}) — pick another path.`,
+    );
+  if (demo.audience) {
+    // `group` and `navButton` are nav settings, not page data.
+    const {
+      group: _group,
+      navButton: _navButton,
+      ...audience
+    } = structuredClone(demo.audience);
+    audience.path = `/${audience.path}`;
+    /** @type {Array<[string, string]>} identifier → asset path */
+    const audienceImports = [];
+    /** @param {any} holder @param {string} key @param {string} id */
+    const audienceImage = async (holder, key, id) => {
+      if (!holder?.[key]) return;
+      const rel = `src/assets/demo/audience-${id}.webp`;
+      await write(rel, await webp(await img(holder[key])));
+      audienceImports.push([
+        `audience${id[0].toUpperCase()}${id.slice(1)}Image`,
+        rel,
+      ]);
+      holder[key] = `__AUDIENCE_IMAGE_${audienceImports.length - 1}__`;
+    };
+    await audienceImage(audience.hero, "image", "hero");
+    await audienceImage(audience.scope, "image", "scope");
+    await audienceImage(audience.capability, "image", "capability");
+    for (const [i, extra] of (audience.projects?.extras ?? []).entries())
+      await audienceImage(extra, "image", `extra${i + 1}`);
+    let audienceJson = JSON.stringify(audience, null, 2);
+    audienceImports.forEach(([id], i) => {
+      audienceJson = audienceJson.replace(`"__AUDIENCE_IMAGE_${i}__"`, id);
+    });
+    await write(
+      "src/data/audience.ts",
+      `/**
+ * The audience page's content — GENERATED by \`npm run demo\` from
+ * demo.json (\`audience\`). Edit demo.json and re-run the script.
+ */
+import type { LocalServiceAudienceData } from "@/lib/local-service-audience";
+${audienceImports.map(([id, rel]) => `import ${id} from "@/${rel.replace(/^src\//, "")}";`).join("\n")}
+
+export const AUDIENCE = ${audienceJson} satisfies LocalServiceAudienceData;
+`,
+    );
+    await write(
+      /** @type {string} */ (audiencePage),
+      await fs.readFile(path.join(presetDir, "audience.astro"), "utf8"),
+    );
+  } else if (!DRY_RUN) {
+    await fs.rm(at("src/data/audience.ts"), { force: true });
   }
 
   // 4. Home data and the default process steps.
@@ -631,6 +760,17 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
   {
     const aboutDesc =
       demo.home.about?.description ?? `Who ${name} is and how we work.`;
+    const audiencePath = demo.audience ? `/${demo.audience.path}` : null;
+    const audienceGroup = demo.audience?.group;
+    const navPaths = [
+      ...(audiencePath && !audienceGroup ? [audiencePath] : []),
+      ...(demo.projects ? ["/projects"] : []),
+      "/about",
+      ...(hasReviewsPage ? ["/reviews"] : []),
+    ];
+    const footerPaths = navPaths.filter((p) => p !== "/projects");
+    const groupLinks =
+      audiencePath && audienceGroup ? { [audienceGroup]: [audiencePath] } : {};
     await write(
       "src/data/preset-pages.ts",
       `/**
@@ -638,8 +778,19 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
  * (scripts/demo.mjs) from demo.json. Don't edit; re-run the script.
  */
 import type { FooterLink, NavMenuItem, SitePage } from "./site-structure";
+import type { ProjectsPageCopy } from "./preset-pages-types";
 
-export const PRESET_PAGES: SitePage[] = [
+export const PRESET_PAGES: SitePage[] = [${
+        demo.audience
+          ? `
+  {
+    path: ${JSON.stringify(audiencePath)},
+    title: ${JSON.stringify(demo.audience.navLabel)},
+    desc: ${JSON.stringify(demo.audience.description)},
+    group: "main",
+  },`
+          : ""
+      }
   {
     path: "/about",
     title: "About",
@@ -657,8 +808,16 @@ export const PRESET_PAGES: SitePage[] = [
       : ""
   }
 ];
-export const PRESET_NAV: NavMenuItem[] = [{ path: "/about" }${hasReviewsPage ? ', { path: "/reviews" }' : ""}];
-export const PRESET_FOOTER: FooterLink[] = ["/about"${hasReviewsPage ? ', "/reviews"' : ""}];
+export const PRESET_NAV: NavMenuItem[] = ${JSON.stringify(
+        navPaths.map((p) =>
+          p === "/about" && demo.home.about?.navLabel
+            ? { path: p, label: demo.home.about.navLabel }
+            : { path: p },
+        ),
+      )};
+export const PRESET_FOOTER: FooterLink[] = ${JSON.stringify(footerPaths)};
+export const PRESET_GROUP_LINKS: Record<string, string[]> = ${JSON.stringify(groupLinks)};
+export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(demo.projectsPage ?? null)};
 `,
     );
   }
@@ -673,7 +832,11 @@ export const PRESET_FOOTER: FooterLink[] = ["/about"${hasReviewsPage ? ', "/revi
       slug,
       prospect: name,
       preset: demo.preset,
-      hiddenPaths: preset.HIDDEN_PATHS,
+      hiddenPaths: demo.projects
+        ? preset.HIDDEN_PATHS.filter(
+            (/** @type {string} */ p) => p !== "/projects",
+          )
+        : preset.HIDDEN_PATHS,
       bannerText: fill(defaults.bannerText ?? DEFAULT_BANNER_TEXT, vars),
       bannerHref: fill(defaults.bannerHref ?? DEFAULT_BANNER_HREF, vars),
     };

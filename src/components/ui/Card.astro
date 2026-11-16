@@ -65,6 +65,9 @@ type CardVariant =
   /** Cover card — visual fills card, content overlays at bottom */
   | "cover";
 
+/** Content padding: `default` (space-5) or `large` (space-7) for a panel that carries an argument. */
+type CardPadding = "default" | "large";
+
 type GridRowSpan = 1 | 2 | 3 | 4;
 type GridColumnSpan = 1 | 2 | 3 | 4;
 
@@ -81,6 +84,7 @@ type GridColumnSpan = 1 | 2 | 3 | 4;
  * - `rowSpan` — span multiple grid rows, 1–4
  * - `colSpan` — span multiple grid columns, 1–4
  * - `radius` — border-radius utility class override
+ * - `padding` — content padding: default or large (roomy panel)
  * - `class` — extra classes on the outer wrapper
  *
  * **Slots:** `visual` (image/media), `title` (custom heading), default (body), `footer`.
@@ -98,6 +102,7 @@ interface BaseProps {
    * - `rowSpan` — 1-4 grid row span
    * - `colSpan` — 1-4 grid column span
    * - `radius` — border-radius override
+   * - `padding` — default or large (roomy panel for a card that makes a case)
    * - `class` — extra classes
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to root element
    *
@@ -148,6 +153,14 @@ interface BaseProps {
    * @example theme="invert"
    */
   theme?: "light" | "dark" | "brand" | "invert";
+
+  /**
+   * Padding around the card's text and footer. `large` gives a roomy panel
+   * for cards that make a case (a checklist and a button), not a tile.
+   * @default 'default'
+   * @example padding="large"
+   */
+  padding?: CardPadding;
 
   /**
    * Convenience title — renders as plain text styled with `u-text-style-h5`.
@@ -272,6 +285,7 @@ const {
   radius,
   actions,
   theme,
+  padding = "default",
   class: className,
   ...rest
 } = Astro.props as AllProps;
@@ -352,7 +366,13 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitleSlot || title)) {
 {
   render && (
     <div
-      class:list={["card_primary_wrap", ...spanClasses, radius, className]}
+      class:list={[
+        "card_primary_wrap",
+        ...spanClasses,
+        radius,
+        { "is-padding-large": padding === "large" },
+        className,
+      ]}
       data-card-variant={variant}
       {...rest}
     >
@@ -637,7 +657,7 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitleSlot || title)) {
     .card_primary_content {
       z-index: 1;
       position: relative;
-      padding: var(--space-5);
+      padding: var(--_card-padding, var(--space-5));
       display: flex;
       flex-direction: column;
       /* NO gap here — text rhythm belongs to the text elements' own
@@ -658,6 +678,10 @@ if (import.meta.env.DEV && isSurfaceLink && !(hasTitleSlot || title)) {
        collapses to zero, and without this the button would touch the copy.
        (The text block's own trailing margin is trimmed away — see the
        u-margin-trim on .card_primary_text in the markup.) */
+    .card_primary_wrap.is-padding-large {
+      --_card-padding: var(--space-7);
+    }
+
     .card_primary_footer {
       margin-top: auto;
       padding-top: var(--space-4);

@@ -138,6 +138,17 @@ function projectCard(p: Doc): Doc {
     slug: p.slug,
     category: p.category,
     location: p.location,
+    service: p.service ?? null,
+    /* pt::text(description): the blocks' text, a blank line between. */
+    summary: Array.isArray(p.description)
+      ? p.description
+          .map((block: Doc) =>
+            ((block.children as Doc[] | undefined) ?? [])
+              .map((span) => span.text ?? "")
+              .join(""),
+          )
+          .join("\n\n")
+      : null,
     heroImage: p.heroImage,
     imageAlt: p.imageAlt,
     heroImageMeta: p.heroImageMeta,

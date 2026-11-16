@@ -6,6 +6,9 @@
  * with the draft perspective.
  */
 import ProjectTemplate from "@/components/templates/ProjectTemplate.astro";
+import ProjectEstate from "@/components/templates/ProjectEstate.astro";
+import { SITE } from "@/config/site";
+import { lookChrome } from "@/config/looks";
 import { getProject, getProjectStaticPaths } from "@/lib/content";
 
 // Must be an imported helper: Astro extracts getStaticPaths into its own
@@ -17,6 +20,16 @@ if (!slug) return Astro.redirect("/404");
 
 const data = await getProject(slug);
 if (!data) return Astro.redirect("/404");
+/* The look picks the page: the estate look has its own project layout. */
+const estate = lookChrome(SITE.look).pages === "estate";
 ---
 
-<ProjectTemplate {...data} />
+{
+  estate && (
+    <ProjectEstate
+      project={data.project}
+      relatedProjects={data.relatedProjects}
+    />
+  )
+}
+{!estate && <ProjectTemplate {...data} />}

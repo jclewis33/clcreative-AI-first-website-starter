@@ -102,6 +102,20 @@ cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
 
 ## Working with Casey on a demo
 
+- **An approved design is the source of truth.** When Casey approves a
+  design (an Artifact design canvas, a mockup), build THAT: the same
+  sections in the same order, the same nav, buttons, banner and utility
+  bar, the same copy. Use an existing component only where it already
+  produces the design; otherwise add a variant or build a new component
+  (in the starter, reusable). Never bend the design to fit the components
+  we have — every demo built from a design should leave the starter with
+  more to pull from. Before reporting, compare the build to the design
+  section by section, side by side, and fix every difference. One
+  exception: the footer. Design boards often show a short one; the site
+  uses one consistent full footer (the home page design's) on every page.
+  (Casey,
+  Nov 2026, FDC Coatings: the first build swapped his approved design's
+  nav, banner order, buttons and sections for existing ones.)
 - **Show, then build.** For a visual call (hero treatment, a background,
   mascot vs. photo) send 2–3 quick mockups or screenshots first; build the
   one he picks.
@@ -111,6 +125,66 @@ cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
   answer with the line from their site.
 - **Fixes and new options go into the starter** (one PR branch per demo
   session), merged into the demo branch as you go; never only the demo.
+
+## Building from an approved design (learned on FDC Coatings, Nov 2026)
+
+The FDC demo was built from an approved Artifact design canvas (one board
+per page). What made it match, and what cost rounds of fixes:
+
+- **Read the board's markup, not your memory of it.** Before building a
+  page, pull the board's section list and copy out of its HTML (the
+  `*.dc.html` files: headings, buttons, labels, `alt` texts, icons). Casey
+  caught every small thing the build dropped: a download arrow on the
+  "Capabilities statement (PDF)" button, the spec rows on case study cards
+  (Scope / Size / Contractor), the town names as copper links, a heading
+  with no accent word. Diff each section against the markup, including
+  icons, labels and button order, before reporting.
+- **One board, one screenshot pass.** Screenshot the built page at 1440
+  and 390, slice it, and look at it next to the board section by section.
+  Check computed styles in the browser when something looks off
+  (`getComputedStyle`), before guessing at the CSS.
+- **Restart the dev server after every `npm run demo`, and after editing a
+  component's `<style is:global>`.** Vite kept serving old copies of edited
+  component stylesheets, and after a regenerate the renamed content images
+  showed as broken (ImageNotFound). Stop it, `rm -rf node_modules/.vite`,
+  start it again. Twice a "bug" was only a stale stylesheet.
+- **Match the board's photos by their alt text.** Make a contact sheet of
+  the candidate files (sharp, 4×4 tiles) and pick by what the board's alt
+  describes. Then check what you picked: the first pass labelled an epoxy
+  hallway as polished concrete, used a lobby where the board had an
+  arcade, and showed the same room twice on one page from two different
+  files.
+- **Placeholders in the design** (`[SQ FT]`, `[GC NAME]`, `[CITY]`): keep
+  them where the design shows them, and list each one in `confirmOrCut`.
+  Where a placeholder sits inside a sentence, write the sentence without
+  it, in words that are true from their site ("old flooring", not
+  "[EXISTING FLOORING]"). Never invent the number.
+- **Keep the demo's builder in the demos repo.** FDC's demo.json was
+  written by a script (`demo/build_demo.py`: their services, projects and
+  reviews, then a "design overrides" block per page). Keep it, and its
+  inputs, on the demo branch: a scratchpad script disappears with the
+  session, and every later fix is "edit the builder, re-run".
+- **Two buyers, two kinds of page.** A trade that sells to homeowners and
+  to contractors gets: the `audience` page (spec bar, scopes, equipment,
+  case study cards, prequal paperwork, a bid invitation form with
+  `fields="bid"`), a "For Contractors" nav button (`audience.navButton`),
+  a utility-bar link to the bid form, Residential / Commercial service
+  menus (`group`), and commercial service pages with
+  `buyer: "contractor"` (bid buttons, specs, benefits, equipment, work,
+  upkeep; no reviews or FAQ). Homeowner pages keep the quote pop-up, and
+  Casey prefers the pop-up to a separate quote page.
+- **Reviews on a service page:** three Google-style cards
+  (`ReviewCards`), the reviews that mention that service first. One review
+  alone sits narrow, never full width. Say the count ("78 five-star
+  reviews on Google"), not a rating word.
+- **Hero:** on a desktop screen the cards pulled up under the hero
+  (`PathPanels`) must show without scrolling, with no shadow under them.
+- **Merging the starter into a demo branch:** conflicts in generated files
+  (`src/config/site.ts`, `src/data/preset-pages.ts`) take the demo's
+  version, then re-run `npm run demo`; the demo branch has no
+  `addons/`, so keep those deleted; conflicts that are only Prettier
+  formatting take the starter's side. Run `npx prettier --write
+demo/demo.json src/data/service-area-geo.json` before committing.
 
 ## Copy rules learned on real demos
 
@@ -136,6 +210,36 @@ cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
   nicknames.
 - **No time promises** ("same day", "this week") unless their site makes
   them.
+
+## The four questions every page answers
+
+AI assistants (ChatGPT, Claude, Perplexity) and people both need these
+stated in plain sentences. Answer them **throughout the site**, on every
+page that can be an entry point, not on one dedicated page (Casey's call,
+Nov 2026, FDC Coatings):
+
+1. **What it does** — the service, in plain words.
+2. **Where it works** — the city or region, as a sentence, not only a
+   town list or a map.
+3. **Who it helps** — homeowners, builders, property managers, business
+   owners: whoever they really serve.
+4. **What happens when you call them** — the next steps after someone
+   calls or sends the form.
+
+How to cover them:
+
+- **One plain summary sentence per page**, in the intro paragraph (not the
+  headline): "FDC Coatings polishes existing concrete floors for
+  homeowners, builders and businesses across Dallas–Fort Worth, from
+  Flower Mound."
+- **A "what happens when you reach out" strip beside every main call to
+  action** — about three steps, only from what their site or the owner
+  says (reply time, call, site visit, written quote). Unknown steps get
+  [brackets] and go in `confirmOrCut`; the no-time-promises rule still
+  applies.
+- The home page, every service page, every area page and the contact page
+  each answer all four on their own.
+- Before reporting, check each page against the four and name any gap.
 
 ## Workflow (target times in brackets)
 
@@ -218,12 +322,23 @@ git switch -c demo/<slug>
     panel/trust row. For work bought by looking at it — hardscape, decks,
     remodeling, landscaping. Only pick it with strong real photos: it
     leans on them.
+  - `estate`: high-end and two-sided (homeowners and contractors), after
+    the FDC Coatings design. Pair it with the `estate` look (below).
 
 - **`look`**, by trade (see `src/config/looks.ts`):
   - `fresh`: lawn, pest, cleaning, pool
   - `warm`: HVAC, insulation, remodeling
   - `rugged`: electrical, roofing, plumbing, commercial
   - `natural`: hardscape, landscaping, decks, outdoor living
+  - `estate`: high-end decorative work sold to homeowners and contractors
+    (FDC Coatings). Use it with `home.layout: "estate"`: a full-photo
+    hero, path panels, a before-and-after switcher, the commercial side in
+    the spotlight, project highlights, a quote band. The look also brings
+    its own service pages (before-and-after, options, gallery, stacked
+    FAQ, town links) and /projects pages: fill the services' and
+    projects' optional fields (`beforeAfter`, `options`, `gallery`,
+    `cities`, `cta.steps`; project `summary`, `specs`, `story`) and
+    `projectsPage` in demo.json.
 
   If their current brand clearly fights the default for their trade, pick
   the closer look and say why in your report.
@@ -255,6 +370,25 @@ git switch -c demo/<slug>
     `<mark>`.
   - `trust`: only credentials they actually show (licensed & insured, BBB,
     manufacturer dealer), with the seal file as `image` when you have it.
+- **Two audiences (homeowners and contractors):** when a prospect sells
+  to both, add `home.paths` (two panels under the hero, each linking to its
+  side) and an `audience` page at the URL they already use for that side
+  (`"path": "commercial-concrete-coatings"`): scopes, equipment, their
+  commercial projects, the prequal paperwork, next steps and a bid form.
+  Equipment counts, crew size, square footage and GC names go in
+  [brackets] and `confirmOrCut` until they confirm them. Worked example:
+  the FDC Coatings demo.
+- **Qualifying form (screening tire kickers):** `home.estimate.questions`
+  turns the estimate pop-up into one-tap steps before the contact fields —
+  who's asking (homeowner / contractor / property manager / business
+  owner), the project, size, timing, and "What have you set aside for this
+  project?" with ranges. The ranges are the visitor's answer, not the
+  business's prices: pick sensible buckets for the trade, never a "starts
+  at" price they didn't publish, and list the buckets in `confirmOrCut` so
+  the owner can set them.
+- **Projects:** `projects` (their own jobs, with before/after `photos`)
+  builds `/projects` and a page per job, in the nav; `home.beforeAfter`
+  puts the best pairs on the home page as sliders.
 - **About page (`/about`):** generated for every demo from the same `home`
   data (story, stats, team, guarantee, process, reviews, map, call band) and
   added to the nav and footer. Give it `home.about` — an `eyebrow`, an h1

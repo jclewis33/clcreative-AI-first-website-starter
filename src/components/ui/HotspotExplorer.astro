@@ -1,0 +1,631 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Visual from "@/components/ui/Visual.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import Button from "@/components/ui/Button.astro";
+import Accordion from "@/components/ui/Accordion.astro";
+import AccordionItem from "@/components/ui/AccordionItem.astro";
+import type { SectionCta } from "@/lib/cta";
+import { slotContent } from "@/lib/slots";
+import { uid } from "@/lib/uid";
+
+type HotspotImage = ComponentProps<typeof Visual>["src"];
+type HotspotRatio = ComponentProps<typeof Visual>["ratio"];
+type HotspotTitleTag = "h2" | "h3" | "h4";
+type HotspotPanelSide = "left" | "right";
+
+type HotspotItem = {
+  /** The part, in the panel: "Synthetic underlayment", "Condenser coil". */
+  title: string;
+  /** One or two sentences: what it is and what it does. */
+  text: string;
+  /** Marker position from the photo's left edge, in percent (0 to 100). */
+  x: number;
+  /** Marker position from the photo's top edge, in percent (0 to 100). */
+  y: number;
+  /** Shorter name for the strip under the photo. @default title */
+  label?: string;
+  /** Small label above the panel title. @default '01 / 07' style counter */
+  eyebrow?: string;
+  /** Close-up photo for the strip. */
+  thumb?: HotspotImage;
+  /** Alt text for `thumb`. Required when `thumb` is set. */
+  thumbAlt?: string;
+  /** Longer note, folded under `detailLabel` ("Why this detail matters"). */
+  detail?: string;
+  /** Optional button in the panel. */
+  cta?: SectionCta;
+};
+
+interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **HotspotExplorer** — a photo with numbered markers on the parts that
+   * matter, a numbered strip of close-ups under it, and a panel that
+   * explains the part you pick. "Explore every layer" of a roof, the parts
+   * of an HVAC system, what is inside a water heater or an electrical panel.
+   *
+   * - `image` / `imageAlt` — the big photo; `ratio` sets its shape
+   * - `items` — `{ title, text, x, y, label?, eyebrow?, thumb?, thumbAlt?, detail?, cta? }[]`;
+   *   `x` / `y` are the marker's position on the photo in percent
+   * - default slot — the overview shown before a part is picked (heading,
+   *   text, buttons). With it, Esc or "Back to overview" returns to it.
+   *   Without it, the first part opens on load.
+   * - `strip` — set `false` to hide the numbered strip
+   * - `panelSide` — panel `left` (default, like a hero's copy column) or `right`
+   *
+   * Markers and strip items are real buttons (`aria-expanded`,
+   * `aria-controls`). Picking one moves focus into its panel; Esc goes back
+   * to the overview and to the button that opened it. Without JS every panel
+   * shows as a list. Below ~928px the panel stacks under the photo and the
+   * strip scrolls sideways.
+   *
+   * @example
+   * <HotspotExplorer image={house} imageAlt="A two-storey brick house with a new grey shingle roof" items={[{ title: "Ice and water shield", text: "A sticky membrane along the eaves and valleys…", x: 32, y: 55, thumb: shield, thumbAlt: "Ice and water shield rolled out along an eave" }]}>
+   *   <Heading tag="h2" variant="h2">Explore every layer</Heading>
+   * </HotspotExplorer>
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** The big photo the markers sit on. */
+  image: HotspotImage;
+
+  /** Alt text for the big photo. */
+  imageAlt: string;
+
+  /** The parts. Fewer than one renders nothing. */
+  items: HotspotItem[];
+
+  /** Accessible name for the whole explorer. @default 'Explore the details' */
+  label?: string;
+
+  /** Text on the fold-out under each panel. @default 'Why this detail matters' */
+  detailLabel?: string;
+
+  /** Shape of the big photo. @default 'landscape' */
+  ratio?: HotspotRatio;
+
+  /** Which side the panel sits on at desktop width. @default 'left' */
+  panelSide?: HotspotPanelSide;
+
+  /** Show the numbered strip under the photo. @default true */
+  strip?: boolean;
+
+  /** Tag of each panel title. @default 'h3' */
+  titleTag?: HotspotTitleTag;
+
+  /** Load the big photo eagerly (above the fold, e.g. a hero). @default false */
+  priority?: boolean;
+
+  /** Extra classes on the wrapper. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  image,
+  imageAlt,
+  items = [],
+  label = "Explore the details",
+  detailLabel = "Why this detail matters",
+  ratio = "landscape",
+  panelSide = "left",
+  strip = true,
+  titleTag = "h3",
+  priority = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!image)
+    console.warn("[HotspotExplorer] `image` is required; nothing renders.");
+  if (!items.length)
+    console.warn("[HotspotExplorer] `items` is empty; nothing renders.");
+  if (!imageAlt)
+    console.warn(
+      "[HotspotExplorer] Give the photo real alt text (`imageAlt`).",
+    );
+  items.forEach((item, i) => {
+    const outOfRange = (n: number) => typeof n !== "number" || n < 0 || n > 100;
+    if (outOfRange(item.x) || outOfRange(item.y))
+      console.warn(
+        `[HotspotExplorer] items[${i}] "${item.title}": x and y are percentages from 0 to 100.`,
+      );
+    if (item.thumb && !item.thumbAlt)
+      console.warn(
+        `[HotspotExplorer] items[${i}] "${item.title}": a thumb needs \`thumbAlt\`.`,
+      );
+  });
+}
+
+const overview = await slotContent(Astro.slots);
+const baseId = uid("hotspot");
+const count = items.length;
+const pad = (n: number) => String(n).padStart(2, "0");
+const clamp = (n: number) => Math.min(100, Math.max(0, Number(n) || 0));
+const parts = items.map((item, i) => ({
+  ...item,
+  panelId: `${baseId}-panel-${i + 1}`,
+  titleId: `${baseId}-title-${i + 1}`,
+  number: pad(i + 1),
+  eyebrow: item.eyebrow ?? `${pad(i + 1)} / ${pad(count)}`,
+  x: clamp(item.x),
+  y: clamp(item.y),
+}));
+---
+
+{
+  render && image && count > 0 && (
+    <div
+      class:list={[
+        "hotspot-explorer_wrap u-flex u-flex-column u-gap-6",
+        panelSide === "right" && "is-panel-right",
+        className,
+      ]}
+      role="group"
+      aria-label={label}
+      data-hotspot-explorer
+      {...rest}
+    >
+      <div class="hotspot-explorer_stage">
+        <div class="hotspot-explorer_media">
+          <Visual
+            src={image}
+            alt={imageAlt}
+            ratio={ratio}
+            class="hotspot-explorer_img"
+            loading={priority ? "eager" : "lazy"}
+            priority={priority}
+            sizes="(min-width: 80rem) 60rem, 100vw"
+          />
+          {parts.map((part) => (
+            <button
+              type="button"
+              class="hotspot-explorer_marker"
+              data-theme="light"
+              data-hotspot-target={part.panelId}
+              aria-controls={part.panelId}
+              aria-expanded="false"
+              style={`--_x: ${part.x}; --_y: ${part.y}`}
+            >
+              <span class="hotspot-explorer_marker_number" aria-hidden="true">
+                {part.number.replace(/^0/, "")}
+              </span>
+              <span class="u-sr-only">
+                {part.number}: {part.label ?? part.title}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <div class="hotspot-explorer_panels">
+          {overview && (
+            <div
+              class="hotspot-explorer_overview u-margin-trim"
+              data-hotspot-overview
+            >
+              <Fragment set:html={overview} />
+            </div>
+          )}
+          {parts.map((part) => (
+            <div
+              class="hotspot-explorer_panel u-margin-trim"
+              id={part.panelId}
+              role="region"
+              aria-labelledby={part.titleId}
+              tabindex="-1"
+              data-hotspot-panel
+            >
+              <Heading
+                tag="p"
+                variant="eyebrow"
+                class="hotspot-explorer_eyebrow"
+              >
+                {part.eyebrow}
+              </Heading>
+              <Heading
+                tag={titleTag}
+                variant="h3"
+                id={part.titleId}
+                class="hotspot-explorer_title"
+              >
+                {part.title}
+              </Heading>
+              <Text class="hotspot-explorer_text" muted>
+                {part.text}
+              </Text>
+              {part.detail && (
+                <Accordion class="hotspot-explorer_detail">
+                  <AccordionItem question={detailLabel} size="small" tag="span">
+                    <Text variant="small">{part.detail}</Text>
+                  </AccordionItem>
+                </Accordion>
+              )}
+              {part.cta && (
+                <div class="hotspot-explorer_action">
+                  <CtaButton cta={part.cta} />
+                </div>
+              )}
+              {overview && (
+                <Button
+                  variant="text"
+                  size="small"
+                  type="button"
+                  data-hotspot-back
+                >
+                  Back to overview
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {strip && (
+        <ol class="hotspot-explorer_strip" role="list">
+          {parts.map((part) => (
+            <li class="hotspot-explorer_strip_item">
+              <button
+                type="button"
+                class="hotspot-explorer_strip_button u-button-reset"
+                data-hotspot-target={part.panelId}
+                aria-controls={part.panelId}
+                aria-expanded="false"
+              >
+                <span class="hotspot-explorer_strip_label u-text-style-small u-weight-bold u-margin-bottom-0">
+                  <span class="hotspot-explorer_strip_number u-text-style-muted u-weight-regular">
+                    {part.number}
+                  </span>{" "}
+                  {part.label ?? part.title}
+                </span>
+                {part.thumb && (
+                  <Visual
+                    src={part.thumb}
+                    alt={part.thumbAlt ?? part.title}
+                    ratio="wide"
+                    radius="small"
+                    class="hotspot-explorer_strip_img"
+                    sizes="12rem"
+                  />
+                )}
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  )
+}
+
+<script>
+  const reduceMotion = () =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function initHotspotExplorers() {
+    for (const root of document.querySelectorAll<HTMLElement>(
+      "[data-hotspot-explorer]",
+    )) {
+      if (root.dataset.init) continue;
+      root.dataset.init = "true";
+
+      const triggers = [
+        ...root.querySelectorAll<HTMLButtonElement>("[data-hotspot-target]"),
+      ];
+      const panels = [
+        ...root.querySelectorAll<HTMLElement>("[data-hotspot-panel]"),
+      ];
+      const overview = root.querySelector<HTMLElement>(
+        "[data-hotspot-overview]",
+      );
+      let opener: HTMLElement | null = null;
+      let openId: string | null = null;
+
+      const show = (id: string | null) => {
+        openId = id;
+        for (const panel of panels) panel.hidden = panel.id !== id;
+        if (overview) overview.hidden = id !== null;
+        for (const t of triggers) {
+          const on = t.dataset.hotspotTarget === id;
+          t.setAttribute("aria-expanded", String(on));
+          t.classList.toggle("is-active", on);
+        }
+        /* Keep the strip's active item in view as markers are picked. */
+        const stripButton = root.querySelector<HTMLElement>(
+          `.hotspot-explorer_strip_button[data-hotspot-target="${id}"]`,
+        );
+        stripButton?.scrollIntoView({
+          block: "nearest",
+          inline: "nearest",
+          behavior: reduceMotion() ? "auto" : "smooth",
+        });
+      };
+
+      const open = (id: string, from: HTMLElement) => {
+        opener = from;
+        show(id);
+        const panel = panels.find((p) => p.id === id);
+        if (!panel) return;
+        panel.focus({ preventScroll: true });
+        /* On phones the panel sits under the photo: bring it into view. */
+        const box = panel.getBoundingClientRect();
+        if (box.top < 0 || box.bottom > window.innerHeight) {
+          panel.scrollIntoView({
+            block: "nearest",
+            behavior: reduceMotion() ? "auto" : "smooth",
+          });
+        }
+      };
+
+      const close = () => {
+        if (!overview || openId === null) return;
+        show(null);
+        opener?.focus();
+      };
+
+      for (const t of triggers) {
+        t.addEventListener("click", () => {
+          const id = t.dataset.hotspotTarget!;
+          if (id === openId && overview) close();
+          else open(id, t);
+        });
+      }
+      for (const back of root.querySelectorAll<HTMLButtonElement>(
+        "[data-hotspot-back]",
+      )) {
+        back.addEventListener("click", close);
+      }
+      root.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && openId !== null && overview) {
+          event.preventDefault();
+          close();
+        }
+      });
+
+      root.classList.add("is-ready");
+      show(overview ? null : (panels[0]?.id ?? null));
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initHotspotExplorers);
+  } else {
+    initHotspotExplorers();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .hotspot-explorer_wrap {
+      container-type: inline-size;
+      width: 100%;
+    }
+
+    /* Panel column + photo column. DOM order is photo then panel (focus
+       moves marker -> panel); at desktop the panel takes column 1. */
+    .hotspot-explorer_stage {
+      display: var(--flex-medium, grid);
+      flex-direction: column;
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      align-items: center;
+      gap: var(--space-6) var(--site-gutter);
+    }
+
+    .hotspot-explorer_media {
+      position: relative;
+      grid-column-start: 2;
+      grid-row-start: 1;
+      width: 100%;
+    }
+
+    .hotspot-explorer_panels {
+      grid-column-start: 1;
+      grid-row-start: 1;
+      width: 100%;
+    }
+
+    .hotspot-explorer_wrap.is-panel-right .hotspot-explorer_stage {
+      grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    }
+
+    .hotspot-explorer_wrap.is-panel-right .hotspot-explorer_media {
+      grid-column-start: 1;
+    }
+
+    .hotspot-explorer_wrap.is-panel-right .hotspot-explorer_panels {
+      grid-column-start: 2;
+    }
+
+    /* ── Markers ─────────────────────────────────────────────── */
+    .hotspot-explorer_marker {
+      position: absolute;
+      top: calc(var(--_y) * 1%);
+      left: calc(var(--_x) * 1%);
+      z-index: 1;
+      translate: -50% -50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 2.5rem;
+      aspect-ratio: 1 / 1;
+      padding: 0;
+      border: var(--border-width-main) solid var(--background);
+      border-radius: var(--radius-full);
+      background-color: var(--background-2);
+      color: var(--text);
+      font-size: var(--text-small-size);
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 0.25rem 1rem var(--overlay-scrim);
+      cursor: pointer;
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        scale 0.2s ease;
+    }
+
+    .hotspot-explorer_marker.is-active {
+      background-color: var(--button-primary-background);
+      color: var(--button-primary-text);
+      scale: 1.12;
+    }
+
+    .hotspot-explorer_marker:focus-visible {
+      outline: var(--border-width-main) solid var(--color-focus-state);
+      outline-offset: 0.25rem;
+    }
+
+    @media (hover: hover) {
+      .hotspot-explorer_marker:hover {
+        scale: 1.12;
+      }
+    }
+
+    /* A soft pulse invites the first tap; it stops once one is picked. */
+    @media (prefers-reduced-motion: no-preference) {
+      .hotspot-explorer_wrap.is-ready:not(:has(.is-active))
+        .hotspot-explorer_marker {
+        animation: hotspot-explorer-pulse 2.4s ease-out infinite;
+      }
+    }
+
+    @keyframes hotspot-explorer-pulse {
+      0% {
+        box-shadow:
+          0 0.25rem 1rem var(--overlay-scrim),
+          0 0 0 0 color-mix(in srgb, var(--background-2) 70%, transparent);
+      }
+      70%,
+      100% {
+        box-shadow:
+          0 0.25rem 1rem var(--overlay-scrim),
+          0 0 0 0.75rem color-mix(in srgb, var(--background-2) 0%, transparent);
+      }
+    }
+
+    @container (width < 35em) {
+      .hotspot-explorer_marker {
+        width: 2.25rem;
+      }
+    }
+
+    /* ── Panels ──────────────────────────────────────────────── */
+    /* Without JS every panel shows, one under another, as a list. */
+    .hotspot-explorer_panel + .hotspot-explorer_panel,
+    .hotspot-explorer_overview + .hotspot-explorer_panel {
+      margin-top: var(--space-6);
+      padding-top: var(--space-6);
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .hotspot-explorer_wrap.is-ready .hotspot-explorer_panel {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .hotspot-explorer_panel:focus {
+      outline: none;
+    }
+
+    .hotspot-explorer_panel:focus-visible {
+      outline: var(--border-width-main) solid var(--color-focus-state);
+      outline-offset: var(--space-2);
+      border-radius: var(--radius-small);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .hotspot-explorer_panel,
+      .hotspot-explorer_overview {
+        transition:
+          opacity 0.35s ease,
+          translate 0.35s ease;
+      }
+
+      /* The panel arrives from display:none (the hidden attribute); this
+         gives the transition its "before" values. */
+      @starting-style {
+        .hotspot-explorer_panel,
+        .hotspot-explorer_overview {
+          opacity: 0;
+          translate: 0 0.5rem;
+        }
+      }
+    }
+
+    /* "Back to overview" needs the script; without it every panel shows. */
+    .hotspot-explorer_wrap:not(.is-ready) [data-hotspot-back] {
+      display: none;
+    }
+
+    /* The fold-out is a one-item small <Accordion>; a rule above it
+       separates it from the panel text. */
+    .hotspot-explorer_detail {
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .hotspot-explorer_detail,
+    .hotspot-explorer_action {
+      margin-bottom: var(--space-4);
+    }
+
+    /* ── Strip ───────────────────────────────────────────────── */
+    .hotspot-explorer_strip {
+      display: flex;
+      gap: var(--space-2);
+      margin: 0;
+      padding: 0 0 var(--space-2);
+      list-style: none;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: thin;
+      border-top: var(--border-width-main) solid var(--border);
+      padding-top: var(--space-4);
+    }
+
+    .hotspot-explorer_strip_item {
+      flex: 1 0 10rem;
+      max-width: 15rem;
+      scroll-snap-align: start;
+    }
+
+    .hotspot-explorer_strip_button {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      width: 100%;
+      height: 100%;
+      padding: var(--space-2);
+      border-radius: var(--radius-small);
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .hotspot-explorer_strip_button.is-active {
+      background-color: var(--background-2);
+      box-shadow: inset 0 calc(var(--border-width-main) * -2) 0
+        var(--heading-accent);
+    }
+
+    .hotspot-explorer_strip_button:focus-visible {
+      outline: var(--border-width-main) solid var(--color-focus-state);
+      outline-offset: calc(var(--border-width-main) * -2);
+    }
+
+    @media (hover: hover) {
+      .hotspot-explorer_strip_button:hover {
+        background-color: var(--background-2);
+      }
+    }
+
+    .hotspot-explorer_strip_img {
+      width: 100%;
+    }
+  }
+</style>

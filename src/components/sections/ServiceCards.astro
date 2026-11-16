@@ -23,6 +23,11 @@ type ServiceCardItem = {
   /** Shown instead of a photo when there's no `image`. */
   icon?: ServiceIconName;
 };
+type ServiceCardsVariant =
+  /** Boxed cards with a "Learn more" line */
+  | "cards"
+  /** No box: photo, title and line, the block one link */
+  | "plain";
 type ServiceCardsLayout =
   /** 3 → 2 → 1 column grid (2 → 2 → 1 for two or four cards) */
   | "grid"
@@ -66,6 +71,13 @@ interface Props extends HTMLAttributes<"section"> {
   /** Grid, or a swipe row on phones. @default 'grid' */
   layout?: ServiceCardsLayout;
 
+  /**
+   * `cards` — boxed cards with a "Learn more" line; `plain` — no box: a
+   * 4:3 photo, the title and the line under it, the whole block one link
+   * (the estate look's finishes grid). @default 'cards'
+   */
+  variant?: ServiceCardsVariant;
+
   /** Text on linked cards. @default 'Learn more' */
   moreLabel?: string;
 
@@ -90,6 +102,7 @@ const {
   intro,
   items = [],
   layout = "grid",
+  variant = "cards",
   moreLabel = "Learn more",
   theme,
   padding,
@@ -139,38 +152,65 @@ if (import.meta.env.DEV && render) {
       {heading && (
         <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
       )}
-      <Wrapper {...wrapperProps}>
-        {items.map((item) => (
-          <Card
-            {...cardLink(item)}
-            variant={item.image ? "default" : "stacked"}
-            class="service-cards_card"
-          >
-            {item.image ? (
-              <Visual
-                slot="visual"
-                src={item.image}
-                alt={item.imageAlt || item.title}
-                ratio="landscape"
-              />
-            ) : null}
-            <Fragment slot="title">
-              {!item.image && item.icon ? (
-                <ServiceIcon name={item.icon} />
+      {variant === "plain" && (
+        <Wrapper {...wrapperProps}>
+          {items.map((item) => {
+            const Tag = item.href ? "a" : "div";
+            return (
+              <Tag
+                class="service-cards_plain_wrap"
+                {...(item.href ? { href: item.href } : {})}
+              >
+                {item.image && (
+                  <Visual
+                    src={item.image}
+                    alt={item.imageAlt || item.title}
+                    ratio="4 / 3"
+                  />
+                )}
+                <h3 class="service-cards_plain_title">{item.title}</h3>
+                {item.text && (
+                  <p class="service-cards_plain_text">{item.text}</p>
+                )}
+              </Tag>
+            );
+          })}
+        </Wrapper>
+      )}
+      {variant !== "plain" && (
+        <Wrapper {...wrapperProps}>
+          {items.map((item) => (
+            <Card
+              {...cardLink(item)}
+              variant={item.image ? "default" : "stacked"}
+              class="service-cards_card"
+            >
+              {item.image ? (
+                <Visual
+                  slot="visual"
+                  src={item.image}
+                  alt={item.imageAlt || item.title}
+                  ratio="landscape"
+                />
               ) : null}
-              <Heading tag="h3" variant="h5">
-                {item.title}
-              </Heading>
-            </Fragment>
-            {item.text && <Text variant="small">{item.text}</Text>}
-            {item.href && (
-              <span slot="footer" class="service-cards_more">
-                {moreLabel}
-              </span>
-            )}
-          </Card>
-        ))}
-      </Wrapper>
+              <Fragment slot="title">
+                {!item.image && item.icon ? (
+                  <ServiceIcon name={item.icon} />
+                ) : null}
+                <Heading tag="h3" variant="h5">
+                  {item.title}
+                </Heading>
+              </Fragment>
+              {item.text && <Text variant="small">{item.text}</Text>}
+              {item.href && (
+                <span slot="footer" class="service-cards_more">
+                  {moreLabel}
+                </span>
+              )}
+            </Card>
+          ))}
+        </Wrapper>
+      )}
     </Section>
   )
 }
@@ -182,6 +222,47 @@ if (import.meta.env.DEV && render) {
        heading rather than under it. */
     .service-cards_card .service-icon_wrap {
       margin-bottom: var(--space-4);
+    }
+
+    /* variant="plain": no box — photo, title, line; one link. */
+    .service-cards_plain_wrap {
+      display: grid;
+      align-content: start;
+      gap: var(--space-3);
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .service-cards_plain_title {
+      margin: var(--space-1) 0 0;
+      font-family: var(--font-primary);
+      font-size: var(--h5-size);
+      font-weight: var(--h5-weight);
+      line-height: 1.2;
+    }
+
+    .service-cards_plain_text {
+      margin: 0;
+      color: color-mix(in srgb, var(--text) 72%, transparent);
+    }
+
+    .service-cards_plain_wrap:focus-visible {
+      outline: var(--focus-width) solid var(--color-focus-state);
+      outline-offset: var(--focus-offset-outer);
+    }
+
+    @media (hover: hover) {
+      .service-cards_plain_wrap .u-image {
+        transition: scale 0.4s ease;
+      }
+
+      .service-cards_plain_wrap:hover .u-image {
+        scale: 1.03;
+      }
+
+      .service-cards_plain_wrap:hover .service-cards_plain_title {
+        color: var(--heading-accent);
+      }
     }
 
     .service-cards_more {

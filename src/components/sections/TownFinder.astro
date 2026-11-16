@@ -1,0 +1,538 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import Button from "@/components/ui/Button.astro";
+import ButtonWrapper from "@/components/ui/ButtonWrapper.astro";
+import Text from "@/components/ui/Text.astro";
+import ChoiceChips from "@/components/ui/ChoiceChips.astro";
+import { uid } from "@/lib/uid";
+
+/** One town in the directory. */
+type TownFinderTown = {
+  /** The town's name: "Weatherford". */
+  name: string;
+  /** Where the card links. Blank = `fallbackHref` (usually the contact page). */
+  href?: string;
+  /** The region or direction it sits in: "Northeast", "Ellis County". Drives the filter chips. */
+  region?: string;
+  /** Distance from the shop, in miles. Shown as "26 mi". */
+  miles?: number;
+  /** At the edge of the service area: shows the "Ask about service" flag. */
+  edge?: boolean;
+};
+/** How the live count names the towns: [one, many]. */
+type TownFinderUnit = [string, string];
+type TownFinderTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **TownFinder** — "Find your town": every town the business serves as a
+   * searchable, filterable directory. A search box, region chips, a live
+   * count ("128 towns"), and a hairline grid of town cards — name, region
+   * and distance ("Northeast · 26 mi"), an "Ask about service" flag for
+   * edge towns, an arrow. Homeowners look for their own town; the long
+   * list is also internal links to the area pages.
+   *
+   * - `towns` — `{ name, href?, region?, miles?, edge? }[]`; empty renders nothing
+   * - Region chips are built from the towns' `region` values and only show
+   *   when there are 2 or more (real radio buttons, like GalleryBrowser)
+   * - A town without `href` links to `fallbackHref` (default `/contact`)
+   * - Every card is in the HTML at build time (search engines, no-JS
+   *   visitors); the search bar stays hidden until the script runs
+   * - `note` — fine print under the grid ("Distances are straight-line…")
+   *
+   * Feed it from the service-area files: `AREA_NAV.flatMap((area) =>
+   * area.towns.map((name) => ({ name, region: area.title, href: area.path })))`.
+   *
+   * @example
+   * <TownFinder eyebrow="Where we work" towns={towns} note="Distances are straight-line miles from our shop." />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. @default 'Find your town.' */
+  heading?: string;
+
+  /** Intro beside the heading. */
+  intro?: string;
+
+  /** The towns, in the order to show them. Empty renders nothing. */
+  towns: TownFinderTown[];
+
+  /** Fine print under the grid. */
+  note?: string;
+
+  /** Label above the search box. @default 'Search by town or city' */
+  searchLabel?: string;
+
+  /** Search placeholder. @default 'Try ' plus the first three town names */
+  searchPlaceholder?: string;
+
+  /** The first chip, which shows every town. @default 'All areas' */
+  allLabel?: string;
+
+  /** How the count names the towns. @default ['town', 'towns'] */
+  unit?: TownFinderUnit;
+
+  /** The flag on edge towns. @default 'Ask about service' */
+  edgeLabel?: string;
+
+  /** Where a town without its own page links, and the empty state's button. @default '/contact' */
+  fallbackHref?: string;
+
+  /** Section theme. */
+  theme?: TownFinderTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading = "Find your town.",
+  intro,
+  towns = [],
+  note,
+  searchLabel = "Search by town or city",
+  searchPlaceholder,
+  allLabel = "All areas",
+  unit = ["town", "towns"],
+  edgeLabel = "Ask about service",
+  fallbackHref = "/contact",
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && !Astro.props.towns?.length) {
+  console.warn("[TownFinder] `towns` is empty or missing; nothing renders.");
+}
+
+const slug = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+/* Regions in the order they first appear in the data. */
+const regions = [
+  ...new Set(towns.map((town) => town.region).filter(Boolean) as string[]),
+];
+const showChips = regions.length >= 2;
+const chipOptions = [
+  { label: allLabel, value: "" },
+  ...regions.map((r) => ({ label: r, value: slug(r) })),
+];
+const placeholder =
+  searchPlaceholder ??
+  `Try ${towns
+    .slice(0, 3)
+    .map((town) => town.name)
+    .join(", ")}…`;
+const countText = (n: number) => `${n} ${n === 1 ? unit[0] : unit[1]}`;
+const meta = (town: TownFinderTown) =>
+  [town.region, town.miles != null ? `${town.miles} mi` : ""]
+    .filter(Boolean)
+    .join(" · ");
+/* One radio group per instance, so two finders on a page don't share it. */
+const group = uid("town-finder");
+---
+
+{
+  render && towns.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["town-finder_wrap", className]}
+      {...rest}
+    >
+      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      <div
+        class="town-finder_browser"
+        data-unit-one={unit[0]}
+        data-unit-many={unit[1]}
+      >
+        <div class="town-finder_bar" hidden>
+          <label class="town-finder_search">
+            <span class="town-finder_label">{searchLabel}</span>
+            <span class="town-finder_field">
+              <svg
+                class="town-finder_search_icon"
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+              <input
+                class="town-finder_input"
+                type="search"
+                placeholder={placeholder}
+                autocomplete="off"
+              />
+            </span>
+          </label>
+          {showChips && (
+            <ChoiceChips
+              legend="Filter by area"
+              name={group}
+              options={chipOptions}
+              class="town-finder_chips"
+            />
+          )}
+          <p
+            class="town-finder_count u-text-style-small u-text-style-muted u-margin-bottom-0"
+            aria-live="polite"
+          >
+            {countText(towns.length)}
+          </p>
+        </div>
+
+        <ul class="town-finder_list">
+          {towns.map((town) => (
+            <li
+              class="town-finder_item"
+              data-region={town.region ? slug(town.region) : ""}
+              data-search={`${town.name} ${town.region ?? ""}`.toLowerCase()}
+            >
+              <a class="town-finder_card" href={town.href || fallbackHref}>
+                <span class="town-finder_name">{town.name}</span>
+                {(meta(town) || town.edge) && (
+                  <span class="town-finder_meta">
+                    {meta(town)}
+                    {town.edge && (
+                      <span class="town-finder_flag">{edgeLabel}</span>
+                    )}
+                  </span>
+                )}
+                <svg
+                  class="town-finder_arrow"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path d="M7 17 17 7M8 7h9v9" />
+                </svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <div
+          class="town-finder_empty u-padding-6 u-radius-main u-background-2 u-margin-trim"
+          hidden
+        >
+          <Text weight="bold">
+            No towns match that search. We may still reach you — just ask.
+          </Text>
+          <ButtonWrapper>
+            <Button href={fallbackHref} ariaLabel="Ask about your town">
+              Ask about your town
+            </Button>
+            <Button variant="secondary" class="town-finder_reset">
+              Show all {unit[1]}
+            </Button>
+          </ButtonWrapper>
+        </div>
+
+        {note && (
+          <Text variant="tiny" muted class="town-finder_note">
+            {note}
+          </Text>
+        )}
+      </div>
+    </Section>
+  )
+}
+
+<script>
+  function initTownFinder() {
+    for (const wrap of document.querySelectorAll<HTMLElement>(
+      ".town-finder_browser",
+    )) {
+      if (wrap.dataset.init) continue;
+      wrap.dataset.init = "true";
+
+      const bar = wrap.querySelector<HTMLElement>(".town-finder_bar");
+      const input = wrap.querySelector<HTMLInputElement>(".town-finder_input");
+      const count = wrap.querySelector<HTMLElement>(".town-finder_count");
+      const empty = wrap.querySelector<HTMLElement>(".town-finder_empty");
+      const reset = wrap.querySelector<HTMLElement>(".town-finder_reset");
+      const items = [
+        ...wrap.querySelectorAll<HTMLElement>(".town-finder_item"),
+      ];
+      const list = wrap.querySelector<HTMLElement>(".town-finder_list");
+      if (!bar || !input || !count || !empty || !list) continue;
+      const one = wrap.dataset.unitOne ?? "town";
+      const many = wrap.dataset.unitMany ?? "towns";
+
+      /* Read the checked chip each time rather than trusting the event:
+         browsers restore a checked radio on back/forward without firing
+         `change`. */
+      const apply = () => {
+        const query = input.value.trim().toLowerCase();
+        const region =
+          wrap.querySelector<HTMLInputElement>(".choice-chips_radio:checked")
+            ?.value ?? "";
+        let shown = 0;
+        for (const item of items) {
+          const match =
+            (!region || item.dataset.region === region) &&
+            (!query || (item.dataset.search ?? "").includes(query));
+          item.hidden = !match;
+          if (match) shown += 1;
+        }
+        count.textContent = `${shown} ${shown === 1 ? one : many}`;
+        empty.hidden = shown > 0;
+        list.hidden = shown === 0;
+      };
+
+      input.addEventListener("input", apply);
+      wrap.addEventListener("change", (event) => {
+        if ((event.target as HTMLElement).matches(".choice-chips_radio")) {
+          apply();
+        }
+      });
+      reset?.addEventListener("click", () => {
+        input.value = "";
+        const all = wrap.querySelector<HTMLInputElement>(".choice-chips_radio");
+        if (all) all.checked = true;
+        apply();
+        input.focus();
+      });
+      window.addEventListener("pageshow", apply);
+
+      bar.hidden = false;
+      apply();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initTownFinder);
+  } else {
+    initTownFinder();
+  }
+</script>
+
+<style is:global>
+  @layer components {
+    .town-finder_browser {
+      --_cols: 4;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      width: 100%;
+    }
+
+    /* ── Bar: search on the left, chips beside it, count under ── */
+    .town-finder_bar {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      gap: var(--space-4) var(--space-6);
+      align-items: start;
+      padding-bottom: var(--space-5);
+      border-bottom: var(--border-width-main) solid var(--border);
+    }
+
+    .town-finder_bar[hidden] {
+      display: none;
+    }
+
+    .town-finder_label {
+      display: block;
+      margin-bottom: var(--space-2);
+      padding: 0;
+      font-weight: 600;
+      font-size: var(--text-small-size);
+    }
+
+    .town-finder_search {
+      grid-column: 1 / span 1;
+    }
+
+    .town-finder_field {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .town-finder_search_icon {
+      position: absolute;
+      left: 1rem;
+      width: 1.1rem;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      stroke: color-mix(in srgb, var(--text) 60%, transparent);
+      stroke-width: 2;
+      stroke-linecap: round;
+      pointer-events: none;
+    }
+
+    .town-finder_input {
+      width: 100%;
+      height: 3.25rem;
+      padding: 0 1rem 0 2.75rem;
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-xlarge);
+      background-color: var(--background-2);
+      color: var(--text);
+      font: inherit;
+      font-size: 1rem;
+    }
+
+    .town-finder_input:focus-visible {
+      outline: var(--border-width-main) solid var(--color-focus-state);
+      outline-offset: 0.15rem;
+    }
+
+    .town-finder_chips {
+      grid-column: 2 / span 1;
+    }
+
+    .town-finder_count {
+      grid-column: 1 / -1;
+    }
+
+    /* ── The directory: a hairline grid of town cards ─────── */
+    .town-finder_list {
+      display: grid;
+      grid-template-columns: repeat(var(--_cols), minmax(0, 1fr));
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-top: var(--border-width-main) solid var(--border);
+      border-left: var(--border-width-main) solid var(--border);
+    }
+
+    .town-finder_item {
+      border-right: var(--border-width-main) solid var(--border);
+      border-bottom: var(--border-width-main) solid var(--border);
+      background-color: var(--background-2);
+    }
+
+    .town-finder_item[hidden] {
+      display: none;
+    }
+
+    .town-finder_card {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-content: center;
+      column-gap: var(--space-3);
+      row-gap: 0.2em;
+      height: 100%;
+      min-height: 4.5rem;
+      padding: var(--space-3) var(--space-4);
+      color: var(--text);
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+
+    .town-finder_card:focus-visible {
+      outline: var(--border-width-main) solid var(--color-focus-state);
+      outline-offset: -0.2rem;
+    }
+
+    .town-finder_name {
+      grid-column: 1;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .town-finder_meta {
+      grid-column: 1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.25em 0.6em;
+      font-size: var(--text-tiny-size);
+      color: color-mix(in srgb, var(--text) 65%, transparent);
+    }
+
+    .town-finder_flag {
+      padding: 0.1em 0.55em;
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-full);
+      color: var(--text);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .town-finder_arrow {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      align-self: center;
+      width: 1.1em;
+      aspect-ratio: 1 / 1;
+      flex-shrink: 0;
+      stroke: currentColor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s ease;
+    }
+
+    .town-finder_list[hidden],
+    .town-finder_empty[hidden] {
+      display: none;
+    }
+
+    @media (hover: hover) {
+      .town-finder_card:hover {
+        background-color: color-mix(in srgb, var(--text) 5%, transparent);
+      }
+
+      .town-finder_card:hover .town-finder_arrow {
+        transform: translate(0.15em, -0.15em);
+      }
+    }
+
+    /* Column count steps down with the container: 4 → 3 → 2 → 1. */
+    @container (width < 58em) {
+      .town-finder_browser {
+        --_cols: 3;
+      }
+
+      .town-finder_bar {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .town-finder_search,
+      .town-finder_chips {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @container (width < 44em) {
+      .town-finder_browser {
+        --_cols: 2;
+      }
+    }
+
+    @container (width < 26em) {
+      .town-finder_browser {
+        --_cols: 1;
+      }
+    }
+  }
+</style>

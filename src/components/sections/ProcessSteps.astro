@@ -14,7 +14,9 @@ type ProcessStepsVariant =
   /** Header on top, numbered cards in a row */
   | "cards"
   /** Header on top, steps alternating along a vertical line (no photo) */
-  | "timeline";
+  | "timeline"
+  /** Header on top, the steps side by side under accent rules (no photo) */
+  | "columns";
 type ProcessStepsTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -95,7 +97,7 @@ if (import.meta.env.DEV && render) {
     console.warn(
       "[ProcessSteps] `steps` is empty or missing; nothing renders.",
     );
-  if (!["list", "cards", "timeline"].includes(variant))
+  if (!["list", "cards", "timeline", "columns"].includes(variant))
     console.warn(`[ProcessSteps] Unknown variant "${variant}".`);
 }
 ---
@@ -109,7 +111,9 @@ if (import.meta.env.DEV && render) {
       class:list={["process-steps_wrap", className]}
       {...rest}
     >
-      {variant === "cards" || variant === "timeline" ? (
+      {variant === "cards" ||
+      variant === "timeline" ||
+      variant === "columns" ? (
         <>
           <SectionHeader eyebrow={eyebrow} heading={heading} intro={text} />
           <StepList steps={steps} variant={variant} />

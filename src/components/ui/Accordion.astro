@@ -203,6 +203,22 @@ const items = slot.replace(/data-accordion-group/g, () => {
       outline-offset: var(--focus-offset-inner);
     }
 
+    /* Small: a fold-out inside a card or panel — tighter row, icon sized
+       to the small label. */
+    .accordion_item.is-small > .accordion_toggle {
+      align-items: center;
+      padding-top: var(--space-3);
+      padding-bottom: var(--space-3);
+    }
+
+    .accordion_item.is-small .accordion_toggle_icon {
+      width: 1.25em;
+    }
+
+    .accordion_item.is-small .accordion_body {
+      padding-bottom: var(--space-3);
+    }
+
     .accordion_toggle::-webkit-details-marker {
       display: none;
     }

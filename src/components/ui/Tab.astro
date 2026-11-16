@@ -20,6 +20,7 @@ import { uid } from "@/lib/uid";
  *   - `side`   — vertical tabs in a 12-col grid, fade transition
  *   - `slider` — horizontal tabs, slide transition, autoplay + prev/next/play-pause controls
  *   - `fade`   — horizontal tabs, fade transition, no controls (alias for top)
+ *   - `pills`  — pill track with a raised active pill, fade transition
  *
  * Slots:
  *   - `heading` — optional heading content above the button list
@@ -37,8 +38,9 @@ import { uid } from "@/lib/uid";
  * - `'side'`   — vertical tabs on left (3-col grid), fade transition
  * - `'slider'` — horizontal tabs, slide transition, autoplay + prev/next/play-pause controls
  * - `'fade'`   — alias for `'top'` (identical behavior)
+ * - `'pills'`  — horizontal pill track (active pill raised), fade transition
  */
-type TabVariant = "top" | "side" | "slider" | "fade";
+type TabVariant = "top" | "side" | "slider" | "fade" | "pills";
 
 /**
  * Tab — tabbed interface with multiple layout and transition variants.
@@ -46,7 +48,7 @@ type TabVariant = "top" | "side" | "slider" | "fade";
  * Compose with `<TabButton>` (in the `buttons` slot) and `<TabPanel>` (default slot).
  *
  * **Props:**
- * - `variant` — layout and transition: top (horizontal, fade), side (vertical, fade), slider (horizontal, slide + autoplay), fade (alias for top) (default: `'top'`)
+ * - `variant` — layout and transition: top (horizontal, fade), side (vertical, fade), slider (horizontal, slide + autoplay), fade (alias for top), pills (pill track, fade) (default: `'top'`)
  * - `duration` — panel transition duration in seconds (default: `0.6`)
  * - `autoplayDuration` — autoplay interval in seconds, slider variant only (default: `6`)
  * - `pauseOnHover` — pause autoplay on hover, slider variant only (default: `true`)
@@ -61,7 +63,7 @@ type TabVariant = "top" | "side" | "slider" | "fade";
 interface Props {
   /**
    * **Tab props:**
-   * - `variant` — top (horizontal, fade), side (vertical, fade), slider (horizontal, slide + autoplay), fade (default 'top')
+   * - `variant` — top (horizontal, fade), side (vertical, fade), slider (horizontal, slide + autoplay), fade, pills (pill track, fade) (default 'top')
    * - `duration` — transition seconds (default 0.6)
    * - `autoplayDuration` — interval seconds, slider only (default 6)
    * - `pauseOnHover` — pause autoplay on hover (default true)
@@ -84,6 +86,7 @@ interface Props {
    * | `'side'` | Vertical tabs (3-col), content right (9-col) | Fade | None |
    * | `'slider'` | Horizontal tabs, content below | Slide | Prev/Next + Play/Pause |
    * | `'fade'` | Horizontal tabs, content below | Fade | None |
+   * | `'pills'` | Pill track (active pill raised), content below | Fade | None |
    *
    * @default 'top'
    * @example variant="side"
@@ -721,7 +724,7 @@ const tabId = uid("tab");
     /* ==========================================================================
    TAB COMPONENT STYLES
    ==========================================================================
-   Tab interface with four variants: top (default), side, slider, fade.
+   Tab interface with five variants: top (default), side, slider, fade, pills.
    The active tab/panel is marked with .is-active (toggled by JS); panel
    transitions are CSS keyframes selected by [data-tab-transition], and the
    autoplay progress line is a CSS animation paused via .is-held.
@@ -747,6 +750,7 @@ const tabId = uid("tab");
      data-tab-variant="side"    — vertical tabs in 12-col grid + fade
      data-tab-variant="slider"  — horizontal tabs + slide + autoplay controls
      data-tab-variant="fade"    — horizontal tabs + fade, no controls
+     data-tab-variant="pills"   — pill track + fade, no controls
 
    ACTIVE STATE
      JS toggles .is-active on the active tab_button_item / tab_panel_item.
@@ -1076,6 +1080,44 @@ const tabId = uid("tab");
         padding-right: var(--site-margin);
         margin-left: calc(var(--site-margin) * -1);
         margin-right: calc(var(--site-margin) * -1);
+      }
+    }
+
+    /* =====================================================
+   PILLS VARIANT — a segmented pill track (horizontal, fade)
+   The active pill is a raised chip on the track; scrolls
+   sideways when the labels outgrow the width.
+   ===================================================== */
+
+    [data-tab-variant="pills"] .tab_button_list {
+      gap: var(--space-1);
+      width: fit-content;
+      max-width: 100%;
+      padding: var(--space-1);
+      border-radius: var(--radius-full);
+      background-color: var(--background-2);
+    }
+
+    [data-tab-variant="pills"] .tab_button_item {
+      flex: none;
+      padding: var(--space-3) var(--space-5);
+      border: none;
+      border-radius: var(--radius-full);
+      transition: background-color 0.2s ease;
+    }
+
+    [data-tab-variant="pills"] .tab_button_item.is-active {
+      background-color: var(--background);
+      box-shadow: var(--box-shadow-small);
+    }
+
+    [data-tab-variant="pills"] .tab_button_line {
+      display: none;
+    }
+
+    @media (hover: hover) {
+      [data-tab-variant="pills"] .tab_button_item:not(.is-active):hover {
+        background-color: color-mix(in srgb, var(--text) 6%, transparent);
       }
     }
   }

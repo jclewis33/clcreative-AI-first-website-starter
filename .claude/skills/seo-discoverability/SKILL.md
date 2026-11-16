@@ -125,6 +125,23 @@ point it at the live URL.
 - **Don't hardcode contact details.** They live in `SITE`
   ([src/config/site.ts](../../../src/config/site.ts)).
 
+## The four questions every page answers
+
+Before `llms.txt` can help, the pages themselves have to say these in plain
+sentences. Every page that can be an entry point (home, each service, each
+area, contact) answers all four on its own — throughout the site, not on
+one dedicated page:
+
+1. **What it does** — the service, in plain words.
+2. **Where it works** — the city or region, as a sentence.
+3. **Who it helps** — the kinds of customer they serve.
+4. **What happens when you call them** — the steps after a call or a form.
+
+Put a one-sentence summary in each page's intro paragraph and a short
+"what happens when you reach out" list beside the main call to action.
+Never invent a step or a reply time; use what the client confirms. The
+demo skill has the worked example.
+
 ## LLM Discoverability — `llms.txt` & `llms-full.txt`
 
 The site serves two LLM-facing files at the root, following the

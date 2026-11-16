@@ -1,0 +1,368 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import ChoiceChips from "@/components/ui/ChoiceChips.astro";
+import { getProjects } from "@/lib/content";
+import { PROJECT_CATEGORIES } from "@/config/projects";
+import { uid } from "@/lib/uid";
+
+type ProjectHighlightsTheme = ComponentProps<typeof Section>["theme"];
+type ProjectHighlightsTag = "h1" | "h2";
+type ProjectHighlightsLayout =
+  /** One section: the heading and pills over the cards */
+  | "section"
+  /** A /projects page: a dark header (h1, a line, the pills) then the cards on the page paper */
+  | "page";
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ProjectHighlights** — the business's projects as plain cards (photo,
+   * "Category · Service" in small caps, the title, a line), with pill
+   * filters by category (All / Residential / Commercial — only categories
+   * in use, and only with two or more). Pure CSS filtering (radios + :has).
+   *
+   * Reads the projects content (`getProjects()`). `slugs` picks and orders
+   * the ones shown; otherwise the newest `limit`. With `tag="h1"` it heads
+   * a /projects page.
+   *
+   * @example
+   * <ProjectHighlights eyebrow="Projects" heading="Selected work" limit={6} link={{ label: "View all projects", href: "/projects" }} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** The heading. @default 'Selected work' */
+  heading?: string;
+
+  /** A line under the heading. */
+  intro?: string;
+
+  /** The heading's tag — `h1` when this section heads the page. @default 'h2' */
+  tag?: ProjectHighlightsTag;
+
+  /** Which projects, in order (their file names). @default the newest */
+  slugs?: string[];
+
+  /** How many show when `slugs` isn't set. @default 6 */
+  limit?: number;
+
+  /** Show each card's one-line summary. @default false */
+  showSummary?: boolean;
+
+  /** Category filter pills. @default true */
+  filters?: boolean;
+
+  /** `section`, or `page` — a dark header with the pills, then the cards. @default 'section' */
+  layout?: ProjectHighlightsLayout;
+
+  /** A link under the cards ("View all projects"). */
+  link?: { label: string; href: string };
+
+  /** Section theme. */
+  theme?: ProjectHighlightsTheme;
+
+  /** Section id for anchor links. @default 'projects' */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading = "Selected work",
+  intro,
+  tag = "h2",
+  slugs,
+  limit = 6,
+  showSummary = false,
+  filters = true,
+  layout = "section",
+  link,
+  theme,
+  id = "projects",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const all = await getProjects();
+const projects = slugs?.length
+  ? slugs
+      .map((slug) => all.find((p) => p.id === slug))
+      .filter((p): p is (typeof all)[number] => Boolean(p))
+  : all.slice(0, limit);
+const used = PROJECT_CATEGORIES.filter((c) =>
+  projects.some((p) => p.category === c.value),
+);
+const showFilters = filters && used.length > 1;
+const filterName = uid("project-filter");
+const options = [
+  { label: layout === "page" ? "All projects" : "All", value: "all" },
+  ...used.map((c) => ({ label: c.title, value: c.value })),
+];
+---
+
+{
+  render && projects.length > 0 && layout === "section" && (
+    <Section
+      theme={theme}
+      id={id}
+      class:list={["project-highlights_wrap", className]}
+      {...rest}
+    >
+      <div class="project-highlights_filterable">
+        <div class="project-highlights_header">
+          <div class="u-margin-trim">
+            {eyebrow && (
+              <Heading variant="eyebrow" marginBottom={4}>
+                {eyebrow}
+              </Heading>
+            )}
+            <Heading
+              tag={tag}
+              variant={tag === "h1" ? "h1" : "h2"}
+              marginBottom={intro ? 4 : 0}
+            >
+              {heading}
+            </Heading>
+            {intro && <Text variant="large">{intro}</Text>}
+          </div>
+          {showFilters && (
+            <ChoiceChips
+              legend="Filter projects"
+              legendHidden
+              name={filterName}
+              options={options}
+            />
+          )}
+        </div>
+        <ul class="project-highlights_list">
+          {projects.map((project) => (
+            <li
+              class="project-highlights_item"
+              data-category={project.category}
+            >
+              <a class="project-highlights_card_wrap" href={project.href}>
+                {project.image && (
+                  <Visual
+                    src={project.image.src}
+                    alt={project.image.alt}
+                    width={project.image.width}
+                    height={project.image.height}
+                    ratio="landscape"
+                  />
+                )}
+                <span class="project-highlights_meta">
+                  {[project.categoryLabel, project.service]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+                <span class="project-highlights_title">{project.title}</span>
+                {showSummary && project.summary && (
+                  <span class="project-highlights_summary">
+                    {project.summary}
+                  </span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      {link && (
+        <a class="project-highlights_link" href={link.href}>
+          {link.label} <span aria-hidden="true">→</span>
+        </a>
+      )}
+    </Section>
+  )
+}
+
+{
+  render && projects.length > 0 && layout === "page" && (
+    <div class="project-highlights_filterable is-page">
+      <Section theme="dark" class="project-highlights_page_head">
+        <div class="u-margin-trim">
+          {eyebrow && (
+            <Heading variant="eyebrow" marginBottom={5}>
+              {eyebrow}
+            </Heading>
+          )}
+          <Heading tag={tag} variant="h1" maxWidth="52rem" marginBottom={5}>
+            {heading}
+          </Heading>
+          {intro && <Text variant="large">{intro}</Text>}
+        </div>
+        {showFilters && (
+          <ChoiceChips
+            legend="Filter projects"
+            legendHidden
+            name={filterName}
+            options={options}
+            tone="brand"
+          />
+        )}
+      </Section>
+      <Section
+        id={id}
+        class:list={["project-highlights_wrap", className]}
+        {...rest}
+      >
+        <ul class="project-highlights_list">
+          {projects.map((project) => (
+            <li
+              class="project-highlights_item"
+              data-category={project.category}
+            >
+              <a class="project-highlights_card_wrap" href={project.href}>
+                {project.image && (
+                  <Visual
+                    src={project.image.src}
+                    alt={project.image.alt}
+                    width={project.image.width}
+                    height={project.image.height}
+                    ratio="4 / 3"
+                  />
+                )}
+                <span class="project-highlights_meta">
+                  {[project.categoryLabel, project.service]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+                <span class="project-highlights_title">{project.title}</span>
+                {showSummary && project.summary && (
+                  <span class="project-highlights_summary">
+                    {project.summary}
+                  </span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ul>
+        {link && (
+          <a class="project-highlights_link" href={link.href}>
+            {link.label} <span aria-hidden="true">→</span>
+          </a>
+        )}
+      </Section>
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .project-highlights_filterable {
+      display: grid;
+      gap: var(--space-7);
+    }
+
+    .project-highlights_header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-5) var(--space-7);
+    }
+
+    .project-highlights_list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(20rem, 100%), 1fr));
+      gap: var(--space-7) var(--space-5);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    /* layout="page": the two sections meet with no gap. */
+    .project-highlights_filterable.is-page {
+      display: block;
+    }
+
+    .project-highlights_item[hidden] {
+      display: none;
+    }
+
+    .project-highlights_card_wrap {
+      display: grid;
+      align-content: start;
+      gap: var(--space-3);
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .project-highlights_meta {
+      margin-top: var(--space-1);
+      font-size: var(--eyebrow-size, 0.75rem);
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--heading-accent);
+    }
+
+    .project-highlights_title {
+      font-family: var(--font-primary);
+      font-size: var(--h5-size);
+      font-weight: var(--h5-weight);
+      line-height: 1.2;
+    }
+
+    .project-highlights_summary {
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, var(--text) 72%, transparent);
+    }
+
+    .project-highlights_link {
+      font-weight: 600;
+      color: var(--heading-accent);
+      text-decoration: none;
+    }
+
+    .project-highlights_card_wrap:focus-visible {
+      outline: var(--focus-width) solid var(--color-focus-state);
+      outline-offset: var(--focus-offset-outer);
+    }
+
+    @media (hover: hover) {
+      .project-highlights_card_wrap .u-image {
+        transition: scale 0.4s ease;
+      }
+
+      .project-highlights_card_wrap:hover .u-image {
+        scale: 1.03;
+      }
+
+      .project-highlights_card_wrap:hover .project-highlights_title,
+      .project-highlights_link:hover {
+        color: var(--heading-accent);
+      }
+    }
+  }
+</style>
+
+<script>
+  /* The category pills: show the picked category's cards ("all" = every
+     one). Without JS every card shows. */
+  for (const wrap of document.querySelectorAll<HTMLElement>(
+    ".project-highlights_filterable",
+  )) {
+    const items = wrap.querySelectorAll<HTMLElement>(
+      ".project-highlights_item",
+    );
+    wrap.addEventListener("change", (event) => {
+      const input = event.target as HTMLInputElement;
+      if (!input.matches(".choice-chips_radio")) return;
+      for (const item of items)
+        item.hidden =
+          input.value !== "all" && item.dataset.category !== input.value;
+    });
+  }
+</script>

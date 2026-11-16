@@ -1889,13 +1889,15 @@ export type FEATURED_CASE_STUDIES_QUERY_RESULT = Array<{
 
 // Source: src/sanity/lib/queries.ts
 // Variable: PROJECTS_QUERY
-// Query: *[_type == "project"]  | order(completed desc, _createdAt desc) {  _id,  title,  "slug": slug.current,  category,  location,  heroImage,  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },  featured,  completed}
+// Query: *[_type == "project"]  | order(completed desc, _createdAt desc) {  _id,  title,  "slug": slug.current,  category,  location,  service,  "summary": pt::text(description),  heroImage,  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },  featured,  completed}
 export type PROJECTS_QUERY_RESULT = Array<{
   _id: string;
   title: string | null;
   slug: string | null;
   category: "commercial" | "remodel" | "repair" | "residential" | null;
   location: string | null;
+  service: string | null;
+  summary: string | null;
   heroImage: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -1982,13 +1984,15 @@ export type PROJECT_QUERY_RESULT = {
 
 // Source: src/sanity/lib/queries.ts
 // Variable: RELATED_PROJECTS_QUERY
-// Query: *[  _type == "project"  && defined(slug.current)  && slug.current != $slug] | order((category == $category) desc, completed desc, _createdAt desc) [0...4] {  _id,  title,  "slug": slug.current,  category,  location,  heroImage,  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },  featured,  completed}
+// Query: *[  _type == "project"  && defined(slug.current)  && slug.current != $slug] | order((category == $category) desc, completed desc, _createdAt desc) [0...4] {  _id,  title,  "slug": slug.current,  category,  location,  service,  "summary": pt::text(description),  heroImage,  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },  featured,  completed}
 export type RELATED_PROJECTS_QUERY_RESULT = Array<{
   _id: string;
   title: string | null;
   slug: string | null;
   category: "commercial" | "remodel" | "repair" | "residential" | null;
   location: string | null;
+  service: string | null;
+  summary: string | null;
   heroImage: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -2007,13 +2011,15 @@ export type RELATED_PROJECTS_QUERY_RESULT = Array<{
 
 // Source: src/sanity/lib/queries.ts
 // Variable: FEATURED_PROJECTS_QUERY
-// Query: *[  _type == "project" && featured == true] | order(completed desc, _createdAt desc) [0...3] {  _id,  title,  "slug": slug.current,  category,  location,  heroImage,  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },  featured,  completed}
+// Query: *[  _type == "project" && featured == true] | order(completed desc, _createdAt desc) [0...3] {  _id,  title,  "slug": slug.current,  category,  location,  service,  "summary": pt::text(description),  heroImage,  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },  featured,  completed}
 export type FEATURED_PROJECTS_QUERY_RESULT = Array<{
   _id: string;
   title: string | null;
   slug: string | null;
   category: "commercial" | "remodel" | "repair" | "residential" | null;
   location: string | null;
+  service: string | null;
+  summary: string | null;
   heroImage: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -2075,11 +2081,11 @@ declare module "@sanity/client" {
     '*[_type == "testimonial"] | order(sortOrder asc) {\n  _id,\n  name,\n  role,\n  company,\n  quote,\n  avatar,\n  website,\n  stars,\n  featured,\n  sortOrder\n}': TESTIMONIALS_QUERY_RESULT;
     '*[_type == "testimonial" && featured == true] | order(sortOrder asc) {\n  _id,\n  name,\n  role,\n  company,\n  quote,\n  avatar,\n  website,\n  stars,\n  featured,\n  sortOrder\n}': FEATURED_TESTIMONIALS_QUERY_RESULT;
     '*[_type == "caseStudy" && slug.current in $slugs] {\n  "slug": slug.current,\n  client,\n  description,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, "")\n}': FEATURED_CASE_STUDIES_QUERY_RESULT;
-    '*[_type == "project"]\n  | order(completed desc, _createdAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  category,\n  location,\n  heroImage,\n  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),\n  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },\n  featured,\n  completed\n}': PROJECTS_QUERY_RESULT;
+    '*[_type == "project"]\n  | order(completed desc, _createdAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  category,\n  location,\n  service,\n  "summary": pt::text(description),\n  heroImage,\n  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),\n  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },\n  featured,\n  completed\n}': PROJECTS_QUERY_RESULT;
     '*[_type == "project" && defined(slug.current)].slug.current': PROJECT_SLUGS_QUERY_RESULT;
     '*[_type == "project" && slug.current == $slug][0] {\n  _id,\n  _updatedAt,\n  title,\n  "slug": slug.current,\n  category,\n  location,\n  service,\n  completed,\n  featured,\n  heroImage,\n  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),\n  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },\n  photos[] {\n    _key,\n    asset,\n    hotspot,\n    crop,\n    label,\n    "alt": coalesce(alt, asset->altText, ""),\n    "meta": asset->metadata{ dimensions, lqip }\n  },\n  description,\n  quote { text, name },\n  seoDescription\n}': PROJECT_QUERY_RESULT;
-    '*[\n  _type == "project"\n  && defined(slug.current)\n  && slug.current != $slug\n] | order((category == $category) desc, completed desc, _createdAt desc) [0...4] {\n  _id,\n  title,\n  "slug": slug.current,\n  category,\n  location,\n  heroImage,\n  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),\n  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },\n  featured,\n  completed\n}': RELATED_PROJECTS_QUERY_RESULT;
-    '*[\n  _type == "project" && featured == true\n] | order(completed desc, _createdAt desc) [0...3] {\n  _id,\n  title,\n  "slug": slug.current,\n  category,\n  location,\n  heroImage,\n  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),\n  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },\n  featured,\n  completed\n}': FEATURED_PROJECTS_QUERY_RESULT;
+    '*[\n  _type == "project"\n  && defined(slug.current)\n  && slug.current != $slug\n] | order((category == $category) desc, completed desc, _createdAt desc) [0...4] {\n  _id,\n  title,\n  "slug": slug.current,\n  category,\n  location,\n  service,\n  "summary": pt::text(description),\n  heroImage,\n  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),\n  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },\n  featured,\n  completed\n}': RELATED_PROJECTS_QUERY_RESULT;
+    '*[\n  _type == "project" && featured == true\n] | order(completed desc, _createdAt desc) [0...3] {\n  _id,\n  title,\n  "slug": slug.current,\n  category,\n  location,\n  service,\n  "summary": pt::text(description),\n  heroImage,\n  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),\n  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },\n  featured,\n  completed\n}': FEATURED_PROJECTS_QUERY_RESULT;
     '*[_type == "galleryItem"]\n  | order(added desc, _createdAt desc) {\n  _id,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  "imageMeta": image.asset->metadata{ dimensions, lqip },\n  caption,\n  category,\n  location,\n  added,\n  "project": project->{ title, "slug": slug.current }\n}': GALLERY_QUERY_RESULT;
   }
 }
