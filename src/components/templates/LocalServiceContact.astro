@@ -16,6 +16,8 @@
  * Used by the dev sample (/demo/local-service-contact) and by every
  * prospect demo generated with `npm run demo` (presets/local-service).
  */
+import Grid from "@/components/ui/Grid.astro";
+import OfficeCard from "@/components/ui/OfficeCard.astro";
 import type { ImageMetadata } from "astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/ui/Section.astro";
@@ -95,6 +97,13 @@ const projectOptions = [
   { label: "Something else", value: "other" },
 ];
 const geo = geoFor(SITE.serviceAreas);
+/* A place to visit (a street address or day-by-day hours): the office
+   card carries the address and the week's hours, so the one-line Hours
+   card steps aside. */
+const hasOffice = Boolean(SITE.address.street || SITE.openingHours.length);
+const hoursCards = hasOffice
+  ? []
+  : [{ heading: "Hours", body: SITE.hours }].filter((card) => card.body);
 ---
 
 <BaseLayout title={title} description={description}>
@@ -123,16 +132,22 @@ const geo = geoFor(SITE.serviceAreas);
         messageLabel="Anything we should know? (optional)"
         submitLabel="Send"
       />
-      <ContactCards
+      <Grid
         slot="column2"
-        urgent={{
-          heading: "Need help today?",
-          text: "Call and we'll talk you through it.",
-        }}
-        cards={[{ heading: "Hours", body: SITE.hours }].filter(
-          (card) => card.body,
-        )}
-      />
+        largeColumns={1}
+        mediumColumns={1}
+        smallColumns={1}
+        rowGap={4}
+      >
+        <ContactCards
+          urgent={{
+            heading: "Need help today?",
+            text: "Call and we'll talk you through it.",
+          }}
+          cards={hoursCards}
+        />
+        {hasOffice && <OfficeCard titleTag="h2" />}
+      </Grid>
     </Layout>
   </Section>
 

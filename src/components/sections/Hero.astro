@@ -16,6 +16,7 @@ import TrustBadges from "@/components/ui/TrustBadges.astro";
 import LeadForm from "@/components/form/LeadForm.astro";
 import type { FormId } from "@/config/forms";
 import type { SectionCta } from "@/lib/cta";
+import type { LeadQuestion } from "@/lib/lead-questions";
 import { SITE } from "@/config/site";
 import GoogleMark from "@/assets/logos/google-g.svg";
 
@@ -80,6 +81,11 @@ type HeroForm = {
    * the contact fields. Without, the contact fields straight away.
    */
   projectOptions?: { label: string; value: string }[];
+  /**
+   * A qualifying form in the card instead: several one-tap (or "pick all
+   * that apply") steps before the contact fields. Wins over `projectOptions`.
+   */
+  questions?: LeadQuestion[];
   /** The step-1 question over the tiles. @default 'What can we help with?' */
   stepQuestion?: string;
   /** Just Name, Phone and an optional note (LeadForm `compact`). @default true */
@@ -589,13 +595,18 @@ const backdropUrl =
             <LeadForm
               formId={formCard.formId}
               id="hero-form"
-              fields={formCard.projectOptions?.length ? "steps" : "contact"}
+              fields={
+                formCard.questions?.length || formCard.projectOptions?.length
+                  ? "steps"
+                  : "contact"
+              }
+              questions={formCard.questions}
               projectOptions={formCard.projectOptions}
               stepQuestion={formCard.stepQuestion ?? "What can we help with?"}
               compact={formCard.compact ?? true}
               messageLabel={
                 formCard.messageLabel ??
-                (formCard.projectOptions?.length
+                (formCard.questions?.length || formCard.projectOptions?.length
                   ? "Anything we should know? (optional)"
                   : "What can we help with?")
               }

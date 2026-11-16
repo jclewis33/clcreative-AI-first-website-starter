@@ -61,6 +61,12 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   (who's asking, new or returning, project, what they need help with, size,
   timing, budget) before the contact fields; `multiple: true` makes a step
   "pick all that apply" (checkboxes and a Next button)
+- `home.spotFinder` ("Where does it hurt?": body areas with causes, how
+  they help and service links), `home.office` (a photo beside the office
+  card: address, `contact.openingHours`, directions) and `home.profile`
+  (meet the doctor/owner: badge, credential tiles, optional schema.org
+  Person). `hero.formQuestions` puts `estimate.questions` in the hero card;
+  `hero.edge: "wave"` and `hero.proof.source: "google"` style the hero
 - `home.paths` (homeowner / contractor panels under the hero) and
   `home.beforeAfter` (their own before-and-after pairs)
 - `audience` — a page for contractors or property managers at its own
