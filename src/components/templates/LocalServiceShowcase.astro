@@ -27,6 +27,9 @@ import ServiceCards from "@/components/sections/ServiceCards.astro";
 import PathCards from "@/components/sections/PathCards.astro";
 import BeforeAfterGallery from "@/components/sections/BeforeAfterGallery.astro";
 import WhyChooseUs from "@/components/sections/WhyChooseUs.astro";
+import SpotFinder from "@/components/sections/SpotFinder.astro";
+import OfficeVisit from "@/components/sections/OfficeVisit.astro";
+import ProfileSplit from "@/components/sections/ProfileSplit.astro";
 import ExpectTimeline from "@/components/sections/ExpectTimeline.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import RecentWork from "@/components/sections/RecentWork.astro";
@@ -96,6 +99,9 @@ const {
   beforeAfter,
   why,
   expect,
+  spotFinder,
+  office,
+  profile,
 } = home;
 const areaGeo =
   serviceArea.geo ?? geoFor(serviceArea.areas ?? SITE.serviceAreas);
@@ -121,6 +127,7 @@ const closeImageAlt = callBand.image ? callBand.imageAlt : hero.imageAlt;
     primaryCta={estimateCta}
     proof={hero.proof}
     badge={false}
+    edge={hero.edge}
   />
 
   {home.stats && <StatsStrip items={home.stats} />}
@@ -151,6 +158,18 @@ const closeImageAlt = callBand.image ? callBand.imageAlt : hero.imageAlt;
   />
 
   {
+    spotFinder && (
+      <SpotFinder
+        eyebrow={spotFinder.eyebrow}
+        heading={spotFinder.heading}
+        intro={spotFinder.intro}
+        items={spotFinder.items}
+        cta={estimateCta}
+      />
+    )
+  }
+
+  {
     beforeAfter && (
       <BeforeAfterGallery
         theme={"dark"}
@@ -158,6 +177,20 @@ const closeImageAlt = callBand.image ? callBand.imageAlt : hero.imageAlt;
         heading={beforeAfter.heading}
         intro={beforeAfter.intro}
         items={beforeAfter.items}
+      />
+    )
+  }
+
+  {
+    office && (
+      <OfficeVisit
+        eyebrow={office.eyebrow}
+        heading={office.heading}
+        intro={office.intro}
+        paragraphs={office.paragraphs}
+        image={office.image}
+        imageAlt={office.imageAlt}
+        card={{ title: office.cardTitle }}
       />
     )
   }
@@ -227,6 +260,25 @@ const closeImageAlt = callBand.image ? callBand.imageAlt : hero.imageAlt;
         image={story.image}
         imageAlt={story.imageAlt}
         cta={storyCta}
+      />
+    )
+  }
+
+  {
+    profile && (
+      <ProfileSplit
+        eyebrow={profile.eyebrow}
+        name={profile.name}
+        lead={profile.lead}
+        paragraphs={profile.paragraphs}
+        image={profile.image}
+        imageAlt={profile.imageAlt}
+        imageSide={profile.imageSide}
+        badge={profile.badge}
+        credentials={profile.credentials}
+        cta={estimateCta}
+        secondaryCta={profile.secondaryCta}
+        person={profile.person}
       />
     )
   }

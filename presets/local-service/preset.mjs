@@ -76,13 +76,17 @@ const homeSchema = z.object({
           z.object({
             name: z.enum([
               "audience",
+              "customerStatus",
               "projectType",
+              "concerns",
               "projectSize",
               "timeline",
               "budget",
             ]),
             question: text,
             text: text.optional(),
+            /** "Pick all that apply": checkboxes and a Next button. */
+            multiple: z.boolean().optional(),
             options: z
               .array(
                 z.object({
@@ -136,8 +140,17 @@ const homeSchema = z.object({
     proofPosition: z.enum(["below", "above"]).default("above"),
     ctaNote: text.optional(),
     proof: z
-      .object({ rating: z.number().min(1).max(5).optional(), text })
+      .object({
+        rating: z.number().min(1).max(5).optional(),
+        text,
+        /** "google" adds the Google G — only for their Google rating. */
+        source: z.enum(["google"]).optional(),
+      })
       .optional(),
+    /** Background only: "wave" curves the hero's bottom into the next section. */
+    edge: z.enum(["straight", "wave"]).optional(),
+    /** ctaStyle "form": the hero card asks estimate.questions (new patient? where does it hurt?) instead of the one project tap. */
+    formQuestions: z.boolean().optional(),
     /** Estate layout: a second hero button ("See our work" → "#projects"). */
     secondaryCta: z.object({ label: text, href: text }).optional(),
     /** The estimate button's text in the hero. @default estimate.label */
@@ -364,6 +377,88 @@ const homeSchema = z.object({
         .max(4),
       /** One real figure from their reviews or profile. */
       proof: z.object({ value: text, label: text }).optional(),
+    })
+    .optional(),
+  /**
+   * "Where does it hurt?" (clinics): the places on the body they treat,
+   * each with what usually causes it and how they help, from their own
+   * site. `links` point at their service pages (/services/<slug>).
+   */
+  spotFinder: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      items: z
+        .array(
+          z.object({
+            label: text,
+            area: z.enum([
+              "head",
+              "neck",
+              "shoulders",
+              "upper-back",
+              "lower-back",
+              "elbows-wrists",
+              "hips",
+              "knees",
+              "ankles-feet",
+            ]),
+            title: text.optional(),
+            text,
+            lists: z
+              .array(z.object({ title: text, items: z.array(text).min(1) }))
+              .max(2)
+              .optional(),
+            links: z.array(z.object({ label: text, href: text })).optional(),
+          }),
+        )
+        .min(2)
+        .max(9),
+    })
+    .optional(),
+  /** A place people visit: a photo beside the office card (hours from contact.openingHours). */
+  office: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      paragraphs: z.array(text).optional(),
+      image: image.optional(),
+      imageAlt: text.optional(),
+      cardTitle: text.optional(),
+    })
+    .refine((o) => !o.image || o.imageAlt, {
+      message: "imageAlt is required when image is set",
+      path: ["imageAlt"],
+    })
+    .optional(),
+  /** Meet the doctor / owner: real, public facts only (school, license, languages). */
+  profile: z
+    .object({
+      eyebrow: text.optional(),
+      name: text,
+      lead: text.optional(),
+      paragraphs: z.array(text).optional(),
+      image,
+      imageAlt: text,
+      imageSide: z.enum(["left", "right"]).optional(),
+      badge: z.object({ title: text, text: text.optional() }).optional(),
+      credentials: z
+        .array(
+          z.object({ label: text, value: text, wide: z.boolean().optional() }),
+        )
+        .max(8)
+        .optional(),
+      secondaryCta: z.object({ label: text, href: text }).optional(),
+      person: z
+        .object({
+          jobTitle: text.optional(),
+          alumniOf: z.array(text).optional(),
+          knowsLanguage: z.array(text).optional(),
+          hasCredential: z.array(text).optional(),
+        })
+        .optional(),
     })
     .optional(),
   why: z
@@ -759,7 +854,33 @@ const demoObject = z.object({
     postalCode: text.optional(),
     locality: text,
     region: text,
+    /**
+     * Day by day, for a place people visit (a clinic, a showroom): the
+     * hours table and the JSON-LD hours. Days not listed are closed; times
+     * 24-hour. Only hours their site or Google profile shows.
+     */
+    openingHours: z
+      .array(
+        z.object({
+          days: z
+            .array(z.enum(["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]))
+            .min(1),
+          opens: z.string().regex(/^\d{2}:\d{2}$/),
+          closes: z.string().regex(/^\d{2}:\d{2}$/),
+        }),
+      )
+      .optional(),
   }),
+  /**
+   * The schema.org type of the business, the most specific that fits:
+   * "Plumber", "Electrician", "HVACBusiness", "RoofingContractor",
+   * "Chiropractor", "Dentist" (the list in src/config/site.ts).
+   * Default "ProfessionalService".
+   */
+  businessType: z
+    .string()
+    .regex(/^[A-Z][A-Za-z]+$/)
+    .optional(),
   serviceAreas: z.array(text).min(1),
   /**
    * When they describe their area as a distance ("within 60 miles of

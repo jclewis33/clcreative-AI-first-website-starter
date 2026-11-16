@@ -18,6 +18,8 @@ import Hero from "@/components/sections/Hero.astro";
 import StatsStrip from "@/components/sections/StatsStrip.astro";
 import StorySplit from "@/components/sections/StorySplit.astro";
 import TeamGrid from "@/components/sections/TeamGrid.astro";
+import OfficeVisit from "@/components/sections/OfficeVisit.astro";
+import ProfileSplit from "@/components/sections/ProfileSplit.astro";
 import Guarantee from "@/components/sections/Guarantee.astro";
 import ProcessSteps from "@/components/sections/ProcessSteps.astro";
 import Reviews from "@/components/sections/Reviews.astro";
@@ -56,6 +58,8 @@ const {
   reviews,
   serviceArea,
   callBand,
+  office,
+  profile,
 } = home;
 
 const services = await getServices();
@@ -124,6 +128,25 @@ const schemaCrumbs = [
   }
 
   {
+    profile && (
+      <ProfileSplit
+        eyebrow={profile.eyebrow}
+        name={profile.name}
+        lead={profile.lead}
+        paragraphs={profile.paragraphs}
+        image={profile.image}
+        imageAlt={profile.imageAlt}
+        imageSide={profile.imageSide}
+        badge={profile.badge}
+        credentials={profile.credentials}
+        cta={estimateCta}
+        secondaryCta={profile.secondaryCta}
+        person={profile.person}
+      />
+    )
+  }
+
+  {
     team && (
       <TeamGrid
         eyebrow={team.eyebrow}
@@ -167,6 +190,20 @@ const schemaCrumbs = [
         count={reviews.count}
         reviews={reviews.items}
         layout={reviews.layout ?? "cards"}
+      />
+    )
+  }
+
+  {
+    office && (
+      <OfficeVisit
+        eyebrow={office.eyebrow}
+        heading={office.heading}
+        intro={office.intro}
+        paragraphs={office.paragraphs}
+        image={office.image}
+        imageAlt={office.imageAlt}
+        card={{ title: office.cardTitle }}
       />
     )
   }

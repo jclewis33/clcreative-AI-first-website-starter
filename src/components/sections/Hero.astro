@@ -16,7 +16,9 @@ import TrustBadges from "@/components/ui/TrustBadges.astro";
 import LeadForm from "@/components/form/LeadForm.astro";
 import type { FormId } from "@/config/forms";
 import type { SectionCta } from "@/lib/cta";
+import type { LeadQuestion } from "@/lib/lead-questions";
 import { SITE } from "@/config/site";
+import GoogleMark from "@/assets/logos/google-g.svg";
 
 type HeroVariant =
   /** Photo fills the section behind the text, with a dark overlay */
@@ -36,7 +38,13 @@ type HeroSecondaryVariant =
   /** An outline button beside the main one */
   | "secondary";
 type HeroCrumb = { label: string; href?: string };
-type HeroProof = { rating?: number; text: string };
+/** Where the rating comes from: `google` puts the Google "G" before it. */
+type HeroProofSource = "google";
+type HeroProof = { rating?: number; text: string; source?: HeroProofSource };
+/** A shaped bottom edge: `wave` curves into the next section. */
+type HeroEdge = "straight" | "wave";
+/** The theme of the section under the hero (the edge's fill). */
+type HeroEdgeTheme = "light" | "dark" | "brand";
 type HeroBadge = { value: string; label: string };
 type HeroFocus = { x: number; y: number };
 type HeroImageFit =
@@ -73,6 +81,11 @@ type HeroForm = {
    * the contact fields. Without, the contact fields straight away.
    */
   projectOptions?: { label: string; value: string }[];
+  /**
+   * A qualifying form in the card instead: several one-tap (or "pick all
+   * that apply") steps before the contact fields. Wins over `projectOptions`.
+   */
+  questions?: LeadQuestion[];
   /** The step-1 question over the tiles. @default 'What can we help with?' */
   stepQuestion?: string;
   /** Just Name, Phone and an optional note (LeadForm `compact`). @default true */
@@ -106,7 +119,8 @@ interface Props extends HTMLAttributes<"section"> {
    * - `breadcrumbs` — trail in its own row at the top of the hero, just under
    *   the nav (top padding drops to xsmall). Also pass it to BaseLayout's
    *   `breadcrumbs` prop so the schema matches)
-   * - `proof` — a trust line, with optional star rating
+   * - `proof` — a trust line, with optional star rating (`source: "google"` adds the G)
+   * - `edge="wave"` + `edgeTheme` — a curved bottom edge in the next section's colour
    * - `badge` — a small card, e.g. `{ value: "Since 2009", label: "Family owned" }`.
    *   Defaults to "Since {SITE.founded}" when `SITE.founded` is set; pass
    *   `false` to hide it
@@ -115,7 +129,8 @@ interface Props extends HTMLAttributes<"section"> {
    *   the button
    * - `trust` — credential badges under the buttons (TrustBadges)
    * - Wrap an offer in `<mark>` in `heading` for a highlighter accent,
-   *   e.g. `Call today for <mark>$100 off</mark>`
+   *   e.g. `Call today for <mark>$100 off</mark>`; an old price in `<s>`
+   *   shows struck and quieter: `Just <mark>$99</mark> <s>$199</s>`
    *
    * Renders nothing (with a dev warning) without a `heading`.
    *
@@ -227,7 +242,10 @@ interface Props extends HTMLAttributes<"section"> {
   /** Breadcrumb trail above the eyebrow (service and detail pages). */
   breadcrumbs?: HeroCrumb[];
 
-  /** Trust line under the buttons. `rating` adds that many of 5 stars. */
+  /**
+   * Trust line under the buttons. `rating` adds that many of 5 stars;
+   * `source: "google"` puts the Google "G" first (only for a Google rating).
+   */
   proof?: HeroProof;
 
   /** Where `proof` sits: `'below'` the buttons, or `'above'` the headline as a pill. @default 'below' */
@@ -235,6 +253,12 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Credential badges under the buttons — only ones the business holds. */
   trust?: HeroTrust[];
+
+  /** The bottom edge: `wave` curves into the next section (background photos). @default 'straight' */
+  edge?: HeroEdge;
+
+  /** Theme of the section under the hero, which the wave is filled with. @default 'light' */
+  edgeTheme?: HeroEdgeTheme;
 
   /**
    * Small card, e.g. "Since 2009 / Family owned". Defaults to
@@ -287,6 +311,8 @@ const {
   breadcrumbs,
   proof,
   proofPosition = "below",
+  edge = "straight",
+  edgeTheme = "light",
   trust,
   badge: badgeProp,
   theme: themeProp,
@@ -429,6 +455,22 @@ const backdropUrl =
         />
       )}
 
+      {edge === "wave" && (
+        <svg
+          slot="background"
+          class="hero_edge"
+          data-theme={edgeTheme}
+          viewBox="0 0 1440 80"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M0 52C220 10 470 4 730 30s510 50 710 18v32H0Z"
+            fill="currentColor"
+          />
+        </svg>
+      )}
+
       {breadcrumbs?.length ? (
         <Breadcrumbs items={breadcrumbs} class="hero_crumbs" />
       ) : null}
@@ -447,6 +489,13 @@ const backdropUrl =
       >
         {proofPill && proof?.text && (
           <p class="hero_proof is-pill">
+            {proof.source === "google" && (
+              <GoogleMark
+                class="hero_proof_logo"
+                role="img"
+                aria-label="Google"
+              />
+            )}
             {stars > 0 && (
               <span
                 class="hero_stars"
@@ -494,6 +543,13 @@ const backdropUrl =
         )}
         {!proofPill && proof?.text && (
           <p class="hero_proof">
+            {proof.source === "google" && (
+              <GoogleMark
+                class="hero_proof_logo"
+                role="img"
+                aria-label="Google"
+              />
+            )}
             {stars > 0 && (
               <span
                 class="hero_stars"
@@ -539,13 +595,18 @@ const backdropUrl =
             <LeadForm
               formId={formCard.formId}
               id="hero-form"
-              fields={formCard.projectOptions?.length ? "steps" : "contact"}
+              fields={
+                formCard.questions?.length || formCard.projectOptions?.length
+                  ? "steps"
+                  : "contact"
+              }
+              questions={formCard.questions}
               projectOptions={formCard.projectOptions}
               stepQuestion={formCard.stepQuestion ?? "What can we help with?"}
               compact={formCard.compact ?? true}
               messageLabel={
                 formCard.messageLabel ??
-                (formCard.projectOptions?.length
+                (formCard.questions?.length || formCard.projectOptions?.length
                   ? "Anything we should know? (optional)"
                   : "What can we help with?")
               }
@@ -596,6 +657,33 @@ const backdropUrl =
       border-radius: var(--radius-main);
       background-color: var(--background);
       color: var(--text);
+    }
+
+    .hero_proof_logo {
+      flex-shrink: 0;
+      width: 1.15em;
+      aspect-ratio: 1;
+    }
+
+    /* An old price struck through in the heading ("Just $99 <s>$199</s>"):
+       quieter than the new one, the line still clearly a strike. */
+    .hero_title :is(s, del) {
+      opacity: 0.45;
+      text-decoration-thickness: 0.08em;
+    }
+
+    /* edge="wave": the next section's colour, curving up over the photo's
+       bottom. Lives in the background slot, so it never covers content;
+       the slot pins its children to the top, hence top: auto. */
+    .hero_wrap .hero_edge {
+      position: absolute;
+      top: auto;
+      left: 0;
+      bottom: -0.0625rem;
+      width: 100%;
+      height: clamp(1.5rem, 4vw, 3.5rem);
+      color: var(--background);
+      pointer-events: none;
     }
 
     /* proofPosition="above": the proof as a pill over the eyebrow. */

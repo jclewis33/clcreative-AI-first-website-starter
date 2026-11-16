@@ -386,6 +386,33 @@ git switch -c demo/<slug>
   business's prices: pick sensible buckets for the trade, never a "starts
   at" price they didn't publish, and list the buckets in `confirmOrCut` so
   the owner can set them.
+- **A place people visit (clinics, offices, showrooms)** — the kit taken
+  from a well-built chiropractic site (Nov 2026):
+  - `contact.openingHours` — their hours day by day (only what their site or
+    Google profile shows; 24-hour times, days not listed are closed) and
+    `businessType` — the most specific schema.org type ("Chiropractor",
+    "Dentist", "Plumber"; the list is in `src/config/site.ts`). With a
+    street address or hours, the contact page shows the office card
+    (address, hours table, directions) automatically.
+  - `home.office` — a photo of the place beside that card, before the map
+    (home and About).
+  - `home.profile` — meet the doctor or owner: portrait, `badge` ("Cum
+    laude"), `credentials` tiles (school, license, techniques, languages),
+    and `person` for the schema.org Person. Real, public facts only; a
+    license number goes in `confirmOrCut` unless their site shows it. After
+    the story (home and About).
+  - `home.spotFinder` — "Where does it hurt?": 3–9 `items`, each an `area`
+    on the body figure (head, neck, shoulders, upper-back, lower-back,
+    elbows-wrists, hips, knees, ankles-feet), a line, up to two `lists`
+    ("Common causes", "How we help") and `links` to their service pages —
+    from their own conditions/services pages, never invented. After the
+    symptoms (contractor) or the services (showcase).
+  - Questions with `multiple: true` ("Where are you hurting?", pick all
+    that apply) and `customerStatus` ("New or existing patient?");
+    `hero.formQuestions: true` puts those questions in the hero card.
+  - Hero: an old price in `<s>` ("Just <mark>$99</mark> <s>$199</s>", only
+    their real offer), `proof.source: "google"` for a Google rating, and
+    `edge: "wave"`.
 - **Projects:** `projects` (their own jobs, with before/after `photos`)
   builds `/projects` and a page per job, in the nav; `home.beforeAfter`
   puts the best pairs on the home page as sliders.

@@ -1,0 +1,232 @@
+---
+import type { HTMLAttributes } from "astro/types";
+import Heading from "@/components/ui/Heading.astro";
+import Button from "@/components/ui/Button.astro";
+import { SITE } from "@/config/site";
+import { hoursRows, type OpeningHours } from "@/lib/hours";
+
+type OfficeCardTheme = "light" | "dark" | "brand" | "invert";
+
+interface Props extends HTMLAttributes<"div"> {
+  /**
+   * **OfficeCard** — where to find the business: the address, the phone as
+   * a big tap-to-call link, the week's hours as a table, and a "Get
+   * directions" button. For a place people visit (a clinic, an office, a
+   * showroom). Everything defaults to `SITE` — `address`, `phone`,
+   * `openingHours` — so `<OfficeCard />` alone is a complete card.
+   *
+   * - `eyebrow` (default "Visit us"), `title` (default "Our {city} office")
+   * - `hours` — defaults to `SITE.openingHours`; neighbouring days with the
+   *   same hours share a row ("Sat & Sun"); days not listed say `closedLabel`
+   * - `directionsLabel` — the button; it shows only with a street address
+   *   (`SITE.address.street`) and opens Google Maps directions
+   * - `theme` — `invert` (default: dark on a light section, light on a dark
+   *   one) or pin `light` / `dark` / `brand`
+   *
+   * @example
+   * <OfficeCard title="Our Riverside office" />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label over the title. @default 'Visit us' */
+  eyebrow?: string;
+
+  /** The card's title. @default 'Our {SITE.address.locality} office' */
+  title?: string;
+
+  /** The week's hours. @default SITE.openingHours */
+  hours?: OpeningHours[];
+
+  /** Word for a day with no hours. @default 'Closed' */
+  closedLabel?: string;
+
+  /** Show the phone number as a tap-to-call link. @default true */
+  showPhone?: boolean;
+
+  /** The directions button's text. Empty = no button. @default 'Get directions' */
+  directionsLabel?: string;
+
+  /** The card's colors. @default 'invert' */
+  theme?: OfficeCardTheme;
+
+  /** Heading level of the title. @default 'h3' */
+  titleTag?: "h2" | "h3" | "h4";
+
+  /** Extra classes on the card. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow = "Visit us",
+  title = `Our ${SITE.address.locality} office`,
+  hours = SITE.openingHours,
+  closedLabel = "Closed",
+  showPhone = true,
+  directionsLabel = "Get directions",
+  theme = "invert",
+  titleTag = "h3",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const { street, locality, region, postalCode } = SITE.address;
+const cityLine = [locality, [region, postalCode].filter(Boolean).join(" ")]
+  .filter(Boolean)
+  .join(", ");
+const rows = hours.length ? hoursRows(hours, closedLabel) : [];
+const directionsHref = street
+  ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+      [street, cityLine].join(", "),
+    )}`
+  : undefined;
+
+if (import.meta.env.DEV && render && !street && !rows.length) {
+  console.warn(
+    "[OfficeCard] No street address and no opening hours in SITE — the card has little to show. Fill SITE.address.street / SITE.openingHours, or leave it out.",
+  );
+}
+---
+
+{
+  render && (
+    <div
+      class:list={["office-card_wrap", className]}
+      data-theme={theme === "invert" ? undefined : theme}
+      data-theme-invert={theme === "invert" ? "" : undefined}
+      {...rest}
+    >
+      <Heading tag="p" variant="eyebrow" class="office-card_eyebrow">
+        {eyebrow}
+      </Heading>
+      <Heading tag={titleTag} variant="h4" class="office-card_title">
+        {title}
+      </Heading>
+      <address class="office-card_address">
+        {street && (
+          <span class="office-card_line">
+            {street}
+            <br />
+          </span>
+        )}
+        <span class="office-card_line">{cityLine}</span>
+      </address>
+      {showPhone && (
+        <a class="office-card_phone" href={`tel:${SITE.phone.tel}`}>
+          {SITE.phone.display}
+        </a>
+      )}
+      {rows.length > 0 && (
+        <table class="office-card_hours">
+          <caption class="u-sr-only">Opening hours</caption>
+          <tbody>
+            {rows.map((row) => (
+              <tr class:list={["office-card_row", { "is-closed": row.closed }]}>
+                <th class="office-card_day" scope="row">
+                  {row.label}
+                </th>
+                <td class="office-card_time">{row.value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {directionsHref && directionsLabel && (
+        <Button
+          href={directionsHref}
+          newTab
+          fullWidth
+          class="office-card_button"
+        >
+          {directionsLabel}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .office-card_wrap {
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-6);
+      border-radius: var(--radius-main);
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    .office-card_eyebrow {
+      margin-bottom: var(--space-2);
+    }
+
+    .office-card_title {
+      margin-bottom: var(--space-3);
+    }
+
+    .office-card_address {
+      font-style: normal;
+      opacity: 0.85;
+    }
+
+    .office-card_phone {
+      align-self: flex-start;
+      margin-top: var(--space-4);
+      color: var(--text);
+      font-size: var(--h5-size);
+      font-weight: 700;
+      line-height: 1.2;
+      text-decoration: none;
+    }
+
+    @media (hover: hover) {
+      .office-card_phone:hover {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+    }
+
+    .office-card_hours {
+      width: 100%;
+      margin-top: var(--space-5);
+      border-collapse: collapse;
+      font-size: var(--text-small-size);
+    }
+
+    .office-card_row {
+      border-top: var(--border-width-main) solid var(--border);
+    }
+
+    .office-card_row:last-child {
+      border-bottom: var(--border-width-main) solid var(--border);
+    }
+
+    .office-card_day,
+    .office-card_time {
+      padding-block: var(--space-2);
+      font-weight: 400;
+      vertical-align: top;
+    }
+
+    .office-card_day {
+      padding-right: var(--space-4);
+      text-align: left;
+    }
+
+    .office-card_time {
+      text-align: right;
+    }
+
+    .office-card_row.is-closed .office-card_time {
+      opacity: 0.75;
+    }
+
+    .office-card_button {
+      margin-top: var(--space-6);
+    }
+  }
+</style>

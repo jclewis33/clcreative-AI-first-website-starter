@@ -19,6 +19,17 @@ import type { LeadQuestion } from "@/lib/lead-questions";
 type HomeImage = ImageMetadata | string;
 type HomeItem = { title: string; text: string };
 type HomeStat = { value: string; label: string };
+/** The places on SpotFinder's built-in body figure. */
+type SpotArea =
+  | "head"
+  | "neck"
+  | "shoulders"
+  | "upper-back"
+  | "lower-back"
+  | "elbows-wrists"
+  | "hips"
+  | "knees"
+  | "ankles-feet";
 type HomeReview = {
   /** The line the home page and service pages show (an excerpt is fine). */
   text: string;
@@ -162,8 +173,12 @@ export interface LocalServiceHomeData {
     proofPosition?: "below" | "above";
     /** Small line under the estimate button in the panel ("And claim $100 off"). */
     ctaNote?: string;
-    /** Star line under the CTAs — only with a real rating to quote. */
-    proof?: { rating?: number; text: string };
+    /** Star line under the CTAs — only with a real rating to quote. `source: "google"` adds the Google G (a Google rating only). */
+    proof?: { rating?: number; text: string; source?: "google" };
+    /** Background only: `wave` curves the hero's bottom into the next section. */
+    edge?: "straight" | "wave";
+    /** `form` only: the card asks `estimate.questions` (the qualifying steps) instead of the one project tap. */
+    formQuestions?: boolean;
     /** Credentials the business really holds. */
     trust?: HomeTrust[];
     /** Estate layout: a second hero button ("See our work" → #projects). */
@@ -319,6 +334,70 @@ export interface LocalServiceHomeData {
     steps: { label: string; title: string; text: string }[];
     /** One real figure ("100%" / "Recommend us on Facebook"). Never invented. */
     proof?: HomeStat;
+  };
+
+  /**
+   * "Where does it hurt?" — the places on the body they treat, as markers
+   * and pills with a panel each (SpotFinder): causes, how they help, links
+   * to their service pages. Clinics: chiropractic, physio, massage. The
+   * booking button opens the estimate form.
+   */
+  spotFinder?: {
+    eyebrow?: string;
+    /** @default "Where does it hurt?" */
+    heading?: string;
+    intro?: string;
+    items: {
+      label: string;
+      /** Where its markers sit on the built-in body figure. */
+      area: SpotArea;
+      title?: string;
+      text: string;
+      /** One or two lists: "Common causes", "How we help". */
+      lists?: { title: string; items: string[] }[];
+      /** Their service pages that treat it. */
+      links?: { label: string; href: string }[];
+    }[];
+  };
+
+  /**
+   * A place people visit: a photo of it beside the office card (address,
+   * phone, the hours from SITE.openingHours, directions) — OfficeVisit.
+   */
+  office?: {
+    eyebrow?: string;
+    /** @default "Visit our {city} office" */
+    heading?: string;
+    intro?: string;
+    paragraphs?: string[];
+    image?: HomeImage;
+    imageAlt?: string;
+    /** The card's title. @default "Our {city} office" */
+    cardTitle?: string;
+  };
+
+  /**
+   * Meet the doctor / owner (ProfileSplit): portrait, bio, credentials as
+   * tiles. Real, public facts only; `person` adds the schema.org Person.
+   */
+  profile?: {
+    eyebrow?: string;
+    name: string;
+    lead?: string;
+    paragraphs?: string[];
+    image: HomeImage;
+    imageAlt: string;
+    imageSide?: "left" | "right";
+    badge?: { title: string; text?: string };
+    credentials?: { label: string; value: string; wide?: boolean }[];
+    /** A text link beside the booking button ("Meet the doctor" → /about). */
+    secondaryCta?: { label: string; href: string };
+    person?: {
+      jobTitle?: string;
+      alumniOf?: string[];
+      knowsLanguage?: string[];
+      hasCredential?: string[];
+    };
   };
 
   /** Why customers pick them: icon rows beside one big photo (WhyChooseUs). */
