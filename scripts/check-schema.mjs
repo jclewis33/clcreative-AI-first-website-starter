@@ -195,7 +195,11 @@ for (const pagePath of PAGES) {
             );
         });
       }
-      if (type === "LocalBusiness" || type === "ProfessionalService") {
+      if (
+        type === "LocalBusiness" ||
+        type === "ProfessionalService" ||
+        String(node["@id"] ?? "").endsWith("/#localbusiness")
+      ) {
         if (!node.name) issues.push(`${type} missing name`);
         if (!node.address)
           issues.push(`${type} "${node.name}" missing address`);

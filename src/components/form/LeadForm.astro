@@ -111,7 +111,9 @@ interface Props extends Omit<
   /**
    * Steps preset: the one-tap questions, one step each, before the contact
    * fields — `{ name, question, text?, options }` (src/lib/lead-questions.ts).
-   * Each answer is saved as its `name` (audience, projectType, projectSize,
+   * `multiple: true` makes a step "pick all that apply" (checkboxes + Next).
+   * Each answer is saved as its `name` (audience, customerStatus,
+   * projectType, concerns, projectSize,
    * timeline, budget). Replaces the single `stepQuestion` / `projectOptions`
    * step; with a `timeline` question the details step drops its Timeline
    * select. Progress reads "Step 2 of 5".
@@ -320,12 +322,15 @@ const detailsProps = stepped
       )}
       {choiceSteps.map((q, i) => {
         const photoTiles = q.options.some((o) => o.image);
+        const inputType = q.multiple ? "checkbox" : "radio";
+        const hint =
+          q.text ?? (q.multiple ? "Pick all that apply." : undefined);
         return (
           <fieldset class="lead-form_step is-choice" data-step={String(i + 1)}>
             <legend class="lead-form_step_title">{q.question}</legend>
-            {q.text && (
+            {hint && (
               <p class="lead-form_step_text u-text-style-small u-text-style-muted">
-                {q.text}
+                {hint}
               </p>
             )}
             {!photoTiles && (
@@ -333,13 +338,14 @@ const detailsProps = stepped
                 class:list={[
                   "lead-form_tiles",
                   q.options.some((o) => o.description) && "is-described",
+                  q.multiple && "is-multiple",
                 ]}
               >
                 {q.options.map((o) => (
                   <label class="lead-form_tile">
                     <input
                       class="lead-form_tile_input"
-                      type="radio"
+                      type={inputType}
                       name={q.name}
                       value={o.label}
                     />
@@ -351,6 +357,9 @@ const detailsProps = stepped
                         </span>
                       )}
                     </span>
+                    {q.multiple && (
+                      <span class="lead-form_tile_check" aria-hidden="true" />
+                    )}
                   </label>
                 ))}
               </div>
@@ -361,7 +370,7 @@ const detailsProps = stepped
                   <label class="lead-form_tile is-photo">
                     <input
                       class="lead-form_tile_input"
-                      type="radio"
+                      type={inputType}
                       name={q.name}
                       value={o.label}
                     />
@@ -385,6 +394,13 @@ const detailsProps = stepped
                     </span>
                   </label>
                 ))}
+              </div>
+            )}
+            {q.multiple && (
+              <div class="lead-form_next" data-step-next>
+                <Button type="button" fullWidth>
+                  Next
+                </Button>
               </div>
             )}
             {i > 0 && (
@@ -856,6 +872,53 @@ const detailsProps = stepped
       line-height: 1.2;
     }
 
+    /* "Pick all that apply": the label on the left, a check box on the
+       right, so the tiles read as a checklist rather than one-tap choices. */
+    .lead-form_tiles.is-multiple {
+      grid-template-columns: repeat(auto-fill, minmax(min(11rem, 100%), 1fr));
+    }
+
+    .lead-form_tiles.is-multiple .lead-form_tile {
+      justify-content: space-between;
+      gap: var(--space-3);
+      min-height: 3.5rem;
+      text-align: start;
+    }
+
+    .lead-form_tile_check {
+      flex-shrink: 0;
+      width: 1.25em;
+      aspect-ratio: 1;
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-small);
+    }
+
+    /* The tick: a mask (its colour is only the alpha), painted in the
+       page background so it reads on the accent box in every theme. */
+    .lead-form_tile_check::after {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 100%;
+      background-color: var(--background);
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E")
+        center / 80% no-repeat;
+      opacity: 0;
+    }
+
+    .lead-form_tile:has(:checked) .lead-form_tile_check {
+      border-color: var(--heading-accent);
+      background-color: var(--heading-accent);
+    }
+
+    .lead-form_tile:has(:checked) .lead-form_tile_check::after {
+      opacity: 1;
+    }
+
+    .lead-form_next {
+      margin-top: var(--space-2);
+    }
+
     .lead-form_tile:has(:checked) {
       border-color: var(--heading-accent);
       background-color: color-mix(
@@ -995,7 +1058,7 @@ const detailsProps = stepped
          users can look through the tiles before choosing. */
       let pointer = false;
       for (const input of form.querySelectorAll<HTMLInputElement>(
-        ".lead-form_tile_input",
+        ".lead-form_tile_input[type=radio]",
       )) {
         const step = Number(
           input.closest<HTMLElement>(".lead-form_step")?.dataset.step ?? 1,
@@ -1025,6 +1088,18 @@ const detailsProps = stepped
           input.checked = true;
           choose();
         });
+      }
+      /* "Pick all that apply" steps: ticking a box never moves on; their
+         Next button does. */
+      for (const next of form.querySelectorAll<HTMLElement>(
+        "[data-step-next]",
+      )) {
+        const step = Number(
+          next.closest<HTMLElement>(".lead-form_step")?.dataset.step ?? 1,
+        );
+        next
+          .querySelector("button")
+          ?.addEventListener("click", () => go(Math.min(step + 1, total)));
       }
       form
         .querySelector("[data-step-back]")

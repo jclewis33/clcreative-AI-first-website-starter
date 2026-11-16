@@ -9,9 +9,22 @@ description: Per-page SEO, structured data, and LLM discoverability reference fo
 
 - **LocalBusiness JSON-LD** lives in
   [src/layouts/BaseLayout.astro](../../../src/layouts/BaseLayout.astro) as a
-  single `ProfessionalService` node with `@id: ${SITE.url}/#localbusiness`. It
+  single business node (`SITE.businessType`, default `ProfessionalService`) with `@id: ${SITE.url}/#localbusiness`. It
   renders on **every** page. Per-page `Service` schemas reference it via
   `provider.@id` — never redefine the LocalBusiness on a page.
+- **Use the most specific `SITE.businessType`** that fits ("Plumber",
+  "HVACBusiness", "RoofingContractor", "Chiropractor", "Dentist" — the
+  union in `site.ts`; add a real schema.org type there when a client needs
+  one). `check:schema` finds the node by its `#localbusiness` id, whatever
+  its type.
+- **Opening hours:** `SITE.openingHours` (day by day, 24-hour times; helpers
+  in `src/lib/hours.ts`) becomes `openingHoursSpecification` on the business
+  node and the hours table on `OfficeCard`. Fill it for a place people visit;
+  leave it empty for a home-service business (`SITE.hours` is the footer
+  line either way). Only hours the business publishes.
+- **A credentialed person:** `ProfileSplit`'s `person` prop emits a `Person`
+  (`worksFor` → the business `@id`, `alumniOf`, `knowsLanguage`,
+  `hasCredential`) — only true, public facts (school, license, languages).
 - **`areaServed`** on the sitewide node comes from `SITE.areaServed` in
   [src/config/site.ts](../../../src/config/site.ts). Add the cities/regions
   the business serves there (once).

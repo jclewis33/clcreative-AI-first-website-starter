@@ -29,7 +29,13 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   characters; the branch is `demo/<slug>`), `website?`, `owner?`
 - `contact` — `phone` (US), `email?` (leave out if they don't publish one),
   `hours`, `street?` + `postalCode?` (only a published shop or office
-  address; leave out for a home-based business), `locality`, `region`
+  address; leave out for a home-based business), `locality`, `region`,
+  `openingHours?` (day by day, for a place people visit:
+  `[{ "days": ["Mo", "Tu"], "opens": "09:00", "closes": "18:00" }]`; days
+  not listed are closed — feeds OfficeCard and the JSON-LD hours)
+- `businessType?` — the schema.org type, most specific that fits
+  ("Plumber", "HVACBusiness", "Chiropractor"; the list is in
+  `src/config/site.ts`). Default `ProfessionalService`
 - `smsOptIn?` — the Phone field and SMS consent box on the demo's forms
   (default on; `false` for email-only, as on a real site before A2P approval)
 - `serviceAreas`, `founded?`, `reviewsUrl?`, `social?` (`{ "Facebook": url }`),
@@ -52,7 +58,9 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   plus a `slug`. A service without its own `reviews` gets the
   `home.reviews` items and rating, so every service page carries real reviews
 - `home.estimate.questions` — a qualifying estimate form: one-tap steps
-  (who's asking, project, size, timing, budget) before the contact fields
+  (who's asking, new or returning, project, what they need help with, size,
+  timing, budget) before the contact fields; `multiple: true` makes a step
+  "pick all that apply" (checkboxes and a Next button)
 - `home.paths` (homeowner / contractor panels under the hero) and
   `home.beforeAfter` (their own before-and-after pairs)
 - `audience` — a page for contractors or property managers at its own

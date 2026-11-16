@@ -15,6 +15,35 @@
 import { SITE_URL as SHARED_SITE_URL } from "./site.shared.mjs";
 import type { SiteLook } from "./looks";
 import type { LeadQuestion } from "@/lib/lead-questions";
+import type { OpeningHours } from "@/lib/hours";
+
+/**
+ * schema.org LocalBusiness types this starter's sites use. Pick the most
+ * specific; add another real schema.org type here when a client needs it.
+ */
+type BusinessType =
+  | "ProfessionalService"
+  | "HomeAndConstructionBusiness"
+  | "GeneralContractor"
+  | "Plumber"
+  | "Electrician"
+  | "HVACBusiness"
+  | "RoofingContractor"
+  | "HousePainter"
+  | "Locksmith"
+  | "MovingCompany"
+  | "AutoRepair"
+  | "MedicalBusiness"
+  | "MedicalClinic"
+  | "Chiropractor"
+  | "Dentist"
+  | "Physician"
+  | "Optician"
+  | "HealthAndBeautyBusiness"
+  | "DaySpa"
+  | "LegalService"
+  | "AccountingService"
+  | "RealEstateAgent";
 
 export interface SocialLink {
   /** Accessible label / platform name. */
@@ -80,8 +109,26 @@ export const SITE = {
     tel: "5555555555",
   },
 
-  /** Visible business hours (footer). */
+  /** Visible business hours, one line (footer, contact cards). */
   hours: "M–F, 9 AM–5 PM",
+
+  /**
+   * Opening hours day by day, for a business people visit (an office, a
+   * clinic, a showroom): the hours table on OfficeCard and the
+   * `openingHoursSpecification` in the JSON-LD. Days not listed are closed;
+   * times are 24-hour. Empty = no table and no hours in the schema (most
+   * home-service businesses: `hours` is enough).
+   * @example [{ days: ["Mo", "Tu", "Th"], opens: "09:00", closes: "18:00" }, { days: ["Fr"], opens: "08:00", closes: "13:00" }]
+   */
+  openingHours: [] as OpeningHours[],
+
+  /**
+   * The schema.org type of the business node — the most specific one that
+   * fits helps search and AI assistants place it: "Plumber", "Electrician",
+   * "HVACBusiness", "RoofingContractor", "Chiropractor", "Dentist", …
+   * @default "ProfessionalService"
+   */
+  businessType: "ProfessionalService" as BusinessType,
 
   /** Founder / person name (schema.org `founder`, `author` fallback). */
   founder: "Your Name",

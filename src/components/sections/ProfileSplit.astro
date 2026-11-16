@@ -1,0 +1,395 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import Visual from "@/components/ui/Visual.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import JsonLd from "@/components/global/JsonLd.astro";
+import type { SectionCta } from "@/lib/cta";
+import { SITE } from "@/config/site";
+
+/** One credential tile: "Licensed in" · "Texas, license #00000". */
+type ProfileSplitCredential = {
+  /** The small label: "Chiropractic college", "Languages". */
+  label: string;
+  /** The fact: "Sample College, 2012". */
+  value: string;
+  /** Span both columns (a long list, like techniques). */
+  wide?: boolean;
+};
+
+/** A small card over the photo's corner: an honor, a title, a years figure. */
+type ProfileSplitBadge = {
+  /** The bold line: "Cum laude", "Master plumber", "25 years". */
+  title: string;
+  /** One line under it: "Sample Chiropractic College". */
+  text?: string;
+};
+
+/** Facts for the Person schema, only ones that are true and public. */
+type ProfileSplitPerson = {
+  /** "Chiropractor", "Master electrician", "Owner". */
+  jobTitle?: string;
+  /** Schools: ["Sample Chiropractic College", "Sample State University"]. */
+  alumniOf?: string[];
+  /** Languages spoken: ["English", "Spanish"]. */
+  knowsLanguage?: string[];
+  /** Licenses and certifications, in words: ["Texas chiropractic license #00000"]. */
+  hasCredential?: string[];
+};
+
+type ProfileSplitImageSide = "left" | "right";
+type ProfileSplitTheme = ComponentProps<typeof Section>["theme"];
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ProfileSplit** — "Meet your chiropractor" / "Meet the owner": one
+   * person's portrait (with an optional badge over its corner) beside their
+   * name, a bio, and their credentials as small labelled tiles — school,
+   * license, techniques, languages, years. For a business where the person
+   * IS the reason to call: a doctor, a master tradesman, a designer. Real
+   * facts only.
+   *
+   * - `name` — the heading ("Dr. Jordan Avery, D.C."); `eyebrow` over it
+   * - `lead` — the first paragraph, larger; `paragraphs` — the rest, smaller
+   * - `image` + `imageAlt` (required), `imageSide` (default `left`)
+   * - `badge` — `{ title, text? }` over the photo's corner ("Cum laude")
+   * - `credentials` — `{ label, value, wide? }[]`, two across; `wide` spans both
+   * - `cta` (button) and `secondaryCta` (text link: "Meet the doctor")
+   * - `person` — adds a schema.org Person (worksFor the business) with
+   *   `jobTitle`, `alumniOf`, `knowsLanguage`, `hasCredential`
+   * - Theme: `dark` by default (it reads as a feature); pass `light` etc.
+   *
+   * @example
+   * <ProfileSplit eyebrow="Meet your chiropractor" name="Dr. Jordan Avery, D.C." lead="Dr. Avery graduated with honors…" image={portrait} imageAlt="Dr. Jordan Avery in a treatment room" badge={{ title: "With honors", text: "Doctor of Chiropractic" }} credentials={[{ label: "Licensed in", value: "Texas, license #00000" }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the name: "Meet your chiropractor". */
+  eyebrow?: string;
+
+  /** The person's name, as the section heading. Required. */
+  name: string;
+
+  /** The opening paragraph, set larger. */
+  lead?: string;
+
+  /** More paragraphs, set smaller: life outside work, family, why they do it. */
+  paragraphs?: string[];
+
+  /** The portrait (an import or a URL). Required. */
+  image: ImageMetadata | string;
+
+  /** Real alt text for the portrait. Required. */
+  imageAlt: string;
+
+  /** Which side the portrait sits on. @default 'left' */
+  imageSide?: ProfileSplitImageSide;
+
+  /** A small card over the portrait's corner. */
+  badge?: ProfileSplitBadge;
+
+  /** The credentials, as labelled tiles. */
+  credentials?: ProfileSplitCredential[];
+
+  /** The button. */
+  cta?: SectionCta;
+
+  /** A text link beside the button ("Meet the doctor"). */
+  secondaryCta?: SectionCta;
+
+  /** Emit a schema.org Person for them (linked to the business). */
+  person?: ProfileSplitPerson;
+
+  /** Section theme. @default 'dark' */
+  theme?: ProfileSplitTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  name,
+  lead,
+  paragraphs = [],
+  image,
+  imageAlt,
+  imageSide = "left",
+  badge,
+  credentials = [],
+  cta,
+  secondaryCta,
+  person,
+  theme = "dark",
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render) {
+  if (!name)
+    console.warn("[ProfileSplit] `name` is required; nothing renders.");
+  if (!image)
+    console.warn("[ProfileSplit] `image` is required; nothing renders.");
+  if (!imageAlt)
+    console.warn(
+      "[ProfileSplit] Give the portrait real alt text (`imageAlt`).",
+    );
+}
+
+const slug = (name ?? "")
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-|-$/g, "");
+const nonEmpty = (list?: string[]) => (list?.length ? list : undefined);
+const personSchema = person && {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "@id": `${SITE.url}/#person-${slug}`,
+  name,
+  jobTitle: person.jobTitle || undefined,
+  worksFor: { "@id": `${SITE.url}/#localbusiness` },
+  alumniOf: nonEmpty(person.alumniOf)?.map((school) => ({
+    "@type": "EducationalOrganization",
+    name: school,
+  })),
+  knowsLanguage: nonEmpty(person.knowsLanguage),
+  hasCredential: nonEmpty(person.hasCredential)?.map((credential) => ({
+    "@type": "EducationalOccupationalCredential",
+    name: credential,
+  })),
+};
+---
+
+{
+  render && name && image && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["profile-split_wrap", className]}
+      {...rest}
+    >
+      <div
+        class:list={[
+          "profile-split_layout",
+          { "is-image-right": imageSide === "right" },
+        ]}
+      >
+        <div class="profile-split_media">
+          <Visual
+            src={image}
+            alt={imageAlt || name}
+            ratio="portrait"
+            loading="lazy"
+            class="profile-split_img"
+          />
+          {badge?.title && (
+            <div class="profile-split_badge" data-theme="brand">
+              <svg
+                class="profile-split_badge_icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="9" r="6" />
+                <path d="M8.5 13.9 7 22l5-3 5 3-1.5-8.1" />
+              </svg>
+              <div class="profile-split_badge_text u-margin-trim">
+                <p class="profile-split_badge_title">{badge.title}</p>
+                {badge.text && (
+                  <p class="profile-split_badge_line u-text-style-small">
+                    {badge.text}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        <div class="profile-split_body u-margin-trim">
+          {eyebrow && (
+            <Heading tag="p" variant="eyebrow" class="profile-split_eyebrow">
+              {eyebrow}
+            </Heading>
+          )}
+          <Heading tag="h2" variant="h2" class="profile-split_name">
+            {name}
+          </Heading>
+          {lead && (
+            <Text variant="large" class="profile-split_lead">
+              {lead}
+            </Text>
+          )}
+          {paragraphs.map((p) => (
+            <Text muted class="profile-split_text">
+              {p}
+            </Text>
+          ))}
+          {credentials.length > 0 && (
+            <dl class="profile-split_credentials">
+              {credentials.map((c) => (
+                <div
+                  class:list={[
+                    "profile-split_credential",
+                    { "is-wide": c.wide },
+                  ]}
+                >
+                  <dt class="profile-split_credential_label">{c.label}</dt>
+                  <dd class="profile-split_credential_value">{c.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {(cta || secondaryCta) && (
+            <div class="profile-split_actions">
+              {cta && <CtaButton cta={cta} />}
+              {secondaryCta && <CtaButton cta={secondaryCta} variant="text" />}
+            </div>
+          )}
+        </div>
+      </div>
+      {personSchema && <JsonLd data={personSchema} />}
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .profile-split_layout {
+      display: var(--flex-medium, grid);
+      flex-direction: column;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      align-items: center;
+      gap: var(--space-8);
+    }
+
+    /* Portrait on the right: the same grid, the body takes column 1. */
+    .profile-split_layout.is-image-right {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+
+    .profile-split_layout.is-image-right .profile-split_media {
+      grid-column-start: 2;
+      grid-row-start: 1;
+    }
+
+    /* The badge hangs off the portrait's lower right corner. */
+    .profile-split_media {
+      position: relative;
+      width: 100%;
+      padding-bottom: var(--space-4);
+    }
+
+    @container (width < 58em) {
+      .profile-split_media {
+        width: min(100%, 28rem);
+        align-self: center;
+      }
+    }
+
+    .profile-split_badge {
+      position: absolute;
+      right: calc(var(--space-4) * -1);
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      max-width: min(17rem, 80%);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-main);
+      background-color: var(--background);
+      color: var(--text);
+      box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 0.25);
+    }
+
+    @container (width < 58em) {
+      .profile-split_badge {
+        right: var(--space-3);
+      }
+    }
+
+    .profile-split_badge_icon {
+      flex-shrink: 0;
+      width: 2.25em;
+      aspect-ratio: 1;
+    }
+
+    .profile-split_badge_text {
+      min-width: 0;
+    }
+
+    .profile-split_badge_title {
+      margin: 0;
+      font-family: var(--h4-font-family, inherit);
+      font-size: var(--text-large-size);
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .profile-split_badge_line {
+      margin: 0;
+      opacity: 0.85;
+    }
+
+    /* Credentials: labelled tiles, two across; one column on phones. */
+    .profile-split_credentials {
+      display: var(--flex-small, grid);
+      flex-direction: column;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-3);
+      margin: var(--space-6) 0;
+    }
+
+    .profile-split_credential {
+      padding: var(--space-3) var(--space-4);
+      border: var(--border-width-main) solid var(--border);
+      border-radius: var(--radius-small);
+      background-color: color-mix(in srgb, var(--text) 5%, transparent);
+    }
+
+    .profile-split_credential.is-wide {
+      grid-column-end: span 2;
+    }
+
+    .profile-split_credential_label {
+      margin-bottom: var(--space-1);
+      color: var(--heading-accent);
+      font-size: var(--text-tiny-size);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .profile-split_credential_value {
+      margin: 0;
+      font-size: var(--text-small-size);
+      font-weight: 600;
+    }
+
+    .profile-split_actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3) var(--space-5);
+    }
+  }
+</style>

@@ -427,6 +427,8 @@ async function main() {
       name: area,
     })),
     founded: demo.founded ?? null,
+    openingHours: demo.contact.openingHours ?? [],
+    businessType: demo.businessType ?? "ProfessionalService",
     utilityBar: demo.utilityBar ?? null,
     reviewsUrl: demo.reviewsUrl ?? "",
     googleReviewUrl: "",

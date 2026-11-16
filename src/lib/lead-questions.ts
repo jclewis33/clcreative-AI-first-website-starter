@@ -11,7 +11,13 @@ import type { ImageMetadata } from "astro";
  * preset can all describe a form without importing a component.
  */
 export type LeadQuestionField =
-  "audience" | "projectType" | "projectSize" | "timeline" | "budget";
+  | "audience"
+  | "customerStatus"
+  | "projectType"
+  | "concerns"
+  | "projectSize"
+  | "timeline"
+  | "budget";
 
 export type LeadQuestionOption = {
   /** What the visitor sees, and what is saved. */
@@ -35,4 +41,10 @@ export interface LeadQuestion {
   text?: string;
   /** The tiles; picking one moves to the next step. */
   options: LeadQuestionOption[];
+  /**
+   * "Pick all that apply": the tiles are checkboxes, the step gets a Next
+   * button instead of moving on at the first tap, and every pick is saved
+   * (comma-separated). "Where are you hurting?", "Which rooms?".
+   */
+  multiple?: boolean;
 }

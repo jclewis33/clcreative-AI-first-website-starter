@@ -76,13 +76,17 @@ const homeSchema = z.object({
           z.object({
             name: z.enum([
               "audience",
+              "customerStatus",
               "projectType",
+              "concerns",
               "projectSize",
               "timeline",
               "budget",
             ]),
             question: text,
             text: text.optional(),
+            /** "Pick all that apply": checkboxes and a Next button. */
+            multiple: z.boolean().optional(),
             options: z
               .array(
                 z.object({
@@ -759,7 +763,33 @@ const demoObject = z.object({
     postalCode: text.optional(),
     locality: text,
     region: text,
+    /**
+     * Day by day, for a place people visit (a clinic, a showroom): the
+     * hours table and the JSON-LD hours. Days not listed are closed; times
+     * 24-hour. Only hours their site or Google profile shows.
+     */
+    openingHours: z
+      .array(
+        z.object({
+          days: z
+            .array(z.enum(["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]))
+            .min(1),
+          opens: z.string().regex(/^\d{2}:\d{2}$/),
+          closes: z.string().regex(/^\d{2}:\d{2}$/),
+        }),
+      )
+      .optional(),
   }),
+  /**
+   * The schema.org type of the business, the most specific that fits:
+   * "Plumber", "Electrician", "HVACBusiness", "RoofingContractor",
+   * "Chiropractor", "Dentist" (the list in src/config/site.ts).
+   * Default "ProfessionalService".
+   */
+  businessType: z
+    .string()
+    .regex(/^[A-Z][A-Za-z]+$/)
+    .optional(),
   serviceAreas: z.array(text).min(1),
   /**
    * When they describe their area as a distance ("within 60 miles of
