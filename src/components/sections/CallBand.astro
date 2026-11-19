@@ -246,7 +246,10 @@ if (import.meta.env.DEV && render) {
       --_buttons-justify: center;
       align-self: center;
       width: 100%;
-      max-width: 44rem;
+      /* Room for the panel's button, "or" and the number on one line: at
+         44rem a serif look's larger number (trusted) wrapped "(844)" onto
+         a line of its own. */
+      max-width: 48rem;
       padding: var(--space-7) var(--space-6);
       border-radius: var(--radius-main);
       background-color: var(--background-2);

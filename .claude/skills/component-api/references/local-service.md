@@ -164,13 +164,15 @@ Two `SITE` settings turn the agency chrome into contractor chrome, site-wide:
   `LocalServiceHome` uses the site-wide modal when it exists and brings its
   own otherwise.
 - **`SITE.look`** — `studio` (the starter's own), `fresh`, `warm`, `rugged`,
-  `natural`, `estate` (`src/config/looks.ts`; tokens in
+  `natural`, `trusted`, `estate` (`src/config/looks.ts`; tokens in
   `src/styles/variables/looks.css`). A look re-values tokens only — fonts,
   heading case and tracking, radii, button and nav/footer type, paper and
   ink — so every component follows; the brand colour stays the client's.
   Pick by trade: fresh = lawn, pest, cleaning, pool; warm = HVAC,
   insulation, remodeling; rugged = electrical, roofing, plumbing,
-  commercial; natural = hardscape, landscaping, decks; estate = high-end
+  commercial; natural = hardscape, landscaping, decks; trusted =
+  remediation, inspection, restoration (cream paper, navy ink, calm serif
+  headings with italic brand-colour accents, pill buttons); estate = high-end
   decorative work sold to homeowners and contractors (Fraunces, warm paper,
   a dark nav with the name beside the logo, the brief footer and its own
   service and project pages).

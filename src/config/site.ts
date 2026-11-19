@@ -185,7 +185,7 @@ export const SITE = {
 
   /**
    * The site's visual look (src/config/looks.ts): "studio" (the starter's
-   * own), or a home-service look — "fresh", "warm", "rugged", "natural".
+   * own), or a home-service look — "fresh", "warm", "rugged", "natural", "trusted", "estate".
    */
   look: "studio" as SiteLook,
 

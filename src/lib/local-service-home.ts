@@ -185,6 +185,8 @@ export interface LocalServiceHomeData {
     secondaryCta?: { label: string; href: string };
     /** The estimate button's text here. @default estimate.label */
     ctaLabel?: string;
+    /** The small card on the photo. It defaults to "Since {founded}"; `false` hides it. */
+    badge?: { value: string; label: string } | false;
   };
 
   /** Four short numbers or words. Leave out anything you can't back up. */

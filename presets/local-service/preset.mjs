@@ -155,6 +155,10 @@ const homeSchema = z.object({
     secondaryCta: z.object({ label: text, href: text }).optional(),
     /** The estimate button's text in the hero. @default estimate.label */
     ctaLabel: text.optional(),
+    /** The small card on the hero photo; it defaults to "Since {founded}". `false` hides it. */
+    badge: z
+      .union([z.literal(false), z.object({ value: text, label: text })])
+      .optional(),
     /** Credentials they really hold; `image` is a logo source. */
     trust: z
       .array(z.object({ label: text, image: image.optional() }))
@@ -814,6 +818,7 @@ export const LOOK_NAMES = [
   "warm",
   "rugged",
   "natural",
+  "trusted",
   "estate",
   "studio",
 ];
@@ -822,7 +827,8 @@ const demoObject = z.object({
   preset: z.literal("local-service"),
   /**
    * fresh (lawn, pest, cleaning) · warm (HVAC, insulation, remodeling) ·
-   * rugged (electrical, roofing, plumbing) · natural (hardscape, landscaping)
+   * rugged (electrical, roofing, plumbing) · natural (hardscape, landscaping) ·
+   * trusted (remediation, inspection, restoration) · estate (high-end finishes)
    */
   look: z.enum(LOOK_NAMES).default("fresh"),
   /** Contractor license, shown in the footer, e.g. "TECL #25414". */
