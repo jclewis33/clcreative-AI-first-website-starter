@@ -1,10 +1,1 @@
-[
-  {
-    "link": "/case-studies/greenleaf-organics-seo",
-    "reason": "CaseStudyFeatured links every featured study to its page, but this sample study is comingSoon, so it has none. Fix: give FeaturedCaseStudy comingSoon/liveUrl (and the Sanity add-on's map + query) and link like CaseStudyCard does."
-  },
-  {
-    "link": "/#services",
-    "reason": "SERVICES_INDEX_PATH (src/lib/services.ts) points at #services, but the starter homepage's Services section has no id. Fix: give the section that id, or point the breadcrumb at a real services page."
-  }
-]
+[]

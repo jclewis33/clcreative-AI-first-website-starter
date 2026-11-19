@@ -181,6 +181,8 @@ export async function getFeaturedCaseStudies(
         client: d.client,
         description: d.description,
         image: localImage(d.image, d.imageAlt),
+        comingSoon: d.comingSoon,
+        liveUrl: d.liveUrl ?? null,
       },
     ];
   });

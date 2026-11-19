@@ -287,6 +287,9 @@ export interface FeaturedCaseStudy {
   client: string | null;
   description: string | null;
   image: ContentImage | null;
+  /** Not published yet (no page is built): the card links to `liveUrl` instead. */
+  comingSoon: boolean;
+  liveUrl: string | null;
 }
 
 /* ── Blog ──────────────────────────────────────────────────────────────── */

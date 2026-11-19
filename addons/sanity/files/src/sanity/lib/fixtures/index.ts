@@ -235,6 +235,8 @@ export function resolveFixture(
           description: c.description,
           image: c.image,
           imageAlt: c.imageAlt,
+          comingSoon: c.comingSoon,
+          liveUrl: c.liveUrl,
         }));
     }
     case TESTIMONIALS_QUERY:

@@ -9,6 +9,9 @@
  * Below the large breakpoint the 1-wide + 2-narrow layout is preserved.
  * When the container collapses further, all cards stack at equal width.
  *
+ * A coming-soon study (no page yet) links to its `liveUrl` in a new tab,
+ * as CaseStudyCard does; one with no `liveUrl` is left out.
+ *
  * Designed to be placed once and updated in one place — pass studies
  * via prop or let it look up the slugs in FEATURED_CASE_STUDIES_SLUGS (or a
  * `slugs` prop) from the content source.
@@ -207,6 +210,32 @@ if (import.meta.env.DEV && !prefetched) {
   }
 }
 
+/* ── Card links ───────────────────────────────────────────────────────── */
+
+/* A coming-soon study has no page, so its card links to the live site in a
+   new tab — the same rule CaseStudyCard follows. One with no live URL
+   either has nowhere to go: it is dropped (and named in dev). */
+const linkable = displayStudies.filter((s) => !s.comingSoon || s.liveUrl);
+if (import.meta.env.DEV && linkable.length < displayStudies.length) {
+  console.warn(
+    `[CaseStudyFeatured] Coming-soon case study without a liveUrl dropped: ${displayStudies
+      .filter((s) => s.comingSoon && !s.liveUrl)
+      .map((s) => s.slug)
+      .join(", ")}.`,
+  );
+}
+const cards = linkable.map((study) => {
+  const external = study.comingSoon && Boolean(study.liveUrl);
+  return {
+    study,
+    href: external ? study.liveUrl! : `/case-studies/${study.slug}`,
+    newTab: external,
+    label: external
+      ? `Visit ${plainText(study.client)} website (case study coming soon)`
+      : `View ${plainText(study.client)} case study`,
+  };
+});
+
 /* ── Heading slot ─────────────────────────────────────────────────────── */
 
 /* NOTE: `Astro.slots.has()` is a cheap "was it passed" check, which is all
@@ -218,7 +247,7 @@ const hasHeadingSlot = Astro.slots.has("heading");
 ---
 
 {
-  displayStudies.length >= 3 && (
+  cards.length >= 3 && (
     <Section
       theme={theme}
       padding={padding}
@@ -257,14 +286,16 @@ const hasHeadingSlot = Astro.slots.has("heading");
 
         {/* Cards */}
         <div class="case-study-featured_cards">
-          {displayStudies.map((study, i) => (
+          {cards.map(({ study, href, newTab, label }, i) => (
             <a
-              href={`/case-studies/${study.slug}`}
+              href={href}
+              target={newTab ? "_blank" : undefined}
+              rel={newTab ? "noopener noreferrer" : undefined}
               class:list={[
                 "case-study-featured_card",
                 i === 0 && "is-expanded",
               ]}
-              aria-label={`View ${plainText(study.client)} case study`}
+              aria-label={label}
             >
               <div class="case-study-featured_card_visual">
                 {study.image && (

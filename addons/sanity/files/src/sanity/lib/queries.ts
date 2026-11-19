@@ -371,7 +371,9 @@ export const FEATURED_CASE_STUDIES_QUERY =
   client,
   description,
   image,
-  "imageAlt": coalesce(imageAlt, image.asset->altText, "")
+  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),
+  comingSoon,
+  liveUrl
 }`);
 
 /* ── Projects ─────────────────────────────────────────────────────────────── */
