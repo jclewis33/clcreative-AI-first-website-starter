@@ -21,7 +21,9 @@
  *   4. Home — src/data/home.ts (LocalServiceHomeData) and the default
  *      process steps (src/data/process.ts).
  *   5. Pages — the preset's pages copied into src/pages; their PAGES
- *      descriptions updated.
+ *      descriptions updated. A page of the same name in `pages/` beside
+ *      demo.json (e.g. demo/pages/index.astro) is installed instead: the
+ *      demo's hand-built page, which a re-run keeps.
  *   6. The demo switch — DEMO in src/config/demo.shared.mjs: whole-site
  *      noindex, the "Built for …" banner, nav pruning, the lead fallback.
  *   7. Prettier on what it wrote, then `astro sync` (the content schema
@@ -734,9 +736,16 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
       if (!DRY_RUN) await fs.rm(at(page.to), { force: true });
       continue;
     }
+    const custom = path.join(baseDir, "pages", page.from);
+    const own = await fs.stat(custom).then(
+      () => true,
+      () => false,
+    );
+    if (own)
+      console.log(`  ${page.to}: the demo's own page (pages/${page.from})`);
     await write(
       page.to,
-      await fs.readFile(path.join(presetDir, page.from), "utf8"),
+      await fs.readFile(own ? custom : path.join(presetDir, page.from), "utf8"),
     );
   }
   const hasReviewsPage = Boolean(demo.home.reviews?.items?.length);

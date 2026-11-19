@@ -20,6 +20,15 @@ builds it through the dev sample at `/demo/local-service`. This folder is
 excluded from the starter's `tsconfig.json`: `index.astro` imports
 `src/data/home.ts`, which exists only in a demo.
 
+## A demo's own pages
+
+A file in `pages/` beside demo.json with the name of a preset page
+(`index.astro`, `contact.astro`, `about.astro`, `reviews.astro`) is
+installed instead of the preset's, and kept on every re-run. That is
+where a demo's hand-designed home page lives: start from the preset's
+page and compose it from the template's sections and new ones. Delete
+the file to go back to the preset's page.
+
 ## demo.json in short
 
 Start from `fixture/demo.json`. Every image field is a source: a path
