@@ -374,7 +374,15 @@ npm run check:hover
 npm run build
 npm run check:content-build
 npm run check:schema -- --dist dist/client
+npm run check:links    # site-review.yml: broken links, anchors, redirects
+npm run check:budget   # site-review.yml: page weight vs scripts/budget.json
 ```
+
+`check:links` and `check:budget` come from the separate
+[site-review.yml](../../../.github/workflows/site-review.yml) workflow (it
+survives the Sanity add-on, which replaces only `ci.yml`). A fork whose new
+content breaks a link fixes the link; it doesn't add to
+`scripts/check-links.allow.json`.
 
 CI also runs an `audit` job (`npm audit --omit=dev --audit-level=critical`)
 and the `addon-sanity` job, which passes with nothing to check once
@@ -390,6 +398,21 @@ once the schema is deployed ([references/sanity.md](references/sanity.md)
 Fix anything that fails before handing off. A brand-new empty Sanity project builds
 clean — `getStaticPaths` enumerates zero slugs, so no detail pages are emitted and
 listing pages render empty states.
+
+### 6.1 — Pull request review (in-repo part)
+
+The fork inherits the automated PR review ([docs/pr-review.md](../../../docs/pr-review.md)).
+Two edits belong to setup; the rest is dashboard work for Step 8.
+
+1. **Code owner.** Ask who maintains this site's code (a GitHub username,
+   or `@org/team`). Replace every owner in
+   [.github/CODEOWNERS](../../../.github/CODEOWNERS) with it. Don't leave
+   the starter's owner on a client repo: it would make that person the
+   required approver.
+2. **Key pages for the visual check.** In
+   [scripts/visual-pages.json](../../../scripts/visual-pages.json), list
+   one page per template the fork actually has (home, a service page, a
+   blog post, contact…), and drop any route the fork deleted.
 
 ## Step 7 — Deploy to Cloudflare
 
@@ -412,6 +435,15 @@ every item the user deferred in earlier steps** so nothing is silently dropped:
   the live site until that webhook exists.
 - **GitHub** (§5) — Dependabot alerts / security updates / malware alerts / grouped
   updates; account-level push protection.
+- **Pull request review** (§5, [docs/pr-review.md](../../../docs/pr-review.md)) —
+  install the Claude GitHub App on **this** repo (github.com/apps/claude →
+  Configure → add the repo, or `/install-github-app` in Claude Code from the
+  repo); add ONE Actions secret, `ANTHROPIC_API_KEY` or
+  `CLAUDE_CODE_OAUTH_TOKEN` (until then the Claude review job skips itself);
+  and, on a GitHub plan with rulesets, protect `main` (PR + 1 approval, Code
+  Owner review, required checks `checks`, `audit`, `links-and-weight`). Say
+  that the app and the secret are per repo: a new client fork needs both
+  again unless the app was installed for "All repositories".
 - **GoHighLevel forms** (§6) — the `GHL_API_TOKEN` / `GHL_LOCATION_ID` secrets,
   the form tags, the `/tools` gate and `SITE.smsOptIn`.
 - **Content & images still holding placeholders** — any un-swapped photography
@@ -428,6 +460,8 @@ Then run the **§7 post-launch verification** curl block from the checklist.
   explicitly** (Step 1.1), and the matching branch was completed or explicitly
   deferred.
 - Config files carry the new identity, and **every CI check passes** (Step 6).
+- **`.github/CODEOWNERS` names this site's maintainer** and
+  `scripts/visual-pages.json` lists the fork's own key pages (Step 6.1).
 - **Fonts and font sizes were explicitly discussed** — the user either confirmed
   the defaults or supplied new typefaces / a new type scale, and those were applied.
 - **`--color-brand-text` was decided** — the user confirmed whether the brand color

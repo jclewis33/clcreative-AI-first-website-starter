@@ -50,8 +50,11 @@ merge commit.
 ## Setup (once per repo)
 
 1. **Claude review credentials.** Install the Claude GitHub App on the repo
-   (https://github.com/apps/claude, or run `/install-github-app` in Claude
-   Code). Then add ONE repository secret (Settings → Secrets and variables
+   (https://github.com/apps/claude → Configure → choose the repo, or run
+   `/install-github-app` in Claude Code from inside the repo). The app is
+   installed per GitHub account and given access repo by repo: pick
+   "All repositories" once and new client repos are covered, or add each
+   new repo as you create it. Then add ONE repository secret (Settings → Secrets and variables
    → Actions):
    - `ANTHROPIC_API_KEY` — an API key from console.anthropic.com (billed per
      use), or
@@ -59,7 +62,8 @@ merge commit.
      subscription.
 
    Without either, the Claude review job skips itself and the rest still
-   runs.
+   runs. Secrets are per repo, so each client repo needs its own (or put
+   it in an organization secret if the repos live in a GitHub org).
 
 2. **Code owner.** In `.github/CODEOWNERS`, replace the owner with the
    developer who maintains this site.
