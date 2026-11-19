@@ -1,0 +1,14 @@
+{
+  "$comment": "Pages scripts/visual-diff.mjs always screenshots, plus up to maxChangedPages more whose HTML changed in the PR. Key pages catch CSS changes, which don't show in the HTML. List one page per template on a fork: home, a service page, a blog post, the contact page.",
+  "pages": [
+    "/",
+    "/contact/",
+    "/blog/",
+    "/case-studies/",
+    "/projects/",
+    "/gallery/"
+  ],
+  "maxChangedPages": 12,
+  "widths": [1440, 390],
+  "minChangedPixels": 25
+}

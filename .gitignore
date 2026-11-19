@@ -58,3 +58,6 @@ preview/.env
 
 # Local parity baselines (scripts/compare-dist.mjs) — never commit
 .parity/
+
+# scripts/visual-diff.mjs output
+visual-report/

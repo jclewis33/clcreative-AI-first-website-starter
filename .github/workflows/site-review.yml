@@ -1,0 +1,109 @@
+# Checks a reviewer would otherwise do by hand, on the BUILT site.
+#
+#   links-and-weight  broken internal links and anchors, bad redirects
+#                     (scripts/check-links.mjs) and the page-weight budget
+#                     (scripts/check-budget.mjs, budgets in scripts/budget.json).
+#   visual            builds the base branch and the PR, screenshots the key
+#                     pages plus any page whose HTML changed, and posts a
+#                     table of what looks different as a PR comment. The
+#                     before / after / diff images are in the run's
+#                     "visual-diff" artifact. It reports; it never fails.
+#
+# Lives in its own file (not ci.yml) so the Sanity add-on, which replaces
+# ci.yml, leaves it in place. Docs: docs/pr-review.md.
+name: Site review
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: site-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  links-and-weight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check:links
+      - run: npm run check:budget
+
+  visual:
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check out the PR
+        uses: actions/checkout@v6
+        with:
+          path: head
+      - name: Check out the base branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            head/package-lock.json
+            base/package-lock.json
+
+      - name: Build the base branch
+        working-directory: base
+        run: npm ci && npm run build
+      - name: Build the PR
+        working-directory: head
+        run: npm ci && npm run build
+
+      - name: Install Chromium
+        working-directory: head
+        run: npx playwright install --with-deps chromium
+
+      - name: Compare screenshots
+        working-directory: head
+        run: >
+          node scripts/visual-diff.mjs
+          --base ../base/dist/client
+          --head dist/client
+          --out ../visual-report
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diff
+          path: visual-report
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # One comment per PR, updated on every push. Fork PRs get a read-only
+      # token, so this step may fail there; the job summary still has the table.
+      - name: Comment on the PR
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          printf '\n[Screenshots for this run](%s) (the **visual-diff** artifact).\n' "$RUN_URL" >> visual-report/report.md
+          id=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- visual-diff -->"))) | .id' | head -n 1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@visual-report/report.md > /dev/null
+          else
+            gh pr comment "$PR" --repo "$REPO" --body-file visual-report/report.md
+          fi

@@ -19,7 +19,9 @@ Other docs: [docs/new-project-checklist.md](docs/new-project-checklist.md)
 (handing a finished site to a client), [docs/brand-color-guide.md](docs/brand-color-guide.md),
 [docs/responsive-columns.md](docs/responsive-columns.md),
 [docs/editing-content.md](docs/editing-content.md) (the client-facing
-content-editing guide; keep it in step with the `content-files` skill).
+content-editing guide; keep it in step with the `content-files` skill),
+[docs/pr-review.md](docs/pr-review.md) (the automated PR checks and how to
+review a PR).
 
 > **Forking this repo for a new project?** Start with the checklist above —
 > most of a rebrand is config (`src/config/site.ts`, `site.shared.mjs`,
@@ -359,7 +361,14 @@ image URLs, resized local images, TOC anchors) ·
 `npm run check:addon-installer` · `npm run check:setup` ·
 `npm run check:demo` (the fixture prospect demo, built and checked noindex) ·
 `npm run check:addon` (installs the Sanity add-on in a scratch copy and
-builds it; needs the network, takes minutes) · `npm run build` · `npm run format:check`.
+builds it; needs the network, takes minutes) · `npm run build` · `npm run format:check` ·
+`npm run check:links` (after a build: broken internal links/anchors, bad
+redirects; known issues in `scripts/check-links.allow.json`) ·
+`npm run check:budget` (after a build: page weight vs `scripts/budget.json`) ·
+`npm run visual:diff -- --base <dist> --head dist/client` (screenshots two
+builds, reports what looks different; needs `npx playwright install chromium`).
+A new page that adds weight or a link the checks reject: fix the page, don't
+raise the budget or allow-list it without saying why in the PR.
 
 ## Anti-patterns
 

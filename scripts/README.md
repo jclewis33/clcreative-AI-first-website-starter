@@ -150,3 +150,38 @@ top of the file.
 
 > Fork note: `STATIC_PAGES` and the content samples are tuned to this
 > project's routes — edit them for your own pages.
+
+---
+
+## `check-links.mjs` — broken links and redirects (`npm run check:links`)
+
+Reads a build (`dist/client` by default) and fails on any internal link,
+image, script or `#anchor` that points at nothing the site serves, and on
+`_redirects` rules with a bad status, a broken destination, or a source a
+page also lives at. SSR routes (any `src/pages` file with
+`export const prerender = false`) count as served. External links are not
+fetched. Known issues you've accepted for now go in
+`check-links.allow.json` with a reason and are reported as warnings; an
+entry that stops matching is flagged as stale. CI: `site-review.yml`.
+
+---
+
+## `check-budget.mjs` — page weight (`npm run check:budget`)
+
+Measures every built page's gzipped HTML, CSS (linked plus inline) and JS
+(scripts, module preloads and the modules they statically import), and the
+largest image file, against `budget.json`. Over budget fails; within 10%
+warns. CI: `site-review.yml`.
+
+---
+
+## `visual-diff.mjs` — screenshot comparison (`npm run visual:diff`)
+
+`--base <dist> --head <dist> [--out visual-report]`. Serves both builds,
+screenshots the key pages in `visual-pages.json` plus pages whose HTML
+changed (hashes normalised) at each configured width in headless Chromium
+with reduced motion, and diffs them with pixelmatch. Writes `report.md`
+and before/after/diff PNGs of changed pages. Reports only; never fails.
+Needs `npx playwright install chromium` once. CI: the `visual` job in
+`site-review.yml`, which posts the report as a PR comment. Guide:
+[docs/pr-review.md](../docs/pr-review.md).
