@@ -104,6 +104,24 @@ try {
     assert.equal(again.status, 0, out(again));
     assert.equal(tree(), first, "a second run changed the tree");
   }
+
+  // A page in pages/ beside demo.json replaces the preset's, and only
+  // while it's there.
+  {
+    const own = path.join(dir, path.dirname(FIXTURE), "pages", "contact.astro");
+    fs.mkdirSync(path.dirname(own), { recursive: true });
+    fs.writeFileSync(own, "<p>the demo's own contact page</p>\n");
+    const r = demo(FIXTURE);
+    assert.equal(r.status, 0, out(r));
+    assert.match(
+      read("src/pages/contact.astro"),
+      /the demo's own contact page/,
+    );
+    fs.rmSync(path.dirname(own), { recursive: true });
+    const back = demo(FIXTURE);
+    assert.equal(back.status, 0, out(back));
+    assert.doesNotMatch(read("src/pages/contact.astro"), /own contact page/);
+  }
   assert.match(
     read("src/config/demo.shared.mjs"),
     /prospect: "Brightline Electric"/,

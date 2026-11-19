@@ -1,6 +1,6 @@
 ---
 name: demo
-description: Build a branded prospect demo site for one local-service business, in about 30 minutes, ready to send. Use when Casey says "make a demo for <business or URL>", "build a demo site for <prospect>", "send <prospect> a demo", "update the <prospect> demo", or "clean up old demos". Researches the prospect's current site, writes demo.json, runs `npm run demo`, builds, checks and pushes a `demo/<slug>` branch of the PRIVATE demos repo, and reports the preview URL plus what to confirm before sending.
+description: Build a branded prospect demo site for one local-service business, designed for that business (its own look, not a filled-in template), checked and fixed until it passes, ready to send. Use when Casey says "make a demo for <business or URL>", "build a demo site for <prospect>", "send <prospect> a demo", "update the <prospect> demo", or "clean up old demos". Researches the prospect's current site, writes demo.json, runs `npm run demo`, builds, checks and pushes a `demo/<slug>` branch of the PRIVATE demos repo, and reports the preview URL plus what to confirm before sending.
 ---
 
 # Prospect demo — research → demo.json → `npm run demo` → push
@@ -38,6 +38,112 @@ Read first, once per session:
   pulled from the logo, a service you grouped or renamed, any AI-generated
   photo. Casey reads this list before sending.
 
+## The quality bar: a designed site, not a filled-in template
+
+Every demo has to look like a site a business owner would pay thousands
+for, made for them: not a template, and nothing that reads as AI-made.
+The template path alone (`demo.json` → `npm run demo`) gives every demo
+the same sections in the same shapes, which is the plain white-card look
+Casey rejects. The reference (Nov 2026) is the Hey Segment sites in Clay
+Lawrence's video: a 30A landscaper, a 30A plumber, a tree service. Each
+had its own type, colours and one signature motif, and its copy named the
+place. Their FAQ and "three steps" were plain cards like ours, and that
+was fine: the hero and two or three signature sections carried the site.
+Claude ran on each one for one to four hours, building, screenshotting
+and fixing.
+
+**What "use our design system" means:** the tokens (spacing, type scale,
+radii, theme aliases), Section and Layout, Heading/Text/Button, the forms
+(GHL), SEO and JSON-LD, the service-area map, reviews and tap-to-call
+phones. Always use those. The template's section designs are a starting
+point, not a limit.
+
+### 1. Art direction (after research, before building)
+
+Write `demo/brief.md` (kept on the demo branch):
+
+- **Who buys and the feel**, in three words ("coastal, unhurried,
+  premium"; "fast, honest, no-nonsense").
+- **Display font**, picked for this business. The five looks' fonts are
+  only a start. Add a new one to `astro.config.mjs` (local woff2 in
+  `src/assets/fonts/`, like the others), and do it in the starter so the
+  next demo has it. A demo can get its own entry in `src/config/looks.ts`.
+- **Palette:** their brand colour plus one or two supporting colours,
+  taken from their logo, truck or photos.
+- **One signature motif** from their trade or town: arch-framed photos,
+  a treeline or wave edge between sections, a line drawing of a local
+  landmark, a stamped badge, rope or blueprint lines. Use one or two, not
+  six.
+- **The local hook:** the headline only this business can say ("30A
+  landscaping, built for salt air"; "Real 30A. No stock photos.").
+- **The signature interactive:** a price estimator from rates _they
+  publish_, a before-and-after slider from their photos, the qualifying
+  quote flow, the service-area map. Never an invented price.
+
+Show Casey two or three hero directions (screenshots or an Artifact)
+before building the rest, unless he has said to just go.
+
+### 2. Build it as theirs
+
+- Run `npm run demo` first for everything it does: identity, services,
+  content files, SEO, map, forms, reviews.
+- **Then design the hero and at least two or three sections for this
+  business.** The home page can be the demo's own page: copy the
+  template's page into `demo/pages/index.astro` (beside demo.json) and
+  compose it there from the template's sections and new ones.
+  `npm run demo` installs `demo/pages/*.astro` in place of the template's
+  page and keeps it on every re-run. The same works for `contact.astro`,
+  `about.astro` and `reviews.astro`.
+- **New sections:** build them reusable (props, no business facts in the
+  component) and send them to the starter by PR, so every demo leaves the
+  starter with more designs to pull from. A one-off arrangement can live
+  in the demo's own page.
+- **Avoid, unless it is clearly the best choice:**
+  - rows of identical white cards (icon, title, one line)
+  - centre-aligned everything
+  - the same section shape twice in a row
+  - a generic gradient where a photo belongs
+
+  Vary the rhythm down the page: a full-bleed photo, a colour band, a
+  split, big type, a dense list.
+
+- **Copy names the place and the work.** If a sentence could sit on any
+  competitor's site, rewrite it.
+
+### 3. The check-and-fix loop (no time limit)
+
+After the build, and after every round of fixes:
+
+1. Screenshot every page at 1440 and 390 wide (scroll first so the
+   animations fire), and look section by section.
+2. Grade against the rubric below. Also give the screenshots, the brief
+   and the rubric to a **fresh reviewer subagent**, with the rubric but
+   not your own opinion, so its read isn't anchored on yours.
+3. Fix every material finding, then go back to 1.
+
+Stop only when a round comes back clean at both widths. Running for an
+hour or two is expected. Report what the last round checked.
+
+**Rubric:**
+
+- Would a stranger guess it's a template or AI-made? What gives it away?
+- Is there a default card grid where a designed section belongs?
+- Does the hero say what, where and for whom within five seconds, on a
+  real photo?
+- **Photos:**
+  - objects warped or out of proportion
+  - an AI sheen or glow
+  - a crop through a head
+  - the same photo twice on a page
+  - too low resolution for its slot
+- **Copy:** any sentence that could be on any competitor's site; any
+  claim not traceable to their site; the four questions answered on
+  every page.
+- **Phone:** every number a `tel:` link. **Mobile:** no overflow; tap
+  targets big enough; nothing wrapping badly.
+- **Local SEO:** title and description with service and city, one h1,
+  JSON-LD, name/address/phone identical everywhere.
+
 ## Scope first: a demo is not a site build
 
 Ask Casey (or read from his message) what this demo needs before you
@@ -46,7 +152,7 @@ first real demo (a pest control company, Oct 2026) grew into a full
 site over a day of back-and-forth. That was useful because every fix
 went into the starter, but it is not the target.
 
-- **Quick demo (default, about 30 minutes):** the home page, their 3–4
+- **Quick demo (default):** the home page, their 3–4
   services as service pages, the contact page. On the home page, only
   the sections their real material supports: hero, services, a story or
   promises section, the service-area map, the form, the call band. Leave
@@ -58,8 +164,9 @@ went into the starter, but it is not the target.
 - **Start from the closest previous demo.** Every demo's `demo.json` is
   on its branch in the private repo
   (`git show origin/demo/<slug>:demo/demo.json`). For the same trade,
-  copy it and replace the business: the structure, section choices and
-  service shapes carry over, and only the facts, copy and photos change.
+  copy it and replace the business: the section choices and service
+  shapes carry over. The look never does: every demo gets its own brief
+  (above).
   The fictional Ironwood Pest Control (`demo/ironwood-pest-control`) is
   the pest-control and "fresh" look reference, safe to show anyone.
 - **Every fix and every new section goes into the starter**, never only
@@ -241,7 +348,7 @@ How to cover them:
   each answer all four on their own.
 - Before reporting, check each page against the four and name any gap.
 
-## Workflow (target times in brackets)
+## Workflow (rough times for the mechanical steps; the design and the check-and-fix loop take as long as they take)
 
 ### 1. Branch (1 min)
 
@@ -308,6 +415,12 @@ git switch -c demo/<slug>
   - `highlights`: exactly 4.
   - `included.images`: exactly 2.
   - Service `faqs`: at least 2.
+
+### 3a. Art direction
+
+Write `demo/brief.md` and show Casey the hero directions: see "The quality
+bar" above. The layout and look below are the starting point the brief
+builds on.
 
 ### 3b. Pick the layout, the look and the home-service pieces (1 min)
 
@@ -541,6 +654,10 @@ no warm color cast. No text, no logos."
   uses (tall on desktop, square on phones). Reject and regenerate rather
   than ship one that's "close".
 
+- **One great real photo beats three generated ones.** A slot with no good
+  photo gets a design that doesn't need one (big type, a colour band, a
+  map), never a weak AI image.
+
 List every generated image in `confirmOrCut`. Every image needs real alt
 text.
 
@@ -557,7 +674,10 @@ npm run demo -- --config <path>/demo.json
 - Re-running is the normal way to change anything. Never hand-edit the
   generated files (`src/data/home.ts`, `src/content/services/*`, …).
 
-### 6. Build and look (5–7 min)
+### 6. Build, then the check-and-fix loop
+
+Build, then run the loop from "The quality bar" §3 until it passes. The
+checks below are part of every round.
 
 ```sh
 npm run build && npm run check:content-build
