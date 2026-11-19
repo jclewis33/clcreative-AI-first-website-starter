@@ -172,8 +172,8 @@ Know the private-repo limits (GitHub Free): repo-level secret scanning and branc
 
 **Pull request review** (most of it automatic — full guide: [pr-review.md](pr-review.md)):
 
-1. Install the Claude GitHub App on **this** repo ([github.com/apps/claude](https://github.com/apps/claude) → Configure → add the repo, or run `/install-github-app` in Claude Code from the repo) and add ONE Actions secret, `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`, for the Claude review job (it skips itself without one). Both are per repo: every new client repo needs the secret, and the app too unless it was installed for "All repositories".
-2. Replace the owner in `.github/CODEOWNERS` with whoever maintains this site.
+1. **Only if other people will change the code (Claude review — the `setup` skill asks; otherwise delete `.github/workflows/claude-review.yml`):** install the Claude GitHub App on **this** repo ([github.com/apps/claude](https://github.com/apps/claude) → Configure → add the repo, or run `/install-github-app` in Claude Code from the repo) and add ONE Actions secret, `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`, for the Claude review job (it skips itself without one). Both are per repo: every new client repo needs the secret, and the app too unless it was installed for "All repositories". **The key is the repo owner's:** a client-owned repo gets the client's own `ANTHROPIC_API_KEY` (their Anthropic Console, with a spend limit), never your personal subscription token.
+2. With Claude review: replace the owner in `.github/CODEOWNERS` with whoever maintains this site's code.
 3. On a plan with rulesets: protect `main` — PR required, 1 approval, Code Owner review, required checks `checks`, `audit`, `links-and-weight`.
 4. Tune `scripts/budget.json` and `scripts/visual-pages.json` (one key page per template).
 

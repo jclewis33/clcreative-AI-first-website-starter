@@ -5,6 +5,30 @@ goes through a pull request and someone approves it before it goes live.
 This repo does most of that review automatically, so the approver's job is
 a short look, not a line-by-line read.
 
+**Claude review is optional, and off for most sites.** On a site you build
+and manage alone, you make every change, so the fork deletes
+`claude-review.yml` at setup (the `setup` skill asks). Turn it on when other
+people change the code: a client's team, another contractor. The link,
+page-weight and visual checks run on every site either way.
+
+## Whose key
+
+The Claude review runs on the account whose key is in the repo's secret,
+and that account pays for every review.
+
+- **A client-owned repo** (or one their team pushes to) uses **the
+  client's own** `ANTHROPIC_API_KEY`, created in their own Anthropic
+  Console and added by their admin. They pay per review and can set a
+  spend limit in the Console. You still see every review: the comments
+  post on the PRs whoever pays.
+- **Never put your personal subscription token**
+  (`CLAUDE_CODE_OAUTH_TOKEN`) in a repo other people can push to. Every PR
+  from their team would run on your account, and anyone with write access
+  can use a secret in a workflow they edit, even though nobody can read
+  it.
+- **Your own token** is for repos only you control: the starter, your own
+  sites.
+
 ## What happens on every pull request
 
 | Check                                        | What it tells you                                                                                                                   | Where                                                           |
@@ -49,7 +73,8 @@ merge commit.
 
 ## Setup (once per repo)
 
-1. **Claude review credentials.** Install the Claude GitHub App on the repo
+1. **Claude review credentials** (only when the site uses Claude review;
+   see "Whose key" above for which key). Install the Claude GitHub App on the repo
    (https://github.com/apps/claude → Configure → choose the repo, or run
    `/install-github-app` in Claude Code from inside the repo). The app is
    installed per GitHub account and given access repo by repo: pick

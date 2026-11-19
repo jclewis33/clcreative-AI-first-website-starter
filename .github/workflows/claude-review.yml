@@ -3,6 +3,14 @@
 # and leaves inline comments plus one summary comment that ends in a risk
 # level, so the reviewer knows how closely to look.
 #
+# Optional: a site only you change doesn't need it, and setup deletes this
+# file for those (the setup skill's Step 1.3). Keep it when other people
+# change the code.
+#
+# Whose key: the repo owner's. A client-owned repo uses the client's own
+# ANTHROPIC_API_KEY; never put a personal CLAUDE_CODE_OAUTH_TOKEN in a repo
+# other people can push to (docs/pr-review.md, "Whose key").
+#
 # Needs ONE repository secret: ANTHROPIC_API_KEY, or CLAUDE_CODE_OAUTH_TOKEN
 # (from `claude setup-token` on a Claude subscription). Without either, the
 # job skips itself instead of failing. Also install the Claude GitHub App on
