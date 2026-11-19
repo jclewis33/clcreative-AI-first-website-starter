@@ -814,6 +814,7 @@ export const LOOK_NAMES = [
   "warm",
   "rugged",
   "natural",
+  "trusted",
   "estate",
   "studio",
 ];
@@ -822,7 +823,8 @@ const demoObject = z.object({
   preset: z.literal("local-service"),
   /**
    * fresh (lawn, pest, cleaning) · warm (HVAC, insulation, remodeling) ·
-   * rugged (electrical, roofing, plumbing) · natural (hardscape, landscaping)
+   * rugged (electrical, roofing, plumbing) · natural (hardscape, landscaping) ·
+   * trusted (remediation, inspection, restoration) · estate (high-end finishes)
    */
   look: z.enum(LOOK_NAMES).default("fresh"),
   /** Contractor license, shown in the footer, e.g. "TECL #25414". */

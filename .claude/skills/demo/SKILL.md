@@ -443,6 +443,11 @@ builds on.
   - `warm`: HVAC, insulation, remodeling
   - `rugged`: electrical, roofing, plumbing, commercial
   - `natural`: hardscape, landscaping, decks, outdoor living
+  - `trusted`: remediation (asbestos, mold, lead), inspection, restoration:
+    work bought on trust. Cream paper, a fixed deep-navy ink, calm Fraunces
+    headings with the `<strong>` accent in brand-colour italic, pill
+    buttons. Give it a warm brand colour (orange, gold, terracotta) for the
+    buttons and accents; the navy comes from the look.
   - `estate`: high-end decorative work sold to homeowners and contractors
     (FDC Coatings). Use it with `home.layout: "estate"`: a full-photo
     hero, path panels, a before-and-after switcher, the commercial side in
@@ -594,7 +599,10 @@ Facebook" }`). When set it takes the home page's process slot;
 - **Service-area map:** automatic. `npm run demo` looks each service area
   up on OpenStreetMap and draws a street map with the towns outlined,
   caching the boundaries in `service-area.geo.json` beside demo.json. Commit
-  that file with the demo. A town it can't find is skipped with a warning;
+  that file with the demo. A business that lists counties, not towns, can
+  list them as such (`"Denton County"`): a name ending in "County" is
+  looked up as a county and outlined whole. A miss is cached too: delete the
+  file after fixing a name. A town it can't find is skipped with a warning;
   check the spelling, or use the town's official name.
 - **`license`:** their license number, if their site or the state lookup
   shows it.
