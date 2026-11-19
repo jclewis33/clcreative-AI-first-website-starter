@@ -447,7 +447,10 @@ builds on.
     work bought on trust. Cream paper, a fixed deep-navy ink, calm Fraunces
     headings with the `<strong>` accent in brand-colour italic, pill
     buttons. Give it a warm brand colour (orange, gold, terracotta) for the
-    buttons and accents; the navy comes from the look.
+    buttons and accents; the navy comes from the look. A mid-tone orange
+    gets white button text by default, which is hard to read: set
+    `brand.text: "dark"`. `hero.badge: false` hides the hero's automatic
+    "Since {founded}" card when the design doesn't have one.
   - `estate`: high-end decorative work sold to homeowners and contractors
     (FDC Coatings). Use it with `home.layout: "estate"`: a full-photo
     hero, path panels, a before-and-after switcher, the commercial side in

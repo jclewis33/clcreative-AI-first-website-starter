@@ -155,6 +155,10 @@ const homeSchema = z.object({
     secondaryCta: z.object({ label: text, href: text }).optional(),
     /** The estimate button's text in the hero. @default estimate.label */
     ctaLabel: text.optional(),
+    /** The small card on the hero photo; it defaults to "Since {founded}". `false` hides it. */
+    badge: z
+      .union([z.literal(false), z.object({ value: text, label: text })])
+      .optional(),
     /** Credentials they really hold; `image` is a logo source. */
     trust: z
       .array(z.object({ label: text, image: image.optional() }))
