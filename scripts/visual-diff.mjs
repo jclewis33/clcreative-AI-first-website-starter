@@ -202,6 +202,22 @@ async function shoot(context, url) {
           ),
       );
     });
+    // Lazy images switched to eager start new requests: let them finish,
+    // then make sure every image is decoded (a loaded but undecoded image
+    // can still paint as an empty box in the screenshot).
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() =>
+      Promise.all(
+        [...document.images].map((img) => img.decode().catch(() => {})),
+      ),
+    );
+    await page
+      .waitForFunction(
+        () => [...document.images].every((img) => img.complete),
+        null,
+        { timeout: 15_000 },
+      )
+      .catch(() => {});
     await page.waitForTimeout(300);
     return PNG.sync.read(await page.screenshot({ fullPage: true }));
   } finally {
@@ -324,7 +340,7 @@ const report = [
   "### Visual changes",
   "",
   changedCount
-    ? `${changedCount} screenshot${changedCount === 1 ? "" : "s"} differ from the base branch. Open the **visual-diff** artifact on this run for the before, after and diff images (changed pixels in red).`
+    ? `${changedCount === 1 ? "1 screenshot differs" : `${changedCount} screenshots differ`} from the base branch. Open the **visual-diff** artifact on this run for the before, after and diff images (changed pixels in red).`
     : "No visual changes on the pages checked.",
   "",
   header,
