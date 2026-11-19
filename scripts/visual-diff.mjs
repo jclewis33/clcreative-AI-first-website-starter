@@ -16,8 +16,10 @@
  * How: each build is served from a local static server and loaded in
  * headless Chromium at each width in `widths`, full page, with
  * `prefers-reduced-motion: reduce` (the GSAP system then reveals every
- * element in its final state), transitions and animations switched off,
- * lazy images forced to load and fonts awaited. Pixels are compared with
+ * element in its final state) and transitions and animations switched
+ * off. Lazy images are switched to eager, fonts and images are awaited,
+ * and the page is shot repeatedly until two shots match, so a late paint
+ * doesn't read as a change. Pixels are compared with
  * pixelmatch; a page counts as changed when at least `minChangedPixels`
  * pixels differ or its height changed. Both builds render on the same
  * machine, so an unchanged page differs by zero pixels; the floor only
@@ -178,48 +180,47 @@ async function shoot(context, url) {
   try {
     await page.goto(url, { waitUntil: "networkidle", timeout: 60_000 });
     await page.addStyleTag({ content: FREEZE_CSS });
-    await page.evaluate(async () => {
-      for (const img of document.querySelectorAll('img[loading="lazy"]')) {
-        img.loading = "eager";
+    const unloaded = await page.evaluate(async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      // Chrome reports a lazy image it hasn't fetched yet as `complete`, so
+      // "loaded" here means it has pixels (or failed to load at all).
+      for (const img of document.images) {
+        img.addEventListener("error", () => (img.dataset.vdError = "1"), {
+          once: true,
+        });
+        if (img.loading === "lazy") img.loading = "eager";
       }
-      // Walk down the page so scroll-triggered content runs, then back up.
-      const step = window.innerHeight;
-      for (let y = 0; y < document.body.scrollHeight; y += step) {
-        window.scrollTo(0, y);
-        await new Promise((r) => setTimeout(r, 50));
-      }
-      window.scrollTo(0, 0);
+      const loaded = (img) =>
+        img.naturalWidth > 0 || img.dataset.vdError === "1" || !img.currentSrc;
       await document.fonts.ready;
+      const deadline = Date.now() + 10_000;
+      while (Date.now() < deadline && ![...document.images].every(loaded)) {
+        await sleep(100);
+      }
       await Promise.all(
-        [...document.images]
-          .filter((img) => !img.complete)
-          .map(
-            (img) =>
-              new Promise((done) => {
-                img.addEventListener("load", done, { once: true });
-                img.addEventListener("error", done, { once: true });
-              }),
-          ),
-      );
-    });
-    // Lazy images switched to eager start new requests: let them finish,
-    // then make sure every image is decoded (a loaded but undecoded image
-    // can still paint as an empty box in the screenshot).
-    await page.waitForLoadState("networkidle");
-    await page.evaluate(() =>
-      Promise.all(
         [...document.images].map((img) => img.decode().catch(() => {})),
-      ),
-    );
-    await page
-      .waitForFunction(
-        () => [...document.images].every((img) => img.complete),
-        null,
-        { timeout: 15_000 },
-      )
-      .catch(() => {});
-    await page.waitForTimeout(300);
-    return PNG.sync.read(await page.screenshot({ fullPage: true }));
+      );
+      return [...document.images]
+        .filter((img) => !loaded(img))
+        .map((img) => img.currentSrc || img.src);
+    });
+    if (unloaded.length) {
+      console.warn(
+        `[visual-diff] ${url}: ${unloaded.length} image(s) still loading after 10s`,
+      );
+    }
+    // Images can paint a beat after they decode, and a slow CI machine
+    // makes that beat longer. Shoot until two shots in a row match (the
+    // page has settled), up to a limit; an animation that never stops
+    // ends at the limit with the last shot.
+    let previous = await page.screenshot({ fullPage: true });
+    for (let attempt = 0; attempt < 4; attempt++) {
+      await page.waitForTimeout(300);
+      const next = await page.screenshot({ fullPage: true });
+      if (next.equals(previous)) break;
+      previous = next;
+    }
+    return PNG.sync.read(previous);
   } finally {
     await page.close();
   }
