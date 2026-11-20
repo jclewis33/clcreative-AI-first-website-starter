@@ -36,6 +36,7 @@
 :root[data-look="warm"],
 :root[data-look="rugged"],
 :root[data-look="natural"],
+:root[data-look="trusted"],
 :root[data-look="estate"] {
   --section-space-large: clamp(4rem, 4.286vw + 3.143rem, 7rem);
   --section-space-main: clamp(3rem, 2.857vw + 2.429rem, 5rem);
@@ -62,6 +63,7 @@
 :root[data-look="warm"],
 :root[data-look="rugged"],
 :root[data-look="natural"],
+:root[data-look="trusted"],
 :root[data-look="estate"],
 :root[data-look] [data-theme] {
   --footer-background: color-mix(in oklab, var(--color-dark-900), black 35%);
@@ -76,6 +78,7 @@
 :root[data-look="warm"] :is([data-theme="dark"], .u-theme-dark),
 :root[data-look="rugged"] :is([data-theme="dark"], .u-theme-dark),
 :root[data-look="natural"] :is([data-theme="dark"], .u-theme-dark),
+:root[data-look="trusted"] :is([data-theme="dark"], .u-theme-dark),
 :root[data-look="estate"] :is([data-theme="dark"], .u-theme-dark) {
   --heading-accent: var(--color-brand-300);
 }
@@ -89,6 +92,7 @@
 :root[data-look="warm"] .nav_wrap,
 :root[data-look="rugged"] .nav_wrap,
 :root[data-look="natural"] .nav_wrap,
+:root[data-look="trusted"] .nav_wrap,
 :root[data-look="estate"] .nav_wrap {
   --nav-banner-background: color-mix(in srgb, var(--color-dark-900) 7%, var(--color-light-200));
   --nav-banner-color: var(--color-dark-900);
@@ -348,4 +352,74 @@
 :root[data-look="estate"] :is([data-theme="light"], [data-theme="base"]),
 :root[data-look="estate"] :is([data-theme="dark"], [data-theme="brand"]) [data-theme-invert] {
   --heading-accent: var(--color-brand-600);
+}
+
+/* =====================================================
+   CALM & TRUSTED — remediation, inspection, restoration: work bought on
+   trust (a remediation demo, Nov 2026, after the Hey Segment sites)
+   Cream paper, a fixed deep-navy ink, calm Fraunces headings (sentence
+   case, medium weight, one size down) with the accent words in italic
+   brand colour, Inter body, soft corners, pill buttons. The brand is the
+   warm accent (buttons, accents); the navy is the look's own, so a
+   warm-coloured brand doesn't turn the ink brown.
+   ===================================================== */
+
+:root[data-look="trusted"] {
+  --color-light-100: #ffffff;
+  --color-light-200: #f6f1e8;
+  --color-dark-900: #13213f;
+  --color-dark-800: #1d2e55;
+
+  --font-primary: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-secondary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;
+  --font-tertiary: var(--font-inter), "Helvetica Neue", Helvetica, sans-serif;
+  --font-body: var(--font-secondary);
+
+  --display-lg-min: 2.5;
+  --display-lg-max: 4;
+  --display-lg-weight: 450;
+  --display-lg-line-height: 1.06;
+  --h1-weight: 450;
+  --h2-weight: 450;
+  --h3-weight: 500;
+  --h4-weight: 500;
+  --h5-weight: 500;
+  --h6-weight: 500;
+  --heading-letter-spacing: -0.015em;
+  --heading-accent-style: italic;
+  --heading-accent-weight: 400;
+
+  /* The phone's tap-to-call bar matches the desktop utility bar (navy),
+     not the orange button: the sticky bar at the bottom carries the
+     orange "Get a free quote". */
+  --utility-mobile-background: var(--color-dark-900);
+  --utility-mobile-text: var(--color-light-100);
+
+  --hero-star: var(--color-star);
+
+  --radius-main: 1rem;
+  --button-radius: var(--radius-full);
+  --button-font-family: var(--font-secondary);
+  --button-font-size: 1rem;
+  --button-font-weight: 600;
+  --button-text-transform: none;
+  --button-letter-spacing: normal;
+
+  --eyebrow-font-family: var(--font-secondary);
+  --eyebrow-size: 0.75rem;
+  --eyebrow-weight: 600;
+  --eyebrow-tracking: 0.16em;
+
+  --chrome-font-family: var(--font-secondary);
+  --chrome-text-transform: none;
+  --chrome-letter-spacing: normal;
+}
+
+/* Accent text on paper: a warm brand is too light to read as text on
+   cream, so it goes a good step deeper there; dark sections take the
+   lighter tint (above). */
+:root[data-look="trusted"],
+:root[data-look="trusted"] :is([data-theme="light"], [data-theme="base"]),
+:root[data-look="trusted"] :is([data-theme="dark"], [data-theme="brand"]) [data-theme-invert] {
+  --heading-accent: color-mix(in oklab, var(--color-brand-500), black 32%);
 }

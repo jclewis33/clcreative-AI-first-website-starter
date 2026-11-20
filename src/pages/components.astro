@@ -133,6 +133,7 @@ import ExpectTimeline from "@/components/sections/ExpectTimeline.astro";
 import WhyChooseUs from "@/components/sections/WhyChooseUs.astro";
 import FeatureTiles from "@/components/sections/FeatureTiles.astro";
 import IncludedList from "@/components/sections/IncludedList.astro";
+import ContactMethods from "@/components/sections/ContactMethods.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import Reviews from "@/components/sections/Reviews.astro";
 import LeadFormSection from "@/components/sections/LeadFormSection.astro";
@@ -152,6 +153,11 @@ import HotspotExplorer from "@/components/ui/HotspotExplorer.astro";
 import SwatchPicker from "@/components/ui/SwatchPicker.astro";
 import ChoiceChips from "@/components/ui/ChoiceChips.astro";
 import ConcernTabs from "@/components/sections/ConcernTabs.astro";
+import SpotFinder from "@/components/sections/SpotFinder.astro";
+import OfficeVisit from "@/components/sections/OfficeVisit.astro";
+import ProfileSplit from "@/components/sections/ProfileSplit.astro";
+import type { OpeningHours } from "@/lib/hours";
+import type { LeadQuestion } from "@/lib/lead-questions";
 import PathCards from "@/components/sections/PathCards.astro";
 import OptionCards from "@/components/sections/OptionCards.astro";
 import TownFinder from "@/components/sections/TownFinder.astro";
@@ -299,9 +305,13 @@ const COMPONENT_INDEX = [
   { slug: "why-choose-us", text: "WhyChooseUs" },
   { slug: "feature-tiles", text: "FeatureTiles" },
   { slug: "included-list", text: "IncludedList" },
+  { slug: "contact-methods", text: "ContactMethods" },
   { slug: "service-area", text: "ServiceArea" },
   { slug: "town-finder", text: "TownFinder" },
   { slug: "concern-tabs", text: "ConcernTabs" },
+  { slug: "spot-finder", text: "SpotFinder" },
+  { slug: "office-visit", text: "OfficeVisit & OfficeCard" },
+  { slug: "profile-split", text: "ProfileSplit" },
   { slug: "path-cards", text: "PathCards" },
   { slug: "option-cards", text: "OptionCards" },
   { slug: "reviews", text: "Reviews" },
@@ -798,6 +808,151 @@ const concernItems = [
     image: demoPhoto19,
     imageAlt: "A man working on a laptop at a round table",
     checks: ["Bruised shingles", "Dented vents", "Gutter damage"],
+  },
+];
+
+/* ── SpotFinder, OfficeVisit, ProfileSplit, multi-pick LeadForm demos
+   (a family chiropractic office; sample copy, not a real business) ── */
+const spotCta = { label: "Book a first visit", modal: "demo-estimate" };
+const spotItems = [
+  {
+    label: "Head & migraines",
+    area: "head" as const,
+    text: "Tension headaches often start in tight neck and shoulder muscles or stiff joints at the top of the spine.",
+    lists: [
+      {
+        title: "Common causes",
+        items: [
+          "Tight neck and shoulder muscles",
+          "Hours at a desk or on a phone",
+          "Stress and poor sleep",
+        ],
+      },
+      {
+        title: "How we help",
+        items: [
+          "Gentle adjustments to the upper neck",
+          "Massage for tight muscles",
+          "Posture and workstation tips",
+        ],
+      },
+    ],
+    links: [
+      { label: "Chiropractic care", href: "#spot-finder" },
+      { label: "Massage therapy", href: "#spot-finder" },
+    ],
+  },
+  {
+    label: "Neck",
+    area: "neck" as const,
+    text: "A stiff or sore neck usually comes from posture, a bad night's sleep or an old injury that never fully settled.",
+    lists: [
+      {
+        title: "Common causes",
+        items: ["Looking down at screens", "Sleeping at an angle", "Whiplash"],
+      },
+      {
+        title: "How we help",
+        items: [
+          "Adjustments to restore movement",
+          "Soft-tissue work",
+          "Stretches to do at home",
+        ],
+      },
+    ],
+  },
+  {
+    label: "Shoulders",
+    area: "shoulders" as const,
+    text: "Shoulder pain can come from the joint itself or be referred from the neck.",
+    lists: [
+      {
+        title: "Common causes",
+        items: [
+          "Repetitive reaching or lifting",
+          "Rounded posture",
+          "Old sports injuries",
+        ],
+      },
+    ],
+  },
+  {
+    label: "Upper back",
+    area: "upper-back" as const,
+    text: "Between the shoulder blades is where long days at a desk tend to settle.",
+  },
+  {
+    label: "Lower back",
+    area: "lower-back" as const,
+    text: "The most common reason people come in: lifting, sitting all day, or a disc that's irritated.",
+    lists: [
+      {
+        title: "Common causes",
+        items: [
+          "Lifting with a twist",
+          "Long hours sitting",
+          "Weak core muscles",
+        ],
+      },
+      {
+        title: "How we help",
+        items: [
+          "Adjustments for the lower spine and pelvis",
+          "Decompression where it fits",
+          "A plan to keep it from coming back",
+        ],
+      },
+    ],
+  },
+  {
+    label: "Elbows & wrists",
+    area: "elbows-wrists" as const,
+    text: "Tennis elbow, golfer's elbow and wrist strain respond well to soft-tissue work and rest.",
+  },
+  {
+    label: "Hips & sciatica",
+    area: "hips" as const,
+    text: "Pain that runs from the hip down the leg often starts with a pinched nerve in the lower back.",
+  },
+  {
+    label: "Knees",
+    area: "knees" as const,
+    text: "Knee pain is often about how the hips and feet move, not only the knee itself.",
+  },
+  {
+    label: "Ankles & feet",
+    area: "ankles-feet" as const,
+    text: "Old sprains and flat feet change how you walk, and the whole chain above feels it.",
+  },
+];
+
+const demoOpeningHours: OpeningHours[] = [
+  { days: ["Mo"], opens: "10:00", closes: "17:30" },
+  { days: ["Tu", "Th"], opens: "09:00", closes: "18:00" },
+  { days: ["Fr"], opens: "08:00", closes: "13:00" },
+];
+
+const multiPickQuestions: LeadQuestion[] = [
+  {
+    name: "customerStatus",
+    question: "Are you a new or existing patient?",
+    options: [
+      { label: "New patient", value: "new" },
+      { label: "Existing patient", value: "existing" },
+    ],
+  },
+  {
+    name: "concerns",
+    question: "Where are you hurting?",
+    multiple: true,
+    options: [
+      { label: "Neck pain", value: "neck" },
+      { label: "Lower back pain", value: "lower-back" },
+      { label: "Headaches & migraines", value: "headaches" },
+      { label: "Sciatica", value: "sciatica" },
+      { label: "Car accident injury", value: "car-accident" },
+      { label: "Something else", value: "other" },
+    ],
   },
 ];
 
@@ -2512,6 +2667,25 @@ const leadPhotoOptions = [
     </Layout>
   </Section>
 
+  <Section theme="light" id="lead-form-multiple">
+    <Layout variant="columns" ratio="5-7" verticalAlign="start">
+      <Heading variant="eyebrow">LeadForm · pick all that apply</Heading>
+      <Heading tag="h2">A one-tap question, then a checklist</Heading>
+      <Text variant="regular" muted
+        >A question with multiple: true shows checkbox tiles and a Next button
+        instead of moving on at the first tap; every pick is saved,
+        comma-separated, under its name (here concerns).</Text
+      >
+      <LeadForm
+        slot="column2"
+        formId="contact"
+        id="demo-lead-multiple"
+        fields="steps"
+        questions={multiPickQuestions}
+      />
+    </Layout>
+  </Section>
+
   <Section theme="light" id="discount-claim">
     <Layout variant="columns" ratio="5-7" verticalAlign="start">
       <Heading variant="eyebrow">DiscountClaimForm</Heading>
@@ -3086,6 +3260,25 @@ const leadPhotoOptions = [
     primaryCta={{ label: "Send a message", href: "#lead-form" }}
   />
 
+  <Section theme="light" padding="small" id="hero-offer">
+    <Heading variant="eyebrow">Hero — an offer with the old price</Heading>
+    <Heading tag="h2"
+      >Struck-out price, a Google rating pill, and a wave into the next section</Heading
+    >
+  </Section>
+  <Hero
+    eyebrow="Chiropractor in Your City"
+    heading="Your first visit, just <mark>$99</mark> <s>$199</s>"
+    text="An exam, X-rays if you need them, and your first adjustment, in one appointment."
+    image={demoPhoto6}
+    imageAlt="A patient stretching on a lawn on a sunny morning"
+    overlay="full"
+    primaryCta={{ label: "Book my first visit", modal: "demo-estimate" }}
+    proof={{ rating: 5, text: "4.9 on Google · 57 reviews", source: "google" }}
+    proofPosition="above"
+    edge="wave"
+  />
+
   <Section theme="light" padding="small" id="path-panels">
     <Heading variant="eyebrow">PathPanels</Heading>
     <Heading tag="h2">Two kinds of buyer, two doors (the last one dark)</Heading
@@ -3157,6 +3350,32 @@ const leadPhotoOptions = [
     heading="Selected work"
     showSummary
     link={{ label: "View all projects", href: "/projects" }}
+  />
+
+  <Section theme="light" padding="small" id="contact-methods">
+    <Heading variant="eyebrow">ContactMethods</Heading>
+    <Heading tag="h2">Ways to reach the business</Heading>
+  </Section>
+  <ContactMethods
+    eyebrow="Reach us"
+    heading="Ways to <strong>reach us</strong>"
+    items={[
+      {
+        icon: "call",
+        label: "Call us",
+        value: SITE.phone.display,
+        href: `tel:${SITE.phone.tel}`,
+        note: SITE.hours,
+      },
+      {
+        icon: "mail",
+        label: "Email us",
+        value: "hello@example.com",
+        href: "mailto:hello@example.com",
+      },
+      { icon: "clock", label: "Hours", value: SITE.hours },
+      { icon: "pin", label: "Based in", value: "Riverside" },
+    ]}
   />
 
   <Section theme="light" padding="small" id="review-cards">
@@ -3596,6 +3815,65 @@ const leadPhotoOptions = [
     intro="Explore a concern. Understand why it matters."
     items={concernItems}
     cta={{ label: "Book an inspection", href: "/contact" }}
+  />
+
+  <Section theme="light" padding="small" id="spot-finder">
+    <Heading variant="eyebrow">SpotFinder</Heading>
+    <Heading tag="h2"
+      >Tap a spot on the figure or a pill: what causes it, how we help</Heading
+    >
+  </Section>
+  <SpotFinder
+    eyebrow="Pain relief guide"
+    heading="Where does it hurt?"
+    intro="Tap an area to see what usually causes the pain and how we treat it."
+    items={spotItems}
+    cta={spotCta}
+  />
+
+  <Section theme="light" padding="small" id="office-visit">
+    <Heading variant="eyebrow">OfficeVisit & OfficeCard</Heading>
+    <Heading tag="h2"
+      >The place, the phone and the week's hours, from SITE.openingHours</Heading
+    >
+  </Section>
+  <OfficeVisit
+    heading="Schedule your visit at our office"
+    image={demoPhoto3}
+    imageAlt="A bright reception area with a front desk"
+    paragraphs={[
+      "Our office is open five days a week. Our doctor, therapists and front desk team will get you in, find out what's going on, and give you a plan before any treatment starts.",
+    ]}
+    card={{ hours: demoOpeningHours }}
+  />
+
+  <Section theme="light" padding="small" id="profile-split">
+    <Heading variant="eyebrow">ProfileSplit</Heading>
+    <Heading tag="h2">One person, their bio and their credentials</Heading>
+  </Section>
+  <ProfileSplit
+    eyebrow="Meet your chiropractor"
+    name="Dr. Jordan Avery, D.C."
+    lead="Dr. Avery graduated with honors from chiropractic college after a degree in exercise science, and has treated families in town for over a decade."
+    paragraphs={[
+      "Outside the office you'll find them coaching youth soccer or hiking with their kids.",
+    ]}
+    image={demoPhoto7}
+    imageAlt="A smiling chiropractor in a treatment room"
+    badge={{ title: "With honors", text: "Doctor of Chiropractic" }}
+    credentials={[
+      {
+        label: "Techniques",
+        value: "Diversified, Activator, soft tissue, cold laser",
+        wide: true,
+      },
+      { label: "Chiropractic college", value: "Sample College, 2012" },
+      { label: "Licensed in", value: "Your State, license #0000" },
+      { label: "Undergraduate", value: "B.S. Exercise Science" },
+      { label: "Languages", value: "English and Spanish" },
+    ]}
+    cta={{ label: "Book your first visit", modal: "demo-estimate" }}
+    secondaryCta={{ label: "Meet the doctor", href: "#profile-split" }}
   />
 
   <Section theme="light" padding="small" id="path-cards">

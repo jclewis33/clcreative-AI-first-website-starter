@@ -76,13 +76,17 @@ const homeSchema = z.object({
           z.object({
             name: z.enum([
               "audience",
+              "customerStatus",
               "projectType",
+              "concerns",
               "projectSize",
               "timeline",
               "budget",
             ]),
             question: text,
             text: text.optional(),
+            /** "Pick all that apply": checkboxes and a Next button. */
+            multiple: z.boolean().optional(),
             options: z
               .array(
                 z.object({
@@ -136,12 +140,25 @@ const homeSchema = z.object({
     proofPosition: z.enum(["below", "above"]).default("above"),
     ctaNote: text.optional(),
     proof: z
-      .object({ rating: z.number().min(1).max(5).optional(), text })
+      .object({
+        rating: z.number().min(1).max(5).optional(),
+        text,
+        /** "google" adds the Google G — only for their Google rating. */
+        source: z.enum(["google"]).optional(),
+      })
       .optional(),
+    /** Background only: "wave" curves the hero's bottom into the next section. */
+    edge: z.enum(["straight", "wave"]).optional(),
+    /** ctaStyle "form": the hero card asks estimate.questions (new patient? where does it hurt?) instead of the one project tap. */
+    formQuestions: z.boolean().optional(),
     /** Estate layout: a second hero button ("See our work" → "#projects"). */
     secondaryCta: z.object({ label: text, href: text }).optional(),
     /** The estimate button's text in the hero. @default estimate.label */
     ctaLabel: text.optional(),
+    /** The small card on the hero photo; it defaults to "Since {founded}". `false` hides it. */
+    badge: z
+      .union([z.literal(false), z.object({ value: text, label: text })])
+      .optional(),
     /** Credentials they really hold; `image` is a logo source. */
     trust: z
       .array(z.object({ label: text, image: image.optional() }))
@@ -207,9 +224,19 @@ const homeSchema = z.object({
       heading: text.optional(),
       intro: text.optional(),
       items: z
-        .array(z.object({ title: text, text, icon: text.optional() }))
+        .array(
+          z.object({
+            title: text,
+            text,
+            icon: text.optional(),
+            /** For a demo's own page: the service this situation leads to. */
+            tag: z.object({ label: text, href: text }).optional(),
+          }),
+        )
         .min(2)
         .max(6),
+      /** For a demo's own page: the sentence in the strip under the tiles (<strong> allowed). */
+      prompt: text.optional(),
     })
     .optional(),
   /** One REAL offer from their site — never invent one. */
@@ -366,6 +393,88 @@ const homeSchema = z.object({
       proof: z.object({ value: text, label: text }).optional(),
     })
     .optional(),
+  /**
+   * "Where does it hurt?" (clinics): the places on the body they treat,
+   * each with what usually causes it and how they help, from their own
+   * site. `links` point at their service pages (/services/<slug>).
+   */
+  spotFinder: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      items: z
+        .array(
+          z.object({
+            label: text,
+            area: z.enum([
+              "head",
+              "neck",
+              "shoulders",
+              "upper-back",
+              "lower-back",
+              "elbows-wrists",
+              "hips",
+              "knees",
+              "ankles-feet",
+            ]),
+            title: text.optional(),
+            text,
+            lists: z
+              .array(z.object({ title: text, items: z.array(text).min(1) }))
+              .max(2)
+              .optional(),
+            links: z.array(z.object({ label: text, href: text })).optional(),
+          }),
+        )
+        .min(2)
+        .max(9),
+    })
+    .optional(),
+  /** A place people visit: a photo beside the office card (hours from contact.openingHours). */
+  office: z
+    .object({
+      eyebrow: text.optional(),
+      heading: text.optional(),
+      intro: text.optional(),
+      paragraphs: z.array(text).optional(),
+      image: image.optional(),
+      imageAlt: text.optional(),
+      cardTitle: text.optional(),
+    })
+    .refine((o) => !o.image || o.imageAlt, {
+      message: "imageAlt is required when image is set",
+      path: ["imageAlt"],
+    })
+    .optional(),
+  /** Meet the doctor / owner: real, public facts only (school, license, languages). */
+  profile: z
+    .object({
+      eyebrow: text.optional(),
+      name: text,
+      lead: text.optional(),
+      paragraphs: z.array(text).optional(),
+      image,
+      imageAlt: text,
+      imageSide: z.enum(["left", "right"]).optional(),
+      badge: z.object({ title: text, text: text.optional() }).optional(),
+      credentials: z
+        .array(
+          z.object({ label: text, value: text, wide: z.boolean().optional() }),
+        )
+        .max(8)
+        .optional(),
+      secondaryCta: z.object({ label: text, href: text }).optional(),
+      person: z
+        .object({
+          jobTitle: text.optional(),
+          alumniOf: z.array(text).optional(),
+          knowsLanguage: z.array(text).optional(),
+          hasCredential: z.array(text).optional(),
+        })
+        .optional(),
+    })
+    .optional(),
   why: z
     .object({
       eyebrow: text.optional(),
@@ -417,6 +526,13 @@ const homeSchema = z.object({
       /** "right" puts the photo on the right. */
       imageSide: z.enum(["left", "right"]).optional(),
       ctaLabel: text.optional(),
+      /** For a demo's own page: the smaller photo overlapping the main one. */
+      inset: image.optional(),
+      insetAlt: text.optional(),
+      /** For a demo's own page: the small card on the photos. */
+      badge: z.object({ title: text, text: text.optional() }).optional(),
+      /** For a demo's own page: one real review line beside the story. */
+      quote: z.object({ text, name: text, meta: text.optional() }).optional(),
     })
     .optional(),
   /** Real, attributed reviews only — leave it out otherwise. */
@@ -435,9 +551,26 @@ const homeSchema = z.object({
             full: text.optional(),
             /** 4 or 5 — worse reviews never go on the site. */
             rating: z.number().int().min(4).max(5).optional(),
+            /** As the platform shows it ("a year ago"). */
+            date: text.optional(),
+            /** Who they are, when it matters ("General contractor"). */
+            role: text.optional(),
           }),
         )
         .min(1),
+      /** For a demo's own page: words customers use, counted from the real reviews. */
+      keywords: z
+        .array(z.object({ word: text, count: z.number().int().positive() }))
+        .max(6)
+        .optional(),
+      /** For a demo's own page: the index of the review shown as the featured card. */
+      featured: z.number().int().min(0).optional(),
+      /**
+       * "google": the reviews page and the About page show Google-style
+       * review cards (ReviewCards variant="google"), to match a demo whose
+       * own home page uses them. Default: the classic Reviews cards.
+       */
+      cards: z.enum(["classic", "google"]).optional(),
       layout: z.enum(["cards", "featured", "grid", "marquee"]).optional(),
       /** Estate layout: the star line ("78 five-star reviews on Google"). */
       summary: text.optional(),
@@ -448,7 +581,7 @@ const homeSchema = z.object({
     heading: text,
     text: text.optional(),
     projectOptions: z
-      .array(z.object({ label: text, value: text }))
+      .array(z.object({ label: text, value: text, icon: text.optional() }))
       .min(2)
       .optional(),
   }),
@@ -456,6 +589,17 @@ const homeSchema = z.object({
     .object({
       eyebrow: text.optional(),
       items: z.array(z.object({ question: text, answer: text })).min(2),
+      /** For a demo's own page: the FAQ's own heading (<strong> = accent). */
+      heading: text.optional(),
+      /** For a demo's own page: the "Still have a question?" card beside the questions. */
+      help: z
+        .object({
+          heading: text,
+          text,
+          image: image.optional(),
+          imageAlt: text.optional(),
+        })
+        .optional(),
     })
     .optional(),
   callBand: z
@@ -463,7 +607,7 @@ const homeSchema = z.object({
       heading: text,
       text: text.optional(),
       /** photo-card / split need `image` + `imageAlt`. */
-      variant: z.enum(["band", "photo-card", "split"]).optional(),
+      variant: z.enum(["band", "photo-card", "split", "panel"]).optional(),
       image: image.optional(),
       imageAlt: text.optional(),
       ctaNote: text.optional(),
@@ -473,6 +617,8 @@ const homeSchema = z.object({
       ctaLabel: text.optional(),
       /** Estate layout: what happens when they reach out, in order. */
       steps: z.array(text).min(2).max(4).optional(),
+      /** For a demo's own page: the short tick row under the buttons. */
+      ticks: z.array(text).max(4).optional(),
     })
     .refine((c) => !c.image || c.imageAlt, {
       message: "imageAlt is required when image is set",
@@ -719,6 +865,7 @@ export const LOOK_NAMES = [
   "warm",
   "rugged",
   "natural",
+  "trusted",
   "estate",
   "studio",
 ];
@@ -727,7 +874,8 @@ const demoObject = z.object({
   preset: z.literal("local-service"),
   /**
    * fresh (lawn, pest, cleaning) · warm (HVAC, insulation, remodeling) ·
-   * rugged (electrical, roofing, plumbing) · natural (hardscape, landscaping)
+   * rugged (electrical, roofing, plumbing) · natural (hardscape, landscaping) ·
+   * trusted (remediation, inspection, restoration) · estate (high-end finishes)
    */
   look: z.enum(LOOK_NAMES).default("fresh"),
   /** Contractor license, shown in the footer, e.g. "TECL #25414". */
@@ -744,10 +892,20 @@ const demoObject = z.object({
     website: z.url().optional(),
     /** Schema.org founder; defaults to the business name. */
     owner: text.optional(),
+    /**
+     * Schema.org priceRange, only as their own listing shows it (Google or
+     * Facebook "$"). Left out, the structured data carries none.
+     */
+    priceRange: z.enum(["$", "$$", "$$$", "$$$$"]).optional(),
   }),
   contact: z.object({
     /** As shown on the site, e.g. "(512) 555-0142". US numbers. */
     phone: text,
+    /**
+     * True only when their site or profile says the number takes texts; the
+     * nav then reads "Call or text" instead of "Call us".
+     */
+    texts: z.boolean().default(false),
     /** Leave out when they don't publish one — the footer then shows none. */
     email: z.email().optional(),
     hours: text,
@@ -759,7 +917,33 @@ const demoObject = z.object({
     postalCode: text.optional(),
     locality: text,
     region: text,
+    /**
+     * Day by day, for a place people visit (a clinic, a showroom): the
+     * hours table and the JSON-LD hours. Days not listed are closed; times
+     * 24-hour. Only hours their site or Google profile shows.
+     */
+    openingHours: z
+      .array(
+        z.object({
+          days: z
+            .array(z.enum(["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]))
+            .min(1),
+          opens: z.string().regex(/^\d{2}:\d{2}$/),
+          closes: z.string().regex(/^\d{2}:\d{2}$/),
+        }),
+      )
+      .optional(),
   }),
+  /**
+   * The schema.org type of the business, the most specific that fits:
+   * "Plumber", "Electrician", "HVACBusiness", "RoofingContractor",
+   * "Chiropractor", "Dentist" (the list in src/config/site.ts).
+   * Default "ProfessionalService".
+   */
+  businessType: z
+    .string()
+    .regex(/^[A-Z][A-Za-z]+$/)
+    .optional(),
   serviceAreas: z.array(text).min(1),
   /**
    * When they describe their area as a distance ("within 60 miles of

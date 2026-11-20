@@ -1,6 +1,6 @@
 ---
 name: demo
-description: Build a branded prospect demo site for one local-service business, in about 30 minutes, ready to send. Use when Casey says "make a demo for <business or URL>", "build a demo site for <prospect>", "send <prospect> a demo", "update the <prospect> demo", or "clean up old demos". Researches the prospect's current site, writes demo.json, runs `npm run demo`, builds, checks and pushes a `demo/<slug>` branch of the PRIVATE demos repo, and reports the preview URL plus what to confirm before sending.
+description: Build a branded prospect demo site for one local-service business, designed for that business (its own look, not a filled-in template), checked and fixed until it passes, ready to send. Use when Casey says "make a demo for [business or URL]", "build a demo site for [prospect]", "send [prospect] a demo", "update the [prospect] demo", or "clean up old demos". Researches the prospect's current site, writes demo.json, runs `npm run demo`, builds, checks and pushes a `demo/[slug]` branch of the PRIVATE demos repo, and reports the preview URL plus what to confirm before sending.
 ---
 
 # Prospect demo — research → demo.json → `npm run demo` → push
@@ -38,6 +38,207 @@ Read first, once per session:
   pulled from the logo, a service you grouped or renamed, any AI-generated
   photo. Casey reads this list before sending.
 
+## The quality bar: a designed site, not a filled-in template
+
+Every demo has to look like a site a business owner would pay thousands
+for, made for them: not a template, and nothing that reads as AI-made.
+The template path alone (`demo.json` → `npm run demo`) gives every demo
+the same sections in the same shapes, which is the plain white-card look
+Casey rejects. The reference (Nov 2026) is the Hey Segment sites in Clay
+Lawrence's video: a 30A landscaper, a 30A plumber, a tree service. Each
+had its own type, colours and one signature motif, and its copy named the
+place. Their FAQ and "three steps" were plain cards like ours, and that
+was fine: the hero and two or three signature sections carried the site.
+Claude ran on each one for one to four hours, building, screenshotting
+and fixing.
+
+**What "use our design system" means:** the tokens (spacing, type scale,
+radii, theme aliases), Section and Layout, Heading/Text/Button, the forms
+(GHL), SEO and JSON-LD, the service-area map, reviews and tap-to-call
+phones. Always use those. The template's section designs are a starting
+point, not a limit.
+
+### 1. Art direction (after research, before building)
+
+Write `demo/brief.md` (kept on the demo branch):
+
+- **Who buys and the feel**, in three words ("coastal, unhurried,
+  premium"; "fast, honest, no-nonsense").
+- **Display font**, picked for this business. The five looks' fonts are
+  only a start. Add a new one to `astro.config.mjs` (local woff2 in
+  `src/assets/fonts/`, like the others), and do it in the starter so the
+  next demo has it. A demo can get its own entry in `src/config/looks.ts`.
+- **Palette:** their brand colour plus one or two supporting colours,
+  taken from their logo, truck or photos.
+- **One signature motif** from their trade or town: arch-framed photos,
+  a treeline or wave edge between sections, a line drawing of a local
+  landmark, a stamped badge, rope or blueprint lines. Use one or two, not
+  six.
+- **The local hook:** the headline only this business can say ("30A
+  landscaping, built for salt air"; "Real 30A. No stock photos.").
+- **The signature interactive:** a price estimator from rates _they
+  publish_, a before-and-after slider from their photos, the qualifying
+  quote flow, the service-area map. Never an invented price.
+
+Show Casey two or three hero directions (screenshots or an Artifact)
+before building the rest, unless he has said to just go.
+
+### 2. Build it as theirs
+
+- Run `npm run demo` first for everything it does: identity, services,
+  content files, SEO, map, forms, reviews.
+- **Then design the hero and at least two or three sections for this
+  business.** The home page can be the demo's own page: copy the
+  template's page into `demo/pages/index.astro` (beside demo.json) and
+  compose it there from the template's sections and new ones.
+  `npm run demo` installs `demo/pages/*.astro` in place of the template's
+  page and keeps it on every re-run. The same works for `contact.astro`,
+  `about.astro` and `reviews.astro`.
+- **New sections:** build them reusable (props, no business facts in the
+  component) and send them to the starter by PR, so every demo leaves the
+  starter with more designs to pull from. A one-off arrangement can live
+  in the demo's own page.
+- **Avoid, unless it is clearly the best choice:**
+  - rows of identical white cards (icon, title, one line)
+  - centre-aligned everything
+  - the same section shape twice in a row
+  - a generic gradient where a photo belongs
+
+  Vary the rhythm down the page: a full-bleed photo, a colour band, a
+  split, big type, a dense list.
+
+- **Copy names the place and the work.** If a sentence could sit on any
+  competitor's site, rewrite it.
+
+### 3. The check-and-fix loop (no time limit)
+
+After the build, and after every round of fixes:
+
+1. Screenshot every page at 1440 and 390 wide (scroll first so the
+   animations fire), and look section by section.
+2. Grade against the rubric below. Also give the screenshots, the brief
+   and the rubric to a **fresh reviewer subagent**, with the rubric but
+   not your own opinion, so its read isn't anchored on yours.
+3. Fix every material finding, then go back to 1.
+
+Stop only when a round comes back clean at both widths. Running for an
+hour or two is expected. Report what the last round checked.
+
+**Rubric:**
+
+- Would a stranger guess it's a template or AI-made? What gives it away?
+- Is there a default card grid where a designed section belongs?
+- Does the hero say what, where and for whom within five seconds, on a
+  real photo?
+- **Photos:**
+  - objects warped or out of proportion
+  - an AI sheen or glow
+  - a crop through a head
+  - the same photo twice on a page
+  - too low resolution for its slot
+- **Copy:** any sentence that could be on any competitor's site; any
+  claim not traceable to their site; the four questions answered on
+  every page.
+- **Phone:** every number a `tel:` link. **Mobile:** no overflow; tap
+  targets big enough; nothing wrapping badly.
+- **Local SEO:** title and description with service and city, one h1,
+  JSON-LD, name/address/phone identical everywhere.
+
+## Hands-off: Casey gives the business, you deliver the site
+
+Casey's goal (Nov 2026, after a remediation demo needed a day of
+line-by-line fixes): he names a business, and the demo comes back
+finished, written and designed to the bar below, with one review point.
+Work in this order and don't show him anything half-done:
+
+1. **Research** (step 2 of the workflow). It includes the Google Business
+   Profile: categories, services, review topic chips.
+2. **Copy deck first** (`demo/copy.md`, with the `cl-creative-storybrand-copywriter`
+   skill and its `references/human-voice.md`). The design is built around
+   the words, not the other way round.
+   - **Services follow Google's own names and the profile's evidence.**
+     Lead with the service the reviews mention most (on the remediation
+     demo: mold, mentioned most, over asbestos). Use Google's category wording
+     ("Mold remediation", "Water damage restoration", "Fire damage
+     restoration"). When the profile is thin (one category, no services),
+     write a short "Google Business Profile: suggested updates" list in
+     the deck: categories, services, matching phone and description.
+     The profile is a starting point, not the final word.
+   - **Write for the questions people and AI assistants ask.** The four
+     questions go on every page. The home FAQ answers, in plain
+     sentences, "What does [business] do?", "Are you licensed?", "How much
+     does [service] cost?" (how they quote, never a made-up price), "What
+     happens after I call?", "Do you work with insurance?", "What areas do
+     you serve?"
+   - **Each service page gets its own "includes" list.** Never one shared
+     list: "containment" makes no sense on a rebuild page.
+   - **Claims never stretch the source.** If they offer a "free quote",
+     don't write "free inspection". Don't use one license for another trade
+     (an abatement license is not lead certification). Don't call
+     subcontractors "one crew". Leave out materials or equipment their
+     material doesn't name.
+3. **A fresh reviewer subagent checks the deck** against the research and
+   the voice rules (given the rules and the facts, not your opinion). Fix
+   every finding.
+4. **Design the whole home page** on an Artifact design canvas, every
+   section to the quality bar, not just the hero (below). Then put the
+   design and the deck in front of Casey together: one approval.
+5. **Build to the design**, then run the check-and-fix loop.
+
+### The voice, in short
+
+The full rules and before/after examples are in the copywriter skill's
+`references/human-voice.md`. Casey flagged each of these on the remediation demo:
+
+- No slogan virtues ("honest answer", "straight answer", "tell you
+  straight"). Show the virtue with a fact or a customer's quote.
+- No "You get the photos and paperwork…" wrap-ups, and no tidy benefit
+  tails ("so you're not stuck in the middle", "not guesswork", "start to
+  finish").
+- No three-part list cadence, even when the message is right. One plain
+  sentence, or the customer's own words.
+- No abstract or mood headlines ("Calm, careful work when something
+  worrying turns up"). Name the thing, the place, the fact.
+- No phrases nobody says: "Call or send the form" becomes "Give us a call
+  or fill out the form". "We manage the trades and put the space back"
+  becomes "We rebuild what had to come out, and hire and manage the
+  subcontractors for you".
+- No forced counts ("Six services…"). Say who it's for and where.
+
+### The design bar for every section, not just the hero
+
+On the remediation demo, the hero and the second section matched the approved design, then
+the page fell back to plain template sections. Casey called it "the bland
+looking site we are trying to avoid". The reference is the Hey Segment
+sites in Clay Lawrence's video (frames in the session notes; Salty Air, J
+Smith Plumbing, GBZ Tree):
+
+- **Type:** calm, sentence-case 56–64px headlines (a serif with one italic
+  accent phrase, or a clean semibold sans). Never huge condensed capitals:
+  Casey rejected them ("the text is so bold").
+- **Rhythm:** sections alternate cream paper and the dark brand colour.
+  Small tracked eyebrows with a short rule. Generous space.
+- **Never a plain white card with an outline and a photo.** Instead:
+  - **Services:** horizontal cards, photo beside text, an icon chip,
+    tag chips for what each covers, "Learn more" and "Get a quote" links,
+    a soft shadow and rounded corners.
+  - **Situations:** quote-style tiles on the dark band, in the customer's
+    voice ("The tile came up and work stopped."), with a big accent
+    quote mark and a tag linking the service.
+  - **Steps:** one panel, icon circles with number badges, a dashed line
+    connecting them, the CTA and phone under them.
+  - **Reviews:** Google-style cards (initial avatar, name, real "a year
+    ago" date, the G logo, gold stars) on the dark band. Add keyword chips
+    with real counts ("recommend" in 8 reviews) and the rating pill.
+  - **Service area:** a drawn map of their towns or counties, the list
+    beside it.
+  - **FAQ:** a rounded panel beside a "Still have a question?" card with
+    the phone.
+  - **Closing CTA:** a photo panel.
+- Anything the starter can't do yet becomes a reusable section or variant,
+  by PR. A one-off arrangement lives in the demo's own page
+  (`demo/pages/index.astro`).
+
 ## Scope first: a demo is not a site build
 
 Ask Casey (or read from his message) what this demo needs before you
@@ -46,7 +247,7 @@ first real demo (a pest control company, Oct 2026) grew into a full
 site over a day of back-and-forth. That was useful because every fix
 went into the starter, but it is not the target.
 
-- **Quick demo (default, about 30 minutes):** the home page, their 3–4
+- **Quick demo (default):** the home page, their 3–4
   services as service pages, the contact page. On the home page, only
   the sections their real material supports: hero, services, a story or
   promises section, the service-area map, the form, the call band. Leave
@@ -55,13 +256,31 @@ went into the starter, but it is not the target.
 - **Full demo (only when Casey asks):** add the About page, the
   service-area regions (`areas`), and the optional home sections whose
   material is real.
-- **Start from the closest previous demo.** Every demo's `demo.json` is
-  on its branch in the private repo
-  (`git show origin/demo/<slug>:demo/demo.json`). For the same trade,
-  copy it and replace the business: the structure, section choices and
-  service shapes carry over, and only the facts, copy and photos change.
-  The fictional Ironwood Pest Control (`demo/ironwood-pest-control`) is
-  the pest-control and "fresh" look reference, safe to show anyone.
+- **Never start from a previous demo's design.** Each demo's design is
+  made for that business: its type, colours, layout, section mix and
+  order. A finished demo's page is not a template for the next one;
+  copying the last demo is how the early demos came out looking alike
+  (Casey, Nov 2026). The starter is a toolkit, not a template: tokens and
+  type, section components and their variants, forms, SEO, the map,
+  reviews and tap-to-call. Pull pieces where they fit the design, and
+  build new ones when it calls for something the toolkit lacks.
+  Earlier demos' `demo.json` files
+  (`git show origin/demo/<slug>:demo/demo.json`) are still useful as a
+  reference for data shapes and service fields.
+- **Design rules from the remediation demo, for any design:**
+  - **One action per card.** A row of cards gets one "Learn more" each.
+    The quote button belongs to the hero, the CTA strip, the steps and
+    the closing panel.
+  - **No rows of tag pills on feature cards.** They look AI-made. Pills
+    are for filters and for a small link like the situation tiles'
+    service tag.
+  - **One orange for every button and tag,** and one accent shade on
+    dark backgrounds.
+  - **No dark mustard or yellow fills.** A featured card goes cream with
+    an accent edge.
+  - **A service-area map is the real street map** (ServiceArea `card`
+    or the default), never a drawn diagram.
+  - **Sliders only when there are many items,** not by default.
 - **Every fix and every new section goes into the starter**, never only
   into the demo branch: branch the starter, PR, CI, merge, then
   `git merge upstream/main` on the demo branch.
@@ -119,10 +338,75 @@ cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
 - **Show, then build.** For a visual call (hero treatment, a background,
   mascot vs. photo) send 2–3 quick mockups or screenshots first; build the
   one he picks.
-- **Screenshot every change** at 1440, 1200 and 390 wide and look before
-  reporting: crops, wrapping phone numbers, text over faces, overflow.
+- **Test every page at every width before reporting, not just desktop
+  and one phone.** On the remediation demo (Nov 2026) the review cards touched at
+  480–928px. Desktop and 390 had both looked fine, and Casey found it.
+  For each page (home, every service page, reviews, about, contact):
+  1. **Run the automated pass** below at 320, 390, 480, 600, 768, 1024,
+     1200 and 1440. It must report nothing but `u-sr-only` labels.
+  2. **Look at full-page screenshots** at 1440, 768, 480 and 390 for:
+     crops, phone numbers wrapping, text over faces, uneven or missing
+     gaps, cramped tiles, and labels colliding on the map.
+
+  Scroll the whole page first so the scroll animations fire. Serve the
+  production build (`npm run build`, then `npx wrangler dev`) rather
+  than the dev server, which reloads itself after a restart.
+
+  ```js
+  // In the browser (Playwright evaluate), after scrolling the page:
+  // sideways scroll, cards that touch, and text clipped by its box.
+  () => {
+    const out = [],
+      doc = document.documentElement;
+    if (doc.scrollWidth > doc.clientWidth + 1) out.push("HSCROLL");
+    const cards = [
+      ...document.querySelectorAll('main [class*="_card"], main article'),
+    ]
+      .filter((e) => e.offsetParent && e.getBoundingClientRect().height > 40)
+      .map((e) => ({ e, r: e.getBoundingClientRect() }));
+    for (const a of cards)
+      for (const b of cards) {
+        if (a === b || a.e.contains(b.e) || b.e.contains(a.e)) continue;
+        const across =
+          Math.min(a.r.right, b.r.right) - Math.max(a.r.left, b.r.left) > 20;
+        const gap = b.r.top - a.r.bottom;
+        if (across && gap > -2 && gap < 3)
+          out.push("TOUCH " + a.e.className.split(" ")[0]);
+      }
+    for (const e of document.querySelectorAll(
+      "main h1, main h2, main h3, main p, main a, main span, main button, main li",
+    ))
+      if (
+        e.offsetParent &&
+        !e.children.length &&
+        e.scrollWidth > e.clientWidth + 2 &&
+        getComputedStyle(e).overflow !== "visible"
+      )
+        out.push("CLIP " + e.textContent.trim().slice(0, 25));
+    return [...new Set(out)];
+  };
+  ```
+
 - **Every claim traceable.** When he asks "where did this come from?",
   answer with the line from their site.
+- **Fact-check pass before reporting.** Extract the built pages' text
+  (main, nav, footer, meta descriptions, JSON-LD) and check each claim
+  against their site, Google profile and reviews, line by line. Traps found
+  on a remediation demo (Nov 2026), all from tightening their words:
+  - Merging two facts into a new one: "established 1996" + "licensed"
+    became "licensed since 1996". Keep each fact as they state it.
+  - Adding a verb or channel they never gave: "hire and manage the
+    subcontractors" (they say manage), "call or text us" (they never say
+    they take texts).
+  - Headings that promise more than the content: "What customers say
+    about our fire work" over reviews that never mention fire. Name the
+    service only when every review shown is about it.
+  - Starter placeholders presented as theirs: `priceRange` `$$$` in the
+    JSON-LD (set `prospect.priceRange` only from their listing).
+  - A detail with no source (a "smell" symptom when the reviews say
+    spots in the grout).
+    General safety facts (lead is most dangerous to children) are fine;
+    list them in the report so Casey knows they are not from their site.
 - **Fixes and new options go into the starter** (one PR branch per demo
   session), merged into the demo branch as you go; never only the demo.
 
@@ -188,8 +472,10 @@ demo/demo.json src/data/service-area-geo.json` before committing.
 
 ## Copy rules learned on real demos
 
-- **Contact lines say "we" and "us"**: "Call or text us", "we'll get back
-  to you", "Tell us what you're seeing". The owner may not answer the
+- **Contact lines say "we" and "us"**: "Call us", "we'll get back
+  to you", "Tell us what you're seeing". Say "text" only when their site
+  or profile says the number takes texts, and then set `contact.texts:
+true` so the nav reads "Call or text". The owner may not answer the
   phone. Use the owner's name only where it's about them: the story, the
   About page, their license, a "dad who…" line.
 - **Service copy is the company, not the owner.** Never say or imply the
@@ -241,7 +527,7 @@ How to cover them:
   each answer all four on their own.
 - Before reporting, check each page against the four and name any gap.
 
-## Workflow (target times in brackets)
+## Workflow (rough times for the mechanical steps; the design and the check-and-fix loop take as long as they take)
 
 ### 1. Branch (1 min)
 
@@ -309,6 +595,12 @@ git switch -c demo/<slug>
   - `included.images`: exactly 2.
   - Service `faqs`: at least 2.
 
+### 3a. Art direction
+
+Write `demo/brief.md` and show Casey the hero directions: see "The quality
+bar" above. The layout and look below are the starting point the brief
+builds on.
+
 ### 3b. Pick the layout, the look and the home-service pieces (1 min)
 
 - **`home.layout`** — the page's shape (any look works with either):
@@ -330,6 +622,14 @@ git switch -c demo/<slug>
   - `warm`: HVAC, insulation, remodeling
   - `rugged`: electrical, roofing, plumbing, commercial
   - `natural`: hardscape, landscaping, decks, outdoor living
+  - `trusted`: remediation (asbestos, mold, lead), inspection, restoration:
+    work bought on trust. Cream paper, a fixed deep-navy ink, calm Fraunces
+    headings with the `<strong>` accent in brand-colour italic, pill
+    buttons. Give it a warm brand colour (orange, gold, terracotta) for the
+    buttons and accents; the navy comes from the look. A mid-tone orange
+    gets white button text by default, which is hard to read: set
+    `brand.text: "dark"`. `hero.badge: false` hides the hero's automatic
+    "Since {founded}" card when the design doesn't have one.
   - `estate`: high-end decorative work sold to homeowners and contractors
     (FDC Coatings). Use it with `home.layout: "estate"`: a full-photo
     hero, path panels, a before-and-after switcher, the commercial side in
@@ -386,6 +686,33 @@ git switch -c demo/<slug>
   business's prices: pick sensible buckets for the trade, never a "starts
   at" price they didn't publish, and list the buckets in `confirmOrCut` so
   the owner can set them.
+- **A place people visit (clinics, offices, showrooms)** — the kit taken
+  from a well-built chiropractic site (Nov 2026):
+  - `contact.openingHours` — their hours day by day (only what their site or
+    Google profile shows; 24-hour times, days not listed are closed) and
+    `businessType` — the most specific schema.org type ("Chiropractor",
+    "Dentist", "Plumber"; the list is in `src/config/site.ts`). With a
+    street address or hours, the contact page shows the office card
+    (address, hours table, directions) automatically.
+  - `home.office` — a photo of the place beside that card, before the map
+    (home and About).
+  - `home.profile` — meet the doctor or owner: portrait, `badge` ("Cum
+    laude"), `credentials` tiles (school, license, techniques, languages),
+    and `person` for the schema.org Person. Real, public facts only; a
+    license number goes in `confirmOrCut` unless their site shows it. After
+    the story (home and About).
+  - `home.spotFinder` — "Where does it hurt?": 3–9 `items`, each an `area`
+    on the body figure (head, neck, shoulders, upper-back, lower-back,
+    elbows-wrists, hips, knees, ankles-feet), a line, up to two `lists`
+    ("Common causes", "How we help") and `links` to their service pages —
+    from their own conditions/services pages, never invented. After the
+    symptoms (contractor) or the services (showcase).
+  - Questions with `multiple: true` ("Where are you hurting?", pick all
+    that apply) and `customerStatus` ("New or existing patient?");
+    `hero.formQuestions: true` puts those questions in the hero card.
+  - Hero: an old price in `<s>` ("Just <mark>$99</mark> <s>$199</s>", only
+    their real offer), `proof.source: "google"` for a Google rating, and
+    `edge: "wave"`.
 - **Projects:** `projects` (their own jobs, with before/after `photos`)
   builds `/projects` and a page per job, in the nav; `home.beforeAfter`
   puts the best pairs on the home page as sliders.
@@ -454,7 +781,10 @@ Facebook" }`). When set it takes the home page's process slot;
 - **Service-area map:** automatic. `npm run demo` looks each service area
   up on OpenStreetMap and draws a street map with the towns outlined,
   caching the boundaries in `service-area.geo.json` beside demo.json. Commit
-  that file with the demo. A town it can't find is skipped with a warning;
+  that file with the demo. A business that lists counties, not towns, can
+  list them as such (`"Denton County"`): a name ending in "County" is
+  looked up as a county and outlined whole. A miss is cached too: delete the
+  file after fixing a name. A town it can't find is skipped with a warning;
   check the spelling, or use the town's official name.
 - **`license`:** their license number, if their site or the state lookup
   shows it.
@@ -514,6 +844,10 @@ no warm color cast. No text, no logos."
   uses (tall on desktop, square on phones). Reject and regenerate rather
   than ship one that's "close".
 
+- **One great real photo beats three generated ones.** A slot with no good
+  photo gets a design that doesn't need one (big type, a colour band, a
+  map), never a weak AI image.
+
 List every generated image in `confirmOrCut`. Every image needs real alt
 text.
 
@@ -530,7 +864,10 @@ npm run demo -- --config <path>/demo.json
 - Re-running is the normal way to change anything. Never hand-edit the
   generated files (`src/data/home.ts`, `src/content/services/*`, …).
 
-### 6. Build and look (5–7 min)
+### 6. Build, then the check-and-fix loop
+
+Build, then run the loop from "The quality bar" §3 until it passes. The
+checks below are part of every round.
 
 ```sh
 npm run build && npm run check:content-build

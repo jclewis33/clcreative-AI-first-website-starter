@@ -37,7 +37,7 @@ export interface Props extends HTMLAttributes<"div"> {
   /** Small red label above the heading. */
   eyebrow?: string;
 
-  /** The heading text. */
+  /** The heading text. Inline HTML is allowed: wrap the accent phrase in a strong tag. */
   heading: string;
 
   /** Right-hand paragraph (bottom-aligned with the heading). */
@@ -93,7 +93,7 @@ const split = Boolean(intro) || hasAction;
       >
         {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
         <Heading tag={tag} variant={size} maxWidth="40rem">
-          {heading}
+          <Fragment set:html={heading} />
         </Heading>
         <div slot="column2" class="section-header_aside">
           {intro && <Text muted>{intro}</Text>}
@@ -108,7 +108,7 @@ const split = Boolean(intro) || hasAction;
       >
         {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
         <Heading tag={tag} variant={size}>
-          {heading}
+          <Fragment set:html={heading} />
         </Heading>
       </Layout>
     ))

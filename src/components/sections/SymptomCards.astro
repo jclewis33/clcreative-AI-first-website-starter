@@ -1,6 +1,7 @@
 ---
 import type { HTMLAttributes, ComponentProps } from "astro/types";
 import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
@@ -11,14 +12,34 @@ import ServiceIcon, {
 import CtaButton from "@/components/ui/CtaButton.astro";
 import type { SectionCta } from "@/lib/cta";
 
+type SymptomTag = {
+  /** The service, short: "Asbestos". An arrow is added after it. */
+  label: string;
+  /** The service page. Without it the pill is plain text. */
+  href?: string;
+};
 type SymptomCard = {
-  /** The problem, short: "Breaker keeps tripping". */
+  /**
+   * The problem, short: "Breaker keeps tripping". With `variant="quotes"`
+   * this is the quote line, in the customer's voice: "The tile came up
+   * and work stopped."
+   */
   title: string;
   /** How the homeowner puts it, or what it means: one or two sentences. */
   text: string;
   /** Icon from src/data/service-icons.json. @default 'alert' */
   icon?: ServiceIconName;
+  /**
+   * `variant="quotes"` only: the small pill at the bottom of the tile,
+   * linking to the related service.
+   */
+  tag?: SymptomTag;
 };
+type SymptomCardsVariant =
+  /** Bordered cards with an icon chip, title and line */
+  | "cards"
+  /** Quote tiles in the customer's voice, a service pill on each, and a prompt strip with the button */
+  | "quotes";
 type SymptomCardsTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -32,9 +53,18 @@ interface Props extends HTMLAttributes<"section"> {
    * - `items` — `{ title, text, icon? }[]`; empty renders nothing
    * - `eyebrow`, `heading` (default "Sound familiar?"), `intro`
    * - `cta` — optional button under the cards (e.g. the estimate form)
+   * - `variant` — `'cards'` (default) or `'quotes'`: tiles on the raised
+   *   surface, each a big quote mark, the `title` as an italic quote in
+   *   the customer's voice, the `text` muted under it and a `tag` pill
+   *   linking to the related service; under them a wide strip with the
+   *   `prompt` sentence on the left and `cta` on the right. Defaults the
+   *   section to `theme="dark"`. `heading` takes HTML here (`<strong>` =
+   *   the accent).
    *
    * @example
    * <SymptomCards items={[{ title: "Breaker keeps tripping", text: "Every time the microwave and the dryer run together." }]} cta={estimateCta} />
+   * @example Quote tiles with a prompt strip
+   * <SymptomCards variant="quotes" heading="Jobs often start <strong>with one of these.</strong>" items={[{ title: "The tile came up and work stopped.", text: "The installers found something under the old floor.", tag: { label: "Asbestos", href: "/services/asbestos" } }]} prompt="Not sure what you're looking at? <strong>We'll come out and take a look.</strong>" cta={estimateCta} />
    */
   docs?: string;
 
@@ -44,7 +74,7 @@ interface Props extends HTMLAttributes<"section"> {
   /** Small label above the heading. */
   eyebrow?: string;
 
-  /** Section heading. @default 'Sound familiar?' */
+  /** Section heading. HTML allowed with `variant="quotes"` (`<strong>` = accent). @default 'Sound familiar?' */
   heading?: string;
 
   /** Intro beside the heading. */
@@ -53,10 +83,28 @@ interface Props extends HTMLAttributes<"section"> {
   /** The problems. Empty renders nothing. */
   items: SymptomCard[];
 
-  /** Optional button under the cards. */
+  /**
+   * Optional button under the cards. With `variant="quotes"` and a
+   * `prompt`, it sits at the right of the prompt strip.
+   */
   cta?: SectionCta;
 
-  /** Section theme. */
+  /**
+   * `cards` — bordered cards with an icon chip; `quotes` — quote tiles in
+   * the customer's voice with a service pill, and a prompt strip.
+   * @default 'cards'
+   */
+  variant?: SymptomCardsVariant;
+
+  /**
+   * `variant="quotes"` only: the sentence in the strip under the tiles,
+   * beside the `cta`. HTML allowed; `<strong>` sets the second half in
+   * full-strength text: "Not sure what you're looking at? <strong>We'll
+   * come out and take a look.</strong>"
+   */
+  prompt?: string;
+
+  /** Section theme. @default 'dark' with `variant="quotes"`, else the page default */
   theme?: SymptomCardsTheme;
 
   /** Section padding (top and bottom). */
@@ -77,6 +125,8 @@ const {
   intro,
   items = [],
   cta,
+  variant = "cards",
+  prompt,
   theme,
   padding,
   id,
@@ -84,42 +134,140 @@ const {
   ...rest
 } = Astro.props;
 
-if (import.meta.env.DEV && render && !Astro.props.items?.length) {
-  console.warn("[SymptomCards] `items` is empty or missing; nothing renders.");
+const isQuotes = variant === "quotes";
+const sectionTheme = theme ?? (isQuotes ? "dark" : undefined);
+const columns = items.length === 4 ? 4 : 3;
+
+if (import.meta.env.DEV && render) {
+  if (!Astro.props.items?.length)
+    console.warn(
+      "[SymptomCards] `items` is empty or missing; nothing renders.",
+    );
+  if (!["cards", "quotes"].includes(variant))
+    console.warn(`[SymptomCards] Unknown variant "${variant}".`);
+  if (prompt && !isQuotes)
+    console.warn('[SymptomCards] `prompt` only renders with variant="quotes".');
 }
 ---
 
 {
   render && items.length > 0 && (
     <Section
-      theme={theme}
+      theme={sectionTheme}
+      gap={isQuotes ? 7 : undefined}
       padding={padding}
       id={id}
       class:list={["symptom-cards_wrap", className]}
       {...rest}
     >
-      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
-      <Grid
-        largeColumns={items.length === 4 ? 4 : 3}
-        mediumColumns={2}
-        smallColumns={1}
-      >
-        {items.map((item) => (
-          <div class="symptom-cards_card">
-            <ServiceIcon
-              name={item.icon ?? "alert"}
-              class="symptom-cards_icon"
-            />
-            <Heading tag="h3" variant="h6" class="symptom-cards_title">
-              {item.title}
+      {!isQuotes && (
+        <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      )}
+      {isQuotes && intro && (
+        <Layout
+          ratio="7-5"
+          verticalAlign="end"
+          rowGap={3}
+          class="symptom-cards_header"
+        >
+          {eyebrow && (
+            <Heading variant="eyebrow" class="symptom-cards_eyebrow">
+              {eyebrow}
             </Heading>
-            <Text muted class="symptom-cards_text">
-              {item.text}
+          )}
+          <Heading tag="h2" variant="h2" accent>
+            <Fragment set:html={heading} />
+          </Heading>
+          <div slot="column2" class="symptom-cards_header_aside">
+            <Text muted class="symptom-cards_intro">
+              {intro}
             </Text>
           </div>
-        ))}
-      </Grid>
-      {cta && (
+        </Layout>
+      )}
+      {isQuotes && !intro && (
+        <Layout variant="stack" class="symptom-cards_header">
+          {eyebrow && (
+            <Heading variant="eyebrow" class="symptom-cards_eyebrow">
+              {eyebrow}
+            </Heading>
+          )}
+          <Heading tag="h2" variant="h2" accent>
+            <Fragment set:html={heading} />
+          </Heading>
+        </Layout>
+      )}
+      {isQuotes && (
+        <Grid
+          largeColumns={columns}
+          mediumColumns={2}
+          smallColumns={1}
+          rowGap={4}
+          columnGap={4}
+        >
+          {items.map((item) => {
+            const TagEl = item.tag?.href ? "a" : "span";
+            return (
+              <div class="symptom-cards_quote_wrap">
+                <span class="symptom-cards_quote_mark" aria-hidden="true">
+                  “
+                </span>
+                <h3 class="symptom-cards_quote_title">{item.title}</h3>
+                <p class="symptom-cards_quote_text u-text-style-small">
+                  {item.text}
+                </p>
+                {item.tag?.label && (
+                  <TagEl
+                    class="symptom-cards_quote_tag"
+                    {...(item.tag.href ? { href: item.tag.href } : {})}
+                  >
+                    {item.tag.label}
+                    <span class="symptom-cards_quote_arrow" aria-hidden="true">
+                      →
+                    </span>
+                  </TagEl>
+                )}
+              </div>
+            );
+          })}
+        </Grid>
+      )}
+      {isQuotes && prompt && (
+        <div class="symptom-cards_strip">
+          <p class="symptom-cards_strip_text">
+            <Fragment set:html={prompt} />
+          </p>
+          {cta && <CtaButton cta={cta} class="symptom-cards_strip_cta" />}
+        </div>
+      )}
+      {isQuotes && !prompt && cta && (
+        <div class="symptom-cards_action">
+          <CtaButton cta={cta} size="large" />
+        </div>
+      )}
+      {!isQuotes && (
+        <Grid
+          largeColumns={items.length === 4 ? 4 : 3}
+          mediumColumns={2}
+          smallColumns={1}
+        >
+          {items.map((item) => (
+            <div class="symptom-cards_card">
+              <ServiceIcon
+                name={item.icon ?? "alert"}
+                class="symptom-cards_icon"
+              />
+              <Heading tag="h3" variant="h6" class="symptom-cards_title">
+                {item.title}
+              </Heading>
+              <Text muted class="symptom-cards_text">
+                {item.text}
+              </Text>
+            </div>
+          ))}
+        </Grid>
+      )}
+      {!isQuotes && cta && (
         <div class="symptom-cards_action">
           <CtaButton cta={cta} size="large" />
         </div>
@@ -157,6 +305,147 @@ if (import.meta.env.DEV && render && !Astro.props.items?.length) {
     .symptom-cards_action {
       display: flex;
       justify-content: center;
+    }
+    /* ==============================================================
+       variant="quotes" — what the customer says, one tile each, then a
+       strip with the prompt and the button. Sits on a dark section.
+       ============================================================== */
+
+    .symptom-cards_eyebrow::before {
+      content: "";
+      display: inline-block;
+      width: 1.75rem;
+      height: var(--border-width-main);
+      margin-inline-end: 0.625rem;
+      vertical-align: middle;
+      background-color: currentColor;
+    }
+
+    .symptom-cards_header_aside {
+      justify-self: var(--start-medium, end);
+      max-width: 24rem;
+    }
+
+    .symptom-cards_intro {
+      margin-bottom: 0;
+    }
+
+    /* A grid, not flex (its children are text): the last row takes the
+       slack so the pill sits at the bottom and a row of tiles lines up. */
+    .symptom-cards_quote_wrap {
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      row-gap: var(--space-3);
+      height: 100%;
+      padding: var(--space-5) var(--space-4);
+      border: var(--border-width-main) solid
+        color-mix(in srgb, var(--text) 8%, transparent);
+      border-radius: calc(var(--radius-main) * 1.125);
+      background-color: var(--background-2);
+      color: var(--text);
+    }
+
+    .symptom-cards_quote_mark {
+      display: block;
+      margin-top: var(--space-1);
+      font-family: var(--font-primary);
+      font-size: var(--h1-size);
+      line-height: 0.6;
+      color: var(--button-primary-background);
+    }
+
+    .symptom-cards_quote_title {
+      margin: 0;
+      font-family: var(--font-primary);
+      font-size: calc(var(--h6-size) * 1.1);
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.3;
+      letter-spacing: var(--heading-letter-spacing);
+      text-wrap: balance;
+    }
+
+    .symptom-cards_quote_text {
+      margin: 0;
+      line-height: 1.55;
+      color: color-mix(in srgb, var(--text) 72%, transparent);
+    }
+
+    .symptom-cards_quote_tag {
+      align-self: end;
+      justify-self: start;
+      margin-top: var(--space-1);
+      padding: 0.4em 0.95em;
+      border-radius: var(--radius-full);
+      background-color: var(--button-primary-background);
+      color: var(--button-primary-text);
+      font-size: var(--text-tiny-size);
+      font-weight: 600;
+      line-height: 1.3;
+      text-decoration: none;
+    }
+
+    .symptom-cards_quote_arrow {
+      display: inline-block;
+      margin-inline-start: 0.3em;
+    }
+
+    a.symptom-cards_quote_tag:focus-visible {
+      outline: var(--focus-width) solid var(--color-focus-state);
+      outline-offset: var(--focus-offset-outer);
+    }
+
+    /* The strip: the prompt left, the button right; stacked on phones. */
+    .symptom-cards_strip {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: var(--space-4) var(--space-5);
+      padding: var(--space-4) var(--space-5);
+      border-radius: var(--radius-main);
+      background-color: color-mix(in srgb, var(--text) 6%, transparent);
+    }
+
+    .symptom-cards_strip_text {
+      margin: 0;
+      font-size: var(--text-regular-size);
+      line-height: 1.5;
+      color: color-mix(in srgb, var(--text) 86%, transparent);
+    }
+
+    .symptom-cards_strip_text strong {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    @container (width < 35em) {
+      .symptom-cards_strip {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: start;
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .symptom-cards_quote_tag {
+        transition:
+          background-color 0.2s ease,
+          color 0.2s ease;
+      }
+
+      .symptom-cards_quote_arrow {
+        transition: translate 0.2s ease;
+      }
+    }
+
+    @media (hover: hover) {
+      a.symptom-cards_quote_tag:hover {
+        background-color: var(--button-primary-background-hover);
+        color: var(--button-primary-text-hover);
+      }
+
+      a.symptom-cards_quote_tag:hover .symptom-cards_quote_arrow {
+        translate: 0.2em 0;
+      }
     }
   }
 </style>

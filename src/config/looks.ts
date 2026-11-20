@@ -17,6 +17,10 @@
  *            corners — electrical, roofing, plumbing, commercial (ACE)
  *   natural  stone paper, deep green-brown ink, Fraunces serif headings —
  *            hardscape, landscaping, decks, outdoor living
+ *   trusted  cream paper, deep navy ink, calm Fraunces headings with the
+ *            accent words in brand-colour italic, pill buttons — remediation,
+ *            inspection, restoration: work bought on trust (a
+ *            remediation demo, after the Hey Segment sites)
  *   estate   warm paper, light Fraunces headings, squared buttons, a dark
  *            nav with the name beside the logo — high-end finishes for
  *            homes and commercial work (decorative concrete, custom builds)
@@ -82,6 +86,11 @@ export const LOOKS = {
   },
   natural: {
     label: "Outdoor & natural",
+    fonts: ["--font-fraunces", "--font-inter"],
+    nav: "light",
+  },
+  trusted: {
+    label: "Calm & trusted",
     fonts: ["--font-fraunces", "--font-inter"],
     nav: "light",
   },

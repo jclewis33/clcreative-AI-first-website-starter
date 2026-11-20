@@ -9,6 +9,7 @@
  */
 
 import { SITE } from "@/config/site";
+import { openingHoursJsonLd } from "@/lib/hours";
 import {
   resolveImageUrl,
   plainText,
@@ -71,7 +72,7 @@ function publisher(siteUrl: string) {
 export function localBusinessJsonLd(siteUrl: string = SITE.url) {
   return {
     "@context": "https://schema.org",
-    "@type": "ProfessionalService",
+    "@type": SITE.businessType,
     "@id": `${siteUrl}/#localbusiness`,
     name: SITE.name,
     description: SITE.localBusinessDescription,
@@ -80,7 +81,7 @@ export function localBusinessJsonLd(siteUrl: string = SITE.url) {
     logo: `${siteUrl}${SITE.logoPath}`,
     email: SITE.email || undefined,
     telephone: SITE.phone.e164,
-    priceRange: SITE.priceRange,
+    priceRange: SITE.priceRange || undefined,
     founder: { "@type": "Person", name: SITE.founder },
     address: {
       "@type": "PostalAddress",
@@ -91,6 +92,9 @@ export function localBusinessJsonLd(siteUrl: string = SITE.url) {
       addressCountry: SITE.address.country,
     },
     areaServed: SITE.areaServed.map((a) => ({ "@type": a.type, name: a.name })),
+    openingHoursSpecification: SITE.openingHours.length
+      ? openingHoursJsonLd(SITE.openingHours)
+      : undefined,
     sameAs: SITE.sameAs,
   };
 }

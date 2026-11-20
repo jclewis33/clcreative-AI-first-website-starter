@@ -199,8 +199,12 @@ const link = bar?.link;
       justify-content: center;
       margin: 0;
       padding: var(--space-2) var(--site-margin);
-      background-color: var(--button-primary-background);
-      color: var(--button-primary-text);
+      /* A look can set its own (trusted: the navy of the desktop bar). */
+      background-color: var(
+        --utility-mobile-background,
+        var(--button-primary-background)
+      );
+      color: var(--utility-mobile-text, var(--button-primary-text));
       font-weight: 700;
       text-align: center;
       text-decoration: none;

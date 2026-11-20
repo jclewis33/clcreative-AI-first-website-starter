@@ -85,6 +85,9 @@ read `SITE.phone`.
 | `ConcernTabs`        | "What is your roof telling you?": warning signs as pill tabs (`Tab variant="pills"`), each a photo beside an explanation | `items: { label, eyebrow?, title, text, takeaway?, image, imageAlt, caption?, checks?, cta?, link? }[]`, `heading`, `intro`, `checksLabel` (default "What we look at"), `cta` (fallback for items without one)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Home or service pages: "Strange noises / High bills / Uneven temps" for HVAC. Photo stacks above the text below ~928px                                                                                                                                                                                                                                                      |
 | `PathCards`          | Two (or three) ways forward as equal panels                                                                              | `paths: { label?, title, text?, points?, cta? }[]`, `heading`, `intro`, `note` (fine print), `help: { title, text? }` (a "Not sure where to start?" strip with the `SITE.phone` call button)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Insurance vs paying directly, repair vs replace, financing vs paying upfront. Built from `Card padding="large"` + `CheckList`                                                                                                                                                                                                                                               |
 | `OptionCards`        | The options side by side as numbered cards                                                                               | `items: { label?, title, image?, imageAlt?, credit?, creditHref?, text, details?, href? }[]`, `detailsLabel` (default "What matters for your home"), `cta` (default "Discuss this option" → `/contact`), `numbered`, `note`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Roof systems, materials, HVAC equipment, water heaters. `details` is a paragraph or a string[] checklist in a small AccordionItem fold-out                                                                                                                                                                                                                                  |
+| `SpotFinder`         | "Where does it hurt?": markers on a figure, the same places as pills, a panel for the one picked                         | `items: { label, text, area?, spots?, title?, lists?: {title, items}[], links?: {label, href}[], cta? }[]`, `figure` (any SVG as a component; default the built-in body), `figureLabel`, `linksLabel`, `cta`, `showPhone`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Chiropractic, physio, massage (`area`: head, neck, shoulders, upper-back, lower-back, elbows-wrists, hips, knees, ankles-feet — markers pre-placed); a contractor's house cutaway with `figure` + `spots` (percent). Pills wrap as chips; a marker tap picks its pill and scrolls the panel up when stacked                                                                 |
+| `OfficeVisit`        | "Visit our office": a photo of the place beside an `OfficeCard`, a few lines under them                                  | `heading` (default "Visit our {city} office"), `intro`, `image`, `imageAlt`, `paragraphs`, `card` (OfficeCard props)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | A clinic, office or showroom people come to. Without a photo the card sits alone, centred                                                                                                                                                                                                                                                                                   |
+| `ProfileSplit`       | Meet the doctor / owner: portrait with a badge, bio, credentials as labelled tiles                                       | `name`, `eyebrow`, `lead`, `paragraphs`, `image`, `imageAlt`, `imageSide`, `badge: {title, text?}`, `credentials: {label, value, wide?}[]`, `cta`, `secondaryCta` (text link), `person` (schema.org Person), `theme` (default dark)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | When the person is the reason to call — a doctor, a master tradesman. Real facts only; `person` only with public facts                                                                                                                                                                                                                                                      |
 | `UtilityBar`         | Thin bar above the nav (`src/components/global/`)                                                                        | none — set `SITE.utilityBar` (`null` = off)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Emergency / 24/7 businesses                                                                                                                                                                                                                                                                                                                                                 |
 
 Supporting pieces: `CtaPanel` (the estimate button, "or", and "Call or text
@@ -99,7 +102,11 @@ icon + `label` — only ones the business holds), `CtaButton` (renders a
 `LeadFormModal` (a pop-up LeadForm; place once per page), `ImagePair`
 (`variant="polaroid"`: two tilted, framed prints with an optional per-image
 `caption`; makes job-site phone photos look intentional),
-`ServiceIcon` (icon set in `src/data/service-icons.json`). `CTASection` also
+`ServiceIcon` (icon set in `src/data/service-icons.json`). `OfficeCard` (address, the
+phone as a big tap-to-call link, the week's hours from `SITE.openingHours`
+as a table — neighbouring days with the same hours share a row — and "Get
+directions" to Google Maps when there's a street address; `theme` default
+`invert`). `CTASection` also
 accepts `primaryCta` / `secondaryCta` and HTML headings.
 
 **ServiceArea maps:** import the client's SVG as a component and pass it as
@@ -129,7 +136,10 @@ Variants added alongside: `StatsStrip` `variant: band | ruled | spec`
 `BeforeAfterGallery` `variant: switcher` (chips pick one pair);
 `ChoiceChips` `tone: brand`; `ProcessSteps` / `StepList` `variant: columns`;
 `Hero` `overlay: full` (the whole photo, darkest behind the text) and
-`secondaryVariant: secondary` (an outline button); `FAQ` `layout: stacked`;
+`secondaryVariant: secondary` (an outline button); `Hero` `edge: "wave"` +
+`edgeTheme` (a curved bottom edge in the next section's colour), an old
+price in `<s>` in `heading` (struck and quieter: `Just <mark>$99</mark>
+<s>$199</s>`), and `proof.source: "google"` (the Google G in the rating); `FAQ` `layout: stacked`;
 `LeadForm` `fields="bid"` (a contractor's bid invitation) and
 `LeadFormSection` `steps` + `contact: both`; a `SectionCta` takes
 `icon: "download"` for a PDF.
@@ -148,19 +158,21 @@ Two `SITE` settings turn the agency chrome into contractor chrome, site-wide:
 - **`SITE.quote`** (`{ label, heading, text? }`, `null` = off): BaseLayout
   renders the estimate form once as a modal (`ESTIMATE_MODAL_ID` from
   `@/lib/cta` — open it with `{ label, modal: ESTIMATE_MODAL_ID }`), the
-  navbar shows "Call or text" + the number and a button that opens it, phones
+  navbar shows "Call or text" (or "Call us" when `SITE.phone.texts` is false) + the number and a button that opens it, phones
   get the sticky `MobileActionBar` (Call now | estimate), and the footer adds
   a "Service area" column and "© year Legal Name. License …" (`SITE.license`).
   `LocalServiceHome` uses the site-wide modal when it exists and brings its
   own otherwise.
 - **`SITE.look`** — `studio` (the starter's own), `fresh`, `warm`, `rugged`,
-  `natural`, `estate` (`src/config/looks.ts`; tokens in
+  `natural`, `trusted`, `estate` (`src/config/looks.ts`; tokens in
   `src/styles/variables/looks.css`). A look re-values tokens only — fonts,
   heading case and tracking, radii, button and nav/footer type, paper and
   ink — so every component follows; the brand colour stays the client's.
   Pick by trade: fresh = lawn, pest, cleaning, pool; warm = HVAC,
   insulation, remodeling; rugged = electrical, roofing, plumbing,
-  commercial; natural = hardscape, landscaping, decks; estate = high-end
+  commercial; natural = hardscape, landscaping, decks; trusted =
+  remediation, inspection, restoration (cream paper, navy ink, calm serif
+  headings with italic brand-colour accents, pill buttons); estate = high-end
   decorative work sold to homeowners and contractors (Fraunces, warm paper,
   a dark nav with the name beside the logo, the brief footer and its own
   service and project pages).
@@ -201,7 +213,7 @@ optional sections (`stats`, `process`, `photoBand`, `story`, `reviews`, `faqs`)
 render only when their data is there, and the service cards come from
 `src/content/services`. Step lists (`StepList`, `ProcessSteps`) have a **`timeline`** variant: numbered dots on a line, steps alternating sides (line left on narrow screens), each dot lighting up, text fading in and line drawing as it scrolls into view (scroll-driven CSS; fully lit without support or with reduced motion). Service pages and the About page use it. `ServiceArea` draws a dashed **radius** ring from `SERVICE_RADIUS` (`src/data/service-radius.json`, generated from demo.json's `serviceRadius`). The contact template (`LocalServiceContact`) never invents promises: its steps and FAQ come from the home data and drop out when absent.
 
-Home data also takes **`paths`** (PathCards under the stats: homeowners
+Home data also takes **`spotFinder`**, **`office`** and **`profile`** (SpotFinder after the symptoms or services, OfficeVisit before the map, ProfileSplit after the story; the last two also on the About page) and `hero.formQuestions` (the hero card asks `estimate.questions`). The contact template shows an `OfficeCard` whenever `SITE.address.street` or `SITE.openingHours` is set. Home data also takes **`paths`** (PathCards under the stats: homeowners
 one way, contractors another, each `cta` linking to its page) and
 **`beforeAfter`** (BeforeAfterGallery); the showcase layout also renders
 `why` (after recent work) and `expect` (before the form).
@@ -273,3 +285,41 @@ order:
   heading="Get a free estimate"
 />
 ```
+
+## Section variants from the remediation demo (Nov 2026)
+
+These are a palette, not a page template. Use one where a demo's own design
+calls for it. Each is a `variant` on an existing section, and the default
+variants are unchanged. Headings in these variants take HTML, where
+`<strong>` is the italic accent.
+
+| Section        | Variant     | What it is                                                                                                                                                                                                                          | New props                                                                                                                                    |
+| -------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| StorySplit     | `collage`   | Two overlapping photos with a badge card, beside the story, a 4-cell stats card and a review quote                                                                                                                                  | `image2`, `image2Alt`, `badge {title,text?}`, `stats {value,label}[]` (up to 4; a ★ is drawn in the brand colour), `quote {text,name,meta?}` |
+| ServiceCards   | `feature`   | The first `featured` (default 2) items as large photo cards (title, line, "Learn more" over a navy fade), the rest as compact white cards. One link per card, no tag pills                                                          | `featured`, item `label` (eyebrow on the large cards)                                                                                        |
+| SymptomCards   | `quotes`    | Dark band of quote tiles in the customer's voice, each with a pill linking its service, and a strip with a sentence and the CTA                                                                                                     | item `tag {label,href?}`, `prompt` (HTML)                                                                                                    |
+| ProcessSteps   | `connected` | One white panel with icon circles, number badges and a dashed connector. Under it the CTA, then "or call (phone) · hours"                                                                                                           | step `icon` (service-icons names, or `call`/`search`/`shield`/`document`), `cta`, `showPhone`, `note`                                        |
+| ReviewCards    | `google`    | Google-style cards (initial avatar, date, G, stars), a white rating card, keyword chips with real counts, a cream featured card                                                                                                     | `rating`, `count`, `keywords {word,count}[]`, `featured`, `href`, `link`; review `date`, `role`                                              |
+| ServiceArea    | `card`      | A white card with the place list and a phone button, beside the real street map (brand fill, tighter fit, "County" dropped from the map labels)                                                                                     | `variant="card"`. ServiceMap gains `variant="filled"`, passed only by this card                                                              |
+| FAQ            | `split`     | The questions in a white panel beside a navy "Still have a question?" help card; first item open; round +/− indicator                                                                                                               | `variant="split"`, `help {heading,text,image?,imageAlt?}`                                                                                    |
+| CallBand       | `panel`     | A rounded photo panel with a navy wash, the estimate button and a phone button, and a tick row                                                                                                                                      | `ticks`                                                                                                                                      |
+| IncludedList   | `panel`     | One white rounded card: the heading (HTML accent) on the left, the checklist with round brand ticks on the right, no photos (for pages whose photos are already used)                                                               | `variant="panel"`                                                                                                                            |
+| ContactMethods | (section)   | Ways to reach the business as white cards: a navy icon disc (call, mail, clock, pin), a small accent label, the value in the serif (linked when it has an `href`), a note. Four across, two, then one with the disc beside the text | `items: { icon, label, value, href?, note? }[]`, optional `eyebrow`/`heading`                                                                |
+
+The estimate form's tiles also take an `icon` per option (LeadFormOption,
+LeadQuestionOption, demo.json `home.leadForm.projectOptions[].icon`). The
+tiles then read left to right, two across even on a phone.
+
+The demo.json fields that feed them sit beside the existing ones:
+
+- `story.inset`, `insetAlt`, `badge`, `quote`
+- `symptoms.items[].tag`, `symptoms.prompt`
+- `reviews.items[].date`, `role`, `reviews.keywords`, `featured`
+- `faqs.heading`, `faqs.help`
+- `callBand.variant: "panel"`, `ticks`
+- `reviews.cards: "google"` — the preset's reviews and About pages switch to
+  the Google-style cards too, so they match a home page that uses them
+
+The preset's templates don't use them. A demo's own page
+(`demo/pages/index.astro`) does. The worked example is the
+remediation demo's branch in the private demos repo.

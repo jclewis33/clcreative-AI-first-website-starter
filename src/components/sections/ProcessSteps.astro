@@ -6,8 +6,35 @@ import Layout from "@/components/ui/Layout.astro";
 import Visual from "@/components/ui/Visual.astro";
 import SectionHeader from "@/components/ui/SectionHeader.astro";
 import StepList from "@/components/ui/StepList.astro";
+import Heading from "@/components/ui/Heading.astro";
+import Text from "@/components/ui/Text.astro";
+import CtaButton from "@/components/ui/CtaButton.astro";
+import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
+import SERVICE_ICONS from "@/data/service-icons.json";
+import type { SectionCta } from "@/lib/cta";
+import { SITE } from "@/config/site";
+import { linkPhones } from "@/lib/phone-links";
 
-type ProcessStep = { title: string; text: string };
+/* Step icons the service set doesn't carry (24x24 stroke paths, same
+   drawing rules as src/data/service-icons.json). */
+const STEP_ICONS = {
+  search: '<circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/>',
+  shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/>',
+  document: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+  call: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+} as const;
+
+/** A step's icon: one of src/data/service-icons.json, or a step-only icon (call, search, shield, document). */
+type ProcessStepIcon = ServiceIconName | keyof typeof STEP_ICONS;
+
+type ProcessStep = {
+  /** The step's name: "Inspection and estimate". */
+  title: string;
+  /** A line or two about it. */
+  text: string;
+  /** Icon in the step's circle (`connected` only). Without one, the circle shows the number. */
+  icon?: ProcessStepIcon;
+};
 type ProcessStepsVariant =
   /** Header (and optional photo) left, numbered list right */
   | "list"
@@ -16,7 +43,9 @@ type ProcessStepsVariant =
   /** Header on top, steps alternating along a vertical line (no photo) */
   | "timeline"
   /** Header on top, the steps side by side under accent rules (no photo) */
-  | "columns";
+  | "columns"
+  /** Centred header; one panel with icon circles joined by a dashed line, a CTA row under them (no photo) */
+  | "connected";
 type ProcessStepsTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -26,13 +55,24 @@ interface Props extends HTMLAttributes<"section"> {
    * finished job.
    *
    * - `eyebrow`, `heading`, `text` — the intro
-   * - `steps` — `{ title, text }[]` (numbers are generated)
+   * - `steps` — `{ title, text, icon? }[]` (numbers are generated; `icon`
+   *   is used by `connected` only)
    * - `image`, `imageAlt` — optional photo under the intro (`list` only)
-   * - `variant` — `'list'` (default), `'cards'`, or `'timeline'` (steps
-   *   alternating along a line; the photo isn't shown)
+   * - `variant` — `'list'` (default), `'cards'`, `'timeline'` (steps
+   *   alternating along a line), `'columns'`, or `'connected'` (centred
+   *   eyebrow between rules and an accent heading, then one raised panel:
+   *   a navy icon circle per step with an orange number badge, the circles
+   *   joined by a dashed line, and a footer row with `cta` and "or call
+   *   (phone) · `note`"). The photo shows in `list` only.
+   * - `cta`, `note`, `showPhone` — the `connected` footer row. The phone is
+   *   `SITE.phone` as a tap-to-call link; `note` (default `SITE.hours`)
+   *   follows it after a dot. In `connected`, `heading` takes HTML
+   *   (`<strong>` = accent).
    *
    * @example
    * <ProcessSteps heading="How it works" steps={[{ title: "Call", text: "Tell us what you need." }]} />
+   * @example Connected
+   * <ProcessSteps variant="connected" eyebrow="How it works" heading="What happens <strong>after you call.</strong>" steps={[{ title: "Call us", text: "Tell us what you found.", icon: "call" }]} cta={{ label: "Get a free quote", modal: "estimate-modal" }} note="Mon–Fri, 8–5" />
    */
   docs?: string;
 
@@ -42,7 +82,7 @@ interface Props extends HTMLAttributes<"section"> {
   /** Small label above the heading. */
   eyebrow?: string;
 
-  /** Section heading. Required. */
+  /** Section heading. Required. In `connected`, HTML is allowed (`<strong>` = accent). */
   heading: string;
 
   /** Intro paragraph. */
@@ -59,6 +99,15 @@ interface Props extends HTMLAttributes<"section"> {
 
   /** Layout. @default 'list' */
   variant?: ProcessStepsVariant;
+
+  /** The button in the footer row under the steps (`connected` only). */
+  cta?: SectionCta;
+
+  /** Show "or call (phone)" in the footer row, from `SITE.phone` (`connected` only). @default true */
+  showPhone?: boolean;
+
+  /** Short line after the phone, e.g. "Mon–Fri, 8–5"; `""` hides it (`connected` only). @default SITE.hours */
+  note?: string;
 
   /** Section theme. */
   theme?: ProcessStepsTheme;
@@ -83,6 +132,9 @@ const {
   image,
   imageAlt,
   variant = "list",
+  cta,
+  showPhone = true,
+  note = SITE.hours,
   theme,
   padding,
   id,
@@ -97,9 +149,20 @@ if (import.meta.env.DEV && render) {
     console.warn(
       "[ProcessSteps] `steps` is empty or missing; nothing renders.",
     );
-  if (!["list", "cards", "timeline", "columns"].includes(variant))
+  if (!["list", "cards", "timeline", "columns", "connected"].includes(variant))
     console.warn(`[ProcessSteps] Unknown variant "${variant}".`);
 }
+
+const ICON_PATHS: Record<string, string> = { ...SERVICE_ICONS, ...STEP_ICONS };
+if (import.meta.env.DEV && render && variant === "connected") {
+  steps.forEach((step) => {
+    if (step.icon && !ICON_PATHS[step.icon])
+      console.warn(
+        `[ProcessSteps] Unknown step icon "${step.icon}"; the number shows instead.`,
+      );
+  });
+}
+const hasFooter = variant === "connected" && (Boolean(cta?.label) || showPhone);
 ---
 
 {
@@ -107,47 +170,126 @@ if (import.meta.env.DEV && render) {
     <Section
       theme={theme}
       padding={padding}
+      gap={variant === "connected" ? 6 : undefined}
       id={id}
-      class:list={["process-steps_wrap", className]}
+      class:list={[
+        "process-steps_wrap",
+        variant === "connected" && "is-connected",
+        className,
+      ]}
       {...rest}
     >
-      {variant === "cards" ||
-      variant === "timeline" ||
-      variant === "columns" ? (
+      {variant === "connected" && (
         <>
-          <SectionHeader eyebrow={eyebrow} heading={heading} intro={text} />
-          <StepList steps={steps} variant={variant} />
-        </>
-      ) : (
-        <>
-          {/* The header runs full width; the photo and the steps share the
-              row under it and stretch to one height, so the step rules line
-              up with the photo instead of starting above it. */}
-          <SectionHeader eyebrow={eyebrow} heading={heading} intro={text} />
-          {image && (
-            <Layout
-              ratio="5-7"
-              verticalAlign="stretch"
-              class="process-steps_row"
+          <Layout variant="stack-centered" class="process-steps_header">
+            {eyebrow && (
+              <Heading tag="p" variant="eyebrow" class="process-steps_eyebrow">
+                {eyebrow}
+              </Heading>
+            )}
+            <Heading tag="h2" variant="h2" accent>
+              <Fragment set:html={heading} />
+            </Heading>
+            {text && <Text muted>{text}</Text>}
+          </Layout>
+          <div class="process-steps_panel">
+            <ol
+              class="process-steps_track"
+              style={`--_count: ${Math.min(steps.length, 4)}`}
             >
-              <div class="process-steps_media">
-                <Visual
-                  src={image}
-                  alt={imageAlt || heading}
-                  ratio="landscape"
-                />
+              {steps.map((step, i) => {
+                const paths = step.icon ? ICON_PATHS[step.icon] : undefined;
+                return (
+                  <li class="process-steps_step">
+                    <span
+                      class="process-steps_marker"
+                      data-theme-invert
+                      aria-hidden="true"
+                    >
+                      {paths && (
+                        <svg
+                          class="process-steps_icon"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <Fragment set:html={paths} />
+                        </svg>
+                      )}
+                      {paths && (
+                        <span class="process-steps_badge">{i + 1}</span>
+                      )}
+                      {!paths && (
+                        <span class="process-steps_number">{i + 1}</span>
+                      )}
+                    </span>
+                    <h3 class="process-steps_step_title u-text-style-h6">
+                      {step.title}
+                    </h3>
+                    <p class="process-steps_step_text u-text-style-small">
+                      <Fragment set:html={linkPhones(step.text)} />
+                    </p>
+                  </li>
+                );
+              })}
+            </ol>
+            {hasFooter && (
+              <div class="process-steps_footer">
+                {cta?.label && <CtaButton cta={cta} />}
+                {showPhone && (
+                  <p class="process-steps_note u-text-style-small">
+                    {cta?.label ? "or call " : "Call "}
+                    <a
+                      class="process-steps_phone"
+                      href={`tel:${SITE.phone.tel}`}
+                    >
+                      {SITE.phone.display}
+                    </a>
+                    {note && ` · ${note}`}
+                  </p>
+                )}
               </div>
-              <StepList
-                slot="column2"
-                steps={steps}
-                variant="list"
-                class="process-steps_list"
-              />
-            </Layout>
-          )}
-          {!image && <StepList steps={steps} variant="list" />}
+            )}
+          </div>
         </>
       )}
+      {variant !== "connected" &&
+        (variant === "cards" ||
+        variant === "timeline" ||
+        variant === "columns" ? (
+          <>
+            <SectionHeader eyebrow={eyebrow} heading={heading} intro={text} />
+            <StepList steps={steps} variant={variant} />
+          </>
+        ) : (
+          <>
+            {/* The header runs full width; the photo and the steps share the
+              row under it and stretch to one height, so the step rules line
+              up with the photo instead of starting above it. */}
+            <SectionHeader eyebrow={eyebrow} heading={heading} intro={text} />
+            {image && (
+              <Layout
+                ratio="5-7"
+                verticalAlign="stretch"
+                class="process-steps_row"
+              >
+                <div class="process-steps_media">
+                  <Visual
+                    src={image}
+                    alt={imageAlt || heading}
+                    ratio="landscape"
+                  />
+                </div>
+                <StepList
+                  slot="column2"
+                  steps={steps}
+                  variant="list"
+                  class="process-steps_list"
+                />
+              </Layout>
+            )}
+            {!image && <StepList steps={steps} variant="list" />}
+          </>
+        ))}
     </Section>
   )
 }
@@ -185,6 +327,215 @@ if (import.meta.env.DEV && render) {
       .process-steps_media .u-image-wrapper {
         aspect-ratio: 3 / 2;
         min-height: 0;
+      }
+    }
+
+    /* ── connected ─────────────────────────────────────────────── */
+    /* Eyebrow between two short rules. */
+    .process-steps_eyebrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.625rem;
+    }
+
+    .process-steps_eyebrow::before,
+    .process-steps_eyebrow::after {
+      content: "";
+      flex-shrink: 0;
+      width: 1.75rem;
+      height: var(--border-width-main);
+      background-color: currentColor;
+    }
+
+    /* One raised panel on the paper. --_ring is the panel colour, resolved
+       here so the inverted icon circles can cut it out around themselves. */
+    .process-steps_panel {
+      --_ring: var(--background-2);
+      --_line: color-mix(in oklab, var(--heading-accent) 28%, var(--_ring));
+      display: grid;
+      gap: var(--space-6);
+      width: 100%;
+      padding: var(--space-7) var(--space-6) var(--space-6);
+      border-radius: calc(var(--radius-main) * 1.5);
+      background-color: var(--background-2);
+      color: var(--text);
+      box-shadow:
+        0 0.0625rem 0.125rem color-mix(in srgb, var(--text) 6%, transparent),
+        0 1rem 2.5rem color-mix(in srgb, var(--text) 7%, transparent);
+    }
+
+    .process-steps_track {
+      --_gap: var(--space-4);
+      display: grid;
+      grid-template-columns: repeat(var(--_count, 4), minmax(0, 1fr));
+      gap: var(--space-6) var(--_gap);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .process-steps_step {
+      position: relative;
+      text-align: center;
+    }
+
+    /* The dashed connector: from this circle's centre to the next one's,
+       drawn behind the circles (which ring themselves in the panel
+       colour, so the line seems to stop short of each). */
+    .process-steps_step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 2rem;
+      left: 50%;
+      width: calc(100% + var(--_gap));
+      border-top: calc(var(--border-width-main) * 4 / 3) dashed var(--_line);
+    }
+
+    .process-steps_marker {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 4rem;
+      aspect-ratio: 1 / 1;
+      margin: 0 auto var(--space-4);
+      border-radius: var(--radius-full);
+      background-color: var(--background);
+      color: var(--text);
+      box-shadow: 0 0 0 0.5rem var(--_ring);
+    }
+
+    .process-steps_icon {
+      flex-shrink: 0;
+      width: 1.625rem;
+      aspect-ratio: 1 / 1;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .process-steps_badge {
+      position: absolute;
+      top: -0.25rem;
+      right: -0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-full);
+      background-color: var(--button-primary-background);
+      color: var(--button-primary-text);
+      font-family: var(--font-body);
+      font-size: var(--text-tiny-size);
+      font-weight: var(--font-weight-bold);
+      line-height: 1;
+    }
+
+    .process-steps_number {
+      font-family: var(--font-primary);
+      font-size: var(--h5-size);
+      line-height: 1;
+    }
+
+    .process-steps_step_title {
+      margin-bottom: var(--space-2);
+    }
+
+    .process-steps_step_text {
+      max-width: 15rem;
+      margin: 0 auto;
+      color: color-mix(in srgb, var(--text) 75%, transparent);
+    }
+
+    /* Footer: the button and the phone line, centred under a hairline. */
+    .process-steps_footer {
+      display: grid;
+      grid-auto-flow: var(--row-small, column);
+      justify-content: center;
+      justify-items: center;
+      align-items: center;
+      gap: var(--space-3) var(--space-4);
+      padding-top: var(--space-5);
+      border-top: var(--border-width-main) solid
+        color-mix(in srgb, var(--border) 45%, transparent);
+      text-align: center;
+    }
+
+    .process-steps_note {
+      margin: 0;
+      color: color-mix(in srgb, var(--text) 75%, transparent);
+    }
+
+    .process-steps_phone {
+      color: var(--text);
+      font-weight: var(--font-weight-bold);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    @media (hover: hover) {
+      .process-steps_phone:hover {
+        text-decoration: underline;
+      }
+    }
+
+    /* Two across: the line joins each pair, not across the row break. */
+    @container (width < 58em) {
+      .process-steps_track {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .process-steps_step:nth-child(2n)::after {
+        display: none;
+      }
+    }
+
+    /* Phones: one column, each circle beside its text, the dashed line
+       running down from circle to circle. */
+    @container (width < 35em) {
+      .process-steps_panel {
+        padding: var(--space-6) var(--space-4) var(--space-5);
+      }
+
+      .process-steps_track {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .process-steps_step {
+        display: grid;
+        grid-template-columns: 4rem minmax(0, 1fr);
+        column-gap: var(--space-4);
+        align-items: start;
+        text-align: left;
+      }
+
+      .process-steps_marker {
+        grid-row: span 2;
+        margin: 0;
+      }
+
+      .process-steps_step_title {
+        margin-top: var(--space-1);
+      }
+
+      .process-steps_step_text {
+        max-width: none;
+        margin: 0;
+      }
+
+      .process-steps_step:not(:last-child)::after,
+      .process-steps_step:nth-child(2n):not(:last-child)::after {
+        display: block;
+        top: 2rem;
+        left: 2rem;
+        width: 0;
+        height: calc(100% + var(--space-6));
+        border-top: 0;
+        border-left: calc(var(--border-width-main) * 4 / 3) dashed var(--_line);
       }
     }
   }

@@ -42,7 +42,9 @@
 /* Heading accent — applies theme accent color to <strong> within the element */
 .u-heading-accent strong {
   color: var(--heading-accent);
-  font-weight: inherit;
+  /* A look can set the accent in italic and a lighter weight (trusted). */
+  font-style: var(--heading-accent-style, normal);
+  font-weight: var(--heading-accent-weight, inherit);
 }
 
 /* Color utilities live in visual-utilities.css so they load *after*

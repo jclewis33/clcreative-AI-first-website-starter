@@ -290,6 +290,11 @@ const STRUCTURED_SITE_KEYS = [
   "license",
   // A second nav button ({ label, href } or null).
   "navSecondaryCta",
+  // Day-by-day hours ([{ days: ["Mo"], opens: "09:00", closes: "17:00" }])
+  // and the schema.org business type ("Chiropractor", "Plumber", …;
+  // astro check rejects one site.ts doesn't list).
+  "openingHours",
+  "businessType",
 ];
 
 const currentString = (src, key) => {

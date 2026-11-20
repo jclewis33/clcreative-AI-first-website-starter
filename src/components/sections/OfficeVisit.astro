@@ -1,0 +1,169 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Text from "@/components/ui/Text.astro";
+import OfficeCard from "@/components/ui/OfficeCard.astro";
+import { SITE } from "@/config/site";
+
+type OfficeVisitTheme = ComponentProps<typeof Section>["theme"];
+type OfficeVisitCard = Omit<ComponentProps<typeof OfficeCard>, "docs">;
+type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **OfficeVisit** — "Schedule your appointment at our Riverside office": a
+   * photo of the place beside an `OfficeCard` (address, tap-to-call phone,
+   * the week's hours, directions), with a few lines under them on what
+   * happens there. For a business people come to — a clinic, an office, a
+   * showroom. The card reads `SITE`, so it stays right when the hours
+   * change.
+   *
+   * - `eyebrow`, `heading` (default "Visit our {city} office"), `intro`
+   * - `image` + `imageAlt` — the building, the front desk, a treatment room;
+   *   without one the card sits alone, centred
+   * - `paragraphs` — under the photo and card: who works there, what they
+   *   offer (one plain sentence of what, where and for whom helps AI
+   *   assistants too)
+   * - `card` — any OfficeCard prop (`title`, `eyebrow`, `directionsLabel`, …)
+   *
+   * @example
+   * <OfficeVisit heading="Schedule your visit at our Riverside office" image={frontDesk} imageAlt="The front desk at the Riverside office" paragraphs={["Our office in Riverside is open five days a week…"]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Section heading. @default 'Visit our {SITE.address.locality} office' */
+  heading?: string;
+
+  /** Intro beside the heading. */
+  intro?: string;
+
+  /** A photo of the place (an import or a URL). */
+  image?: ImageMetadata | string;
+
+  /** Real alt text for `image`. Required with `image`. */
+  imageAlt?: string;
+
+  /** Paragraphs under the photo and card. */
+  paragraphs?: string[];
+
+  /** Props for the OfficeCard. */
+  card?: OfficeVisitCard;
+
+  /** Section theme. */
+  theme?: OfficeVisitTheme;
+
+  /** Section padding (top and bottom). */
+  padding?: PaddingSize;
+
+  /** Section id for anchor links. */
+  id?: string;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading = `Visit our ${SITE.address.locality} office`,
+  intro,
+  image,
+  imageAlt,
+  paragraphs = [],
+  card,
+  theme,
+  padding,
+  id,
+  class: className,
+  ...rest
+} = Astro.props;
+
+if (import.meta.env.DEV && render && image && !imageAlt) {
+  console.warn("[OfficeVisit] `image` needs real `imageAlt`; photo skipped.");
+}
+const showImage = Boolean(image && imageAlt);
+---
+
+{
+  render && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["office-visit_wrap", className]}
+      {...rest}
+    >
+      <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      <div class:list={["office-visit_layout", { "is-card-only": !showImage }]}>
+        {showImage && image && imageAlt && (
+          <div class="office-visit_media">
+            <Visual
+              src={image}
+              alt={imageAlt}
+              variant="background"
+              loading="lazy"
+              class="office-visit_img"
+            />
+          </div>
+        )}
+        <OfficeCard {...card} class="office-visit_card" />
+      </div>
+      {paragraphs.length > 0 && (
+        <div class="office-visit_text u-margin-trim">
+          {paragraphs.map((p) => (
+            <Text>{p}</Text>
+          ))}
+        </div>
+      )}
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    /* Photo beside the card; the photo fills the card's height. Stacked
+       below ~928px, the photo takes a landscape ratio above the card. */
+    .office-visit_layout {
+      display: var(--flex-medium, grid);
+      flex-direction: column;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--space-6);
+    }
+
+    .office-visit_layout.is-card-only {
+      display: flex;
+      justify-content: center;
+    }
+
+    .office-visit_layout.is-card-only .office-visit_card {
+      width: min(100%, 32rem);
+    }
+
+    .office-visit_media {
+      position: relative;
+      min-height: 20rem;
+      overflow: clip;
+      border-radius: var(--radius-main);
+    }
+
+    @container (width < 58em) {
+      .office-visit_media {
+        min-height: 0;
+        aspect-ratio: 3 / 2;
+      }
+    }
+
+    .office-visit_text {
+      max-width: 75ch;
+    }
+  }
+</style>

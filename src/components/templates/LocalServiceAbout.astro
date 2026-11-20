@@ -18,9 +18,12 @@ import Hero from "@/components/sections/Hero.astro";
 import StatsStrip from "@/components/sections/StatsStrip.astro";
 import StorySplit from "@/components/sections/StorySplit.astro";
 import TeamGrid from "@/components/sections/TeamGrid.astro";
+import OfficeVisit from "@/components/sections/OfficeVisit.astro";
+import ProfileSplit from "@/components/sections/ProfileSplit.astro";
 import Guarantee from "@/components/sections/Guarantee.astro";
 import ProcessSteps from "@/components/sections/ProcessSteps.astro";
 import Reviews from "@/components/sections/Reviews.astro";
+import ReviewCards from "@/components/sections/ReviewCards.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import CallBand from "@/components/sections/CallBand.astro";
 import LeadFormModal from "@/components/form/LeadFormModal.astro";
@@ -56,6 +59,8 @@ const {
   reviews,
   serviceArea,
   callBand,
+  office,
+  profile,
 } = home;
 
 const services = await getServices();
@@ -124,6 +129,25 @@ const schemaCrumbs = [
   }
 
   {
+    profile && (
+      <ProfileSplit
+        eyebrow={profile.eyebrow}
+        name={profile.name}
+        lead={profile.lead}
+        paragraphs={profile.paragraphs}
+        image={profile.image}
+        imageAlt={profile.imageAlt}
+        imageSide={profile.imageSide}
+        badge={profile.badge}
+        credentials={profile.credentials}
+        cta={estimateCta}
+        secondaryCta={profile.secondaryCta}
+        person={profile.person}
+      />
+    )
+  }
+
+  {
     team && (
       <TeamGrid
         eyebrow={team.eyebrow}
@@ -161,12 +185,45 @@ const schemaCrumbs = [
   }
 
   {
-    reviews && (
+    reviews && reviews.cards === "google" && (
+      <ReviewCards
+        variant="google"
+        eyebrow="Google reviews"
+        heading="What our customers <strong>say</strong>"
+        reviews={reviews.items.slice(0, 6)}
+        rating={reviews.rating}
+        count={reviews.count}
+        keywords={reviews.keywords}
+        featured={reviews.featured}
+        href="/reviews"
+        link={{
+          label: `Read all ${reviews.items.length} reviews`,
+          href: "/reviews",
+        }}
+      />
+    )
+  }
+  {
+    reviews && reviews.cards !== "google" && (
       <Reviews
         rating={reviews.rating}
         count={reviews.count}
         reviews={reviews.items}
         layout={reviews.layout ?? "cards"}
+      />
+    )
+  }
+
+  {
+    office && (
+      <OfficeVisit
+        eyebrow={office.eyebrow}
+        heading={office.heading}
+        intro={office.intro}
+        paragraphs={office.paragraphs}
+        image={office.image}
+        imageAlt={office.imageAlt}
+        card={{ title: office.cardTitle }}
       />
     )
   }

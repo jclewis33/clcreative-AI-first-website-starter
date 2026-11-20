@@ -39,6 +39,9 @@ import PathCards from "@/components/sections/PathCards.astro";
 import BeforeAfterGallery from "@/components/sections/BeforeAfterGallery.astro";
 import ExpectTimeline from "@/components/sections/ExpectTimeline.astro";
 import WhyChooseUs from "@/components/sections/WhyChooseUs.astro";
+import SpotFinder from "@/components/sections/SpotFinder.astro";
+import OfficeVisit from "@/components/sections/OfficeVisit.astro";
+import ProfileSplit from "@/components/sections/ProfileSplit.astro";
 import { geoFor } from "@/lib/service-area-geo";
 import { getServices, servicePath } from "@/lib/services";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
@@ -99,6 +102,8 @@ const heroForm = {
   text: home.hero.formText ?? home.estimate.text,
   projectOptions,
   stepQuestion: home.estimate.question,
+  /* hero.formQuestions: the card asks the qualifying questions too. */
+  questions: home.hero.formQuestions ? home.estimate.questions : undefined,
 };
 const {
   hero,
@@ -121,6 +126,9 @@ const {
   why,
   paths,
   beforeAfter,
+  spotFinder,
+  office,
+  profile,
 } = home;
 /* The street map: the home data's own outlines (the dev sample's SVG map
    has none), else the generated src/data/service-area-geo.json. */
@@ -156,6 +164,8 @@ if (import.meta.env.DEV && !services.length)
     proof={hero.proof}
     proofPosition={hero.proofPosition}
     trust={hero.trust}
+    edge={hero.edge}
+    badge={hero.badge}
   />
 
   {home.stats && <StatsStrip items={home.stats} />}
@@ -225,6 +235,18 @@ if (import.meta.env.DEV && !services.length)
   }
 
   {
+    spotFinder && (
+      <SpotFinder
+        eyebrow={spotFinder.eyebrow}
+        heading={spotFinder.heading}
+        intro={spotFinder.intro}
+        items={spotFinder.items}
+        cta={estimateCta}
+      />
+    )
+  }
+
+  {
     offer && (
       <OfferBand
         seal={offer.seal}
@@ -248,6 +270,20 @@ if (import.meta.env.DEV && !services.length)
         layout={
           reviews.layout ?? (reviews.items.length >= 4 ? "marquee" : "cards")
         }
+      />
+    )
+  }
+
+  {
+    office && (
+      <OfficeVisit
+        eyebrow={office.eyebrow}
+        heading={office.heading}
+        intro={office.intro}
+        paragraphs={office.paragraphs}
+        image={office.image}
+        imageAlt={office.imageAlt}
+        card={{ title: office.cardTitle }}
       />
     )
   }
@@ -330,6 +366,25 @@ if (import.meta.env.DEV && !services.length)
         imageAlt={story.imageAlt}
         imageSide={story.imageSide}
         reasons={story.reasons}
+      />
+    )
+  }
+
+  {
+    profile && (
+      <ProfileSplit
+        eyebrow={profile.eyebrow}
+        name={profile.name}
+        lead={profile.lead}
+        paragraphs={profile.paragraphs}
+        image={profile.image}
+        imageAlt={profile.imageAlt}
+        imageSide={profile.imageSide}
+        badge={profile.badge}
+        credentials={profile.credentials}
+        cta={estimateCta}
+        secondaryCta={profile.secondaryCta}
+        person={profile.person}
       />
     )
   }

@@ -41,13 +41,14 @@ function round(c) {
  */
 async function lookUp(town, region) {
   const url = new URL(ENDPOINT);
-  // A structured city search for a settlement: a free-text "Terrell, TX"
-  // matched Terrell County, 300 miles from the city of Terrell.
+  // A structured search: a free-text "Terrell, TX" matched Terrell County,
+  // 300 miles from the city of Terrell. A name ending in "County" (a
+  // business that lists its counties, not towns) is searched as a county.
+  const county = /\scounty$/i.test(town);
   url.search = new URLSearchParams({
-    city: town,
+    ...(county ? { county: town } : { city: town, featureType: "settlement" }),
     state: region,
     country: "USA",
-    featureType: "settlement",
     format: "jsonv2",
     polygon_geojson: "1",
     polygon_threshold: "0.003",

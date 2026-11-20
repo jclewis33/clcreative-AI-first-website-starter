@@ -1,3 +1,4 @@
+import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
 import type { ImageMetadata } from "astro";
 
 /**
@@ -11,7 +12,13 @@ import type { ImageMetadata } from "astro";
  * preset can all describe a form without importing a component.
  */
 export type LeadQuestionField =
-  "audience" | "projectType" | "projectSize" | "timeline" | "budget";
+  | "audience"
+  | "customerStatus"
+  | "projectType"
+  | "concerns"
+  | "projectSize"
+  | "timeline"
+  | "budget";
 
 export type LeadQuestionOption = {
   /** What the visitor sees, and what is saved. */
@@ -24,6 +31,8 @@ export type LeadQuestionOption = {
   image?: ImageMetadata | string;
   /** Alt text for `image`. @default the label */
   imageAlt?: string;
+  /** A small icon beside the label (src/data/service-icons.json); the tiles then read left to right. */
+  icon?: ServiceIconName;
 };
 
 export interface LeadQuestion {
@@ -35,4 +44,10 @@ export interface LeadQuestion {
   text?: string;
   /** The tiles; picking one moves to the next step. */
   options: LeadQuestionOption[];
+  /**
+   * "Pick all that apply": the tiles are checkboxes, the step gets a Next
+   * button instead of moving on at the first tap, and every pick is saved
+   * (comma-separated). "Where are you hurting?", "Which rooms?".
+   */
+  multiple?: boolean;
 }

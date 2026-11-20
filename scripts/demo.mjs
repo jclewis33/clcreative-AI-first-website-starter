@@ -21,7 +21,9 @@
  *   4. Home — src/data/home.ts (LocalServiceHomeData) and the default
  *      process steps (src/data/process.ts).
  *   5. Pages — the preset's pages copied into src/pages; their PAGES
- *      descriptions updated.
+ *      descriptions updated. A page of the same name in `pages/` beside
+ *      demo.json (e.g. demo/pages/index.astro) is installed instead: the
+ *      demo's hand-built page, which a re-run keeps.
  *   6. The demo switch — DEMO in src/config/demo.shared.mjs: whole-site
  *      noindex, the "Built for …" banner, nav pruning, the lead fallback.
  *   7. Prettier on what it wrote, then `astro sync` (the content schema
@@ -266,7 +268,11 @@ async function main() {
   await homeImage(home.process, "image", "process");
   await homeImage(home.photoBand, "image", "photo-band");
   await homeImage(home.story, "image", "story");
+  await homeImage(home.story, "inset", "story-inset", 1600);
+  await homeImage(home.faqs?.help, "image", "faq-help", 1200);
   await homeImage(home.why, "image", "why");
+  await homeImage(home.office, "image", "office");
+  await homeImage(home.profile, "image", "profile", 1600);
   await homeImage(home.about, "image", "about");
   await homeImage(home.about, "imageBackdrop", "about-backdrop", 1600);
   await homeImage(home.about, "storyImage", "about-story");
@@ -427,6 +433,8 @@ async function main() {
       name: area,
     })),
     founded: demo.founded ?? null,
+    openingHours: demo.contact.openingHours ?? [],
+    businessType: demo.businessType ?? "ProfessionalService",
     utilityBar: demo.utilityBar ?? null,
     reviewsUrl: demo.reviewsUrl ?? "",
     googleReviewUrl: "",
@@ -484,14 +492,15 @@ async function main() {
     "src/styles/variables/colors.css",
   ].forEach((f) => written.add(f));
   // setup keeps the current value for an empty answer; a prospect with no
-  // published email (or street address) must not inherit the starter's
-  // placeholder or a previous run's value.
+  // published email (or street address, or price range) must not inherit
+  // the starter's placeholder or a previous run's value.
   if (!DRY_RUN) {
     let site = await fs.readFile(at("src/config/site.ts"), "utf8");
     for (const [key, value] of [
       ["email", demo.contact.email],
       ["street", demo.contact.street],
       ["postalCode", demo.contact.postalCode],
+      ["priceRange", demo.prospect.priceRange],
     ])
       site = site.replace(
         new RegExp(`(\\b${key}\\s*:\\s*)"(?:\\\\.|[^"])*"`),
@@ -500,6 +509,10 @@ async function main() {
     site = site.replace(
       /(\bsmsOptIn\s*:\s*)(?:true|false)/,
       (_, lead) => `${lead}${demo.smsOptIn ? "true" : "false"}`,
+    );
+    site = site.replace(
+      /(\btexts\s*:\s*)(?:true|false)/,
+      (_, lead) => `${lead}${demo.contact.texts ? "true" : "false"}`,
     );
     await fs.writeFile(at("src/config/site.ts"), site);
   }
@@ -730,10 +743,45 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
       if (!DRY_RUN) await fs.rm(at(page.to), { force: true });
       continue;
     }
+    const custom = path.join(baseDir, "pages", page.from);
+    const own = await fs.stat(custom).then(
+      () => true,
+      () => false,
+    );
+    if (own)
+      console.log(`  ${page.to}: the demo's own page (pages/${page.from})`);
     await write(
       page.to,
-      await fs.readFile(path.join(presetDir, page.from), "utf8"),
+      await fs.readFile(own ? custom : path.join(presetDir, page.from), "utf8"),
     );
+  }
+  // Any other page in pages/ beside demo.json is installed at the same path
+  // under src/pages (pages/services/[slug].astro replaces the service
+  // route). Delete the file and restore the starter's route to undo.
+  {
+    const ownDir = path.join(baseDir, "pages");
+    const presetFiles = new Set(
+      preset.PAGES.map((/** @type {{ from: string }} */ p) => p.from),
+    );
+    /** @param {string} dir @param {string} rel */
+    const install = async (dir, rel) => {
+      const entries = await fs
+        .readdir(dir, { withFileTypes: true })
+        .catch(() => []);
+      for (const entry of entries) {
+        const childRel = rel ? `${rel}/${entry.name}` : entry.name;
+        const child = path.join(dir, entry.name);
+        if (entry.isDirectory()) await install(child, childRel);
+        else if (!(rel === "" && presetFiles.has(entry.name))) {
+          console.log(`  src/pages/${childRel}: the demo's own page`);
+          await write(
+            `src/pages/${childRel}`,
+            await fs.readFile(child, "utf8"),
+          );
+        }
+      }
+    };
+    await install(ownDir, "");
   }
   const hasReviewsPage = Boolean(demo.home.reviews?.items?.length);
   {
@@ -767,8 +815,12 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
       ...(demo.projects ? ["/projects"] : []),
       "/about",
       ...(hasReviewsPage ? ["/reviews"] : []),
+      // Contact is in the nav as well as the footer's Company list.
+      "/contact",
     ];
-    const footerPaths = navPaths.filter((p) => p !== "/projects");
+    const footerPaths = navPaths.filter(
+      (p) => p !== "/projects" && p !== "/contact",
+    );
     const groupLinks =
       audiencePath && audienceGroup ? { [audienceGroup]: [audiencePath] } : {};
     await write(
