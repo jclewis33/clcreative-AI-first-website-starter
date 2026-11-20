@@ -886,6 +886,11 @@ const demoObject = z.object({
     website: z.url().optional(),
     /** Schema.org founder; defaults to the business name. */
     owner: text.optional(),
+    /**
+     * Schema.org priceRange, only as their own listing shows it (Google or
+     * Facebook "$"). Left out, the structured data carries none.
+     */
+    priceRange: z.enum(["$", "$$", "$$$", "$$$$"]).optional(),
   }),
   contact: z.object({
     /** As shown on the site, e.g. "(512) 555-0142". US numbers. */

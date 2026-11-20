@@ -402,6 +402,7 @@ async function main() {
     legalName: demo.prospect.legalName ?? name,
     siteUrl,
     founder: demo.prospect.owner ?? name,
+    priceRange: demo.prospect.priceRange ?? "",
     tagline: demo.seo.tagline,
     defaultDescription: demo.seo.description,
     summary: demo.seo.description,

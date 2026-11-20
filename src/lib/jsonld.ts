@@ -81,7 +81,7 @@ export function localBusinessJsonLd(siteUrl: string = SITE.url) {
     logo: `${siteUrl}${SITE.logoPath}`,
     email: SITE.email || undefined,
     telephone: SITE.phone.e164,
-    priceRange: SITE.priceRange,
+    priceRange: SITE.priceRange || undefined,
     founder: { "@type": "Person", name: SITE.founder },
     address: {
       "@type": "PostalAddress",
