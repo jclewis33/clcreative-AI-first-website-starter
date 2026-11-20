@@ -146,7 +146,7 @@ hour or two is expected. Report what the last round checked.
 
 ## Hands-off: Casey gives the business, you deliver the site
 
-Casey's goal (Nov 2026, after the JC's Environmental demo needed a day of
+Casey's goal (Nov 2026, after a remediation demo needed a day of
 line-by-line fixes): he names a business, and the demo comes back
 finished, written and designed to the bar below, with one review point.
 Work in this order and don't show him anything half-done:
@@ -157,8 +157,8 @@ Work in this order and don't show him anything half-done:
    skill and its `references/human-voice.md`). The design is built around
    the words, not the other way round.
    - **Services follow Google's own names and the profile's evidence.**
-     Lead with the service the reviews mention most (JC's: mold, 7
-     review mentions, over asbestos's 4). Use Google's category wording
+     Lead with the service the reviews mention most (on the remediation
+     demo: mold, mentioned most, over asbestos). Use Google's category wording
      ("Mold remediation", "Water damage restoration", "Fire damage
      restoration"). When the profile is thin (one category, no services),
      write a short "Google Business Profile: suggested updates" list in
@@ -188,7 +188,7 @@ Work in this order and don't show him anything half-done:
 ### The voice, in short
 
 The full rules and before/after examples are in the copywriter skill's
-`references/human-voice.md`. Casey flagged each of these on JC's:
+`references/human-voice.md`. Casey flagged each of these on the remediation demo:
 
 - No slogan virtues ("honest answer", "straight answer", "tell you
   straight"). Show the virtue with a fact or a customer's quote.
@@ -207,7 +207,7 @@ The full rules and before/after examples are in the copywriter skill's
 
 ### The design bar for every section, not just the hero
 
-On JC's, the hero and the second section matched the approved design, then
+On the remediation demo, the hero and the second section matched the approved design, then
 the page fell back to plain template sections. Casey called it "the bland
 looking site we are trying to avoid". The reference is the Hey Segment
 sites in Clay Lawrence's video (frames in the session notes; Salty Air, J
@@ -267,7 +267,7 @@ went into the starter, but it is not the target.
   Earlier demos' `demo.json` files
   (`git show origin/demo/<slug>:demo/demo.json`) are still useful as a
   reference for data shapes and service fields.
-- **Design rules from JC's, for any design:**
+- **Design rules from the remediation demo, for any design:**
   - **One action per card.** A row of cards gets one "Learn more" each.
     The quote button belongs to the hero, the CTA strip, the steps and
     the closing panel.
@@ -339,7 +339,7 @@ cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
   mascot vs. photo) send 2–3 quick mockups or screenshots first; build the
   one he picks.
 - **Test every page at every width before reporting, not just desktop
-  and one phone.** On JC's (Nov 2026) the review cards touched at
+  and one phone.** On the remediation demo (Nov 2026) the review cards touched at
   480–928px. Desktop and 390 had both looked fine, and Casey found it.
   For each page (home, every service page, reviews, about, contact):
   1. **Run the automated pass** below at 320, 390, 480, 600, 768, 1024,
@@ -389,6 +389,24 @@ cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
 
 - **Every claim traceable.** When he asks "where did this come from?",
   answer with the line from their site.
+- **Fact-check pass before reporting.** Extract the built pages' text
+  (main, nav, footer, meta descriptions, JSON-LD) and check each claim
+  against their site, Google profile and reviews, line by line. Traps found
+  on a remediation demo (Nov 2026), all from tightening their words:
+  - Merging two facts into a new one: "established 1996" + "licensed"
+    became "licensed since 1996". Keep each fact as they state it.
+  - Adding a verb or channel they never gave: "hire and manage the
+    subcontractors" (they say manage), "call or text us" (they never say
+    they take texts).
+  - Headings that promise more than the content: "What customers say
+    about our fire work" over reviews that never mention fire. Name the
+    service only when every review shown is about it.
+  - Starter placeholders presented as theirs: `priceRange` `$$$` in the
+    JSON-LD (set `prospect.priceRange` only from their listing).
+  - A detail with no source (a "smell" symptom when the reviews say
+    spots in the grout).
+    General safety facts (lead is most dangerous to children) are fine;
+    list them in the report so Casey knows they are not from their site.
 - **Fixes and new options go into the starter** (one PR branch per demo
   session), merged into the demo branch as you go; never only the demo.
 

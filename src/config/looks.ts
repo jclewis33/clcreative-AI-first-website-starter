@@ -19,8 +19,8 @@
  *            hardscape, landscaping, decks, outdoor living
  *   trusted  cream paper, deep navy ink, calm Fraunces headings with the
  *            accent words in brand-colour italic, pill buttons — remediation,
- *            inspection, restoration: work bought on trust (JC's
- *            Environmental, after the Hey Segment sites)
+ *            inspection, restoration: work bought on trust (a
+ *            remediation demo, after the Hey Segment sites)
  *   estate   warm paper, light Fraunces headings, squared buttons, a dark
  *            nav with the name beside the logo — high-end finishes for
  *            homes and commercial work (decorative concrete, custom builds)

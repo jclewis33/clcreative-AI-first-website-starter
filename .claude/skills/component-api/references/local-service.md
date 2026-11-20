@@ -286,7 +286,7 @@ order:
 />
 ```
 
-## Section variants from the JC's Environmental demo (Nov 2026)
+## Section variants from the remediation demo (Nov 2026)
 
 These are a palette, not a page template. Use one where a demo's own design
 calls for it. Each is a `variant` on an existing section, and the default
@@ -319,4 +319,4 @@ The demo.json fields that feed them sit beside the existing ones:
 
 The preset's templates don't use them. A demo's own page
 (`demo/pages/index.astro`) does. The worked example is the
-`demo/jcs-environmental` branch.
+remediation demo's branch in the private demos repo.
