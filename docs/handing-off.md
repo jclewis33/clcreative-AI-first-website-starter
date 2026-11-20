@@ -189,8 +189,8 @@ Things to check when the client takes over an account:
 
 ### Run it on your computer
 
-1. Install **Node.js 22.18 or later** (the project's `package.json`
-   requires it). Git is not needed to run the site locally; you need it
+1. Install **Node.js 26** (the version in `.node-version`, which Cloudflare
+   and CI build with). Git is not needed to run the site locally; you need it
    to publish changes through GitHub.
 2. In the project folder:
 

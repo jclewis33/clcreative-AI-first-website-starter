@@ -12,7 +12,7 @@ This page covers the everyday jobs.
 
 ## 1. First-time setup
 
-1. Install **Node.js 22.18 or later** (the LTS download from
+1. Install **Node.js 26 or later** (the LTS download from
    [nodejs.org](https://nodejs.org) is fine).
 2. Install [VS Code](https://code.visualstudio.com) (recommended: it
    autocompletes the content files, see section 7).
