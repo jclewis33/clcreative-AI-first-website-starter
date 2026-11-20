@@ -1,0 +1,239 @@
+---
+import type { HTMLAttributes, ComponentProps } from "astro/types";
+import Section from "@/components/ui/Section.astro";
+import SectionHeader from "@/components/ui/SectionHeader.astro";
+
+/* Stroke icons, 24px grid. */
+const ICON_PATHS = {
+  call: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  pin: '<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+} as const;
+
+type ContactMethodIcon = keyof typeof ICON_PATHS;
+type ContactMethod = {
+  /** Which icon sits in the disc. */
+  icon: ContactMethodIcon;
+  /** Small label over the value ("Call us"). */
+  label: string;
+  /** The number, address or hours, in the heading font. */
+  value: string;
+  /** Makes the value a link (tel:, mailto:, a page). */
+  href?: string;
+  /** One short line under it ("Mon–Fri, 8 to 5"). */
+  note?: string;
+};
+type SectionTheme = ComponentProps<typeof Section>["theme"];
+type SectionPadding = ComponentProps<typeof Section>["padding"];
+
+interface Props extends HTMLAttributes<"section"> {
+  /**
+   * **ContactMethods** — the ways to reach a business as a row of cards:
+   * an icon disc, a small label, the value (phone, email, hours, area) in
+   * the heading font, linked when it has an `href`, and an optional note.
+   * Four across on a wide screen, two, then one. For a contact page under
+   * its hero.
+   *
+   * - `items` — `{ icon, label, value, href?, note? }[]`; `icon` is one of
+   *   call, mail, clock, pin
+   *
+   * Renders nothing without items.
+   *
+   * @example
+   * <ContactMethods items={[{ icon: "call", label: "Call us", value: SITE.phone.display, href: `tel:${SITE.phone.tel}` }]} />
+   */
+  docs?: string;
+
+  /** Set to `false` to skip rendering. @default true */
+  render?: boolean;
+
+  /** Small label above the heading. */
+  eyebrow?: string;
+
+  /** Optional heading over the cards; inline strong marks the accent. */
+  heading?: string;
+
+  /** The cards (four read best). */
+  items: ContactMethod[];
+
+  /** Section theme. */
+  theme?: SectionTheme;
+
+  /** Section padding. @default 'main' */
+  padding?: SectionPadding;
+
+  /** Extra classes on the section. */
+  class?: string;
+}
+
+const {
+  docs,
+  render = true,
+  eyebrow,
+  heading,
+  items = [],
+  theme,
+  padding,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const shown = items.filter((item) => item.label && item.value);
+
+if (import.meta.env.DEV && render && !shown.length)
+  console.warn("[ContactMethods] No items; nothing renders.");
+---
+
+{
+  render && shown.length > 0 && (
+    <Section
+      theme={theme}
+      padding={padding}
+      class:list={["contact-methods_wrap", className]}
+      {...rest}
+    >
+      {heading && <SectionHeader eyebrow={eyebrow} heading={heading} />}
+      <ul class="contact-methods_list" role="list">
+        {shown.map((item) => (
+          <li class="contact-methods_card">
+            <span
+              class="contact-methods_disc"
+              data-theme-invert
+              aria-hidden="true"
+            >
+              <svg class="contact-methods_icon" viewBox="0 0 24 24" fill="none">
+                <Fragment set:html={ICON_PATHS[item.icon]} />
+              </svg>
+            </span>
+            <p class="contact-methods_label u-text-style-eyebrow">
+              {item.label}
+            </p>
+            {item.href && (
+              <a class="contact-methods_value u-text-style-h5" href={item.href}>
+                {item.value}
+              </a>
+            )}
+            {!item.href && (
+              <p class="contact-methods_value u-text-style-h5">{item.value}</p>
+            )}
+            {item.note && (
+              <p class="contact-methods_note u-text-style-small">{item.note}</p>
+            )}
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )
+}
+
+<style is:global>
+  @layer components {
+    .contact-methods_list {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-4);
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .contact-methods_card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-1);
+      padding: var(--space-5);
+      border-radius: calc(var(--radius-main) * 1.5);
+      background-color: var(--background-2);
+      color: var(--text);
+      box-shadow:
+        0 0.0625rem 0.125rem color-mix(in srgb, var(--text) 6%, transparent),
+        0 1rem 2.5rem color-mix(in srgb, var(--text) 7%, transparent);
+    }
+
+    .contact-methods_disc {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      width: 3rem;
+      aspect-ratio: 1 / 1;
+      margin-bottom: var(--space-3);
+      border-radius: var(--radius-full);
+      background-color: var(--background);
+      color: var(--heading-accent);
+    }
+
+    .contact-methods_icon {
+      flex-shrink: 0;
+      width: 1.375rem;
+      aspect-ratio: 1 / 1;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .contact-methods_label,
+    .contact-methods_value,
+    .contact-methods_note {
+      margin: 0;
+    }
+
+    .contact-methods_label {
+      color: var(--heading-accent);
+    }
+
+    .contact-methods_value {
+      color: var(--text);
+      overflow-wrap: anywhere;
+      text-decoration: none;
+    }
+
+    .contact-methods_note {
+      opacity: 0.75;
+    }
+
+    a.contact-methods_value:focus-visible {
+      outline: var(--border-width-main) solid var(--heading-accent);
+      outline-offset: 0.25em;
+    }
+
+    @media (hover: hover) {
+      a.contact-methods_value:hover {
+        color: var(--heading-accent);
+      }
+    }
+
+    @container (width < 60em) {
+      .contact-methods_list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    /* One column: the disc sits beside the text, so four cards stay short. */
+    @container (width < 30em) {
+      .contact-methods_list {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-3);
+      }
+
+      .contact-methods_card {
+        display: grid;
+        grid-template-columns: 3rem minmax(0, 1fr);
+        column-gap: var(--space-4);
+        row-gap: var(--space-1);
+        align-items: center;
+        padding: var(--space-4);
+      }
+
+      .contact-methods_disc {
+        grid-row: span 3;
+        align-self: start;
+        margin-bottom: 0;
+      }
+    }
+  }
+</style>

@@ -815,8 +815,12 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
       ...(demo.projects ? ["/projects"] : []),
       "/about",
       ...(hasReviewsPage ? ["/reviews"] : []),
+      // Contact is in the nav as well as the footer's Company list.
+      "/contact",
     ];
-    const footerPaths = navPaths.filter((p) => p !== "/projects");
+    const footerPaths = navPaths.filter(
+      (p) => p !== "/projects" && p !== "/contact",
+    );
     const groupLinks =
       audiencePath && audienceGroup ? { [audienceGroup]: [audiencePath] } : {};
     await write(

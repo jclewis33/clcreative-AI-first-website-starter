@@ -516,6 +516,12 @@ export interface LocalServiceHomeData {
     keywords?: { word: string; count: number }[];
     /** For a demo's own page: the index of the review shown as the featured card. */
     featured?: number;
+    /**
+     * "google": the reviews and About pages show Google-style review cards
+     * (ReviewCards variant="google"), matching a home page that uses them.
+     * @default 'classic'
+     */
+    cards?: "classic" | "google";
   };
 
   leadForm: {
