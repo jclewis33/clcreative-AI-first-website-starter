@@ -1,6 +1,6 @@
 ---
 name: cl-creative-storybrand-copywriter
-description: CL Creative's primary website copywriting skill, structured around the StoryBrand 7-beat story arc. Use for ALL client website copy — homepages, about pages, service pages, contact pages, landing pages, division/category pages, event pages, and full multi-page site builds — across any industry (professional services, SaaS, events, B2C, local services). Trigger whenever Casey asks to write, draft, or rewrite web copy for a client. If the client has a completed M2M Messaging Sprint deliverable (locked PEACE soundbites, Controlling Idea, Tagline, Decision Trigger), this skill runs in Locked Messaging Mode and quotes that messaging verbatim — trigger on phrases like "write the site copy from the sprint," "use the locked messaging," or any copy request for a client whose sprint is done. Accepts M2M sprint deliverables (best), M2M questionnaire data, or competitor copy as input. This is the preferred copywriting skill — it supersedes cl-creative-copywriter.
+description: CL Creative's primary website copywriting skill, structured around the StoryBrand 7-beat story arc. Use for ALL client website copy — homepages, about pages, service pages, contact pages, landing pages, division/category pages, event pages, and full multi-page site builds — across any industry (professional services, SaaS, events, B2C, local services). Default input is research on the business (its site, Google profile and reviews); an M2M sprint is a bonus, not a requirement. Trigger whenever Casey asks to write, draft, or rewrite web copy for a client. If the client has a completed M2M Messaging Sprint deliverable (locked PEACE soundbites, Controlling Idea, Tagline, Decision Trigger), this skill runs in Locked Messaging Mode and quotes that messaging verbatim — trigger on phrases like "write the site copy from the sprint," "use the locked messaging," or any copy request for a client whose sprint is done. Accepts M2M sprint deliverables (best), M2M questionnaire data, or competitor copy as input. This is the preferred copywriting skill — it supersedes cl-creative-copywriter.
 ---
 
 # CL Creative StoryBrand Website Copywriter
@@ -19,15 +19,31 @@ This skill combines:
 
 ## Input Priority
 
-1. **Best: Completed M2M Messaging Sprint deliverable** (locked PEACE soundbites, Controlling Idea, Decision Trigger, Tagline, Business Story, ICP One-Pager). This activates **Locked Messaging Mode** below.
-2. **Good: Completed M2M/ICP Discovery questionnaire** without a finished sprint. Write from the ICP insight, but tell Casey the output would be stronger after a sprint (`cl-creative-m2m-sprint`) locks the messaging.
-3. **Fallback: Competitor copy / existing site copy.** Analyze angles, find the gaps, ask clarifying questions about ICP and differentiation before writing.
+The usual input now is **research**, not a questionnaire: Casey rarely sends
+clients the M2M questionnaire anymore. Write from what the business has
+already put into the world, and hold every line to `references/human-voice.md`
+whatever the input.
 
-Load `references/m2m-framework.md` if you need the full framework structure.
+1. **Default: research on the business.** Their current site (every page
+   saved as text), their Google Business Profile (categories, services,
+   review topic chips, hours), and every written review. The reviews are the
+   best source of the customer's own language and of what sets the business
+   apart. Use their words, not adjectives about them. Every claim traces to
+   one of these; anything inferred goes to the Open Items list.
+2. **Bonus: a completed M2M Messaging Sprint.** If one exists (locked PEACE
+   soundbites, Controlling Idea, Decision Trigger, Tagline, Business Story,
+   ICP One-Pager), it switches on **Locked Messaging Mode** below and outranks
+   everything else.
+3. **Also useful: an M2M/ICP questionnaire or competitor sites.** These add
+   ICP insight, or the angles and gaps to write against. Neither one is
+   required.
+
+Load `references/m2m-framework.md` only when sprint or questionnaire material
+is in play.
 
 ## Locked Messaging Mode
 
-When the client has a finished Messaging Sprint, that deliverable is **scripture**. This mode produced CL Creative's best copy output to date (Cheer America) — follow it exactly.
+When the client has a finished Messaging Sprint, that deliverable is **scripture**. This mode produced CL Creative's best copy output to date (a youth cheer competition client): follow it exactly.
 
 **The verbatim rule.** The 5 PEACE soundbites, Controlling Idea, Tagline, and Decision Trigger are quoted **word for word, never reworded, paraphrased, or "improved,"** for at least 12 months from lock. If a locked line doesn't fit a slot, change the slot, not the line.
 
@@ -44,7 +60,7 @@ When the client has a finished Messaging Sprint, that deliverable is **scripture
 | Change soundbite                                 | Closing CTA on warm pages (e.g., password-protected coach/member pages) |
 | End Result soundbite                             | Positive End Result headline, verbatim in quotes                        |
 | Decision Trigger                                 | Specific CTA headline, verbatim, framing every primary button           |
-| Controlling Idea                                 | Brand sign-off line ("Cheer America. A season worth coming back to.")   |
+| Controlling Idea                                 | Brand sign-off line ("[Brand]. [Controlling Idea].")                    |
 | Unchosen Problem levels (internal/philosophical) | Supporting copy: About page, agitation body copy, long-form content     |
 | Business Story                                   | About page narrative spine                                              |
 
@@ -55,7 +71,7 @@ Connective copy around the locked lines (section bodies, bullets, transitions) i
 Choose the hero pattern deliberately and document the choice in the page's Decisions callout:
 
 - **Pattern A — Problem-first** (hero H1 = Problem, subhead = Agitation). Default for cold traffic, landing pages, and ad destinations where the pain is the hook.
-- **Pattern B — Tagline-first** (hero H1 = locked Tagline, subhead = Answer-flavored support, Problem moves to Section 2 and Agitation to Section 3). Default for homepages with **mixed or warm traffic** (word of mouth, social, referral) where the page's first job is answering "who are you and what do you do" in three seconds. Cheer America used this pattern.
+- **Pattern B — Tagline-first** (hero H1 = locked Tagline, subhead = Answer-flavored support, Problem moves to Section 2 and Agitation to Section 3). Default for homepages with **mixed or warm traffic** (word of mouth, social, referral) where the page's first job is answering "who are you and what do you do" in three seconds. The cheer competition site used this pattern.
 
 Both patterns preserve all 7 beats — Pattern B just shifts Problem/Agitation down one scroll. Never drop beats; reorder them only with a documented reason.
 
