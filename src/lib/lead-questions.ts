@@ -1,3 +1,4 @@
+import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
 import type { ImageMetadata } from "astro";
 
 /**
@@ -30,6 +31,8 @@ export type LeadQuestionOption = {
   image?: ImageMetadata | string;
   /** Alt text for `image`. @default the label */
   imageAlt?: string;
+  /** A small icon beside the label (src/data/service-icons.json); the tiles then read left to right. */
+  icon?: ServiceIconName;
 };
 
 export interface LeadQuestion {

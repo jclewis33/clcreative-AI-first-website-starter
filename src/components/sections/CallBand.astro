@@ -10,6 +10,7 @@ import Overlay from "@/components/ui/Overlay.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
 import CtaPanel from "@/components/ui/CtaPanel.astro";
 import type { SectionCta } from "@/lib/cta";
+import { linkPhones } from "@/lib/phone-links";
 
 type CallBandVariant =
   /** Dark band: heading left, phone + second button right */
@@ -19,7 +20,9 @@ type CallBandVariant =
   /** One rounded card: dark text side with the buttons, photo side */
   | "split"
   /** A full-width photo under a dark wash, the heading and buttons centred on it — no card */
-  | "cinematic";
+  | "cinematic"
+  /** A rounded photo panel inside the container: a navy wash from the left, heading, buttons and a tick row on it */
+  | "panel";
 type CallBandTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -31,17 +34,22 @@ interface Props extends HTMLAttributes<"section"> {
    *   (a white card on a full-width photo — a lawn, a roofline — with the
    *   estimate panel), `'split'` (a rounded card, text one side, photo the
    *   other) or `'cinematic'` (the photo full-width under a dark wash, the
-   *   heading and both buttons centred on it). The photo variants need `image` + `imageAlt`; without them
-   *   they fall back to `'band'`.
+   *   heading and both buttons centred on it) or `'panel'` (a rounded photo
+   *   panel inside the page container, a dark wash from the left, the
+   *   heading, text, both buttons and an optional `ticks` row left-aligned
+   *   on it; the section itself keeps the page ground). The photo variants
+   *   need `image` + `imageAlt`; without them they fall back to `'band'`.
    * - `heading` (HTML allowed; `<strong>` = accent), `text`
    * - `secondaryCta` — default `{ label: "Contact us", href: "/contact" }`;
    *   pass `{ label, modal }` to open the estimate form instead. On the
    *   photo variants it is the main button.
    * - `ctaNote` — small line under the button on `'photo-card'`
+   * - `ticks` — short proof points under the buttons on `'panel'`
    *
    * @example
    * <CallBand heading="Ready to start?" secondaryCta={{ label: "Get an estimate", modal: "estimate-modal" }} />
    * <CallBand variant="photo-card" image={lawn} imageAlt="A thick green lawn" heading="Get a free quote" secondaryCta={estimateCta} />
+   * <CallBand variant="panel" image={crew} imageAlt="A technician sealing a containment" heading="Found mold? <strong>Let's take a look.</strong>" text="…" secondaryCta={estimateCta} ticks={["Licensed in Texas", "Since 1996"]} />
    */
   docs?: string;
 
@@ -69,7 +77,13 @@ interface Props extends HTMLAttributes<"section"> {
   /** Small line under the button on `'photo-card'`, e.g. "No obligation". */
   ctaNote?: string;
 
-  /** Section theme. @default 'dark' for band and photo-card, else inherit */
+  /**
+   * `'panel'` only: short proof points in a ticked row under the buttons,
+   * e.g. `["Licensed in Texas", "IICRC certified", "Since 1996"]`.
+   */
+  ticks?: string[];
+
+  /** Section theme. @default 'dark' for band, photo-card and cinematic; inherit for split and panel (the panel is always dark) */
   theme?: CallBandTheme;
 
   /** Section padding (top and bottom). */
@@ -92,6 +106,7 @@ const {
   image,
   imageAlt,
   ctaNote,
+  ticks = [],
   theme: themeProp,
   padding,
   id,
@@ -103,14 +118,24 @@ const {
 const variant: CallBandVariant =
   variantProp !== "band" && !image ? "band" : variantProp;
 const theme: CallBandTheme =
-  themeProp ?? (variant === "split" ? undefined : "dark");
+  themeProp ??
+  (variant === "split" || variant === "panel" ? undefined : "dark");
+/* The panel's text is plain copy: escaped, then any phone number in it
+   becomes a tel: link. */
+const textHtml = text
+  ? linkPhones(
+      text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"),
+    )
+  : "";
 /* Never alt="" (CLAUDE.md): fall back to the heading's plain text. */
 const photoAlt = imageAlt || heading?.replace(/<[^>]+>/g, "") || "";
 
 if (import.meta.env.DEV && render) {
   if (!heading)
     console.warn("[CallBand] `heading` is required; nothing renders.");
-  if (!["band", "photo-card", "split", "cinematic"].includes(variantProp))
+  if (
+    !["band", "photo-card", "split", "cinematic", "panel"].includes(variantProp)
+  )
     console.warn(`[CallBand] Unknown variant "${variantProp}".`);
   if (variantProp !== "band" && !image)
     console.warn(
@@ -221,6 +246,60 @@ if (import.meta.env.DEV && render) {
   )
 }
 
+{
+  render && heading && variant === "panel" && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["call-band_wrap", "is-panel", className]}
+      {...rest}
+    >
+      <div class="call-band_panel_wrap" data-theme="dark">
+        <div class="call-band_panel_media">
+          <Visual
+            src={image!}
+            alt={photoAlt}
+            variant="background"
+            radius="none"
+          />
+        </div>
+        <div class="call-band_panel_content">
+          <Heading tag="h2" variant="h1" accent maxWidth="22ch">
+            <Fragment set:html={heading} />
+          </Heading>
+          {text && (
+            <Text variant="large" muted maxWidth="46ch">
+              <Fragment set:html={textHtml} />
+            </Text>
+          )}
+          <div class="call-band_panel_actions">
+            <CtaButton cta={secondaryCta} size="large" />
+            <CtaButton phone variant="secondary" size="large" />
+          </div>
+          {ticks.length > 0 && (
+            <ul class="call-band_ticks" role="list">
+              {ticks.map((tick) => (
+                <li class="call-band_tick">
+                  <svg
+                    class="call-band_tick_icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <path d="m5 12.5 4.5 4.5L19 7.5" />
+                  </svg>
+                  {tick}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </Section>
+  )
+}
+
 <style is:global>
   @layer components {
     /* The two buttons side by side, level with the heading; they wrap and
@@ -314,6 +393,90 @@ if (import.meta.env.DEV && render) {
     .call-band_split_media {
       position: relative;
       min-height: 18rem;
+    }
+
+    /* panel: a rounded photo panel inside the container. Always dark
+       (data-theme="dark" on the panel), whatever the section's ground. */
+    .call-band_panel_wrap {
+      --_wash: linear-gradient(
+        90deg,
+        var(--background) 0%,
+        color-mix(in srgb, var(--background) 92%, transparent) 45%,
+        color-mix(in srgb, var(--background) 25%, transparent) 100%
+      );
+      position: relative;
+      isolation: isolate;
+      overflow: clip;
+      border-radius: calc(var(--radius-main) * 1.75);
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    /* Phones: the text runs nearly the full width, so the wash stays
+       strong all the way across instead of fading to the bare photo. */
+    @container (width < 35em) {
+      .call-band_panel_wrap {
+        --_wash: linear-gradient(
+          90deg,
+          var(--background) 0%,
+          color-mix(in srgb, var(--background) 90%, transparent) 55%,
+          color-mix(in srgb, var(--background) 72%, transparent) 100%
+        );
+      }
+    }
+
+    .call-band_panel_media {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+    }
+
+    .call-band_panel_media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: var(--_wash);
+    }
+
+    .call-band_panel_content {
+      padding: calc(var(--space-8) * 1.125) var(--space-8);
+    }
+
+    @container (width < 35em) {
+      .call-band_panel_content {
+        padding: var(--space-7) var(--space-5);
+      }
+    }
+
+    .call-band_panel_actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3);
+      margin-top: var(--space-5);
+    }
+
+    .call-band_ticks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-4);
+      margin: var(--space-4) 0 0;
+      padding: 0;
+      list-style: none;
+      font-size: var(--text-small-size);
+      color: color-mix(in srgb, currentColor 78%, transparent);
+    }
+
+    .call-band_tick_icon {
+      width: 1em;
+      aspect-ratio: 1 / 1;
+      margin-inline-end: 0.375em;
+      vertical-align: -0.125em;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
   }
 </style>

@@ -224,9 +224,19 @@ const homeSchema = z.object({
       heading: text.optional(),
       intro: text.optional(),
       items: z
-        .array(z.object({ title: text, text, icon: text.optional() }))
+        .array(
+          z.object({
+            title: text,
+            text,
+            icon: text.optional(),
+            /** For a demo's own page: the service this situation leads to. */
+            tag: z.object({ label: text, href: text }).optional(),
+          }),
+        )
         .min(2)
         .max(6),
+      /** For a demo's own page: the sentence in the strip under the tiles (<strong> allowed). */
+      prompt: text.optional(),
     })
     .optional(),
   /** One REAL offer from their site — never invent one. */
@@ -516,6 +526,13 @@ const homeSchema = z.object({
       /** "right" puts the photo on the right. */
       imageSide: z.enum(["left", "right"]).optional(),
       ctaLabel: text.optional(),
+      /** For a demo's own page: the smaller photo overlapping the main one. */
+      inset: image.optional(),
+      insetAlt: text.optional(),
+      /** For a demo's own page: the small card on the photos. */
+      badge: z.object({ title: text, text: text.optional() }).optional(),
+      /** For a demo's own page: one real review line beside the story. */
+      quote: z.object({ text, name: text, meta: text.optional() }).optional(),
     })
     .optional(),
   /** Real, attributed reviews only — leave it out otherwise. */
@@ -534,9 +551,20 @@ const homeSchema = z.object({
             full: text.optional(),
             /** 4 or 5 — worse reviews never go on the site. */
             rating: z.number().int().min(4).max(5).optional(),
+            /** As the platform shows it ("a year ago"). */
+            date: text.optional(),
+            /** Who they are, when it matters ("General contractor"). */
+            role: text.optional(),
           }),
         )
         .min(1),
+      /** For a demo's own page: words customers use, counted from the real reviews. */
+      keywords: z
+        .array(z.object({ word: text, count: z.number().int().positive() }))
+        .max(6)
+        .optional(),
+      /** For a demo's own page: the index of the review shown as the featured card. */
+      featured: z.number().int().min(0).optional(),
       layout: z.enum(["cards", "featured", "grid", "marquee"]).optional(),
       /** Estate layout: the star line ("78 five-star reviews on Google"). */
       summary: text.optional(),
@@ -547,7 +575,7 @@ const homeSchema = z.object({
     heading: text,
     text: text.optional(),
     projectOptions: z
-      .array(z.object({ label: text, value: text }))
+      .array(z.object({ label: text, value: text, icon: text.optional() }))
       .min(2)
       .optional(),
   }),
@@ -555,6 +583,17 @@ const homeSchema = z.object({
     .object({
       eyebrow: text.optional(),
       items: z.array(z.object({ question: text, answer: text })).min(2),
+      /** For a demo's own page: the FAQ's own heading (<strong> = accent). */
+      heading: text.optional(),
+      /** For a demo's own page: the "Still have a question?" card beside the questions. */
+      help: z
+        .object({
+          heading: text,
+          text,
+          image: image.optional(),
+          imageAlt: text.optional(),
+        })
+        .optional(),
     })
     .optional(),
   callBand: z
@@ -562,7 +601,7 @@ const homeSchema = z.object({
       heading: text,
       text: text.optional(),
       /** photo-card / split need `image` + `imageAlt`. */
-      variant: z.enum(["band", "photo-card", "split"]).optional(),
+      variant: z.enum(["band", "photo-card", "split", "panel"]).optional(),
       image: image.optional(),
       imageAlt: text.optional(),
       ctaNote: text.optional(),
@@ -572,6 +611,8 @@ const homeSchema = z.object({
       ctaLabel: text.optional(),
       /** Estate layout: what happens when they reach out, in order. */
       steps: z.array(text).min(2).max(4).optional(),
+      /** For a demo's own page: the short tick row under the buttons. */
+      ticks: z.array(text).max(4).optional(),
     })
     .refine((c) => !c.image || c.imageAlt, {
       message: "imageAlt is required when image is set",

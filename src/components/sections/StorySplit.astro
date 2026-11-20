@@ -8,9 +8,23 @@ import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
+import Icon from "@/components/ui/Icon.astro";
+import shieldIcon from "@/assets/icons/shield-check.svg";
 import type { SectionCta } from "@/lib/cta";
+import { linkPhones } from "@/lib/phone-links";
 
 type StoryReason = { title: string; text: string };
+type StorySplitVariant =
+  /** One portrait photo beside the story (optional reasons grid) */
+  | "default"
+  /** Two overlapping photos with a badge card; the story adds a stats card and a review */
+  | "collage";
+/** The small dark card over the collage photos. */
+type StoryBadge = { title: string; text?: string };
+/** One cell of the collage stats card. A "★" in `value` gets the brand colour. */
+type StoryStat = { value: string; label: string };
+/** The review card under the collage stats. */
+type StoryQuote = { text: string; name: string; meta?: string };
 type StorySplitImageSide =
   /** Photo on the left, story on the right */
   | "left"
@@ -30,8 +44,18 @@ interface Props extends HTMLAttributes<"section"> {
    * - `reasons` — `{ title, text }[]` (four reads best)
    * - `cta` — optional text-style button
    *
+   * **`variant="collage"`** — the "why choose us" block: two overlapping
+   * photos (`image` large top-left, `image2` smaller bottom-right with a
+   * paper border), a small dark `badge` card over them, and beside it the
+   * eyebrow, heading (HTML allowed; `<strong>` = italic accent), one or two
+   * `paragraphs`, a white `stats` card (up to 4 `{ value, label }` cells,
+   * 2×2 on phones) and a `quote` card (`{ text, name, meta? }`, initials
+   * avatar). Photos always sit left (stacked first on phones);
+   * `imageSide` and `reasons` are ignored.
+   *
    * @example
    * <StorySplit eyebrow="Meet the owner" heading="Jordan Lee" paragraphs={["…", "…"]} image={owner} imageAlt="Jordan Lee on a job site" />
+   * <StorySplit variant="collage" eyebrow="Why Southlake calls us" heading="Mold or asbestos? <strong>We've handled both.</strong>" paragraphs={["…"]} image={tech} imageAlt="…" image2={hepa} image2Alt="…" badge={badge} stats={stats} quote={review} />
    */
   docs?: string;
 
@@ -62,6 +86,36 @@ interface Props extends HTMLAttributes<"section"> {
   /** Optional button under the story. */
   cta?: SectionCta;
 
+  /**
+   * Layout. `'collage'` adds the second photo, badge, stats and quote.
+   * @default 'default'
+   */
+  variant?: StorySplitVariant;
+
+  /** `'collage'` only: the smaller inset photo, bottom-right over the main one. */
+  image2?: ImageMetadata | string;
+
+  /** `'collage'` only: real alt text for `image2`. */
+  image2Alt?: string;
+
+  /**
+   * `'collage'` only: the small dark card over the photos, with a shield
+   * icon. `{ title, text? }`, e.g. `{ title: "Licensed in Texas", text: "Asbestos and mold" }`.
+   */
+  badge?: StoryBadge;
+
+  /**
+   * `'collage'` only: up to four `{ value, label }` cells in a white card,
+   * e.g. `{ value: "4.6★", label: "Google rating" }`. Four sit 2×2 on phones.
+   */
+  stats?: StoryStat[];
+
+  /**
+   * `'collage'` only: one review card. `text` without quote marks (they're
+   * added), `name` like "Chris Martin", `meta` like "Google review".
+   */
+  quote?: StoryQuote;
+
   /** Section theme. */
   theme?: StorySplitTheme;
 
@@ -86,12 +140,42 @@ const {
   imageSide = "left",
   reasons = [],
   cta,
+  variant: variantProp = "default",
+  image2,
+  image2Alt,
+  badge,
+  stats = [],
+  quote,
   theme,
   padding,
   id,
   class: className,
   ...rest
 } = Astro.props;
+
+const variant: StorySplitVariant =
+  variantProp === "collage" ? "collage" : "default";
+/* Plain-text heading, for alt-text fallbacks (the collage heading is HTML). */
+const headingText = heading?.replace(/<[^>]+>/g, "") ?? "";
+const statCells = stats.slice(0, 4);
+
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+/* A star in a stat value ("4.6★") gets the brand colour. */
+const statValueHtml = (value: string) =>
+  escapeHtml(value).replace(
+    /★/g,
+    '<span class="story-split_stat_star">★</span>',
+  );
+/* "Chris Martin" becomes "CM" for the review avatar. */
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
 
 if (import.meta.env.DEV && render) {
   if (!heading)
@@ -100,11 +184,23 @@ if (import.meta.env.DEV && render) {
     console.warn("[StorySplit] `image` is required; nothing renders.");
   if (!imageAlt)
     console.warn("[StorySplit] Give the photo real alt text (`imageAlt`).");
+  if (!["default", "collage"].includes(variantProp))
+    console.warn(
+      `[StorySplit] Unknown variant "${variantProp}"; using "default".`,
+    );
+  if (variant === "collage" && image2 && !image2Alt)
+    console.warn(
+      "[StorySplit] Give the inset photo real alt text (`image2Alt`).",
+    );
+  if (variant === "collage" && stats.length > 4)
+    console.warn(
+      "[StorySplit] `stats` shows four cells at most; the rest are dropped.",
+    );
 }
 ---
 
 {
-  render && heading && image && (
+  render && heading && image && variant === "default" && (
     <Section
       theme={theme}
       padding={padding}
@@ -180,11 +276,338 @@ if (import.meta.env.DEV && render) {
   )
 }
 
+{
+  render && heading && image && variant === "collage" && (
+    <Section
+      theme={theme}
+      padding={padding}
+      id={id}
+      class:list={["story-split_wrap", "is-collage", className]}
+      {...rest}
+    >
+      <Layout verticalAlign="center" columnGap="calc(var(--space-8) * 1.25)">
+        <div class:list={["story-split_collage_wrap", !image2 && "is-single"]}>
+          <div class="story-split_collage_main">
+            <Visual
+              src={image}
+              alt={imageAlt || headingText}
+              variant="background"
+              radius="none"
+            />
+          </div>
+          {image2 && (
+            <div class="story-split_collage_inset">
+              <Visual
+                src={image2}
+                alt={image2Alt || imageAlt || headingText}
+                variant="background"
+                radius="none"
+              />
+            </div>
+          )}
+          {badge?.title && (
+            <div class="story-split_badge_wrap u-text-shrink" data-theme-invert>
+              <span class="story-split_badge_icon">
+                <Icon src={shieldIcon} variant="small" />
+              </span>
+              <p class="story-split_badge_text">
+                <strong class="story-split_badge_title">{badge.title}</strong>
+                {badge.text && (
+                  <span class="story-split_badge_sub">{badge.text}</span>
+                )}
+              </p>
+            </div>
+          )}
+        </div>
+        <Fragment slot="column2">
+          {eyebrow && (
+            <Heading variant="eyebrow" class="story-split_eyebrow">
+              {eyebrow}
+            </Heading>
+          )}
+          <Heading tag="h2" accent>
+            <Fragment set:html={heading} />
+          </Heading>
+          {paragraphs.map((p) => (
+            <Text muted>
+              <Fragment set:html={linkPhones(escapeHtml(p))} />
+            </Text>
+          ))}
+          {(statCells.length > 0 || quote?.text) && (
+            <div class="story-split_proof">
+              {statCells.length > 0 && (
+                <ul class="story-split_stats" role="list">
+                  {statCells.map((stat) => (
+                    <li class="story-split_stat">
+                      <p class="story-split_stat_value">
+                        <Fragment set:html={statValueHtml(stat.value)} />
+                      </p>
+                      <p class="story-split_stat_label">{stat.label}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {quote?.text && (
+                <figure class="story-split_quote_wrap">
+                  <blockquote class="story-split_quote_text">
+                    <Fragment
+                      set:html={linkPhones(`“${escapeHtml(quote.text)}”`)}
+                    />
+                  </blockquote>
+                  {quote.name && (
+                    <figcaption class="story-split_quote_by u-text-shrink">
+                      <span class="story-split_quote_avatar" aria-hidden="true">
+                        {initials(quote.name)}
+                      </span>
+                      <span class="story-split_quote_meta">
+                        <strong class="story-split_quote_name">
+                          {quote.name}
+                        </strong>
+                        {quote.meta && ` · ${quote.meta}`}
+                      </span>
+                    </figcaption>
+                  )}
+                </figure>
+              )}
+            </div>
+          )}
+          {cta && (
+            <div class="story-split_cta">
+              <CtaButton cta={cta} variant="text" />
+            </div>
+          )}
+        </Fragment>
+      </Layout>
+    </Section>
+  )
+}
+
 <style is:global>
   @layer components {
     .story-split_reason {
       padding-top: var(--space-4);
       border-top: var(--border-width-main) solid var(--border);
+    }
+
+    /* ---- collage: two overlapping photos + a badge card ---- */
+
+    .story-split_collage_wrap {
+      /* Read here, outside the inverted badge, so the badge's shadow stays
+         ink-coloured even though its own --text flips to light. */
+      --_ink: var(--text);
+      --_inset-border: calc(var(--border-width-main) * 4);
+      position: relative;
+      width: 100%;
+      /* Scales with the column instead of a fixed height; capped so the
+         stacked (tablet) layout doesn't grow a giant collage. */
+      aspect-ratio: 11 / 10;
+      max-width: 40rem;
+    }
+
+    .story-split_collage_main,
+    .story-split_collage_inset {
+      position: absolute;
+      overflow: clip;
+      border-radius: var(--radius-main);
+    }
+
+    .story-split_collage_main {
+      inset-block-start: 0;
+      inset-inline-start: 0;
+      width: 72%;
+      height: 84%;
+    }
+
+    .story-split_collage_wrap.is-single .story-split_collage_main {
+      width: 100%;
+      height: 100%;
+    }
+
+    .story-split_collage_inset {
+      inset-block-end: 0;
+      inset-inline-end: 0;
+      width: 46%;
+      height: 55%;
+      /* The paper-coloured frame that lifts it off the main photo. */
+      border: var(--_inset-border) solid var(--background);
+      border-radius: calc(var(--radius-main) + var(--_inset-border));
+      background-color: var(--background);
+    }
+
+    .story-split_badge_wrap {
+      position: absolute;
+      inset-inline-start: var(--space-4);
+      inset-block-end: 9%;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      max-width: calc(100% - var(--space-4) * 2);
+      padding: var(--space-3) var(--space-4);
+      border-radius: calc(var(--radius-main) * 0.875);
+      background-color: var(--background);
+      color: var(--text);
+      box-shadow: 0 0.875rem 1.875rem
+        color-mix(in srgb, var(--_ink) 25%, transparent);
+    }
+
+    .story-split_badge_icon {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      width: 2.25rem;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      background-color: var(--button-primary-background);
+      color: var(--button-primary-text);
+      font-size: 1.125rem;
+    }
+
+    .story-split_badge_text {
+      min-width: 0;
+      margin: 0;
+      font-size: var(--text-tiny-size);
+      line-height: 1.4;
+    }
+
+    .story-split_badge_title {
+      display: block;
+      font-size: var(--text-small-size);
+      font-weight: 600;
+    }
+
+    .story-split_badge_sub {
+      display: block;
+      color: color-mix(in srgb, currentColor 80%, transparent);
+    }
+
+    /* ---- collage: the story column ---- */
+
+    /* The design's eyebrow: accent colour behind a short leading rule. */
+    .story-split_eyebrow {
+      color: var(--heading-accent);
+    }
+
+    .story-split_eyebrow::before {
+      content: "";
+      display: inline-block;
+      width: 1.75rem;
+      height: var(--border-width-main);
+      margin-inline-end: 0.625rem;
+      vertical-align: middle;
+      background-color: currentColor;
+    }
+
+    .story-split_proof {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      margin-top: var(--space-5);
+    }
+
+    .story-split_stats {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+      /* The 1px gap shows this colour through as the cell dividers. */
+      gap: var(--border-width-main);
+      margin: 0;
+      padding: 0;
+      overflow: clip;
+      list-style: none;
+      border-radius: var(--radius-main);
+      background-color: color-mix(in srgb, var(--background), var(--text) 4%);
+      box-shadow:
+        0 0.0625rem 0.125rem color-mix(in srgb, var(--text) 5%, transparent),
+        0 0.625rem 1.75rem color-mix(in srgb, var(--text) 6%, transparent);
+    }
+
+    /* Four cells go 2×2 on phones. */
+    @container (width < 35em) {
+      .story-split_stats:has(> :nth-child(4)) {
+        grid-auto-flow: row;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .story-split_stat {
+      /* Each cell is its own size context, so a long value ("Licensed")
+         shrinks to fit a narrow cell instead of overflowing it. */
+      container-type: inline-size;
+      min-width: 0;
+      padding: var(--space-4) var(--space-3);
+      background-color: var(--background-2);
+    }
+
+    .story-split_stat_value {
+      margin: 0;
+      font-family: var(--font-primary);
+      font-size: clamp(1.125rem, 22cqi, 1.875rem);
+      font-weight: var(--h4-weight);
+      line-height: 1.15;
+      letter-spacing: var(--heading-letter-spacing);
+    }
+
+    .story-split_stat_star {
+      color: var(--button-primary-background);
+    }
+
+    .story-split_stat_label {
+      margin: var(--space-1) 0 0;
+      font-size: var(--text-tiny-size);
+      line-height: 1.35;
+      color: color-mix(in srgb, currentColor 70%, transparent);
+    }
+
+    .story-split_quote_wrap {
+      margin: 0;
+      padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
+      border-inline-start: calc(var(--border-width-main) * 2) solid
+        var(--button-primary-background);
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+    }
+
+    .story-split_quote_text {
+      margin: 0 0 var(--space-3);
+      font-family: var(--font-primary);
+      font-size: var(--text-regular-size);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .story-split_quote_by {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-small-size);
+    }
+
+    .story-split_quote_avatar {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      width: 1.75rem;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      background-color: var(--text);
+      color: var(--background-2);
+      font-size: var(--text-tiny-size);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .story-split_quote_meta {
+      min-width: 0;
+      color: color-mix(in srgb, currentColor 70%, transparent);
+    }
+
+    .story-split_quote_name {
+      color: var(--text);
+    }
+
+    .story-split_cta {
+      margin-top: var(--space-5);
     }
   }
 </style>

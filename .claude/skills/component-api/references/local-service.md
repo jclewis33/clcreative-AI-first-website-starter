@@ -285,3 +285,37 @@ order:
   heading="Get a free estimate"
 />
 ```
+
+## Section variants from the JC's Environmental demo (Nov 2026)
+
+These are a palette, not a page template. Use one where a demo's own design
+calls for it. Each is a `variant` on an existing section, and the default
+variants are unchanged. Headings in these variants take HTML, where
+`<strong>` is the italic accent.
+
+| Section      | Variant     | What it is                                                                                                                                                                 | New props                                                                                                                                    |
+| ------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| StorySplit   | `collage`   | Two overlapping photos with a badge card, beside the story, a 4-cell stats card and a review quote                                                                         | `image2`, `image2Alt`, `badge {title,text?}`, `stats {value,label}[]` (up to 4; a ★ is drawn in the brand colour), `quote {text,name,meta?}` |
+| ServiceCards | `feature`   | The first `featured` (default 2) items as large photo cards (title, line, "Learn more" over a navy fade), the rest as compact white cards. One link per card, no tag pills | `featured`, item `label` (eyebrow on the large cards)                                                                                        |
+| SymptomCards | `quotes`    | Dark band of quote tiles in the customer's voice, each with a pill linking its service, and a strip with a sentence and the CTA                                            | item `tag {label,href?}`, `prompt` (HTML)                                                                                                    |
+| ProcessSteps | `connected` | One white panel with icon circles, number badges and a dashed connector. Under it the CTA, then "or call (phone) · hours"                                                  | step `icon` (service-icons names, or `call`/`search`/`shield`/`document`), `cta`, `showPhone`, `note`                                        |
+| ReviewCards  | `google`    | Google-style cards (initial avatar, date, G, stars), a white rating card, keyword chips with real counts, a cream featured card                                            | `rating`, `count`, `keywords {word,count}[]`, `featured`, `href`, `link`; review `date`, `role`                                              |
+| ServiceArea  | `card`      | A white card with the place list and a phone button, beside the real street map (brand fill, tighter fit, "County" dropped from the map labels)                            | `variant="card"`. ServiceMap gains `variant="filled"`, passed only by this card                                                              |
+| FAQ          | `split`     | The questions in a white panel beside a navy "Still have a question?" help card; first item open; round +/− indicator                                                      | `variant="split"`, `help {heading,text,image?,imageAlt?}`                                                                                    |
+| CallBand     | `panel`     | A rounded photo panel with a navy wash, the estimate button and a phone button, and a tick row                                                                             | `ticks`                                                                                                                                      |
+
+The estimate form's tiles also take an `icon` per option (LeadFormOption,
+LeadQuestionOption, demo.json `home.leadForm.projectOptions[].icon`). The
+tiles then read left to right, two across even on a phone.
+
+The demo.json fields that feed them sit beside the existing ones:
+
+- `story.inset`, `insetAlt`, `badge`, `quote`
+- `symptoms.items[].tag`, `symptoms.prompt`
+- `reviews.items[].date`, `role`, `reviews.keywords`, `featured`
+- `faqs.heading`, `faqs.help`
+- `callBand.variant: "panel"`, `ticks`
+
+The preset's templates don't use them. A demo's own page
+(`demo/pages/index.astro`) does. The worked example is the
+`demo/jcs-environmental` branch.

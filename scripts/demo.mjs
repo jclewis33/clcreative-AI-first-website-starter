@@ -268,6 +268,8 @@ async function main() {
   await homeImage(home.process, "image", "process");
   await homeImage(home.photoBand, "image", "photo-band");
   await homeImage(home.story, "image", "story");
+  await homeImage(home.story, "inset", "story-inset", 1600);
+  await homeImage(home.faqs?.help, "image", "faq-help", 1200);
   await homeImage(home.why, "image", "why");
   await homeImage(home.office, "image", "office");
   await homeImage(home.profile, "image", "profile", 1600);
