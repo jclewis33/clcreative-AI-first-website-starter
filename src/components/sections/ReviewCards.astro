@@ -802,7 +802,10 @@ if (import.meta.env.DEV && render) {
         display: contents;
       }
 
-      .review-cards_google_card {
+      /* Scoped under the columns: the card's own base rule below sets
+         margin: 0 and, at equal specificity and later in the file, wiped
+         this spacing out, so stacked cards touched. */
+      .review-cards_google_columns .review-cards_google_card {
         break-inside: avoid;
         margin-bottom: 1.125rem;
       }

@@ -338,8 +338,55 @@ cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
 - **Show, then build.** For a visual call (hero treatment, a background,
   mascot vs. photo) send 2–3 quick mockups or screenshots first; build the
   one he picks.
-- **Screenshot every change** at 1440, 1200 and 390 wide and look before
-  reporting: crops, wrapping phone numbers, text over faces, overflow.
+- **Test every page at every width before reporting, not just desktop
+  and one phone.** On JC's (Nov 2026) the review cards touched at
+  480–928px. Desktop and 390 had both looked fine, and Casey found it.
+  For each page (home, every service page, reviews, about, contact):
+  1. **Run the automated pass** below at 320, 390, 480, 600, 768, 1024,
+     1200 and 1440. It must report nothing but `u-sr-only` labels.
+  2. **Look at full-page screenshots** at 1440, 768, 480 and 390 for:
+     crops, phone numbers wrapping, text over faces, uneven or missing
+     gaps, cramped tiles, and labels colliding on the map.
+
+  Scroll the whole page first so the scroll animations fire. Serve the
+  production build (`npm run build`, then `npx wrangler dev`) rather
+  than the dev server, which reloads itself after a restart.
+
+  ```js
+  // In the browser (Playwright evaluate), after scrolling the page:
+  // sideways scroll, cards that touch, and text clipped by its box.
+  () => {
+    const out = [],
+      doc = document.documentElement;
+    if (doc.scrollWidth > doc.clientWidth + 1) out.push("HSCROLL");
+    const cards = [
+      ...document.querySelectorAll('main [class*="_card"], main article'),
+    ]
+      .filter((e) => e.offsetParent && e.getBoundingClientRect().height > 40)
+      .map((e) => ({ e, r: e.getBoundingClientRect() }));
+    for (const a of cards)
+      for (const b of cards) {
+        if (a === b || a.e.contains(b.e) || b.e.contains(a.e)) continue;
+        const across =
+          Math.min(a.r.right, b.r.right) - Math.max(a.r.left, b.r.left) > 20;
+        const gap = b.r.top - a.r.bottom;
+        if (across && gap > -2 && gap < 3)
+          out.push("TOUCH " + a.e.className.split(" ")[0]);
+      }
+    for (const e of document.querySelectorAll(
+      "main h1, main h2, main h3, main p, main a, main span, main button, main li",
+    ))
+      if (
+        e.offsetParent &&
+        !e.children.length &&
+        e.scrollWidth > e.clientWidth + 2 &&
+        getComputedStyle(e).overflow !== "visible"
+      )
+        out.push("CLIP " + e.textContent.trim().slice(0, 25));
+    return [...new Set(out)];
+  };
+  ```
+
 - **Every claim traceable.** When he asks "where did this come from?",
   answer with the line from their site.
 - **Fixes and new options go into the starter** (one PR branch per demo
