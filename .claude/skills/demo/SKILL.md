@@ -256,14 +256,31 @@ went into the starter, but it is not the target.
 - **Full demo (only when Casey asks):** add the About page, the
   service-area regions (`areas`), and the optional home sections whose
   material is real.
-- **Start from the closest previous demo.** Every demo's `demo.json` is
-  on its branch in the private repo
-  (`git show origin/demo/<slug>:demo/demo.json`). For the same trade,
-  copy it and replace the business: the section choices and service
-  shapes carry over. The look never does: every demo gets its own brief
-  (above).
-  The fictional Ironwood Pest Control (`demo/ironwood-pest-control`) is
-  the pest-control and "fresh" look reference, safe to show anyone.
+- **Never start from a previous demo's design.** Each demo's design is
+  made for that business: its type, colours, layout, section mix and
+  order. A finished demo's page is not a template for the next one;
+  copying the last demo is how the early demos came out looking alike
+  (Casey, Nov 2026). The starter is a toolkit, not a template: tokens and
+  type, section components and their variants, forms, SEO, the map,
+  reviews and tap-to-call. Pull pieces where they fit the design, and
+  build new ones when it calls for something the toolkit lacks.
+  Earlier demos' `demo.json` files
+  (`git show origin/demo/<slug>:demo/demo.json`) are still useful as a
+  reference for data shapes and service fields.
+- **Design rules from JC's, for any design:**
+  - **One action per card.** A row of cards gets one "Learn more" each.
+    The quote button belongs to the hero, the CTA strip, the steps and
+    the closing panel.
+  - **No rows of tag pills on feature cards.** They look AI-made. Pills
+    are for filters and for a small link like the situation tiles'
+    service tag.
+  - **One orange for every button and tag,** and one accent shade on
+    dark backgrounds.
+  - **No dark mustard or yellow fills.** A featured card goes cream with
+    an accent edge.
+  - **A service-area map is the real street map** (ServiceArea `card`
+    or the default), never a drawn diagram.
+  - **Sliders only when there are many items,** not by default.
 - **Every fix and every new section goes into the starter**, never only
   into the demo branch: branch the starter, PR, CI, merge, then
   `git merge upstream/main` on the demo branch.

@@ -13,6 +13,13 @@ import type { HTMLAttributes } from "astro/types";
  * <FAQ />
  * ```
  *
+ * @example Split: eyebrow, accent heading and a navy help card left; the questions in a raised panel right
+ * ```astro
+ * <FAQ variant="split" eyebrow="Questions"
+ *   heading="Questions people ask <strong>before they call.</strong>"
+ *   help={{ heading: "Still have a question?", text: "Call or text us, Monday to Friday, 8 to 5.", image: techPhoto, imageAlt: "A technician inside a containment hallway" }} />
+ * ```
+ *
  * @example A page-specific set
  * ```astro
  * // add `export const webDesignFaqs: FAQItem[] = [...]` to src/data/faqs.ts
@@ -27,6 +34,10 @@ import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
 import Accordion from "@/components/ui/Accordion.astro";
 import AccordionItem from "@/components/ui/AccordionItem.astro";
+import Visual from "@/components/ui/Visual.astro";
+import Button from "@/components/ui/Button.astro";
+import type { ImageMetadata } from "astro";
+import { SITE } from "@/config/site";
 
 import type { FAQItem } from "@/data/faqs";
 import { generalFaqs } from "@/data/faqs";
@@ -39,14 +50,37 @@ type FAQLayout =
   | "columns"
   /** The heading over the questions, in one narrow centred column */
   | "stacked";
+type FAQVariant =
+  /** Plain: the heading and the accordion on the page ground */
+  | "default"
+  /** Eyebrow, accent heading and a help card left; the questions in a raised panel right */
+  | "split";
+type FAQHelp = {
+  /** The card's title: "Still have a question?". */
+  heading: string;
+  /** One line under it: "Call or text us, Monday to Friday, 8 to 5." */
+  text: string;
+  /** Photo across the top of the card. */
+  image?: ImageMetadata | string;
+  /** Alt text for the photo (falls back to the card's heading). */
+  imageAlt?: string;
+};
 
 interface Props extends HTMLAttributes<"section"> {
   /**
    * **FAQ props:**
    * - `items` — array of `{ question, answer }` objects (default: general FAQs). Answers support inline HTML (`<br><br>`, `<strong>`, etc.)
    * - `eyebrow` — optional small label rendered above the heading
-   * - `heading` — section heading (default: "Frequently Asked Questions")
-   * - `openByDefault` — 1-based index of item to open on load, `0` = all closed (default: `0`)
+   * - `heading` — section heading (default: "Frequently Asked Questions").
+   *   In `split`, HTML is allowed (`<strong>` = accent)
+   * - `variant` — `default`, or `split`: eyebrow between a short rule,
+   *   accent heading and an optional navy `help` card on the left; the
+   *   questions in a white rounded panel on the right (serif questions,
+   *   round +/− indicator, hairline dividers, the first item open). Stacks
+   *   on narrow screens. `layout` is ignored.
+   * - `help` — `{ heading, text, image?, imageAlt? }`: the `split` help
+   *   card, with a tap-to-call button from `SITE.phone`
+   * - `openByDefault` — 1-based index of item to open on load, `0` = all closed (default: `0`; `1` in `split`)
    * - `layout` — `columns` (default) or `stacked` (heading over the
    *   questions, one narrow column)
    * - `theme` — 'light' | 'dark' | 'brand'
@@ -61,10 +95,16 @@ interface Props extends HTMLAttributes<"section"> {
   eyebrow?: string;
   heading?: string;
 
+  /** `default`, or `split` (help card left, questions in a raised panel right). @default 'default' */
+  variant?: FAQVariant;
+
+  /** The navy help card under the heading (`split` only): `{ heading, text, image?, imageAlt? }`. */
+  help?: FAQHelp;
+
   /**
    * 1-based index of the accordion item to open by default on load.
    * `0` means all items start closed.
-   * @default 0
+   * @default 0 (1 in `split`)
    * @example openByDefault={1}
    */
   openByDefault?: number;
@@ -84,7 +124,9 @@ const {
   items = [...generalFaqs],
   eyebrow,
   heading = "Frequently Asked Questions",
-  openByDefault = 0,
+  variant = "default",
+  help,
+  openByDefault = variant === "split" ? 1 : 0,
   layout = "columns",
   theme,
   padding,
@@ -95,63 +137,143 @@ const {
   ...rest
 } = Astro.props;
 import { linkPhones } from "@/lib/phone-links";
+
+if (import.meta.env.DEV) {
+  if (!["default", "split"].includes(variant))
+    console.warn(`[FAQ] Unknown variant "${variant}"; using "default".`);
+  if (help && variant !== "split")
+    console.warn('[FAQ] `help` only shows with variant="split".');
+  if (help && (!help.heading || !help.text))
+    console.warn(
+      "[FAQ] `help` needs `heading` and `text`; the card is skipped.",
+    );
+}
+const isSplit = variant === "split";
+const showHelp = isSplit && Boolean(help?.heading && help?.text);
 ---
 
-<Section
-  theme={theme}
-  paddingTop={paddingTop}
-  paddingBottom={paddingBottom}
-  id={id}
-  class={className}
-  {...rest}
->
-  <Layout
-    ratio={layout === "stacked" ? undefined : "6-7"}
-    verticalAlign="start"
-    variant={layout === "stacked" ? "stack" : "columns"}
-    class:list={[layout === "stacked" && "faq_stack"]}
-  >
-    {
-      eyebrow && (
-        <Heading variant="eyebrow" data-prevent-flicker="true" data-fade-in>
-          {eyebrow}
+{
+  isSplit && (
+    <Section
+      theme={theme}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      id={id}
+      class:list={["faq_wrap is-split", className]}
+      {...rest}
+    >
+      <Layout ratio="4-6" verticalAlign="start" columnGap={7} rowGap={7}>
+        {eyebrow && (
+          <Heading
+            tag="p"
+            variant="eyebrow"
+            class="faq_eyebrow"
+            data-prevent-flicker="true"
+            data-fade-in
+          >
+            {eyebrow}
+          </Heading>
+        )}
+        <Heading accent data-fade-in data-prevent-flicker="true">
+          <Fragment set:html={heading} />
         </Heading>
-      )
-    }
-    <Heading data-fade-in data-prevent-flicker="true">{heading}</Heading>
+        {showHelp && help && (
+          <div class="faq_help_wrap" data-theme-invert data-fade-in>
+            {help.image && (
+              <Visual
+                src={help.image}
+                alt={help.imageAlt || help.heading}
+                ratio="widescreen"
+                radius="none"
+                class="faq_help_img"
+              />
+            )}
+            <div class="faq_help_body u-margin-trim">
+              <h3 class="faq_help_title u-text-style-h5">{help.heading}</h3>
+              <p class="faq_help_text">
+                <Fragment set:html={linkPhones(help.text)} />
+              </p>
+              <Button
+                href={`tel:${SITE.phone.tel}`}
+                ariaLabel={`Call ${SITE.phone.display}`}
+                class="faq_help_button"
+              >
+                {SITE.phone.display}
+              </Button>
+            </div>
+          </div>
+        )}
+        <div slot="column2" class="faq_panel">
+          <Accordion openByDefault={openByDefault} closePrevious>
+            {items.map((faq) => (
+              <AccordionItem data-fade-in question={faq.question}>
+                <Text muted>
+                  <Fragment set:html={linkPhones(faq.answer)} />
+                </Text>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </Layout>
+    </Section>
+  )
+}
 
-    {
-      layout === "stacked" && (
-        <div class="faq_list">
-          <Accordion openByDefault={openByDefault} closePrevious>
-            {items.map((faq) => (
-              <AccordionItem data-fade-in question={faq.question}>
-                <Text>
-                  <Fragment set:html={linkPhones(faq.answer)} />
-                </Text>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      )
-    }
-    {
-      layout !== "stacked" && (
-        <div slot="column2">
-          <Accordion openByDefault={openByDefault} closePrevious>
-            {items.map((faq) => (
-              <AccordionItem data-fade-in question={faq.question}>
-                <Text>
-                  <Fragment set:html={linkPhones(faq.answer)} />
-                </Text>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      )
-    }
-  </Layout>
-</Section>
+{
+  !isSplit && (
+    <Section
+      theme={theme}
+      paddingTop={paddingTop}
+      paddingBottom={paddingBottom}
+      id={id}
+      class={className}
+      {...rest}
+    >
+      <Layout
+        ratio={layout === "stacked" ? undefined : "6-7"}
+        verticalAlign="start"
+        variant={layout === "stacked" ? "stack" : "columns"}
+        class:list={[layout === "stacked" && "faq_stack"]}
+      >
+        {eyebrow && (
+          <Heading variant="eyebrow" data-prevent-flicker="true" data-fade-in>
+            {eyebrow}
+          </Heading>
+        )}
+        <Heading data-fade-in data-prevent-flicker="true">
+          {heading}
+        </Heading>
+
+        {layout === "stacked" && (
+          <div class="faq_list">
+            <Accordion openByDefault={openByDefault} closePrevious>
+              {items.map((faq) => (
+                <AccordionItem data-fade-in question={faq.question}>
+                  <Text>
+                    <Fragment set:html={linkPhones(faq.answer)} />
+                  </Text>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        )}
+        {layout !== "stacked" && (
+          <div slot="column2">
+            <Accordion openByDefault={openByDefault} closePrevious>
+              {items.map((faq) => (
+                <AccordionItem data-fade-in question={faq.question}>
+                  <Text>
+                    <Fragment set:html={linkPhones(faq.answer)} />
+                  </Text>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        )}
+      </Layout>
+    </Section>
+  )
+}
 
 <style is:global>
   @layer components {
@@ -160,6 +282,162 @@ import { linkPhones } from "@/lib/phone-links";
       width: 100%;
       max-width: 55rem;
       margin-inline: auto;
+    }
+
+    /* ── variant="split" ───────────────────────────────────────── */
+    /* Eyebrow after one short rule. */
+    .faq_eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+
+    .faq_eyebrow::before {
+      content: "";
+      flex-shrink: 0;
+      width: 1.75rem;
+      height: var(--border-width-main);
+      background-color: currentColor;
+    }
+
+    /* The help card: a whole inverted theme (navy on the paper). */
+    .faq_help_wrap {
+      overflow: clip;
+      border-radius: calc(var(--radius-main) * 1.25);
+      background-color: var(--background);
+      color: var(--text);
+    }
+
+    .faq_help_body {
+      padding: var(--space-4);
+    }
+
+    .faq_help_title {
+      margin-bottom: var(--space-2);
+    }
+
+    .faq_help_text {
+      margin-bottom: var(--space-4);
+      color: color-mix(in srgb, var(--text) 78%, transparent);
+    }
+
+    /* The questions sit in one raised panel. */
+    .faq_panel {
+      --_divider: color-mix(in srgb, var(--border) 45%, transparent);
+      padding: var(--space-1) var(--space-5);
+      border-radius: calc(var(--radius-main) * 1.25);
+      background-color: var(--background-2);
+      color: var(--text);
+      box-shadow:
+        0 0.0625rem 0.125rem color-mix(in srgb, var(--text) 5%, transparent),
+        0 0.75rem 2rem color-mix(in srgb, var(--text) 6%, transparent);
+    }
+
+    .faq_panel .accordion_wrap {
+      padding-top: 0;
+    }
+
+    .faq_panel .accordion_item {
+      border-bottom-color: var(--_divider);
+    }
+
+    .faq_panel .accordion_item:last-child {
+      border-bottom: 0;
+    }
+
+    .faq_panel .accordion_toggle {
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .faq_panel .accordion_toggle_text {
+      font-size: var(--h6-size);
+      line-height: 1.3;
+    }
+
+    /* A round +/− instead of the chevron: two bars, the upright one
+       folding away when the item opens. */
+    .faq_panel .accordion_toggle_icon {
+      position: relative;
+      display: block;
+      width: 1.75rem;
+      border-radius: var(--radius-full);
+      background-color: var(--background);
+      color: var(--text);
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+    }
+
+    .faq_wrap.is-split .faq_panel .accordion_item .accordion_toggle_icon {
+      rotate: none;
+    }
+
+    .faq_panel .accordion_toggle_icon > svg {
+      display: none;
+    }
+
+    .faq_panel .accordion_toggle_icon::before,
+    .faq_panel .accordion_toggle_icon::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 0.75rem;
+      height: var(--border-width-main);
+      margin: auto;
+      border-radius: var(--radius-full);
+      background-color: currentColor;
+      transition: scale 0.25s ease;
+    }
+
+    .faq_panel .accordion_toggle_icon::after {
+      rotate: 90deg;
+    }
+
+    .faq_panel
+      .accordion_item[open]
+      > .accordion_toggle
+      .accordion_toggle_icon {
+      background-color: var(--button-primary-background);
+      color: var(--button-primary-text);
+    }
+
+    .faq_panel
+      .accordion_item[open]
+      > .accordion_toggle
+      .accordion_toggle_icon::after {
+      scale: 1 0;
+    }
+
+    @media (hover: hover) {
+      .faq_panel
+        .accordion_item:not([open])
+        > .accordion_toggle:hover
+        .accordion_toggle_icon {
+        background-color: color-mix(
+          in srgb,
+          var(--button-primary-background) 25%,
+          var(--background)
+        );
+      }
+    }
+
+    .faq_panel .accordion_body {
+      max-width: 46em;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .faq_panel .accordion_toggle_icon,
+      .faq_panel .accordion_toggle_icon::before,
+      .faq_panel .accordion_toggle_icon::after {
+        transition-duration: 0.01s;
+      }
+    }
+
+    @container (width < 35em) {
+      .faq_panel {
+        padding-inline: var(--space-4);
+      }
     }
   }
 </style>
