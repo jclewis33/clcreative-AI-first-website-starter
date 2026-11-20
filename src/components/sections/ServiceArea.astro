@@ -88,7 +88,7 @@ interface Props extends HTMLAttributes<"section"> {
   /** Small label above the heading. @default 'Where we work' */
   eyebrow?: string;
 
-  /** Section heading. Required. */
+  /** Section heading. Required. Inline HTML is allowed: wrap the accent phrase in a strong tag. */
   heading: string;
 
   /** Intro paragraph. */
@@ -212,7 +212,9 @@ if (import.meta.env.DEV && render) {
         rowGap={4}
       >
         {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
-        <Heading tag="h2">{heading}</Heading>
+        <Heading tag="h2">
+          <Fragment set:html={heading} />
+        </Heading>
         {text && <Text muted>{text}</Text>}
         {paragraphs.map((paragraph) => (
           <Text muted>{paragraph}</Text>
