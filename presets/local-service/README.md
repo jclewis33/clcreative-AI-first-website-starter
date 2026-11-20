@@ -40,7 +40,9 @@ Start from `fixture/demo.json`. Every image field is a source: a path
 relative to demo.json (`./assets/hero.jpg`) or an https URL.
 
 - `prospect` — `name`, `legalName?`, `slug` (kebab-case, up to 30
-  characters; the branch is `demo/<slug>`), `website?`, `owner?`
+  characters; the branch is `demo/<slug>`), `website?`, `owner?`,
+  `priceRange?` (`$`–`$$$$`, only as their Google or Facebook listing
+  shows it; left out, the structured data has none)
 - `contact` — `phone` (US), `email?` (leave out if they don't publish one),
   `hours`, `street?` + `postalCode?` (only a published shop or office
   address; leave out for a home-based business), `locality`, `region`,
