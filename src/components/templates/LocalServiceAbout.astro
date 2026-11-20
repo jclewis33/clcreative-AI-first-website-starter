@@ -23,6 +23,7 @@ import ProfileSplit from "@/components/sections/ProfileSplit.astro";
 import Guarantee from "@/components/sections/Guarantee.astro";
 import ProcessSteps from "@/components/sections/ProcessSteps.astro";
 import Reviews from "@/components/sections/Reviews.astro";
+import ReviewCards from "@/components/sections/ReviewCards.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import CallBand from "@/components/sections/CallBand.astro";
 import LeadFormModal from "@/components/form/LeadFormModal.astro";
@@ -184,7 +185,26 @@ const schemaCrumbs = [
   }
 
   {
-    reviews && (
+    reviews && reviews.cards === "google" && (
+      <ReviewCards
+        variant="google"
+        eyebrow="Google reviews"
+        heading="What our customers <strong>say</strong>"
+        reviews={reviews.items.slice(0, 6)}
+        rating={reviews.rating}
+        count={reviews.count}
+        keywords={reviews.keywords}
+        featured={reviews.featured}
+        href="/reviews"
+        link={{
+          label: `Read all ${reviews.items.length} reviews`,
+          href: "/reviews",
+        }}
+      />
+    )
+  }
+  {
+    reviews && reviews.cards !== "google" && (
       <Reviews
         rating={reviews.rating}
         count={reviews.count}

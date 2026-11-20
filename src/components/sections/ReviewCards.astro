@@ -2,60 +2,110 @@
 import type { HTMLAttributes, ComponentProps } from "astro/types";
 import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
+import Button from "@/components/ui/Button.astro";
 
 type ReviewCard = {
   /** The review text (an excerpt is fine). */
   text: string;
+  /** The whole review, word for word (the /reviews page). Not shown here. */
+  full?: string;
   /** The reviewer's name as shown on the platform. */
   name: string;
   /** "Google review · Polished concrete". */
   meta?: string;
   /** 4 or 5. @default 5 */
   rating?: number;
+  /** `google` variant: when it was posted, as Google words it ("a year ago"). Falls back to `meta`; neither shows nothing. */
+  date?: string;
+  /** `google` variant: who they are, beside the name in the accent ("General contractor"). */
+  role?: string;
 };
+type ReviewCardsKeyword = {
+  /** The word reviewers use ("recommend"). */
+  word: string;
+  /** How many reviews use it. */
+  count: number;
+};
+type ReviewCardsVariant =
+  /** A heading row with a link, three plain cards under it */
+  | "default"
+  /** Google's own look on a dark section: a rating card, keyword chips, three columns of review cards with one featured, and a "Read all" button */
+  | "google";
 type ReviewCardsTheme = ComponentProps<typeof Section>["theme"];
 
 interface Props extends HTMLAttributes<"section"> {
   /**
    * **ReviewCards** — reviews as the cards people know from Google: an
    * initial in a circle, the name and where the review is from, the stars,
-   * the words. A heading with a star line ("78 five-star reviews on
+   * the words.
+   *
+   * **`default`** — a heading with a star line ("78 five-star reviews on
    * Google") on the left, a link to all reviews on the right, three cards
-   * under them.
+   * under them. One review sits at a readable width instead of running the
+   * full page.
    *
-   * One review sits at a readable width instead of running the full page;
-   * three across is the usual row.
+   * **`google`** — a dark section (unless `theme` says otherwise): eyebrow
+   * and heading (`<strong>` = the accent) beside a white Google rating card
+   * (`rating`, `count`); a row of keyword chips (`keywords`); up to six
+   * review cards in three columns (two on tablets, one on phones) read
+   * column by column, with the `featured` one in cream and the serif; a
+   * centred "Read all N reviews" button (`href`). Cards take an optional
+   * `date` ("a year ago") and `role` ("General contractor").
    *
-   * Real, attributed reviews only.
+   * Real, attributed reviews only. No review schema markup.
    *
-   * - `reviews` — `{ text, name, meta?, rating? }[]`; the first `limit` show
-   * - `summary` — the star line under the heading
-   * - `link` — `{ label, href }`, e.g. "Read all our Google reviews"
+   * - `reviews` — `{ text, name, meta?, rating?, date?, role? }[]`; the first `limit` show
+   * - `summary` — `default`: the star line under the heading
+   * - `link` — `{ label, href }`: `default` top-right link; on `google` its label overrides the button's
    *
    * @example
    * <ReviewCards heading="What our customers say" summary="78 five-star reviews on Google" reviews={reviews} link={{ label: "Read all our Google reviews", href: "/reviews" }} />
+   *
+   * @example google
+   * <ReviewCards variant="google" heading="What DFW homeowners <strong>and builders say.</strong>" rating={4.6} count={19} keywords={[{ word: "recommend", count: 8 }]} featured={2} href="/reviews" reviews={reviews} />
    */
   docs?: string;
 
   /** Set to `false` to skip rendering. @default true */
   render?: boolean;
 
-  /** The heading. @default 'What our customers say' */
+  /** `google` variant: the small label above the heading. @default 'Google reviews' */
+  eyebrow?: string;
+
+  /** The heading. On `google`, `<strong>` words take the italic accent. @default 'What our customers say' */
   heading?: string;
 
-  /** The star line under the heading ("78 five-star reviews on Google"). */
+  /** `default` variant: the star line under the heading ("78 five-star reviews on Google"). */
   summary?: string;
 
   /** The reviews. Empty renders nothing. */
   reviews: ReviewCard[];
 
-  /** How many cards show. @default 3 */
+  /** How many cards show. @default 3 (6 on `google`) */
   limit?: number;
 
-  /** A link to all reviews, top right. */
+  /** A link to all reviews: top right on `default`; on `google` it labels and targets the button. */
   link?: { label: string; href: string };
 
-  /** Section theme. */
+  /** The look. @default 'default' */
+  variant?: ReviewCardsVariant;
+
+  /** `google` variant: the Google star rating, e.g. 4.6. Shows the rating card. */
+  rating?: number;
+
+  /** `google` variant: how many Google reviews ("19 reviews on Google"; "Read all 19 reviews"). */
+  count?: number;
+
+  /** `google` variant: words reviewers repeat, a chip each ("“recommend” in 8 reviews"). */
+  keywords?: ReviewCardsKeyword[];
+
+  /** `google` variant: the index (in `reviews`) of the card shown large, in cream. */
+  featured?: number;
+
+  /** `google` variant: where "Read all N reviews" goes. No `href` and no `link` hides the button. */
+  href?: string;
+
+  /** Section theme. @default 'dark' on `google` */
   theme?: ReviewCardsTheme;
 
   /** Section id for anchor links. */
@@ -68,31 +118,114 @@ interface Props extends HTMLAttributes<"section"> {
 const {
   docs,
   render = true,
+  eyebrow = "Google reviews",
   heading = "What our customers say",
   summary,
   reviews = [],
-  limit = 3,
+  limit,
   link,
+  variant = "default",
+  rating,
+  count,
+  keywords = [],
+  featured,
+  href,
   theme,
   id,
   class: className,
   ...rest
 } = Astro.props;
 
-const shown = reviews.slice(0, Math.max(1, limit));
+const isGoogle = variant === "google";
+const shown = reviews.slice(0, Math.max(1, limit ?? (isGoogle ? 6 : 3)));
 const single = shown.length === 1;
 const stars = (n = 5) => Math.min(5, Math.max(0, Math.round(n)));
 /* The avatar tint: one of three, from the name, so a row of cards varies. */
 const tint = (name: string) =>
   [...name].reduce((sum, c) => sum + c.charCodeAt(0), 0) % 3;
+const initial = (name: string) => name.trim().charAt(0).toUpperCase();
 
-if (import.meta.env.DEV && render && !Astro.props.reviews?.length) {
-  console.warn("[ReviewCards] `reviews` is empty or missing; nothing renders.");
+/* ---- google variant ---- */
+
+/* Google-style avatar colour: a hue from the name, at one fixed lightness
+   and chroma, so every circle is a muted colour white reads on. */
+const hue = (name: string) =>
+  [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+
+/* Three columns, filled in reading order (column one top to bottom, then
+   two, then three) and balanced by a rough height for each card: its
+   lines of text, the featured card's larger serif and quote mark. */
+const columnCount = Math.min(3, shown.length);
+const cardWeight = (review: ReviewCard, index: number) => {
+  const isFeatured = index === featured;
+  const lines = review.text.length / (isFeatured ? 32 : 48);
+  return (isFeatured ? 6 : 5) + lines * (isFeatured ? 1.4 : 1);
+};
+const columns: { review: ReviewCard; index: number }[][] = [];
+{
+  const weights = shown.map(cardWeight);
+  let remaining = weights.reduce((a, b) => a + b, 0);
+  let i = 0;
+  for (let c = 0; c < columnCount; c++) {
+    const target = remaining / (columnCount - c);
+    const column: { review: ReviewCard; index: number }[] = [];
+    let height = 0;
+    while (i < shown.length) {
+      const left = shown.length - i;
+      const columnsAfter = columnCount - c - 1;
+      // Leave at least one card for every later column.
+      if (column.length > 0 && left <= columnsAfter) break;
+      const w = weights[i];
+      // Stop when adding this card overshoots the target by more than
+      // stopping short of it would undershoot.
+      if (column.length > 0 && height + w - target > target - height) break;
+      column.push({ review: shown[i], index: i });
+      height += w;
+      i++;
+    }
+    remaining -= height;
+    columns.push(column);
+  }
+}
+
+const ratingValue =
+  rating !== undefined ? Math.min(5, Math.max(0, rating)) : undefined;
+const ratingText =
+  ratingValue !== undefined
+    ? ratingValue.toLocaleString("en-US", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      })
+    : "";
+const moreHref = href ?? link?.href;
+const moreLabel =
+  link?.label ?? (count ? `Read all ${count} reviews` : "Read all reviews");
+
+const STAR =
+  "M12 2l3 6.6 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21.2l1.5-7L2 9.4l7-.8z";
+
+if (import.meta.env.DEV && render) {
+  if (!Astro.props.reviews?.length)
+    console.warn(
+      "[ReviewCards] `reviews` is empty or missing; nothing renders.",
+    );
+  if (variant !== "default" && variant !== "google")
+    console.warn(
+      `[ReviewCards] Unknown variant "${variant}"; showing the default.`,
+    );
+  if (
+    isGoogle &&
+    featured !== undefined &&
+    (!Number.isInteger(featured) || featured < 0 || featured >= shown.length)
+  )
+    console.warn(
+      `[ReviewCards] \`featured\` ${featured} is not one of the ${shown.length} shown reviews; no card is featured.`,
+    );
 }
 ---
 
 {
-  render && shown.length > 0 && (
+  render && shown.length > 0 && !isGoogle && (
     <Section
       theme={theme}
       id={id}
@@ -114,7 +247,7 @@ if (import.meta.env.DEV && render && !Astro.props.reviews?.length) {
                 >
                   {Array.from({ length: 5 }, () => (
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M12 2l3 6.6 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21.2l1.5-7L2 9.4l7-.8z" />
+                      <path d={STAR} />
                     </svg>
                   ))}
                 </span>
@@ -138,7 +271,7 @@ if (import.meta.env.DEV && render && !Astro.props.reviews?.length) {
                     data-tint={String(tint(review.name))}
                     aria-hidden="true"
                   >
-                    {review.name.trim().charAt(0).toUpperCase()}
+                    {initial(review.name)}
                   </span>
                   <span class="review-cards_name_wrap">
                     <span class="review-cards_name">{review.name}</span>
@@ -154,7 +287,7 @@ if (import.meta.env.DEV && render && !Astro.props.reviews?.length) {
                 >
                   {Array.from({ length: stars(review.rating) }, () => (
                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M12 2l3 6.6 7 .8-5.2 4.8 1.5 7L12 17.6 5.7 21.2l1.5-7L2 9.4l7-.8z" />
+                      <path d={STAR} />
                     </svg>
                   ))}
                 </span>
@@ -163,6 +296,200 @@ if (import.meta.env.DEV && render && !Astro.props.reviews?.length) {
             </li>
           ))}
         </ul>
+      </div>
+    </Section>
+  )
+}
+
+{
+  render && shown.length > 0 && isGoogle && (
+    <Section
+      theme={theme ?? "dark"}
+      id={id}
+      class:list={["review-cards_wrap", "is-google", className]}
+      {...rest}
+    >
+      <div class="review-cards_google_layout">
+        <div class="review-cards_google_header">
+          <div class="review-cards_google_heading u-margin-trim">
+            {eyebrow && (
+              <Heading variant="eyebrow" class="review-cards_google_eyebrow">
+                {eyebrow}
+              </Heading>
+            )}
+            <Heading tag="h2" variant="h2" accent>
+              <Fragment set:html={heading} />
+            </Heading>
+          </div>
+          {ratingValue !== undefined && (
+            <div class="review-cards_rating_wrap" data-theme-invert>
+              <svg
+                class="review-cards_rating_logo"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
+              >
+                <path
+                  fill="#EA4335"
+                  d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"
+                />
+                <path
+                  fill="#4285F4"
+                  d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"
+                />
+              </svg>
+              <div class="review-cards_rating_body">
+                <p class="review-cards_rating_score">
+                  <span class="review-cards_rating_number">{ratingText}</span>
+                  <span
+                    class="review-cards_rating_stars"
+                    role="img"
+                    aria-label={`Rated ${ratingText} out of 5 stars`}
+                    style={`--_fill: ${ratingValue / 5}`}
+                  >
+                    <span class="review-cards_rating_stars_track">
+                      {Array.from({ length: 5 }, () => (
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d={STAR} />
+                        </svg>
+                      ))}
+                    </span>
+                    <span class="review-cards_rating_stars_fill">
+                      {Array.from({ length: 5 }, () => (
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d={STAR} />
+                        </svg>
+                      ))}
+                    </span>
+                  </span>
+                </p>
+                <p class="review-cards_rating_count">
+                  {count ? `${count} reviews on Google` : "On Google"}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {keywords.length > 0 && (
+          <ul class="review-cards_keywords" aria-label="What reviewers mention">
+            {keywords.map((keyword, i) => (
+              <li class="review-cards_keyword">
+                <span class="review-cards_keyword_check" aria-hidden="true">
+                  ✓
+                </span>
+                “{keyword.word}”
+                <span class="review-cards_keyword_count">
+                  {i === 0
+                    ? `in ${keyword.count} reviews`
+                    : `in ${keyword.count}`}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div
+          class="review-cards_google_columns"
+          style={`--_columns: ${columnCount}`}
+        >
+          {columns.map((column) => (
+            <div class="review-cards_google_column">
+              {column.map(({ review, index }) => (
+                <figure
+                  class:list={[
+                    "review-cards_google_card",
+                    index === featured && "is-featured",
+                  ]}
+                  data-theme-invert
+                >
+                  {index === featured && (
+                    <span class="review-cards_google_mark" aria-hidden="true">
+                      “
+                    </span>
+                  )}
+                  <figcaption class="review-cards_google_who">
+                    <span
+                      class="review-cards_google_avatar"
+                      style={`--_hue: ${hue(review.name)}`}
+                      aria-hidden="true"
+                    >
+                      {initial(review.name)}
+                    </span>
+                    <span class="review-cards_google_byline">
+                      <span class="review-cards_google_name">
+                        {review.name}
+                        {review.role && (
+                          <span class="review-cards_google_role">
+                            {` · ${review.role}`}
+                          </span>
+                        )}
+                      </span>
+                      {(review.date ?? review.meta) && (
+                        <span class="review-cards_google_date">
+                          {review.date ?? review.meta}
+                        </span>
+                      )}
+                    </span>
+                    <svg
+                      class="review-cards_google_logo"
+                      viewBox="0 0 48 48"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill="#EA4335"
+                        d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"
+                      />
+                      <path
+                        fill="#4285F4"
+                        d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"
+                      />
+                    </svg>
+                    <span class="u-sr-only">Google review</span>
+                  </figcaption>
+                  <span
+                    class="review-cards_google_stars"
+                    role="img"
+                    aria-label={`${stars(review.rating)} out of 5 stars`}
+                  >
+                    {Array.from({ length: stars(review.rating) }, () => (
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d={STAR} />
+                      </svg>
+                    ))}
+                  </span>
+                  <blockquote class="review-cards_google_text">
+                    {review.text}
+                  </blockquote>
+                </figure>
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {moreHref && (
+          <div class="review-cards_google_more">
+            <Button variant="secondary" href={moreHref} ariaLabel={moreLabel}>
+              {moreLabel}
+              <span aria-hidden="true">&nbsp;→</span>
+            </Button>
+          </div>
+        )}
       </div>
     </Section>
   )
@@ -304,6 +631,306 @@ if (import.meta.env.DEV && render && !Astro.props.reviews?.length) {
         text-decoration: underline;
         text-underline-offset: 0.2em;
       }
+    }
+
+    /* ================= google variant ================= */
+
+    .review-cards_google_layout {
+      display: flex;
+      flex-direction: column;
+      gap: 2.25rem;
+    }
+
+    .review-cards_google_header {
+      display: flex;
+      flex-direction: var(--column-small, row);
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: var(--start-small, flex-end);
+      gap: var(--space-5) var(--space-7);
+    }
+
+    /* Basis auto, not a length: on phones the header is a column, where a
+       28rem basis became 28rem of empty height above the rating card. */
+    .review-cards_google_heading {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    /* The eyebrow: a short rule, then the label, in the accent. */
+    .review-cards_google_eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      color: var(--heading-accent);
+    }
+
+    .review-cards_google_eyebrow::before {
+      content: "";
+      flex-shrink: 0;
+      width: 1.75rem;
+      height: 0.0625rem;
+      background-color: currentColor;
+    }
+
+    /* The Google rating card: white, Google's G, the number in the serif. */
+    .review-cards_rating_wrap {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.375rem;
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+      color: var(--text);
+      box-shadow: var(--box-shadow-xlarge);
+    }
+
+    .review-cards_rating_logo {
+      flex-shrink: 0;
+      width: 2.125rem;
+      aspect-ratio: 1 / 1;
+    }
+
+    .review-cards_rating_score {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin: 0;
+    }
+
+    .review-cards_rating_number {
+      font-family: var(--font-primary);
+      font-size: 2rem;
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: var(--heading-letter-spacing);
+    }
+
+    /* Stars filled to the rating: a faint row of five, the gold row over
+       it clipped to rating ÷ 5 (4.6 shows the last star most of the way). */
+    .review-cards_rating_stars {
+      position: relative;
+      display: inline-flex;
+      font-size: 1rem;
+    }
+
+    .review-cards_rating_stars_track,
+    .review-cards_rating_stars_fill {
+      display: inline-flex;
+      gap: 0.125em;
+    }
+
+    .review-cards_rating_stars_track {
+      color: color-mix(in srgb, var(--text) 15%, transparent);
+    }
+
+    .review-cards_rating_stars_fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      overflow: hidden;
+      width: calc(var(--_fill, 1) * 100%);
+      color: var(--rating-star);
+    }
+
+    .review-cards_rating_stars svg,
+    .review-cards_google_stars svg {
+      flex-shrink: 0;
+      width: 1em;
+      aspect-ratio: 1 / 1;
+      fill: currentColor;
+    }
+
+    .review-cards_rating_count {
+      margin: 0;
+      font-size: 0.8125rem;
+      color: color-mix(in srgb, var(--text) 70%, transparent);
+    }
+
+    /* Keyword chips. */
+    .review-cards_keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .review-cards_keyword {
+      padding: 0.4375rem 0.875rem;
+      border: 0.0625rem solid color-mix(in srgb, var(--text) 14%, transparent);
+      border-radius: var(--radius-full);
+      background-color: color-mix(in srgb, var(--text) 8%, transparent);
+      font-size: 0.8125rem;
+      line-height: 1.4;
+    }
+
+    .review-cards_keyword_check {
+      margin-inline-end: 0.25em;
+    }
+
+    .review-cards_keyword_count {
+      color: var(--heading-accent);
+    }
+
+    /* The cards: three columns filled in reading order (ReviewCards'
+       frontmatter balances them). Under the medium tier the column groups
+       dissolve and the cards flow through two CSS columns, then one —
+       still in the same order. */
+    .review-cards_google_columns {
+      display: grid;
+      grid-template-columns: repeat(var(--_columns, 3), minmax(0, 1fr));
+      gap: 1.125rem;
+      align-items: start;
+    }
+
+    .review-cards_google_column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.125rem;
+    }
+
+    @container (width < 58em) {
+      .review-cards_google_columns {
+        display: block;
+        columns: 2;
+        column-gap: 1.125rem;
+      }
+
+      .review-cards_google_column {
+        display: contents;
+      }
+
+      /* Scoped under the columns: the card's own base rule below sets
+         margin: 0 and, at equal specificity and later in the file, wiped
+         this spacing out, so stacked cards touched. */
+      .review-cards_google_columns .review-cards_google_card {
+        break-inside: avoid;
+        margin-bottom: 1.125rem;
+      }
+    }
+
+    @container (width < 35em) {
+      .review-cards_google_columns {
+        columns: 1;
+      }
+    }
+
+    .review-cards_google_card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 1.375rem;
+      border-radius: var(--radius-main);
+      background-color: var(--background-2);
+      color: var(--text);
+    }
+
+    /* The featured card: warm paper, a thin brand edge, a big quote mark
+       and the words in the serif. */
+    .review-cards_google_card.is-featured {
+      gap: 0.875rem;
+      padding: 1.75rem;
+      background-color: color-mix(
+        in srgb,
+        var(--background) 55%,
+        var(--background-2)
+      );
+      box-shadow: inset 0 0 0 0.0625rem
+        color-mix(in srgb, var(--color-brand-500) 35%, transparent);
+    }
+
+    .review-cards_google_mark {
+      display: block;
+      height: 1.375rem;
+      font-family: var(--font-primary);
+      font-size: 4rem;
+      line-height: 0.5;
+      color: var(--color-brand-500);
+    }
+
+    .review-cards_google_who {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .review-cards_google_avatar {
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      width: 2.5rem;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-full);
+      background-color: oklch(0.5 0.09 var(--_hue, 250));
+      color: var(--color-light-100);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .review-cards_google_byline {
+      flex-grow: 1;
+      min-width: 0;
+      display: grid;
+      gap: 0.125rem;
+      line-height: 1.3;
+    }
+
+    .review-cards_google_name {
+      font-size: 0.9375rem;
+      font-weight: 600;
+    }
+
+    .review-cards_google_role {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--heading-accent);
+    }
+
+    .review-cards_google_date {
+      font-size: 0.75rem;
+      color: color-mix(in srgb, var(--text) 58%, transparent);
+    }
+
+    .review-cards_google_logo {
+      flex-shrink: 0;
+      width: 1.125rem;
+      aspect-ratio: 1 / 1;
+    }
+
+    .review-cards_google_stars {
+      display: inline-flex;
+      gap: 0.125em;
+      color: var(--rating-star);
+      font-size: 1rem;
+    }
+
+    .review-cards_google_text {
+      margin: 0;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: color-mix(in srgb, var(--text) 82%, transparent);
+    }
+
+    .review-cards_google_card.is-featured .review-cards_google_text {
+      font-family: var(--font-primary);
+      font-size: 1.25rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    /* "Read all N reviews": centred, a stronger outline than the default
+       secondary button so it holds its own on the dark ground. */
+    .review-cards_google_more {
+      display: flex;
+      justify-content: center;
+      --button-secondary-border: color-mix(
+        in srgb,
+        var(--text) 40%,
+        transparent
+      );
     }
   }
 </style>

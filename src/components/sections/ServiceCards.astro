@@ -2,6 +2,7 @@
 import type { HTMLAttributes, ComponentProps } from "astro/types";
 import type { ImageMetadata } from "astro";
 import Section from "@/components/ui/Section.astro";
+import Layout from "@/components/ui/Layout.astro";
 import Grid from "@/components/ui/Grid.astro";
 import Card from "@/components/ui/Card.astro";
 import Heading from "@/components/ui/Heading.astro";
@@ -22,12 +23,19 @@ type ServiceCardItem = {
   href?: string;
   /** Shown instead of a photo when there's no `image`. */
   icon?: ServiceIconName;
+  /**
+   * `variant="feature"` only: the small uppercase line above a large
+   * card's title ("Licensed in Texas"). Ignored on the compact cards.
+   */
+  label?: string;
 };
 type ServiceCardsVariant =
   /** Boxed cards with a "Learn more" line */
   | "cards"
   /** No box: photo, title and line, the block one link */
-  | "plain";
+  | "plain"
+  /** The first `featured` services as large photo cards, the rest as compact cards */
+  | "feature";
 type ServiceCardsLayout =
   /** 3 → 2 → 1 column grid (2 → 2 → 1 for two or four cards) */
   | "grid"
@@ -47,9 +55,17 @@ interface Props extends HTMLAttributes<"section"> {
    * - `layout` — `'grid'` (default) or `'swipe'` (a swipe row on phones;
    *   use it for "related services")
    * - `moreLabel` — the "Learn more" line on linked cards
+   * - `variant` — `'cards'` (default), `'plain'`, or `'feature'`: the first
+   *   `featured` items (default 2) as large cards, the photo filling the
+   *   card under a rising navy gradient, with an optional `label` eyebrow,
+   *   the title, one line and "Learn more"; the rest as compact white cards
+   *   (photo on top, title, line, "Learn more"), four to a row. Each card
+   *   is one link. `heading` takes HTML here (`<strong>` = the accent).
    *
    * @example
    * <ServiceCards heading="What we do" items={[{ title: "Kitchens", text: "…", image: kitchen, imageAlt: "…", href: "/services/kitchens" }]} />
+   * @example Two featured services, then four compact ones
+   * <ServiceCards variant="feature" eyebrow="What we do" heading="Mold and asbestos, <strong>across the metro.</strong>" intro="From the first inspection to the rebuild." items={services} />
    */
   docs?: string;
 
@@ -59,7 +75,7 @@ interface Props extends HTMLAttributes<"section"> {
   /** Small label above the heading. */
   eyebrow?: string;
 
-  /** Section heading. */
+  /** Section heading. HTML allowed with `variant="feature"` (`<strong>` = accent). */
   heading?: string;
 
   /** Intro beside the heading. */
@@ -74,9 +90,17 @@ interface Props extends HTMLAttributes<"section"> {
   /**
    * `cards` — boxed cards with a "Learn more" line; `plain` — no box: a
    * 4:3 photo, the title and the line under it, the whole block one link
-   * (the estate look's finishes grid). @default 'cards'
+   * (the estate look's finishes grid); `feature` — the first `featured`
+   * items as large photo cards, the rest as compact cards. @default 'cards'
    */
   variant?: ServiceCardsVariant;
+
+  /**
+   * `variant="feature"` only: how many items, from the start of `items`,
+   * render as the large photo cards (two to a row). The rest are compact
+   * cards. @default 2
+   */
+  featured?: number;
 
   /** Text on linked cards. @default 'Learn more' */
   moreLabel?: string;
@@ -103,6 +127,7 @@ const {
   items = [],
   layout = "grid",
   variant = "cards",
+  featured = 2,
   moreLabel = "Learn more",
   theme,
   padding,
@@ -130,6 +155,26 @@ const wrapperProps =
     ? { columns: 3 as const, label: heading ?? "Services" }
     : { largeColumns, mediumColumns: 2, smallColumns: 1, rowGap: 6 };
 
+/* variant="feature": the lead services large, the rest compact. */
+const featuredCount =
+  Number.isInteger(featured) && featured >= 0 ? featured : 2;
+const featureItems = items.slice(0, featuredCount);
+const compactItems = items.slice(featuredCount);
+/* Compact cards: four to a row, or as many as there are when fewer;
+   three across for six or nine so no row is left with a lone card. */
+type GridColumns = ComponentProps<typeof Grid>["largeColumns"];
+const compactColumns = (
+  compactItems.length <= 4
+    ? Math.max(compactItems.length, 1)
+    : compactItems.length % 3 === 0
+      ? 3
+      : 4
+) as GridColumns;
+const featureColumns = Math.min(
+  Math.max(featureItems.length, 1),
+  3,
+) as GridColumns;
+
 if (import.meta.env.DEV && render) {
   if (!Astro.props.items?.length)
     console.warn(
@@ -137,6 +182,12 @@ if (import.meta.env.DEV && render) {
     );
   if (!["grid", "swipe"].includes(layout))
     console.warn(`[ServiceCards] Unknown layout "${layout}".`);
+  if (!["cards", "plain", "feature"].includes(variant))
+    console.warn(`[ServiceCards] Unknown variant "${variant}".`);
+  if (variant === "feature" && featuredCount !== featured)
+    console.warn(
+      `[ServiceCards] \`featured\` must be a whole number of 0 or more; got "${featured}". Using 2.`,
+    );
 }
 ---
 
@@ -146,11 +197,155 @@ if (import.meta.env.DEV && render) {
       theme={theme}
       padding={padding}
       id={id}
+      gap={variant === "feature" ? 7 : undefined}
       class:list={["service-cards_wrap", className]}
       {...rest}
     >
-      {heading && (
+      {heading && variant !== "feature" && (
         <SectionHeader eyebrow={eyebrow} heading={heading} intro={intro} />
+      )}
+      {heading && variant === "feature" && intro && (
+        <Layout
+          ratio="7-5"
+          verticalAlign="end"
+          rowGap={3}
+          class="service-cards_header"
+        >
+          {eyebrow && (
+            <Heading variant="eyebrow" class="service-cards_eyebrow">
+              {eyebrow}
+            </Heading>
+          )}
+          <Heading tag="h2" variant="h2" accent>
+            <Fragment set:html={heading} />
+          </Heading>
+          <div slot="column2" class="service-cards_header_aside">
+            <Text muted class="service-cards_intro">
+              {intro}
+            </Text>
+          </div>
+        </Layout>
+      )}
+      {heading && variant === "feature" && !intro && (
+        <Layout variant="stack" class="service-cards_header">
+          {eyebrow && (
+            <Heading variant="eyebrow" class="service-cards_eyebrow">
+              {eyebrow}
+            </Heading>
+          )}
+          <Heading tag="h2" variant="h2" accent>
+            <Fragment set:html={heading} />
+          </Heading>
+        </Layout>
+      )}
+      {variant === "feature" && (
+        <div class="service-cards_feature_list">
+          {featureItems.length > 0 && (
+            <Grid
+              largeColumns={featureColumns}
+              mediumColumns={1}
+              smallColumns={1}
+              rowGap={4}
+              columnGap={4}
+            >
+              {featureItems.map((item) => {
+                const Tag = item.href ? "a" : "div";
+                return (
+                  <Tag
+                    class="service-cards_feature_wrap"
+                    data-theme="dark"
+                    {...(item.href ? { href: item.href } : {})}
+                  >
+                    {item.image && (
+                      <Visual
+                        src={item.image}
+                        alt={item.imageAlt || item.title}
+                        variant="background"
+                        sizes="(min-width: 62em) 50vw, 100vw"
+                        class="service-cards_feature_img"
+                      />
+                    )}
+                    <div class="service-cards_feature_body">
+                      {item.label && (
+                        <p class="service-cards_feature_label u-text-style-eyebrow">
+                          {item.label}
+                        </p>
+                      )}
+                      <h3 class="service-cards_feature_title u-text-style-h3">
+                        {item.title}
+                      </h3>
+                      {item.text && (
+                        <p class="service-cards_feature_text">{item.text}</p>
+                      )}
+                      {item.href && (
+                        <span class="service-cards_feature_more">
+                          {moreLabel}
+                          <span
+                            class="service-cards_feature_arrow"
+                            aria-hidden="true"
+                          >
+                            →
+                          </span>
+                        </span>
+                      )}
+                    </div>
+                  </Tag>
+                );
+              })}
+            </Grid>
+          )}
+          {compactItems.length > 0 && (
+            <Grid
+              largeColumns={compactColumns}
+              mediumColumns={2}
+              smallColumns={1}
+              rowGap={4}
+              columnGap={4}
+            >
+              {compactItems.map((item) => {
+                const Tag = item.href ? "a" : "div";
+                return (
+                  <Tag
+                    class="service-cards_compact_wrap"
+                    {...(item.href ? { href: item.href } : {})}
+                  >
+                    {item.image && (
+                      <Visual
+                        src={item.image}
+                        alt={item.imageAlt || item.title}
+                        ratio="5 / 3"
+                        radius="none"
+                        sizes="(min-width: 62em) 25vw, (min-width: 35em) 50vw, 100vw"
+                        class="service-cards_compact_img"
+                      />
+                    )}
+                    <div class="service-cards_compact_body">
+                      <h3 class="service-cards_compact_title u-text-style-h6">
+                        {item.title}
+                      </h3>
+                      {item.text && (
+                        <p class="service-cards_compact_text u-text-style-small">
+                          {item.text}
+                        </p>
+                      )}
+                      {item.href && (
+                        <span class="service-cards_compact_more">
+                          {moreLabel}
+                          <span
+                            class="service-cards_compact_arrow"
+                            aria-hidden="true"
+                          >
+                            →
+                          </span>
+                        </span>
+                      )}
+                    </div>
+                  </Tag>
+                );
+              })}
+            </Grid>
+          )}
+        </div>
       )}
       {variant === "plain" && (
         <Wrapper {...wrapperProps}>
@@ -177,7 +372,7 @@ if (import.meta.env.DEV && render) {
           })}
         </Wrapper>
       )}
-      {variant !== "plain" && (
+      {variant !== "plain" && variant !== "feature" && (
         <Wrapper {...wrapperProps}>
           {items.map((item) => (
             <Card
@@ -269,6 +464,239 @@ if (import.meta.env.DEV && render) {
       font-size: var(--text-small-size);
       font-weight: 600;
       color: var(--heading-accent);
+    }
+    /* ==============================================================
+       variant="feature" — the lead services as large photo cards, the
+       rest as compact white cards. Every card is one link.
+       ============================================================== */
+
+    /* The header's eyebrow carries a short rule before it. */
+    .service-cards_eyebrow::before {
+      content: "";
+      display: inline-block;
+      width: 1.75rem;
+      height: var(--border-width-main);
+      margin-inline-end: 0.625rem;
+      vertical-align: middle;
+      background-color: currentColor;
+    }
+
+    .service-cards_header_aside {
+      justify-self: var(--start-medium, end);
+      max-width: 24rem;
+    }
+
+    .service-cards_intro {
+      margin-bottom: 0;
+    }
+
+    /* The two rows of cards sit closer to each other than to the header. */
+    .service-cards_feature_list {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    /* Shared by both card sizes: a soft two-layer shadow in the theme's
+       scrim ink (navy on every theme, so a card on a dark section still
+       casts a dark shadow), and the lift. */
+    .service-cards_feature_wrap,
+    .service-cards_compact_wrap {
+      --_ink: var(--overlay-scrim);
+      position: relative;
+      overflow: hidden;
+      color: var(--text);
+      text-decoration: none;
+      box-shadow:
+        0 0.0625rem 0.125rem color-mix(in srgb, var(--_ink) 12%, transparent),
+        0 1.125rem 2.75rem -0.25rem
+          color-mix(in srgb, var(--_ink) 20%, transparent);
+    }
+
+    .service-cards_feature_wrap:focus-visible,
+    .service-cards_compact_wrap:focus-visible {
+      outline: var(--focus-width) solid var(--color-focus-state);
+      outline-offset: var(--focus-offset-outer);
+    }
+
+    /* Large card: the photo fills the card; the text sits on a navy
+       gradient rising from the bottom. data-theme="dark" on the card
+       makes --text white and --heading-accent the light accent. */
+    .service-cards_feature_wrap {
+      isolation: isolate;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 32.5rem;
+      border-radius: calc(var(--radius-main) * 1.5);
+      background-color: var(--background);
+    }
+
+    .service-cards_feature_wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(
+        180deg,
+        transparent 30%,
+        color-mix(in srgb, var(--background) 58%, transparent) 55%,
+        color-mix(in srgb, var(--background) 96%, transparent) 100%
+      );
+      pointer-events: none;
+    }
+
+    .service-cards_feature_img {
+      z-index: 0;
+    }
+
+    .service-cards_feature_body {
+      position: relative;
+      z-index: 1;
+      padding: var(--space-6);
+    }
+
+    .service-cards_feature_label {
+      margin: 0 0 var(--space-2);
+      color: var(--heading-accent);
+    }
+
+    .service-cards_feature_label::before {
+      content: "";
+      display: inline-block;
+      width: 1.5rem;
+      height: var(--border-width-main);
+      margin-inline-end: 0.625rem;
+      vertical-align: middle;
+      background-color: currentColor;
+    }
+
+    .service-cards_feature_title {
+      margin: 0 0 var(--space-2);
+      line-height: 1.1;
+    }
+
+    .service-cards_feature_text {
+      max-width: 30em;
+      margin: 0 0 var(--space-3);
+      line-height: 1.6;
+      color: color-mix(in srgb, var(--text) 86%, transparent);
+    }
+
+    .service-cards_feature_more {
+      display: inline-block;
+      padding-top: var(--space-3);
+      border-top: var(--border-width-main) solid
+        color-mix(in srgb, var(--text) 22%, transparent);
+      font-size: var(--text-small-size);
+      font-weight: 600;
+      color: var(--heading-accent);
+    }
+
+    /* Compact card: white, photo on top, the "Learn more" line pinned to
+       the bottom so a row of cards lines up. */
+    .service-cards_compact_wrap {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border-radius: calc(var(--radius-main) * 1.25);
+      background-color: var(--background-2);
+    }
+
+    .service-cards_compact_img {
+      flex-shrink: 0;
+    }
+
+    /* A grid, not flex (its children are text): the last row takes the
+       slack so the link sits at the bottom. */
+    .service-cards_compact_body {
+      flex-grow: 1;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      row-gap: var(--space-2);
+      padding: var(--space-4);
+    }
+
+    .service-cards_compact_title {
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .service-cards_compact_text {
+      margin: 0;
+      line-height: 1.55;
+      color: color-mix(in srgb, var(--text) 76%, transparent);
+    }
+
+    .service-cards_compact_more {
+      align-self: end;
+      margin-top: var(--space-1);
+      padding-top: var(--space-3);
+      border-top: var(--border-width-main) solid
+        color-mix(in srgb, var(--text) 9%, transparent);
+      font-size: var(--text-small-size);
+      font-weight: 600;
+      color: var(--heading-accent);
+    }
+
+    /* A card with no text: the link still pins to the bottom. */
+    .service-cards_compact_body:not(:has(.service-cards_compact_text)) {
+      grid-template-rows: auto 1fr;
+    }
+
+    .service-cards_feature_arrow,
+    .service-cards_compact_arrow {
+      display: inline-block;
+      margin-inline-start: 0.35em;
+    }
+
+    @container (width < 35em) {
+      .service-cards_feature_wrap {
+        min-height: 26rem;
+      }
+
+      .service-cards_feature_body {
+        padding: var(--space-5) var(--space-4);
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .service-cards_feature_wrap,
+      .service-cards_compact_wrap {
+        transition:
+          translate 0.35s ease,
+          box-shadow 0.35s ease;
+      }
+
+      .service-cards_feature_wrap .u-image,
+      .service-cards_compact_wrap .u-image {
+        transition: scale 0.6s ease;
+      }
+
+      .service-cards_feature_arrow,
+      .service-cards_compact_arrow {
+        transition: translate 0.25s ease;
+      }
+    }
+
+    @media (hover: hover) {
+      a.service-cards_feature_wrap:hover,
+      a.service-cards_compact_wrap:hover {
+        translate: 0 -0.25rem;
+        box-shadow:
+          0 0.125rem 0.25rem color-mix(in srgb, var(--_ink) 12%, transparent),
+          0 1.75rem 3.5rem -0.5rem
+            color-mix(in srgb, var(--_ink) 28%, transparent);
+      }
+
+      a.service-cards_feature_wrap:hover .u-image,
+      a.service-cards_compact_wrap:hover .u-image {
+        scale: 1.04;
+      }
+
+      a.service-cards_feature_wrap:hover .service-cards_feature_arrow,
+      a.service-cards_compact_wrap:hover .service-cards_compact_arrow {
+        translate: 0.25em 0;
+      }
     }
   }
 </style>

@@ -21,6 +21,11 @@ type ServiceMapGeometry = {
   coordinates: unknown;
 };
 type ServiceMapArea = { name: string; geometry: ServiceMapGeometry };
+type ServiceMapVariant =
+  /** Thin accent outlines, faintly filled, framed with a margin */
+  | "default"
+  /** The towns fill the frame: tight framing, a brand-tinted fill and a darker brand outline */
+  | "filled";
 
 interface Props {
   /**
@@ -29,8 +34,16 @@ interface Props {
    * (scripts/lib/service-area-geo.mjs); a town known only as a point gets
    * a circle. Empty `areas` renders nothing.
    *
+   * `variant="filled"` frames the map tightly on the towns (not the
+   * radius ring) at quarter zoom steps, and fills them with the brand
+   * colour under a darker brand outline — the map as the picture of a
+   * card (ServiceArea's `card` variant).
+   *
    * @example
    * <ServiceMap areas={HOME.serviceArea.geo} />
+   *
+   * @example filled
+   * <ServiceMap areas={HOME.serviceArea.geo} variant="filled" />
    */
   docs?: string;
 
@@ -49,6 +62,9 @@ interface Props {
   /** "Within N miles of home base": a dashed circle the map frames itself on. */
   radius?: { lat: number; lng: number; miles: number } | null;
 
+  /** How the towns are drawn and framed. @default 'default' */
+  variant?: ServiceMapVariant;
+
   /** Extra classes on the map. */
   class?: string;
 }
@@ -60,8 +76,16 @@ const {
   label,
   current,
   radius,
+  variant = "default",
   class: className,
 } = Astro.props;
+
+if (import.meta.env.DEV && variant !== "default" && variant !== "filled") {
+  console.warn(
+    `[ServiceMap] Unknown variant "${variant}"; drawing the default.`,
+  );
+}
+const filled = variant === "filled";
 
 const mapLabel =
   label ??
@@ -78,10 +102,11 @@ const mapLabel =
 {
   render && (areas.length > 0 || radius) && (
     <div
-      class:list={["service-map_wrap", className]}
+      class:list={["service-map_wrap", filled && "is-filled", className]}
       role="img"
       aria-label={mapLabel}
       data-current={current}
+      data-variant={filled ? "filled" : undefined}
       data-radius={radius ? JSON.stringify(radius) : undefined}
     >
       <div class="service-map_canvas" data-service-map />
@@ -155,6 +180,35 @@ const mapLabel =
     .service-map_canvas .leaflet-control-attribution {
       font-size: 0.625rem;
     }
+
+    /* Filled: the brand colour at low strength inside a darker brand
+       outline. The script reads these two for Leaflet's own styles; the
+       rules below win over a parent's [data-area] tint (ServiceArea's)
+       so the outlines stay this colour inside it too. */
+    .service-map_wrap.is-filled {
+      --_area-fill: var(--color-brand-500);
+      --_area-stroke: color-mix(in oklab, var(--color-brand-500), black 30%);
+    }
+
+    .service-map_wrap.is-filled [data-area] {
+      fill: var(--_area-fill);
+      fill-opacity: 0.2;
+      stroke: var(--_area-stroke);
+      stroke-opacity: 0.9;
+      stroke-width: 2;
+      transition: fill-opacity 0.2s ease;
+    }
+
+    .service-map_wrap.is-filled [data-area]:is(.is-active, .is-current) {
+      fill-opacity: 0.38;
+      stroke-opacity: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .service-map_wrap.is-filled [data-area] {
+        transition: none;
+      }
+    }
   }
 </style>
 
@@ -171,23 +225,33 @@ const mapLabel =
     }[];
     const L = (await import("leaflet")).default;
 
+    const filled = wrap.dataset.variant === "filled";
+    const css = getComputedStyle(wrap);
     const accent =
-      getComputedStyle(wrap).getPropertyValue("--heading-accent").trim() ||
-      "currentColor";
-    const style = {
-      color: accent,
-      weight: 2,
-      opacity: 0.85,
-      fillColor: accent,
-      fillOpacity: 0.12,
-    };
+      css.getPropertyValue("--heading-accent").trim() || "currentColor";
+    const style = filled
+      ? {
+          color: css.getPropertyValue("--_area-stroke").trim() || accent,
+          weight: 2,
+          opacity: 0.9,
+          fillColor: css.getPropertyValue("--_area-fill").trim() || accent,
+          fillOpacity: 0.2,
+        }
+      : {
+          color: accent,
+          weight: 2,
+          opacity: 0.85,
+          fillColor: accent,
+          fillOpacity: 0.12,
+        };
     const map = L.map(canvas, {
       scrollWheelZoom: false,
       // A one-finger drag on a phone should scroll the page, not the map.
       dragging: !L.Browser.mobile,
       // Whole zoom levels: fractional ones scale the tiles and open hairline
-      // seams between them.
-      zoomSnap: 1,
+      // seams between them. Filled frames tightly, so it takes quarter
+      // steps (measured seam-free in Chromium at 8.25 with per-tile grey).
+      zoomSnap: filled ? 0.25 : 1,
       attributionControl: true,
     });
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -223,7 +287,10 @@ const mapLabel =
       // Every town named on the map while they fit; past eight the labels
       // pile up at metro zoom, so they show on hover (the chips beside the
       // map name them all) — except this page's own town.
-      layer.bindTooltip(area.name, {
+      // Counties drop the word on the map ("Denton", not "Denton County"):
+      // the list beside it carries the full names, and seven county labels
+      // collided on a phone-width map.
+      layer.bindTooltip(area.name.replace(/\s+County$/i, ""), {
         permanent: areas.length <= 8 || area.name === wrap.dataset.current,
         direction: "center",
         className: "service-map_label",
@@ -265,11 +332,14 @@ const mapLabel =
     // until the map has a view to render it in.
     const meters = radius ? radius.miles * 1609.344 : 0;
     let bounds = areas.length ? group.getBounds() : null;
-    if (radius) {
+    // Filled frames on the towns alone, so they fill the picture; the
+    // ring then runs off the edges where it is wider.
+    if (radius && !(filled && bounds)) {
       const box = L.latLng(radius.lat, radius.lng).toBounds(meters * 2);
       bounds = bounds ? bounds.extend(box) : box;
     }
-    if (bounds) map.fitBounds(bounds, { padding: [24, 24] });
+    const pad = filled ? 10 : 24;
+    if (bounds) map.fitBounds(bounds, { padding: [pad, pad] });
     if (radius) {
       L.circle([radius.lat, radius.lng], {
         radius: meters,

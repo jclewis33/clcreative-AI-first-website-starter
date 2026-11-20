@@ -301,6 +301,11 @@ export default defineConfig({
             style: "normal",
             src: ["./src/assets/fonts/fraunces-latin-wght-normal.woff2"],
           },
+          {
+            weight: "100 900",
+            style: "italic",
+            src: ["./src/assets/fonts/fraunces-latin-wght-italic.woff2"],
+          },
         ],
       },
     },

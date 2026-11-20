@@ -133,6 +133,7 @@ import ExpectTimeline from "@/components/sections/ExpectTimeline.astro";
 import WhyChooseUs from "@/components/sections/WhyChooseUs.astro";
 import FeatureTiles from "@/components/sections/FeatureTiles.astro";
 import IncludedList from "@/components/sections/IncludedList.astro";
+import ContactMethods from "@/components/sections/ContactMethods.astro";
 import ServiceArea from "@/components/sections/ServiceArea.astro";
 import Reviews from "@/components/sections/Reviews.astro";
 import LeadFormSection from "@/components/sections/LeadFormSection.astro";
@@ -304,6 +305,7 @@ const COMPONENT_INDEX = [
   { slug: "why-choose-us", text: "WhyChooseUs" },
   { slug: "feature-tiles", text: "FeatureTiles" },
   { slug: "included-list", text: "IncludedList" },
+  { slug: "contact-methods", text: "ContactMethods" },
   { slug: "service-area", text: "ServiceArea" },
   { slug: "town-finder", text: "TownFinder" },
   { slug: "concern-tabs", text: "ConcernTabs" },
@@ -3348,6 +3350,32 @@ const leadPhotoOptions = [
     heading="Selected work"
     showSummary
     link={{ label: "View all projects", href: "/projects" }}
+  />
+
+  <Section theme="light" padding="small" id="contact-methods">
+    <Heading variant="eyebrow">ContactMethods</Heading>
+    <Heading tag="h2">Ways to reach the business</Heading>
+  </Section>
+  <ContactMethods
+    eyebrow="Reach us"
+    heading="Ways to <strong>reach us</strong>"
+    items={[
+      {
+        icon: "call",
+        label: "Call us",
+        value: SITE.phone.display,
+        href: `tel:${SITE.phone.tel}`,
+        note: SITE.hours,
+      },
+      {
+        icon: "mail",
+        label: "Email us",
+        value: "hello@example.com",
+        href: "mailto:hello@example.com",
+      },
+      { icon: "clock", label: "Hours", value: SITE.hours },
+      { icon: "pin", label: "Based in", value: "Riverside" },
+    ]}
   />
 
   <Section theme="light" padding="small" id="review-cards">

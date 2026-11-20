@@ -344,6 +344,9 @@ const variant: HeroVariant = variantProp ?? (image ? "background" : "text");
 const theme: HeroTheme =
   themeProp ?? (variant === "background" ? "dark" : undefined);
 const hasPhoto = variant !== "text" && Boolean(image);
+/* A text-only hero (the reviews page) has nothing beside the headline, so
+   Heading's default 30ch ran it the page's full width at display size;
+   16ch wraps it to two lines. */
 /* Never alt="" (CLAUDE.md): fall back to the heading's plain text. */
 const photoAlt = imageAlt || heading?.replace(/<[^>]+>/g, "") || "";
 const stars = proof?.rating
@@ -514,6 +517,7 @@ const backdropUrl =
           variant={headingSize === "h1" ? "h1" : "display-lg"}
           accent
           marginBottom={4}
+          maxWidth={hasPhoto ? undefined : "16ch"}
           class="hero_title"
         >
           <Fragment set:html={heading} />

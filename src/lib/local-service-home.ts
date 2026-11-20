@@ -39,8 +39,17 @@ type HomeReview = {
   full?: string;
   /** Its stars — 4 or 5 only; the site never shows a worse review. @default 5 */
   rating?: number;
+  /** As the platform shows it ("a year ago"). */
+  date?: string;
+  /** Who they are, when it matters ("General contractor"). */
+  role?: string;
 };
-type HomeOption = { label: string; value: string };
+type HomeOption = {
+  label: string;
+  value: string;
+  /** A small icon on the estimate tile (src/data/service-icons.json). */
+  icon?: ServiceIconName;
+};
 /** An SVG imported as a component (ServiceArea's interactive map). */
 type HomeMap = (props: Record<string, unknown>) => unknown;
 type HomeTrust = { label: string; image?: HomeImage };
@@ -185,6 +194,8 @@ export interface LocalServiceHomeData {
     secondaryCta?: { label: string; href: string };
     /** The estimate button's text here. @default estimate.label */
     ctaLabel?: string;
+    /** The small card on the photo. It defaults to "Since {founded}"; `false` hides it. */
+    badge?: { value: string; label: string } | false;
   };
 
   /** Four short numbers or words. Leave out anything you can't back up. */
@@ -232,7 +243,15 @@ export interface LocalServiceHomeData {
     eyebrow?: string;
     heading?: string;
     intro?: string;
-    items: { title: string; text: string; icon?: ServiceIconName }[];
+    items: {
+      title: string;
+      text: string;
+      icon?: ServiceIconName;
+      /** For a demo's own page: the service this situation leads to. */
+      tag?: { label: string; href: string };
+    }[];
+    /** For a demo's own page: the sentence in the strip under the tiles (<strong> allowed). */
+    prompt?: string;
   };
 
   /** One real offer — a discount, financing, rebates (OfferBand). Opens the estimate form. */
@@ -475,6 +494,13 @@ export interface LocalServiceHomeData {
     imageSide?: "left" | "right";
     /** The showcase layout's text link to the estimate form ("Book time with me"). */
     ctaLabel?: string;
+    /** For a demo's own page: the smaller photo overlapping the main one. */
+    inset?: HomeImage;
+    insetAlt?: string;
+    /** For a demo's own page: the small card on the photos. */
+    badge?: { title: string; text?: string };
+    /** For a demo's own page: one real review line beside the story. */
+    quote?: { text: string; name: string; meta?: string };
   };
 
   /** Real, attributed reviews only. Absent = no Reviews section. */
@@ -486,6 +512,16 @@ export interface LocalServiceHomeData {
     layout?: "cards" | "featured" | "grid" | "marquee";
     /** Estate layout: the star line under the heading ("78 five-star reviews on Google"). */
     summary?: string;
+    /** For a demo's own page: words customers use, counted from the real reviews. */
+    keywords?: { word: string; count: number }[];
+    /** For a demo's own page: the index of the review shown as the featured card. */
+    featured?: number;
+    /**
+     * "google": the reviews and About pages show Google-style review cards
+     * (ReviewCards variant="google"), matching a home page that uses them.
+     * @default 'classic'
+     */
+    cards?: "classic" | "google";
   };
 
   leadForm: {
@@ -497,13 +533,25 @@ export interface LocalServiceHomeData {
   };
 
   /** Absent = no FAQ section (never the generic lorem defaults). */
-  faqs?: { eyebrow?: string; items: FAQItem[] };
+  faqs?: {
+    eyebrow?: string;
+    items: FAQItem[];
+    /** For a demo's own page: the FAQ's own heading (<strong> = accent). */
+    heading?: string;
+    /** For a demo's own page: the "Still have a question?" card. */
+    help?: {
+      heading: string;
+      text: string;
+      image?: HomeImage;
+      imageAlt?: string;
+    };
+  };
 
   callBand: {
     heading: string;
     text?: string;
     /** `photo-card` / `split` need `image`. @default 'band' */
-    variant?: "band" | "photo-card" | "split";
+    variant?: "band" | "photo-card" | "split" | "panel";
     image?: HomeImage;
     imageAlt?: string;
     ctaNote?: string;
@@ -511,6 +559,8 @@ export interface LocalServiceHomeData {
     secondaryCta?: { label: string; href: string };
     /** The estimate button's text here. @default estimate.label */
     ctaLabel?: string;
+    /** For a demo's own page: the short tick row under the buttons. */
+    ticks?: string[];
     /** Estate layout: "What happens when you reach out", in order. */
     steps?: string[];
   };

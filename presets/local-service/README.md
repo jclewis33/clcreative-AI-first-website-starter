@@ -20,14 +20,32 @@ builds it through the dev sample at `/demo/local-service`. This folder is
 excluded from the starter's `tsconfig.json`: `index.astro` imports
 `src/data/home.ts`, which exists only in a demo.
 
+## A demo's own pages
+
+A file in `pages/` beside demo.json with the name of a preset page
+(`index.astro`, `contact.astro`, `about.astro`, `reviews.astro`) is
+installed instead of the preset's, and kept on every re-run. That is
+where a demo's hand-designed home page lives: start from the preset's
+page and compose it from the template's sections and new ones. Delete
+the file to go back to the preset's page.
+
+Any other file under `pages/` is installed at the same path under
+`src/pages/` too: `pages/services/[slug].astro` replaces the service
+route with the demo's own service page. To undo, delete it and restore
+the starter's file (`git checkout src/pages/services`).
+
 ## demo.json in short
 
 Start from `fixture/demo.json`. Every image field is a source: a path
 relative to demo.json (`./assets/hero.jpg`) or an https URL.
 
 - `prospect` — `name`, `legalName?`, `slug` (kebab-case, up to 30
-  characters; the branch is `demo/<slug>`), `website?`, `owner?`
-- `contact` — `phone` (US), `email?` (leave out if they don't publish one),
+  characters; the branch is `demo/<slug>`), `website?`, `owner?`,
+  `priceRange?` (`$`–`$$$$`, only as their Google or Facebook listing
+  shows it; left out, the structured data has none)
+- `contact` — `phone` (US), `texts?` (true only when they say the number
+  takes texts; the nav then reads "Call or text", otherwise "Call us"),
+  `email?` (leave out if they don't publish one),
   `hours`, `street?` + `postalCode?` (only a published shop or office
   address; leave out for a home-based business), `locality`, `region`,
   `openingHours?` (day by day, for a place people visit:
@@ -57,6 +75,9 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   (`src/content.config.ts`, guide: `.claude/skills/component-api/references/service-pages.md`)
   plus a `slug`. A service without its own `reviews` gets the
   `home.reviews` items and rating, so every service page carries real reviews
+- `home.reviews.cards: "google"` — the reviews page and the About page show
+  Google-style review cards (`ReviewCards variant="google"`, with `keywords`
+  and `featured`), for a demo whose own home page uses them
 - `home.estimate.questions` — a qualifying estimate form: one-tap steps
   (who's asking, new or returning, project, what they need help with, size,
   timing, budget) before the contact fields; `multiple: true` makes a step
