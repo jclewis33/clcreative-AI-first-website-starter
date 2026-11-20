@@ -268,6 +268,14 @@ went into the starter, but it is not the target.
   (`git show origin/demo/<slug>:demo/demo.json`) are still useful as a
   reference for data shapes and service fields.
 - **Design rules from the remediation demo, for any design:**
+  - **Every page in the nav carries the design, not only the home page.**
+    Casey caught the reviews page falling back to the classic review
+    cards and a plain contact page after the home and service pages were
+    designed. Set `home.reviews.cards: "google"` when the home page uses
+    Google-style cards (reviews and About pages follow), and give the
+    contact page its own `demo/pages/contact.astro` in the same language
+    (hero with the form, `ContactMethods`, connected steps, a few reviews
+    about getting started, the map card, the FAQ). Contact is in the nav.
   - **One action per card.** A row of cards gets one "Learn more" each.
     The quote button belongs to the hero, the CTA strip, the steps and
     the closing panel.
