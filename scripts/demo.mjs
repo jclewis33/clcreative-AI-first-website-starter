@@ -750,6 +750,34 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
       await fs.readFile(own ? custom : path.join(presetDir, page.from), "utf8"),
     );
   }
+  // Any other page in pages/ beside demo.json is installed at the same path
+  // under src/pages (pages/services/[slug].astro replaces the service
+  // route). Delete the file and restore the starter's route to undo.
+  {
+    const ownDir = path.join(baseDir, "pages");
+    const presetFiles = new Set(
+      preset.PAGES.map((/** @type {{ from: string }} */ p) => p.from),
+    );
+    /** @param {string} dir @param {string} rel */
+    const install = async (dir, rel) => {
+      const entries = await fs
+        .readdir(dir, { withFileTypes: true })
+        .catch(() => []);
+      for (const entry of entries) {
+        const childRel = rel ? `${rel}/${entry.name}` : entry.name;
+        const child = path.join(dir, entry.name);
+        if (entry.isDirectory()) await install(child, childRel);
+        else if (!(rel === "" && presetFiles.has(entry.name))) {
+          console.log(`  src/pages/${childRel}: the demo's own page`);
+          await write(
+            `src/pages/${childRel}`,
+            await fs.readFile(child, "utf8"),
+          );
+        }
+      }
+    };
+    await install(ownDir, "");
+  }
   const hasReviewsPage = Boolean(demo.home.reviews?.items?.length);
   {
     let structure = await fs.readFile(at("src/data/site-structure.ts"), "utf8");

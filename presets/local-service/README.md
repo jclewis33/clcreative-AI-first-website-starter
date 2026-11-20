@@ -29,6 +29,11 @@ where a demo's hand-designed home page lives: start from the preset's
 page and compose it from the template's sections and new ones. Delete
 the file to go back to the preset's page.
 
+Any other file under `pages/` is installed at the same path under
+`src/pages/` too: `pages/services/[slug].astro` replaces the service
+route with the demo's own service page. To undo, delete it and restore
+the starter's file (`git checkout src/pages/services`).
+
 ## demo.json in short
 
 Start from `fixture/demo.json`. Every image field is a source: a path

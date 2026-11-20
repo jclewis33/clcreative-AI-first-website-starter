@@ -9,6 +9,11 @@ import CheckList from "@/components/ui/CheckList.astro";
 import ImagePair from "@/components/ui/ImagePair.astro";
 
 type IncludedImage = { src: ImageMetadata | string; alt: string };
+type IncludedListVariant =
+  /** The checklist, with an optional photo pair beside it */
+  | "default"
+  /** One white rounded card: heading left, round-ticked checklist right */
+  | "panel";
 type IncludedListTheme = ComponentProps<typeof Section>["theme"];
 type PaddingSize = import("@/components/ui/Section.astro").PaddingSize;
 
@@ -21,6 +26,9 @@ interface Props extends HTMLAttributes<"section"> {
    * - `items` — the checklist lines
    * - `images` — two `{ src, alt }` photos (optional; without them the
    *   checklist takes the full width)
+   * - `variant` — `"default"`, or `"panel"`: one white rounded card, the
+   *   heading (HTML, `<strong>` = accent) and text on the left, the
+   *   checklist with round brand ticks on the right; no photos
    *
    * @example
    * <IncludedList heading="What's included" items={["Permits", "Demolition", "Cabinets", "Cleanup"]} images={[a, b]} />
@@ -42,8 +50,11 @@ interface Props extends HTMLAttributes<"section"> {
   /** The checklist lines. Empty renders nothing. */
   items: string[];
 
-  /** Two photos beside the list. */
+  /** Two photos beside the list (default variant only). */
   images?: IncludedImage[];
+
+  /** `panel` = the checklist in one white rounded card beside the heading. @default 'default' */
+  variant?: IncludedListVariant;
 
   /** Section theme. */
   theme?: IncludedListTheme;
@@ -66,6 +77,7 @@ const {
   text,
   items = [],
   images = [],
+  variant = "default",
   theme,
   padding,
   id,
@@ -92,7 +104,30 @@ if (import.meta.env.DEV && render) {
       class:list={["included-list_wrap", className]}
       {...rest}
     >
-      {images.length === 2 ? (
+      {variant === "panel" && (
+        <div class="included-list_panel">
+          <div class="included-list_panel_intro u-margin-trim">
+            {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
+            <Heading tag="h2" accent>
+              <Fragment set:html={heading} />
+            </Heading>
+            {text && <Text muted>{text}</Text>}
+          </div>
+          <ul class="included-list_panel_list">
+            {items.map((item) => (
+              <li class="included-list_panel_item">
+                <span class="included-list_panel_tick" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="m6 12.5 4 4 8-9" />
+                  </svg>
+                </span>
+                <span class="included-list_panel_text">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {variant !== "panel" && images.length === 2 && (
         <Layout ratio="6-6" verticalAlign="center">
           {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
           <Heading tag="h2">{heading}</Heading>
@@ -100,7 +135,8 @@ if (import.meta.env.DEV && render) {
           <CheckList items={items} columns={2} />
           <ImagePair slot="column2" images={images} />
         </Layout>
-      ) : (
+      )}
+      {variant !== "panel" && images.length !== 2 && (
         <Layout variant="stack">
           {eyebrow && <Heading variant="eyebrow">{eyebrow}</Heading>}
           <Heading tag="h2">{heading}</Heading>
@@ -111,3 +147,66 @@ if (import.meta.env.DEV && render) {
     </Section>
   )
 }
+
+<style is:global>
+  @layer components {
+    /* panel: one white rounded card, heading left, checklist right. */
+    .included-list_panel {
+      display: grid;
+      grid-template-columns: var(
+        --column-medium,
+        minmax(0, 0.9fr) minmax(0, 1.1fr)
+      );
+      gap: var(--space-6) var(--space-8);
+      align-items: center;
+      padding: var(--space-7);
+      border-radius: calc(var(--radius-main) * 1.5);
+      background-color: var(--background-2);
+      box-shadow:
+        0 0.0625rem 0.125rem color-mix(in srgb, var(--text) 6%, transparent),
+        0 1rem 2.5rem color-mix(in srgb, var(--text) 7%, transparent);
+    }
+
+    .included-list_panel_list {
+      display: grid;
+      grid-template-columns: var(--column-small, repeat(2, minmax(0, 1fr)));
+      gap: var(--space-4) var(--space-6);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .included-list_panel_item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .included-list_panel_text {
+      min-width: 0;
+      font-weight: var(--font-weight-medium);
+    }
+
+    .included-list_panel_tick {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      aspect-ratio: 1;
+      border-radius: var(--radius-full);
+      background-color: color-mix(
+        in srgb,
+        var(--color-brand-500) 16%,
+        var(--background-2)
+      );
+      color: var(--heading-accent);
+    }
+
+    .included-list_panel_tick svg {
+      width: 1rem;
+      aspect-ratio: 1;
+      stroke-width: 2.5;
+    }
+  }
+</style>
