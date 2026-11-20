@@ -16,7 +16,7 @@ interface Props {
    *
    * - `cta` — the button (`{ label, modal }` to open the estimate form)
    * - `note` — a small line under the button ("No obligation · Free quote")
-   * - `phoneLabel` — the line over the number. @default 'Call or text us'
+   * - `phoneLabel` — the line over the number. @default 'Call or text us' (or 'Call us' when SITE.phone.texts is false)
    *
    * Renders nothing (with a dev warning) without `cta.label`.
    *
@@ -46,7 +46,7 @@ const {
   render = true,
   cta,
   note,
-  phoneLabel = "Call or text us",
+  phoneLabel = SITE.phone.texts ? "Call or text us" : "Call us",
   class: className,
 } = Astro.props;
 

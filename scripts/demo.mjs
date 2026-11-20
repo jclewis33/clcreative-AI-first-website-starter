@@ -510,6 +510,10 @@ async function main() {
       /(\bsmsOptIn\s*:\s*)(?:true|false)/,
       (_, lead) => `${lead}${demo.smsOptIn ? "true" : "false"}`,
     );
+    site = site.replace(
+      /(\btexts\s*:\s*)(?:true|false)/,
+      (_, lead) => `${lead}${demo.contact.texts ? "true" : "false"}`,
+    );
     await fs.writeFile(at("src/config/site.ts"), site);
   }
 
