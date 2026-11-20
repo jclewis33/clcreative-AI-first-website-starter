@@ -3570,12 +3570,12 @@ twin reads the Sanity source` and ends `the Sanity add-on.` with:
 3. As the first statement inside the loop's `if (equivalent) {`:
 
 ```js
-    if (file === "_headers") {
-      // Row 16: the CSP frame-ancestors differ by content source; the rest
-      // is the one SECURITY_HEADERS list, which check:config guards.
-      if (a !== b) fired["_headers skipped (frame-ancestors differ by source)"]++;
-      continue;
-    }
+if (file === "_headers") {
+  // Row 16: the CSP frame-ancestors differ by content source; the rest
+  // is the one SECURITY_HEADERS list, which check:config guards.
+  if (a !== b) fired["_headers skipped (frame-ancestors differ by source)"]++;
+  continue;
+}
 ```
 
 - [ ] **Step 5: The manifest**
@@ -4166,36 +4166,36 @@ Replace the loop's `const url = …` line, the `console.log` after it and
 the whole `let html; try { … } catch { … }` block with:
 
 ```js
-  const where = DIST
-    ? path.join(DIST, pagePath, "index.html")
-    : `${BASE}${pagePath}`;
-  console.log(`\n${c("bold", c("cyan", `→ ${where}`))}`);
+const where = DIST
+  ? path.join(DIST, pagePath, "index.html")
+  : `${BASE}${pagePath}`;
+console.log(`\n${c("bold", c("cyan", `→ ${where}`))}`);
 
-  let html;
-  try {
-    if (DIST) {
-      html = fs.readFileSync(where, "utf8");
-    } else {
-      const res = await fetch(where);
-      if (!res.ok) {
-        console.log(c("red", `  ✗ fetch failed: HTTP ${res.status}`));
-        pageFailures++;
-        continue;
-      }
-      html = await res.text();
+let html;
+try {
+  if (DIST) {
+    html = fs.readFileSync(where, "utf8");
+  } else {
+    const res = await fetch(where);
+    if (!res.ok) {
+      console.log(c("red", `  ✗ fetch failed: HTTP ${res.status}`));
+      pageFailures++;
+      continue;
     }
-  } catch (err) {
-    console.log(
-      c(
-        "red",
-        DIST
-          ? `  ✗ not built: ${err.message}`
-          : `  ✗ fetch failed: ${err.message} — is the dev server running?`,
-      ),
-    );
-    pageFailures++;
-    continue;
+    html = await res.text();
   }
+} catch (err) {
+  console.log(
+    c(
+      "red",
+      DIST
+        ? `  ✗ not built: ${err.message}`
+        : `  ✗ fetch failed: ${err.message} — is the dev server running?`,
+    ),
+  );
+  pageFailures++;
+  continue;
+}
 ```
 
 In the header's usage, add:
@@ -4914,7 +4914,7 @@ if (prompt.key === "contentSource")
 7. `gatherInteractive` — first line inside `for (const prompt of PROMPTS) {`:
 
 ```js
-    if (prompt.cms && prompt.cms !== answers.contentSource) continue;
+if (prompt.cms && prompt.cms !== answers.contentSource) continue;
 ```
 
 8. `gatherFromConfig` — the loop and a check after it:
