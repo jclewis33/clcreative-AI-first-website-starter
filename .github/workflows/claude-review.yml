@@ -1,0 +1,110 @@
+# Claude reviews every pull request against this repo's own rules
+# (CLAUDE.md and the skills in .claude/skills) before a human looks at it,
+# and leaves inline comments plus one summary comment that ends in a risk
+# level, so the reviewer knows how closely to look.
+#
+# Optional: a site only you change doesn't need it, and setup deletes this
+# file for those (the setup skill's Step 1.3). Keep it when other people
+# change the code.
+#
+# Whose key: the repo owner's. A client-owned repo uses the client's own
+# ANTHROPIC_API_KEY; never put a personal CLAUDE_CODE_OAUTH_TOKEN in a repo
+# other people can push to (docs/pr-review.md, "Whose key").
+#
+# Needs ONE repository secret: ANTHROPIC_API_KEY, or CLAUDE_CODE_OAUTH_TOKEN
+# (from `claude setup-token` on a Claude subscription). Without either, the
+# job skips itself instead of failing. Also install the Claude GitHub App on
+# the repo (https://github.com/apps/claude) — setup steps in docs/pr-review.md.
+#
+# Fork PRs and Dependabot PRs get no secrets, so they are skipped too.
+name: Claude review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: ${{ !github.event.pull_request.draft && github.actor != 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    env:
+      HAS_CREDENTIALS: ${{ secrets.ANTHROPIC_API_KEY != '' || secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}
+    steps:
+      - name: Skip without credentials
+        if: env.HAS_CREDENTIALS != 'true'
+        run: echo "::notice::No ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN secret, so Claude review is skipped. See docs/pr-review.md."
+
+      - uses: actions/checkout@v7
+        if: env.HAS_CREDENTIALS == 'true'
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        if: env.HAS_CREDENTIALS == 'true'
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          use_sticky_comment: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            You are the first reviewer on a pull request to an Astro marketing
+            site. A human approves it after you. Your job is to save that
+            person time: catch what breaks this repo's rules, and tell them how
+            closely they need to look.
+
+            Before reviewing, read CLAUDE.md in full. For each kind of file the
+            PR touches, read the matching skill in .claude/skills/ (as the table
+            at the top of CLAUDE.md says): component-api for pages, sections
+            and components; styling-reference for CSS; content-files for
+            src/content; seo-discoverability for new pages, JSON-LD or
+            llms.txt. Get the diff with `gh pr diff`.
+
+            Check, in this order:
+            1. Design-system rules from CLAUDE.md: class naming (custom class
+               first, `_wrap` roots, max 4 utilities, scoped `is-` combos), no
+               `px`, no hardcoded colors/sizes/radii/borders, CSS co-located in
+               `<style is:global>` inside `@layer components` (never
+               unlayered), hover behind `@media (hover: hover)`, layout rules
+               (no margins between Section/Layout children, `minmax(0, 1fr)`,
+               nothing on `u-container`), slots rendered once.
+            2. Reuse: does it build something an existing component or variant
+               already does? Name the component it should use.
+            3. Reach: if it changes a shared component, a style variable, the
+               nav, footer, BaseLayout or global CSS, grep for every consumer
+               and say which pages it affects.
+            4. Accessibility: real alt text (never alt=""), accessible names
+               on links, keyboard access, reduced motion.
+            5. SEO and content: a new static page needs its PAGES registry
+               entry (src/data/site-structure.ts); site-wide values come from
+               SITE, not hardcoded; phone numbers are tel: links; content is
+               read only through @/lib/content.
+            6. Anything risky: secrets or tokens in code, external scripts,
+               forms that post somewhere new, redirects that change URLs.
+
+            Do NOT comment on formatting (Prettier and CI own it), on things
+            CI already checks and passes, or on taste. Copy and content
+            changes are the author's call unless they break a rule above.
+
+            Leave an inline comment on each specific problem, with the fix.
+            Then post ONE summary comment that starts with exactly one of:
+              **Risk: low** — follows the rules, small reach. A glance at the preview is enough.
+              **Risk: medium** — check the pages listed below in the preview.
+              **Risk: high** — changes shared components or site-wide styles; review carefully.
+            followed by: what the PR changes in one or two sentences, the pages
+            a reviewer should look at, and a short list of problems (or "No
+            problems found"). Keep it short; the reviewer is busy.
+          claude_args: |
+            --max-turns 30
+            --allowedTools "Read,Glob,Grep,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(grep:*)"

@@ -1,0 +1,7 @@
+{
+  "$comment": "Page-weight budgets for scripts/check-budget.mjs, in KB. html/css/js are per page and gzipped; imageKb is the largest single image file as stored. The starter's heaviest pages sit near half of each budget (Nov 2026: html 30, css 39, js 73, image 267). Raise a budget deliberately, in its own commit, when a fork needs more.",
+  "htmlKb": 60,
+  "cssKb": 70,
+  "jsKb": 150,
+  "imageKb": 400
+}

@@ -151,6 +151,41 @@ for `siteUrl` — no logic changes, and no code edit is needed to switch later
 [references/cloudflare.md](references/cloudflare.md) for the staging→production
 runbook, and surface it whenever the domain isn't ready.
 
+### 1.3 — Will other people change this site? (Claude PR review)
+
+Ask:
+
+> Will anyone besides you change this site's code — the client's team,
+> another contractor? If so, do you want Claude to review every pull
+> request before someone approves it?
+
+- **No (the default — a site you build and manage yourself).** Delete
+  `.github/workflows/claude-review.yml`. You make every change, so there
+  is nothing to review, and an idle review job only adds a skipped check
+  to every PR. Leave `.github/CODEOWNERS` naming you. The link, page-weight
+  and visual checks (`site-review.yml`) stay: they cost nothing and catch
+  your own mistakes.
+- **Yes (a team edits the site, usually a client-owned repo).** Keep the
+  workflow. Step 6.1 sets the code owner; Step 8 hands off the GitHub App,
+  the key and branch protection.
+
+**Whose key.** The review runs on whatever account's key is in the repo's
+secret, and that account pays for every review. Rules:
+
+- A repo the **client owns** (or that their team pushes to) uses the
+  **client's own** key: an `ANTHROPIC_API_KEY` from their own Anthropic
+  Console account, added by their admin, with a spend limit set there.
+- **Never** put your personal subscription token
+  (`CLAUDE_CODE_OAUTH_TOKEN`) in a repo other people can push to: every
+  PR from their team would run on your account, and anyone with write
+  access can use a secret in a workflow they edit, even though they can't
+  read it.
+- Your own token belongs only on repos you alone control (the starter,
+  your own sites).
+
+Adding the review later is just keeping or restoring the workflow file and
+doing Step 6.1 and the Step 8 item.
+
 ## Step 2 — Gather identity (conversational)
 
 Collect the values the CLI needs. **You may draft copy** and propose it — don't
@@ -374,7 +409,15 @@ npm run check:hover
 npm run build
 npm run check:content-build
 npm run check:schema -- --dist dist/client
+npm run check:links    # site-review.yml: broken links, anchors, redirects
+npm run check:budget   # site-review.yml: page weight vs scripts/budget.json
 ```
+
+`check:links` and `check:budget` come from the separate
+[site-review.yml](../../../.github/workflows/site-review.yml) workflow (it
+survives the Sanity add-on, which replaces only `ci.yml`). A fork whose new
+content breaks a link fixes the link; it doesn't add to
+`scripts/check-links.allow.json`.
 
 CI also runs an `audit` job (`npm audit --omit=dev --audit-level=critical`)
 and the `addon-sanity` job, which passes with nothing to check once
@@ -390,6 +433,22 @@ once the schema is deployed ([references/sanity.md](references/sanity.md)
 Fix anything that fails before handing off. A brand-new empty Sanity project builds
 clean — `getStaticPaths` enumerates zero slugs, so no detail pages are emitted and
 listing pages render empty states.
+
+### 6.1 — Pull request review (in-repo part)
+
+The fork inherits the automated PR checks ([docs/pr-review.md](../../../docs/pr-review.md)).
+
+1. **Claude review (Step 1.3).** "No": confirm
+   `.github/workflows/claude-review.yml` is deleted. "Yes": ask who
+   maintains this site's code (a GitHub username, or `@org/team`) and
+   replace every owner in [.github/CODEOWNERS](../../../.github/CODEOWNERS)
+   with it. In a client-owned repo that is whoever must approve changes to
+   shared code — usually you, as their developer; name it explicitly
+   rather than leaving the starter's value by accident.
+2. **Key pages for the visual check** (every fork). In
+   [scripts/visual-pages.json](../../../scripts/visual-pages.json), list
+   one page per template the fork actually has (home, a service page, a
+   blog post, contact…), and drop any route the fork deleted.
 
 ## Step 7 — Deploy to Cloudflare
 
@@ -412,6 +471,17 @@ every item the user deferred in earlier steps** so nothing is silently dropped:
   the live site until that webhook exists.
 - **GitHub** (§5) — Dependabot alerts / security updates / malware alerts / grouped
   updates; account-level push protection.
+- **Claude PR review — only if Step 1.3 was "Yes"** (§5,
+  [docs/pr-review.md](../../../docs/pr-review.md)) — the repo owner's
+  admin installs the Claude GitHub App on **this** repo
+  (github.com/apps/claude → Configure → add the repo); the repo owner adds
+  ONE Actions secret with **their own** key (a client-owned repo:
+  `ANTHROPIC_API_KEY` from the client's Anthropic Console, with a spend
+  limit — never your personal `CLAUDE_CODE_OAUTH_TOKEN`; see Step 1.3);
+  and, on a GitHub plan with rulesets, protect `main` (PR + 1 approval,
+  Code Owner review, required checks `checks`, `audit`,
+  `links-and-weight`). Until the secret exists the review job skips
+  itself.
 - **GoHighLevel forms** (§6) — the `GHL_API_TOKEN` / `GHL_LOCATION_ID` secrets,
   the form tags, the `/tools` gate and `SITE.smsOptIn`.
 - **Content & images still holding placeholders** — any un-swapped photography
@@ -428,6 +498,11 @@ Then run the **§7 post-launch verification** curl block from the checklist.
   explicitly** (Step 1.1), and the matching branch was completed or explicitly
   deferred.
 - Config files carry the new identity, and **every CI check passes** (Step 6).
+- **The Claude PR review question was asked** (Step 1.3): "No" deleted
+  `claude-review.yml`; "Yes" kept it, set `.github/CODEOWNERS` to the
+  site's maintainer, and handed off the app, the repo owner's own key and
+  branch protection. `scripts/visual-pages.json` lists the fork's own key
+  pages either way (Step 6.1).
 - **Fonts and font sizes were explicitly discussed** — the user either confirmed
   the defaults or supplied new typefaces / a new type scale, and those were applied.
 - **`--color-brand-text` was decided** — the user confirmed whether the brand color

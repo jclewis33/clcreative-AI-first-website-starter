@@ -1872,7 +1872,7 @@ export type FEATURED_TESTIMONIALS_QUERY_RESULT = Array<{
 
 // Source: src/sanity/lib/queries.ts
 // Variable: FEATURED_CASE_STUDIES_QUERY
-// Query: *[_type == "caseStudy" && slug.current in $slugs] {  "slug": slug.current,  client,  description,  image,  "imageAlt": coalesce(imageAlt, image.asset->altText, "")}
+// Query: *[_type == "caseStudy" && slug.current in $slugs] {  "slug": slug.current,  client,  description,  image,  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),  comingSoon,  liveUrl}
 export type FEATURED_CASE_STUDIES_QUERY_RESULT = Array<{
   slug: string | null;
   client: string | null;
@@ -1885,6 +1885,8 @@ export type FEATURED_CASE_STUDIES_QUERY_RESULT = Array<{
     _type: "image";
   } | null;
   imageAlt: string | "";
+  comingSoon: boolean | null;
+  liveUrl: string | null;
 }>;
 
 // Source: src/sanity/lib/queries.ts
@@ -2080,7 +2082,7 @@ declare module "@sanity/client" {
     '*[\n  _type == "caseStudy"\n  && slug.current != $slug\n  && defined(image.asset)\n] | order(date desc) [0...4] {\n  title,\n  "slug": slug.current,\n  description,\n  client,\n  categories,\n  industries,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  date,\n  featured,\n  comingSoon,\n  liveUrl\n}': RELATED_CASE_STUDIES_QUERY_RESULT;
     '*[_type == "testimonial"] | order(sortOrder asc) {\n  _id,\n  name,\n  role,\n  company,\n  quote,\n  avatar,\n  website,\n  stars,\n  featured,\n  sortOrder\n}': TESTIMONIALS_QUERY_RESULT;
     '*[_type == "testimonial" && featured == true] | order(sortOrder asc) {\n  _id,\n  name,\n  role,\n  company,\n  quote,\n  avatar,\n  website,\n  stars,\n  featured,\n  sortOrder\n}': FEATURED_TESTIMONIALS_QUERY_RESULT;
-    '*[_type == "caseStudy" && slug.current in $slugs] {\n  "slug": slug.current,\n  client,\n  description,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, "")\n}': FEATURED_CASE_STUDIES_QUERY_RESULT;
+    '*[_type == "caseStudy" && slug.current in $slugs] {\n  "slug": slug.current,\n  client,\n  description,\n  image,\n  "imageAlt": coalesce(imageAlt, image.asset->altText, ""),\n  comingSoon,\n  liveUrl\n}': FEATURED_CASE_STUDIES_QUERY_RESULT;
     '*[_type == "project"]\n  | order(completed desc, _createdAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  category,\n  location,\n  service,\n  "summary": pt::text(description),\n  heroImage,\n  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),\n  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },\n  featured,\n  completed\n}': PROJECTS_QUERY_RESULT;
     '*[_type == "project" && defined(slug.current)].slug.current': PROJECT_SLUGS_QUERY_RESULT;
     '*[_type == "project" && slug.current == $slug][0] {\n  _id,\n  _updatedAt,\n  title,\n  "slug": slug.current,\n  category,\n  location,\n  service,\n  completed,\n  featured,\n  heroImage,\n  "imageAlt": coalesce(imageAlt, heroImage.asset->altText, ""),\n  "heroImageMeta": heroImage.asset->metadata{ dimensions, lqip },\n  photos[] {\n    _key,\n    asset,\n    hotspot,\n    crop,\n    label,\n    "alt": coalesce(alt, asset->altText, ""),\n    "meta": asset->metadata{ dimensions, lqip }\n  },\n  description,\n  quote { text, name },\n  seoDescription\n}': PROJECT_QUERY_RESULT;

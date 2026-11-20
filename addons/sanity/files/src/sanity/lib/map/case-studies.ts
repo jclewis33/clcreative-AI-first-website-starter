@@ -64,6 +64,8 @@ export function toFeaturedCaseStudy(s: RawFeatured): FeaturedCaseStudy | null {
     client: s.client,
     description: s.description,
     image: sanityImage(s.image, s.imageAlt),
+    comingSoon: stegaClean(s.comingSoon) ?? false,
+    liveUrl: stegaClean(s.liveUrl),
   };
 }
 

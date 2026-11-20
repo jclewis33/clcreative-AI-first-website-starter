@@ -37,6 +37,7 @@ interface Props {
   /**
    * **Services props:**
    * - `padding` / `paddingTop` / `paddingBottom` — section padding
+   * - `id` — anchor id on the outer Section
    * - `class` — extra classes on outer Section
    */
   docs?: string;
@@ -45,6 +46,13 @@ interface Props {
   padding?: PaddingValue;
   paddingTop?: PaddingValue;
   paddingBottom?: PaddingValue;
+  /**
+   * Anchor id on the outer Section, for in-page links. The homepage passes
+   * `services`, the target of SERVICES_INDEX_PATH (the service pages'
+   * breadcrumb).
+   * @example id="services"
+   */
+  id?: string;
   class?: string;
 }
 
@@ -53,6 +61,7 @@ const {
   padding,
   paddingTop = padding,
   paddingBottom = padding,
+  id,
   class: className,
 } = Astro.props;
 
@@ -119,6 +128,7 @@ const services = [
   theme="dark"
   paddingTop={paddingTop}
   paddingBottom={paddingBottom}
+  id={id}
   class:list={["services_section", className]}
 >
   <Layout variant="stack-centered" class="services_header">

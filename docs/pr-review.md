@@ -1,0 +1,134 @@
+# Reviewing pull requests
+
+When more than one person changes a site through Claude Code, every change
+goes through a pull request and someone approves it before it goes live.
+This repo does most of that review automatically, so the approver's job is
+a short look, not a line-by-line read.
+
+**Claude review is optional, and off for most sites.** On a site you build
+and manage alone, you make every change, so the fork deletes
+`claude-review.yml` at setup (the `setup` skill asks). Turn it on when other
+people change the code: a client's team, another contractor. The link,
+page-weight and visual checks run on every site either way.
+
+## Whose key
+
+The Claude review runs on the account whose key is in the repo's secret,
+and that account pays for every review.
+
+- **A client-owned repo** (or one their team pushes to) uses **the
+  client's own** `ANTHROPIC_API_KEY`, created in their own Anthropic
+  Console and added by their admin. They pay per review and can set a
+  spend limit in the Console. You still see every review: the comments
+  post on the PRs whoever pays.
+- **Never put your personal subscription token**
+  (`CLAUDE_CODE_OAUTH_TOKEN`) in a repo other people can push to. Every PR
+  from their team would run on your account, and anyone with write access
+  can use a secret in a workflow they edit, even though nobody can read
+  it.
+- **Your own token** is for repos only you control: the starter, your own
+  sites.
+
+## What happens on every pull request
+
+| Check                                        | What it tells you                                                                                                                   | Where                                                           |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **CI** (`ci.yml`)                            | Formatting, types, content, the build, JSON-LD                                                                                      | Red/green on the PR                                             |
+| **Links and weight** (`site-review.yml`)     | Broken internal links or `#anchors`, bad redirects, pages over the weight budget                                                    | Red/green on the PR, details in the job summary                 |
+| **Visual changes** (`site-review.yml`)       | Which pages look different from the base branch, at desktop and mobile widths                                                       | A comment on the PR, images in the run's `visual-diff` artifact |
+| **Claude review** (`claude-review.yml`)      | Breaks of CLAUDE.md's rules, missed reuse, which pages a shared change reaches, accessibility and SEO misses, plus a **risk level** | Inline comments and one summary comment                         |
+| **Preview link** (Cloudflare Workers Builds) | The site with the change, live                                                                                                      | Posted on the PR                                                |
+| **Code owners** (`.github/CODEOWNERS`)       | Changes to shared components, styles, config or the rules need the owner's approval                                                 | "Review required" on the PR                                     |
+
+## Reviewing one
+
+1. Wait for the checks. Anything red gets fixed first; don't review around
+   it.
+2. Read Claude's summary comment. Its first line is the risk level:
+   - **Low** — glance at the pages it lists on the preview link and
+     approve.
+   - **Medium** — open those pages on the preview, desktop and mobile.
+   - **High** — the PR changes something shared. Read the inline comments,
+     check every page it lists, and read the diff of the shared files.
+3. Read the visual changes comment. Every "Changed" row should be a page
+   the PR meant to change. A change on a page nobody touched is the thing
+   to catch.
+4. Approve, or comment and request changes. Merging deploys.
+
+Most small PRs take two to five minutes this way. If something slips
+through, roll back from the Worker's **Deployments** tab, or revert the
+merge commit.
+
+## Keeping it fast
+
+- **One change per PR.** Ten changes in one PR take longer to review than
+  ten small PRs.
+- **Few people change code at first.** Content editors use the content
+  files (or Sanity, with the add-on); only people working through Claude
+  Code open code PRs.
+- **Agree a turnaround**, e.g. "reviewed within one working day, same day if
+  marked urgent", so nobody waits on the reviewer without knowing when.
+- **Keep CLAUDE.md current.** When a review catches the same mistake twice,
+  add a rule so Claude stops making it.
+
+## Setup (once per repo)
+
+1. **Claude review credentials** (only when the site uses Claude review;
+   see "Whose key" above for which key). Install the Claude GitHub App on the repo
+   (https://github.com/apps/claude → Configure → choose the repo, or run
+   `/install-github-app` in Claude Code from inside the repo). The app is
+   installed per GitHub account and given access repo by repo: pick
+   "All repositories" once and new client repos are covered, or add each
+   new repo as you create it. Then add ONE repository secret (Settings → Secrets and variables
+   → Actions):
+   - `ANTHROPIC_API_KEY` — an API key from console.anthropic.com (billed per
+     use), or
+   - `CLAUDE_CODE_OAUTH_TOKEN` — from `claude setup-token` on a Claude
+     subscription.
+
+   Without either, the Claude review job skips itself and the rest still
+   runs. Secrets are per repo, so each client repo needs its own (or put
+   it in an organization secret if the repos live in a GitHub org).
+
+2. **Code owner.** In `.github/CODEOWNERS`, replace the owner with the
+   developer who maintains this site.
+3. **Branch protection** (Settings → Rules → Rulesets → New branch ruleset,
+   target `main`):
+   - Require a pull request before merging, with 1 approval
+   - Require review from Code Owners
+   - Require status checks to pass: `checks`, `audit`, `links-and-weight`
+     (add `addon-sanity` on the starter itself)
+   - Block force pushes
+
+   Private repos need GitHub Pro, Team or Enterprise for rulesets (a public
+   repo has them free). Without them everything above still runs and
+   reports; it just can't block a merge.
+
+4. **Budgets and key pages.** Adjust `scripts/budget.json` and
+   `scripts/visual-pages.json` for the fork: list one page per template as a
+   key page.
+
+## Running the checks locally
+
+```bash
+npm run build
+npm run check:links    # broken links, anchors and redirects
+npm run check:budget   # page weight
+```
+
+The visual comparison needs two builds and Chromium:
+
+```bash
+npx playwright install chromium        # once
+cp -r dist/client /tmp/before          # build the "before" first
+# …make the change, then:
+npm run build
+npm run visual:diff -- --base /tmp/before --head dist/client
+```
+
+It writes `visual-report/` with a `report.md` and the before, after and
+diff images of every changed page.
+
+A link problem you have decided to live with for now can go in
+`scripts/check-links.allow.json` with a reason; it is then reported as a
+warning. Fix the link instead when you can.

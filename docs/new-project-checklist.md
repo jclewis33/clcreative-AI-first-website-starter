@@ -170,7 +170,14 @@ Account-level (once per GitHub account, not per repo): **Push protection for you
 
 Know the private-repo limits (GitHub Free): repo-level secret scanning and branch protection rulesets require Pro or a public repo. The compensating controls: account-level push protection (above) + CI visibly red/green on every PR + solo-dev PR discipline.
 
-Finally: open one trivial PR (or wait for Dependabot's first) and confirm every CI job runs green: `checks`, `addon-sanity` and `audit` (with the Sanity add-on installed, its workflow has `checks` and `audit`).
+**Pull request review** (most of it automatic — full guide: [pr-review.md](pr-review.md)):
+
+1. **Only if other people will change the code (Claude review — the `setup` skill asks; otherwise delete `.github/workflows/claude-review.yml`):** install the Claude GitHub App on **this** repo ([github.com/apps/claude](https://github.com/apps/claude) → Configure → add the repo, or run `/install-github-app` in Claude Code from the repo) and add ONE Actions secret, `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`, for the Claude review job (it skips itself without one). Both are per repo: every new client repo needs the secret, and the app too unless it was installed for "All repositories". **The key is the repo owner's:** a client-owned repo gets the client's own `ANTHROPIC_API_KEY` (their Anthropic Console, with a spend limit), never your personal subscription token.
+2. With Claude review: replace the owner in `.github/CODEOWNERS` with whoever maintains this site's code.
+3. On a plan with rulesets: protect `main` — PR required, 1 approval, Code Owner review, required checks `checks`, `audit`, `links-and-weight`.
+4. Tune `scripts/budget.json` and `scripts/visual-pages.json` (one key page per template).
+
+Finally: open one trivial PR (or wait for Dependabot's first) and confirm every CI job runs green: `checks`, `addon-sanity` and `audit` (with the Sanity add-on installed, its workflow has `checks` and `audit`), plus `links-and-weight` and `visual` from Site review, and Claude review once its secret is set.
 
 ---
 

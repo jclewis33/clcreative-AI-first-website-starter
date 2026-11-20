@@ -1,0 +1,29 @@
+# Files whose changes reach every page. With branch protection's "Require
+# review from Code Owners" on, a PR touching any of these can't merge until
+# the owner below approves it (docs/pr-review.md). Pages and content don't
+# need an owner's approval; any approved review is enough.
+#
+# On a fork: replace the owner with the developer who maintains the site
+# (a GitHub username or @org/team). Later lines win over earlier ones.
+
+# Design system and shared components
+/src/styles/            @jclewis33
+/src/components/        @jclewis33
+/src/layouts/           @jclewis33
+/src/lib/               @jclewis33
+/src/config/            @jclewis33
+/src/data/site-structure.ts @jclewis33
+/src/middleware.ts      @jclewis33
+
+# Build, deploy and the rules Claude works from
+/astro.config.mjs       @jclewis33
+/wrangler.jsonc         @jclewis33
+/package.json           @jclewis33
+/package-lock.json      @jclewis33
+/public/_headers        @jclewis33
+/public/_redirects      @jclewis33
+/CLAUDE.md              @jclewis33
+/AGENTS.md              @jclewis33
+/.claude/               @jclewis33
+/.github/               @jclewis33
+/scripts/               @jclewis33

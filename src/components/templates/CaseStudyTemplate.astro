@@ -216,6 +216,8 @@ const ogImageUrl = await resolveImageUrl(seo?.ogImage ?? study.image, {
                   imageAlt={entry.image.alt}
                   imagePosition={entry.image.position}
                   date={entry.date ?? undefined}
+                  comingSoon={entry.comingSoon}
+                  externalUrl={entry.liveUrl ?? undefined}
                 />
               ),
           )}
