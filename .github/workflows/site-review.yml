@@ -55,7 +55,7 @@ jobs:
           path: base
       - uses: actions/setup-node@v7
         with:
-          node-version-file: .node-version
+          node-version-file: head/.node-version
           cache: npm
           cache-dependency-path: |
             head/package-lock.json
