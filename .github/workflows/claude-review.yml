@@ -44,7 +44,7 @@ jobs:
         if: env.HAS_CREDENTIALS != 'true'
         run: echo "::notice::No ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN secret, so Claude review is skipped. See docs/pr-review.md."
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         if: env.HAS_CREDENTIALS == 'true'
         with:
           fetch-depth: 1
