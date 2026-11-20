@@ -144,6 +144,101 @@ hour or two is expected. Report what the last round checked.
 - **Local SEO:** title and description with service and city, one h1,
   JSON-LD, name/address/phone identical everywhere.
 
+## Hands-off: Casey gives the business, you deliver the site
+
+Casey's goal (Nov 2026, after the JC's Environmental demo needed a day of
+line-by-line fixes): he names a business, and the demo comes back
+finished, written and designed to the bar below, with one review point.
+Work in this order and don't show him anything half-done:
+
+1. **Research** (step 2 of the workflow). It includes the Google Business
+   Profile: categories, services, review topic chips.
+2. **Copy deck first** (`demo/copy.md`, with the `cl-creative-storybrand-copywriter`
+   skill and its `references/human-voice.md`). The design is built around
+   the words, not the other way round.
+   - **Services follow Google's own names and the profile's evidence.**
+     Lead with the service the reviews mention most (JC's: mold, 7
+     review mentions, over asbestos's 4). Use Google's category wording
+     ("Mold remediation", "Water damage restoration", "Fire damage
+     restoration"). When the profile is thin (one category, no services),
+     write a short "Google Business Profile: suggested updates" list in
+     the deck: categories, services, matching phone and description.
+     The profile is a starting point, not the final word.
+   - **Write for the questions people and AI assistants ask.** The four
+     questions go on every page. The home FAQ answers, in plain
+     sentences, "What does [business] do?", "Are you licensed?", "How much
+     does [service] cost?" (how they quote, never a made-up price), "What
+     happens after I call?", "Do you work with insurance?", "What areas do
+     you serve?"
+   - **Each service page gets its own "includes" list.** Never one shared
+     list: "containment" makes no sense on a rebuild page.
+   - **Claims never stretch the source.** If they offer a "free quote",
+     don't write "free inspection". Don't use one license for another trade
+     (an abatement license is not lead certification). Don't call
+     subcontractors "one crew". Leave out materials or equipment their
+     material doesn't name.
+3. **A fresh reviewer subagent checks the deck** against the research and
+   the voice rules (given the rules and the facts, not your opinion). Fix
+   every finding.
+4. **Design the whole home page** on an Artifact design canvas, every
+   section to the quality bar, not just the hero (below). Then put the
+   design and the deck in front of Casey together: one approval.
+5. **Build to the design**, then run the check-and-fix loop.
+
+### The voice, in short
+
+The full rules and before/after examples are in the copywriter skill's
+`references/human-voice.md`. Casey flagged each of these on JC's:
+
+- No slogan virtues ("honest answer", "straight answer", "tell you
+  straight"). Show the virtue with a fact or a customer's quote.
+- No "You get the photos and paperwork…" wrap-ups, and no tidy benefit
+  tails ("so you're not stuck in the middle", "not guesswork", "start to
+  finish").
+- No three-part list cadence, even when the message is right. One plain
+  sentence, or the customer's own words.
+- No abstract or mood headlines ("Calm, careful work when something
+  worrying turns up"). Name the thing, the place, the fact.
+- No phrases nobody says: "Call or send the form" becomes "Give us a call
+  or fill out the form". "We manage the trades and put the space back"
+  becomes "We rebuild what had to come out, and hire and manage the
+  subcontractors for you".
+- No forced counts ("Six services…"). Say who it's for and where.
+
+### The design bar for every section, not just the hero
+
+On JC's, the hero and the second section matched the approved design, then
+the page fell back to plain template sections. Casey called it "the bland
+looking site we are trying to avoid". The reference is the Hey Segment
+sites in Clay Lawrence's video (frames in the session notes; Salty Air, J
+Smith Plumbing, GBZ Tree):
+
+- **Type:** calm, sentence-case 56–64px headlines (a serif with one italic
+  accent phrase, or a clean semibold sans). Never huge condensed capitals:
+  Casey rejected them ("the text is so bold").
+- **Rhythm:** sections alternate cream paper and the dark brand colour.
+  Small tracked eyebrows with a short rule. Generous space.
+- **Never a plain white card with an outline and a photo.** Instead:
+  - **Services:** horizontal cards, photo beside text, an icon chip,
+    tag chips for what each covers, "Learn more" and "Get a quote" links,
+    a soft shadow and rounded corners.
+  - **Situations:** quote-style tiles on the dark band, in the customer's
+    voice ("The tile came up and work stopped."), with a big accent
+    quote mark and a tag linking the service.
+  - **Steps:** one panel, icon circles with number badges, a dashed line
+    connecting them, the CTA and phone under them.
+  - **Reviews:** Google-style cards (initial avatar, name, real "a year
+    ago" date, the G logo, gold stars) on the dark band. Add keyword chips
+    with real counts ("recommend" in 8 reviews) and the rating pill.
+  - **Service area:** a drawn map of their towns or counties, the list
+    beside it.
+  - **FAQ:** a rounded panel beside a "Still have a question?" card with
+    the phone.
+  - **Closing CTA:** a photo panel.
+- Anything the starter can't do yet becomes a reusable section or variant,
+  by PR. A one-off arrangement lives in the demo's own page
+  (`demo/pages/index.astro`).
+
 ## Scope first: a demo is not a site build
 
 Ask Casey (or read from his message) what this demo needs before you
