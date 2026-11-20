@@ -14,6 +14,7 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Hero from "@/components/sections/Hero.astro";
 import Reviews from "@/components/sections/Reviews.astro";
+import ReviewCards from "@/components/sections/ReviewCards.astro";
 import CallBand from "@/components/sections/CallBand.astro";
 import LeadFormModal from "@/components/form/LeadFormModal.astro";
 import { getServices } from "@/lib/services";
@@ -43,6 +44,9 @@ const items = (reviews?.items ?? []).map((r) => ({
   text: r.full ?? r.text,
 }));
 const services = await getServices();
+const googleLink = SITE.reviewsUrl
+  ? { label: "See all our reviews on Google", href: SITE.reviewsUrl }
+  : undefined;
 const estimateCta = { label: home.estimate.label, modal: ESTIMATE_MODAL_ID };
 const ownModal = !SITE.quote;
 const projectOptions = home.leadForm.projectOptions ?? [
@@ -80,12 +84,33 @@ if (import.meta.env.DEV && !items.length)
     badge={false}
   />
 
-  <Reviews
-    heading="In their own words"
-    reviews={items}
-    layout="cards"
-    allReviewsLabel="See all our reviews on Google"
-  />
+  {
+    reviews?.cards === "google" && (
+      <ReviewCards
+        variant="google"
+        eyebrow="Google reviews"
+        heading="In their <strong>own words</strong>"
+        reviews={items}
+        limit={items.length}
+        rating={reviews.rating}
+        count={reviews.count}
+        keywords={reviews.keywords}
+        featured={reviews.featured}
+        href={SITE.reviewsUrl || undefined}
+        link={googleLink}
+      />
+    )
+  }
+  {
+    reviews?.cards !== "google" && (
+      <Reviews
+        heading="In their own words"
+        reviews={items}
+        layout="cards"
+        allReviewsLabel="See all our reviews on Google"
+      />
+    )
+  }
 
   <CallBand
     heading={callBand.heading}

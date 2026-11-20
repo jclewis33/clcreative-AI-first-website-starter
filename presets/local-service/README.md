@@ -75,6 +75,9 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   (`src/content.config.ts`, guide: `.claude/skills/component-api/references/service-pages.md`)
   plus a `slug`. A service without its own `reviews` gets the
   `home.reviews` items and rating, so every service page carries real reviews
+- `home.reviews.cards: "google"` — the reviews page and the About page show
+  Google-style review cards (`ReviewCards variant="google"`, with `keywords`
+  and `featured`), for a demo whose own home page uses them
 - `home.estimate.questions` — a qualifying estimate form: one-tap steps
   (who's asking, new or returning, project, what they need help with, size,
   timing, budget) before the contact fields; `multiple: true` makes a step

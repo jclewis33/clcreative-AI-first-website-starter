@@ -565,6 +565,12 @@ const homeSchema = z.object({
         .optional(),
       /** For a demo's own page: the index of the review shown as the featured card. */
       featured: z.number().int().min(0).optional(),
+      /**
+       * "google": the reviews page and the About page show Google-style
+       * review cards (ReviewCards variant="google"), to match a demo whose
+       * own home page uses them. Default: the classic Reviews cards.
+       */
+      cards: z.enum(["classic", "google"]).optional(),
       layout: z.enum(["cards", "featured", "grid", "marquee"]).optional(),
       /** Estate layout: the star line ("78 five-star reviews on Google"). */
       summary: text.optional(),
