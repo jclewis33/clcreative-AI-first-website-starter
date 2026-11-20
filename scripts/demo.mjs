@@ -402,7 +402,6 @@ async function main() {
     legalName: demo.prospect.legalName ?? name,
     siteUrl,
     founder: demo.prospect.owner ?? name,
-    priceRange: demo.prospect.priceRange ?? "",
     tagline: demo.seo.tagline,
     defaultDescription: demo.seo.description,
     summary: demo.seo.description,
@@ -493,14 +492,15 @@ async function main() {
     "src/styles/variables/colors.css",
   ].forEach((f) => written.add(f));
   // setup keeps the current value for an empty answer; a prospect with no
-  // published email (or street address) must not inherit the starter's
-  // placeholder or a previous run's value.
+  // published email (or street address, or price range) must not inherit
+  // the starter's placeholder or a previous run's value.
   if (!DRY_RUN) {
     let site = await fs.readFile(at("src/config/site.ts"), "utf8");
     for (const [key, value] of [
       ["email", demo.contact.email],
       ["street", demo.contact.street],
       ["postalCode", demo.contact.postalCode],
+      ["priceRange", demo.prospect.priceRange],
     ])
       site = site.replace(
         new RegExp(`(\\b${key}\\s*:\\s*)"(?:\\\\.|[^"])*"`),

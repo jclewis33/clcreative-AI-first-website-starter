@@ -1,7 +1,7 @@
 # Human voice: what reads as AI, and what to write instead
 
-Casey's rules, from line-by-line feedback on the JC's Environmental
-Technologies demo (Nov 19 2026). They apply to every page of every client.
+Casey's rules, from line-by-line feedback on a remediation
+contractor's demo (Nov 19 2026). They apply to every page of every client.
 Load this before writing, and check every line against it before showing
 Casey anything. The test for each line: **would the owner say this,
 out loud, to a customer standing in their driveway?** If not, rewrite it.
