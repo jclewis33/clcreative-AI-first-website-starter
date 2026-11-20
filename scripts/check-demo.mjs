@@ -128,6 +128,7 @@ try {
   );
   assert.match(read("src/config/site.ts"), /name: "Brightline Electric"/);
   assert.match(read("src/config/site.ts"), /email: ""/);
+  assert.match(read("src/config/site.ts"), /priceRange: ""/);
   assert.match(
     read("src/styles/variables/colors.css"),
     /--color-brand-500: #1a4fd8;/,
