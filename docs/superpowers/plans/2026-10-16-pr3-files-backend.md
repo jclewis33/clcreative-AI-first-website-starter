@@ -6191,24 +6191,24 @@ In the comparison loop, insert this right after `a` and `b` are read and
 normalised, before the `canonical` branch:
 
 ```js
-  if (equivalent) {
-    a = a.replace(IMAGE_URL, "IMAGE");
-    b = b.replace(IMAGE_URL, "IMAGE");
-    if (file.endsWith(".html")) {
-      const why = styleLayerDiff(a, b);
-      if (why) {
-        failures++;
-        console.log(`STYLES   ${file}: ${why}`);
-        continue;
-      }
-      const noStyles = (t) => t.replace(STYLE_RE, "<style></style>");
-      a = canonEq(parse(noStyles(a), PARSE_OPTIONS));
-      b = canonEq(parse(noStyles(b), PARSE_OPTIONS));
-    } else if (path.basename(file) === "llms-full.txt") {
-      a = outline(a);
-      b = outline(b);
+if (equivalent) {
+  a = a.replace(IMAGE_URL, "IMAGE");
+  b = b.replace(IMAGE_URL, "IMAGE");
+  if (file.endsWith(".html")) {
+    const why = styleLayerDiff(a, b);
+    if (why) {
+      failures++;
+      console.log(`STYLES   ${file}: ${why}`);
+      continue;
     }
+    const noStyles = (t) => t.replace(STYLE_RE, "<style></style>");
+    a = canonEq(parse(noStyles(a), PARSE_OPTIONS));
+    b = canonEq(parse(noStyles(b), PARSE_OPTIONS));
+  } else if (path.basename(file) === "llms-full.txt") {
+    a = outline(a);
+    b = outline(b);
   }
+}
 ```
 
 Guard the existing `canonical` and `layers` branches with
