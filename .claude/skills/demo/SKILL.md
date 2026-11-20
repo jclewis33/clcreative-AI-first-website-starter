@@ -870,7 +870,7 @@ Build, then run the loop from "The quality bar" §3 until it passes. The
 checks below are part of every round.
 
 ```sh
-npm run build && npm run check:content-build
+npm run build && npm run check:content-build && npm run check:links && npm run check:budget
 npx wrangler dev   # serves the build locally
 ```
 
