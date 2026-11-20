@@ -184,13 +184,31 @@ async function source(src, baseDir) {
 /* Photos keep up to 2400px: sections crop them (a landscape photo into a
    tall portrait, a wide band), and a smaller source stretched into the
    crop looked blurry. The build serves right-sized copies, so the size
-   here costs nothing at runtime. */
+   here costs nothing at runtime. The build also publishes each original
+   (share images, structured data), so the long side stays at `width` and
+   the quality steps down until the file fits under check:budget's 400 KB
+   with room for the build's own re-encode. */
 async function webp(/** @type {Buffer} */ buf, width = 2400) {
-  return sharp(buf)
-    .rotate()
-    .resize({ width, withoutEnlargement: true })
-    .webp({ quality: 82 })
-    .toBuffer();
+  /* Quality first; a very busy photo that still doesn't fit steps down in
+     size. */
+  const tries = [82, 74, 66, 58].map((quality) => ({ size: width, quality }));
+  tries.push({ size: Math.min(width, 2000), quality: 66 });
+  tries.push({ size: Math.min(width, 1600), quality: 66 });
+  let out = Buffer.alloc(0);
+  for (const { size, quality } of tries) {
+    out = await sharp(buf)
+      .rotate()
+      .resize({
+        width: size,
+        height: size,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({ quality })
+      .toBuffer();
+    if (out.length <= 320 * 1024) break;
+  }
+  return out;
 }
 
 /** @type {Set<string>} */
@@ -366,11 +384,22 @@ async function main() {
       !DRY_RUN
     )
       await fs.rm(at(`public/images/logo.${ext}`));
-  const logoMeta = await sharp(logoBuf).metadata();
-  await write(
-    `public/images/logo.${logoExt}`,
-    logoExt === "svg" ? logoBuf : await sharp(logoBuf).png().toBuffer(),
-  );
+  /* A logo shows at most a few hundred pixels wide; 1200 keeps it sharp on
+     any screen and the file inside check:budget. */
+  const logoOut =
+    logoExt === "svg"
+      ? logoBuf
+      : await sharp(logoBuf)
+          .resize({
+            width: 1200,
+            height: 1200,
+            fit: "inside",
+            withoutEnlargement: true,
+          })
+          .png({ palette: true, quality: 90, effort: 10, compressionLevel: 9 })
+          .toBuffer();
+  const logoMeta = await sharp(logoOut).metadata();
+  await write(`public/images/logo.${logoExt}`, logoOut);
   const iconBuf = demo.brand.favicon ? await img(demo.brand.favicon) : logoBuf;
   const square = (/** @type {number} */ size, /** @type {boolean} */ solid) =>
     sharp(iconBuf)
@@ -388,7 +417,8 @@ async function main() {
     await sharp(await img(demo.home.hero.image))
       .rotate()
       .resize(1200, 630, { fit: "cover" })
-      .png()
+      // A palette PNG: a photo as full-colour PNG is over 1 MB.
+      .png({ palette: true, quality: 90, effort: 10, compressionLevel: 9 })
       .toBuffer(),
   );
 
