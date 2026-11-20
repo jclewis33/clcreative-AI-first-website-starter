@@ -472,8 +472,10 @@ demo/demo.json src/data/service-area-geo.json` before committing.
 
 ## Copy rules learned on real demos
 
-- **Contact lines say "we" and "us"**: "Call or text us", "we'll get back
-  to you", "Tell us what you're seeing". The owner may not answer the
+- **Contact lines say "we" and "us"**: "Call us", "we'll get back
+  to you", "Tell us what you're seeing". Say "text" only when their site
+  or profile says the number takes texts, and then set `contact.texts:
+true` so the nav reads "Call or text". The owner may not answer the
   phone. Use the owner's name only where it's about them: the story, the
   About page, their license, a "dad who…" line.
 - **Service copy is the company, not the owner.** Never say or imply the

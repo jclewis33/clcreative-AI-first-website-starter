@@ -158,7 +158,7 @@ Two `SITE` settings turn the agency chrome into contractor chrome, site-wide:
 - **`SITE.quote`** (`{ label, heading, text? }`, `null` = off): BaseLayout
   renders the estimate form once as a modal (`ESTIMATE_MODAL_ID` from
   `@/lib/cta` — open it with `{ label, modal: ESTIMATE_MODAL_ID }`), the
-  navbar shows "Call or text" + the number and a button that opens it, phones
+  navbar shows "Call or text" (or "Call us" when `SITE.phone.texts` is false) + the number and a button that opens it, phones
   get the sticky `MobileActionBar` (Call now | estimate), and the footer adds
   a "Service area" column and "© year Legal Name. License …" (`SITE.license`).
   `LocalServiceHome` uses the site-wide modal when it exists and brings its

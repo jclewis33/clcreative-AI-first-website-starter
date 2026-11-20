@@ -895,6 +895,11 @@ const demoObject = z.object({
   contact: z.object({
     /** As shown on the site, e.g. "(512) 555-0142". US numbers. */
     phone: text,
+    /**
+     * True only when their site or profile says the number takes texts; the
+     * nav then reads "Call or text" instead of "Call us".
+     */
+    texts: z.boolean().default(false),
     /** Leave out when they don't publish one — the footer then shows none. */
     email: z.email().optional(),
     hours: text,

@@ -43,7 +43,9 @@ relative to demo.json (`./assets/hero.jpg`) or an https URL.
   characters; the branch is `demo/<slug>`), `website?`, `owner?`,
   `priceRange?` (`$`–`$$$$`, only as their Google or Facebook listing
   shows it; left out, the structured data has none)
-- `contact` — `phone` (US), `email?` (leave out if they don't publish one),
+- `contact` — `phone` (US), `texts?` (true only when they say the number
+  takes texts; the nav then reads "Call or text", otherwise "Call us"),
+  `email?` (leave out if they don't publish one),
   `hours`, `street?` + `postalCode?` (only a published shop or office
   address; leave out for a home-based business), `locality`, `region`,
   `openingHours?` (day by day, for a place people visit:

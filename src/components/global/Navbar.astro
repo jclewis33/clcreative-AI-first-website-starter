@@ -122,6 +122,7 @@ const estimateCta = SITE.quote
  *  button (a second kind of buyer) comes from SITE.navSecondaryCta. */
 const chrome = lookChrome(SITE.look);
 const showNavPhone = chrome.navPhone;
+const phoneLabel = SITE.phone.texts ? "Call or text" : "Call us";
 const wordmark = chrome.wordmark ? SITE.name : undefined;
 const secondaryCta = SITE.navSecondaryCta;
 /** UtilityBar passed in from BaseLayout: it sits under the banner, and both
@@ -595,9 +596,9 @@ const searchSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" vi
             <a
               class="nav_phone_wrap"
               href={`tel:${SITE.phone.tel}`}
-              aria-label={`Call or text ${SITE.phone.display}`}
+              aria-label={`${phoneLabel} ${SITE.phone.display}`}
             >
-              <span class="nav_phone_label">Call or text</span>
+              <span class="nav_phone_label">{phoneLabel}</span>
               <span class="nav_phone_number">{SITE.phone.display}</span>
             </a>
           )

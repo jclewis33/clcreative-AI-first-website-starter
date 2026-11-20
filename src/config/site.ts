@@ -107,6 +107,11 @@ export const SITE = {
     e164: "+1-555-555-5555",
     /** Digits only, for `tel:` hrefs. */
     tel: "5555555555",
+    /**
+     * The number takes text messages: the nav label reads "Call or text".
+     * Set false when the business doesn't say it does ("Call us").
+     */
+    texts: true,
   },
 
   /** Visible business hours, one line (footer, contact cards). */
