@@ -1,6 +1,6 @@
 ---
 name: demo
-description: Build a branded prospect demo site for one local-service business, designed for that business (its own look, not a filled-in template), checked and fixed until it passes, ready to send. Use when Casey says "make a demo for <business or URL>", "build a demo site for <prospect>", "send <prospect> a demo", "update the <prospect> demo", or "clean up old demos". Researches the prospect's current site, writes demo.json, runs `npm run demo`, builds, checks and pushes a `demo/<slug>` branch of the PRIVATE demos repo, and reports the preview URL plus what to confirm before sending.
+description: Build a branded prospect demo site for one local-service business, designed for that business (its own look, not a filled-in template), checked and fixed until it passes, ready to send. Use when Casey says "make a demo for [business or URL]", "build a demo site for [prospect]", "send [prospect] a demo", "update the [prospect] demo", or "clean up old demos". Researches the prospect's current site, writes demo.json, runs `npm run demo`, builds, checks and pushes a `demo/[slug]` branch of the PRIVATE demos repo, and reports the preview URL plus what to confirm before sending.
 ---
 
 # Prospect demo — research → demo.json → `npm run demo` → push
