@@ -389,6 +389,12 @@
   --heading-accent-style: italic;
   --heading-accent-weight: 400;
 
+  /* The phone's tap-to-call bar matches the desktop utility bar (navy),
+     not the orange button: the sticky bar at the bottom carries the
+     orange "Get a free quote". */
+  --utility-mobile-background: var(--color-dark-900);
+  --utility-mobile-text: var(--color-light-100);
+
   --hero-star: var(--color-star);
 
   --radius-main: 1rem;
