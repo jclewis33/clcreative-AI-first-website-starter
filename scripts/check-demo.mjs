@@ -156,6 +156,25 @@ try {
     assert.equal(git(dir, "status", "--porcelain").trim(), "");
   }
 
+  // A first run that fails part-way (a missing photo, after site.ts is
+  // written) still leaves the preset's pages, so the re-run that follows
+  // the fix is a demo, not the starter's home page.
+  {
+    const r = edited(
+      (d) => (d.services[0].cardImage = "./assets/missing.webp"),
+    );
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /Image not found: \.\/assets\/missing\.webp/);
+    const fixed = demo(FIXTURE);
+    assert.equal(fixed.status, 0, out(fixed));
+    for (const page of ["index.astro", "contact.astro"])
+      assert.equal(
+        read(`src/pages/${page}`),
+        read(`presets/local-service/${page}`),
+        `src/pages/${page} is not the preset's page after a failed first run`,
+      );
+  }
+
   // Writes the demo, and a second run changes nothing.
   {
     const r = demo(FIXTURE);
@@ -178,6 +197,38 @@ try {
     assert.equal(r.status, 0, out(r));
     assert.match(read("src/pages/index.astro"), /<!-- hand edit -->/);
     assert.equal(tree(), before, "a re-run changed the tree");
+  }
+
+  // A merged demo branch: its own pages, `demo` back to null (the starter's
+  // line won the merge) but its `quote` kept. Not a fresh starter, so a
+  // re-run leaves every page alone.
+  {
+    fs.appendFileSync(
+      path.join(dir, "src/pages/contact.astro"),
+      "<!-- hand edit -->\n",
+    );
+    const site = path.join(dir, "src/config/site.ts");
+    fs.writeFileSync(
+      site,
+      fs
+        .readFileSync(site, "utf8")
+        .replace(
+          /(\n {2}demo: )\{[\s\S]*?\n {2}\}( as DemoConfig \| null,)/,
+          "$1null$2",
+        ),
+    );
+    assert.match(read("src/config/site.ts"), /\n {2}demo: null as /);
+    assert.doesNotMatch(read("src/config/site.ts"), /\n {2}quote: null as /);
+    tree();
+    const pagesBefore = git(dir, "write-tree", "--prefix=src/pages/").trim();
+    const r = demo(FIXTURE);
+    assert.equal(r.status, 0, out(r));
+    tree();
+    assert.equal(
+      git(dir, "write-tree", "--prefix=src/pages/").trim(),
+      pagesBefore,
+      "a re-run on a merged branch changed src/pages",
+    );
   }
 
   // Facts and repeated content go to the collections, never a data file.

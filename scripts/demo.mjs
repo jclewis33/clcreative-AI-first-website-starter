@@ -11,8 +11,14 @@
  * this script does every file write, the same way every time. Page copy is
  * never in demo.json: it is written in the pages.
  *
- * What it writes (every step but 4 regenerates its files whole, so
+ * What it writes (every step but 0 regenerates its files whole, so
  * re-running after an edit to demo.json is the normal way to change them):
+ *   0. Pages — the preset's pages (and audiencePage's) copied into
+ *      src/pages, only where no page is there yet: once a page exists it
+ *      is the demo's, and a re-run never touches it. The one exception is
+ *      the first run on a fresh starter (SITE.demo and SITE.quote both
+ *      null), where the preset's home and contact pages replace the
+ *      starter's own. First, before anything else is written.
  *   1. Images — each source (a path relative to demo.json, or an https URL)
  *      converted to webp beside the content file that uses it. Logo →
  *      public/images/logo.<ext>, plus favicon.png, webclip.png and
@@ -22,17 +28,11 @@
  *      estimate CTA, …), then SITE.rating and SITE.serviceRadius.
  *   3. Collections — src/content/services, service-areas, reviews, faqs
  *      and projects replaced by the prospect's; settings.json `process`.
- *   4. Pages — the preset's pages (and audiencePage's) copied into
- *      src/pages, only where no page is there yet: once a page exists it
- *      is the demo's, and a re-run never touches it. The one exception is
- *      the first run on a fresh starter (SITE.demo and SITE.quote both
- *      null), where the preset's home and contact pages replace the
- *      starter's own.
- *   5. The nav — PAGES descriptions in site-structure.ts and the preset's
+ *   4. The nav — PAGES descriptions in site-structure.ts and the preset's
  *      extra pages in src/data/preset-pages.ts.
- *   6. The demo switch — `demo` in SITE (src/config/site.ts): whole-site
+ *   5. The demo switch — `demo` in SITE (src/config/site.ts): whole-site
  *      noindex, the "Built for …" banner, nav pruning, the lead fallback.
- *   7. Prettier on what it wrote, then `astro sync` (the content schema
+ *   6. Prettier on what it wrote, then `astro sync` (the content schema
  *      names any bad service field) and `astro check`.
  * Git is left to the caller: review the diff, commit, push.
  *
@@ -289,11 +289,48 @@ async function main() {
         );
   const img = (/** @type {string} */ src) => source(src, baseDir);
   // The starter as it ships — not yet a demo, not yet a local-service site:
-  // the only run that may replace existing pages (step 5).
+  // the only run that may replace existing pages (step 0).
   const startSite = readFileSync(at("src/config/site.ts"), "utf8");
   const freshStarter =
     /\n {2}demo: null as /.test(startSite) &&
     /\n {2}quote: null as /.test(startSite);
+
+  // 0. The preset's pages, each only where src/pages has none yet: once a
+  // page is there it is the demo's own, and a re-run leaves it alone. On
+  // the first run (the starter as it ships) the preset's home and contact
+  // pages replace the starter's. This runs before any other write, so a
+  // run that fails later (a missing photo, after setup.mjs has set
+  // SITE.quote) has already installed them, and the re-run that follows
+  // the fix is not mistaken for a branch with pages of its own.
+  /** @type {Array<{ from: string; to: string; replacesStarter: boolean }>} */
+  const pages = [
+    ...preset.PAGES.filter(
+      (/** @type {{ when?: (d: any) => boolean }} */ page) =>
+        !page.when || page.when(demo),
+    ).map((/** @type {{ from: string; to: string }} */ page) => ({
+      from: page.from,
+      to: page.to,
+      replacesStarter: true,
+    })),
+    ...(demo.audiencePage
+      ? [
+          {
+            from: "audience.astro",
+            to: `src/pages/${demo.audiencePage.path}.astro`,
+            replacesStarter: false,
+          },
+        ]
+      : []),
+  ];
+  for (const page of pages) {
+    if (existsSync(at(page.to)) && !(freshStarter && page.replacesStarter))
+      continue;
+    console.log(`  ${page.to}: installed from presets/${demo.preset}`);
+    await write(
+      page.to,
+      await fs.readFile(path.join(presetDir, page.from), "utf8"),
+    );
+  }
 
   // 1a. The service-area street map: each town's real boundary from
   // OpenStreetMap (scripts/lib/service-area-geo.mjs, the same function
@@ -720,39 +757,7 @@ async function main() {
     );
   }
 
-  // 4. The preset's pages, each only where src/pages has none yet: once a
-  // page is there it is the demo's own, and a re-run leaves it alone. On
-  // the first run (the starter as it ships) the preset's home and contact
-  // pages replace the starter's.
-  /** @type {Array<{ from: string; to: string; replacesStarter: boolean }>} */
-  const pages = [
-    ...preset.PAGES.filter(
-      (/** @type {{ when?: (d: any) => boolean }} */ page) =>
-        !page.when || page.when(demo),
-    ).map((/** @type {{ from: string; to: string }} */ page) => ({
-      from: page.from,
-      to: page.to,
-      replacesStarter: true,
-    })),
-    ...(demo.audiencePage
-      ? [
-          {
-            from: "audience.astro",
-            to: `src/pages/${demo.audiencePage.path}.astro`,
-            replacesStarter: false,
-          },
-        ]
-      : []),
-  ];
-  for (const page of pages) {
-    if (existsSync(at(page.to)) && !(freshStarter && page.replacesStarter))
-      continue;
-    console.log(`  ${page.to}: installed from presets/${demo.preset}`);
-    await write(
-      page.to,
-      await fs.readFile(path.join(presetDir, page.from), "utf8"),
-    );
-  }
+  // 4a. The nav: the PAGES descriptions of the home and contact pages.
   const hasPage = (/** @type {string} */ to) =>
     existsSync(at(to)) || pages.some((page) => page.to === to);
   const hasReviewsPage = hasPage("src/pages/reviews.astro");
@@ -774,7 +779,7 @@ async function main() {
     }
     await write("src/data/site-structure.ts", structure);
   }
-  // 5. The preset's extra pages in the nav, the footer and llms.txt — a
+  // 4b. The preset's extra pages in the nav, the footer and llms.txt — a
   // generated file site-structure.ts merges in, so the registry itself is
   // never rewritten beyond the descriptions above.
   {
@@ -847,7 +852,7 @@ export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(de
     );
   }
 
-  // 6. The demo switch — SITE.demo in src/config/site.ts.
+  // 5. The demo switch — SITE.demo in src/config/site.ts.
   {
     const siteSource = await fs.readFile(at("src/config/site.ts"), "utf8");
     const config = {
@@ -885,7 +890,7 @@ export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(de
     return;
   }
 
-  // 7. Format, then validate with the real content schema and types.
+  // 6. Format, then validate with the real content schema and types.
   const formattable = [...written].filter((f) =>
     /\.(astro|ts|mjs|css)$/.test(f),
   );
