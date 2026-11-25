@@ -4,13 +4,13 @@
 
 **Goal:** Demos and client sites keep config in `SITE`, repeated content in collections, and page copy in the pages, with `npm run demo` writing only facts and plumbing.
 
-**Architecture:** `site.ts` becomes importable by plain Node. That lets the demo switch, the map settings and the rating move into `SITE`, and `demo.shared.mjs` goes away. Two new collections (`reviews`, `faqs`) and a `process` field on `settings` replace the generated `home.ts`, `process.ts` and `data/faqs.ts`. The preset's pages become composed pages, installed once and never overwritten. The whole-page templates are deleted last, behind a gate.
+**Architecture:** `site.ts` becomes importable by plain Node. That lets the demo switch, the map settings and the rating move into `SITE`, and `demo.shared.mjs` goes away. Two new collections (`reviews`, `faqs`) and a `process` field on `settings` replace the generated `home.ts`, `process.ts` and `data/faqs.ts`. The preset's pages become composed pages, installed once and never overwritten. Every demo branch in the private demos repo is then converted to the same model, and the whole-page templates are deleted once none uses them.
 
 **Tech Stack:** Astro 7 content collections (zod), Node 26 scripts (`node:assert`), the starter's check scripts.
 
 **Spec:** `docs/superpowers/specs/2026-11-25-page-composed-demos-design.md`
 
-**Depends on:** PR #113 (Stacki slot and MDX fixes) merged to `main` first.
+**Depends on:** PR #113 (Stacki slot and MDX fixes). Branch this work from `lumos-fixes-and-stacki-config` so it can start before #113 merges; open its PR after #113 merges.
 
 ## Global Constraints
 
@@ -24,7 +24,7 @@
 
 ## Review Focus
 
-- **A demo branch made before this plan merges `main`:** its `home.ts`-driven pages break. Expected: the demo skill and `docs/demo-mode.md` say to convert it first, and `npm run demo` on an old-format `demo.json` (with `home`) fails with one message saying to convert. Never a half-written site. Test in Task 6.
+- **An old-format `demo.json` (with `home` or `audience`):** every demo branch is converted in Task 8, but an old file can still turn up (an old checkout, a copied example). Expected: `npm run demo` fails with one message saying to convert. Never a half-written site. Test in Task 6.
 - **Re-running `npm run demo` after hand-editing a page:** expected to leave `src/pages/*` byte-identical. Test in Task 6.
 - **A town removed from `SITE.serviceAreas` that a region file still lists:** expected to be a build error naming the region file and `towns`. Test in Task 2.
 - **`npm run map` offline, or OpenStreetMap not finding a town:** expected to keep the existing cache, warn naming the town, and exit 0. The build only warns. Test in Task 2.
@@ -195,23 +195,41 @@
 - [ ] **Step 2: Write the new demo flow.**
   - **The steps:** research, then write `demo.json` (facts, services, regions, reviews, FAQs), then `npm run demo`, then design and compose each page in `src/pages/` with copy written in the page, then the check-and-fix loop.
   - **Signing:** push `demo/<slug>` as `main` of the client's repo, set `SITE.demo = null`, run `/setup`, clear `confirmOrCut`.
-  - **Old demos:** frozen demo branches are converted before merging `main`. Keep every existing rule in the skill (copy, photos, quality bar) as is.
+  - **Keep the rest:** keep every existing rule in the skill (copy, photos, quality bar) as is.
 - [ ] **Step 3: Rerun the Step 1 grep.** Expected: no stale hits. Then `npm run format:check`.
 - [ ] **Step 4: Commit** `Docs and skills: page-composed demos`.
 
-### Task 8: Convert the pilot demo (private demos repo, not the starter)
+### Task 8: Convert every demo branch (private demos repo, not the starter)
 
-**Files:** on the most recent demo branch in the private demos repo: `demo/demo.json`, `src/pages/*.astro`, `demo/pages/` (delete after moving), `demo/build_demo.py` (drop `home`/`audience` output)
+Repeat this task once per branch in `git branch -r --list 'origin/demo/*'` (six today). Use one subagent per branch, the most recent branch first, since it already composes its own pages. Never name a branch or prospect in the starter.
 
-- [ ] **Step 1: Snapshot the current pages.** Build the current branch and save `dist/client` as the baseline.
-- [ ] **Step 2: Merge and convert.** Merge starter `main` (with Tasks 1–7). Move `demo/pages/*.astro` into `src/pages/`. Rewrite them from `HOME.*` reads to literal props and collection queries. Move reviews and FAQs from `demo.json` `home` into the new top-level keys. Run `npm run demo` once.
-- [ ] **Step 3: Compare.** Run `npm run visual:diff -- --base <baseline> --head dist/client`. Expected: no visual differences on home, contact, services, reviews and about. Fix any that appear.
-- [ ] **Step 4: Run the demo checks.** Run `check:links`, `check:content-build`, the demo skill's width sweep, and the Stacki checks from CLAUDE.md. Open the home page in Stacki and edit a heading, a photo and the call band text.
-- [ ] **Step 5: Commit and push** the demo branch.
+**Files (per branch):** `demo/demo.json`, `src/pages/*.astro`, `demo/pages/` (deleted once moved), any builder script beside `demo.json` (stops emitting `home`/`audience`)
 
-### Task 9 (gated): Delete the whole-page templates
+**Interfaces:**
 
-**Gate:** run only when no frozen demo branch still needs updates. Ask the site owner which demo branches are dead first; the demo skill's cleanup section deletes them.
+- Consumes: the starter branch holding Tasks 1–7 (merged into the demo branch as `upstream/<that branch>`, or `upstream/main` once merged), and the `demo.json` shape from Task 6.
+- Produces: a demo branch with no import of `@/data/home`, `@/data/audience` or any `LocalService*` template. Task 9 depends on this for every branch.
+
+- [ ] **Step 1: Snapshot the current site.** Check out the branch, run `npm run build`, and copy `dist/client` to a scratch baseline folder outside the repo.
+- [ ] **Step 2: Merge the starter.** On a conflict in a generated file (`src/config/site.ts`, `src/data/preset-pages.ts`, `src/data/site-structure.ts`), take the demo's side, then let Step 4 regenerate it. On a conflict in `src/pages/*`, take the demo's side.
+- [ ] **Step 3: Compose the pages.**
+  - **Which pages:** every page the branch renders from a template or `HOME`/`AUDIENCE`: home, about, contact, reviews, and the audience page if it has one.
+  - **How:** write each as a composed page in `src/pages/` that reproduces its current output. Use the same sections in the same order with the same props, copy written as literal props, and images imported in the page from `src/assets/demo/`.
+  - **Where to read the current values:** the template the page used (`LocalServiceHome`, `LocalServiceShowcase` or `LocalServiceEstate` for the home page, by `home.layout`) and the branch's `src/data/home.ts`.
+  - **Existing hand-built pages** (`demo/pages/*.astro`) move into `src/pages/`, with their `HOME.*` reads replaced the same way.
+- [ ] **Step 4: Convert `demo.json`.** Remove `home` and `audience`. Move their reviews, FAQs, process steps and rating into the Task 6 top-level keys, word for word. Run `npm run demo` once, then delete `src/data/home.ts` and `src/data/audience.ts` if they are still there.
+- [ ] **Step 5: Compare against the snapshot.** Run `npm run build`, then `npm run visual:diff -- --base <baseline> --head dist/client`. Expected: no visual differences on any page. Fix every difference, then run it again.
+- [ ] **Step 6: Run the demo checks.**
+  - `check:links`, `check:content-build`, `check:budget`;
+  - the demo skill's width sweep (320–1440) on every page;
+  - `grep -rn "@/data/home\|@/data/audience\|LocalService" src` comes back empty;
+  - the Stacki slot scan (no conditional slotted elements).
+- [ ] **Step 7: Commit and push** `Convert to page-composed demo` on that branch. Its preview redeploys.
+- [ ] **Step 8: Check the preview.** Open the preview URL. The banner shows, `x-robots-tag: noindex` is set, and one test lead still arrives (the demo skill's step 8).
+
+### Task 9: Delete the whole-page templates
+
+**Precondition:** Task 8 is done for every branch in `git branch -r --list 'origin/demo/*'`. Confirm with the Task 8 Step 6 grep on each branch.
 
 **Files:**
 
@@ -221,3 +239,4 @@
 - [ ] **Step 1: Check nothing still uses them.** `grep -rn "LocalService\(Home\|Showcase\|Estate\|About\|Contact\|Audience\|Reviews\)\|local-service-home\|local-service-audience\|local-service-sample" src presets scripts .claude docs` should list only the files being deleted and historical notes.
 - [ ] **Step 2: Delete them**, then run all checks plus `check:demo`. Expected: PASS.
 - [ ] **Step 3: Commit** `Remove whole-page local-service templates`.
+- [ ] **Step 4: Merge into every demo branch.** Merge this into each demo branch, then build and push each one. Expected: every demo builds unchanged.

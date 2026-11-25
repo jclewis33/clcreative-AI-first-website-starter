@@ -76,10 +76,10 @@ because Stacki follows only literal props and images imported in the page.
      (it shares the starter's history, so starter updates still merge), set
      `SITE.demo = null`, run `/setup` for the real-site settings, then clear
      `confirmOrCut`.
-   - **Existing demo branches built from the old templates are frozen.**
-     Don't merge starter `main` into one after this lands until it has been
-     converted. The final task deletes the old templates. It is skipped while
-     any frozen demo still needs updates.
+   - **Every existing demo branch is converted** to this model, so nothing
+     is left on the old one. Each converted demo must look the same as
+     before (screenshot comparison). Once every branch is converted, the
+     old whole-page templates are deleted.
 
 ## Out of scope
 
