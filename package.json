@@ -21,6 +21,8 @@
     "css-data": "node scripts/generate-css-custom-data.mjs",
     "check:hover": "node scripts/run-check-hover.mjs",
     "check:boundary": "node scripts/check-boundary-rules.mjs && node scripts/check-content-boundary.mjs",
+    "check:map": "node scripts/check-map.mjs",
+    "map": "node scripts/map.mjs",
     "check:content": "node scripts/check-content-text.mjs && node scripts/check-content-validation.mjs",
     "check:content-build": "node scripts/check-content-build.mjs",
     "addon:sanity": "node scripts/addon-sanity.mjs",

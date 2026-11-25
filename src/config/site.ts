@@ -61,6 +61,15 @@ export interface AreaServed {
   name: string;
 }
 
+/** The business's public star rating (shown as a badge and in structured data). */
+export interface SiteRating {
+  /** Average stars, 1 to 5. */
+  value: number;
+  /** How many reviews the average is over. */
+  count: number;
+  source: "google" | "facebook" | "yelp";
+}
+
 /**
  * A prospect demo describes itself with this. `null` on every real site.
  * `npm run demo` writes it (a `demo/<slug>` branch of the private demos
@@ -167,6 +176,17 @@ export const SITE = {
    * strings exactly. Placeholders: replace per client.
    */
   serviceAreas: ["Your City", "Neighboring City", "North County"],
+
+  /**
+   * "Within N miles of <town>": the circle the street map draws. `center` is
+   * a town (looked up like the ones above); `null` = no circle. After
+   * changing it or `serviceAreas`, run `npm run map` to rebuild the map
+   * files in src/data/.
+   */
+  serviceRadius: null as { center: string; miles: number } | null,
+
+  /** The public star rating, when there is one. `null` = no rating shown. */
+  rating: null as SiteRating | null,
 
   /** Public reviews page (e.g. the Google Business Profile). Blank = no "Read all reviews" link. */
   reviewsUrl: "",

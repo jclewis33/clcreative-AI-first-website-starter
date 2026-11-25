@@ -18,6 +18,7 @@ import {
   PROJECT_CATEGORY_VALUES,
   PROJECT_PHOTO_LABELS,
 } from "./config/projects";
+import { SITE } from "./config/site";
 import { checked, type RefTarget } from "./lib/content/checks";
 import { renderRichText } from "./lib/content/markdown";
 
@@ -441,7 +442,7 @@ const serviceAreas = defineCollection({
         order: z.number().default(100),
         seoTitle: z.string().min(1),
         seoDescription: z.string().min(1).max(160),
-        /** The towns in this region (each one of SITE.serviceAreas). */
+        /** The towns in this region (each one of SITE.serviceAreas, checked below). */
         towns: z.array(z.string().min(1)).min(1),
         /** One line on the hub's region card. */
         cardText: z.string().min(1),
@@ -495,6 +496,14 @@ const serviceAreas = defineCollection({
         }),
       })
       .superRefine((area, ctx) => {
+        area.towns.forEach((town, i) => {
+          if (!(SITE.serviceAreas as readonly string[]).includes(town))
+            ctx.addIssue({
+              code: "custom",
+              path: ["towns", i],
+              message: `"${town}" isn't in SITE.serviceAreas (src/config/site.ts). Add it there, run npm run map, or fix the spelling.`,
+            });
+        });
         for (const [key, list] of [
           ["reviews", area.reviews ?? []],
           ["jobs", area.jobs ?? []],

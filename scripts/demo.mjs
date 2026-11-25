@@ -51,7 +51,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { parseJsonc } from "./lib/jsonc.mjs";
-import { serviceAreaGeo } from "./lib/service-area-geo.mjs";
+import { buildMap } from "./lib/service-area-geo.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const at = (/** @type {string[]} */ ...rel) => path.join(ROOT, ...rel);
@@ -310,67 +310,38 @@ async function main() {
     await homeImage(badge, "image", `trust-${i + 1}`, 320);
 
   // 1a'. The service-area street map: each town's real boundary from
-  // OpenStreetMap, cached beside demo.json (service-area.geo.json) so a
+  // OpenStreetMap (scripts/lib/service-area-geo.mjs, the same function
+  // `npm run map` runs), cached beside demo.json (service-area.geo.json) so a
   // re-run — and check:demo — needs no network. Written to
-  // src/data/service-area-geo.json, which the home page, the service pages
-  // and the town pages all read. A failed lookup only costs the map.
-  /** @type {unknown[]} */
-  let areaGeo = [];
+  // src/data/service-area-geo.json (the home page, the service pages and
+  // the town pages read it) and src/data/service-radius.json ("within 60
+  // miles of Palmer"). The cache is copied to src/data/ too, so a later
+  // `npm run map` on the demo's branch starts from it. A failed lookup only
+  // costs the map.
+  /** @type {Awaited<ReturnType<typeof buildMap>>} */
+  let map = { geo: [], radius: null };
+  const geoCache = path.join(baseDir, "service-area.geo.json");
   try {
-    areaGeo = await serviceAreaGeo(
-      demo.serviceAreas,
-      demo.contact.region,
-      path.join(baseDir, "service-area.geo.json"),
-      (m) => console.warn(`! ${m}`),
-    );
+    map = await buildMap({
+      areas: demo.serviceAreas,
+      radius: demo.serviceRadius ?? null,
+      region: demo.contact.region,
+      cacheFile: geoCache,
+      warn: (m) => console.warn(`! ${m}`),
+    });
   } catch (err) {
     console.warn(
       `! Service-area map skipped: ${/** @type {Error} */ (err).message}`,
     );
   }
-  await write("src/data/service-area-geo.json", `${JSON.stringify(areaGeo)}\n`);
-
-  // The service radius ("within 60 miles of Palmer"): its centre town looked
-  // up like the others (same cache), then the middle of its outline.
-  /** @type {{ lat: number; lng: number; miles: number } | null} */
-  let serviceRadius = null;
-  if (demo.serviceRadius) {
-    try {
-      const [hit] = await serviceAreaGeo(
-        [demo.serviceRadius.center],
-        demo.contact.region,
-        path.join(baseDir, "service-area.geo.json"),
-        (m) => console.warn(`! ${m}`),
-      );
-      if (hit) {
-        /** @type {number[][]} */
-        const points = [];
-        const walk = (/** @type {unknown} */ c) =>
-          Array.isArray(c) && typeof c[0] === "number"
-            ? points.push(/** @type {number[]} */ (c))
-            : Array.isArray(c) && c.forEach(walk);
-        walk(
-          /** @type {{ coordinates: unknown }} */ (hit.geometry).coordinates,
-        );
-        const lngs = points.map((p) => p[0]);
-        const lats = points.map((p) => p[1]);
-        const mid = (/** @type {number[]} */ v) =>
-          Math.round(((Math.min(...v) + Math.max(...v)) / 2) * 1e4) / 1e4;
-        serviceRadius = {
-          lat: mid(lats),
-          lng: mid(lngs),
-          miles: demo.serviceRadius.miles,
-        };
-      }
-    } catch (err) {
-      console.warn(
-        `! Service radius skipped: ${/** @type {Error} */ (err).message}`,
-      );
-    }
-  }
+  await write("src/data/service-area-geo.json", `${JSON.stringify(map.geo)}\n`);
   await write(
     "src/data/service-radius.json",
-    `${JSON.stringify(serviceRadius)}\n`,
+    `${JSON.stringify(map.radius)}\n`,
+  );
+  await write(
+    "src/data/service-area-geo.cache.json",
+    existsSync(geoCache) ? await fs.readFile(geoCache, "utf8") : "{}\n",
   );
 
   // 1b. Logo, favicon, webclip, share image.
@@ -544,6 +515,20 @@ async function main() {
       /(\btexts\s*:\s*)(?:true|false)/,
       (_, lead) => `${lead}${demo.contact.texts ? "true" : "false"}`,
     );
+    // The map's radius and the public rating live in SITE too.
+    const reviews = demo.home.reviews;
+    const rating =
+      reviews?.rating && reviews.count
+        ? { value: reviews.rating, count: reviews.count, source: "google" }
+        : null;
+    for (const [key, value] of [
+      ["serviceRadius", demo.serviceRadius ?? null],
+      ["rating", rating],
+    ])
+      site = site.replace(
+        new RegExp(`(\\n  ${key}: )(?:null|\\{[^}]*\\})(\\s+as\\s)`),
+        (_, lead, tail) => `${lead}${JSON.stringify(value)}${tail}`,
+      );
     await fs.writeFile(at("src/config/site.ts"), site);
   }
 

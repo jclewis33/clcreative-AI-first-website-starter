@@ -450,6 +450,35 @@ const CASES = [
     ],
   },
   {
+    name: "region names a town not in SITE.serviceAreas",
+    apply: () => {
+      write("src/content/service-areas/images/zz-check.png", PNG);
+      write(
+        "src/content/service-areas/zz-check.json",
+        json({
+          title: "Check region",
+          seoTitle: "Check region",
+          seoDescription: "Check.",
+          towns: ["Nowhere Town"],
+          cardText: "Check.",
+          hero: {
+            heading: "Check",
+            text: "Check.",
+            image: IMG,
+            imageAlt: "A check image",
+          },
+          local: { heading: "Check", paragraphs: ["One.", "Two."] },
+          faqs: [
+            { question: "One?", answer: "One." },
+            { question: "Two?", answer: "Two." },
+          ],
+          cta: { heading: "Check" },
+        }),
+      );
+    },
+    expect: ["zz-check", "towns", "Nowhere Town", "SITE.serviceAreas"],
+  },
+  {
     name: "settings.json without its site key",
     apply: () => {
       const file = "src/content/settings.json";

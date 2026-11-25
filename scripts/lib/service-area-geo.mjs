@@ -9,8 +9,9 @@
  * town's chip still shows.
  *
  * Nominatim's usage policy: an identifying User-Agent and at most one request
- * a second — so this runs once, when a demo is generated, and results are
- * cached in a JSON file beside demo.json. The live site never calls it.
+ * a second — so this runs only from `npm run map` (and `npm run demo`), and
+ * results are cached in a JSON file (src/data/service-area-geo.cache.json).
+ * The live site never calls it.
  *
  * Zero dependencies (fetch + fs).
  */
@@ -85,6 +86,7 @@ async function lookUp(town, region) {
  * @param {string} region
  * @param {string} cacheFile
  * @param {(message: string) => void} [warn]
+ * @param {boolean} [offline] never call the network: a town missing from the cache is skipped with a warning
  * @returns {Promise<AreaGeo[]>}
  */
 export async function serviceAreaGeo(
@@ -92,6 +94,7 @@ export async function serviceAreaGeo(
   region,
   cacheFile,
   warn = console.warn,
+  offline = false,
 ) {
   /** @type {Record<string, Geometry | null>} */
   const cache = existsSync(cacheFile)
@@ -100,7 +103,7 @@ export async function serviceAreaGeo(
   let fetched = false;
   for (const town of towns) {
     const key = `${town}, ${region}`;
-    if (key in cache) continue;
+    if (key in cache || offline) continue;
     if (fetched) await new Promise((r) => setTimeout(r, 1100));
     cache[key] = await lookUp(town, region);
     fetched = true;
@@ -110,10 +113,74 @@ export async function serviceAreaGeo(
     const geometry = cache[`${town}, ${region}`];
     if (!geometry) {
       warn(
-        `Service-area map: "${town}, ${region}" wasn't found on OpenStreetMap — its chip shows, the map skips it.`,
+        `Service-area map: "${town}, ${region}" ${
+          offline && !(`${town}, ${region}` in cache)
+            ? "isn't in the cache (offline)"
+            : "wasn't found on OpenStreetMap"
+        } — its chip shows, the map skips it.`,
       );
       return [];
     }
     return [{ name: town, geometry }];
   });
+}
+
+/**
+ * The middle of an outline's bounding box, rounded like the outlines.
+ * @param {Geometry} geometry
+ * @returns {{ lat: number, lng: number }}
+ */
+function middleOf(geometry) {
+  /** @type {number[][]} */
+  const points = [];
+  const walk = (/** @type {any} */ c) =>
+    Array.isArray(c) && typeof c[0] === "number"
+      ? points.push(c)
+      : Array.isArray(c) && c.forEach(walk);
+  walk(geometry.coordinates);
+  const mid = (/** @type {number[]} */ v) =>
+    Math.round(((Math.min(...v) + Math.max(...v)) / 2) * 1e4) / 1e4;
+  return {
+    lat: mid(points.map((p) => p[1])),
+    lng: mid(points.map((p) => p[0])),
+  };
+}
+
+/**
+ * Everything the street map needs: each area's outline, and the radius
+ * circle's centre when `radius` is set. Shared by `npm run map` (reads SITE)
+ * and `npm run demo`. Throws on a network failure, like `serviceAreaGeo`;
+ * a town that isn't found is skipped with a warning.
+ *
+ * @param {object} options
+ * @param {string[]} options.areas  town names (SITE.serviceAreas)
+ * @param {{ center: string, miles: number } | null} options.radius  SITE.serviceRadius
+ * @param {string} options.region  e.g. "TX" (SITE.address.region)
+ * @param {string} options.cacheFile
+ * @param {(message: string) => void} [options.warn]
+ * @param {boolean} [options.offline]  never call the network (cache only)
+ * @returns {Promise<{ geo: AreaGeo[], radius: { lat: number, lng: number, miles: number } | null }>}
+ */
+export async function buildMap({
+  areas,
+  radius,
+  region,
+  cacheFile,
+  warn = console.warn,
+  offline = false,
+}) {
+  const geo = await serviceAreaGeo(areas, region, cacheFile, warn, offline);
+  if (!radius) return { geo, radius: null };
+  // The centre town is looked up like the others (same cache).
+  const [hit] = await serviceAreaGeo(
+    [radius.center],
+    region,
+    cacheFile,
+    warn,
+    offline,
+  );
+  return {
+    geo,
+    radius: hit ? { ...middleOf(hit.geometry), miles: radius.miles } : null,
+  };
 }
