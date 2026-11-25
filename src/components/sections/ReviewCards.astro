@@ -3,7 +3,9 @@ import type { HTMLAttributes, ComponentProps } from "astro/types";
 import Section from "@/components/ui/Section.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Button from "@/components/ui/Button.astro";
+import { reviewMeta, type Review } from "@/lib/reviews";
 
+type ReviewPlatform = Review["platform"];
 type ReviewCard = {
   /** The review text (an excerpt is fine). */
   text: string;
@@ -15,6 +17,8 @@ type ReviewCard = {
   meta?: string;
   /** 4 or 5. @default 5 */
   rating?: number;
+  /** Where it was left. With no `meta`, the line under the name reads "Google review". */
+  platform?: ReviewPlatform;
   /** `google` variant: when it was posted, as Google words it ("a year ago"). Falls back to `meta`; neither shows nothing. */
   date?: string;
   /** `google` variant: who they are, beside the name in the accent ("General contractor"). */
@@ -54,7 +58,7 @@ interface Props extends HTMLAttributes<"section"> {
    *
    * Real, attributed reviews only. No review schema markup.
    *
-   * - `reviews` — `{ text, name, meta?, rating?, date?, role? }[]`; the first `limit` show
+   * - `reviews` — `{ text, name, meta?, platform?, rating?, date?, role? }[]` (the `reviews` collection's entries, from `getReviews`, fit); the first `limit` show
    * - `summary` — `default`: the star line under the heading
    * - `link` — `{ label, href }`: `default` top-right link; on `google` its label overrides the button's
    *
@@ -275,8 +279,10 @@ if (import.meta.env.DEV && render) {
                   </span>
                   <span class="review-cards_name_wrap">
                     <span class="review-cards_name">{review.name}</span>
-                    {review.meta && (
-                      <span class="review-cards_meta">{review.meta}</span>
+                    {reviewMeta(review) && (
+                      <span class="review-cards_meta">
+                        {reviewMeta(review)}
+                      </span>
                     )}
                   </span>
                 </figcaption>
@@ -432,9 +438,9 @@ if (import.meta.env.DEV && render) {
                           </span>
                         )}
                       </span>
-                      {(review.date ?? review.meta) && (
+                      {(review.date ?? reviewMeta(review)) && (
                         <span class="review-cards_google_date">
-                          {review.date ?? review.meta}
+                          {review.date ?? reviewMeta(review)}
                         </span>
                       )}
                     </span>

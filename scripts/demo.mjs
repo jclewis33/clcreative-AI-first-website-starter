@@ -17,7 +17,8 @@
  *      favicon.png, webclip.png and og-image.png (from the hero photo).
  *   2. Identity — scripts/setup.mjs --config (name, phone, hours, brand
  *      colour and its contrast text, service areas, logo, social, …).
- *   3. Services — src/content/services/*.json replaced by the prospect's.
+ *   3. Services — src/content/services/*.json replaced by the prospect's,
+ *      and their reviews (home + per service) in src/content/reviews/*.json.
  *   4. Home — src/data/home.ts (LocalServiceHomeData) and the default
  *      process steps (src/data/process.ts).
  *   5. Pages — the preset's pages copied into src/pages; their PAGES
@@ -250,6 +251,17 @@ function luminance(/** @type {string} */ hex) {
   });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
+
+/** Platform names a review's `meta` can carry ("Google review"). */
+const REVIEW_PLATFORMS = /** @type {const} */ ([
+  ["google", /google/i],
+  ["facebook", /facebook/i],
+  ["yelp", /yelp/i],
+  ["angi", /angi/i],
+  ["nextdoor", /nextdoor/i],
+  ["thumbtack", /thumbtack/i],
+  ["bbb", /\bbbb\b|better business/i],
+]);
 
 async function main() {
   const { demo, defaults, preset, presetDir, baseDir } = await load();
@@ -524,6 +536,61 @@ async function main() {
     await fs.writeFile(at("src/config/site.ts"), site);
   }
 
+  // 3a. Reviews — one file each in src/content/reviews: the home page's
+  // reviews, then each service's own, tagged with that service. A review in
+  // both places is one file with every service it belongs to.
+  await emptyDir("src/content/reviews");
+  /** @type {Map<string, Record<string, any>>} */
+  const reviewFiles = new Map();
+  const reviewIds = new Set();
+  /** The platform named in a review's `meta`; google when it has no meta. */
+  const platformOf = (/** @type {string | undefined} */ meta) =>
+    !meta
+      ? "google"
+      : (REVIEW_PLATFORMS.find(([, pattern]) => pattern.test(meta))?.[0] ??
+        "google");
+  const addReview = (
+    /** @type {Record<string, any>} */ review,
+    /** @type {string | undefined} */ serviceId,
+  ) => {
+    const key = `${review.name}\n${review.text}`;
+    const have = reviewFiles.get(key);
+    if (have) {
+      if (serviceId && !have.services?.includes(serviceId))
+        (have.services ??= []).push(serviceId);
+      return;
+    }
+    const base =
+      review.name
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "review";
+    let id = base;
+    for (let n = 2; reviewIds.has(id); n++) id = `${base}-${n}`;
+    reviewIds.add(id);
+    reviewFiles.set(key, {
+      id,
+      name: review.name,
+      rating: review.rating ?? 5,
+      text: review.text,
+      ...(review.full ? { full: review.full } : {}),
+      ...(review.date ? { date: review.date } : {}),
+      platform: platformOf(review.meta),
+      ...(serviceId ? { services: [serviceId] } : {}),
+      order: reviewFiles.size,
+    });
+  };
+  for (const review of demo.home.reviews?.items ?? [])
+    addReview(review, undefined);
+  for (const entry of demo.services)
+    for (const review of entry.reviews ?? []) addReview(review, entry.slug);
+  for (const { id, ...review } of reviewFiles.values())
+    await write(
+      `src/content/reviews/${id}.json`,
+      `${JSON.stringify(review, null, 2)}\n`,
+    );
+
   // 3. Services.
   await emptyDir("src/content/services", /^images$/);
   await emptyDir("src/content/services/images");
@@ -542,10 +609,8 @@ async function main() {
       return `./images/${file}`;
     };
     service.order ??= (index + 1) * 10;
-    // A service with no reviews of its own shows the business's (home)
-    // reviews and rating: real reviews belong on every service page.
-    if (!service.reviews?.length && demo.home.reviews?.items?.length)
-      service.reviews = structuredClone(demo.home.reviews.items);
+    // Reviews live in src/content/reviews (step 3a), not in the service.
+    delete service.reviews;
     if (!service.reviewSummary && demo.home.reviews?.rating)
       service.reviewSummary = {
         rating: demo.home.reviews.rating,
@@ -573,9 +638,6 @@ async function main() {
       );
     for (const [i, item] of (service.work?.items ?? []).entries())
       item.image = await image(item.image, `work-${i + 1}`, 1600);
-    for (const [i, review] of (service.reviews ?? []).entries())
-      if (review.avatar)
-        review.avatar = await image(review.avatar, `review-${i + 1}`, 256);
     await write(
       `src/content/services/${id}.json`,
       `${JSON.stringify(service, null, 2)}\n`,

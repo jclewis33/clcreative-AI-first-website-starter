@@ -24,6 +24,7 @@ import { SITE } from "@/config/site";
 import { DEFAULT_PROCESS } from "@/data/process";
 import { serviceFaqJsonLd } from "@/lib/jsonld";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { getReviews } from "@/lib/reviews";
 import { geoFor } from "@/lib/service-area-geo";
 import { TOWN_LINKS } from "@/lib/area-nav";
 import {
@@ -58,6 +59,7 @@ const related = relatedServices(all, service.id);
 const process = s.process ?? DEFAULT_PROCESS;
 const title = `${s.seoTitle} | ${SITE.name}`;
 const description = s.seoDescription;
+const reviews = await getReviews({ service: service.id, limit: 6 });
 
 const crumbs = [
   { label: "Home", href: "/" },
@@ -145,11 +147,11 @@ const ownModal = !SITE.quote;
 
   {/* Four or more reviews scroll across the screen; fewer sit as cards. */}
   <Reviews
-    render={Boolean(s.reviews?.length)}
-    reviews={s.reviews ?? []}
+    render={reviews.length > 0}
+    reviews={reviews}
     rating={s.reviewSummary?.rating}
     count={s.reviewSummary?.count}
-    layout={(s.reviews?.length ?? 0) >= 4 ? "marquee" : "cards"}
+    layout={reviews.length >= 4 ? "marquee" : "cards"}
   />
 
   <FAQ eyebrow="Questions" items={faqs} />

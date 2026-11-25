@@ -183,6 +183,13 @@ const TESTIMONIAL = {
   avatarAlt: "Check Person",
 };
 
+const REVIEW = {
+  name: "Check Reviewer",
+  rating: 5,
+  text: "Check.",
+  platform: "google",
+};
+
 /** An MDX post. A `{ raw }` value is written into the YAML unquoted. */
 function post(overrides = {}, body = "## Check\n\nBody text.\n") {
   const fields = {
@@ -250,6 +257,7 @@ function control() {
     "src/content/testimonials/zz-check-testimonial.json",
     json(TESTIMONIAL),
   );
+  write("src/content/reviews/zz-check-review.json", json(REVIEW));
   write(POST_FILE, post());
 }
 
@@ -417,6 +425,33 @@ const CASES = [
         json(TESTIMONIAL_WITHOUT_ALT),
       ),
     expect: ["zz-check-testimonial.json", "avatarAlt"],
+  },
+  {
+    name: "review rating below 4",
+    apply: () =>
+      write(
+        "src/content/reviews/zz-check-review.json",
+        json({ ...REVIEW, rating: 3 }),
+      ),
+    expect: ["zz-check-review.json", "rating"],
+  },
+  {
+    name: "review tagged with a service that does not exist",
+    apply: () =>
+      write(
+        "src/content/reviews/zz-check-review.json",
+        json({ ...REVIEW, services: ["no-such-service"] }),
+      ),
+    expect: ["zz-check", "services", "no-such-service"],
+  },
+  {
+    name: "review platform not on the list",
+    apply: () =>
+      write(
+        "src/content/reviews/zz-check-review.json",
+        json({ ...REVIEW, platform: "myspace" }),
+      ),
+    expect: ["zz-check-review.json", "platform"],
   },
   {
     name: "filename not kebab-case",

@@ -35,6 +35,7 @@ import { SITE } from "@/config/site";
 import { DEFAULT_PROCESS } from "@/data/process";
 import { serviceFaqJsonLd } from "@/lib/jsonld";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { getReviews } from "@/lib/reviews";
 import { servicePath, SERVICES_INDEX_PATH, type Service } from "@/lib/services";
 
 interface Props {
@@ -79,7 +80,7 @@ const estimateCta = {
 const ownModal = !SITE.quote;
 const contractor = s.buyer === "contractor";
 const heroCta = s.hero.primaryCta ?? estimateCta;
-const reviews = s.reviews ?? [];
+const reviews = await getReviews({ service: service.id, limit: 6 });
 const proof = s.reviewSummary
   ? {
       rating: s.reviewSummary.rating,

@@ -58,7 +58,19 @@ const DIR = {
   caseStudies: "src/content/case-studies",
   projects: "src/content/projects",
   testimonials: "src/content/testimonials",
+  reviews: "src/content/reviews",
 } as const;
+
+/** Where a review can have been left (the schema's `platform`). */
+const REVIEW_PLATFORMS = [
+  "google",
+  "facebook",
+  "yelp",
+  "angi",
+  "nextdoor",
+  "thumbtack",
+  "bbb",
+] as const;
 
 /** A reference target: entries are `<dir>/<id>.json` (or `.mdx`). */
 const json = (dir: string): RefTarget => ({ dir, ext: "json" });
@@ -318,28 +330,6 @@ const services = defineCollection({
           /** The star line's words ("78 five-star reviews on Google"; estate page). */
           text: z.string().min(1).optional(),
         })
-        .optional(),
-      reviews: z
-        .array(
-          z
-            .object({
-              text: z.string().min(1),
-              name: z.string().min(1),
-              meta: z.string().optional(),
-              /** Optional reviewer photo; needs avatarAlt. */
-              avatar: image().optional(),
-              avatarAlt: alt.optional(),
-            })
-            .superRefine((review, ctx) => {
-              if (review.avatar && !review.avatarAlt)
-                ctx.addIssue({
-                  code: "custom",
-                  path: ["avatarAlt"],
-                  message:
-                    'Add avatarAlt (usually the reviewer\'s name) — "avatar" is set, and every image needs alt text.',
-                });
-            }),
-        )
         .optional(),
       faqs: z
         .array(
@@ -899,6 +889,41 @@ const testimonials = defineCollection({
       }),
 });
 
+/* `reviews`: one JSON file per review, kept for the whole site. A review
+   shows on the service pages it is tagged with (`services`), then fills
+   the rest in `featured` / `order` order (src/lib/reviews.ts). Only real,
+   attributed 4 and 5 star reviews belong here — the schema can't prove a
+   review is real; the demo skill says how they are sourced. */
+const reviews = defineCollection({
+  loader: checked(
+    filesIn(
+      DIR.reviews,
+      "json",
+      '"jane-d.json" — the filename is only an id; name the reviewer inside',
+    ),
+    { refs: { services: json(DIR.services) } },
+  ),
+  schema: z.object({
+    /** The reviewer's name as the platform shows it ("Jane D."). */
+    name: z.string().min(1),
+    /** Stars. The site never shows a review below 4. */
+    rating: z.union([z.literal(4), z.literal(5)]),
+    /** The line the cards show (an excerpt is fine). */
+    text: z.string().min(1),
+    /** The whole review, word for word (the /reviews page). Defaults to text. */
+    full: z.string().min(1).optional(),
+    /** As the platform words it ("a year ago") or a date. */
+    date: z.string().min(1).optional(),
+    /** Where the review was left. */
+    platform: z.enum(REVIEW_PLATFORMS),
+    /** The service pages it belongs to (filenames in src/content/services). */
+    services: z.array(reference("services")).optional(),
+    featured: z.boolean().default(false),
+    /** Sort order, lowest first. */
+    order: z.number().int().min(0).default(100),
+  }),
+});
+
 export const collections = {
   services,
   serviceAreas,
@@ -911,4 +936,5 @@ export const collections = {
   projects,
   gallery,
   testimonials,
+  reviews,
 };

@@ -45,18 +45,19 @@ the field reference; keep the two in step.
 
 ## Where everything lives
 
-| Content        | File(s)                                 | Becomes                                                            |
-| -------------- | --------------------------------------- | ------------------------------------------------------------------ |
-| Blog post      | `src/content/blog/<slug>.mdx`           | `/blog/<slug>`, cards, category pages, llms files                  |
-| Author         | `src/content/authors/<id>.json`         | The byline and photo on posts                                      |
-| Blog CTA       | `src/content/ctas/blog/<id>.json`       | The end-of-post CTA, and `<BlogCta id>` inside a post              |
-| CTA section    | `src/content/ctas/section/<id>.json`    | The bottom CTA band on blog, case-study and project pages          |
-| Site defaults  | `src/content/settings.json`             | Which blog CTA and CTA section a page gets when it names none      |
-| Case study     | `src/content/case-studies/<slug>.json`  | `/case-studies/<slug>` (unless coming soon), cards, featured strip |
-| Project        | `src/content/projects/<slug>.json`      | `/projects/<slug>`, project cards                                  |
-| Gallery photos | `src/content/gallery.json` (one array)  | `/gallery`, the /projects strip                                    |
-| Testimonial    | `src/content/testimonials/<id>.json`    | Testimonial sliders, grids, `<SingleTestimonial name>`             |
-| Service area   | `src/content/service-areas/<slug>.json` | `/service-areas/<slug>` (a region of towns), the hub, town links   |
+| Content        | File(s)                                 | Becomes                                                              |
+| -------------- | --------------------------------------- | -------------------------------------------------------------------- |
+| Blog post      | `src/content/blog/<slug>.mdx`           | `/blog/<slug>`, cards, category pages, llms files                    |
+| Author         | `src/content/authors/<id>.json`         | The byline and photo on posts                                        |
+| Blog CTA       | `src/content/ctas/blog/<id>.json`       | The end-of-post CTA, and `<BlogCta id>` inside a post                |
+| CTA section    | `src/content/ctas/section/<id>.json`    | The bottom CTA band on blog, case-study and project pages            |
+| Site defaults  | `src/content/settings.json`             | Which blog CTA and CTA section a page gets when it names none        |
+| Case study     | `src/content/case-studies/<slug>.json`  | `/case-studies/<slug>` (unless coming soon), cards, featured strip   |
+| Project        | `src/content/projects/<slug>.json`      | `/projects/<slug>`, project cards                                    |
+| Gallery photos | `src/content/gallery.json` (one array)  | `/gallery`, the /projects strip                                      |
+| Testimonial    | `src/content/testimonials/<id>.json`    | Testimonial sliders, grids, `<SingleTestimonial name>`               |
+| Service area   | `src/content/service-areas/<slug>.json` | `/service-areas/<slug>` (a region of towns), the hub, town links     |
+| Review         | `src/content/reviews/<id>.json`         | Review sections; `getReviews({ service, limit })` in `@/lib/reviews` |
 
 Photos go in an `images/` folder beside the entries, referenced as
 `"./images/<file>"`: `src/content/blog/images/`,
@@ -253,6 +254,12 @@ that have an `image` (every Files study does: it is required).
   (a square headshot; needs `avatarAlt`, usually the name), `website`,
   `stars` (1–5), `featured` (featured sections), `order` (lowest first;
   default 100).
+- **Review**: `name`, `rating` (4 or 5 only), `text`, `platform` (`google`,
+  `facebook`, `yelp`, `angi`, `nextdoor`, `thumbtack`, `bbb`). Optional:
+  `full` (the whole review, word for word), `date` (as the platform words
+  it), `services` (service ids; a service page lists its tagged reviews
+  first, then the rest), `featured` (first), `order` (lowest first;
+  default 100). Real, attributed reviews only; the schema can't prove it.
 - **Author**: `name`. Optional: `avatar` (a square headshot), `avatarAlt`
   (default: the name).
 - **Blog CTA**: `heading`, `body` (280 characters at most), `image` +
