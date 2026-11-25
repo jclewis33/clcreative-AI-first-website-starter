@@ -24,7 +24,8 @@ Read first, once per session:
 - **No invented proof.**
   - Only quote reviews that are real, attributed and public (theirs, on
     their site or their Google profile). If there are none, leave
-    `home.reviews` out; the section disappears.
+    `reviews` as `[]` in demo.json (no reviews page is installed) and
+    leave the review sections out of the pages.
   - No made-up numbers: a stat like "1,200 jobs" or "4.9 rating" must come
     from them. Otherwise use non-numeric highlights, such as "Licensed",
     "Upfront pricing", "Same-week".
@@ -42,7 +43,7 @@ Read first, once per session:
 
 Every demo has to look like a site a business owner would pay thousands
 for, made for them: not a template, and nothing that reads as AI-made.
-The template path alone (`demo.json` → `npm run demo`) gives every demo
+The starter pages alone (`demo.json` → `npm run demo`) give every demo
 the same sections in the same shapes, which is the plain white-card look
 Casey rejects. The reference (Nov 2026) is the Hey Segment sites in Clay
 Lawrence's video: a 30A landscaper, a 30A plumber, a tree service. Each
@@ -55,7 +56,7 @@ and fixing.
 **What "use our design system" means:** the tokens (spacing, type scale,
 radii, theme aliases), Section and Layout, Heading/Text/Button, the forms
 (GHL), SEO and JSON-LD, the service-area map, reviews and tap-to-call
-phones. Always use those. The template's section designs are a starting
+phones. Always use those. The starter pages' section designs are a starting
 point, not a limit.
 
 ### 1. Art direction (after research, before building)
@@ -86,14 +87,17 @@ before building the rest, unless he has said to just go.
 ### 2. Build it as theirs
 
 - Run `npm run demo` first for everything it does: identity, services,
-  content files, SEO, map, forms, reviews.
-- **Then design the hero and at least two or three sections for this
-  business.** The home page can be the demo's own page: copy the
-  template's page into `demo/pages/index.astro` (beside demo.json) and
-  compose it there from the template's sections and new ones.
-  `npm run demo` installs `demo/pages/*.astro` in place of the template's
-  page and keeps it on every re-run. The same works for `contact.astro`,
-  `about.astro` and `reviews.astro`.
+  regions, reviews, FAQs, projects, the nav, SEO, the map, forms. It also
+  installs the preset's starter pages into `src/pages/` (home, About,
+  contact, and reviews when there are reviews), once.
+- **Then design every page for this business, in `src/pages/`.** The
+  page there is the demo's own: compose it from section components (the
+  starter's and new ones), write the copy as props and tag text in the
+  page, import its photos in the page, and pull the repeated content from
+  the collections. Re-running `npm run demo` never overwrites a page that
+  exists. To start a page over, delete it and re-run. Design the hero and
+  at least two or three sections properly; the starter pages' neutral copy
+  and placeholder photos are where you start, never what ships.
 - **New sections:** build them reusable (props, no business facts in the
   component) and send them to the starter by PR, so every demo leaves the
   starter with more designs to pull from. A one-off arrangement can live
@@ -237,7 +241,7 @@ Smith Plumbing, GBZ Tree):
   - **Closing CTA:** a photo panel.
 - Anything the starter can't do yet becomes a reusable section or variant,
   by PR. A one-off arrangement lives in the demo's own page
-  (`demo/pages/index.astro`).
+  (`src/pages/index.astro`).
 
 ## Scope first: a demo is not a site build
 
@@ -271,9 +275,9 @@ went into the starter, but it is not the target.
   - **Every page in the nav carries the design, not only the home page.**
     Casey caught the reviews page falling back to the classic review
     cards and a plain contact page after the home and service pages were
-    designed. Set `home.reviews.cards: "google"` when the home page uses
-    Google-style cards (reviews and About pages follow), and give the
-    contact page its own `demo/pages/contact.astro` in the same language
+    designed. Use the Google-style `ReviewCards` variant on every page
+    that shows reviews when the home page uses it (the reviews and About
+    pages too), and design `src/pages/contact.astro` in the same language
     (hero with the form, `ContactMethods`, connected steps, a few reviews
     about getting started, the map card, the FAQ). Contact is in the nav.
   - **One action per card.** A row of cards gets one "Learn more" each.
@@ -299,15 +303,16 @@ The template's order, settled on the Jerry's Plumbing demo — fill it, don't
 re-argue it: hero (rating pill, form) → stats → emergency → services →
 symptoms ("Sound familiar?", button centred) → **reviews scrolling across
 the screen** → service-area map → how it works → story (their real photo,
-`story.imageSide: "right"`) → comparison → lead form → FAQ → call band.
+`imageSide="right"`) → comparison → lead form → FAQ → call band.
 Service pages get the same reviews automatically.
 
 **Reviews page (`/reviews`, in the nav):** it exists to show off how many
 good reviews they have, so pull **every 4- and 5-star written review they
 have, as many as there are — 20 or 200** — from every platform: Google,
 Facebook recommendations, Yelp, Angi/HomeAdvisor, Nextdoor, Thumbtack, BBB.
-All go in `home.reviews.items`, each with `full` (the whole review, word for
-word), `rating`, and `meta` naming the platform ("Google review"). Never a
+All go in demo.json's `reviews` (one file each in `src/content/reviews`),
+each with `full` (the whole review, word for word), `rating`, and `meta`
+naming the platform ("Google review"). Never a
 review under 4 stars (the schema refuses them). Getting them all:
 
 - **Google: use the search panel, not Maps.** Logged out, Google Maps shows
@@ -320,11 +325,11 @@ review under 4 stars (the schema refuses them). Getting them all:
   without a login. Ask Casey to paste those, or note them in
   `confirmOrCut`.
 - Star-only ratings (no text) can't be quoted; they still count in
-  `reviews.count`.
+  `rating.count`.
 
 **Reviews:** quote each reviewer's strongest line, not the whole review —
 cut with "…", otherwise their exact words — and say so in `confirmOrCut`.
-`reviews.layout: "marquee"` scrolls them (swipeable, pauses on hover);
+The `Reviews` section's `layout="marquee"` scrolls them (swipeable, pauses on hover);
 5+ reviews fill it.
 
 ## Working with Casey on a demo
@@ -457,9 +462,9 @@ per page). What made it match, and what cost rounds of fixes:
   inputs, on the demo branch: a scratchpad script disappears with the
   session, and every later fix is "edit the builder, re-run".
 - **Two buyers, two kinds of page.** A trade that sells to homeowners and
-  to contractors gets: the `audience` page (spec bar, scopes, equipment,
+  to contractors gets: the audience page (`audiencePage` in demo.json; spec bar, scopes, equipment,
   case study cards, prequal paperwork, a bid invitation form with
-  `fields="bid"`), a "For Contractors" nav button (`audience.navButton`),
+  `fields="bid"`), a "For Contractors" nav button (`audiencePage.navButton`),
   a utility-bar link to the bid form, Residential / Commercial service
   menus (`group`), and commercial service pages with
   `buyer: "contractor"` (bid buttons, specs, benefits, equipment, work,
@@ -588,7 +593,8 @@ git switch -c demo/<slug>
 ### 3. Write the copy (6–8 min)
 
 - Use the `cl-creative-storybrand-copywriter` skill for the home page (hero,
-  story, call band) and each service (hero, scope, included, FAQs, CTA).
+  story, call band; written in the page itself) and each service (hero,
+  scope, included, FAQs, CTA; written in its service file).
 - Each service's `scope` gets an `intro` line, 2 real `paragraphs` about
   that work (what goes wrong, how they do it, what the customer gets), and
   a **required** `scope.image` + `imageAlt`.
@@ -609,17 +615,16 @@ Write `demo/brief.md` and show Casey the hero directions: see "The quality
 bar" above. The layout and look below are the starting point the brief
 builds on.
 
-### 3b. Pick the layout, the look and the home-service pieces (1 min)
+### 3b. Pick the page shape, the look and the home-service pieces (1 min)
 
-- **`home.layout`** — the page's shape (any look works with either):
+- **The home page's shape**, composed in `src/pages/index.astro` (any look works with any):
   - `contractor` (default): conversion-led. Quote panel in the hero, offer
     seal, symptom cards, comparison table. For call-driven trades —
     electrical, plumbing, HVAC, pest, lawn.
   - `showcase`: photo-led and editorial, after the Outdoor Living demo.
     Full-bleed hero with a calmer headline, recent work on dark, the
-    owner's story with a "talk to us" link (`story.ctaLabel`), a cinematic
-    photo close. It skips `offer`, `symptoms`, `comparison` and the hero
-    panel/trust row. For work bought by looking at it — hardscape, decks,
+    owner's story with a "talk to us" link, a cinematic photo close. It
+    leaves out the offer, symptoms, comparison and the hero panel/trust row. For work bought by looking at it — hardscape, decks,
     remodeling, landscaping. Only pick it with strong real photos: it
     leans on them.
   - `estate`: high-end and two-sided (homeowners and contractors), after
@@ -636,10 +641,10 @@ builds on.
     buttons. Give it a warm brand colour (orange, gold, terracotta) for the
     buttons and accents; the navy comes from the look. A mid-tone orange
     gets white button text by default, which is hard to read: set
-    `brand.text: "dark"`. `hero.badge: false` hides the hero's automatic
-    "Since {founded}" card when the design doesn't have one.
+    `brand.text: "dark"`. Leave the hero's "Since {founded}" badge out when
+    the design doesn't have one.
   - `estate`: high-end decorative work sold to homeowners and contractors
-    (FDC Coatings). Use it with `home.layout: "estate"`: a full-photo
+    (FDC Coatings). Use it with the estate page shape: a full-photo
     hero, path panels, a before-and-after switcher, the commercial side in
     the spotlight, project highlights, a quote band. The look also brings
     its own service pages (before-and-after, options, gallery, stacked
@@ -663,8 +668,8 @@ builds on.
   - Without the form (`ctaStyle: "panel"`), the photo can carry people:
     tech and homeowners on its right half, in the bright style below.
   - `ctaStyle: "form"` (the default): the two-step estimate form on a card
-    beside the headline — step 1 is one tap on a service tile (under
-    `estimate.question`), step 2 just Name, Phone and an optional note. Casey picked two-step
+    beside the headline — step 1 is one tap on a service tile (headed
+    by the form's question), step 2 just Name, Phone and an optional note. Casey picked two-step
     over a long form: one easy question first, and a lighter-looking hero. `"panel"` is the lighter
     alternative.
   - `proofPosition: "above"` (the default) with `proof: { rating, text:
@@ -679,14 +684,15 @@ builds on.
   - `trust`: only credentials they actually show (licensed & insured, BBB,
     manufacturer dealer), with the seal file as `image` when you have it.
 - **Two audiences (homeowners and contractors):** when a prospect sells
-  to both, add `home.paths` (two panels under the hero, each linking to its
-  side) and an `audience` page at the URL they already use for that side
+  to both, put a PathCards section (two panels under the hero, each linking to its
+  side) on the home page and set `audiencePage` in demo.json at the URL
+  they already use for that side
   (`"path": "commercial-concrete-coatings"`): scopes, equipment, their
   commercial projects, the prequal paperwork, next steps and a bid form.
   Equipment counts, crew size, square footage and GC names go in
   [brackets] and `confirmOrCut` until they confirm them. Worked example:
   the FDC Coatings demo.
-- **Qualifying form (screening tire kickers):** `home.estimate.questions`
+- **Qualifying form (screening tire kickers):** `quote.questions` in demo.json
   turns the estimate pop-up into one-tap steps before the contact fields —
   who's asking (homeowner / contractor / property manager / business
   owner), the project, size, timing, and "What have you set aside for this
@@ -702,14 +708,14 @@ builds on.
     "Dentist", "Plumber"; the list is in `src/config/site.ts`). With a
     street address or hours, the contact page shows the office card
     (address, hours table, directions) automatically.
-  - `home.office` — a photo of the place beside that card, before the map
-    (home and About).
-  - `home.profile` — meet the doctor or owner: portrait, `badge` ("Cum
+  - An OfficeVisit section — a photo of the place beside that card, before
+    the map (home and About).
+  - A ProfileSplit section — meet the doctor or owner: portrait, `badge` ("Cum
     laude"), `credentials` tiles (school, license, techniques, languages),
     and `person` for the schema.org Person. Real, public facts only; a
     license number goes in `confirmOrCut` unless their site shows it. After
     the story (home and About).
-  - `home.spotFinder` — "Where does it hurt?": 3–9 `items`, each an `area`
+  - A SpotFinder section — "Where does it hurt?": 3–9 `items`, each an `area`
     on the body figure (head, neck, shoulders, upper-back, lower-back,
     elbows-wrists, hips, knees, ankles-feet), a line, up to two `lists`
     ("Common causes", "How we help") and `links` to their service pages —
@@ -717,27 +723,27 @@ builds on.
     symptoms (contractor) or the services (showcase).
   - Questions with `multiple: true` ("Where are you hurting?", pick all
     that apply) and `customerStatus` ("New or existing patient?");
-    `hero.formQuestions: true` puts those questions in the hero card.
+    the hero card can ask those questions too.
   - Hero: an old price in `<s>` ("Just <mark>$99</mark> <s>$199</s>", only
     their real offer), `proof.source: "google"` for a Google rating, and
     `edge: "wave"`.
 - **Projects:** `projects` (their own jobs, with before/after `photos`)
-  builds `/projects` and a page per job, in the nav; `home.beforeAfter`
-  puts the best pairs on the home page as sliders.
-- **About page (`/about`):** generated for every demo from the same `home`
-  data (story, stats, team, guarantee, process, reviews, map, call band) and
-  added to the nav and footer. Give it `home.about` — an `eyebrow`, an h1
-  `heading`, an intro `text`, and longer story `paragraphs` in the owner's
-  own words (their About section, verbatim where you can), and an
-  `about.image` of its own (without one it borrows the home page's photo
-  band, which then shows twice across the site). Without `home.about` the
-  page just leads with the story.
-- **`callBand`:** `variant: "photo-card"` with a wide texture-like job photo
+  builds `/projects` and a page per job, in the nav; a BeforeAfterGallery
+  section puts the best pairs on the home page as sliders.
+- **About page (`/about`):** installed with the other starter pages on the
+  first run and added to the nav and footer (`aboutNavLabel` renames the
+  nav link). Design it in `src/pages/about.astro`: an eyebrow, an h1, an
+  intro, and longer story paragraphs in the owner's own words (their About
+  section, verbatim where you can), then the team, guarantee, process,
+  reviews, map and call band as the material supports. Give it a photo of
+  its own, not the one the home page's photo band uses, which would show
+  twice across the site.
+- **The call band:** `CallBand variant="photo-card"` with a wide texture-like job photo
   (a lawn, a roofline, a finished patio). Otherwise leave out `variant` for
   the dark band.
 - **Optional home sections:** include each one only when the material is
-  real. Leaving one out removes it from the page, which is better than
-  filling it with something made up.
+  real. Leave a section out of the page rather than filling it with
+  something made up.
   - `symptoms`: 3 or 4 problems their customers describe ("AC blowing warm
     air", "Water under the sink"), from their FAQ, service pages or reviews.
   - `offer`: an offer **from their site**, with its terms in `note`.
@@ -756,8 +762,9 @@ builds on.
     "First visit", "Every season") beside the CTA. Only timings they
     promise: no "same day" or "this week" unless their site says so.
     `proof` is one real figure (`{ value: "100%", label: "Recommend us on
-Facebook" }`). When set it takes the home page's process slot;
-    `process` still feeds the About and service pages.
+Facebook" }`). It takes the home page's process slot;
+    The site-wide process steps (demo.json `process`) still feed the About and
+    service pages.
   - `why`: 3–5 reasons as icon rows (`icon` from
     src/data/service-icons.json) beside one big photo not used elsewhere on
     the home page. Sits after the story.
@@ -769,14 +776,16 @@ Facebook" }`). When set it takes the home page's process slot;
   `reviews` or `jobs` only when they're real (from their site or Casey);
   never filler like distances or "we drive there". Note missing proof in
   `confirmOrCut`. Pests, soil, lakes: only what's true and general;
-  list anything inferred in `confirmOrCut`. Skip `areas` and there's no
-  hub or region page at all.
-- `home.estimate.question` heads step 1 of the estimate form, above the
+  list anything inferred in `confirmOrCut`. A region page may only list
+  towns that are in `serviceAreas` (a build error names the file
+  otherwise). Skip `areas` and there's no hub or region page at all.
+- `quote.question` (demo.json) heads step 1 of the estimate form, above the
   service tiles. The default is "What do you need help with?". Phrase it for
   their trade ("What's going on with your AC?").
-- **`home.services.layout`:** `"cards"` (photo grid, default) or
-  `"showcase"` (an auto-advancing accordion with the photo swapping beside
-  it; it uses each service's `hero.text`, so write that as a full sentence).
+- **The home page's services section:** ServiceCards (a photo grid) or
+  ServiceShowcase (an auto-advancing accordion with the photo swapping
+  beside it; it uses each service's `hero.text`, so write that as a full
+  sentence).
 - **`serviceRadius`:** when they describe their area as a distance ("within
   60 miles of Palmer"), set `{ "center": "Palmer", "miles": 60 }`: the map
   draws that circle and frames itself on it. Then pick `serviceAreas` from
@@ -784,15 +793,18 @@ Facebook" }`). When set it takes the home page's process slot;
   the home county.
 - **`smsOptIn`:** on by default for demos (forms ask for a phone, with the
   SMS consent box); `false` for email-only.
-- **`photoBand.position`:** `{ "x": 50, "y": 25 }` (percent) when the
+- **PhotoBand `position`:** `{ x: 50, y: 25 }` (percent) when the
   people in the photo sit high in the frame; check heads aren't cropped.
-- **Service-area map:** automatic. `npm run demo` looks each service area
-  up on OpenStreetMap and draws a street map with the towns outlined,
-  caching the boundaries in `service-area.geo.json` beside demo.json. Commit
-  that file with the demo. A business that lists counties, not towns, can
+- **Service-area map:** automatic. `npm run demo` runs the same code as
+  `npm run map`: it looks each service area up on OpenStreetMap and draws
+  a street map with the towns outlined, writing the generated files in
+  `src/data/` (`service-area-geo.json`, `service-radius.json` and the
+  lookup cache `service-area-geo.cache.json`). Never hand-edit them;
+  commit them with the demo. After changing `serviceAreas` or
+  `serviceRadius` in `SITE`, run `npm run map`. A business that lists counties, not towns, can
   list them as such (`"Denton County"`): a name ending in "County" is
   looked up as a county and outlined whole. A miss is cached too: delete the
-  file after fixing a name. A town it can't find is skipped with a warning;
+  cache file after fixing a name. A town it can't find is skipped with a warning;
   check the spelling, or use the town's official name.
 - **`license`:** their license number, if their site or the state lookup
   shows it.
@@ -837,10 +849,10 @@ no warm color cast. No text, no logos."
   hero, tilted or murky shots.
 - **Never** a street photo of their house, even when it's their listed
   address.
-- **Contact page photo** (`home.contact.image`): sits behind the heading
+- **Contact page photo** (the hero image on `src/pages/contact.astro`): sits behind the heading
   under a dark overlay — a trade texture (copper and valves, tools), not a
   person.
-- **Their mascot or cartoon** goes on the About page hero (`about.imageFit:
+- **Their mascot or cartoon** goes on the About page hero (`imageFit=
 "cutout"`, transparent PNG via `images_remove_background`), not the home
   hero.
 - **Generate a few per slot (`count: 2–3`), make a contact sheet, pick.**
@@ -867,10 +879,20 @@ npm run demo -- --config <path>/demo.json
 
 - Keep `demo.json` and its `assets/` folder in the repo at `demo/` (committed
   with the branch), so the demo can be regenerated or promoted later.
+- demo.json holds facts and repeated content only: the business, services,
+  regions, reviews, FAQs, process steps, rating, quote form, projects. Page
+  copy is never in it (an old file with `home` or `audience` keys is
+  refused). Schema and a worked example: `presets/local-service/README.md`.
 - The script validates first: a bad field is reported as
   `demo.json › services.1.highlights: …`. Fix it and re-run.
-- Re-running is the normal way to change anything. Never hand-edit the
-  generated files (`src/data/home.ts`, `src/content/services/*`, …).
+- **Step 0 installs the preset's pages into `src/pages/`, only where no
+  page exists, and never overwrites one after.** Everything else it writes
+  (`SITE` in `src/config/site.ts`, `src/content/{services,service-areas,
+reviews,faqs,projects}/*`, `settings.json` `process`, the nav, the map
+  data) is regenerated whole on every run: re-running after an edit to
+  demo.json is the normal way to change a fact or a service, and never
+  hand-edit those generated files. Pages are the opposite: edit them
+  directly in `src/pages/`.
 
 ### 6. Build, then the check-and-fix loop
 
@@ -895,7 +917,8 @@ Screenshot at 1440 and 390 wide with the Playwright MCP:
 - the estimate modal
 
 Scroll the page first so the scroll animations fire. Fix anything off by
-editing demo.json and re-running, especially:
+editing the page, or demo.json and re-running for facts and content,
+especially:
 
 - a logo that's too small or that vanishes (try `plate`)
 - an unreadable brand colour
@@ -952,5 +975,13 @@ git push origin --delete demo/<slug>
 
 ## When a prospect signs
 
-Follow docs/demo-mode.md, "When a prospect signs". Their demo.json and
-assets carry over, then `/setup` sets up the real project.
+The demo branch becomes the client's site; follow docs/demo-mode.md,
+"When a prospect signs":
+
+1. Push `demo/<slug>` as `main` of the client's new repo (it shares the
+   starter's history, so starter updates still merge).
+2. Set `SITE.demo` to `null` in `src/config/site.ts`.
+3. Run `/setup` for the real-site settings.
+4. Work through `confirmOrCut` with the client and clear it.
+
+Their demo.json and assets stay in the repo as the record of the facts.

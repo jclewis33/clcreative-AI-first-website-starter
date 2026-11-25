@@ -34,7 +34,7 @@ To remove a service, delete its file and its photos.
 | `highlights`                                    | StatsStrip — exactly 4 `{ value, label }`                                                                                                     |
 | `scope`                                         | WorkScope "what we work on": `intro`, `paragraphs` (1–3, about THIS work), icon rows, and a tall photo (`image`/`imageAlt`, else `cardImage`) |
 | `included`                                      | IncludedList — checklist + exactly 2 photos                                                                                                   |
-| `process` (optional)                            | ProcessSteps; omit to use `src/data/process.ts`                                                                                               |
+| `process` (optional)                            | ProcessSteps; omit to use the site-wide steps (`process` in `src/content/settings.json`, read with `getProcess()`)                            |
 | _(reviews)_                                     | Not a service field: reviews are files in `src/content/reviews/`, tagged with `services: ["<this id>"]`; 4+ scroll across the screen          |
 | `reviewSummary` (optional)                      | `{ rating, count? }` — the summary line over the reviews                                                                                      |
 | `faqs`                                          | FAQ section + FAQPage schema (2 or more, plain text)                                                                                          |

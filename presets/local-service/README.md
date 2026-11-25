@@ -33,6 +33,12 @@ the design. The home page follows the contractor home's order (hero,
 services, symptoms, reviews, map, how it works, story, comparison, lead
 form, FAQ, call band).
 
+Two things to know about the scaffold. Headings built with `${…}`
+interpolation and lists rendered with `.map()` can't be edited on the
+Stacki canvas (it reads literal props and tag text only), so write those
+out in full when a page is meant for Stacki. And the scaffold copy must be
+rewritten from the business's own facts before a demo ships.
+
 This folder is excluded from the starter's `tsconfig.json`, so
 `npm run check` doesn't see these pages; `npm run check:demo` builds
 them in the fixture demo.

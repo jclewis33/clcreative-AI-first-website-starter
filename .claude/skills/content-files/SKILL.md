@@ -58,6 +58,7 @@ the field reference; keep the two in step.
 | Testimonial    | `src/content/testimonials/<id>.json`    | Testimonial sliders, grids, `<SingleTestimonial name>`               |
 | Service area   | `src/content/service-areas/<slug>.json` | `/service-areas/<slug>` (a region of towns), the hub, town links     |
 | Review         | `src/content/reviews/<id>.json`         | Review sections; `getReviews({ service, limit })` in `@/lib/reviews` |
+| FAQ            | `src/content/faqs/<id>.json`            | The site-wide FAQ section and its FAQPage JSON-LD (`getFaqs()`)      |
 
 Photos go in an `images/` folder beside the entries, referenced as
 `"./images/<file>"`: `src/content/blog/images/`,
@@ -257,9 +258,16 @@ that have an `image` (every Files study does: it is required).
 - **Review**: `name`, `rating` (4 or 5 only), `text`, `platform` (`google`,
   `facebook`, `yelp`, `angi`, `nextdoor`, `thumbtack`, `bbb`). Optional:
   `full` (the whole review, word for word), `date` (as the platform words
-  it), `services` (service ids; a service page lists its tagged reviews
-  first, then the rest), `featured` (first), `order` (lowest first;
-  default 100). Real, attributed reviews only; the schema can't prove it.
+  it), `meta` (the line under the name, "Panel upgrade · Round Rock";
+  default "<Platform> review"), `role` (who they are, when it matters:
+  "General contractor"), `avatar` (a reviewer photo; needs `avatarAlt`,
+  usually the name), `services` (service ids; a service page lists its
+  tagged reviews first, then the rest), `featured` (first), `order`
+  (lowest first; default 100). Real, attributed reviews only; the schema
+  can't prove it.
+- **FAQ** (site-wide; a service's own FAQs stay in its service file):
+  `question`, `answer` (inline HTML allowed). Optional: `order` (lowest
+  first; default 100). The filename is only an id.
 - **Author**: `name`. Optional: `avatar` (a square headshot), `avatarAlt`
   (default: the name).
 - **Blog CTA**: `heading`, `body` (280 characters at most), `image` +
@@ -272,7 +280,10 @@ that have an `image` (every Files study does: it is required).
   (0–100, default 80).
 - **settings.json**: `{ "site": { "defaultBlogCta": "<id>",
 "defaultCtaSection": "<id>" } }`. The `"site"` key is required: without it
-  the sync fails (`src/content/settings.json → site: missing`).
+  the sync fails (`src/content/settings.json → site: missing`). It also
+  holds `process`, the site-wide "how it works" steps every service page
+  shows without its own: `{ "heading", "text"?, "steps": [{ "title",
+"text" }] }`, at least 2 steps (`getProcess()` in `@/lib/faqs`).
 
 ## How to…
 
