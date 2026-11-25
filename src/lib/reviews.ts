@@ -67,6 +67,20 @@ export async function getReviews(opts: ReviewOptions = {}): Promise<Review[]> {
   return limit === undefined ? sorted : sorted.slice(0, Math.max(0, limit));
 }
 
+/**
+ * The reviews a service page shows: every review tagged with that service,
+ * in the usual order. A service with none tagged shows the site's own
+ * (untagged) reviews instead, so every service page carries real reviews.
+ * Reviews tagged for other services never appear here.
+ */
+export async function getServiceReviews(serviceId: string): Promise<Review[]> {
+  const all = await getReviews({ service: serviceId });
+  const own = all.filter((r) =>
+    r.services?.some((ref) => ref.id === serviceId),
+  );
+  return own.length > 0 ? own : all.filter((r) => !r.services?.length);
+}
+
 /** The business's public rating (`SITE.rating`), or null when there is none. */
 export function getRating(): SiteRating | null {
   return SITE.rating;

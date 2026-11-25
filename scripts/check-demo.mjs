@@ -382,15 +382,32 @@ try {
   // Service pages carry one estimate form (the site-wide one), not two.
   const service = html("services/panel-upgrades/index.html");
   assert.equal(service.match(/id="estimate-modal"/g)?.length, 1);
-  // A service page lists the reviews tagged for that service first, ahead
-  // of the site's own reviews (which sort earlier by order).
-  const taggedAt = service.indexOf("Marcus T.");
-  const untaggedAt = service.indexOf("Dana M.");
-  assert.ok(taggedAt !== -1, "service page is missing its tagged review");
-  assert.ok(
-    untaggedAt === -1 || taggedAt < untaggedAt,
-    "service reviews must list the tagged review before the untagged ones",
-  );
+  // A service page shows every review tagged for that service (not a
+  // capped few) and none of the others; a service with none tagged shows
+  // the site's own reviews.
+  const tagged = fixture.services[0].reviews;
+  assert.ok(tagged.length > 6, "fixture must tag more than 6 reviews");
+  for (const review of tagged)
+    assert.ok(
+      service.includes(review.text),
+      `service page is missing its tagged review from ${review.name}`,
+    );
+  for (const review of fixture.reviews)
+    assert.ok(
+      !service.includes(review.text),
+      `service page shows an untagged review from ${review.name}`,
+    );
+  const fallback = html("services/ev-chargers/index.html");
+  for (const review of fixture.reviews)
+    assert.ok(
+      fallback.includes(review.text),
+      `an untagged service page is missing the site review from ${review.name}`,
+    );
+  for (const review of tagged)
+    assert.ok(
+      !fallback.includes(review.text),
+      "an untagged service page shows another service's review",
+    );
   // Region pages: their own title, the region's towns on the map, the
   // services linking to their main pages, the form on the page; the
   // service page's town chips link to the region.
