@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { mergeStyle } from "@/lib/style";
 
 /* ── Props contract ──────────────────────────────────────────────────────────
    Keep the JSDoc below free of STRAY angle brackets — a stray one silently
@@ -159,10 +160,7 @@ if (import.meta.env.DEV && render) {
 const isCustom = variant === "custom";
 const isAuto = variant === "auto";
 const computedStyle = isCustom && ratio ? `aspect-ratio: ${ratio};` : undefined;
-const mergedStyle =
-  [computedStyle, typeof userStyle === "string" ? userStyle : undefined]
-    .filter(Boolean)
-    .join(" ") || undefined;
+const mergedStyle = mergeStyle(computedStyle, userStyle);
 ---
 
 {

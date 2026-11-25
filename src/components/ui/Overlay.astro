@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { mergeStyle } from "@/lib/style";
 /**
  * Overlay — dark scrim that sits over media or background content.
  *
@@ -95,8 +96,7 @@ const computedStyle = styleParts.filter(Boolean).join("; ") || undefined;
 
 /* Merge user-provided style with computed overlay styles */
 const { style: userStyle, ...attrs } = rest;
-const mergedStyle =
-  [computedStyle, userStyle].filter(Boolean).join("; ") || undefined;
+const mergedStyle = mergeStyle(computedStyle, userStyle);
 ---
 
 {

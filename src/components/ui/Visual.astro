@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { mergeStyle } from "@/lib/style";
 /**
  * Visual — image component wrapping Astro `<Image />` with aspect ratio,
  * focal-point positioning, border-radius, and variant support.
@@ -457,8 +458,7 @@ if (transparent) wrapperParts.push("background-color: transparent");
 
 /* Merge user-provided style with computed wrapper styles */
 const { style: userStyle, ...attrs } = rest;
-const wrapperStyle =
-  [...wrapperParts, userStyle].filter(Boolean).join("; ") || undefined;
+const wrapperStyle = mergeStyle(...wrapperParts, userStyle);
 
 /* Crop factor: how much wider than its box a cover-cropped photo is drawn
    (a wide photo in a tall box is scaled to the box's HEIGHT). `sizes="auto"`

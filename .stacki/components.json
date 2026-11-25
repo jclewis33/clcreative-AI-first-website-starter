@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "components": {
+    "src/components/ui/Heading.astro": {
+      "props": {},
+      "text": "Heading"
+    },
+    "src/components/ui/Text.astro": {
+      "props": {},
+      "text": "A short paragraph of supporting text."
+    },
+    "src/components/ui/Button.astro": {
+      "props": { "href": "/contact" },
+      "text": "Button text"
+    },
+    "src/components/ui/ButtonWrapper.astro": {
+      "props": {},
+      "children": [{ "component": "src/components/ui/Button.astro" }]
+    },
+    "src/components/ui/Card.astro": {
+      "props": { "title": "Card title" },
+      "children": [{ "component": "src/components/ui/Text.astro" }]
+    },
+    "src/components/ui/Grid.astro": {
+      "props": { "largeColumns": 3, "mediumColumns": 2, "smallColumns": 1 },
+      "children": [
+        { "component": "src/components/ui/Card.astro" },
+        { "component": "src/components/ui/Card.astro" },
+        { "component": "src/components/ui/Card.astro" }
+      ]
+    },
+    "src/components/ui/Section.astro": {
+      "props": {},
+      "children": [
+        { "component": "src/components/ui/Heading.astro" },
+        { "component": "src/components/ui/Text.astro" }
+      ]
+    }
+  }
+}

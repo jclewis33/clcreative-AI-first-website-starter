@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { mergeStyle } from "@/lib/style";
 import Layout from "@/components/ui/Layout.astro";
 /**
  * Heading — separates semantic tag (`h1`–`h6`, `p`) from visual style.
@@ -246,12 +247,10 @@ const elementClasses = [
 
 /* Merge user-provided style with computed max-width */
 const { style: userStyle, ...attrs } = rest;
-const mergedStyle = [
+const mergedStyle = mergeStyle(
   resolvedMaxWidth ? `max-width: ${resolvedMaxWidth}` : null,
   userStyle,
-]
-  .filter(Boolean)
-  .join("; ");
+);
 ---
 
 {

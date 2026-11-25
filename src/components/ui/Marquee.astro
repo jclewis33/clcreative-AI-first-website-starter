@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { mergeStyle } from "@/lib/style";
 /**
  * Marquee — infinite horizontal scrolling ticker. Pure CSS, no JavaScript.
  *
@@ -132,6 +133,9 @@ const gapValue = gap === 0 ? "0px" : `var(--space-${gap})`;
 // Both are consumed by CSS only. The small script below only acts on
 // `swipe` marquees.
 const trackStyle = `--marquee-gap: ${gapValue}; --marquee-duration: ${speed}s`;
+
+/* Caller style merges with the component's own inline custom properties */
+const { style: userStyle, ...attrs } = rest;
 ---
 
 <div
@@ -140,8 +144,8 @@ const trackStyle = `--marquee-gap: ${gapValue}; --marquee-duration: ${speed}s`;
   data-marquee-direction={direction}
   data-marquee-pause={String(pauseOnHover)}
   data-marquee-swipe={swipe ? "" : undefined}
-  style={trackStyle}
-  {...rest}
+  style={mergeStyle(trackStyle, userStyle)}
+  {...attrs}
 >
   <div class="marquee_track">
     <div class="marquee_inner"><slot /></div>

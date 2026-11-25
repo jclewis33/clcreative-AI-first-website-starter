@@ -252,15 +252,22 @@ const items = slot.replace(/data-accordion-group/g, () => {
 
     /* Open/close: block-size 0 ↔ auto on the details content box.
        allow-discrete on content-visibility keeps the content painted for
-       the whole closing transition. Non-supporting engines ignore all of
-       this and toggle instantly. */
+       the whole closing transition. The transition is gated on
+       interpolate-size: Firefox supports ::details-content but can't
+       animate to auto, and an ungated transition flickers there. Engines
+       without it toggle instantly. */
     .accordion_item::details-content {
       block-size: 0;
       overflow: hidden;
       content-visibility: hidden;
-      transition:
-        block-size 0.3s ease,
-        content-visibility 0.3s ease allow-discrete;
+    }
+
+    @supports (interpolate-size: allow-keywords) {
+      .accordion_item::details-content {
+        transition:
+          block-size 0.3s ease,
+          content-visibility 0.3s ease allow-discrete;
+      }
     }
 
     .accordion_item[open]::details-content {

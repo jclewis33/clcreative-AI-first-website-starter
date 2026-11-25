@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { mergeStyle } from "@/lib/style";
 /**
  * FormRange — label + range slider with optional value display.
  *
@@ -124,6 +125,9 @@ const fieldId = id || `field-${name}`;
 const outputId = `${fieldId}-output`;
 const describedById = helperText || errorText ? `${fieldId}-hint` : undefined;
 const initialProgress = ((value - min) / (max - min)) * 100;
+
+/* Caller style merges with the component's own inline custom properties */
+const { style: userStyle, ...attrs } = rest;
 ---
 
 <div class:list={["form_label_wrap", "form_range_wrap", className]}>
@@ -166,11 +170,11 @@ const initialProgress = ((value - min) / (max - min)) * 100;
     disabled={disabled}
     aria-describedby={describedById}
     aria-invalid={errorText ? "true" : undefined}
-    style={`--range-progress: ${initialProgress}%`}
+    style={mergeStyle(`--range-progress: ${initialProgress}%`, userStyle)}
     data-output={showValue ? outputId : undefined}
     data-prefix={prefix || undefined}
     data-suffix={suffix || undefined}
-    {...rest}
+    {...attrs}
   />
 
   {
