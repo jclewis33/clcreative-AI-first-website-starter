@@ -114,7 +114,7 @@ accepts `primaryCta` / `secondaryCta` and HTML headings.
 matching one of `areas` exactly. Everything else in the SVG is artwork and
 ignores the pointer. Example: `src/assets/maps/sample-service-area.svg`.
 
-### Estate pieces (the FDC Coatings design)
+### Estate pieces (the coatings design)
 
 Built for a high-end, two-sided business (homeowners and contractors). Each
 is a section with a demo on `/components`; they work in any look.

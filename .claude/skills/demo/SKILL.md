@@ -299,7 +299,7 @@ went into the starter, but it is not the target.
 
 ## Page flow (contractor home)
 
-The template's order, settled on the Jerry's Plumbing demo — fill it, don't
+The template's order, settled on the plumbing demo (Nov 2026) — fill it, don't
 re-argue it: hero (rating pill, form) → stats → emergency → services →
 symptoms ("Sound familiar?", button centred) → **reviews scrolling across
 the screen** → service-area map → how it works → story (their real photo,
@@ -316,7 +316,7 @@ naming the platform ("Google review"). Never a
 review under 4 stars (the schema refuses them). Getting them all:
 
 - **Google: use the search panel, not Maps.** Logged out, Google Maps shows
-  only a handful (on Jerry's: 5 of 14). Open their Google Business Profile
+  only a handful (on the plumbing demo: 5 of 14). Open their Google Business Profile
   link (or search their name) in Playwright, click "View all Google
   reviews" in the panel, keep scrolling that dialog until the count stops
   growing, click every "More". It listed all 14. Check your count against
@@ -346,7 +346,7 @@ The `Reviews` section's `layout="marquee"` scrolls them (swipeable, pauses on ho
   exception: the footer. Design boards often show a short one; the site
   uses one consistent full footer (the home page design's) on every page.
   (Casey,
-  Nov 2026, FDC Coatings: the first build swapped his approved design's
+  Nov 2026, coatings demo: the first build swapped his approved design's
   nav, banner order, buttons and sections for existing ones.)
 - **Show, then build.** For a visual call (hero treatment, a background,
   mascot vs. photo) send 2–3 quick mockups or screenshots first; build the
@@ -423,9 +423,9 @@ The `Reviews` section's `layout="marquee"` scrolls them (swipeable, pauses on ho
 - **Fixes and new options go into the starter** (one PR branch per demo
   session), merged into the demo branch as you go; never only the demo.
 
-## Building from an approved design (learned on FDC Coatings, Nov 2026)
+## Building from an approved design (learned on a coatings demo, Nov 2026)
 
-The FDC demo was built from an approved Artifact design canvas (one board
+The coatings demo was built from an approved Artifact design canvas (one board
 per page). What made it match, and what cost rounds of fixes:
 
 - **Read the board's markup, not your memory of it.** Before building a
@@ -456,7 +456,7 @@ per page). What made it match, and what cost rounds of fixes:
   Where a placeholder sits inside a sentence, write the sentence without
   it, in words that are true from their site ("old flooring", not
   "[EXISTING FLOORING]"). Never invent the number.
-- **Keep the demo's builder in the demos repo.** FDC's demo.json was
+- **Keep the demo's builder in the demos repo.** The coatings demo's demo.json was
   written by a script (`demo/build_demo.py`: their services, projects and
   reviews, then a "design overrides" block per page). Keep it, and its
   inputs, on the demo branch: a scratchpad script disappears with the
@@ -515,7 +515,7 @@ true` so the nav reads "Call or text". The owner may not answer the
 AI assistants (ChatGPT, Claude, Perplexity) and people both need these
 stated in plain sentences. Answer them **throughout the site**, on every
 page that can be an entry point, not on one dedicated page (Casey's call,
-Nov 2026, FDC Coatings):
+Nov 2026, coatings demo):
 
 1. **What it does** — the service, in plain words.
 2. **Where it works** — the city or region, as a sentence, not only a
@@ -528,7 +528,7 @@ Nov 2026, FDC Coatings):
 How to cover them:
 
 - **One plain summary sentence per page**, in the intro paragraph (not the
-  headline): "FDC Coatings polishes existing concrete floors for
+  headline): "Acme Coatings polishes existing concrete floors for
   homeowners, builders and businesses across Dallas–Fort Worth, from
   Flower Mound."
 - **A "what happens when you reach out" strip beside every main call to
@@ -612,23 +612,26 @@ git switch -c demo/<slug>
 ### 3a. Art direction
 
 Write `demo/brief.md` and show Casey the hero directions: see "The quality
-bar" above. The layout and look below are the starting point the brief
+bar" above. The direction and look below are the starting point the brief
 builds on.
 
-### 3b. Pick the page shape, the look and the home-service pieces (1 min)
+### 3b. Pick the design direction, the look and the home-service pieces (1 min)
 
-- **The home page's shape**, composed in `src/pages/index.astro` (any look works with any):
-  - `contractor` (default): conversion-led. Quote panel in the hero, offer
+- **Three design directions** to compose the home page in
+  (`src/pages/index.astro`; the preset ships the contractor order; any look
+  works with any direction):
+  - **Contractor** (the starter page's order): conversion-led. Quote panel in the hero, offer
     seal, symptom cards, comparison table. For call-driven trades —
     electrical, plumbing, HVAC, pest, lawn.
-  - `showcase`: photo-led and editorial, after the Outdoor Living demo.
+  - **Showcase**: photo-led and editorial, after an outdoor-living demo.
     Full-bleed hero with a calmer headline, recent work on dark, the
     owner's story with a "talk to us" link, a cinematic photo close. It
-    leaves out the offer, symptoms, comparison and the hero panel/trust row. For work bought by looking at it — hardscape, decks,
+    leaves out the offer, symptoms, comparison and the hero panel/trust row.
+    For work bought by looking at it — hardscape, decks,
     remodeling, landscaping. Only pick it with strong real photos: it
     leans on them.
-  - `estate`: high-end and two-sided (homeowners and contractors), after
-    the FDC Coatings design. Pair it with the `estate` look (below).
+  - **Estate**: high-end and two-sided (homeowners and contractors), after
+    a coatings design. It goes with the `estate` look (below).
 
 - **`look`**, by trade (see `src/config/looks.ts`):
   - `fresh`: lawn, pest, cleaning, pool
@@ -644,7 +647,7 @@ builds on.
     `brand.text: "dark"`. Leave the hero's "Since {founded}" badge out when
     the design doesn't have one.
   - `estate`: high-end decorative work sold to homeowners and contractors
-    (FDC Coatings). Use it with the estate page shape: a full-photo
+    (a coatings demo). Its home page leads with a full-photo
     hero, path panels, a before-and-after switcher, the commercial side in
     the spotlight, project highlights, a quote band. The look also brings
     its own service pages (before-and-after, options, gallery, stacked
@@ -656,8 +659,8 @@ builds on.
   If their current brand clearly fights the default for their trade, pick
   the closer look and say why in your report.
 
-- **Hero** (contractor layout). The recipe that landed on the Jerry's
-  Plumbing demo, after Mike Healey Plumbing's site:
+- **Hero** (contractor direction). The recipe that landed on the plumbing
+  demo, after Mike Healey Plumbing's site:
   - `variant: "background"` + `overlay: "side"`: the photo on the right
     two-thirds, melting into the dark background behind the text, with the
     form card on top of it. **With the form, the photo is texture, not a
@@ -691,7 +694,7 @@ builds on.
   commercial projects, the prequal paperwork, next steps and a bid form.
   Equipment counts, crew size, square footage and GC names go in
   [brackets] and `confirmOrCut` until they confirm them. Worked example:
-  the FDC Coatings demo.
+  the coatings demo.
 - **Qualifying form (screening tire kickers):** `quote.questions` in demo.json
   turns the estimate pop-up into one-tap steps before the contact fields —
   who's asking (homeowner / contractor / property manager / business
@@ -858,7 +861,7 @@ no warm color cast. No text, no logos."
 - **Generate a few per slot (`count: 2–3`), make a contact sheet, pick.**
 - **Check every photo for correctness at full size, not just the
   thumbnail:** objects built right and in proportion (a trailer's bed square
-  on its frame, wheels and axles where they belong — the first Jerry's dump
+  on its frame, wheels and axles where they belong — the first plumbing demo's dump
   trailer had its bed twisted sideways and shipped unnoticed), hands, tools,
   pipes that connect, lettering, and heads not cropped at the sizes the site
   uses (tall on desktop, square on phones). Reject and regenerate rather
