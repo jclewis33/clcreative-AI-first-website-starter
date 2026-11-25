@@ -222,6 +222,7 @@ function control() {
     "projects",
     "case-studies",
     "testimonials",
+    "reviews",
     "blog",
   ])
     write(`src/content/${dir}/images/zz-check.png`, PNG);
@@ -452,6 +453,15 @@ const CASES = [
         json({ ...REVIEW, platform: "myspace" }),
       ),
     expect: ["zz-check-review.json", "platform"],
+  },
+  {
+    name: "review avatar without avatarAlt",
+    apply: () =>
+      write(
+        "src/content/reviews/zz-check-review.json",
+        json({ ...REVIEW, avatar: IMG }),
+      ),
+    expect: ["zz-check-review.json", "avatarAlt"],
   },
   {
     name: "filename not kebab-case",

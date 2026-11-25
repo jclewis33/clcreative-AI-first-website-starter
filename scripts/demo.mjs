@@ -539,7 +539,8 @@ async function main() {
   // 3a. Reviews — one file each in src/content/reviews: the home page's
   // reviews, then each service's own, tagged with that service. A review in
   // both places is one file with every service it belongs to.
-  await emptyDir("src/content/reviews");
+  await emptyDir("src/content/reviews", /^images$/);
+  await emptyDir("src/content/reviews/images");
   /** @type {Map<string, Record<string, any>>} */
   const reviewFiles = new Map();
   const reviewIds = new Set();
@@ -576,6 +577,10 @@ async function main() {
       text: review.text,
       ...(review.full ? { full: review.full } : {}),
       ...(review.date ? { date: review.date } : {}),
+      ...(review.meta ? { meta: review.meta } : {}),
+      ...(review.role ? { role: review.role } : {}),
+      ...(review.avatar ? { avatar: review.avatar } : {}),
+      ...(review.avatarAlt ? { avatarAlt: review.avatarAlt } : {}),
       platform: platformOf(review.meta),
       ...(serviceId ? { services: [serviceId] } : {}),
       order: reviewFiles.size,
@@ -585,11 +590,19 @@ async function main() {
     addReview(review, undefined);
   for (const entry of demo.services)
     for (const review of entry.reviews ?? []) addReview(review, entry.slug);
-  for (const { id, ...review } of reviewFiles.values())
+  for (const { id, ...review } of reviewFiles.values()) {
+    if (review.avatar) {
+      await write(
+        `src/content/reviews/images/${id}.webp`,
+        await webp(await img(review.avatar), 256),
+      );
+      review.avatar = `./images/${id}.webp`;
+    }
     await write(
       `src/content/reviews/${id}.json`,
       `${JSON.stringify(review, null, 2)}\n`,
     );
+  }
 
   // 3. Services.
   await emptyDir("src/content/services", /^images$/);

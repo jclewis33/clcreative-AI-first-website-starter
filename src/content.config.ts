@@ -903,25 +903,44 @@ const reviews = defineCollection({
     ),
     { refs: { services: json(DIR.services) } },
   ),
-  schema: z.object({
-    /** The reviewer's name as the platform shows it ("Jane D."). */
-    name: z.string().min(1),
-    /** Stars. The site never shows a review below 4. */
-    rating: z.union([z.literal(4), z.literal(5)]),
-    /** The line the cards show (an excerpt is fine). */
-    text: z.string().min(1),
-    /** The whole review, word for word (the /reviews page). Defaults to text. */
-    full: z.string().min(1).optional(),
-    /** As the platform words it ("a year ago") or a date. */
-    date: z.string().min(1).optional(),
-    /** Where the review was left. */
-    platform: z.enum(REVIEW_PLATFORMS),
-    /** The service pages it belongs to (filenames in src/content/services). */
-    services: z.array(reference("services")).optional(),
-    featured: z.boolean().default(false),
-    /** Sort order, lowest first. */
-    order: z.number().int().min(0).default(100),
-  }),
+  schema: ({ image }) =>
+    z
+      .object({
+        /** The reviewer's name as the platform shows it ("Jane D."). */
+        name: z.string().min(1),
+        /** Stars. The site never shows a review below 4. */
+        rating: z.union([z.literal(4), z.literal(5)]),
+        /** The line the cards show (an excerpt is fine). */
+        text: z.string().min(1),
+        /** The whole review, word for word (the /reviews page). Defaults to text. */
+        full: z.string().min(1).optional(),
+        /** As the platform words it ("a year ago") or a date. */
+        date: z.string().min(1).optional(),
+        /** Where the review was left. */
+        platform: z.enum(REVIEW_PLATFORMS),
+        /** The service pages it belongs to (filenames in src/content/services). */
+        services: z.array(reference("services")).optional(),
+        featured: z.boolean().default(false),
+        /** Sort order, lowest first. */
+        order: z.number().int().min(0).default(100),
+        /** The line under the name ("Panel upgrade · Round Rock"). Defaults to "<Platform> review". */
+        meta: z.string().min(1).optional(),
+        /** Who they are, when it matters ("General contractor"). */
+        role: z.string().min(1).optional(),
+        /** Reviewer photo. Needs avatarAlt. */
+        avatar: image().optional(),
+        /** Required with an avatar: usually the reviewer's name. */
+        avatarAlt: alt.optional(),
+      })
+      .superRefine((review, ctx) => {
+        if (review.avatar && !review.avatarAlt)
+          ctx.addIssue({
+            code: "custom",
+            path: ["avatarAlt"],
+            message:
+              'Add avatarAlt (usually the reviewer\'s name) — "avatar" is set, and every image needs alt text.',
+          });
+      }),
 });
 
 export const collections = {
