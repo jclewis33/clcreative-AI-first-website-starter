@@ -384,7 +384,7 @@ try {
   assert.equal(service.match(/id="estimate-modal"/g)?.length, 1);
   // A service page shows every review tagged for that service (not a
   // capped few) and none of the others; a service with none tagged shows
-  // the site's own reviews.
+  // all the site's reviews, including ones tagged for other services.
   const tagged = fixture.services[0].reviews;
   assert.ok(tagged.length > 6, "fixture must tag more than 6 reviews");
   for (const review of tagged)
@@ -401,12 +401,14 @@ try {
   for (const review of fixture.reviews)
     assert.ok(
       fallback.includes(review.text),
-      `an untagged service page is missing the site review from ${review.name}`,
+      `a service with no tags is missing the site review from ${review.name}`,
     );
+  // A review tagged for a different service still shows (the demo bridge
+  // tags a review that is also a home review with its service).
   for (const review of tagged)
     assert.ok(
-      !fallback.includes(review.text),
-      "an untagged service page shows another service's review",
+      fallback.includes(review.text),
+      "a service with no tags must still show reviews tagged for another service",
     );
   // Region pages: their own title, the region's towns on the map, the
   // services linking to their main pages, the form on the page; the

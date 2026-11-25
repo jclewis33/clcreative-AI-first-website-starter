@@ -262,7 +262,7 @@ that have an `image` (every Files study does: it is required).
   default "<Platform> review"), `role` (who they are, when it matters:
   "General contractor"), `avatar` (a reviewer photo; needs `avatarAlt`,
   usually the name), `services` (service ids; a service page shows its
-  tagged reviews, or the untagged ones when it has none), `featured` (first), `order`
+  tagged reviews, or all reviews when it has none), `featured` (first), `order`
   (lowest first; default 100). Real, attributed reviews only; the schema
   can't prove it.
 - **FAQ** (site-wide; a service's own FAQs stay in its service file):
