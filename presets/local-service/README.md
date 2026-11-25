@@ -8,17 +8,34 @@ skill (`.claude/skills/demo/SKILL.md`) explains the whole workflow and
 | File             | What it is                                                                                                                     |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `preset.mjs`     | The `demo.json` schema (validated before anything is written), the pages this preset installs, the nav links a demo hides      |
-| `index.astro`    | The home page: `LocalServiceHome` + the generated `src/data/home.ts`                                                           |
-| `reviews.astro`  | The reviews page (`/reviews`, in the nav): `LocalServiceReviews` — only when `home.reviews` is set                             |
-| `contact.astro`  | The contact page: `LocalServiceContact`                                                                                        |
-| `audience.astro` | The audience page (`LocalServiceAudience`), installed at demo.json's `audience.path` — only with `audience`                    |
+| `index.astro`    | The home page                                                                                                                  |
+| `about.astro`    | The About page                                                                                                                 |
+| `reviews.astro`  | The reviews page (`/reviews`, in the nav) — only when the demo has reviews                                                     |
+| `contact.astro`  | The contact page                                                                                                               |
+| `audience.astro` | A page for contractors or property managers, installed at demo.json's `audience.path` — only with `audience`                   |
 | `fixture/`       | A fictional prospect (Brightline Electric) — `npm run check:demo` builds it; also the worked example of a complete `demo.json` |
 
-The page markup lives in `src/components/templates/` (LocalServiceHome,
-LocalServiceContact), not here, so the starter's own CI type-checks and
-builds it through the dev sample at `/demo/local-service`. This folder is
-excluded from the starter's `tsconfig.json`: `index.astro` imports
-`src/data/home.ts`, which exists only in a demo.
+## The pages are a scaffold, not a template
+
+Each page is composed in the file itself: section components laid out in
+order, with the copy written as props and tag text and the photos
+imported at the top. Repeated content comes from the collections
+(services, reviews, FAQs, the process steps in `settings.json`) and the
+business's facts (phone, towns, rating, the estimate button) from `SITE`.
+Nothing is generated into them, so they can be edited on the Stacki
+canvas.
+
+The copy is neutral example copy and the photos are the starter's
+placeholders. They are where a demo starts, not what it ships: redesign
+each page for the business, rewrite every line from what they really say
+and do, swap in their photos, and add, drop or reorder sections to fit
+the design. The home page follows the contractor home's order (hero,
+services, symptoms, reviews, map, how it works, story, comparison, lead
+form, FAQ, call band).
+
+This folder is excluded from the starter's `tsconfig.json`, so
+`npm run check` doesn't see these pages; `npm run check:demo` builds
+them in the fixture demo.
 
 ## A demo's own pages
 
@@ -26,7 +43,7 @@ A file in `pages/` beside demo.json with the name of a preset page
 (`index.astro`, `contact.astro`, `about.astro`, `reviews.astro`) is
 installed instead of the preset's, and kept on every re-run. That is
 where a demo's hand-designed home page lives: start from the preset's
-page and compose it from the template's sections and new ones. Delete
+page and compose it from its sections and new ones. Delete
 the file to go back to the preset's page.
 
 Any other file under `pages/` is installed at the same path under

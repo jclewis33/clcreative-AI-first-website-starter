@@ -65,6 +65,21 @@ const tree = () => {
 };
 
 try {
+  // The preset's pages are composed pages: copy in the page, content from
+  // the collections and SITE, never a generated data file or a template.
+  for (const page of [
+    "index.astro",
+    "about.astro",
+    "contact.astro",
+    "reviews.astro",
+    "audience.astro",
+  ])
+    assert.doesNotMatch(
+      read(`presets/local-service/${page}`),
+      /@\/data\/home|@\/data\/audience|LocalService(Home|Showcase|Estate|About|Contact|Audience|Reviews)/,
+      `presets/local-service/${page} must be a composed page`,
+    );
+
   fs.symlinkSync(
     path.join(REPO, "node_modules"),
     path.join(dir, "node_modules"),
@@ -196,7 +211,17 @@ try {
   const home = html("index.html");
   assert.match(home, /Built for Brightline Electric by CL Creative/);
   assert.match(home, /see-how-it-works-demo\?demo=brightline-electric/);
-  assert.match(home, /your first service call/);
+  // The home page is the preset's composed page: its copy is the scaffold's,
+  // so these check the facts it reads from site.ts and the collections.
+  assert.match(
+    home,
+    /<title>Brightline Electric \| Licensed electricians in Austin<\/title>/,
+  );
+  assert.match(home, /Serving Austin and nearby/);
+  assert.match(home, /4\.9 stars from 86 reviews/);
+  assert.match(home, /They swapped our panel in a day/);
+  assert.match(home, /From first call to final inspection/);
+  assert.match(home, /Are you licensed and insured\?/);
   assert.match(home, /href="\/services\/panel-upgrades"/);
   assert.doesNotMatch(home, /href="\/blog"/);
   // The demo footer links the pages nothing else links to.
@@ -222,18 +247,19 @@ try {
   assert.equal(home.match(/id="estimate-modal"/g)?.length, 1);
   assert.match(home, /class="mobile-bar_wrap"/);
   assert.match(home, /License TECL #12345/);
-  assert.match(home, /<mark>\$50 off<\/mark>/);
   assert.match(home, /class="cta-panel_wrap/);
   assert.match(home, /class="trust-badges_wrap/);
   assert.match(home, /reviews_card is-rated/);
   assert.match(home, /call-band_wrap is-photo-card/);
-  // Phase-2 sections, and the two-step estimate form in the site-wide modal.
+  // The scaffold's sections, and the two-step estimate form in the
+  // site-wide modal.
   for (const cls of [
+    "service-cards_wrap",
     "symptom-cards_wrap",
-    "offer-band_wrap",
-    "recent-work_wrap",
-    "guarantee_wrap",
+    "process-steps_wrap",
+    "story-split_wrap",
     "comparison-table_wrap",
+    "lead-form-section_wrap",
   ])
     assert.match(home, new RegExp(`class="[^"]*\\b${cls}\\b`), cls);
   assert.match(home, /class="lead-form_tiles"/);
@@ -242,9 +268,10 @@ try {
   assert.match(home, /class="service-map_wrap/);
   assert.match(home, /"name":"Round Rock","geometry":\{"type":"Polygon"/);
   assert.match(html("contact/index.html"), /Contact \| Brightline Electric/);
-  // Phase 3: the emergency band, plans and team on the home page.
-  for (const cls of ["emergency-band_wrap", "plans_wrap", "team-grid_wrap"])
-    assert.match(home, new RegExp(`class="[^"]*\\b${cls}\\b`), cls);
+  // The other composed pages read the same collections.
+  assert.match(html("about/index.html"), /They swapped our panel in a day/);
+  assert.match(html("reviews/index.html"), /Reviews \| Brightline Electric/);
+  assert.match(html("reviews/index.html"), /Dana M\./);
   // Service pages carry one estimate form (the site-wide one), not two.
   const service = html("services/panel-upgrades/index.html");
   assert.equal(service.match(/id="estimate-modal"/g)?.length, 1);

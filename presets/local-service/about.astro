@@ -1,12 +1,119 @@
 ---
 /**
- * About page — the local-service preset (presets/local-service), installed
- * by `npm run demo`. The content is src/data/home.ts (story, stats, team,
- * guarantee, process, reviews, service area); `home.about` in demo.json sets
- * the intro. Edit demo.json and re-run the script rather than this file.
+ * About page — the local-service preset's starter page, installed by
+ * `npm run demo`. A scaffold to redesign for each business, not a
+ * template: rewrite the copy in their words, swap the placeholder photos
+ * for theirs (the owner, the crew, the van), and add the sections their
+ * story needs (team, guarantee, office) only with real material.
+ *
+ * The copy and photos are in the page; the process steps and reviews come
+ * from the content collections; the towns, rating and estimate button from
+ * SITE. Order: intro hero, story, how a job goes, reviews, where we work,
+ * call band.
  */
-import LocalServiceAbout from "@/components/templates/LocalServiceAbout.astro";
-import { HOME } from "@/data/home";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import StorySplit from "@/components/sections/StorySplit.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import { SITE } from "@/config/site";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { getReviews, getRating } from "@/lib/reviews";
+import { getProcess } from "@/lib/faqs";
+import { geoFor } from "@/lib/service-area-geo";
+import heroPhoto from "@/assets/placeholder-images/ai-first-starter-19.webp";
+import storyPhoto from "@/assets/placeholder-images/ai-first-starter-3.webp";
+import callPhoto from "@/assets/placeholder-images/ai-first-starter-10.webp";
+
+const [reviews, process] = await Promise.all([
+  getReviews({ limit: 6 }),
+  getProcess(),
+]);
+const rating = getRating();
+
+/* The estimate button opens the site-wide form (BaseLayout, SITE.quote). */
+const estimateCta = {
+  label: SITE.quote?.label ?? "Get an estimate",
+  modal: ESTIMATE_MODAL_ID,
+};
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "About", path: "/about" },
+];
+
+const storyParagraphs = [
+  "We started with one truck and a simple rule: show up when we said we would, and leave the place cleaner than we found it.",
+  "Word of mouth did the rest. Most of our work still comes from neighbors who called us once and kept our number.",
+  "The same family runs every job today. The person who quotes the work is the person you can call about it, before, during and after.",
+];
+const reasons = [
+  { title: "Written quotes", text: "The price is agreed before we start." },
+  { title: "On time", text: "We give you a window and keep it." },
+  { title: "Clean work", text: "Floors covered, mess cleared every day." },
+  { title: "One number", text: "Call the same people about the job." },
+];
 ---
 
-<LocalServiceAbout home={HOME} />
+<BaseLayout
+  title={`About | ${SITE.name}`}
+  description={`Who ${SITE.name} is and how we work.`}
+  canonical={`${SITE.url}/about`}
+  breadcrumbs={breadcrumbs}
+>
+  <Hero
+    variant="split"
+    headingSize="h1"
+    eyebrow="About us"
+    heading={`About <strong>${SITE.name}</strong>`}
+    text="A local business that does the work it quotes, on the day it said it would."
+    image={heroPhoto}
+    imageAlt="A man at a laptop on a wooden table"
+    primaryCta={estimateCta}
+    showPhone
+  />
+
+  <StorySplit
+    eyebrow="Our story"
+    heading="How we got started"
+    paragraphs={storyParagraphs}
+    image={storyPhoto}
+    imageAlt="A man working at a laptop by a window"
+    imageSide="right"
+    reasons={reasons}
+  />
+
+  <ProcessSteps
+    render={Boolean(process)}
+    variant="timeline"
+    eyebrow="How a job goes"
+    heading={process?.heading ?? ""}
+    text={process?.text}
+    steps={process?.steps ?? []}
+  />
+
+  <Reviews
+    render={reviews.length > 0}
+    reviews={reviews}
+    rating={rating?.value}
+    count={rating?.count}
+    layout="cards"
+  />
+
+  <ServiceArea
+    heading={`Serving ${SITE.address.locality} and nearby`}
+    text="Not sure we cover your street? Call and ask."
+    geo={geoFor(SITE.serviceAreas)}
+  />
+
+  <CallBand
+    heading="Need a hand with <strong>your home</strong>?"
+    text="Call now, or send the form and we'll call you back."
+    variant="photo-card"
+    image={callPhoto}
+    imageAlt="A laptop and a cup of coffee on a wooden desk"
+    ctaNote="No obligation"
+    secondaryCta={estimateCta}
+  />
+</BaseLayout>

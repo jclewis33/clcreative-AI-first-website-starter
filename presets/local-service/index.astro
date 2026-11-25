@@ -1,23 +1,227 @@
 ---
 /**
- * Home page — the local-service preset (presets/local-service), installed
- * by `npm run demo`. The content is src/data/home.ts, generated from
- * demo.json; edit demo.json and re-run the script rather than this file.
- * `layout` in demo.json picks the template: contractor (LocalServiceHome)
- * showcase (LocalServiceShowcase) or estate (LocalServiceEstate).
+ * Home page — the local-service preset's starter page, installed by
+ * `npm run demo`. A scaffold to redesign for each business, not a
+ * template: rewrite the copy, swap the placeholder photos for theirs, and
+ * add, drop or reorder sections to fit the design.
+ *
+ * Where things come from:
+ * - the copy and the photos: written and imported here, in the page;
+ * - the services, reviews, FAQs and process steps: the content
+ *   collections (src/content/), through their readers in src/lib/;
+ * - the phone, towns, rating and estimate button: SITE (src/config/site.ts).
+ *
+ * The order is the contractor home's: hero, services, symptoms, reviews,
+ * map, how it works, story, comparison, lead form, FAQ, call band.
  */
-import LocalServiceHome from "@/components/templates/LocalServiceHome.astro";
-import LocalServiceShowcase from "@/components/templates/LocalServiceShowcase.astro";
-import LocalServiceEstate from "@/components/templates/LocalServiceEstate.astro";
-import { HOME } from "@/data/home";
-import type { LocalServiceHomeData } from "@/lib/local-service-home";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import ServiceCards from "@/components/sections/ServiceCards.astro";
+import SymptomCards from "@/components/sections/SymptomCards.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import StorySplit from "@/components/sections/StorySplit.astro";
+import ComparisonTable from "@/components/sections/ComparisonTable.astro";
+import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import FAQ from "@/components/sections/FAQ.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import { SITE } from "@/config/site";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { getServices, servicePath } from "@/lib/services";
+import { getReviews, getRating } from "@/lib/reviews";
+import { getFaqs, getProcess } from "@/lib/faqs";
+import { geoFor } from "@/lib/service-area-geo";
+import heroPhoto from "@/assets/placeholder-images/ai-first-starter-4.webp";
+import processPhoto from "@/assets/placeholder-images/ai-first-starter-14.webp";
+import storyPhoto from "@/assets/placeholder-images/ai-first-starter-3.webp";
+import callPhoto from "@/assets/placeholder-images/ai-first-starter-10.webp";
 
-/* Widened: home.ts is `satisfies`-typed, so its layout is a literal. */
-const layout = HOME.layout as LocalServiceHomeData["layout"];
-const showcase = layout === "showcase";
-const estate = layout === "estate";
+const [services, reviews, faqs, process] = await Promise.all([
+  getServices(),
+  getReviews(),
+  getFaqs(),
+  getProcess(),
+]);
+const rating = getRating();
+
+/* The estimate button opens the site-wide form (BaseLayout, SITE.quote). */
+const estimateCta = {
+  label: SITE.quote?.label ?? "Get an estimate",
+  modal: ESTIMATE_MODAL_ID,
+};
+const proof = rating
+  ? {
+      rating: rating.value,
+      text: `${rating.value.toFixed(1)} stars from ${rating.count} reviews`,
+      source: rating.source === "google" ? ("google" as const) : undefined,
+    }
+  : undefined;
+const serviceItems = services.map((s) => ({
+  title: s.data.title,
+  text: s.data.cardText,
+  image: s.data.cardImage,
+  imageAlt: s.data.cardImageAlt,
+  href: servicePath(s.id),
+}));
+const projectOptions = [
+  ...services.map((s) => ({ label: s.data.title, value: s.id })),
+  { label: "Something else", value: "other" },
+];
+
+const trust = [
+  { label: "Licensed & insured" },
+  { label: "Written quotes" },
+  { label: "Local crew" },
+];
+const symptoms = [
+  {
+    title: "It stopped working",
+    text: "It worked yesterday, it doesn't today, and you're not sure why.",
+    icon: "alert" as const,
+  },
+  {
+    title: "It keeps coming back",
+    text: "It was fixed once already, and the same problem is back.",
+    icon: "tools" as const,
+  },
+  {
+    title: "It's getting worse",
+    text: "The small thing you noticed last year is harder to ignore now.",
+    icon: "alert" as const,
+  },
+  {
+    title: "You're planning ahead",
+    text: "Buying, selling or remodeling, and you want it checked first.",
+    icon: "house" as const,
+  },
+];
+const storyParagraphs = [
+  "We started with one truck and a simple rule: show up when we said we would, and leave the place cleaner than we found it.",
+  "The same family still runs every job, and the person who quotes the work is the person you can call about it.",
+];
+const reasons = [
+  { title: "Written quotes", text: "The price is agreed before we start." },
+  { title: "On time", text: "We give you a window and keep it." },
+  { title: "Clean work", text: "Floors covered, mess cleared every day." },
+];
+const comparison = [
+  {
+    label: "Pricing",
+    us: "A written price before any work starts",
+    them: "An hourly rate that keeps running",
+  },
+  {
+    label: "Scheduling",
+    us: "A time window, and a call if we're running late",
+    them: "Sometime between eight and five",
+  },
+  {
+    label: "Clean-up",
+    us: "Floors covered, mess cleared before we leave",
+    them: "Dust and offcuts left behind",
+  },
+  {
+    label: "Follow-up",
+    us: "One number to call about the job",
+    them: "Hard to reach once the bill is paid",
+  },
+];
 ---
 
-{showcase && <LocalServiceShowcase home={HOME} />}
-{estate && <LocalServiceEstate home={HOME} />}
-{!showcase && !estate && <LocalServiceHome home={HOME} />}
+<BaseLayout
+  title={`${SITE.name} | ${SITE.tagline}`}
+  description={SITE.defaultDescription}
+>
+  <Hero
+    variant="split"
+    eyebrow={`Serving ${SITE.address.locality} and nearby`}
+    heading="Help for your home, <strong>from a local crew</strong>"
+    text="Tell us what's going on. We'll look at it, explain the options and give you a written price before any work starts."
+    image={heroPhoto}
+    imageAlt="Two people looking over a page on a desktop computer"
+    ctaStyle="panel"
+    ctaNote="No obligation"
+    primaryCta={estimateCta}
+    proof={proof}
+    proofPosition="above"
+    trust={trust}
+  />
+
+  <ServiceCards
+    id="services"
+    eyebrow="What we do"
+    heading="Our <strong>services</strong>"
+    intro="Pick a service to see what's involved, or call and we'll point you to the right one."
+    items={serviceItems}
+  />
+
+  <SymptomCards
+    heading="Sound familiar?"
+    intro="Most calls start with one of these. If you've noticed any of them, it's worth a look before it gets worse."
+    items={symptoms}
+    cta={estimateCta}
+  />
+
+  <Reviews
+    render={reviews.length > 0}
+    reviews={reviews}
+    rating={rating?.value}
+    count={rating?.count}
+    layout="marquee"
+  />
+
+  <ServiceArea
+    heading={`Serving ${SITE.address.locality} and nearby`}
+    text="Not sure we cover your street? Call and ask."
+    geo={geoFor(SITE.serviceAreas)}
+  />
+
+  <ProcessSteps
+    render={Boolean(process)}
+    eyebrow="How it works"
+    heading={process?.heading ?? ""}
+    text={process?.text}
+    steps={process?.steps ?? []}
+    image={processPhoto}
+    imageAlt="Two people talking over a design on a desktop screen"
+  />
+
+  <StorySplit
+    eyebrow="Why choose us"
+    heading="A local business that answers the phone"
+    paragraphs={storyParagraphs}
+    image={storyPhoto}
+    imageAlt="A man working at a laptop by a window"
+    imageSide="right"
+    reasons={reasons}
+  />
+
+  <ComparisonTable
+    heading="How we <strong>work</strong>"
+    intro="What to expect from us, next to what people tell us they had before."
+    themLabel="What people tell us"
+    rows={comparison}
+  />
+
+  <LeadFormSection
+    eyebrow="Get in touch"
+    heading="Tell us about the <strong>job</strong>"
+    text="Send the form and we'll call you back."
+    formId="contact"
+    fields="quote"
+    projectOptions={projectOptions}
+  />
+
+  <FAQ eyebrow="Questions" items={faqs} />
+
+  <CallBand
+    heading="Need a hand with <strong>your home</strong>?"
+    text="Call now, or send the form and we'll call you back."
+    variant="photo-card"
+    image={callPhoto}
+    imageAlt="A laptop and a cup of coffee on a wooden desk"
+    ctaNote="No obligation"
+    secondaryCta={estimateCta}
+  />
+</BaseLayout>
