@@ -397,7 +397,7 @@ raise the budget or allow-list it without saying why in the PR.
   props.
 
 - **A slotted element inside a condition** (`{cond && (<div
-  slot="background">…)}`) — Stacki wraps the condition's contents in a
+slot="background">…)}`) — Stacki wraps the condition's contents in a
   `<Fragment>` to mark them, the slot attribute ends up one level down, and
   the slot renders nothing in the editor (backgrounds vanish). Pass the slot
   unconditionally with the condition inside:
