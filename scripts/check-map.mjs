@@ -112,6 +112,34 @@ try {
     console.log("ok    an uncached town warns by name and keeps the other 3");
   }
 
+  // A lookup that fails (lost connection): exit 0, a warning, files untouched.
+  {
+    fs.writeFileSync(file("src/config/site.ts"), site);
+    const names = [
+      "src/data/service-area-geo.json",
+      "src/data/service-radius.json",
+      "src/data/service-area-geo.cache.json",
+    ];
+    const before = names.map((n) => fs.readFileSync(file(n), "utf8"));
+    fs.writeFileSync(
+      file("src/config/site.ts"),
+      site.replace(/(serviceAreas: \[[^\]]*)\]/, `$1, "Zz Uncached Town"]`),
+    );
+    const r = spawnSync(process.execPath, ["scripts/map.mjs"], {
+      cwd: dir,
+      encoding: "utf8",
+      env: { ...process.env, MAP_FAIL_LOOKUP: "1" },
+    });
+    assert.equal(r.status, 0, out(r));
+    assert.match(r.stderr, /lookup forced to fail/);
+    assert.match(r.stderr, /Map files left as they were/);
+    assert.deepEqual(
+      names.map((n) => fs.readFileSync(file(n), "utf8")),
+      before,
+    );
+    console.log("ok    a failed lookup keeps the map files and exits 0");
+  }
+
   // A failed lookup warns by name and leaves the other result intact
   // (in-process, with a stub in place of the network).
   {

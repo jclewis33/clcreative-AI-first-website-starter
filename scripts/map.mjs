@@ -13,7 +13,8 @@
  * region in src/config/site.ts, and commit the three files. Only towns
  * missing from the cache hit the network (one request a second, per
  * Nominatim's policy). `MAP_OFFLINE=1` uses the cache only: a town it
- * lacks is skipped with a warning.
+ * lacks is skipped with a warning. A lookup that fails (no connection)
+ * warns and leaves the existing files untouched, exit 0.
  *
  * Reads site.ts directly: Node 26 strips its types, and site.ts imports
  * nothing at runtime but site.shared.mjs (check:config enforces that).
@@ -34,10 +35,20 @@ const { geo, radius, failed } = await buildMap({
   cacheFile: path.join(DATA, "service-area-geo.cache.json"),
   warn: (message) => console.warn(`! ${message}`),
   offline: process.env.MAP_OFFLINE === "1",
+  // Test seam (scripts/check-map.mjs): every network lookup fails.
+  fetchGeometry:
+    process.env.MAP_FAIL_LOOKUP === "1"
+      ? async () => {
+          throw new Error("lookup forced to fail");
+        }
+      : undefined,
 });
 if (failed) {
-  console.error("Map not written: a lookup failed (see above).");
-  process.exit(1);
+  // A lost connection is "offline": keep what's there, don't fail.
+  console.warn(
+    "! Map files left as they were (src/data/service-area-geo*.json, service-radius.json): a lookup failed, see above. Run `npm run map` again when online.",
+  );
+  process.exit(0);
 }
 await fs.writeFile(
   path.join(DATA, "service-area-geo.json"),
