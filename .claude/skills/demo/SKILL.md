@@ -735,7 +735,8 @@ builds on.
   section puts the best pairs on the home page as sliders.
 - **About page (`/about`):** installed with the other starter pages on the
   first run and added to the nav and footer (`aboutNavLabel` renames the
-  nav link). Design it in `src/pages/about.astro`: an eyebrow, an h1, an
+  nav link; `aboutDescription` writes its llms.txt line, and
+  `audiencePage.desc` the audience page's, in place of the generic ones). Design it in `src/pages/about.astro`: an eyebrow, an h1, an
   intro, and longer story paragraphs in the owner's own words (their About
   section, verbatim where you can), then the team, guarantee, process,
   reviews, map and call band as the material supports. Give it a photo of

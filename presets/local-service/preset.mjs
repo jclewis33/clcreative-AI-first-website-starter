@@ -405,10 +405,20 @@ const demoObject = z.object({
        * `group`.
        */
       group: text.optional(),
+      /**
+       * The page's line in llms.txt and the page registry.
+       * @default "<name> works with general contractors and property managers."
+       */
+      desc: text.optional(),
     })
     .optional(),
   /** The About page's name in the nav ("Our Process"). @default 'About' */
   aboutNavLabel: text.optional(),
+  /**
+   * The About page's line in llms.txt and the page registry.
+   * @default "Who <name> is and how we work."
+   */
+  aboutDescription: text.optional(),
   /**
    * Their real projects: /projects and /projects/<slug>, in the nav. They
    * replace the starter's sample projects (and its sample gallery).

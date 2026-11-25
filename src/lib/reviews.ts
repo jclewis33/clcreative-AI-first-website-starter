@@ -60,7 +60,7 @@ export async function getReviews(opts: ReviewOptions = {}): Promise<Review[]> {
     id: entry.id,
   }));
   const tagged = (review: Review) =>
-    Boolean(service) && review.services?.some((ref) => ref.id === service);
+    Boolean(service && review.services?.some((ref) => ref.id === service));
   const sorted = all
     .sort(byPriority)
     .sort((a, b) => Number(tagged(b)) - Number(tagged(a)));

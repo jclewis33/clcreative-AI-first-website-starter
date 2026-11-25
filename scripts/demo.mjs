@@ -783,7 +783,8 @@ async function main() {
   // generated file site-structure.ts merges in, so the registry itself is
   // never rewritten beyond the descriptions above.
   {
-    const aboutDesc = `Who ${name} is and how we work.`;
+    const aboutDesc =
+      demo.aboutDescription ?? `Who ${name} is and how we work.`;
     const audiencePath = demo.audiencePage
       ? `/${demo.audiencePage.path}`
       : null;
@@ -816,7 +817,7 @@ export const PRESET_PAGES: SitePage[] = [${
   {
     path: ${JSON.stringify(audiencePath)},
     title: ${JSON.stringify(demo.audiencePage.navLabel ?? "For contractors")},
-    desc: ${JSON.stringify(`${name} works with general contractors and property managers.`)},
+    desc: ${JSON.stringify(demo.audiencePage.desc ?? `${name} works with general contractors and property managers.`)},
     group: "main",
   },`
           : ""

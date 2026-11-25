@@ -16,6 +16,7 @@
   },
   "serviceAreas": ["Austin", "Round Rock", "Cedar Park", "Pflugerville"],
   "founded": 2009,
+  "aboutDescription": "Meet the licensed Austin electricians behind Brightline and how a job runs.",
   "social": {
     "Facebook": "https://www.facebook.com/example"
   },
@@ -152,6 +153,13 @@
   "services": [
     {
       "slug": "panel-upgrades",
+      "reviews": [
+        {
+          "text": "Our old fuse box is gone and the new 200-amp panel passed inspection the first time.",
+          "name": "Marcus T.",
+          "meta": "Panel upgrade · Pflugerville"
+        }
+      ],
       "title": "Panel upgrades",
       "navLabel": "Panels",
       "seoTitle": "Electrical Panel Upgrades in Austin",

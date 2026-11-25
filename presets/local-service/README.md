@@ -106,12 +106,13 @@ Every image field is a source: a path relative to demo.json
   shape above). A service without its own `reviewSummary` gets `rating`
 - `areas?` — service-area regions (`/service-areas/<slug>`) grouping every
   town in `serviceAreas`, each town in exactly one
-- `audiencePage?` — `{ path, navLabel?, navButton?, group? }`: installs
+- `audiencePage?` — `{ path, navLabel?, navButton?, group?, desc? }`: installs
   `audience.astro` once at `src/pages/<path>.astro` (keep the prospect's
   URL) for contractors or property managers, linked in the nav
   (`navLabel`, default "For contractors"), or at the top of a service
-  `group`'s menu; `navButton` adds a second nav button to it
+  `group`'s menu; `navButton` adds a second nav button to it; `desc` is its llms.txt line
 - `aboutNavLabel?` — the About page's name in the nav ("Our Process")
+- `aboutDescription?` — the About page's line in llms.txt (default "Who <name> is and how we work.")
 - `projects?` — their real jobs (the projects-file shape plus a `slug`):
   `/projects` and `/projects/<slug>`, in the nav; they replace the sample
   projects and the sample gallery. `projectsPage?` holds that page's words

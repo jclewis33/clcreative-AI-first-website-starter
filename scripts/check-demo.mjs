@@ -236,13 +236,26 @@ try {
     fs
       .readdirSync(path.join(dir, "src/content/reviews"))
       .filter((f) => f.endsWith(".json")).length,
-    fixture.reviews.length,
+    fixture.reviews.length +
+      fixture.services.reduce(
+        (/** @type {number} */ n, /** @type {{ reviews?: unknown[] }} */ s) =>
+          n + (s.reviews?.length ?? 0),
+        0,
+      ),
   );
   assert.ok(
     !fs.existsSync(path.join(dir, "src/data/home.ts")),
     "src/data/home.ts must not be written",
   );
   assert.ok(!fs.existsSync(path.join(dir, "src/data/audience.ts")));
+  // demo.json's aboutDescription is the About page's registry (llms.txt)
+  // line; a demo build serves a stub llms.txt, so read the generated file.
+  assert.ok(
+    read("src/data/preset-pages.ts").includes(
+      JSON.stringify(fixture.aboutDescription),
+    ),
+    "aboutDescription is missing from the generated page registry",
+  );
   assert.match(
     read("src/config/site.ts"),
     /rating: \{\s*value: 4\.9,\s*count: 86/,
@@ -369,6 +382,15 @@ try {
   // Service pages carry one estimate form (the site-wide one), not two.
   const service = html("services/panel-upgrades/index.html");
   assert.equal(service.match(/id="estimate-modal"/g)?.length, 1);
+  // A service page lists the reviews tagged for that service first, ahead
+  // of the site's own reviews (which sort earlier by order).
+  const taggedAt = service.indexOf("Marcus T.");
+  const untaggedAt = service.indexOf("Dana M.");
+  assert.ok(taggedAt !== -1, "service page is missing its tagged review");
+  assert.ok(
+    untaggedAt === -1 || taggedAt < untaggedAt,
+    "service reviews must list the tagged review before the untagged ones",
+  );
   // Region pages: their own title, the region's towns on the map, the
   // services linking to their main pages, the form on the page; the
   // service page's town chips link to the region.
