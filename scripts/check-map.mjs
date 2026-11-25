@@ -19,6 +19,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildMap } from "./lib/service-area-geo.mjs";
 import { requireGitRepo, scratchCopy } from "./lib/scratch.mjs";
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -109,6 +110,56 @@ try {
     assert.match(r.stderr, /Zz Uncached Town/);
     assert.equal(json("src/data/service-area-geo.json").length, 3);
     console.log("ok    an uncached town warns by name and keeps the other 3");
+  }
+
+  // A failed lookup warns by name and leaves the other result intact
+  // (in-process, with a stub in place of the network).
+  {
+    const cacheFile = file("zz-map-cache.json");
+    const square = {
+      type: "Polygon",
+      coordinates: [
+        [
+          [0, 0],
+          [1, 0],
+          [1, 1],
+          [0, 0],
+        ],
+      ],
+    };
+    fs.writeFileSync(
+      cacheFile,
+      JSON.stringify({ "A, ST": square, "Hub, ST": square }),
+    );
+    const boom = async () => {
+      throw new Error("stub network down");
+    };
+    const base = { areas: ["A"], region: "ST", cacheFile, fetchGeometry: boom };
+
+    // Radius centre uncached: outlines survive, the warning names the radius.
+    let warnings = /** @type {string[]} */ ([]);
+    let r = await buildMap({
+      ...base,
+      radius: { center: "Elsewhere", miles: 5 },
+      warn: (m) => warnings.push(m),
+    });
+    assert.equal(r.geo.length, 1);
+    assert.equal(r.radius, null);
+    assert.equal(r.failed, true);
+    assert.match(warnings.join("\n"), /Service radius skipped.*stub network/);
+
+    // An area uncached: the radius survives, the warning names the outlines.
+    warnings = [];
+    r = await buildMap({
+      ...base,
+      areas: ["Elsewhere"],
+      radius: { center: "Hub", miles: 5 },
+      warn: (m) => warnings.push(m),
+    });
+    assert.equal(r.geo.length, 0);
+    assert.deepEqual(r.radius, { lat: 0.5, lng: 0.5, miles: 5 });
+    assert.match(warnings.join("\n"), /outlines skipped.*stub network/);
+    console.log("ok    a failed lookup warns by name; the other result stays");
   }
 } finally {
   fs.rmSync(dir, { recursive: true, force: true });

@@ -87,6 +87,7 @@ async function lookUp(town, region) {
  * @param {string} cacheFile
  * @param {(message: string) => void} [warn]
  * @param {boolean} [offline] never call the network: a town missing from the cache is skipped with a warning
+ * @param {typeof lookUp} [fetchGeometry] the lookup itself; a test seam
  * @returns {Promise<AreaGeo[]>}
  */
 export async function serviceAreaGeo(
@@ -95,6 +96,7 @@ export async function serviceAreaGeo(
   cacheFile,
   warn = console.warn,
   offline = false,
+  fetchGeometry = lookUp,
 ) {
   /** @type {Record<string, Geometry | null>} */
   const cache = existsSync(cacheFile)
@@ -105,7 +107,7 @@ export async function serviceAreaGeo(
     const key = `${town}, ${region}`;
     if (key in cache || offline) continue;
     if (fetched) await new Promise((r) => setTimeout(r, 1100));
-    cache[key] = await lookUp(town, region);
+    cache[key] = await fetchGeometry(town, region);
     fetched = true;
   }
   if (fetched) await fs.writeFile(cacheFile, `${JSON.stringify(cache)}\n`);
@@ -149,8 +151,10 @@ function middleOf(geometry) {
 /**
  * Everything the street map needs: each area's outline, and the radius
  * circle's centre when `radius` is set. Shared by `npm run map` (reads SITE)
- * and `npm run demo`. Throws on a network failure, like `serviceAreaGeo`;
- * a town that isn't found is skipped with a warning.
+ * and `npm run demo`. The two lookups are independent: one that fails (a
+ * network or cache error) warns, naming it, and leaves the other's result
+ * intact; `failed` is then true. A town that isn't found is skipped with a
+ * warning and is not a failure.
  *
  * @param {object} options
  * @param {string[]} options.areas  town names (SITE.serviceAreas)
@@ -159,7 +163,8 @@ function middleOf(geometry) {
  * @param {string} options.cacheFile
  * @param {(message: string) => void} [options.warn]
  * @param {boolean} [options.offline]  never call the network (cache only)
- * @returns {Promise<{ geo: AreaGeo[], radius: { lat: number, lng: number, miles: number } | null }>}
+ * @param {typeof lookUp} [options.fetchGeometry]  test seam: replaces the network lookup
+ * @returns {Promise<{ geo: AreaGeo[], radius: { lat: number, lng: number, miles: number } | null, failed: boolean }>}
  */
 export async function buildMap({
   areas,
@@ -168,19 +173,43 @@ export async function buildMap({
   cacheFile,
   warn = console.warn,
   offline = false,
+  fetchGeometry,
 }) {
-  const geo = await serviceAreaGeo(areas, region, cacheFile, warn, offline);
-  if (!radius) return { geo, radius: null };
-  // The centre town is looked up like the others (same cache).
-  const [hit] = await serviceAreaGeo(
-    [radius.center],
-    region,
-    cacheFile,
-    warn,
-    offline,
-  );
-  return {
-    geo,
-    radius: hit ? { ...middleOf(hit.geometry), miles: radius.miles } : null,
-  };
+  let failed = false;
+  /** @type {AreaGeo[]} */
+  let geo = [];
+  try {
+    geo = await serviceAreaGeo(
+      areas,
+      region,
+      cacheFile,
+      warn,
+      offline,
+      fetchGeometry,
+    );
+  } catch (err) {
+    failed = true;
+    warn(
+      `Service-area outlines skipped: ${/** @type {Error} */ (err).message}`,
+    );
+  }
+  /** @type {{ lat: number, lng: number, miles: number } | null} */
+  let circle = null;
+  if (radius)
+    try {
+      // The centre town is looked up like the others (same cache).
+      const [hit] = await serviceAreaGeo(
+        [radius.center],
+        region,
+        cacheFile,
+        warn,
+        offline,
+        fetchGeometry,
+      );
+      if (hit) circle = { ...middleOf(hit.geometry), miles: radius.miles };
+    } catch (err) {
+      failed = true;
+      warn(`Service radius skipped: ${/** @type {Error} */ (err).message}`);
+    }
+  return { geo, radius: circle, failed };
 }

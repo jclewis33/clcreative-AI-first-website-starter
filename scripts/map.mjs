@@ -27,7 +27,7 @@ import { buildMap } from "./lib/service-area-geo.mjs";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DATA = path.join(ROOT, "src", "data");
 
-const { geo, radius } = await buildMap({
+const { geo, radius, failed } = await buildMap({
   areas: [...SITE.serviceAreas],
   radius: SITE.serviceRadius,
   region: SITE.address.region,
@@ -35,6 +35,10 @@ const { geo, radius } = await buildMap({
   warn: (message) => console.warn(`! ${message}`),
   offline: process.env.MAP_OFFLINE === "1",
 });
+if (failed) {
+  console.error("Map not written: a lookup failed (see above).");
+  process.exit(1);
+}
 await fs.writeFile(
   path.join(DATA, "service-area-geo.json"),
   `${JSON.stringify(geo)}\n`,

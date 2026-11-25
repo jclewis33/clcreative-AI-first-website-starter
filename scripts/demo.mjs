@@ -318,22 +318,14 @@ async function main() {
   // miles of Palmer"). The cache is copied to src/data/ too, so a later
   // `npm run map` on the demo's branch starts from it. A failed lookup only
   // costs the map.
-  /** @type {Awaited<ReturnType<typeof buildMap>>} */
-  let map = { geo: [], radius: null };
   const geoCache = path.join(baseDir, "service-area.geo.json");
-  try {
-    map = await buildMap({
-      areas: demo.serviceAreas,
-      radius: demo.serviceRadius ?? null,
-      region: demo.contact.region,
-      cacheFile: geoCache,
-      warn: (m) => console.warn(`! ${m}`),
-    });
-  } catch (err) {
-    console.warn(
-      `! Service-area map skipped: ${/** @type {Error} */ (err).message}`,
-    );
-  }
+  const map = await buildMap({
+    areas: demo.serviceAreas,
+    radius: demo.serviceRadius ?? null,
+    region: demo.contact.region,
+    cacheFile: geoCache,
+    warn: (m) => console.warn(`! ${m}`),
+  });
   await write("src/data/service-area-geo.json", `${JSON.stringify(map.geo)}\n`);
   await write(
     "src/data/service-radius.json",
