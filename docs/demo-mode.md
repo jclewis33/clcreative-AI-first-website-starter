@@ -148,6 +148,6 @@ git push origin --delete demo/<slug>
 1. Create the client's own repo from the starter.
 2. Copy over the demo's `demo.json` and `assets/`.
 3. Run `/setup` with the client's real details.
-4. Set `DEMO = null` in `src/config/demo.shared.mjs`. That removes the
+4. Set `demo: null` in `src/config/site.ts`. That removes the
    banner, the noindex and the lead fallback in one change.
 5. Work through the demo's `confirmOrCut` list with the client.

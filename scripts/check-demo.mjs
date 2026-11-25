@@ -14,9 +14,9 @@
  *   - bad input fails naming the field: one caught by the preset schema,
  *     one by the content schema (via astro sync)
  *
- * node_modules is linked from this repo, so no install and no network. The
- * normal (DEMO = null) build is what CI already builds, so it isn't
- * repeated here.
+ * node_modules is linked from this repo, so no install and no network.
+ * Before the demo is written the starter itself (`demo: null`) is built
+ * once, to prove the switch is off: indexable, a sitemap, no banner.
  *
  * Usage: npm run check:demo
  */
@@ -85,6 +85,26 @@ try {
   );
   git(dir, "commit", "-qam", "name the Worker");
 
+  // The starter as it ships (SITE.demo is null) is not a demo.
+  {
+    const r = spawnSync("npm", ["run", "build"], {
+      cwd: dir,
+      encoding: "utf8",
+    });
+    assert.equal(r.status, 0, out(r).slice(-4000));
+    const client = path.join(dir, "dist", "client");
+    assert.doesNotMatch(
+      fs.readFileSync(path.join(client, "robots.txt"), "utf8"),
+      /^Disallow: \/$/m,
+    );
+    assert.ok(fs.existsSync(path.join(client, "sitemap-index.xml")));
+    assert.doesNotMatch(
+      fs.readFileSync(path.join(client, "index.html"), "utf8"),
+      /Built for/,
+    );
+    fs.rmSync(path.join(dir, "dist"), { recursive: true, force: true });
+  }
+
   // Refuses the wrong branch, before writing anything.
   {
     const r = demo(FIXTURE);
@@ -123,8 +143,13 @@ try {
     assert.doesNotMatch(read("src/pages/contact.astro"), /own contact page/);
   }
   assert.match(
-    read("src/config/demo.shared.mjs"),
-    /prospect: "Brightline Electric"/,
+    read("src/config/site.ts"),
+    /demo: \{\s*slug: "brightline-electric"/,
+  );
+  assert.match(read("src/config/site.ts"), /prospect: "Brightline Electric"/);
+  assert.ok(
+    !fs.existsSync(path.join(dir, "src/config/demo.shared.mjs")),
+    "src/config/demo.shared.mjs must not exist; the switch is SITE.demo",
   );
   assert.match(read("src/config/site.ts"), /name: "Brightline Electric"/);
   assert.match(read("src/config/site.ts"), /email: ""/);

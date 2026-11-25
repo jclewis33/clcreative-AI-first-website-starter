@@ -108,7 +108,7 @@ src/
 `presets/` (outside `src/`, excluded from tsconfig) holds the prospect-demo
 presets `npm run demo` installs; their page markup lives in
 `src/components/templates/` (LocalServiceHome, LocalServiceContact) so the
-starter's CI still checks it. `DEMO` in `src/config/demo.shared.mjs` is
+starter's CI still checks it. `SITE.demo` in `src/config/site.ts` is
 `null` on every real site.
 
 `addons/sanity/` (outside `src/`, not built) is the Sanity add-on: an

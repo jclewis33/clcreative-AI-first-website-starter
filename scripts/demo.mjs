@@ -24,7 +24,7 @@
  *      descriptions updated. A page of the same name in `pages/` beside
  *      demo.json (e.g. demo/pages/index.astro) is installed instead: the
  *      demo's hand-built page, which a re-run keeps.
- *   6. The demo switch — DEMO in src/config/demo.shared.mjs: whole-site
+ *   6. The demo switch — `demo` in SITE (src/config/site.ts): whole-site
  *      noindex, the "Built for …" banner, nav pruning, the lead fallback.
  *   7. Prettier on what it wrote, then `astro sync` (the content schema
  *      names any bad service field) and `astro check`.
@@ -904,12 +904,9 @@ export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(de
     );
   }
 
-  // 6. The demo switch.
+  // 6. The demo switch — SITE.demo in src/config/site.ts.
   {
-    const switchFile = await fs.readFile(
-      at("src/config/demo.shared.mjs"),
-      "utf8",
-    );
+    const siteSource = await fs.readFile(at("src/config/site.ts"), "utf8");
     const config = {
       slug,
       prospect: name,
@@ -922,13 +919,18 @@ export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(de
       bannerText: fill(defaults.bannerText ?? DEFAULT_BANNER_TEXT, vars),
       bannerHref: fill(defaults.bannerHref ?? DEFAULT_BANNER_HREF, vars),
     };
-    if (!/export const DEMO = /.test(switchFile))
-      fail("src/config/demo.shared.mjs has no `export const DEMO =`.");
+    const value = `{\n${Object.entries(config)
+      .map(([key, v]) => `    ${key}: ${JSON.stringify(v)},`)
+      .join("\n")}\n  }`;
+    const switchPattern =
+      /(\n  demo: )(?:null|\{[\s\S]*?\n  \})( as DemoConfig \| null,)/;
+    if (!switchPattern.test(siteSource))
+      fail("src/config/site.ts has no `demo: … as DemoConfig | null,`.");
     await write(
-      "src/config/demo.shared.mjs",
-      switchFile.replace(
-        /export const DEMO = [\s\S]*$/,
-        () => `export const DEMO = ${JSON.stringify(config, null, 2)};\n`,
+      "src/config/site.ts",
+      siteSource.replace(
+        switchPattern,
+        (_, lead, tail) => `${lead}${value}${tail}`,
       ),
     );
   }
