@@ -1,5 +1,5 @@
 import type { ImageMetadata } from "astro";
-import type { FAQItem } from "@/data/faqs";
+import type { FAQItem } from "@/lib/faqs";
 import type { ServiceIconName } from "@/components/ui/ServiceIcon.astro";
 import type { LeadQuestion } from "@/lib/lead-questions";
 

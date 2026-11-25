@@ -190,6 +190,8 @@ const REVIEW = {
   platform: "google",
 };
 
+const FAQ = { question: "Check?", answer: "Check." };
+
 /** An MDX post. A `{ raw }` value is written into the YAML unquoted. */
 function post(overrides = {}, body = "## Check\n\nBody text.\n") {
   const fields = {
@@ -259,6 +261,7 @@ function control() {
     json(TESTIMONIAL),
   );
   write("src/content/reviews/zz-check-review.json", json(REVIEW));
+  write("src/content/faqs/zz-check-faq.json", json(FAQ));
   write(POST_FILE, post());
 }
 
@@ -462,6 +465,37 @@ const CASES = [
         json({ ...REVIEW, avatar: IMG }),
       ),
     expect: ["zz-check-review.json", "avatarAlt"],
+  },
+  {
+    name: "FAQ with an empty question",
+    apply: () =>
+      write(
+        "src/content/faqs/zz-check-faq.json",
+        json({ ...FAQ, question: "" }),
+      ),
+    expect: ["zz-check-faq.json", "question"],
+  },
+  {
+    name: "settings.process with one step",
+    apply: () => {
+      const file = "src/content/settings.json";
+      const settings = JSON.parse(
+        fs.readFileSync(path.join(ROOT, file), "utf8"),
+      );
+      write(
+        file,
+        json({
+          site: {
+            ...settings.site,
+            process: {
+              heading: "Check",
+              steps: [{ title: "One", text: "Only one." }],
+            },
+          },
+        }),
+      );
+    },
+    expect: ["settings.json", "process", "steps"],
   },
   {
     name: "filename not kebab-case",

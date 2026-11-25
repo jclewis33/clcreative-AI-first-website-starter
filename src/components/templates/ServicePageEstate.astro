@@ -32,7 +32,7 @@ import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
 import { SITE } from "@/config/site";
-import { DEFAULT_PROCESS } from "@/data/process";
+import { getProcess } from "@/lib/faqs";
 import { serviceFaqJsonLd } from "@/lib/jsonld";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
 import { getReviews } from "@/lib/reviews";
@@ -60,7 +60,7 @@ const { service, all } = Astro.props;
 const s = service.data;
 const path = servicePath(service.id);
 const pageUrl = `${SITE.url}${path}`;
-const process = s.process ?? DEFAULT_PROCESS;
+const process = s.process ?? (await getProcess());
 const title = `${s.seoTitle} | ${SITE.name}`;
 const description = s.seoDescription;
 const crumbs = [
@@ -190,12 +190,13 @@ const proof = s.reviewSummary
         )}
 
         <ProcessSteps
+          render={Boolean(process)}
           id="process"
           variant="columns"
           class="u-background-2"
           eyebrow={s.process?.eyebrow ?? "How it works"}
-          heading={process.heading}
-          steps={process.steps}
+          heading={process?.heading ?? ""}
+          steps={process?.steps ?? []}
         />
 
         <ReviewCards

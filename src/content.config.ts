@@ -59,6 +59,7 @@ const DIR = {
   projects: "src/content/projects",
   testimonials: "src/content/testimonials",
   reviews: "src/content/reviews",
+  faqs: "src/content/faqs",
 } as const;
 
 /** Where a review can have been left (the schema's `platform`). */
@@ -310,7 +311,7 @@ const services = defineCollection({
         items: z.array(z.string().min(1)).min(1),
         images: z.array(z.object({ src: image(), alt })).length(2),
       }),
-      /** Optional: falls back to DEFAULT_PROCESS in src/data/process.ts. */
+      /** Optional: falls back to the site-wide steps in settings.json (`process`). */
       process: z
         .object({
           eyebrow: z.string().optional(),
@@ -660,6 +661,18 @@ const settings = defineCollection({
   schema: z.object({
     defaultBlogCta: reference("blogCtas").optional(),
     defaultCtaSection: reference("ctaSections").optional(),
+    /** The "how it works" steps every service page shows without its own. */
+    process: z
+      .object({
+        heading: z.string().min(1),
+        text: z.string().min(1).optional(),
+        steps: z
+          .array(
+            z.object({ title: z.string().min(1), text: z.string().min(1) }),
+          )
+          .min(2),
+      })
+      .optional(),
   }),
 });
 
@@ -943,6 +956,25 @@ const reviews = defineCollection({
       }),
 });
 
+/* `faqs`: the site-wide questions, one JSON file per FAQ. The FAQ section
+   shows them by `order` (src/lib/faqs.ts). Answers take inline HTML. */
+const faqs = defineCollection({
+  loader: checked(
+    filesIn(
+      DIR.faqs,
+      "json",
+      '"do-you-offer-free-estimates.json" — the filename is only an id; the question goes inside',
+    ),
+  ),
+  schema: z.object({
+    question: z.string().min(1),
+    /** Inline HTML allowed (`<br><br>`, `<strong>`, `<a href>`). */
+    answer: z.string().min(1),
+    /** Sort order, lowest first. */
+    order: z.number().int().min(0).default(100),
+  }),
+});
+
 export const collections = {
   services,
   serviceAreas,
@@ -956,4 +988,5 @@ export const collections = {
   gallery,
   testimonials,
   reviews,
+  faqs,
 };

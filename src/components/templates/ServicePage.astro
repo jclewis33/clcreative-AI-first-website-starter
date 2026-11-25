@@ -21,7 +21,7 @@ import FAQ from "@/components/sections/FAQ.astro";
 import CallBand from "@/components/sections/CallBand.astro";
 import LeadFormModal from "@/components/form/LeadFormModal.astro";
 import { SITE } from "@/config/site";
-import { DEFAULT_PROCESS } from "@/data/process";
+import { getProcess } from "@/lib/faqs";
 import { serviceFaqJsonLd } from "@/lib/jsonld";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
 import { getReviews } from "@/lib/reviews";
@@ -56,7 +56,7 @@ const basePath = servicePath(service.id);
 const path = basePath;
 const pageUrl = `${SITE.url}${path}`;
 const related = relatedServices(all, service.id);
-const process = s.process ?? DEFAULT_PROCESS;
+const process = s.process ?? (await getProcess());
 const title = `${s.seoTitle} | ${SITE.name}`;
 const description = s.seoDescription;
 const reviews = await getReviews({ service: service.id, limit: 6 });
@@ -139,10 +139,11 @@ const ownModal = !SITE.quote;
   />
 
   <ProcessSteps
+    render={Boolean(process)}
     variant="timeline"
     eyebrow="How it works"
-    heading={process.heading}
-    steps={process.steps}
+    heading={process?.heading ?? ""}
+    steps={process?.steps ?? []}
   />
 
   {/* Four or more reviews scroll across the screen; fewer sit as cards. */}
