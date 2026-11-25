@@ -396,6 +396,15 @@ raise the budget or allow-list it without saying why in the PR.
   composes its sections in the page file with imported images and literal
   props.
 
+- **A slotted element inside a condition** (`{cond && (<div
+  slot="background">…)}`) — Stacki wraps the condition's contents in a
+  `<Fragment>` to mark them, the slot attribute ends up one level down, and
+  the slot renders nothing in the editor (backgrounds vanish). Pass the slot
+  unconditionally with the condition inside:
+  `<Fragment slot="background">{cond && (…)}</Fragment>`. Receiving
+  components capture named slots with `slotContent()`, so an empty one
+  still renders nothing. `.map()` inside a slotted Fragment is fine.
+
 - Importing a CMS package or `src/sanity` outside the add-on's allow list
   (`scripts/boundary/*.json`, shipped by the add-on) — content, types and
   image helpers come from `@/lib/content`.

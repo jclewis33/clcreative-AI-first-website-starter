@@ -3,6 +3,7 @@ import type { HTMLAttributes } from "astro/types";
 import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Text from "@/components/ui/Text.astro";
+import { slotContent } from "@/lib/slots";
 
 /**
  * SectionHeader — the heading row that opens most sections: an eyebrow and a
@@ -76,8 +77,10 @@ if (import.meta.env.DEV) {
     console.warn(`[SectionHeader] Unknown size "${size}".`);
 }
 
-const hasAction = Astro.slots.has("action");
-const split = Boolean(intro) || hasAction;
+/* Captured once, so an action passed as `<Fragment slot="action">` around a
+   condition (the Stacki-safe form) counts only when it renders something. */
+const action = await slotContent(Astro.slots, "action");
+const split = Boolean(intro) || Boolean(action);
 ---
 
 {
@@ -97,7 +100,7 @@ const split = Boolean(intro) || hasAction;
         </Heading>
         <div slot="column2" class="section-header_aside">
           {intro && <Text muted>{intro}</Text>}
-          <slot name="action" />
+          {action && <Fragment set:html={action} />}
         </div>
       </Layout>
     ) : (

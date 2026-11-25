@@ -98,11 +98,13 @@ if (import.meta.env.DEV && !project) {
           {project.location}
         </Text>
       )}
-      {!compact && (
-        <span slot="footer" class="project-card_cta">
-          View project <span aria-hidden="true">→</span>
-        </span>
-      )}
+      <Fragment slot="footer">
+        {!compact && (
+          <span class="project-card_cta">
+            View project <span aria-hidden="true">→</span>
+          </span>
+        )}
+      </Fragment>
     </Card>
   )
 }

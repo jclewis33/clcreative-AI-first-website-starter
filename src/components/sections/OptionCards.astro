@@ -147,13 +147,11 @@ const pad = (n: number) => String(n + 1).padStart(2, "0");
         <Grid largeColumns={columns} mediumColumns={2} smallColumns={1}>
           {items.map((item, index) => (
             <Card class="option-cards_card">
-              {item.image && (
-                <Visual
-                  slot="visual"
-                  src={item.image}
-                  alt={item.imageAlt ?? item.title}
-                />
-              )}
+              <Fragment slot="visual">
+                {item.image && (
+                  <Visual src={item.image} alt={item.imageAlt ?? item.title} />
+                )}
+              </Fragment>
               <Fragment slot="title">
                 {(numbered || item.label) && (
                   <Heading tag="p" variant="eyebrow">

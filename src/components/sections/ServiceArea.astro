@@ -231,27 +231,30 @@ if (import.meta.env.DEV && render) {
         )}
         {cta && <CtaButton cta={cta} variant="secondary" />}
 
-        {hasStreetMap && (
-          <div slot="column2" class="service-area_map is-street">
-            <ServiceMap
-              areas={geo}
-              radius={radius}
-              label={mapLabel}
-              current={currentArea}
-            />
-          </div>
-        )}
-        {!hasStreetMap && Map ? (
-          <div slot="column2" class="service-area_map">
-            <Map
-              class="service-area_svg"
-              role="img"
-              aria-label={mapLabel ?? `Map of ${areas.join(", ")}`}
-            />
-          </div>
-        ) : !hasStreetMap && images.length === 2 ? (
-          <ImagePair slot="column2" images={images} />
-        ) : null}
+        <Fragment slot="column2">
+          {hasStreetMap && (
+            <div class="service-area_map is-street">
+              <ServiceMap
+                areas={geo}
+                radius={radius}
+                label={mapLabel}
+                current={currentArea}
+              />
+            </div>
+          )}
+          {!hasStreetMap && Map && (
+            <div class="service-area_map">
+              <Map
+                class="service-area_svg"
+                role="img"
+                aria-label={mapLabel ?? `Map of ${areas.join(", ")}`}
+              />
+            </div>
+          )}
+          {!hasStreetMap && !Map && images.length === 2 && (
+            <ImagePair images={images} />
+          )}
+        </Fragment>
       </Layout>
     </Section>
   )
@@ -315,29 +318,31 @@ if (import.meta.env.DEV && render) {
             )}
           </div>
 
-          {hasStreetMap && (
-            <div slot="column2" class="service-area_map is-street is-framed">
-              <ServiceMap
-                areas={geo}
-                radius={radius}
-                label={mapLabel}
-                current={currentArea}
-                variant="filled"
-              />
-            </div>
-          )}
-          {!hasStreetMap && Map && (
-            <div slot="column2" class="service-area_map is-framed">
-              <Map
-                class="service-area_svg"
-                role="img"
-                aria-label={mapLabel ?? `Map of ${areas.join(", ")}`}
-              />
-            </div>
-          )}
-          {!hasStreetMap && !Map && images.length === 2 && (
-            <ImagePair slot="column2" images={images} />
-          )}
+          <Fragment slot="column2">
+            {hasStreetMap && (
+              <div class="service-area_map is-street is-framed">
+                <ServiceMap
+                  areas={geo}
+                  radius={radius}
+                  label={mapLabel}
+                  current={currentArea}
+                  variant="filled"
+                />
+              </div>
+            )}
+            {!hasStreetMap && Map && (
+              <div class="service-area_map is-framed">
+                <Map
+                  class="service-area_svg"
+                  role="img"
+                  aria-label={mapLabel ?? `Map of ${areas.join(", ")}`}
+                />
+              </div>
+            )}
+            {!hasStreetMap && !Map && images.length === 2 && (
+              <ImagePair images={images} />
+            )}
+          </Fragment>
         </Layout>
       </div>
     </Section>
