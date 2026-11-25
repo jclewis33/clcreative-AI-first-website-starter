@@ -5,7 +5,10 @@
  * (presets/local-service/fixture) in a scratch copy of this repo
  * (scripts/lib/scratch.mjs), builds it, and checks the result:
  *
- *   - a second run writes the identical tree (the script is re-runnable)
+ *   - a second run writes the identical tree (the script is re-runnable),
+ *     and a hand edit to an installed page survives a re-run
+ *   - an old-format demo.json (`home` or `audience`) fails before writing
+ *   - reviews and FAQs land in the collections, never src/data/home.ts
  *   - the whole site is noindex: the meta on every page, robots.txt
  *     `Disallow: /`, no sitemap, X-Robots-Tag in the built _headers, stub
  *     llms.txt
@@ -129,6 +132,30 @@ try {
   }
   git(dir, "switch", "-qc", `demo/${SLUG}`);
 
+  const fixture = JSON.parse(read(FIXTURE));
+  /** Runs the script on a copy of the fixture, edited. */
+  const edited = (/** @type {(d: any) => void} */ edit) => {
+    const copy = structuredClone(fixture);
+    edit(copy);
+    const file = path.join(dir, "presets/local-service/fixture/bad.json");
+    fs.writeFileSync(file, JSON.stringify(copy));
+    const r = demo(file);
+    fs.rmSync(file);
+    return r;
+  };
+
+  // An old-format demo.json (page copy in `home` or `audience`) fails
+  // before anything is written.
+  for (const key of ["home", "audience"]) {
+    const r = edited((d) => (d[key] = {}));
+    assert.equal(r.status, 1, out(r));
+    assert.match(
+      r.stderr,
+      new RegExp(`demo.json has "${key}": page copy now lives in the pages`),
+    );
+    assert.equal(git(dir, "status", "--porcelain").trim(), "");
+  }
+
   // Writes the demo, and a second run changes nothing.
   {
     const r = demo(FIXTURE);
@@ -140,23 +167,39 @@ try {
     assert.equal(tree(), first, "a second run changed the tree");
   }
 
-  // A page in pages/ beside demo.json replaces the preset's, and only
-  // while it's there.
+  // The pages are the demo's once installed: a re-run never overwrites one.
   {
-    const own = path.join(dir, path.dirname(FIXTURE), "pages", "contact.astro");
-    fs.mkdirSync(path.dirname(own), { recursive: true });
-    fs.writeFileSync(own, "<p>the demo's own contact page</p>\n");
+    fs.appendFileSync(
+      path.join(dir, "src/pages/index.astro"),
+      "<!-- hand edit -->\n",
+    );
+    const before = tree();
     const r = demo(FIXTURE);
     assert.equal(r.status, 0, out(r));
-    assert.match(
-      read("src/pages/contact.astro"),
-      /the demo's own contact page/,
-    );
-    fs.rmSync(path.dirname(own), { recursive: true });
-    const back = demo(FIXTURE);
-    assert.equal(back.status, 0, out(back));
-    assert.doesNotMatch(read("src/pages/contact.astro"), /own contact page/);
+    assert.match(read("src/pages/index.astro"), /<!-- hand edit -->/);
+    assert.equal(tree(), before, "a re-run changed the tree");
   }
+
+  // Facts and repeated content go to the collections, never a data file.
+  assert.equal(
+    fs
+      .readdirSync(path.join(dir, "src/content/reviews"))
+      .filter((f) => f.endsWith(".json")).length,
+    fixture.reviews.length,
+  );
+  assert.ok(
+    !fs.existsSync(path.join(dir, "src/data/home.ts")),
+    "src/data/home.ts must not be written",
+  );
+  assert.ok(!fs.existsSync(path.join(dir, "src/data/audience.ts")));
+  assert.match(
+    read("src/config/site.ts"),
+    /rating: \{\s*value: 4\.9,\s*count: 86/,
+  );
+  assert.match(
+    read("src/content/settings.json"),
+    /From first call to final inspection/,
+  );
   assert.match(
     read("src/config/site.ts"),
     /demo: \{\s*slug: "brightline-electric"/,
@@ -297,35 +340,36 @@ try {
   assert.ok(
     !fs.existsSync(path.join(client, "services", "kitchen-remodeling")),
   );
+  // The audience page, installed once at demo.json's audiencePage.path, and
+  // its nav button.
+  assert.ok(
+    fs.existsSync(path.join(client, "for-contractors", "index.html")),
+    "missing the audience page (for-contractors/index.html)",
+  );
+  assert.match(home, /href="\/for-contractors"/);
+  assert.match(html("for-contractors/index.html"), /Brightline Electric/);
 
   // Bad input names the field.
-  const fixture = JSON.parse(read(FIXTURE));
-  const bad = (/** @type {(d: any) => void} */ edit) => {
-    const copy = structuredClone(fixture);
-    edit(copy);
-    const file = path.join(dir, "presets/local-service/fixture/bad.json");
-    fs.writeFileSync(file, JSON.stringify(copy));
-    return demo(file);
-  };
   {
-    const r = bad((d) => (d.home.hero.imageAlt = ""));
+    // Only 4 and 5 star reviews go on the site.
+    const r = edited((d) => (d.reviews[0].rating = 3));
     assert.equal(r.status, 1, out(r));
-    assert.match(r.stderr, /demo\.json › home\.hero\.imageAlt/);
+    assert.match(r.stderr, /demo\.json › reviews\.0\.rating/);
   }
   {
-    const r = bad((d) => d.services[0].highlights.pop());
+    const r = edited((d) => d.services[0].highlights.pop());
     assert.equal(r.status, 1, out(r));
     assert.match(out(r), /panel-upgrades[\s\S]*highlights/);
   }
   {
     // Every town needs a region: none quietly dropped.
-    const r = bad((d) => d.areas[1].towns.pop());
+    const r = edited((d) => d.areas[1].towns.pop());
     assert.equal(r.status, 1, out(r));
     assert.match(out(r), /"Pflugerville" is in serviceAreas but in no region/);
   }
   {
     // A review must come from one of the region's own towns.
-    const r = bad(
+    const r = edited(
       (d) =>
         (d.areas[0].reviews = [
           { text: "Great.", name: "Sam", town: "Round Rock" },
@@ -336,7 +380,7 @@ try {
   }
 
   console.log(
-    "check-demo: ok (fixture demo written twice, built, noindex, bad input named)",
+    "check-demo: ok (fixture demo written twice, pages kept, built, noindex, bad input named)",
   );
 } finally {
   fs.rmSync(dir, { recursive: true, force: true });
