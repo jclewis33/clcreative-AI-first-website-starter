@@ -12,7 +12,9 @@ not, you delete the branch.
 - **What a demo changes:** `scripts/demo.mjs` (its header lists every file).
   It writes facts and plumbing (`SITE`, the content collections, the nav,
   the map) and installs the preset's composed pages once; the pages are then
-  designed in `src/pages/` and a re-run never overwrites them.
+  designed in `src/pages/` and a re-run never overwrites them. The one
+  exception is the first run on a fresh starter, where the preset's home and
+  contact pages replace the starter's own.
 - **The preset and the `demo.json` shape:** `presets/local-service/README.md`.
 
 Everything below is **one-time setup**, done once for the demos repo.

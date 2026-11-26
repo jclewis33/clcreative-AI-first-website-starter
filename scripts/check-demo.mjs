@@ -16,6 +16,9 @@
  *     starter's sample services and the hidden nav links are gone
  *   - bad input fails naming the field: one caught by the preset schema,
  *     one by the content schema (via astro sync)
+ *   - every run names each page still exactly the preset's scaffold
+ *   - a demo with no FAQs and no process shows neither (never the
+ *     starter's sample steps), and its serviceRadius reaches SITE
  *
  * node_modules is linked from this repo, so no install and no network.
  * Before the demo is written the starter itself (`demo: null`) is built
@@ -184,6 +187,19 @@ try {
     const again = demo(FIXTURE);
     assert.equal(again.status, 0, out(again));
     assert.equal(tree(), first, "a second run changed the tree");
+    // Every run names each installed page still the preset's scaffold.
+    for (const page of [
+      "index.astro",
+      "contact.astro",
+      "about.astro",
+      "reviews.astro",
+      "for-contractors.astro",
+    ])
+      assert.match(
+        again.stderr,
+        new RegExp(`src/pages/${page}: still the scaffold copy`),
+        `no scaffold warning for ${page}`,
+      );
   }
 
   // The pages are the demo's once installed: a re-run never overwrites one.
@@ -197,6 +213,12 @@ try {
     assert.equal(r.status, 0, out(r));
     assert.match(read("src/pages/index.astro"), /<!-- hand edit -->/);
     assert.equal(tree(), before, "a re-run changed the tree");
+    // An edited page is no longer the scaffold; the others still are.
+    assert.doesNotMatch(
+      r.stderr,
+      /src\/pages\/index\.astro: still the scaffold/,
+    );
+    assert.match(r.stderr, /src\/pages\/about\.astro: still the scaffold copy/);
   }
 
   // A merged demo branch: its own pages, `demo` back to null (the starter's
@@ -248,6 +270,12 @@ try {
     "src/data/home.ts must not be written",
   );
   assert.ok(!fs.existsSync(path.join(dir, "src/data/audience.ts")));
+  // The map's lookups land in `npm run map`'s own cache, seeded from the
+  // fixture's.
+  assert.match(
+    read("src/data/service-area-geo.cache.json"),
+    /"Round Rock, TX":\{"type":"Polygon"/,
+  );
   // demo.json's aboutDescription is the About page's registry (llms.txt)
   // line; a demo build serves a stub llms.txt, so read the generated file.
   assert.ok(
@@ -329,6 +357,7 @@ try {
   assert.match(home, /They swapped our panel in a day/);
   assert.match(home, /From first call to final inspection/);
   assert.match(home, /Are you licensed and insured\?/);
+  assert.match(home, /class="[^"]*\bfaq_wrap\b/);
   assert.match(home, /href="\/services\/panel-upgrades"/);
   assert.doesNotMatch(home, /href="\/blog"/);
   // The demo footer links the pages nothing else links to.
@@ -471,8 +500,70 @@ try {
     assert.match(out(r), /"Round Rock" isn't one of this region's towns/);
   }
 
+  {
+    // An audience page can't take a route the site already has.
+    const r = edited((d) => (d.audiencePage.path = "services"));
+    assert.equal(r.status, 1, out(r));
+    assert.match(
+      r.stderr,
+      /demo\.json › audiencePage\.path: \/services is already a route/,
+    );
+  }
+  {
+    // site.ts without the line a fact is written to fails, naming both,
+    // rather than keeping the old value.
+    const site = path.join(dir, "src/config/site.ts");
+    const before = fs.readFileSync(site, "utf8");
+    fs.writeFileSync(site, before.replace(/\n {2}rating: /, "\n  ratingX: "));
+    const r = demo(FIXTURE);
+    fs.writeFileSync(site, before);
+    assert.equal(r.status, 1, out(r));
+    assert.match(
+      r.stderr,
+      /src\/config\/site\.ts has no `rating: … as …` line/,
+    );
+  }
+
+  // No FAQs and no process: neither section shows, and the starter's
+  // sample steps never stand in. The radius reaches SITE.
+  {
+    const r = edited((d) => {
+      d.faqs = [];
+      delete d.process;
+      d.serviceRadius = { center: "Austin", miles: 30 };
+    });
+    assert.equal(r.status, 0, out(r));
+    assert.equal(
+      JSON.parse(read("src/content/settings.json")).site.process,
+      undefined,
+    );
+    assert.match(
+      read("src/config/site.ts"),
+      /serviceRadius: \{\s*center: "Austin",\s*miles: 30\s*\}/,
+    );
+    fs.rmSync(path.join(dir, "dist"), { recursive: true, force: true });
+    const b = spawnSync("npm", ["run", "build"], {
+      cwd: dir,
+      encoding: "utf8",
+    });
+    assert.equal(b.status, 0, out(b).slice(-4000));
+    const bare = html("index.html");
+    assert.doesNotMatch(
+      bare,
+      /class="[^"]*\bfaq_wrap\b/,
+      "an empty FAQ set rendered a section",
+    );
+    assert.doesNotMatch(
+      bare,
+      /id="faq"/,
+      "an empty FAQ set rendered a section",
+    );
+    assert.doesNotMatch(bare, /class="[^"]*\bprocess-steps_wrap\b/);
+    assert.doesNotMatch(bare, /From first call to final/);
+  }
+
   console.log(
-    "check-demo: ok (fixture demo written twice, pages kept, built, noindex, bad input named)",
+    "check-demo: ok (fixture demo written twice, pages kept, built, noindex, bad input named, empty FAQs and process skipped)",
   );
 } finally {
   fs.rmSync(dir, { recursive: true, force: true });

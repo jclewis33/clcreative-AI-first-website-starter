@@ -15,6 +15,7 @@
  * ("./assets/hero.jpg") or an https URL. The script converts each to webp
  * and writes it where the site expects it.
  */
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { z } from "astro/zod";
 
 const text = z.string().trim().min(1);
@@ -194,6 +195,43 @@ const areaSchema = z
 const kebab = z
   .string()
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "use lowercase-kebab-case");
+
+const PAGES_DIR = new URL("../../src/pages/", import.meta.url);
+const PRESET_PAGES_FILE = new URL(
+  "../../src/data/preset-pages.ts",
+  import.meta.url,
+);
+/**
+ * The file or folder in src/pages an audience page at /<path> would collide
+ * with (null when the path is free): the preset's own pages, every route
+ * folder (services, blog, api…) and every page file (404, components…). An
+ * audience page a previous run installed there is the demo's own, so a
+ * re-run is not a collision.
+ */
+function routeTaken(/** @type {string} */ path) {
+  if (["index", "about", "contact", "reviews"].includes(path))
+    return `the preset's ${path} page`;
+  const entry = readdirSync(PAGES_DIR, { withFileTypes: true }).find(
+    (e) =>
+      (e.isDirectory()
+        ? e.name
+        : e.name.replace(/\.(astro|md|mdx|html|ts|js)$/, "")) === path,
+  );
+  if (!entry) return null;
+  const file = new URL(entry.name, PAGES_DIR);
+  const installed =
+    entry.isFile() &&
+    entry.name === `${path}.astro` &&
+    /* In the nav from an earlier run, or still the scaffold (a first run
+       that failed after installing it). */
+    ((existsSync(PRESET_PAGES_FILE) &&
+      readFileSync(PRESET_PAGES_FILE, "utf8").includes(`path: "/${path}"`)) ||
+      readFileSync(file, "utf8") ===
+        readFileSync(new URL("audience.astro", import.meta.url), "utf8"));
+  return installed
+    ? null
+    : `src/pages/${entry.name}${entry.isDirectory() ? "/" : ""}`;
+}
 /** A project (src/content/projects): /projects/<slug>, their own job only. */
 const projectSchema = z
   .object({
@@ -353,8 +391,8 @@ const demoObject = z.object({
   }),
   quote: quoteSchema,
   /**
-   * Their public star rating (SITE.rating): the stars line and the
-   * structured data. Only the figure their profile shows.
+   * Their public star rating (SITE.rating): the stars line (never the
+   * structured data). Only the figure their profile shows.
    */
   rating: z
     .object({
@@ -391,10 +429,14 @@ const demoObject = z.object({
   audiencePage: z
     .object({
       /** The URL: "commercial-concrete-coatings" → /commercial-concrete-coatings. */
-      path: kebab.refine(
-        (p) => !["index", "about", "contact", "reviews"].includes(p),
-        "is one of the preset's own pages — pick another path",
-      ),
+      path: kebab.superRefine((p, ctx) => {
+        const taken = routeTaken(p);
+        if (taken)
+          ctx.addIssue({
+            code: "custom",
+            message: `/${p} is already a route (${taken}) — pick another path`,
+          });
+      }),
       /** Its name in the nav. @default 'For contractors' */
       navLabel: text.optional(),
       /** A second nav button to this page ("For Contractors"). */
@@ -407,7 +449,7 @@ const demoObject = z.object({
       group: text.optional(),
       /**
        * The page's line in llms.txt and the page registry.
-       * @default "<name> works with general contractors and property managers."
+       * @default "<name>: work for contractors and property managers."
        */
       desc: text.optional(),
     })

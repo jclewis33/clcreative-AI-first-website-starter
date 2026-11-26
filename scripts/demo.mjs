@@ -27,13 +27,16 @@
  *      colour and its contrast text, service areas, logo, social, the
  *      estimate CTA, …), then SITE.rating and SITE.serviceRadius.
  *   3. Collections — src/content/services, service-areas, reviews, faqs
- *      and projects replaced by the prospect's; settings.json `process`.
+ *      and projects replaced by the prospect's; settings.json `process`
+ *      (removed when demo.json has none).
  *   4. The nav — PAGES descriptions in site-structure.ts and the preset's
  *      extra pages in src/data/preset-pages.ts.
  *   5. The demo switch — `demo` in SITE (src/config/site.ts): whole-site
  *      noindex, the "Built for …" banner, nav pruning, the lead fallback.
  *   6. Prettier on what it wrote, then `astro sync` (the content schema
  *      names any bad service field) and `astro check`.
+ * Every run ends by naming each installed page that is still exactly the
+ * preset's scaffold (its copy claims nothing about the business).
  * Git is left to the caller: review the diff, commit, push.
  *
  * Defaults shared by every demo live in `demo.defaults.json` at the repo
@@ -269,7 +272,7 @@ const REVIEW_PLATFORMS = /** @type {const} */ ([
   ["google", /google/i],
   ["facebook", /facebook/i],
   ["yelp", /yelp/i],
-  ["angi", /angi/i],
+  ["angi", /\bangi\b|angie'?s list|homeadvisor/i],
   ["nextdoor", /nextdoor/i],
   ["thumbtack", /thumbtack/i],
   ["bbb", /\bbbb\b|better business/i],
@@ -334,29 +337,48 @@ async function main() {
 
   // 1a. The service-area street map: each town's real boundary from
   // OpenStreetMap (scripts/lib/service-area-geo.mjs, the same function
-  // `npm run map` runs), cached beside demo.json (service-area.geo.json) so a
-  // re-run — and check:demo — needs no network. Written to
-  // src/data/service-area-geo.json (the home page, the service pages and
-  // the town pages read it) and src/data/service-radius.json ("within 60
-  // miles of Palmer"). The cache is copied to src/data/ too, so a later
-  // `npm run map` on the demo's branch starts from it. A failed lookup only
-  // costs the map.
-  const geoCache = path.join(baseDir, "service-area.geo.json");
-  const map = await buildMap({
-    areas: demo.serviceAreas,
-    radius: demo.serviceRadius ?? null,
-    region: demo.contact.region,
-    cacheFile: geoCache,
-    warn: (m) => console.warn(`! ${m}`),
-  });
+  // `npm run map` runs), written to src/data/service-area-geo.json (the
+  // home page, the service pages and the region pages read it) and
+  // src/data/service-radius.json ("within 60 miles of Palmer"). The lookup
+  // cache is `npm run map`'s own, src/data/service-area-geo.cache.json,
+  // so a re-run and a later `npm run map` share it. A
+  // service-area.geo.json beside demo.json (an older demo's cache, or the
+  // fixture's, so check:demo needs no network) seeds it with any town it
+  // lacks. A failed lookup only costs the map.
+  const geoCache = at("src/data/service-area-geo.cache.json");
+  const readCache = (/** @type {string} */ file) =>
+    existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {};
+  const haveCache = readCache(geoCache);
+  const seededCache = {
+    ...readCache(path.join(baseDir, "service-area.geo.json")),
+    ...haveCache,
+  };
+  /* A dry run writes nothing in the repo: it looks up from a scratch copy. */
+  const cacheFile = DRY_RUN
+    ? path.join(os.tmpdir(), `demo-geo-cache-${process.pid}.json`)
+    : geoCache;
+  if (
+    DRY_RUN ||
+    Object.keys(seededCache).length > Object.keys(haveCache).length
+  )
+    await fs.writeFile(cacheFile, `${JSON.stringify(seededCache)}\n`);
+  written.add("src/data/service-area-geo.cache.json");
+  let map;
+  try {
+    map = await buildMap({
+      areas: demo.serviceAreas,
+      radius: demo.serviceRadius ?? null,
+      region: demo.contact.region,
+      cacheFile,
+      warn: (m) => console.warn(`! ${m}`),
+    });
+  } finally {
+    if (DRY_RUN) await fs.rm(cacheFile, { force: true });
+  }
   await write("src/data/service-area-geo.json", `${JSON.stringify(map.geo)}\n`);
   await write(
     "src/data/service-radius.json",
     `${JSON.stringify(map.radius)}\n`,
-  );
-  await write(
-    "src/data/service-area-geo.cache.json",
-    existsSync(geoCache) ? await fs.readFile(geoCache, "utf8") : "{}\n",
   );
 
   // 1b. Logo, favicon, webclip, share image.
@@ -523,15 +545,23 @@ async function main() {
       /(\btexts\s*:\s*)(?:true|false)/,
       (_, lead) => `${lead}${demo.contact.texts ? "true" : "false"}`,
     );
-    // The map's radius and the public rating live in SITE too.
+    // The map's radius and the public rating live in SITE too. A site.ts
+    // without the line (renamed, reformatted) fails rather than keeping the
+    // old value.
     for (const [key, value] of [
       ["serviceRadius", demo.serviceRadius ?? null],
       ["rating", demo.rating ?? null],
-    ])
+    ]) {
+      const pattern = new RegExp(
+        `(\\n  ${key}: )(?:null|\\{[^}]*\\})(\\s+as\\s)`,
+      );
+      if (!pattern.test(site))
+        fail(`src/config/site.ts has no \`${key}: … as …\` line to write.`);
       site = site.replace(
-        new RegExp(`(\\n  ${key}: )(?:null|\\{[^}]*\\})(\\s+as\\s)`),
+        pattern,
         (_, lead, tail) => `${lead}${JSON.stringify(value)}${tail}`,
       );
+    }
     await fs.writeFile(at("src/config/site.ts"), site);
   }
 
@@ -714,21 +744,24 @@ async function main() {
   }
 
   // 3d. The site-wide process steps: settings.json's `process` (the file's
-  // other keys stay).
-  if (demo.process && !DRY_RUN) {
+  // other keys stay). Without demo.process there are none, so the sections
+  // that show them skip: never the starter's sample steps.
+  if (!DRY_RUN) {
     const settingsFile = at("src/content/settings.json");
     const settings = JSON.parse(await fs.readFile(settingsFile, "utf8"));
-    const { heading, text, steps } = demo.process;
-    settings.site.process = {
-      heading,
-      ...(text ? { text } : {}),
-      steps: steps.map(
-        (/** @type {{ title: string; text: string }} */ step) => ({
-          title: step.title,
-          text: step.text,
-        }),
-      ),
-    };
+    if (demo.process) {
+      const { heading, text, steps } = demo.process;
+      settings.site.process = {
+        heading,
+        ...(text ? { text } : {}),
+        steps: steps.map(
+          (/** @type {{ title: string; text: string }} */ step) => ({
+            title: step.title,
+            text: step.text,
+          }),
+        ),
+      };
+    } else delete settings.site.process;
     await write(
       "src/content/settings.json",
       `${JSON.stringify(settings, null, 2)}\n`,
@@ -817,7 +850,7 @@ export const PRESET_PAGES: SitePage[] = [${
   {
     path: ${JSON.stringify(audiencePath)},
     title: ${JSON.stringify(demo.audiencePage.navLabel ?? "For contractors")},
-    desc: ${JSON.stringify(demo.audiencePage.desc ?? `${name} works with general contractors and property managers.`)},
+    desc: ${JSON.stringify(demo.audiencePage.desc ?? `${name}: work for contractors and property managers.`)},
     group: "main",
   },`
           : ""
@@ -884,7 +917,22 @@ export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(de
     );
   }
 
+  /* The preset's pages are a scaffold that claims nothing about the
+     business: every run names each one still exactly as installed. */
+  const warnScaffold = () => {
+    for (const page of pages)
+      if (
+        existsSync(at(page.to)) &&
+        readFileSync(at(page.to), "utf8") ===
+          readFileSync(path.join(presetDir, page.from), "utf8")
+      )
+        console.warn(
+          `! ${page.to}: still the scaffold copy — rewrite from the business's facts.`,
+        );
+  };
+
   if (DRY_RUN) {
+    warnScaffold();
     console.log(
       `✓ demo.json is valid. Would write ${written.size} files for ${name} (${siteUrl}).`,
     );
@@ -904,6 +952,7 @@ export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(de
       quiet: true,
     });
 
+  warnScaffold();
   const confirm = demo.notes.confirmOrCut;
   console.log(`
 ✓ Demo written for ${name}

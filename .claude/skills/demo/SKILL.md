@@ -890,7 +890,12 @@ npm run demo -- --config <path>/demo.json
 - The script validates first: a bad field is reported as
   `demo.json › services.1.highlights: …`. Fix it and re-run.
 - **Step 0 installs the preset's pages into `src/pages/`, only where no
-  page exists, and never overwrites one after.** Everything else it writes
+  page exists, and never overwrites one after.** (The first run on a fresh
+  starter is the one exception: the preset's home and contact pages replace
+  the starter's own.) The installed pages are a scaffold that claims
+  nothing about the business, with `[bracketed]` prompts for its facts;
+  every run warns "still the scaffold copy" for each page not yet
+  rewritten. Everything else it writes
   (`SITE` in `src/config/site.ts`, `src/content/{services,service-areas,
 reviews,faqs,projects}/*`, `settings.json` `process`, the nav, the map
   data) is regenerated whole on every run: re-running after an edit to
