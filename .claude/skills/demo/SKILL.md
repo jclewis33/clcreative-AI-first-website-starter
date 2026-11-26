@@ -497,8 +497,8 @@ true` so the nav reads "Call or text". The owner may not answer the
   has to still be true. Write "we": "We tell you what your home needs",
   "When we say we'll be there, we're there". The owner's own story (why
   they started, their family, their values) stays first person on the
-  story and About sections; credentials read as the company's ("Just A
-  Dad's is licensed…").
+  story and About sections; credentials read as the company's ("Acme
+  Pest is licensed…").
 - **No filler to fill a slot.** No distances from home base, no "we make
   the drive", no restating the town list as a sentence. If a section has
   nothing real to say, leave it out.
