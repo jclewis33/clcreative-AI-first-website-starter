@@ -48,7 +48,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
     "@types/leaflet": "^1.9.22",
-    "node-html-parser": "^7.1.0",
+    "node-html-parser": "^9.0.7",
     "pixelmatch": "^8.0.0",
     "playwright": "^1.65.1",
     "pngjs": "^7.0.0",
