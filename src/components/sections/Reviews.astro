@@ -169,17 +169,18 @@ const reviewAvatar = (review: Review) =>
       )}
       {!rated && (
         <SectionHeader eyebrow={eyebrow} heading={heading}>
-          {allReviewsHref && (
-            <Button
-              slot="action"
-              variant="secondary"
-              href={allReviewsHref}
-              newTab
-              ariaLabel={allReviewsLabel}
-            >
-              {allReviewsLabel}
-            </Button>
-          )}
+          <Fragment slot="action">
+            {allReviewsHref && (
+              <Button
+                variant="secondary"
+                href={allReviewsHref}
+                newTab
+                ariaLabel={allReviewsLabel}
+              >
+                {allReviewsLabel}
+              </Button>
+            )}
+          </Fragment>
         </SectionHeader>
       )}
 

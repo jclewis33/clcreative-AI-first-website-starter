@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { slotContent } from "@/lib/slots";
 /**
  * Layout — the one component that arranges a section's content.
  *
@@ -546,12 +547,16 @@ const effectiveAlign =
    measure to centre. */
 const needsContentWrapper = effectiveAlign !== "inherit" || Boolean(maxWidth);
 
-/* NOTE: `Astro.slots.has()` is a cheap "was it passed" check, which is all
-   this needs. When emptiness must gate markup, capture the slot ONCE with
+/* NOTE: when emptiness gates markup, capture the slot ONCE with
    `slotContent()` (src/lib/slots.ts) and emit the string with set:html —
    never render `<slot />` after calling `Astro.slots.render()`, which drops
    the hoisted script of every component inside the slot. */
-const hasColumn2Slot = Astro.slots.has("column2");
+/* column2 is captured once rather than checked with has(): a caller may pass
+   it unconditionally with the condition inside (`<Fragment slot="column2">`
+   around `{cond && …}`), which visual editors such as Stacki need — they
+   wrap a conditional slotted element in a Fragment and the slot is lost. An
+   empty capture leaves a one-column layout. */
+const column2 = await slotContent(Astro.slots, "column2");
 
 const isBreakout = [
   "breakout",
@@ -646,9 +651,9 @@ const inlineStyle = styleParts.length ? styleParts.join("; ") : undefined;
 
         {/* Only emitted when it renders something — a column2 holding an empty
             expression would otherwise leave a stray grid cell. */}
-        {hasColumn2Slot && (
+        {column2 && (
           <div class="u-layout-column-2">
-            <slot name="column2" />
+            <Fragment set:html={column2} />
           </div>
         )}
       </div>

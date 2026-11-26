@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { mergeStyle } from "@/lib/style";
 import Layout from "@/components/ui/Layout.astro";
 /**
  * Text — body copy with design-system size, weight, and alignment tokens.
@@ -385,9 +386,10 @@ const childClasses = [clamp && `u-line-clamp-${clamp}`];
    medium breakpoint (~58em). Below that, --unset-medium = `unset`, which
    removes the constraint and lets the text fill the available width. */
 const { style: userStyle, ...attrs } = rest;
-const mergedStyle = [`max-width: var(--unset-medium, ${maxWidth})`, userStyle]
-  .filter(Boolean)
-  .join("; ");
+const mergedStyle = mergeStyle(
+  `max-width: var(--unset-medium, ${maxWidth})`,
+  userStyle,
+);
 ---
 
 {

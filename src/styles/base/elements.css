@@ -55,6 +55,13 @@ button:not(:disabled) {
   cursor: pointer;
 }
 
+/* Controls aren't text: a fast double-click on a button, tab, chip or a
+   checkbox/radio label shouldn't highlight its words. */
+button,
+label:has(input:is([type="radio"], [type="checkbox"])) {
+  user-select: none;
+}
+
 /* ---- from utilities/typography.css: semantic heading + text elements ---- */
 
 /* Apply heading variables to semantic heading tags */

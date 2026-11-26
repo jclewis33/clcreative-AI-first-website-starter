@@ -380,14 +380,15 @@ if (import.meta.env.DEV && render) {
               variant={item.image ? "default" : "stacked"}
               class="service-cards_card"
             >
-              {item.image ? (
-                <Visual
-                  slot="visual"
-                  src={item.image}
-                  alt={item.imageAlt || item.title}
-                  ratio="landscape"
-                />
-              ) : null}
+              <Fragment slot="visual">
+                {item.image && (
+                  <Visual
+                    src={item.image}
+                    alt={item.imageAlt || item.title}
+                    ratio="landscape"
+                  />
+                )}
+              </Fragment>
               <Fragment slot="title">
                 {!item.image && item.icon ? (
                   <ServiceIcon name={item.icon} />
@@ -397,11 +398,11 @@ if (import.meta.env.DEV && render) {
                 </Heading>
               </Fragment>
               {item.text && <Text variant="small">{item.text}</Text>}
-              {item.href && (
-                <span slot="footer" class="service-cards_more">
-                  {moreLabel}
-                </span>
-              )}
+              <Fragment slot="footer">
+                {item.href && (
+                  <span class="service-cards_more">{moreLabel}</span>
+                )}
+              </Fragment>
             </Card>
           ))}
         </Wrapper>

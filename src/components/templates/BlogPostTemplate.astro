@@ -276,35 +276,34 @@ const jsonLd = await blogPostJsonLd(post, siteOrigin);
         </a>
       </div>
 
-      {
-        post.video ? (
-          <div
-            slot="column2"
-            class="blog_post_video_wrap u-aspect-ratio-widescreen u-radius-main u-overflow-hidden"
-          >
-            <iframe
-              src={post.video
-                .replace("youtu.be/", "www.youtube.com/embed/")
-                .replace("watch?v=", "embed/")
-                .replace("&", "?")}
-              title={plainText(post.title)}
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-              style="position:absolute;top:0;left:0;width:100%;height:100%;"
-            />
-          </div>
-        ) : (
-          post.image && (
+      <Fragment slot="column2">
+        {
+          post.video && (
+            <div class="blog_post_video_wrap u-aspect-ratio-widescreen u-radius-main u-overflow-hidden">
+              <iframe
+                src={post.video
+                  .replace("youtu.be/", "www.youtube.com/embed/")
+                  .replace("watch?v=", "embed/")
+                  .replace("&", "?")}
+                title={plainText(post.title)}
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                style="position:absolute;top:0;left:0;width:100%;height:100%;"
+              />
+            </div>
+          )
+        }
+        {
+          !post.video && post.image && (
             <Visual
-              slot="column2"
               src={imageSrc(post.image, { width: 1200 })}
               alt={post.image.alt}
               ratio="wide"
             />
           )
-        )
-      }
+        }
+      </Fragment>
     </Layout>
   </Section>
 

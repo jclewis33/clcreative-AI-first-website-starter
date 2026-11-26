@@ -114,9 +114,11 @@ if (import.meta.env.DEV && render && !phone && !cta?.label) {
         class={className}
       >
         {cta.label}
-        {cta.icon === "download" && (
-          <Icon slot="icon" src={downloadIcon} variant="small" />
-        )}
+        <Fragment slot="icon">
+          {cta.icon === "download" && (
+            <Icon src={downloadIcon} variant="small" />
+          )}
+        </Fragment>
       </Button>
     ) : null)
 }

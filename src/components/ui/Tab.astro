@@ -1,5 +1,7 @@
 ---
+import type { HTMLAttributes } from "astro/types";
 import { uid } from "@/lib/uid";
+import { mergeStyle } from "@/lib/style";
 /**
  * Tab component — a tabbed interface with multiple layout and transition variants.
  *
@@ -60,7 +62,7 @@ type TabVariant = "top" | "side" | "slider" | "fade" | "pills";
  *
  * **Slots:** `heading` (above button list), `buttons` (`<TabButton>` instances), default (`<TabPanel>` instances).
  */
-interface Props {
+interface Props extends HTMLAttributes<"div"> {
   /**
    * **Tab props:**
    * - `variant` — top (horizontal, fade), side (vertical, fade), slider (horizontal, slide + autoplay), fade, pills (pill track, fade) (default 'top')
@@ -72,6 +74,7 @@ interface Props {
    * - `id` — wrapper id, doubles as the deep-link query key
    * - `deepLink` — mirror the active tab in the URL (default false)
    * - `class` — extra classes
+   * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to `.tab_wrap`
    *
    * **Slots:** `heading` (above buttons), `buttons` (`<TabButton>`), default (`<TabPanel>`)
    */
@@ -162,6 +165,8 @@ const {
   id,
   deepLink = false,
   class: className,
+  style: userStyle,
+  ...rest
 } = Astro.props;
 
 const isSlider = variant === "slider";
@@ -178,7 +183,10 @@ const tabId = uid("tab");
 <div
   class:list={["tab_wrap", className]}
   id={id}
-  style={`--_duration: ${duration}s; --_autoplay: ${autoplayDuration}s;`}
+  style={mergeStyle(
+    `--_duration: ${duration}s; --_autoplay: ${autoplayDuration}s`,
+    userStyle,
+  )}
   data-tab-variant={variant}
   data-tab-transition={transitionMode}
   data-autoplay-duration={isSlider ? String(autoplayDuration) : ""}
@@ -187,6 +195,7 @@ const tabId = uid("tab");
   data-active-tab={String(activeTab)}
   data-deep-link={deepLink ? "true" : undefined}
   data-tab-id={tabId}
+  {...rest}
 >
   <div class="tab_left">
     {

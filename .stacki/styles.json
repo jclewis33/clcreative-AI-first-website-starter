@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "keep": ["is-*", "has-*", "u-*"],
+  "lockedStylesheets": ["src/styles/"],
+  "newStyleTag": {
+    "version": 2,
+    "attributes": "is:global",
+    "content": "@layer components {\n}"
+  },
+  "newStyleLocations": {
+    "version": 1,
+    "page": {
+      "use": "tag",
+      "tag": {
+        "version": 2,
+        "attributes": "is:global",
+        "content": "@layer pages {\n}"
+      }
+    },
+    "component": {
+      "use": "tag",
+      "tag": {
+        "version": 2,
+        "attributes": "is:global",
+        "content": "@layer components {\n}"
+      }
+    }
+  }
+}

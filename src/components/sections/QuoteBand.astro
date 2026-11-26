@@ -95,12 +95,14 @@ const {
       class:list={["quote-band_wrap", className]}
       {...rest}
     >
-      {image && (
-        <Fragment slot="background">
-          <Visual src={image} alt={imageAlt} variant="background" />
-          <Overlay strength={82} />
-        </Fragment>
-      )}
+      <Fragment slot="background">
+        {image && (
+          <Fragment>
+            <Visual src={image} alt={imageAlt} variant="background" />
+            <Overlay strength={82} />
+          </Fragment>
+        )}
+      </Fragment>
       <div class="quote-band_layout">
         <div class="quote-band_text u-margin-trim">
           <Heading tag="h2" variant="h1" marginBottom={5}>

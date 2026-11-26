@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { mergeStyle } from "@/lib/style";
 import { slotContent } from "@/lib/slots";
 
 /* ── Props contract ──────────────────────────────────────────────────────────
@@ -152,10 +153,7 @@ const visible = (Object.keys(counts) as Array<keyof typeof counts>)
   .map((key) => `${tierVar[key]}: ${counts[key]}`)
   .join("; ");
 
-const mergedStyle =
-  [visible, typeof userStyle === "string" ? userStyle : undefined]
-    .filter(Boolean)
-    .join("; ") || undefined;
+const mergedStyle = mergeStyle(visible, userStyle);
 
 /* Capture the slot ONCE and emit the string with set:html — render-once rule,
    see src/lib/slots.ts. An empty slot skips the whole component. */

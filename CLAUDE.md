@@ -261,7 +261,10 @@ const content = await slotContent(Astro.slots);
   (measured on the 7.3.2 upgrade: footer copyright, required-field `*`).
 - **Merging classes:** always `class:list` (base class first, conditional
   modifiers, caller's `className` last). Merging inline **styles** is
-  separate: `[computed, userStyle].filter(Boolean).join("; ")`.
+  separate: `mergeStyle(computed, userStyle)` from `@/lib/style` (handles
+  string and object styles). A component that sets its own inline `style`
+  pulls `style` out of `rest` first — `style={…}` beside `{...rest}` lets
+  the caller's style wipe the component's custom properties.
 - **Animation/slider dependencies are per-component imports** — no window
   globals, no site-wide library script. GSAP today: `animation.js`
   (dynamically imported behind data-attribute checks), ScrollReveal,
@@ -378,6 +381,29 @@ raise the budget or allow-list it without saying why in the PR.
   `const`), and the `cond ? ( …markup… ) : ( …markup… )` ternary Reviews.astro
   used (Stacki's rewrite broke the file; prefer separate `cond && (…)` /
   `!cond && (…)` blocks).
+
+- **What Stacki can edit on the canvas** (it reads source, never runs it;
+  config lives in `.stacki/` — commit it, only `.stacki/preview/` is
+  ignored). Editable: text written in the page (slot text, string props,
+  a frontmatter `const`), and images that are an `<img>`/`<Visual>`/
+  `<Image>` whose `src` is an asset **imported in the page**. Not
+  editable on the canvas: a data member passed down (`image={hero.image}`,
+  `heading={home.hero.heading}`), text with HTML in the data (`<strong>`),
+  text run through a call (`linkPhones(x)`), arrays rendered with `.map()`
+  inside a section component, components nested more than 3 deep, and CSS
+  `background-image`/`url()` in a `style`. Collection content is edited in
+  Stacki's CMS panel instead. A page meant for a client to edit in Stacki
+  composes its sections in the page file with imported images and literal
+  props.
+
+- **A slotted element inside a condition** (`{cond && (<div
+slot="background">…)}`) — Stacki wraps the condition's contents in a
+  `<Fragment>` to mark them, the slot attribute ends up one level down, and
+  the slot renders nothing in the editor (backgrounds vanish). Pass the slot
+  unconditionally with the condition inside:
+  `<Fragment slot="background">{cond && (…)}</Fragment>`. Receiving
+  components capture named slots with `slotContent()`, so an empty one
+  still renders nothing. `.map()` inside a slotted Fragment is fine.
 
 - Importing a CMS package or `src/sanity` outside the add-on's allow list
   (`scripts/boundary/*.json`, shipped by the add-on) — content, types and

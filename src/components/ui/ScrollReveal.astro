@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { mergeStyle } from "@/lib/style";
 /**
  * ScrollReveal — scroll-linked reveal with sticky image cross-fade.
  *
@@ -142,13 +143,16 @@ const ratioStyle =
   left > 0 && right > 0
     ? `--sr-col-1: ${left}fr; --sr-col-2: ${right}fr`
     : undefined;
+
+/* Caller style merges with the component's own inline custom properties */
+const { style: userStyle, ...attrs } = rest;
 ---
 
 <div
   class:list={["scroll_reveal_wrap", className]}
   data-scroll-reveal="component"
-  style={ratioStyle}
-  {...rest}
+  style={mergeStyle(ratioStyle, userStyle)}
+  {...attrs}
 >
   {/* ── Content column (left) ── */}
   <div class="scroll_reveal_content">

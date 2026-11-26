@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import { mergeStyle } from "@/lib/style";
 /**
  * FormTextarea — label + auto-growing textarea for multiline text input.
  *
@@ -105,6 +106,9 @@ const describedById = helperText || errorText ? `${fieldId}-hint` : undefined;
 const isFloating = labelVariant === "floating";
 const resolvedPlaceholder = isFloating ? placeholder || " " : placeholder;
 const linesStyle = `--_min-lines: ${minLines}; --_max-lines: ${maxLines};`;
+
+/* Caller style merges with the component's own inline custom properties */
+const { style: userStyle, ...attrs } = rest;
 ---
 
 <div class:list={["form_label_wrap", isFloating && "is-floating", className]}>
@@ -130,10 +134,10 @@ const linesStyle = `--_min-lines: ${minLines}; --_max-lines: ${maxLines};`;
     required={required}
     disabled={disabled}
     rows={minLines}
-    style={linesStyle}
+    style={mergeStyle(linesStyle, userStyle)}
     aria-describedby={describedById}
     aria-invalid={errorText ? "true" : undefined}
-    {...rest}>{value}</textarea
+    {...attrs}>{value}</textarea
   >
 
   {

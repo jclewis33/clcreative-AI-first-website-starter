@@ -243,18 +243,20 @@
   grid-template-columns: subgrid;
 }
 
-/* Fills available space with as many columns as fit at the minimum size */
+/* Fills available space with as many columns as fit at the minimum size.
+   min(…, 100%) caps the minimum at the container width, so a --col-min
+   wider than the container gives one full-width column instead of overflow. */
 .u-grid-autofit {
   gap: var(--site-gutter);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--col-min, 200px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--col-min, 12.5rem), 100%), 1fr));
 }
 
 /* Preserves empty tracks — use when item count matters */
 .u-grid-autofill {
   gap: var(--site-gutter);
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--col-min, 200px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--col-min, 12.5rem), 100%), 1fr));
 }
 
 /* Full-bleed breakout layout — named-line grid spanning the viewport.

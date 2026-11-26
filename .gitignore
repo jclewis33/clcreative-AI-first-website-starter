@@ -63,3 +63,6 @@ preview/.env
 
 # scripts/visual-diff.mjs output
 visual-report/
+
+# Stacki editor: commit .stacki/, ignore only its generated preview
+.stacki/preview/

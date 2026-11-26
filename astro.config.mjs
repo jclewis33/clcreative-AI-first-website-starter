@@ -2,6 +2,7 @@
 import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
+import { satteri } from "@astrojs/markdown-satteri";
 import cloudflare from "@astrojs/cloudflare";
 import { readFile, rm, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -127,7 +128,12 @@ export default defineConfig({
             filter: (page) => !isNoindexRoute(new URL(page).pathname),
           }),
         ]),
-    mdx(),
+    // MDX gets its own processor (the same one it defaults to) instead of
+    // inheriting `markdown.processor`. Visual editors such as Stacki swap that
+    // processor for one that inserts raw-HTML comment markers, which the MDX
+    // compiler refuses ("Cannot compile a raw node"), and every page that
+    // loads a blog post then fails in the editor. Plain builds are unchanged.
+    mdx({ processor: satteri() }),
     // The content source's integrations (src/config/cms.mjs): none for
     // content in local files; a CMS add-on supplies its own.
     ...cms.integrations,
