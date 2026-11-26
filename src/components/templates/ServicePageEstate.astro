@@ -35,7 +35,7 @@ import { SITE } from "@/config/site";
 import { getProcess } from "@/lib/faqs";
 import { serviceFaqJsonLd } from "@/lib/jsonld";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
-import { getServiceReviews } from "@/lib/reviews";
+import { getReviews } from "@/lib/reviews";
 import { servicePath, SERVICES_INDEX_PATH, type Service } from "@/lib/services";
 
 interface Props {
@@ -80,7 +80,8 @@ const estimateCta = {
 const ownModal = !SITE.quote;
 const contractor = s.buyer === "contractor";
 const heroCta = s.hero.primaryCta ?? estimateCta;
-const reviews = await getServiceReviews(service.id);
+/* This service's tagged reviews first, then the rest; ReviewCards shows 3. */
+const reviews = await getReviews({ service: service.id });
 /* The platform the site's rating comes from ("on Google"); none named
    when SITE.rating is null. */
 const PLATFORM_NAMES = {
