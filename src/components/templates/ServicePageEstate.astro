@@ -81,14 +81,23 @@ const ownModal = !SITE.quote;
 const contractor = s.buyer === "contractor";
 const heroCta = s.hero.primaryCta ?? estimateCta;
 const reviews = await getServiceReviews(service.id);
+/* The platform the site's rating comes from ("on Google"); none named
+   when SITE.rating is null. */
+const PLATFORM_NAMES = {
+  google: "Google",
+  facebook: "Facebook",
+  yelp: "Yelp",
+} as const;
+const platform = SITE.rating ? PLATFORM_NAMES[SITE.rating.source] : "";
 const proof = s.reviewSummary
   ? {
       rating: s.reviewSummary.rating,
       text:
         s.reviewSummary.text ??
-        `${s.reviewSummary.count ?? reviews.length} reviews on Google`,
+        `${s.reviewSummary.count ?? reviews.length} reviews${platform ? ` on ${platform}` : ""}`,
     }
   : undefined;
+const allReviewsLabel = `Read all our ${platform ? `${platform} ` : ""}reviews`;
 ---
 
 <BaseLayout
@@ -203,7 +212,7 @@ const proof = s.reviewSummary
           render={reviews.length > 0}
           reviews={reviews}
           limit={3}
-          link={{ label: "Read all our Google reviews", href: "/reviews" }}
+          link={{ label: allReviewsLabel, href: "/reviews" }}
         />
 
         {s.gallery && (

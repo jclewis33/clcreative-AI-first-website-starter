@@ -61,7 +61,10 @@ export interface AreaServed {
   name: string;
 }
 
-/** The business's public star rating (shown as a badge and in structured data). */
+/**
+ * The business's public star rating, shown as the stars line. Not in the
+ * structured data: a rating a business shows on its own site is not eligible.
+ */
 export interface SiteRating {
   /** Average stars, 1 to 5. */
   value: number;

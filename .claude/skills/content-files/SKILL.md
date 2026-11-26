@@ -58,7 +58,7 @@ the field reference; keep the two in step.
 | Testimonial    | `src/content/testimonials/<id>.json`    | Testimonial sliders, grids, `<SingleTestimonial name>`                                        |
 | Service area   | `src/content/service-areas/<slug>.json` | `/service-areas/<slug>` (a region of towns), the hub, town links                              |
 | Review         | `src/content/reviews/<id>.json`         | Review sections; `getReviews({ service, limit })`, `getServiceReviews(id)` in `@/lib/reviews` |
-| FAQ            | `src/content/faqs/<id>.json`            | The site-wide FAQ section and its FAQPage JSON-LD (`getFaqs()`)                               |
+| FAQ            | `src/content/faqs/<id>.json`            | The site-wide FAQ section (`getFaqs()`)                                                       |
 
 Photos go in an `images/` folder beside the entries, referenced as
 `"./images/<file>"`: `src/content/blog/images/`,
