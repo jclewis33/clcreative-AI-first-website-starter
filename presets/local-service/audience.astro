@@ -1,12 +1,147 @@
 ---
 /**
- * GENERATED AUDIENCE PAGE — the local-service preset (presets/local-service),
- * installed by `npm run demo` at demo.json's `audience.path`. The content is
- * src/data/audience.ts. Edit demo.json and re-run the script rather than
- * this file.
+ * Audience page — the local-service preset's starter page for a second
+ * kind of buyer (general contractors and property managers, for a trade
+ * that mostly sells to homeowners). A scaffold to redesign for each
+ * business, not a template: copy it to the business's own path under
+ * src/pages, rewrite the copy from what they really do, and swap the
+ * placeholder photos for theirs.
+ *
+ * A photo hero (bid invitation and paperwork buttons), a spec bar of facts
+ * from SITE, the scopes beside a photo, equipment and capacity on dark,
+ * the prequal paperwork, the bid invitation form with what happens next,
+ * and the towns served (SITE.serviceAreas).
+ *
+ * The copy claims nothing about the business. Lines in [brackets] are
+ * prompts for facts only the business can supply (crews, equipment,
+ * insurance, the scopes they bid): replace each from their own material,
+ * or cut it.
  */
-import LocalServiceAudience from "@/components/templates/LocalServiceAudience.astro";
-import { AUDIENCE } from "@/data/audience";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import StatsStrip from "@/components/sections/StatsStrip.astro";
+import RuledList from "@/components/sections/RuledList.astro";
+import FeatureSpotlight from "@/components/sections/FeatureSpotlight.astro";
+import LeadFormSection from "@/components/sections/LeadFormSection.astro";
+import TownLinks from "@/components/sections/TownLinks.astro";
+import { SITE } from "@/config/site";
+import heroPhoto from "@/assets/placeholder-images/ai-first-starter-15.webp";
+import scopePhoto from "@/assets/placeholder-images/ai-first-starter-13.webp";
+import capabilityPhoto from "@/assets/placeholder-images/ai-first-starter-8.webp";
+
+const FORM_ID = "bid";
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "For contractors", path: Astro.url.pathname.replace(/\/$/, "") },
+];
+const formCta = { label: "Send a bid invitation", href: `#${FORM_ID}` };
+const paperworkCta = { label: "Prequalification paperwork", href: "#docs" };
+
+/* Facts from SITE only; a blank one drops out. */
+const facts = [
+  {
+    label: "Based in",
+    value: `${SITE.address.locality}, ${SITE.address.region}`,
+  },
+  { label: "Hours", value: SITE.hours },
+  { label: "License", value: SITE.license },
+  { label: "In business since", value: SITE.founded ? `${SITE.founded}` : "" },
+].filter((fact) => fact.value);
+const scopes = [
+  { title: "New construction", text: "[What they do on new builds]" },
+  { title: "Tenant finish-outs", text: "[The kinds of spaces they finish]" },
+  { title: "Turnovers and repairs", text: "[What they handle between leases]" },
+];
+const capabilityImages = [
+  {
+    image: capabilityPhoto,
+    alt: "A person typing at a desktop computer with a notebook beside it",
+  },
+];
+const capabilities = [
+  { label: "[Crews]", text: "[How many, and how big, as they say it]" },
+  { label: "[Equipment]", text: "[What they own, only what they name]" },
+  { label: "[Hours]", text: "[When they can work on a site]" },
+];
+const documents = [
+  { title: "[Capabilities statement]", text: "[Only if they have one]" },
+  { title: "[Certificate of insurance]", text: "[Only if they carry it]" },
+  { title: "W-9", text: "Current and signed" },
+];
+const scopeOptions = [
+  { label: "New construction", value: "new-construction" },
+  { label: "Tenant finish-out", value: "finish-out" },
+  { label: "Turnover or repair", value: "turnover" },
+  { label: "Something else", value: "other" },
+];
+const nextSteps = [
+  "We confirm we have your invitation.",
+  "We review the drawings and the scope.",
+  "[When they send their number]",
+];
 ---
 
-<LocalServiceAudience audience={AUDIENCE} />
+<BaseLayout
+  title={`Contractors and property managers | ${SITE.name}`}
+  description={`Bid invitations and prequalification paperwork for ${SITE.name} in ${SITE.address.locality}.`}
+  breadcrumbs={breadcrumbs}
+>
+  <Hero
+    variant="background"
+    overlay="full"
+    headingSize="h1"
+    eyebrow="For contractors and property managers"
+    heading="[Their trade] for <strong>your next project</strong>"
+    text="Send the drawings and the bid date, and we'll get back to you."
+    image={heroPhoto}
+    imageAlt="A desktop, laptop, tablet and phone on a wooden desk"
+    primaryCta={formCta}
+    secondaryCta={paperworkCta}
+    secondaryVariant="secondary"
+    showPhone={false}
+    minHeight={false}
+    badge={false}
+  />
+
+  <StatsStrip items={facts} variant="spec" padding="small" />
+
+  <RuledList
+    eyebrow="Scopes we cover"
+    heading="[The work they bid on, in their words]"
+    items={scopes}
+    image={scopePhoto}
+    imageAlt="Two screens on a desk, one showing code and one a web page"
+  />
+
+  <FeatureSpotlight
+    theme="dark"
+    eyebrow="Equipment and capacity"
+    heading="[What they can take on: <strong>crews, equipment, hours</strong>]"
+    images={capabilityImages}
+    items={capabilities}
+  />
+
+  <RuledList
+    id="docs"
+    tone="white"
+    eyebrow="Prequalification"
+    heading="Paperwork, ready to send"
+    text="Ask and we'll email the packet."
+    items={documents}
+    cta={formCta}
+  />
+
+  <LeadFormSection
+    id={FORM_ID}
+    eyebrow="Bid invitations"
+    heading="Add us to your <strong>bid list</strong>"
+    text="Send the project and the due date."
+    formId="contact"
+    fields="bid"
+    projectOptions={scopeOptions}
+    steps={nextSteps}
+    contact="both"
+  />
+
+  <TownLinks heading="Where we work" towns={[...SITE.serviceAreas]} />
+</BaseLayout>

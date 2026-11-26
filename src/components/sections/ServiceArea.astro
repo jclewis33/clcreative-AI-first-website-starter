@@ -193,6 +193,12 @@ if (import.meta.env.DEV && render) {
     console.warn(
       "[ServiceArea] needs areas, a map, or images; nothing renders.",
     );
+  const outlined = new Set(geo.map((area) => area.name));
+  const unoutlined = areas.filter((area) => !outlined.has(area));
+  if (geo.length > 0 && unoutlined.length > 0)
+    console.warn(
+      `[ServiceArea] No map outline for ${unoutlined.join(", ")}; the map skips them (chips still show). Run \`npm run map\`.`,
+    );
 }
 ---
 

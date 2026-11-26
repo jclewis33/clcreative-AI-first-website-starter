@@ -45,18 +45,20 @@ the field reference; keep the two in step.
 
 ## Where everything lives
 
-| Content        | File(s)                                 | Becomes                                                            |
-| -------------- | --------------------------------------- | ------------------------------------------------------------------ |
-| Blog post      | `src/content/blog/<slug>.mdx`           | `/blog/<slug>`, cards, category pages, llms files                  |
-| Author         | `src/content/authors/<id>.json`         | The byline and photo on posts                                      |
-| Blog CTA       | `src/content/ctas/blog/<id>.json`       | The end-of-post CTA, and `<BlogCta id>` inside a post              |
-| CTA section    | `src/content/ctas/section/<id>.json`    | The bottom CTA band on blog, case-study and project pages          |
-| Site defaults  | `src/content/settings.json`             | Which blog CTA and CTA section a page gets when it names none      |
-| Case study     | `src/content/case-studies/<slug>.json`  | `/case-studies/<slug>` (unless coming soon), cards, featured strip |
-| Project        | `src/content/projects/<slug>.json`      | `/projects/<slug>`, project cards                                  |
-| Gallery photos | `src/content/gallery.json` (one array)  | `/gallery`, the /projects strip                                    |
-| Testimonial    | `src/content/testimonials/<id>.json`    | Testimonial sliders, grids, `<SingleTestimonial name>`             |
-| Service area   | `src/content/service-areas/<slug>.json` | `/service-areas/<slug>` (a region of towns), the hub, town links   |
+| Content        | File(s)                                 | Becomes                                                                                       |
+| -------------- | --------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Blog post      | `src/content/blog/<slug>.mdx`           | `/blog/<slug>`, cards, category pages, llms files                                             |
+| Author         | `src/content/authors/<id>.json`         | The byline and photo on posts                                                                 |
+| Blog CTA       | `src/content/ctas/blog/<id>.json`       | The end-of-post CTA, and `<BlogCta id>` inside a post                                         |
+| CTA section    | `src/content/ctas/section/<id>.json`    | The bottom CTA band on blog, case-study and project pages                                     |
+| Site defaults  | `src/content/settings.json`             | Which blog CTA and CTA section a page gets when it names none                                 |
+| Case study     | `src/content/case-studies/<slug>.json`  | `/case-studies/<slug>` (unless coming soon), cards, featured strip                            |
+| Project        | `src/content/projects/<slug>.json`      | `/projects/<slug>`, project cards                                                             |
+| Gallery photos | `src/content/gallery.json` (one array)  | `/gallery`, the /projects strip                                                               |
+| Testimonial    | `src/content/testimonials/<id>.json`    | Testimonial sliders, grids, `<SingleTestimonial name>`                                        |
+| Service area   | `src/content/service-areas/<slug>.json` | `/service-areas/<slug>` (a region of towns), the hub, town links                              |
+| Review         | `src/content/reviews/<id>.json`         | Review sections; `getReviews({ service, limit })`, `getServiceReviews(id)` in `@/lib/reviews` |
+| FAQ            | `src/content/faqs/<id>.json`            | The site-wide FAQ section (`getFaqs()`)                                                       |
 
 Photos go in an `images/` folder beside the entries, referenced as
 `"./images/<file>"`: `src/content/blog/images/`,
@@ -253,6 +255,19 @@ that have an `image` (every Files study does: it is required).
   (a square headshot; needs `avatarAlt`, usually the name), `website`,
   `stars` (1–5), `featured` (featured sections), `order` (lowest first;
   default 100).
+- **Review**: `name`, `rating` (4 or 5 only), `text`, `platform` (`google`,
+  `facebook`, `yelp`, `angi`, `nextdoor`, `thumbtack`, `bbb`). Optional:
+  `full` (the whole review, word for word), `date` (as the platform words
+  it), `meta` (the line under the name, "Panel upgrade · Round Rock";
+  default "<Platform> review"), `role` (who they are, when it matters:
+  "General contractor"), `avatar` (a reviewer photo; needs `avatarAlt`,
+  usually the name), `services` (service ids; a service page shows its
+  tagged reviews, or all reviews when it has none), `featured` (first), `order`
+  (lowest first; default 100). Real, attributed reviews only; the schema
+  can't prove it.
+- **FAQ** (site-wide; a service's own FAQs stay in its service file):
+  `question`, `answer` (inline HTML allowed). Optional: `order` (lowest
+  first; default 100). The filename is only an id.
 - **Author**: `name`. Optional: `avatar` (a square headshot), `avatarAlt`
   (default: the name).
 - **Blog CTA**: `heading`, `body` (280 characters at most), `image` +
@@ -265,7 +280,10 @@ that have an `image` (every Files study does: it is required).
   (0–100, default 80).
 - **settings.json**: `{ "site": { "defaultBlogCta": "<id>",
 "defaultCtaSection": "<id>" } }`. The `"site"` key is required: without it
-  the sync fails (`src/content/settings.json → site: missing`).
+  the sync fails (`src/content/settings.json → site: missing`). It also
+  holds `process`, the site-wide "how it works" steps every service page
+  shows without its own: `{ "heading", "text"?, "steps": [{ "title",
+"text" }] }`, at least 2 steps (`getProcess()` in `@/lib/faqs`).
 
 ## How to…
 

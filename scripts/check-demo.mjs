@@ -5,7 +5,10 @@
  * (presets/local-service/fixture) in a scratch copy of this repo
  * (scripts/lib/scratch.mjs), builds it, and checks the result:
  *
- *   - a second run writes the identical tree (the script is re-runnable)
+ *   - a second run writes the identical tree (the script is re-runnable),
+ *     and a hand edit to an installed page survives a re-run
+ *   - an old-format demo.json (`home` or `audience`) fails before writing
+ *   - reviews and FAQs land in the collections, never src/data/home.ts
  *   - the whole site is noindex: the meta on every page, robots.txt
  *     `Disallow: /`, no sitemap, X-Robots-Tag in the built _headers, stub
  *     llms.txt
@@ -13,10 +16,13 @@
  *     starter's sample services and the hidden nav links are gone
  *   - bad input fails naming the field: one caught by the preset schema,
  *     one by the content schema (via astro sync)
+ *   - every run names each page still exactly the preset's scaffold
+ *   - a demo with no FAQs and no process shows neither (never the
+ *     starter's sample steps), and its serviceRadius reaches SITE
  *
- * node_modules is linked from this repo, so no install and no network. The
- * normal (DEMO = null) build is what CI already builds, so it isn't
- * repeated here.
+ * node_modules is linked from this repo, so no install and no network.
+ * Before the demo is written the starter itself (`demo: null`) is built
+ * once, to prove the switch is off: indexable, a sitemap, no banner.
  *
  * Usage: npm run check:demo
  */
@@ -65,6 +71,21 @@ const tree = () => {
 };
 
 try {
+  // The preset's pages are composed pages: copy in the page, content from
+  // the collections and SITE, never a generated data file or a template.
+  for (const page of [
+    "index.astro",
+    "about.astro",
+    "contact.astro",
+    "reviews.astro",
+    "audience.astro",
+  ])
+    assert.doesNotMatch(
+      read(`presets/local-service/${page}`),
+      /@\/data\/home|@\/data\/audience|LocalService(Home|Showcase|Estate|About|Contact|Audience|Reviews)/,
+      `presets/local-service/${page} must be a composed page`,
+    );
+
   fs.symlinkSync(
     path.join(REPO, "node_modules"),
     path.join(dir, "node_modules"),
@@ -85,6 +106,26 @@ try {
   );
   git(dir, "commit", "-qam", "name the Worker");
 
+  // The starter as it ships (SITE.demo is null) is not a demo.
+  {
+    const r = spawnSync("npm", ["run", "build"], {
+      cwd: dir,
+      encoding: "utf8",
+    });
+    assert.equal(r.status, 0, out(r).slice(-4000));
+    const client = path.join(dir, "dist", "client");
+    assert.doesNotMatch(
+      fs.readFileSync(path.join(client, "robots.txt"), "utf8"),
+      /^Disallow: \/$/m,
+    );
+    assert.ok(fs.existsSync(path.join(client, "sitemap-index.xml")));
+    assert.doesNotMatch(
+      fs.readFileSync(path.join(client, "index.html"), "utf8"),
+      /Built for/,
+    );
+    fs.rmSync(path.join(dir, "dist"), { recursive: true, force: true });
+  }
+
   // Refuses the wrong branch, before writing anything.
   {
     const r = demo(FIXTURE);
@@ -93,6 +134,49 @@ try {
     assert.equal(git(dir, "status", "--porcelain").trim(), "");
   }
   git(dir, "switch", "-qc", `demo/${SLUG}`);
+
+  const fixture = JSON.parse(read(FIXTURE));
+  /** Runs the script on a copy of the fixture, edited. */
+  const edited = (/** @type {(d: any) => void} */ edit) => {
+    const copy = structuredClone(fixture);
+    edit(copy);
+    const file = path.join(dir, "presets/local-service/fixture/bad.json");
+    fs.writeFileSync(file, JSON.stringify(copy));
+    const r = demo(file);
+    fs.rmSync(file);
+    return r;
+  };
+
+  // An old-format demo.json (page copy in `home` or `audience`) fails
+  // before anything is written.
+  for (const key of ["home", "audience"]) {
+    const r = edited((d) => (d[key] = {}));
+    assert.equal(r.status, 1, out(r));
+    assert.match(
+      r.stderr,
+      new RegExp(`demo.json has "${key}": page copy now lives in the pages`),
+    );
+    assert.equal(git(dir, "status", "--porcelain").trim(), "");
+  }
+
+  // A first run that fails part-way (a missing photo, after site.ts is
+  // written) still leaves the preset's pages, so the re-run that follows
+  // the fix is a demo, not the starter's home page.
+  {
+    const r = edited(
+      (d) => (d.services[0].cardImage = "./assets/missing.webp"),
+    );
+    assert.equal(r.status, 1, out(r));
+    assert.match(r.stderr, /Image not found: \.\/assets\/missing\.webp/);
+    const fixed = demo(FIXTURE);
+    assert.equal(fixed.status, 0, out(fixed));
+    for (const page of ["index.astro", "contact.astro"])
+      assert.equal(
+        read(`src/pages/${page}`),
+        read(`presets/local-service/${page}`),
+        `src/pages/${page} is not the preset's page after a failed first run`,
+      );
+  }
 
   // Writes the demo, and a second run changes nothing.
   {
@@ -103,28 +187,119 @@ try {
     const again = demo(FIXTURE);
     assert.equal(again.status, 0, out(again));
     assert.equal(tree(), first, "a second run changed the tree");
+    // Every run names each installed page still the preset's scaffold.
+    for (const page of [
+      "index.astro",
+      "contact.astro",
+      "about.astro",
+      "reviews.astro",
+      "for-contractors.astro",
+    ])
+      assert.match(
+        again.stderr,
+        new RegExp(`src/pages/${page}: still the scaffold copy`),
+        `no scaffold warning for ${page}`,
+      );
   }
 
-  // A page in pages/ beside demo.json replaces the preset's, and only
-  // while it's there.
+  // The pages are the demo's once installed: a re-run never overwrites one.
   {
-    const own = path.join(dir, path.dirname(FIXTURE), "pages", "contact.astro");
-    fs.mkdirSync(path.dirname(own), { recursive: true });
-    fs.writeFileSync(own, "<p>the demo's own contact page</p>\n");
+    fs.appendFileSync(
+      path.join(dir, "src/pages/index.astro"),
+      "<!-- hand edit -->\n",
+    );
+    const before = tree();
     const r = demo(FIXTURE);
     assert.equal(r.status, 0, out(r));
-    assert.match(
-      read("src/pages/contact.astro"),
-      /the demo's own contact page/,
+    assert.match(read("src/pages/index.astro"), /<!-- hand edit -->/);
+    assert.equal(tree(), before, "a re-run changed the tree");
+    // An edited page is no longer the scaffold; the others still are.
+    assert.doesNotMatch(
+      r.stderr,
+      /src\/pages\/index\.astro: still the scaffold/,
     );
-    fs.rmSync(path.dirname(own), { recursive: true });
-    const back = demo(FIXTURE);
-    assert.equal(back.status, 0, out(back));
-    assert.doesNotMatch(read("src/pages/contact.astro"), /own contact page/);
+    assert.match(r.stderr, /src\/pages\/about\.astro: still the scaffold copy/);
   }
+
+  // A merged demo branch: its own pages, `demo` back to null (the starter's
+  // line won the merge) but its `quote` kept. Not a fresh starter, so a
+  // re-run leaves every page alone.
+  {
+    fs.appendFileSync(
+      path.join(dir, "src/pages/contact.astro"),
+      "<!-- hand edit -->\n",
+    );
+    const site = path.join(dir, "src/config/site.ts");
+    fs.writeFileSync(
+      site,
+      fs
+        .readFileSync(site, "utf8")
+        .replace(
+          /(\n {2}demo: )\{[\s\S]*?\n {2}\}( as DemoConfig \| null,)/,
+          "$1null$2",
+        ),
+    );
+    assert.match(read("src/config/site.ts"), /\n {2}demo: null as /);
+    assert.doesNotMatch(read("src/config/site.ts"), /\n {2}quote: null as /);
+    tree();
+    const pagesBefore = git(dir, "write-tree", "--prefix=src/pages/").trim();
+    const r = demo(FIXTURE);
+    assert.equal(r.status, 0, out(r));
+    tree();
+    assert.equal(
+      git(dir, "write-tree", "--prefix=src/pages/").trim(),
+      pagesBefore,
+      "a re-run on a merged branch changed src/pages",
+    );
+  }
+
+  // Facts and repeated content go to the collections, never a data file.
+  assert.equal(
+    fs
+      .readdirSync(path.join(dir, "src/content/reviews"))
+      .filter((f) => f.endsWith(".json")).length,
+    fixture.reviews.length +
+      fixture.services.reduce(
+        (/** @type {number} */ n, /** @type {{ reviews?: unknown[] }} */ s) =>
+          n + (s.reviews?.length ?? 0),
+        0,
+      ),
+  );
+  assert.ok(
+    !fs.existsSync(path.join(dir, "src/data/home.ts")),
+    "src/data/home.ts must not be written",
+  );
+  assert.ok(!fs.existsSync(path.join(dir, "src/data/audience.ts")));
+  // The map's lookups land in `npm run map`'s own cache, seeded from the
+  // fixture's.
   assert.match(
-    read("src/config/demo.shared.mjs"),
-    /prospect: "Brightline Electric"/,
+    read("src/data/service-area-geo.cache.json"),
+    /"Round Rock, TX":\{"type":"Polygon"/,
+  );
+  // demo.json's aboutDescription is the About page's registry (llms.txt)
+  // line; a demo build serves a stub llms.txt, so read the generated file.
+  assert.ok(
+    read("src/data/preset-pages.ts").includes(
+      JSON.stringify(fixture.aboutDescription),
+    ),
+    "aboutDescription is missing from the generated page registry",
+  );
+  assert.match(
+    read("src/config/site.ts"),
+    /rating: \{\s*value: 4\.9,\s*count: 86/,
+  );
+  assert.match(
+    read("src/content/settings.json"),
+    /From first call to final inspection/,
+  );
+  assert.match(
+    read("src/config/site.ts"),
+    /demo: \{\s*slug: "brightline-electric"/,
+  );
+  assert.match(read("src/config/site.ts"), /prospect: "Brightline Electric"/);
+  assert.ok(
+    !fs.existsSync(path.join(dir, "src/config/demo.shared.mjs")),
+    "src/config/demo.shared.mjs must not exist; the switch is SITE.demo",
   );
   assert.match(read("src/config/site.ts"), /name: "Brightline Electric"/);
   assert.match(read("src/config/site.ts"), /email: ""/);
@@ -171,7 +346,18 @@ try {
   const home = html("index.html");
   assert.match(home, /Built for Brightline Electric by CL Creative/);
   assert.match(home, /see-how-it-works-demo\?demo=brightline-electric/);
-  assert.match(home, /your first service call/);
+  // The home page is the preset's composed page: its copy is the scaffold's,
+  // so these check the facts it reads from site.ts and the collections.
+  assert.match(
+    home,
+    /<title>Brightline Electric \| Licensed electricians in Austin<\/title>/,
+  );
+  assert.match(home, /Serving Austin and nearby/);
+  assert.match(home, /4\.9 stars from 86 reviews/);
+  assert.match(home, /They swapped our panel in a day/);
+  assert.match(home, /From first call to final inspection/);
+  assert.match(home, /Are you licensed and insured\?/);
+  assert.match(home, /class="[^"]*\bfaq_wrap\b/);
   assert.match(home, /href="\/services\/panel-upgrades"/);
   assert.doesNotMatch(home, /href="\/blog"/);
   // The demo footer links the pages nothing else links to.
@@ -197,18 +383,19 @@ try {
   assert.equal(home.match(/id="estimate-modal"/g)?.length, 1);
   assert.match(home, /class="mobile-bar_wrap"/);
   assert.match(home, /License TECL #12345/);
-  assert.match(home, /<mark>\$50 off<\/mark>/);
   assert.match(home, /class="cta-panel_wrap/);
   assert.match(home, /class="trust-badges_wrap/);
   assert.match(home, /reviews_card is-rated/);
   assert.match(home, /call-band_wrap is-photo-card/);
-  // Phase-2 sections, and the two-step estimate form in the site-wide modal.
+  // The scaffold's sections, and the two-step estimate form in the
+  // site-wide modal.
   for (const cls of [
+    "service-cards_wrap",
     "symptom-cards_wrap",
-    "offer-band_wrap",
-    "recent-work_wrap",
-    "guarantee_wrap",
+    "process-steps_wrap",
+    "story-split_wrap",
     "comparison-table_wrap",
+    "lead-form-section_wrap",
   ])
     assert.match(home, new RegExp(`class="[^"]*\\b${cls}\\b`), cls);
   assert.match(home, /class="lead-form_tiles"/);
@@ -217,12 +404,41 @@ try {
   assert.match(home, /class="service-map_wrap/);
   assert.match(home, /"name":"Round Rock","geometry":\{"type":"Polygon"/);
   assert.match(html("contact/index.html"), /Contact \| Brightline Electric/);
-  // Phase 3: the emergency band, plans and team on the home page.
-  for (const cls of ["emergency-band_wrap", "plans_wrap", "team-grid_wrap"])
-    assert.match(home, new RegExp(`class="[^"]*\\b${cls}\\b`), cls);
+  // The other composed pages read the same collections.
+  assert.match(html("about/index.html"), /They swapped our panel in a day/);
+  assert.match(html("reviews/index.html"), /Reviews \| Brightline Electric/);
+  assert.match(html("reviews/index.html"), /Dana M\./);
   // Service pages carry one estimate form (the site-wide one), not two.
   const service = html("services/panel-upgrades/index.html");
   assert.equal(service.match(/id="estimate-modal"/g)?.length, 1);
+  // A service page shows every review tagged for that service (not a
+  // capped few) and none of the others; a service with none tagged shows
+  // all the site's reviews, including ones tagged for other services.
+  const tagged = fixture.services[0].reviews;
+  assert.ok(tagged.length > 6, "fixture must tag more than 6 reviews");
+  for (const review of tagged)
+    assert.ok(
+      service.includes(review.text),
+      `service page is missing its tagged review from ${review.name}`,
+    );
+  for (const review of fixture.reviews)
+    assert.ok(
+      !service.includes(review.text),
+      `service page shows an untagged review from ${review.name}`,
+    );
+  const fallback = html("services/ev-chargers/index.html");
+  for (const review of fixture.reviews)
+    assert.ok(
+      fallback.includes(review.text),
+      `a service with no tags is missing the site review from ${review.name}`,
+    );
+  // A review tagged for a different service still shows (the demo bridge
+  // tags a review that is also a home review with its service).
+  for (const review of tagged)
+    assert.ok(
+      fallback.includes(review.text),
+      "a service with no tags must still show reviews tagged for another service",
+    );
   // Region pages: their own title, the region's towns on the map, the
   // services linking to their main pages, the form on the page; the
   // service page's town chips link to the region.
@@ -245,35 +461,36 @@ try {
   assert.ok(
     !fs.existsSync(path.join(client, "services", "kitchen-remodeling")),
   );
+  // The audience page, installed once at demo.json's audiencePage.path, and
+  // its nav button.
+  assert.ok(
+    fs.existsSync(path.join(client, "for-contractors", "index.html")),
+    "missing the audience page (for-contractors/index.html)",
+  );
+  assert.match(home, /href="\/for-contractors"/);
+  assert.match(html("for-contractors/index.html"), /Brightline Electric/);
 
   // Bad input names the field.
-  const fixture = JSON.parse(read(FIXTURE));
-  const bad = (/** @type {(d: any) => void} */ edit) => {
-    const copy = structuredClone(fixture);
-    edit(copy);
-    const file = path.join(dir, "presets/local-service/fixture/bad.json");
-    fs.writeFileSync(file, JSON.stringify(copy));
-    return demo(file);
-  };
   {
-    const r = bad((d) => (d.home.hero.imageAlt = ""));
+    // Only 4 and 5 star reviews go on the site.
+    const r = edited((d) => (d.reviews[0].rating = 3));
     assert.equal(r.status, 1, out(r));
-    assert.match(r.stderr, /demo\.json › home\.hero\.imageAlt/);
+    assert.match(r.stderr, /demo\.json › reviews\.0\.rating/);
   }
   {
-    const r = bad((d) => d.services[0].highlights.pop());
+    const r = edited((d) => d.services[0].highlights.pop());
     assert.equal(r.status, 1, out(r));
     assert.match(out(r), /panel-upgrades[\s\S]*highlights/);
   }
   {
     // Every town needs a region: none quietly dropped.
-    const r = bad((d) => d.areas[1].towns.pop());
+    const r = edited((d) => d.areas[1].towns.pop());
     assert.equal(r.status, 1, out(r));
     assert.match(out(r), /"Pflugerville" is in serviceAreas but in no region/);
   }
   {
     // A review must come from one of the region's own towns.
-    const r = bad(
+    const r = edited(
       (d) =>
         (d.areas[0].reviews = [
           { text: "Great.", name: "Sam", town: "Round Rock" },
@@ -283,8 +500,70 @@ try {
     assert.match(out(r), /"Round Rock" isn't one of this region's towns/);
   }
 
+  {
+    // An audience page can't take a route the site already has.
+    const r = edited((d) => (d.audiencePage.path = "services"));
+    assert.equal(r.status, 1, out(r));
+    assert.match(
+      r.stderr,
+      /demo\.json › audiencePage\.path: \/services is already a route/,
+    );
+  }
+  {
+    // site.ts without the line a fact is written to fails, naming both,
+    // rather than keeping the old value.
+    const site = path.join(dir, "src/config/site.ts");
+    const before = fs.readFileSync(site, "utf8");
+    fs.writeFileSync(site, before.replace(/\n {2}rating: /, "\n  ratingX: "));
+    const r = demo(FIXTURE);
+    fs.writeFileSync(site, before);
+    assert.equal(r.status, 1, out(r));
+    assert.match(
+      r.stderr,
+      /src\/config\/site\.ts has no `rating: … as …` line/,
+    );
+  }
+
+  // No FAQs and no process: neither section shows, and the starter's
+  // sample steps never stand in. The radius reaches SITE.
+  {
+    const r = edited((d) => {
+      d.faqs = [];
+      delete d.process;
+      d.serviceRadius = { center: "Austin", miles: 30 };
+    });
+    assert.equal(r.status, 0, out(r));
+    assert.equal(
+      JSON.parse(read("src/content/settings.json")).site.process,
+      undefined,
+    );
+    assert.match(
+      read("src/config/site.ts"),
+      /serviceRadius: \{\s*center: "Austin",\s*miles: 30\s*\}/,
+    );
+    fs.rmSync(path.join(dir, "dist"), { recursive: true, force: true });
+    const b = spawnSync("npm", ["run", "build"], {
+      cwd: dir,
+      encoding: "utf8",
+    });
+    assert.equal(b.status, 0, out(b).slice(-4000));
+    const bare = html("index.html");
+    assert.doesNotMatch(
+      bare,
+      /class="[^"]*\bfaq_wrap\b/,
+      "an empty FAQ set rendered a section",
+    );
+    assert.doesNotMatch(
+      bare,
+      /id="faq"/,
+      "an empty FAQ set rendered a section",
+    );
+    assert.doesNotMatch(bare, /class="[^"]*\bprocess-steps_wrap\b/);
+    assert.doesNotMatch(bare, /From first call to final/);
+  }
+
   console.log(
-    "check-demo: ok (fixture demo written twice, built, noindex, bad input named)",
+    "check-demo: ok (fixture demo written twice, pages kept, built, noindex, bad input named, empty FAQs and process skipped)",
   );
 } finally {
   fs.rmSync(dir, { recursive: true, force: true });

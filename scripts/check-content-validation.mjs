@@ -183,6 +183,15 @@ const TESTIMONIAL = {
   avatarAlt: "Check Person",
 };
 
+const REVIEW = {
+  name: "Check Reviewer",
+  rating: 5,
+  text: "Check.",
+  platform: "google",
+};
+
+const FAQ = { question: "Check?", answer: "Check." };
+
 /** An MDX post. A `{ raw }` value is written into the YAML unquoted. */
 function post(overrides = {}, body = "## Check\n\nBody text.\n") {
   const fields = {
@@ -215,6 +224,7 @@ function control() {
     "projects",
     "case-studies",
     "testimonials",
+    "reviews",
     "blog",
   ])
     write(`src/content/${dir}/images/zz-check.png`, PNG);
@@ -250,6 +260,8 @@ function control() {
     "src/content/testimonials/zz-check-testimonial.json",
     json(TESTIMONIAL),
   );
+  write("src/content/reviews/zz-check-review.json", json(REVIEW));
+  write("src/content/faqs/zz-check-faq.json", json(FAQ));
   write(POST_FILE, post());
 }
 
@@ -419,6 +431,73 @@ const CASES = [
     expect: ["zz-check-testimonial.json", "avatarAlt"],
   },
   {
+    name: "review rating below 4",
+    apply: () =>
+      write(
+        "src/content/reviews/zz-check-review.json",
+        json({ ...REVIEW, rating: 3 }),
+      ),
+    expect: ["zz-check-review.json", "rating"],
+  },
+  {
+    name: "review tagged with a service that does not exist",
+    apply: () =>
+      write(
+        "src/content/reviews/zz-check-review.json",
+        json({ ...REVIEW, services: ["no-such-service"] }),
+      ),
+    expect: ["zz-check", "services", "no-such-service"],
+  },
+  {
+    name: "review platform not on the list",
+    apply: () =>
+      write(
+        "src/content/reviews/zz-check-review.json",
+        json({ ...REVIEW, platform: "myspace" }),
+      ),
+    expect: ["zz-check-review.json", "platform"],
+  },
+  {
+    name: "review avatar without avatarAlt",
+    apply: () =>
+      write(
+        "src/content/reviews/zz-check-review.json",
+        json({ ...REVIEW, avatar: IMG }),
+      ),
+    expect: ["zz-check-review.json", "avatarAlt"],
+  },
+  {
+    name: "FAQ with an empty question",
+    apply: () =>
+      write(
+        "src/content/faqs/zz-check-faq.json",
+        json({ ...FAQ, question: "" }),
+      ),
+    expect: ["zz-check-faq.json", "question"],
+  },
+  {
+    name: "settings.process with one step",
+    apply: () => {
+      const file = "src/content/settings.json";
+      const settings = JSON.parse(
+        fs.readFileSync(path.join(ROOT, file), "utf8"),
+      );
+      write(
+        file,
+        json({
+          site: {
+            ...settings.site,
+            process: {
+              heading: "Check",
+              steps: [{ title: "One", text: "Only one." }],
+            },
+          },
+        }),
+      );
+    },
+    expect: ["settings.json", "process", "steps"],
+  },
+  {
     name: "filename not kebab-case",
     apply: () =>
       write(
@@ -448,6 +527,35 @@ const CASES = [
       "body",
       '<VideoEmbed url="https://example.com/zz-video"> is not a supported YouTube or Vimeo link',
     ],
+  },
+  {
+    name: "region names a town not in SITE.serviceAreas",
+    apply: () => {
+      write("src/content/service-areas/images/zz-check.png", PNG);
+      write(
+        "src/content/service-areas/zz-check.json",
+        json({
+          title: "Check region",
+          seoTitle: "Check region",
+          seoDescription: "Check.",
+          towns: ["Nowhere Town"],
+          cardText: "Check.",
+          hero: {
+            heading: "Check",
+            text: "Check.",
+            image: IMG,
+            imageAlt: "A check image",
+          },
+          local: { heading: "Check", paragraphs: ["One.", "Two."] },
+          faqs: [
+            { question: "One?", answer: "One." },
+            { question: "Two?", answer: "Two." },
+          ],
+          cta: { heading: "Check" },
+        }),
+      );
+    },
+    expect: ["zz-check", "towns", "Nowhere Town", "SITE.serviceAreas"],
   },
   {
     name: "settings.json without its site key",

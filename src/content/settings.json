@@ -1,6 +1,27 @@
 {
   "site": {
     "defaultBlogCta": "free-site-review",
-    "defaultCtaSection": "start-a-project"
+    "defaultCtaSection": "start-a-project",
+    "process": {
+      "heading": "How a job goes",
+      "steps": [
+        {
+          "title": "Get in touch",
+          "text": "Give us a call or fill out the form and tell us about the job."
+        },
+        {
+          "title": "We talk it through",
+          "text": "We ask about the job, answer your questions and set up the next step."
+        },
+        {
+          "title": "[How you price it]",
+          "text": "[How the business quotes, in its own words: on site or by phone, and what the price includes]"
+        },
+        {
+          "title": "[The work]",
+          "text": "[What happens on the day, from the business itself or its reviews]"
+        }
+      ]
+    }
   }
 }

@@ -61,6 +61,38 @@ export interface AreaServed {
   name: string;
 }
 
+/**
+ * The business's public star rating, shown as the stars line. Not in the
+ * structured data: a rating a business shows on its own site is not eligible.
+ */
+export interface SiteRating {
+  /** Average stars, 1 to 5. */
+  value: number;
+  /** How many reviews the average is over. */
+  count: number;
+  source: "google" | "facebook" | "yelp";
+}
+
+/**
+ * A prospect demo describes itself with this. `null` on every real site.
+ * `npm run demo` writes it (a `demo/<slug>` branch of the private demos
+ * repo); promoting a demo to a real site is setting it back to `null`.
+ */
+export interface DemoConfig {
+  /** kebab-case id; matches the `demo/<slug>` branch. */
+  slug: string;
+  /** The business the demo is built for. */
+  prospect: string;
+  /** The preset it was generated from. */
+  preset: string;
+  /** Nav/footer links to drop, e.g. "/blog". */
+  hiddenPaths: string[];
+  /** The banner shown on every page. */
+  bannerText: string;
+  /** Where the demo banner links. */
+  bannerHref: string;
+}
+
 export const SITE = {
   /** Brand / organization name. */
   name: "Your Company",
@@ -147,6 +179,17 @@ export const SITE = {
    * strings exactly. Placeholders: replace per client.
    */
   serviceAreas: ["Your City", "Neighboring City", "North County"],
+
+  /**
+   * "Within N miles of <town>": the circle the street map draws. `center` is
+   * a town (looked up like the ones above); `null` = no circle. After
+   * changing it or `serviceAreas`, run `npm run map` to rebuild the map
+   * files in src/data/.
+   */
+  serviceRadius: null as { center: string; miles: number } | null,
+
+  /** The public star rating, when there is one. `null` = no rating shown. */
+  rating: null as SiteRating | null,
 
   /** Public reviews page (e.g. the Google Business Profile). Blank = no "Read all reviews" link. */
   reviewsUrl: "",
@@ -330,6 +373,26 @@ export const SITE = {
     { type: "City", name: "Your City" },
     { type: "AdministrativeArea", name: "Your County" },
   ] satisfies AreaServed[],
+
+  /**
+   * Demo mode — `null` on every real site. A prospect demo sets this to
+   * describe itself, and that one committed value switches on everything a
+   * demo needs, wherever it is read:
+   *
+   *   - the whole site is noindex (src/config/seo.shared.mjs)
+   *   - its banner ("Built for <prospect> by …") on every page
+   *     (src/data/site-structure.ts → resolveBanner)
+   *   - nav and footer links in `hiddenPaths` are dropped (same file)
+   *   - lead forms always answer success, and tag the lead source with the
+   *     prospect's name (src/lib/leads.ts)
+   *
+   * A committed value, not an env var: `process.env` inside the Worker is
+   * read at REQUEST time, where Cloudflare build variables do not exist, so
+   * an env flag would disagree between the prerendered pages and the SSR
+   * routes. A branch that carries its own `demo` is always a demo, whatever
+   * the dashboard says. `npm run demo` rewrites this block.
+   */
+  demo: null as DemoConfig | null,
 } as const;
 
 /**

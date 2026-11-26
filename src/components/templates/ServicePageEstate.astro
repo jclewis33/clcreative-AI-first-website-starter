@@ -1,6 +1,6 @@
 ---
 /**
- * Service page, ESTATE layout — after the FDC Coatings service design
+ * Service page, ESTATE layout — after a coatings demo's service design
  * (the estate look's `pages: "estate"`; ServicePage hands over).
  * Same service entry as ServicePage; a different page:
  *
@@ -32,9 +32,10 @@ import Text from "@/components/ui/Text.astro";
 import Visual from "@/components/ui/Visual.astro";
 import CtaButton from "@/components/ui/CtaButton.astro";
 import { SITE } from "@/config/site";
-import { DEFAULT_PROCESS } from "@/data/process";
+import { getProcess } from "@/lib/faqs";
 import { serviceFaqJsonLd } from "@/lib/jsonld";
 import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { getReviews } from "@/lib/reviews";
 import { servicePath, SERVICES_INDEX_PATH, type Service } from "@/lib/services";
 
 interface Props {
@@ -59,7 +60,7 @@ const { service, all } = Astro.props;
 const s = service.data;
 const path = servicePath(service.id);
 const pageUrl = `${SITE.url}${path}`;
-const process = s.process ?? DEFAULT_PROCESS;
+const process = s.process ?? (await getProcess());
 const title = `${s.seoTitle} | ${SITE.name}`;
 const description = s.seoDescription;
 const crumbs = [
@@ -79,15 +80,25 @@ const estimateCta = {
 const ownModal = !SITE.quote;
 const contractor = s.buyer === "contractor";
 const heroCta = s.hero.primaryCta ?? estimateCta;
-const reviews = s.reviews ?? [];
+/* This service's tagged reviews first, then the rest; ReviewCards shows 3. */
+const reviews = await getReviews({ service: service.id });
+/* The platform the site's rating comes from ("on Google"); none named
+   when SITE.rating is null. */
+const PLATFORM_NAMES = {
+  google: "Google",
+  facebook: "Facebook",
+  yelp: "Yelp",
+} as const;
+const platform = SITE.rating ? PLATFORM_NAMES[SITE.rating.source] : "";
 const proof = s.reviewSummary
   ? {
       rating: s.reviewSummary.rating,
       text:
         s.reviewSummary.text ??
-        `${s.reviewSummary.count ?? reviews.length} reviews on Google`,
+        `${s.reviewSummary.count ?? reviews.length} reviews${platform ? ` on ${platform}` : ""}`,
     }
   : undefined;
+const allReviewsLabel = `Read all our ${platform ? `${platform} ` : ""}reviews`;
 ---
 
 <BaseLayout
@@ -189,19 +200,20 @@ const proof = s.reviewSummary
         )}
 
         <ProcessSteps
+          render={Boolean(process)}
           id="process"
           variant="columns"
           class="u-background-2"
           eyebrow={s.process?.eyebrow ?? "How it works"}
-          heading={process.heading}
-          steps={process.steps}
+          heading={process?.heading ?? ""}
+          steps={process?.steps ?? []}
         />
 
         <ReviewCards
           render={reviews.length > 0}
           reviews={reviews}
           limit={3}
-          link={{ label: "Read all our Google reviews", href: "/reviews" }}
+          link={{ label: allReviewsLabel, href: "/reviews" }}
         />
 
         {s.gallery && (

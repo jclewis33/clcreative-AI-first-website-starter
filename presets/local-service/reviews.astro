@@ -1,12 +1,77 @@
 ---
 /**
- * Reviews page — the local-service preset (presets/local-service), installed
- * by `npm run demo` when demo.json has `home.reviews`. The reviews are
- * src/data/home.ts; edit demo.json and re-run the script rather than this
- * file.
+ * Reviews page (/reviews) — the local-service preset's starter page,
+ * installed by `npm run demo` when the demo has reviews. A scaffold to
+ * redesign for each business, not a template.
+ *
+ * Every review in the reviews collection (src/content/reviews) in full
+ * (`full`, else the short `text`), each with its own stars, under a short
+ * hero with the overall rating (SITE.rating) and a link to all reviews
+ * (SITE.reviewsUrl), then the call band. Real, attributed 4- and 5-star
+ * reviews only: the collection never holds anything else.
  */
-import LocalServiceReviews from "@/components/templates/LocalServiceReviews.astro";
-import { HOME } from "@/data/home";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import { SITE } from "@/config/site";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { getReviews, getRating } from "@/lib/reviews";
+import callPhoto from "@/assets/placeholder-images/ai-first-starter-10.webp";
+
+const reviews = (await getReviews()).map((review) => ({
+  ...review,
+  text: review.full ?? review.text,
+}));
+const rating = getRating();
+
+/* The estimate button opens the site-wide form (BaseLayout, SITE.quote). */
+const estimateCta = {
+  label: SITE.quote?.label ?? "Get an estimate",
+  modal: ESTIMATE_MODAL_ID,
+};
+const proof = rating
+  ? {
+      rating: rating.value,
+      text: `${rating.value.toFixed(1)} stars from ${rating.count} reviews`,
+      source: rating.source === "google" ? ("google" as const) : undefined,
+    }
+  : undefined;
+
+if (import.meta.env.DEV && !reviews.length)
+  console.warn("[reviews page] The reviews collection is empty.");
 ---
 
-<LocalServiceReviews home={HOME} />
+<BaseLayout
+  title={`Reviews | ${SITE.name}`}
+  description={`What customers say about ${SITE.name}, in their own words.`}
+  canonical={`${SITE.url}/reviews`}
+>
+  <Hero
+    variant="text"
+    eyebrow="Reviews"
+    heading="What our customers <strong>say about us</strong>"
+    text="Reviews from our customers, in their own words."
+    proof={proof}
+    proofPosition="above"
+    primaryCta={estimateCta}
+    badge={false}
+  />
+
+  <Reviews
+    render={reviews.length > 0}
+    heading="In their own words"
+    reviews={reviews}
+    layout="cards"
+    allReviewsLabel="See all our reviews"
+  />
+
+  <CallBand
+    heading="Need a hand with <strong>your home</strong>?"
+    text="Give us a call or fill out the form and we'll get back to you."
+    variant="photo-card"
+    image={callPhoto}
+    imageAlt="A laptop and a cup of coffee on a wooden desk"
+    secondaryCta={estimateCta}
+  />
+</BaseLayout>

@@ -16,10 +16,15 @@
  *     value, so prerendered pages (served straight from the assets
  *     binding) and SSR responses (src/middleware.ts) carry the same set.
  *
+ *   src/config/site.ts — must import in plain Node, because the config
+ *     contexts (seo.shared.mjs, scripts) read SITE directly: its only
+ *     runtime import may be ./site.shared.mjs.
+ *
  * Run: npm run check:config (and automatically as `prebuild`).
  * `--root <dir>` checks another project tree (check-config-sync-cases.mjs).
  * Exits 1 naming every mismatch.
  */
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -108,6 +113,21 @@ else
         `public/_headers ${name}: "${got ?? "(missing)"}", expected "${value}" (from src/config/headers.shared.mjs)`,
       );
   }
+
+/* 3. site.ts must import in plain Node (no Vite, no "@/" alias): the
+   config-context files (seo.shared.mjs, scripts) read SITE directly. */
+const siteFile = path.join(CONFIG, "site.ts");
+if (fs.existsSync(siteFile)) {
+  const probe = spawnSync(
+    process.execPath,
+    ["-e", `import(${JSON.stringify(pathToFileURL(siteFile).href)})`],
+    { encoding: "utf8" },
+  );
+  if (probe.status !== 0)
+    problems.push(
+      `src/config/site.ts does not import in plain Node: ${probe.stderr.trim().split("\n")[0]}. Its only runtime import must be ./site.shared.mjs (everything else \`import type\`).`,
+    );
+}
 
 if (problems.length) {
   console.error(

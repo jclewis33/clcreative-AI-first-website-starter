@@ -1,0 +1,8 @@
+{
+  "name": "Sample Reviewer One",
+  "rating": 5,
+  "text": "Placeholder review: replace this with a real review from a real customer.",
+  "platform": "google",
+  "services": ["kitchen-remodeling"],
+  "featured": true
+}

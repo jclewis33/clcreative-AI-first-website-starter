@@ -1,12 +1,122 @@
 ---
 /**
- * About page — the local-service preset (presets/local-service), installed
- * by `npm run demo`. The content is src/data/home.ts (story, stats, team,
- * guarantee, process, reviews, service area); `home.about` in demo.json sets
- * the intro. Edit demo.json and re-run the script rather than this file.
+ * About page — the local-service preset's starter page, installed by
+ * `npm run demo`. A scaffold to redesign for each business, not a
+ * template: rewrite the copy in their words, swap the placeholder photos
+ * for theirs (the owner, the crew, the van), and add the sections their
+ * story needs (team, guarantee, office) only with real material.
+ *
+ * The copy and photos are in the page; the process steps and reviews come
+ * from the content collections; the towns, rating and estimate button from
+ * SITE. Order: intro hero, story, how a job goes, reviews, where we work,
+ * call band.
+ *
+ * The copy claims nothing about the business. Lines in [brackets] are
+ * prompts for facts only the business can supply: replace each with what
+ * they say about themselves, or cut it. Its photos are its own, not the
+ * home page's.
  */
-import LocalServiceAbout from "@/components/templates/LocalServiceAbout.astro";
-import { HOME } from "@/data/home";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/sections/Hero.astro";
+import StorySplit from "@/components/sections/StorySplit.astro";
+import ProcessSteps from "@/components/sections/ProcessSteps.astro";
+import Reviews from "@/components/sections/Reviews.astro";
+import ServiceArea from "@/components/sections/ServiceArea.astro";
+import CallBand from "@/components/sections/CallBand.astro";
+import { SITE } from "@/config/site";
+import { ESTIMATE_MODAL_ID } from "@/lib/cta";
+import { getReviews, getRating } from "@/lib/reviews";
+import { getProcess } from "@/lib/faqs";
+import { geoFor } from "@/lib/service-area-geo";
+import heroPhoto from "@/assets/placeholder-images/ai-first-starter-19.webp";
+import storyPhoto from "@/assets/placeholder-images/ai-first-starter-7.webp";
+import callPhoto from "@/assets/placeholder-images/ai-first-starter-20.webp";
+
+const [reviews, process] = await Promise.all([
+  getReviews({ limit: 6 }),
+  getProcess(),
+]);
+const rating = getRating();
+
+/* The estimate button opens the site-wide form (BaseLayout, SITE.quote). */
+const estimateCta = {
+  label: SITE.quote?.label ?? "Get an estimate",
+  modal: ESTIMATE_MODAL_ID,
+};
+const breadcrumbs = [
+  { name: "Home", path: "/" },
+  { name: "About", path: "/about" },
+];
+
+const storyParagraphs = [
+  "[Their story, in the owner's words, from their About page]",
+  "[How the business grew, only as they tell it]",
+  "[Who runs it today, and who customers talk to about a job]",
+];
+const reasons = [
+  { title: "[How they price]", text: "[Only what they offer, in their words]" },
+  { title: "[When they come]", text: "[Only what they promise about timing]" },
+  { title: "[How they work]", text: "[What their reviews say about the job]" },
+];
 ---
 
-<LocalServiceAbout home={HOME} />
+<BaseLayout
+  title={`About | ${SITE.name}`}
+  description={`Who ${SITE.name} is and how we work.`}
+  canonical={`${SITE.url}/about`}
+  breadcrumbs={breadcrumbs}
+>
+  <Hero
+    variant="split"
+    headingSize="h1"
+    eyebrow="About us"
+    heading={`About <strong>${SITE.name}</strong>`}
+    text="[Who they are and what they do, in one line from their About page]"
+    image={heroPhoto}
+    imageAlt="A man at a laptop on a wooden table"
+    primaryCta={estimateCta}
+    showPhone
+  />
+
+  <StorySplit
+    eyebrow="Our story"
+    heading="How we got started"
+    paragraphs={storyParagraphs}
+    image={storyPhoto}
+    imageAlt="A laptop on a round table beside a mug and a notebook"
+    imageSide="right"
+    reasons={reasons}
+  />
+
+  <ProcessSteps
+    render={Boolean(process)}
+    variant="timeline"
+    eyebrow="How a job goes"
+    heading={process?.heading ?? ""}
+    text={process?.text}
+    steps={process?.steps ?? []}
+  />
+
+  <Reviews
+    render={reviews.length > 0}
+    reviews={reviews}
+    rating={rating?.value}
+    count={rating?.count}
+    layout="cards"
+  />
+
+  <ServiceArea
+    heading={`Serving ${SITE.address.locality} and nearby`}
+    text="Not sure we cover your street? Call and ask."
+    geo={geoFor(SITE.serviceAreas)}
+  />
+
+  <CallBand
+    heading="Need a hand with <strong>your home</strong>?"
+    text="Give us a call or fill out the form and we'll get back to you."
+    variant="photo-card"
+    image={callPhoto}
+    imageAlt="A laptop on a stone table beside a mug and a small plant"
+    secondaryCta={estimateCta}
+  />
+</BaseLayout>

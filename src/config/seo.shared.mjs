@@ -23,13 +23,13 @@
  * like /thank-you-call INTO the sitemap while robots.txt still disallows them.
  */
 
-import { DEMO } from "./demo.shared.mjs";
+import { SITE } from "./site.ts";
 
 /**
  * Keep the entire site out of search results: every page gets the noindex
  * meta, robots.txt disallows everything, and the build ships no sitemap, a
  * stub llms.txt, and an `X-Robots-Tag` header on every static asset
- * (astro.config.mjs). On for every prospect demo (src/config/demo.shared.mjs),
+ * (astro.config.mjs). On for every prospect demo (SITE.demo in src/config/site.ts),
  * and for any build run with `SITE_NOINDEX=1` — a client staging site.
  *
  * The env read happens at build time: astro.config.mjs passes the value to
@@ -37,18 +37,10 @@ import { DEMO } from "./demo.shared.mjs";
  * `process.env` has no build variables.
  */
 export const SITE_NOINDEX =
-  DEMO !== null || ["1", "true"].includes(process.env.SITE_NOINDEX ?? "");
+  SITE.demo !== null || ["1", "true"].includes(process.env.SITE_NOINDEX ?? "");
 
 /** Pages that exist only for local development; stripped from the build. */
-export const DEV_ONLY_PATHS = [
-  "/style-guide",
-  "/components",
-  "/demo/local-service",
-  "/demo/local-service-contact",
-  "/demo/local-service-showcase",
-  "/demo/local-service-about",
-  "/demo/local-service-audience",
-];
+export const DEV_ONLY_PATHS = ["/style-guide", "/components"];
 
 /**
  * Whole path segments: matches `/x` and `/x/...`, never `/blog/x-something`.

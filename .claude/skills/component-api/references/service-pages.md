@@ -25,20 +25,20 @@ To remove a service, delete its file and its photos.
 
 ## Field guide
 
-| Field                                           | Shown as                                                                                                                                      |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`, `navLabel`, `order`                    | Page title / breadcrumb; nav & footer label; sort order                                                                                       |
-| `seoTitle`, `seoDescription`                    | `<title>` and meta description (≤ 160 characters)                                                                                             |
-| `cardText`, `cardImage`, `cardImageAlt`, `icon` | This service's card in other pages' "Related services"                                                                                        |
-| `hero`                                          | Split Hero with breadcrumbs (`heading` takes `<strong>` for the accent)                                                                       |
-| `highlights`                                    | StatsStrip — exactly 4 `{ value, label }`                                                                                                     |
-| `scope`                                         | WorkScope "what we work on": `intro`, `paragraphs` (1–3, about THIS work), icon rows, and a tall photo (`image`/`imageAlt`, else `cardImage`) |
-| `included`                                      | IncludedList — checklist + exactly 2 photos                                                                                                   |
-| `process` (optional)                            | ProcessSteps; omit to use `src/data/process.ts`                                                                                               |
-| `reviews` (optional)                            | Reviews; omit to leave the section out (a prospect demo fills it with the home reviews). 4+ scroll across the screen                          |
-| `reviewSummary` (optional)                      | `{ rating, count? }` — the summary line over the reviews                                                                                      |
-| `faqs`                                          | FAQ section + FAQPage schema (2 or more, plain text)                                                                                          |
-| `cta`                                           | CallBand heading and line                                                                                                                     |
+| Field                                           | Shown as                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`, `navLabel`, `order`                    | Page title / breadcrumb; nav & footer label; sort order                                                                                                                                                                                                                                                             |
+| `seoTitle`, `seoDescription`                    | `<title>` and meta description (≤ 160 characters)                                                                                                                                                                                                                                                                   |
+| `cardText`, `cardImage`, `cardImageAlt`, `icon` | This service's card in other pages' "Related services"                                                                                                                                                                                                                                                              |
+| `hero`                                          | Split Hero with breadcrumbs (`heading` takes `<strong>` for the accent)                                                                                                                                                                                                                                             |
+| `highlights`                                    | StatsStrip — exactly 4 `{ value, label }`                                                                                                                                                                                                                                                                           |
+| `scope`                                         | WorkScope "what we work on": `intro`, `paragraphs` (1–3, about THIS work), icon rows, and a tall photo (`image`/`imageAlt`, else `cardImage`)                                                                                                                                                                       |
+| `included`                                      | IncludedList — checklist + exactly 2 photos                                                                                                                                                                                                                                                                         |
+| `process` (optional)                            | ProcessSteps; omit to use the site-wide steps (`process` in `src/content/settings.json`, read with `getProcess()`)                                                                                                                                                                                                  |
+| _(reviews)_                                     | Not a service field: reviews are files in `src/content/reviews/`, tagged with `services: ["<this id>"]`. The contractor page shows all of them (`getServiceReviews`), or all the site's reviews when none; 4+ scroll. The estate page shows three: the tagged ones first, then the rest (`getReviews({ service })`) |
+| `reviewSummary` (optional)                      | `{ rating, count? }` — the summary line over the reviews                                                                                                                                                                                                                                                            |
+| `faqs`                                          | FAQ section + FAQPage schema (2 or more, plain text)                                                                                                                                                                                                                                                                |
+| `cta`                                           | CallBand heading and line                                                                                                                                                                                                                                                                                           |
 
 Icon names are the keys of `src/data/service-icons.json`.
 
@@ -54,16 +54,16 @@ Icon names are the keys of `src/data/service-icons.json`.
 
 ## Recipes
 
-Dev-only sample pages to copy when building a client site (stripped from
-the build via `DEV_ONLY_PATHS`):
+Sample pages to copy when building a client site: the composed pages in
+`presets/local-service/` (home, contact, about, audience).
 
-- `/demo/local-service`: home page. Its ServiceCards link to the service
-  pages and carry `id="services"`, the target of the service breadcrumb.
-- `/demo/local-service-contact`: contact page, kept short: a compact hero
-  (photo behind the heading, dark overlay, call button), the two-step
-  compact LeadForm beside ContactCards (call now, hours — no address card),
-  "what happens next", the map, FAQ. Give it a texture photo (pipes,
-  tools), not a posed person: the heading sits on it.
+- The home page's ServiceCards link to the service pages and carry
+  `id="services"`, the target of the service breadcrumb.
+- The contact page is kept short: a compact hero (photo behind the
+  heading, dark overlay, call button), the two-step compact LeadForm beside
+  ContactCards (call now, hours — no address card), "what happens next",
+  the map, FAQ. Give it a texture photo (pipes, tools), not a posed person:
+  the heading sits on it.
 
 There is no `/services` index page yet. The Services breadcrumb points at
 `SERVICES_INDEX_PATH` (`/#services`) in `src/lib/services.ts`, so the

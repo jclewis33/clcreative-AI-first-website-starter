@@ -10,6 +10,11 @@ not, you delete the branch.
   `demo` skill (`.claude/skills/demo/SKILL.md`) does the research, writes
   `demo.json`, runs `npm run demo`, builds, checks and pushes.
 - **What a demo changes:** `scripts/demo.mjs` (its header lists every file).
+  It writes facts and plumbing (`SITE`, the content collections, the nav,
+  the map) and installs the preset's composed pages once; the pages are then
+  designed in `src/pages/` and a re-run never overwrites them. The one
+  exception is the first run on a fresh starter, where the preset's home and
+  contact pages replace the starter's own.
 - **The preset and the `demo.json` shape:** `presets/local-service/README.md`.
 
 Everything below is **one-time setup**, done once for the demos repo.
@@ -145,9 +150,20 @@ git push origin --delete demo/<slug>
 
 ## When a prospect signs
 
-1. Create the client's own repo from the starter.
-2. Copy over the demo's `demo.json` and `assets/`.
-3. Run `/setup` with the client's real details.
-4. Set `DEMO = null` in `src/config/demo.shared.mjs`. That removes the
-   banner, the noindex and the lead fallback in one change.
-5. Work through the demo's `confirmOrCut` list with the client.
+The demo branch is already the client's site, built on the starter's own
+history, so it becomes their repo as it is.
+
+1. Create the client's new, empty repo.
+2. Push the demo branch as its `main`:
+   ```sh
+   git push <client-repo-url> demo/<slug>:main
+   ```
+   It shares the starter's history, so starter updates still merge.
+3. In the client's repo, set `demo: null` in `src/config/site.ts`
+   (`SITE.demo`). That removes the banner, the noindex, the hidden pages and
+   the lead fallback in one change.
+4. Run `/setup` with the client's real details (domain, forms, analytics,
+   the settings a demo leaves at defaults).
+5. Work through the demo's `confirmOrCut` list with the client, then clear
+   it from `demo/demo.json`. Keep `demo/demo.json` and its `assets/`: they
+   are the record of what the demo's facts and content came from.

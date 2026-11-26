@@ -3,9 +3,11 @@
  * The "local-service" demo preset: what a prospect demo's `demo.json` must
  * hold, and which pages the preset installs. `scripts/demo.mjs` reads it.
  *
- * The schema checks the shape a demo needs before anything is written, so
- * a mistake is reported as `demo.json › home.hero.imageAlt: …` instead of
- * a half-written branch. Service entries are checked again, fully, by the
+ * demo.json holds the business's facts and its repeated content (services,
+ * regions, reviews, FAQs, projects) — never page copy, which is written in
+ * the pages themselves. The schema checks the shape before anything is
+ * written, so a mistake is reported as `demo.json › reviews.0.rating: …`
+ * instead of a half-written branch. Service entries are checked again, fully, by the
  * real content schema (src/content.config.ts) when the script runs
  * `astro sync` — only the fields the script itself handles are checked here.
  *
@@ -13,617 +15,91 @@
  * ("./assets/hero.jpg") or an https URL. The script converts each to webp
  * and writes it where the site expects it.
  */
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { z } from "astro/zod";
 
 const text = z.string().trim().min(1);
 const image = text;
 const item = z.object({ title: text, text: text });
 
-const homeSchema = z.object({
-  /** contractor (conversion-led) or showcase (photo-led, editorial). */
-  layout: z.enum(["contractor", "showcase", "estate"]).default("contractor"),
-  /** The About page (/about). Optional: it leads with the story without it. */
-  about: z
-    .object({
-      /** Its name in the nav ("Our Process"). @default 'About' */
-      navLabel: text.optional(),
-      title: text.optional(),
-      description: text.optional(),
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      text: text.optional(),
-      image: image.optional(),
-      imageAlt: text.optional(),
-      /** "cutout" = `image` is a transparent PNG (their mascot) with no box. */
-      imageFit: z.enum(["cover", "cutout"]).optional(),
-      /** Cutout only: a faint texture behind it (diamond plate, brick). */
-      imageBackdrop: image.optional(),
-      theme: z.enum(["light", "dark", "brand"]).optional(),
-      /** The About page's story photo (default: the home story's). */
-      storyImage: image.optional(),
-      storyImageAlt: text.optional(),
-      storyHeading: text.optional(),
-      paragraphs: z.array(text).optional(),
-    })
-    .optional(),
-  /** The contact page hero: what the visitor gets, a line, a wide photo. */
-  contact: z
-    .object({
-      heading: text.optional(),
-      text: text.optional(),
-      image: image.optional(),
-      imageAlt: text.optional(),
-    })
-    .optional(),
-  /** Defaults to "<name> | <tagline>". */
-  title: text.optional(),
-  /** Defaults to seo.description. */
-  description: text.optional(),
-  estimate: z
-    .object({
-      label: text,
-      heading: text,
-      text: text.optional(),
-      /** The estimate form's first step, over the service tiles. */
-      question: text.optional(),
-      /**
-       * A qualifying form instead: one-tap questions, one step each, before
-       * the contact fields (who's asking, project, size, timing, budget).
-       * Each `name` is the field its answer is saved as.
-       */
-      questions: z
-        .array(
-          z.object({
-            name: z.enum([
-              "audience",
-              "customerStatus",
-              "projectType",
-              "concerns",
-              "projectSize",
-              "timeline",
-              "budget",
-            ]),
-            question: text,
-            text: text.optional(),
-            /** "Pick all that apply": checkboxes and a Next button. */
-            multiple: z.boolean().optional(),
-            options: z
-              .array(
-                z.object({
-                  label: text,
-                  value: text,
-                  description: text.optional(),
-                }),
-              )
-              .min(2)
-              .max(8),
-          }),
-        )
-        .min(1)
-        .max(6)
-        .optional(),
-    })
-    .default({
-      label: "Get a free estimate",
-      heading: "Get a free estimate",
-      text: "Tell us a little about the job and we'll be in touch.",
-    }),
-  hero: z.object({
-    eyebrow: text.optional(),
-    /** HTML: <strong> = accent words, <mark> = a highlighted offer. */
+/**
+ * The site-wide estimate CTA (SITE.quote): the nav and mobile-bar button,
+ * and the form in the modal every page carries.
+ */
+const quoteSchema = z
+  .object({
+    /** The button text everywhere. */
+    label: text,
     heading: text,
     text: text.optional(),
-    image,
-    imageAlt: text,
-    /** Focal point in percent; keep faces in the crop (split: tall on desktop, square on phones). */
-    imagePosition: z
-      .object({
-        x: z.number().min(0).max(100),
-        y: z.number().min(0).max(100),
-      })
+    /** The estimate form's first step, over the service tiles. */
+    question: text.optional(),
+    /**
+     * A qualifying form instead: one-tap questions, one step each, before
+     * the contact fields (who's asking, project, size, timing, budget).
+     * Each `name` is the field its answer is saved as.
+     */
+    questions: z
+      .array(
+        z.object({
+          name: z.enum([
+            "audience",
+            "customerStatus",
+            "projectType",
+            "concerns",
+            "projectSize",
+            "timeline",
+            "budget",
+          ]),
+          question: text,
+          text: text.optional(),
+          /** "Pick all that apply": checkboxes and a Next button. */
+          multiple: z.boolean().optional(),
+          options: z
+            .array(
+              z.object({
+                label: text,
+                value: text,
+                description: text.optional(),
+              }),
+            )
+            .min(2)
+            .max(8),
+        }),
+      )
+      .min(1)
+      .max(6)
       .optional(),
-    variant: z.enum(["background", "split"]).optional(),
-    /** Background only: "side" = dark behind the text, the subject on the right stays bright. */
-    overlay: z.enum(["bottom", "side"]).optional(),
-    /** Split only: "cutout" = a transparent PNG (their mascot, a person cut out) with no box. */
-    imageFit: z.enum(["cover", "cutout"]).optional(),
-    /** Cutout only: a faint texture behind it (diamond plate, brick), fading toward the text. */
-    imageBackdrop: image.optional(),
-    /** "dark" suits a cut-out. */
-    theme: z.enum(["light", "dark", "brand"]).optional(),
-    /** "panel" = estimate button + "or" + "Call or text us". */
-    ctaStyle: z.enum(["buttons", "panel", "form"]).default("form"),
-    /** "form" only: the form card's heading and line (default: the estimate's). */
-    formHeading: text.optional(),
-    formText: text.optional(),
-    /** "above" = the stars line as a pill over the headline. */
-    proofPosition: z.enum(["below", "above"]).default("above"),
-    ctaNote: text.optional(),
-    proof: z
-      .object({
-        rating: z.number().min(1).max(5).optional(),
-        text,
-        /** "google" adds the Google G — only for their Google rating. */
-        source: z.enum(["google"]).optional(),
-      })
-      .optional(),
-    /** Background only: "wave" curves the hero's bottom into the next section. */
-    edge: z.enum(["straight", "wave"]).optional(),
-    /** ctaStyle "form": the hero card asks estimate.questions (new patient? where does it hurt?) instead of the one project tap. */
-    formQuestions: z.boolean().optional(),
-    /** Estate layout: a second hero button ("See our work" → "#projects"). */
-    secondaryCta: z.object({ label: text, href: text }).optional(),
-    /** The estimate button's text in the hero. @default estimate.label */
-    ctaLabel: text.optional(),
-    /** The small card on the hero photo; it defaults to "Since {founded}". `false` hides it. */
-    badge: z
-      .union([z.literal(false), z.object({ value: text, label: text })])
-      .optional(),
-    /** Credentials they really hold; `image` is a logo source. */
-    trust: z
-      .array(z.object({ label: text, image: image.optional() }))
-      .max(5)
-      .optional(),
-  }),
-  stats: z
-    .array(z.object({ value: text, label: text }))
-    .length(4)
-    .optional(),
-  /** Ways in for different visitors (homeowners / contractors), under the hero. */
-  paths: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      intro: text.optional(),
-      items: z
-        .array(
-          z.object({
-            label: text.optional(),
-            title: text,
-            text: text.optional(),
-            points: z.array(text).optional(),
-            cta: z.object({ label: text, href: text }).optional(),
-          }),
-        )
-        .min(2)
-        .max(3),
-    })
-    .optional(),
-  /** Their own before-and-after pairs: the same view, from a real job. */
-  beforeAfter: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      intro: text.optional(),
-      items: z
-        .array(
-          z.object({
-            before: image,
-            beforeAlt: text,
-            after: image,
-            afterAlt: text,
-            title: text,
-            text: text.optional(),
-          }),
-        )
-        .min(1)
-        .max(4),
-    })
-    .optional(),
-  services: z.object({
-    eyebrow: text.optional(),
-    heading: text,
-    intro: text.optional(),
-    /** cards (photo grid) or showcase (auto-advancing accordion). */
-    layout: z.enum(["cards", "showcase"]).optional(),
-  }),
-  /** "Sound familiar?" — problems in the homeowner's words. */
-  symptoms: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      intro: text.optional(),
-      items: z
-        .array(
-          z.object({
-            title: text,
-            text,
-            icon: text.optional(),
-            /** For a demo's own page: the service this situation leads to. */
-            tag: z.object({ label: text, href: text }).optional(),
-          }),
-        )
-        .min(2)
-        .max(6),
-      /** For a demo's own page: the sentence in the strip under the tiles (<strong> allowed). */
-      prompt: text.optional(),
-    })
-    .optional(),
-  /** One REAL offer from their site — never invent one. */
-  offer: z
-    .object({
-      seal: z.object({ value: text, label: text }).optional(),
-      eyebrow: text.optional(),
-      heading: text,
-      text: text.optional(),
-      items: z.array(text).optional(),
-      /** The terms — required: an offer without terms isn't shown. */
-      note: text,
-      ctaLabel: text.optional(),
-    })
-    .optional(),
-  /** Their own job photos only. */
-  recentWork: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      intro: text.optional(),
-      items: z
-        .array(
-          z.object({
-            image,
-            imageAlt: text,
-            title: text,
-            place: text.optional(),
-          }),
-        )
-        .min(3)
-        .max(9),
-    })
-    .optional(),
-  /** Only when they really answer around the clock / after hours. */
-  emergency: z
-    .object({ heading: text.optional(), text: text.optional() })
-    .optional(),
-  /** Their real maintenance / membership plans, at their prices. */
-  plans: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      intro: text.optional(),
-      note: text.optional(),
-      items: z
-        .array(
-          z.object({
-            name: text,
-            price: text,
-            period: text.optional(),
-            description: text.optional(),
-            perks: z.array(text).min(1),
-            featured: z.boolean().optional(),
-            ctaLabel: text.optional(),
-          }),
-        )
-        .min(1)
-        .max(3),
-    })
-    .optional(),
-  /** The real people, with their own photos. */
-  team: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      intro: text.optional(),
-      members: z
-        .array(
-          z.object({
-            name: text,
-            role: text,
-            image,
-            imageAlt: text.optional(),
-            bio: text.optional(),
-          }),
-        )
-        .min(1)
-        .max(8),
-    })
-    .optional(),
-  /** A guarantee they actually give, named. */
-  guarantee: z
-    .object({
-      eyebrow: text.optional(),
-      name: text,
-      text: text.optional(),
-      items: z.array(text).optional(),
-      sealLabel: text.optional(),
-    })
-    .optional(),
-  /** Us vs. a typical contractor — common practice, never a named competitor. */
-  comparison: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      intro: text.optional(),
-      themLabel: text.optional(),
-      rows: z.array(z.object({ label: text, us: text, them: text })).min(3),
-    })
-    .optional(),
-  /** Estate layout: the commercial side on a tinted band. */
-  spotlight: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      text: text.optional(),
-      images: z
-        .array(z.object({ image, alt: text }))
-        .min(1)
-        .max(3),
-      items: z
-        .array(z.object({ label: text, meta: text.optional() }))
-        .optional(),
-      cta: z.object({ label: text, href: text }).optional(),
-      secondaryCta: z.object({ label: text, href: text }).optional(),
-    })
-    .optional(),
-  /** Estate layout: projects with category pills (needs `projects`). */
-  projectHighlights: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      slugs: z.array(text).optional(),
-      limit: z.number().int().min(1).max(12).optional(),
-      linkLabel: text.optional(),
-    })
-    .optional(),
-  serviceArea: z.object({
-    heading: text,
-    text: text.optional(),
-    areas: z.array(text).min(1).optional(),
-  }),
-  /** Only promises the business really makes. */
-  promises: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      intro: text.optional(),
-      items: z.array(item).min(3).max(4),
-    })
-    .optional(),
-  /** Replaces the home page's process section; only real timings. */
-  expect: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      text: text.optional(),
-      steps: z
-        .array(z.object({ label: text, title: text, text }))
-        .min(2)
-        .max(4),
-      /** One real figure from their reviews or profile. */
-      proof: z.object({ value: text, label: text }).optional(),
-    })
-    .optional(),
-  /**
-   * "Where does it hurt?" (clinics): the places on the body they treat,
-   * each with what usually causes it and how they help, from their own
-   * site. `links` point at their service pages (/services/<slug>).
-   */
-  spotFinder: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      intro: text.optional(),
-      items: z
-        .array(
-          z.object({
-            label: text,
-            area: z.enum([
-              "head",
-              "neck",
-              "shoulders",
-              "upper-back",
-              "lower-back",
-              "elbows-wrists",
-              "hips",
-              "knees",
-              "ankles-feet",
-            ]),
-            title: text.optional(),
-            text,
-            lists: z
-              .array(z.object({ title: text, items: z.array(text).min(1) }))
-              .max(2)
-              .optional(),
-            links: z.array(z.object({ label: text, href: text })).optional(),
-          }),
-        )
-        .min(2)
-        .max(9),
-    })
-    .optional(),
-  /** A place people visit: a photo beside the office card (hours from contact.openingHours). */
-  office: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      intro: text.optional(),
-      paragraphs: z.array(text).optional(),
-      image: image.optional(),
-      imageAlt: text.optional(),
-      cardTitle: text.optional(),
-    })
-    .refine((o) => !o.image || o.imageAlt, {
-      message: "imageAlt is required when image is set",
-      path: ["imageAlt"],
-    })
-    .optional(),
-  /** Meet the doctor / owner: real, public facts only (school, license, languages). */
-  profile: z
-    .object({
-      eyebrow: text.optional(),
-      name: text,
-      lead: text.optional(),
-      paragraphs: z.array(text).optional(),
-      image,
-      imageAlt: text,
-      imageSide: z.enum(["left", "right"]).optional(),
-      badge: z.object({ title: text, text: text.optional() }).optional(),
-      credentials: z
-        .array(
-          z.object({ label: text, value: text, wide: z.boolean().optional() }),
-        )
-        .max(8)
-        .optional(),
-      secondaryCta: z.object({ label: text, href: text }).optional(),
-      person: z
-        .object({
-          jobTitle: text.optional(),
-          alumniOf: z.array(text).optional(),
-          knowsLanguage: z.array(text).optional(),
-          hasCredential: z.array(text).optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-  why: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      intro: text.optional(),
-      items: z
-        .array(z.object({ title: text, text, icon: text.optional() }))
-        .min(3)
-        .max(5),
-      image,
-      imageAlt: text,
-    })
-    .optional(),
-  process: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      text: text.optional(),
-      steps: z.array(item).min(2),
-      image: image.optional(),
-      imageAlt: text.optional(),
-    })
-    .refine((p) => !p.image || p.imageAlt, {
-      message: "imageAlt is required when image is set",
-      path: ["imageAlt"],
-    })
-    .optional(),
-  photoBand: z
-    .object({
-      image,
-      alt: text,
-      /** Focal point in percent; keep faces in the crop. */
-      position: z
-        .object({
-          x: z.number().min(0).max(100),
-          y: z.number().min(0).max(100),
-        })
-        .optional(),
-    })
-    .optional(),
-  story: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      paragraphs: z.array(text).optional(),
-      image,
-      imageAlt: text,
-      reasons: z.array(item).optional(),
-      /** "right" puts the photo on the right. */
-      imageSide: z.enum(["left", "right"]).optional(),
-      ctaLabel: text.optional(),
-      /** For a demo's own page: the smaller photo overlapping the main one. */
-      inset: image.optional(),
-      insetAlt: text.optional(),
-      /** For a demo's own page: the small card on the photos. */
-      badge: z.object({ title: text, text: text.optional() }).optional(),
-      /** For a demo's own page: one real review line beside the story. */
-      quote: z.object({ text, name: text, meta: text.optional() }).optional(),
-    })
-    .optional(),
-  /** Real, attributed reviews only — leave it out otherwise. */
-  reviews: z
-    .object({
-      rating: z.number().min(1).max(5).optional(),
-      count: z.number().int().positive().optional(),
-      items: z
-        .array(
-          z.object({
-            /** The line the home and service pages show (an excerpt is fine). */
-            text,
-            name: text,
-            meta: text.optional(),
-            /** The whole review, word for word, for /reviews. */
-            full: text.optional(),
-            /** 4 or 5 — worse reviews never go on the site. */
-            rating: z.number().int().min(4).max(5).optional(),
-            /** As the platform shows it ("a year ago"). */
-            date: text.optional(),
-            /** Who they are, when it matters ("General contractor"). */
-            role: text.optional(),
-          }),
-        )
-        .min(1),
-      /** For a demo's own page: words customers use, counted from the real reviews. */
-      keywords: z
-        .array(z.object({ word: text, count: z.number().int().positive() }))
-        .max(6)
-        .optional(),
-      /** For a demo's own page: the index of the review shown as the featured card. */
-      featured: z.number().int().min(0).optional(),
-      /**
-       * "google": the reviews page and the About page show Google-style
-       * review cards (ReviewCards variant="google"), to match a demo whose
-       * own home page uses them. Default: the classic Reviews cards.
-       */
-      cards: z.enum(["classic", "google"]).optional(),
-      layout: z.enum(["cards", "featured", "grid", "marquee"]).optional(),
-      /** Estate layout: the star line ("78 five-star reviews on Google"). */
-      summary: text.optional(),
-    })
-    .optional(),
-  leadForm: z.object({
-    eyebrow: text.optional(),
-    heading: text,
-    text: text.optional(),
-    projectOptions: z
-      .array(z.object({ label: text, value: text, icon: text.optional() }))
-      .min(2)
-      .optional(),
-  }),
-  faqs: z
-    .object({
-      eyebrow: text.optional(),
-      items: z.array(z.object({ question: text, answer: text })).min(2),
-      /** For a demo's own page: the FAQ's own heading (<strong> = accent). */
-      heading: text.optional(),
-      /** For a demo's own page: the "Still have a question?" card beside the questions. */
-      help: z
-        .object({
-          heading: text,
-          text,
-          image: image.optional(),
-          imageAlt: text.optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-  callBand: z
-    .object({
-      heading: text,
-      text: text.optional(),
-      /** photo-card / split need `image` + `imageAlt`. */
-      variant: z.enum(["band", "photo-card", "split", "panel"]).optional(),
-      image: image.optional(),
-      imageAlt: text.optional(),
-      ctaNote: text.optional(),
-      /** Estate layout: a second button (another kind of buyer). */
-      secondaryCta: z.object({ label: text, href: text }).optional(),
-      /** The estimate button's text here. @default estimate.label */
-      ctaLabel: text.optional(),
-      /** Estate layout: what happens when they reach out, in order. */
-      steps: z.array(text).min(2).max(4).optional(),
-      /** For a demo's own page: the short tick row under the buttons. */
-      ticks: z.array(text).max(4).optional(),
-    })
-    .refine((c) => !c.image || c.imageAlt, {
-      message: "imageAlt is required when image is set",
-      path: ["imageAlt"],
-    }),
+  })
+  .default({
+    label: "Get a free estimate",
+    heading: "Get a free estimate",
+    text: "Tell us a little about the job and we'll be in touch.",
+  });
+
+/**
+ * A real, attributed review from a public platform (src/content/reviews).
+ * Never invented, never below 4 stars.
+ */
+const reviewSchema = z.object({
+  /** The line the cards show (an excerpt is fine). */
+  text,
+  name: text,
+  /** The line under the name ("Panel upgrade · Round Rock", "Google review"); it also names the platform. */
+  meta: text.optional(),
+  /** The whole review, word for word, for /reviews. */
+  full: text.optional(),
+  /** 4 or 5 — worse reviews never go on the site. @default 5 */
+  rating: z.number().int().min(4).max(5).optional(),
+  /** As the platform shows it ("a year ago"). */
+  date: text.optional(),
+  /** Who they are, when it matters ("General contractor"). */
+  role: text.optional(),
+  /** The reviewer's photo (a source); needs avatarAlt. */
+  avatar: image.optional(),
+  avatarAlt: text.optional(),
+  /** Shown before the others. */
+  featured: z.boolean().optional(),
 });
 
 /** A service: the content schema's fields, plus its slug. */
@@ -646,9 +122,8 @@ const serviceSchema = z
         images: z.array(z.object({ src: image, alt: text })).length(2),
       })
       .passthrough(),
-    reviews: z
-      .array(z.object({ avatar: image.optional() }).passthrough())
-      .optional(),
+    /** Reviews about this service; they show on its page first. */
+    reviews: z.array(reviewSchema).optional(),
     /* The estate service page's sections (look "estate"); the content
        schema checks the rest at sync. */
     beforeAfter: z
@@ -720,125 +195,43 @@ const areaSchema = z
 const kebab = z
   .string()
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "use lowercase-kebab-case");
-const iconItem = z.object({ title: text, text, icon: text.optional() });
 
+const PAGES_DIR = new URL("../../src/pages/", import.meta.url);
+const PRESET_PAGES_FILE = new URL(
+  "../../src/data/preset-pages.ts",
+  import.meta.url,
+);
 /**
- * An audience page (LocalServiceAudienceData, src/lib/local-service-audience.ts)
- * for a second kind of buyer — general contractors, property managers —
- * at its own URL (keep the prospect's existing one).
+ * The file or folder in src/pages an audience page at /<path> would collide
+ * with (null when the path is free): the preset's own pages, every route
+ * folder (services, blog, api…) and every page file (404, components…). An
+ * audience page a previous run installed there is the demo's own, so a
+ * re-run is not a collision.
  */
-const audienceSchema = z.object({
-  /** The URL: "commercial-concrete-coatings" → /commercial-concrete-coatings. */
-  path: kebab,
-  navLabel: text,
-  /**
-   * Put the page at the top of a service group's menu ("Commercial") rather
-   * than as its own nav link. Services join a group with their `group`.
-   */
-  group: text.optional(),
-  /** A second nav button to this page ("For Contractors"). */
-  navButton: text.optional(),
-  title: text,
-  /** At most 160 characters. */
-  description: text.max(160),
-  hero: z.object({
-    eyebrow: text.optional(),
-    heading: text,
-    text: text.optional(),
-    image,
-    imageAlt: text,
-    ctaLabel: text.optional(),
-    /** `icon: "download"` when it links to a PDF (a capabilities statement). */
-    secondaryCta: z
-      .object({
-        label: text,
-        href: text,
-        icon: z.enum(["download"]).optional(),
-      })
-      .optional(),
-  }),
-  /** Label over value: { label: "Insurance", value: "Fully insured" }. */
-  facts: z
-    .array(z.object({ value: text, label: text }))
-    .min(3)
-    .max(5)
-    .optional(),
-  scope: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      intro: text.optional(),
-      items: z.array(iconItem).min(3).max(8),
-      image,
-      imageAlt: text,
-    })
-    .optional(),
-  capability: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      intro: text.optional(),
-      items: z.array(iconItem).min(3).max(6),
-      image,
-      imageAlt: text,
-    })
-    .optional(),
-  /** Case study cards for their `projects` in this category. */
-  projects: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text.optional(),
-      category: z.enum(["residential", "commercial"]),
-      /** Which projects get a card, in order, with their spec rows. */
-      cards: z
-        .array(
-          z.object({
-            slug: kebab,
-            specs: z.array(z.object({ label: text, value: text })).min(1),
-          }),
-        )
-        .max(3)
-        .optional(),
-      /** More photos for the row under the cards. */
-      extras: z
-        .array(
-          z.object({ image, alt: text, caption: text, href: text.optional() }),
-        )
-        .max(5)
-        .optional(),
-      /** One real, attributed client quote. */
-      quote: z.object({ text, name: text, meta: text.optional() }).optional(),
-    })
-    .optional(),
-  documents: z
-    .object({
-      eyebrow: text.optional(),
-      heading: text,
-      text: text.optional(),
-      items: z.array(z.object({ title: text, text })).min(2),
-      cta: z.object({ label: text, href: text }).optional(),
-      secondaryCta: z.object({ label: text, href: text }).optional(),
-    })
-    .optional(),
-  /** The bid invitation form; `steps` only what the business really does. */
-  form: z.object({
-    eyebrow: text.optional(),
-    heading: text,
-    text: text.optional(),
-    scopeOptions: z.array(z.object({ label: text, value: text })).optional(),
-    steps: z.array(text).min(2).max(4).optional(),
-  }),
-  /** Their pages by city, as one line. */
-  /** `link`: each town's page, `{town}` = its name in kebab-case ("/commercial-coatings-{town}-tx/"). */
-  cities: z
-    .object({
-      heading: text,
-      towns: z.array(text).min(1),
-      link: text.optional(),
-    })
-    .optional(),
-});
-
+function routeTaken(/** @type {string} */ path) {
+  if (["index", "about", "contact", "reviews"].includes(path))
+    return `the preset's ${path} page`;
+  const entry = readdirSync(PAGES_DIR, { withFileTypes: true }).find(
+    (e) =>
+      (e.isDirectory()
+        ? e.name
+        : e.name.replace(/\.(astro|md|mdx|html|ts|js)$/, "")) === path,
+  );
+  if (!entry) return null;
+  const file = new URL(entry.name, PAGES_DIR);
+  const installed =
+    entry.isFile() &&
+    entry.name === `${path}.astro` &&
+    /* In the nav from an earlier run, or still the scaffold (a first run
+       that failed after installing it). */
+    ((existsSync(PRESET_PAGES_FILE) &&
+      readFileSync(PRESET_PAGES_FILE, "utf8").includes(`path: "/${path}"`)) ||
+      readFileSync(file, "utf8") ===
+        readFileSync(new URL("audience.astro", import.meta.url), "utf8"));
+  return installed
+    ? null
+    : `src/pages/${entry.name}${entry.isDirectory() ? "/" : ""}`;
+}
 /** A project (src/content/projects): /projects/<slug>, their own job only. */
 const projectSchema = z
   .object({
@@ -993,8 +386,33 @@ const demoObject = z.object({
     tagline: text,
     /** The default meta description — at most 160 characters. */
     description: text.max(160),
+    /** The share image (public/images/og-image.png): usually the home hero photo. */
+    image,
   }),
-  home: homeSchema,
+  quote: quoteSchema,
+  /**
+   * Their public star rating (SITE.rating): the stars line (never the
+   * structured data). Only the figure their profile shows.
+   */
+  rating: z
+    .object({
+      value: z.number().min(1).max(5),
+      count: z.number().int().positive(),
+      source: z.enum(["google", "facebook", "yelp"]).default("google"),
+    })
+    .optional(),
+  /** Every real 4 and 5 star review (src/content/reviews); `[]` for none. */
+  reviews: z.array(reviewSchema),
+  /** The site-wide FAQs (src/content/faqs), word for word; `[]` for none. */
+  faqs: z.array(z.object({ question: text, answer: text })),
+  /** The site-wide "how it works" steps (settings.json `process`). */
+  process: z
+    .object({
+      heading: text,
+      text: text.optional(),
+      steps: z.array(item).min(2),
+    })
+    .optional(),
   services: z.array(serviceSchema).min(1).max(8),
   /**
    * Service-area regions (/service-areas/<slug>): a few regions grouping
@@ -1003,10 +421,46 @@ const demoObject = z.object({
    */
   areas: z.array(areaSchema).max(8).optional(),
   /**
-   * A page for a second kind of buyer (contractors, property managers) at
-   * its own URL, in the nav. Optional.
+   * A page for a second kind of buyer (contractors, property managers):
+   * the preset's audience.astro, installed once at src/pages/<path>.astro
+   * (keep the prospect's own URL) and linked from the nav. Its copy is
+   * written in the page.
    */
-  audience: audienceSchema.optional(),
+  audiencePage: z
+    .object({
+      /** The URL: "commercial-concrete-coatings" → /commercial-concrete-coatings. */
+      path: kebab.superRefine((p, ctx) => {
+        const taken = routeTaken(p);
+        if (taken)
+          ctx.addIssue({
+            code: "custom",
+            message: `/${p} is already a route (${taken}) — pick another path`,
+          });
+      }),
+      /** Its name in the nav. @default 'For contractors' */
+      navLabel: text.optional(),
+      /** A second nav button to this page ("For Contractors"). */
+      navButton: text.optional(),
+      /**
+       * Put the page at the top of a service group's menu ("Commercial")
+       * rather than as its own nav link. Services join a group with their
+       * `group`.
+       */
+      group: text.optional(),
+      /**
+       * The page's line in llms.txt and the page registry.
+       * @default "<name>: work for contractors and property managers."
+       */
+      desc: text.optional(),
+    })
+    .optional(),
+  /** The About page's name in the nav ("Our Process"). @default 'About' */
+  aboutNavLabel: text.optional(),
+  /**
+   * The About page's line in llms.txt and the page registry.
+   * @default "Who <name> is and how we work."
+   */
+  aboutDescription: text.optional(),
   /**
    * Their real projects: /projects and /projects/<slug>, in the nav. They
    * replace the starter's sample projects (and its sample gallery).
@@ -1081,12 +535,11 @@ export const PAGES = [
   { from: "index.astro", to: "src/pages/index.astro" },
   { from: "contact.astro", to: "src/pages/contact.astro" },
   { from: "about.astro", to: "src/pages/about.astro" },
-  /* Only with reviews; otherwise the page (and its nav link) is removed. */
+  /* Only with reviews. */
   {
     from: "reviews.astro",
     to: "src/pages/reviews.astro",
-    when: (/** @type {any} */ demo) =>
-      Boolean(demo.home.reviews?.items?.length),
+    when: (/** @type {any} */ demo) => demo.reviews.length > 0,
   },
 ];
 

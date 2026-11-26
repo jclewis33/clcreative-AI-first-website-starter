@@ -1,6 +1,6 @@
 ---
 name: seo-discoverability
-description: Per-page SEO, structured data, and LLM discoverability reference for this starter. Load BEFORE adding or editing JSON-LD / Schema.org markup (Service, FAQ, LocalBusiness), the serviceFaqJsonLd helper (src/lib/jsonld.ts), the schema prop on BaseLayout, per-page FAQs (src/data/faqs.ts), llms.txt / llms-full.txt, or the PAGES registry in src/data/site-structure.ts — and ALWAYS when adding a new static page (marketing, service, location, legal), which has a manual registration step. Also covers check:schema validation.
+description: Per-page SEO, structured data, and LLM discoverability reference for this starter. Load BEFORE adding or editing JSON-LD / Schema.org markup (Service, FAQ, LocalBusiness), the serviceFaqJsonLd helper (src/lib/jsonld.ts), the schema prop on BaseLayout, per-page FAQs (the `faqs` collection, src/lib/faqs.ts), llms.txt / llms-full.txt, or the PAGES registry in src/data/site-structure.ts — and ALWAYS when adding a new static page (marketing, service, location, legal), which has a manual registration step. Also covers check:schema validation.
 ---
 
 # Per-page SEO, Structured Data & LLM Discoverability
@@ -37,7 +37,7 @@ description: Per-page SEO, structured data, and LLM discoverability reference fo
   [src/config/seo.shared.mjs](../../../src/config/seo.shared.mjs) feed the
   robots meta, robots.txt, the sitemap filter, llms.txt and the SSR
   `X-Robots-Tag`. `SITE_NOINDEX` (same file) takes the **whole** site out —
-  on for a prospect demo (`DEMO` in src/config/demo.shared.mjs) or any build
+  on for a prospect demo (`SITE.demo` in src/config/site.ts) or any build
   with `SITE_NOINDEX=1` (staging): noindex on every page, `Disallow: /`, no
   sitemap, stub llms files, and `X-Robots-Tag` added to the built `_headers`.
 
@@ -63,10 +63,11 @@ marketing/service/landing page.
    ```ts
    import { serviceFaqJsonLd } from "../lib/jsonld";
    import { SITE } from "../config/site";
-   import { generalFaqs } from "../data/faqs";
+   import { getFaqs } from "../lib/faqs";
 
    // Build the URL from SITE.url — never hardcode the host literal.
    const pageUrl = `${SITE.url}/your-page`;
+   const generalFaqs = await getFaqs();
 
    const schemaGraph = serviceFaqJsonLd({
      pageUrl,
@@ -101,10 +102,12 @@ marketing/service/landing page.
    `/llms-full.txt`, the nav, and the footer), then reference its `path` in
    `NAV_MENU`/`FOOTER_GROUPS` if it should appear there.
 
-4. **Per-page FAQs:** [src/data/faqs.ts](../../../src/data/faqs.ts) ships one
-   generic `generalFaqs` set; add more exports there (HTML is allowed in
+4. **Per-page FAQs:** the site-wide questions are the `faqs` collection
+   (`src/content/faqs/*.json`, read with `getFaqs()` from
+   [src/lib/faqs.ts](../../../src/lib/faqs.ts)); HTML is allowed in
    answers — `<a class="u-text-style-underline">` links, `<br><br>` breaks,
-   `<strong>` bold) and pass the one you want as `faqs`.
+   `<strong>` bold. A service's own FAQs stay in its service file. Pass the
+   set you want as `faqs`.
 
 ## Validate
 

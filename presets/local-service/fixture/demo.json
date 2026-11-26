@@ -16,6 +16,7 @@
   },
   "serviceAreas": ["Austin", "Round Rock", "Cedar Park", "Pflugerville"],
   "founded": 2009,
+  "aboutDescription": "Meet the licensed Austin electricians behind Brightline and how a job runs.",
   "social": {
     "Facebook": "https://www.facebook.com/example"
   },
@@ -28,387 +29,167 @@
   },
   "seo": {
     "tagline": "Licensed electricians in Austin",
-    "description": "Licensed Austin electricians for panel upgrades, EV chargers, lighting and repairs. Upfront pricing and same-week appointments."
+    "description": "Licensed Austin electricians for panel upgrades, EV chargers, lighting and repairs. Upfront pricing and same-week appointments.",
+    "image": "../../../src/assets/placeholder-images/ai-first-starter-5.webp"
   },
-  "home": {
-    "hero": {
-      "eyebrow": "Licensed electricians in Austin",
-      "heading": "Call today for <mark>$50 off</mark> your first service call",
-      "text": "Licensed Austin electricians for panel upgrades, EV chargers, lighting and repairs, with an upfront price before any work starts.",
-      "image": "../../../src/assets/placeholder-images/ai-first-starter-5.webp",
-      "imageAlt": "An electrician working on a residential panel",
-      "variant": "split",
-      "ctaStyle": "panel",
-      "ctaNote": "No-obligation quote",
-      "trust": [
-        {
-          "label": "Licensed & insured"
-        },
-        {
-          "label": "Upfront pricing"
-        },
-        {
-          "label": "Same-week service"
-        }
-      ]
-    },
-    "emergency": {
-      "heading": "Power out? Sparks? <strong>Call now.</strong>",
-      "text": "A licensed electrician answers, day or night."
-    },
-    "services": {
-      "eyebrow": "What we do",
-      "heading": "Every electrical job, one crew",
-      "intro": "From a single outlet to a full panel upgrade."
-    },
-    "symptoms": {
-      "intro": "If any of these sound like your house, it is worth a look before it gets worse.",
-      "items": [
-        {
-          "title": "Breaker keeps tripping",
-          "text": "Every time the microwave and the dryer run together.",
-          "icon": "bolt"
-        },
-        {
-          "title": "Lights flicker or dim",
-          "text": "Especially when the AC kicks on.",
-          "icon": "alert"
-        },
-        {
-          "title": "Warm outlets or switches",
-          "text": "A plate that feels warm to the touch is a warning sign.",
-          "icon": "alert"
-        },
-        {
-          "title": "No outlet where you need it",
-          "text": "Extension cords running across the room.",
-          "icon": "tools"
-        }
-      ]
-    },
-    "offer": {
-      "seal": {
-        "value": "$50",
-        "label": "Off"
+  "quote": {
+    "label": "Get a free estimate",
+    "heading": "Get a free estimate",
+    "text": "Two quick steps. We call you back the same business day.",
+    "question": "What do you need help with?",
+    "questions": [
+      {
+        "name": "audience",
+        "question": "First, who are we talking to?",
+        "options": [
+          {
+            "label": "Homeowner",
+            "value": "homeowner",
+            "description": "Work at my own home"
+          },
+          {
+            "label": "Builder or contractor",
+            "value": "contractor",
+            "description": "I need an electrical sub"
+          },
+          {
+            "label": "Property manager",
+            "value": "property-manager",
+            "description": "Buildings I manage"
+          }
+        ]
       },
-      "eyebrow": "New customers",
-      "heading": "<strong>$50 off</strong> your first service call",
-      "text": "Book any repair or install and we take $50 off the invoice.",
-      "items": ["Any repair or install", "Written price before we start"],
-      "note": "One per household. Not combinable with other offers. Fictional example offer."
+      {
+        "name": "projectType",
+        "question": "What do you need help with?",
+        "options": [
+          {
+            "label": "Panel or wiring",
+            "value": "panel"
+          },
+          {
+            "label": "Lighting",
+            "value": "lighting"
+          },
+          {
+            "label": "EV charger",
+            "value": "ev"
+          },
+          {
+            "label": "Something else",
+            "value": "other"
+          }
+        ]
+      },
+      {
+        "name": "timeline",
+        "question": "When would you like the work done?",
+        "options": [
+          {
+            "label": "As soon as possible",
+            "value": "asap"
+          },
+          {
+            "label": "In the next month",
+            "value": "month"
+          },
+          {
+            "label": "Just planning",
+            "value": "planning"
+          }
+        ]
+      }
+    ]
+  },
+  "rating": {
+    "value": 4.9,
+    "count": 86,
+    "source": "google"
+  },
+  "reviews": [
+    {
+      "text": "They swapped our panel in a day, pulled the permit, and left the garage cleaner than they found it.",
+      "name": "Dana M.",
+      "meta": "Panel upgrade · Round Rock"
     },
-    "plans": {
-      "eyebrow": "Peace of mind",
-      "heading": "Electrical safety plans",
-      "intro": "A yearly check-up that catches problems before they become emergencies.",
-      "note": "Billed yearly. Cancel anytime. Fictional example plans.",
-      "items": [
-        {
-          "name": "Basic",
-          "price": "$9",
-          "period": "/mo",
-          "description": "For newer homes.",
-          "perks": ["Annual safety inspection", "10% off repairs"]
-        },
-        {
-          "name": "Plus",
-          "price": "$15",
-          "period": "/mo",
-          "description": "Our most popular plan.",
-          "perks": [
-            "Annual safety inspection",
-            "Priority scheduling",
-            "15% off repairs",
-            "Surge protector check"
-          ],
-          "featured": true
-        },
-        {
-          "name": "Premium",
-          "price": "$25",
-          "period": "/mo",
-          "description": "For older homes and big families.",
-          "perks": [
-            "Twice-yearly inspections",
-            "Same-day priority",
-            "20% off repairs",
-            "No trip fees"
-          ]
-        }
-      ]
+    {
+      "text": "Clear price up front, showed up on time, and the EV charger has worked perfectly since.",
+      "name": "Chris L.",
+      "meta": "EV charger · Cedar Park"
     },
-    "serviceArea": {
-      "heading": "Serving Austin and nearby",
-      "text": "Same-week appointments across the metro."
-    },
-    "process": {
-      "eyebrow": "How it works",
-      "heading": "From first call to final inspection",
-      "steps": [
-        {
-          "title": "Call or send the form",
-          "text": "Tell us what's going on."
-        },
-        {
-          "title": "Upfront price",
-          "text": "A written quote before we start."
-        },
-        {
-          "title": "Done right",
-          "text": "Clean work, up to code, inspected."
-        }
-      ],
-      "image": "../../../src/assets/placeholder-images/ai-first-starter-4.webp",
-      "imageAlt": "An electrician explaining a quote to a homeowner"
-    },
-    "recentWork": {
-      "eyebrow": "Recent work",
-      "heading": "Done this year, near you",
-      "items": [
-        {
-          "image": "../../../src/assets/placeholder-images/ai-first-starter-1.webp",
-          "imageAlt": "A new labelled breaker panel",
-          "title": "200-amp panel upgrade",
-          "place": "Round Rock"
-        },
-        {
-          "image": "../../../src/assets/placeholder-images/ai-first-starter-6.webp",
-          "imageAlt": "An EV charger mounted in a garage",
-          "title": "Level 2 EV charger",
-          "place": "Cedar Park"
-        },
-        {
-          "image": "../../../src/assets/placeholder-images/ai-first-starter-8.webp",
-          "imageAlt": "New recessed lighting in a living room",
-          "title": "Recessed lighting",
-          "place": "Austin"
-        }
-      ]
-    },
-    "story": {
-      "eyebrow": "Why choose us",
-      "heading": "A local shop that answers the phone",
-      "paragraphs": [
-        "Brightline started as one truck and a promise to show up when we said we would."
-      ],
-      "image": "../../../src/assets/placeholder-images/ai-first-starter-7.webp",
-      "imageAlt": "The Brightline team in front of their van",
-      "reasons": [
-        {
-          "title": "Upfront pricing",
-          "text": "The quote is the price."
-        },
-        {
-          "title": "Licensed",
-          "text": "Every job, every electrician."
-        }
-      ]
-    },
-    "team": {
-      "eyebrow": "Meet the team",
-      "heading": "The people at your door",
-      "members": [
-        {
-          "name": "Marcus B.",
-          "role": "Owner · Master electrician",
-          "image": "../../../src/assets/placeholder-images/ai-first-starter-16.webp",
-          "bio": "Twenty years wiring Austin homes."
-        },
-        {
-          "name": "Elena R.",
-          "role": "Lead electrician",
-          "image": "../../../src/assets/placeholder-images/ai-first-starter-15.webp",
-          "bio": "Panels, EV chargers and code."
-        },
-        {
-          "name": "Sam T.",
-          "role": "Service technician",
-          "image": "../../../src/assets/placeholder-images/ai-first-starter-19.webp",
-          "bio": "Repairs and troubleshooting."
-        }
-      ]
-    },
-    "guarantee": {
-      "name": "The <strong>Done-Right</strong> Guarantee",
-      "text": "If something we installed is not right, we come back and fix it, free, for a full year.",
-      "items": [
-        "Every job",
-        "Parts and labor",
-        "No trip fee for warranty calls"
-      ]
-    },
-    "leadForm": {
-      "eyebrow": "Free estimate",
-      "heading": "Tell us about the <strong>job</strong>",
-      "text": "We'll call you back within one business day."
-    },
-    "faqs": {
-      "items": [
-        {
-          "question": "Are you licensed and insured?",
-          "answer": "Yes. Every electrician on our team is licensed, and we're fully insured."
-        },
-        {
-          "question": "Do you handle emergencies?",
-          "answer": "Yes. Call any time and we'll get someone out as fast as we can."
-        }
-      ]
-    },
-    "callBand": {
-      "heading": "Need an <strong>electrician</strong>?",
-      "text": "Call now, or get a free estimate online.",
-      "variant": "photo-card",
-      "image": "../../../src/assets/placeholder-images/ai-first-starter-10.webp",
-      "imageAlt": "A newly wired home lit up at dusk",
-      "ctaNote": "No-obligation quote"
-    },
-    "reviews": {
-      "rating": 4.9,
-      "count": 86,
-      "items": [
-        {
-          "text": "They swapped our panel in a day, pulled the permit, and left the garage cleaner than they found it.",
-          "name": "Dana M.",
-          "meta": "Panel upgrade · Round Rock"
-        },
-        {
-          "text": "Clear price up front, showed up on time, and the EV charger has worked perfectly since.",
-          "name": "Chris L.",
-          "meta": "EV charger · Cedar Park"
-        },
-        {
-          "text": "Called about a breaker that kept tripping and they had it sorted the same afternoon.",
-          "name": "Priya S.",
-          "meta": "Repair · Austin"
-        }
-      ]
-    },
-    "comparison": {
-      "heading": "Why Austin homeowners switch to us",
-      "rows": [
-        {
-          "label": "Pricing",
-          "us": "Written price before any work",
-          "them": "Hourly, open-ended"
-        },
-        {
-          "label": "Permits",
-          "us": "Pulled and inspected, every time",
-          "them": "Often skipped"
-        },
-        {
-          "label": "Scheduling",
-          "us": "Same-week appointments",
-          "them": "Two-week waits"
-        },
-        {
-          "label": "Clean-up",
-          "us": "Every site left clean",
-          "them": "Drywall dust left behind"
-        }
-      ]
-    },
-    "estimate": {
-      "label": "Get a free estimate",
-      "heading": "Get a free estimate",
-      "text": "Two quick steps. We call you back the same business day.",
-      "question": "What do you need help with?",
-      "questions": [
-        {
-          "name": "audience",
-          "question": "First, who are we talking to?",
-          "options": [
-            {
-              "label": "Homeowner",
-              "value": "homeowner",
-              "description": "Work at my own home"
-            },
-            {
-              "label": "Builder or contractor",
-              "value": "contractor",
-              "description": "I need an electrical sub"
-            },
-            {
-              "label": "Property manager",
-              "value": "property-manager",
-              "description": "Buildings I manage"
-            }
-          ]
-        },
-        {
-          "name": "projectType",
-          "question": "What do you need help with?",
-          "options": [
-            { "label": "Panel or wiring", "value": "panel" },
-            { "label": "Lighting", "value": "lighting" },
-            { "label": "EV charger", "value": "ev" },
-            { "label": "Something else", "value": "other" }
-          ]
-        },
-        {
-          "name": "timeline",
-          "question": "When would you like the work done?",
-          "options": [
-            { "label": "As soon as possible", "value": "asap" },
-            { "label": "In the next month", "value": "month" },
-            { "label": "Just planning", "value": "planning" }
-          ]
-        }
-      ]
-    },
-    "paths": {
-      "heading": "Two ways to work with us",
-      "items": [
-        {
-          "label": "For homeowners",
-          "title": "Panels, lighting and EV chargers",
-          "text": "Safe, inspected work at home.",
-          "cta": { "label": "See our services", "href": "#services" }
-        },
-        {
-          "label": "For builders",
-          "title": "Electrical on your next project",
-          "text": "Licensed crews for new builds and remodels.",
-          "cta": { "label": "Contact us", "href": "/contact" }
-        }
-      ]
-    },
-    "promises": {
-      "heading": "No surprises. Just good work.",
-      "items": [
-        {
-          "title": "Upfront pricing",
-          "text": "A written price before any work starts."
-        },
-        {
-          "title": "Licensed",
-          "text": "Every job done by a licensed pro."
-        },
-        {
-          "title": "On time",
-          "text": "We show up when we say we will."
-        }
-      ]
-    },
-    "expect": {
-      "heading": "What to expect",
-      "steps": [
-        {
-          "label": "Today",
-          "title": "Call or send the form",
-          "text": "Tell us what is going on."
-        },
-        {
-          "label": "First visit",
-          "title": "We look before we quote",
-          "text": "A plan and a price before any work."
-        }
-      ]
+    {
+      "text": "Called about a breaker that kept tripping and they had it sorted the same afternoon.",
+      "name": "Priya S.",
+      "meta": "Repair · Austin"
     }
+  ],
+  "faqs": [
+    {
+      "question": "Are you licensed and insured?",
+      "answer": "Yes. Every electrician on our team is licensed, and we're fully insured."
+    },
+    {
+      "question": "Do you handle emergencies?",
+      "answer": "Yes. Call any time and we'll get someone out as fast as we can."
+    }
+  ],
+  "process": {
+    "heading": "From first call to final inspection",
+    "steps": [
+      {
+        "title": "Call or send the form",
+        "text": "Tell us what's going on."
+      },
+      {
+        "title": "Upfront price",
+        "text": "A written quote before we start."
+      },
+      {
+        "title": "Done right",
+        "text": "Clean work, up to code, inspected."
+      }
+    ]
   },
   "services": [
     {
       "slug": "panel-upgrades",
+      "reviews": [
+        {
+          "text": "Our old fuse box is gone and the new 200-amp panel passed inspection the first time.",
+          "name": "Marcus T.",
+          "meta": "Panel upgrade · Pflugerville"
+        },
+        {
+          "text": "Permit, inspection and cleanup were handled before we even asked.",
+          "name": "Sample Reviewer A.",
+          "meta": "Panel upgrade · Georgetown"
+        },
+        {
+          "text": "They explained the load calculation and the quote never moved.",
+          "name": "Sample Reviewer B.",
+          "meta": "Panel upgrade · Leander"
+        },
+        {
+          "text": "Two electricians, one morning, and the old panel was out by lunch.",
+          "name": "Sample Reviewer C.",
+          "meta": "Panel upgrade · Hutto"
+        },
+        {
+          "text": "Labeled every breaker and walked us through the new panel.",
+          "name": "Sample Reviewer D.",
+          "meta": "Panel upgrade · Taylor"
+        },
+        {
+          "text": "Showed up in the window they gave us and finished early.",
+          "name": "Sample Reviewer E.",
+          "meta": "Panel upgrade · Manor"
+        },
+        {
+          "text": "Fair price and a tidy install; the inspector had no notes.",
+          "name": "Sample Reviewer F.",
+          "meta": "Panel upgrade · Round Rock"
+        }
+      ],
       "title": "Panel upgrades",
       "navLabel": "Panels",
       "seoTitle": "Electrical Panel Upgrades in Austin",
@@ -573,9 +354,14 @@
       }
     }
   ],
+  "audiencePage": {
+    "path": "for-contractors",
+    "navLabel": "For contractors",
+    "navButton": "For contractors"
+  },
   "notes": {
     "confirmOrCut": [
-      "Fictional fixture: the reviews, offer, guarantee and comparison are invented for the example; never do this for a real business."
+      "Fictional fixture: the reviews and the rating are invented for the example; never do this for a real business."
     ]
   },
   "areas": [

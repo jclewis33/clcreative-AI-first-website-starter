@@ -11,6 +11,7 @@ import Layout from "@/components/ui/Layout.astro";
 import Heading from "@/components/ui/Heading.astro";
 import Marquee from "@/components/ui/Marquee.astro";
 import { SITE } from "@/config/site";
+import { reviewMeta, type Review as ReviewEntry } from "@/lib/reviews";
 
 type Review = {
   text: string;
@@ -22,6 +23,8 @@ type Review = {
   avatarAlt?: string;
   /** This review's stars, 1–5 (the starred cards and marquee). @default 5 */
   rating?: number;
+  /** Where it was left. With no `meta`, the line under the name reads "Google review". */
+  platform?: ReviewEntry["platform"];
 };
 type ReviewsLayout =
   /** First review large on a dark card, the next two stacked beside it */
@@ -39,7 +42,7 @@ interface Props extends HTMLAttributes<"section"> {
   /**
    * **Reviews** — customer reviews with an optional star rating.
    *
-   * - `reviews` — `{ text, name, meta?, avatar?, avatarAlt? }[]`, typed in by you or from a service file
+   * - `reviews` — `{ text, name, meta?, platform?, rating?, avatar?, avatarAlt? }[]`, typed in by you or from `getReviews` (the `reviews` collection)
    * - `rating`, `count` — the summary badge ("4.9 out of 5 · Based on 127 reviews")
    * - `layout` — `'featured'` (default with 3+ reviews; the first review
    *   sits large on a dark card), `'grid'`, `'cards'` (starred cards) or
@@ -209,7 +212,7 @@ const reviewAvatar = (review: Review) =>
             <Quote
               text={featured.text}
               name={featured.name}
-              meta={featured.meta}
+              meta={reviewMeta(featured)}
               avatar={reviewAvatar(featured)}
               mark="icon"
               spread
@@ -222,7 +225,7 @@ const reviewAvatar = (review: Review) =>
                   <Quote
                     text={review.text}
                     name={review.name}
-                    meta={review.meta}
+                    meta={reviewMeta(review)}
                     avatar={reviewAvatar(review)}
                     size="regular"
                     mark="none"
@@ -261,7 +264,7 @@ const reviewAvatar = (review: Review) =>
               <Quote
                 text={review.text}
                 name={review.name}
-                meta={review.meta}
+                meta={reviewMeta(review)}
                 avatar={reviewAvatar(review)}
                 size="regular"
                 mark="none"
@@ -298,7 +301,7 @@ const reviewAvatar = (review: Review) =>
                   <Quote
                     text={review.text}
                     name={review.name}
-                    meta={review.meta}
+                    meta={reviewMeta(review)}
                     avatar={reviewAvatar(review)}
                     size="regular"
                     mark="none"
@@ -329,7 +332,7 @@ const reviewAvatar = (review: Review) =>
               <Quote
                 text={review.text}
                 name={review.name}
-                meta={review.meta}
+                meta={reviewMeta(review)}
                 avatar={reviewAvatar(review)}
                 size="regular"
                 mark="none"

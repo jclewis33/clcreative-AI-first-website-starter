@@ -1,0 +1,7 @@
+{
+  "name": "Sample Reviewer Two",
+  "rating": 5,
+  "text": "Placeholder review: reviews on the site are written in this folder, one file each.",
+  "platform": "google",
+  "order": 20
+}

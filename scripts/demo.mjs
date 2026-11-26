@@ -3,31 +3,40 @@
 /**
  * Prospect demo generator — `npm run demo -- --config demo.json`
  * ════════════════════════════════════════════════════════════════════════════
- * Turns one `demo.json` (a prospect's name, contact details, brand, copy,
- * services and photos — see presets/<preset>/preset.mjs for the shape) into
- * a branded demo site, on a `demo/<slug>` branch of the PRIVATE demos repo.
- * The /demo skill (.claude/skills/demo) researches the prospect and writes
- * demo.json; this script does every file write, the same way every time.
+ * Turns one `demo.json` (a prospect's facts — name, contact details, brand,
+ * rating — and their repeated content: services, regions, reviews, FAQs,
+ * projects; see presets/<preset>/preset.mjs for the shape) into a branded
+ * demo site, on a `demo/<slug>` branch of the PRIVATE demos repo. The /demo
+ * skill (.claude/skills/demo) researches the prospect and writes demo.json;
+ * this script does every file write, the same way every time. Page copy is
+ * never in demo.json: it is written in the pages.
  *
- * What it writes (every step regenerates its files whole, so re-running
- * after an edit to demo.json is the normal way to change a demo):
+ * What it writes (every step but 0 regenerates its files whole, so
+ * re-running after an edit to demo.json is the normal way to change them):
+ *   0. Pages — the preset's pages (and audiencePage's) copied into
+ *      src/pages, only where no page is there yet: once a page exists it
+ *      is the demo's, and a re-run never touches it. The one exception is
+ *      the first run on a fresh starter (SITE.demo and SITE.quote both
+ *      null), where the preset's home and contact pages replace the
+ *      starter's own. First, before anything else is written.
  *   1. Images — each source (a path relative to demo.json, or an https URL)
- *      converted to webp: home photos → src/assets/demo/, service photos →
- *      src/content/services/images/. Logo → public/images/logo.<ext>, plus
- *      favicon.png, webclip.png and og-image.png (from the hero photo).
+ *      converted to webp beside the content file that uses it. Logo →
+ *      public/images/logo.<ext>, plus favicon.png, webclip.png and
+ *      og-image.png (from seo.image). The service-area map (src/data/).
  *   2. Identity — scripts/setup.mjs --config (name, phone, hours, brand
- *      colour and its contrast text, service areas, logo, social, …).
- *   3. Services — src/content/services/*.json replaced by the prospect's.
- *   4. Home — src/data/home.ts (LocalServiceHomeData) and the default
- *      process steps (src/data/process.ts).
- *   5. Pages — the preset's pages copied into src/pages; their PAGES
- *      descriptions updated. A page of the same name in `pages/` beside
- *      demo.json (e.g. demo/pages/index.astro) is installed instead: the
- *      demo's hand-built page, which a re-run keeps.
- *   6. The demo switch — DEMO in src/config/demo.shared.mjs: whole-site
+ *      colour and its contrast text, service areas, logo, social, the
+ *      estimate CTA, …), then SITE.rating and SITE.serviceRadius.
+ *   3. Collections — src/content/services, service-areas, reviews, faqs
+ *      and projects replaced by the prospect's; settings.json `process`
+ *      (removed when demo.json has none).
+ *   4. The nav — PAGES descriptions in site-structure.ts and the preset's
+ *      extra pages in src/data/preset-pages.ts.
+ *   5. The demo switch — `demo` in SITE (src/config/site.ts): whole-site
  *      noindex, the "Built for …" banner, nav pruning, the lead fallback.
- *   7. Prettier on what it wrote, then `astro sync` (the content schema
+ *   6. Prettier on what it wrote, then `astro sync` (the content schema
  *      names any bad service field) and `astro check`.
+ * Every run ends by naming each installed page that is still exactly the
+ * preset's scaffold (its copy claims nothing about the business).
  * Git is left to the caller: review the diff, commit, push.
  *
  * Defaults shared by every demo live in `demo.defaults.json` at the repo
@@ -51,7 +60,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { parseJsonc } from "./lib/jsonc.mjs";
-import { serviceAreaGeo } from "./lib/service-area-geo.mjs";
+import { buildMap } from "./lib/service-area-geo.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const at = (/** @type {string[]} */ ...rel) => path.join(ROOT, ...rel);
@@ -110,6 +119,13 @@ async function load() {
       `${configPath} could not be read as JSON: ${/** @type {Error} */ (err).message}`,
     );
   }
+  // An old demo.json carried the page copy; it now lives in the pages.
+  for (const key of ["home", "audience"])
+    if (raw && typeof raw === "object" && key in raw)
+      fail(
+        `demo.json has "${key}": page copy now lives in the pages (src/pages/*.astro), not demo.json.\n` +
+          `  Move the copy into the pages, and reviews, FAQs, process and rating into the top-level keys (presets/local-service/README.md).`,
+      );
   const presetDir = at(`presets/${raw?.preset}`);
   if (!raw?.preset || !existsSync(path.join(presetDir, "preset.mjs")))
     fail(`demo.json › preset: "${raw?.preset}" is not a folder in presets/.`);
@@ -251,6 +267,17 @@ function luminance(/** @type {string} */ hex) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+/** Platform names a review's `meta` can carry ("Google review"). */
+const REVIEW_PLATFORMS = /** @type {const} */ ([
+  ["google", /google/i],
+  ["facebook", /facebook/i],
+  ["yelp", /yelp/i],
+  ["angi", /\bangi\b|angie'?s list|homeadvisor/i],
+  ["nextdoor", /nextdoor/i],
+  ["thumbtack", /thumbtack/i],
+  ["bbb", /\bbbb\b|better business/i],
+]);
+
 async function main() {
   const { demo, defaults, preset, presetDir, baseDir } = await load();
   const { worker } = preflight(demo);
@@ -264,113 +291,94 @@ async function main() {
           'Set "workersSubdomain" (or "siteUrl") in demo.defaults.json — the demo needs its preview URL for canonical links and the share image.',
         );
   const img = (/** @type {string} */ src) => source(src, baseDir);
+  // The starter as it ships — not yet a demo, not yet a local-service site:
+  // the only run that may replace existing pages (step 0).
+  const startSite = readFileSync(at("src/config/site.ts"), "utf8");
+  const freshStarter =
+    /\n {2}demo: null as /.test(startSite) &&
+    /\n {2}quote: null as /.test(startSite);
 
-  // 1a. Home photos.
-  await emptyDir("src/assets/demo");
-  const home = structuredClone(demo.home);
-  /** @type {Array<[string, string]>} identifier → asset path */
-  const homeImports = [];
-  /** @param {any} holder @param {string} key @param {string} id */
-  async function homeImage(holder, key, id, width = 2400) {
-    if (!holder?.[key]) return;
-    const rel = `src/assets/demo/${id}.webp`;
-    await write(rel, await webp(await img(holder[key]), width));
-    homeImports.push([
-      `${id.replace(/-(\w)/g, (_, c) => c.toUpperCase())}Image`,
-      rel,
-    ]);
-    holder[key] = `__IMAGE_${homeImports.length - 1}__`;
+  // 0. The preset's pages, each only where src/pages has none yet: once a
+  // page is there it is the demo's own, and a re-run leaves it alone. On
+  // the first run (the starter as it ships) the preset's home and contact
+  // pages replace the starter's. This runs before any other write, so a
+  // run that fails later (a missing photo, after setup.mjs has set
+  // SITE.quote) has already installed them, and the re-run that follows
+  // the fix is not mistaken for a branch with pages of its own.
+  /** @type {Array<{ from: string; to: string; replacesStarter: boolean }>} */
+  const pages = [
+    ...preset.PAGES.filter(
+      (/** @type {{ when?: (d: any) => boolean }} */ page) =>
+        !page.when || page.when(demo),
+    ).map((/** @type {{ from: string; to: string }} */ page) => ({
+      from: page.from,
+      to: page.to,
+      replacesStarter: true,
+    })),
+    ...(demo.audiencePage
+      ? [
+          {
+            from: "audience.astro",
+            to: `src/pages/${demo.audiencePage.path}.astro`,
+            replacesStarter: false,
+          },
+        ]
+      : []),
+  ];
+  for (const page of pages) {
+    if (existsSync(at(page.to)) && !(freshStarter && page.replacesStarter))
+      continue;
+    console.log(`  ${page.to}: installed from presets/${demo.preset}`);
+    await write(
+      page.to,
+      await fs.readFile(path.join(presetDir, page.from), "utf8"),
+    );
   }
-  await homeImage(home.hero, "image", "hero");
-  await homeImage(home.hero, "imageBackdrop", "hero-backdrop", 1600);
-  await homeImage(home.process, "image", "process");
-  await homeImage(home.photoBand, "image", "photo-band");
-  await homeImage(home.story, "image", "story");
-  await homeImage(home.story, "inset", "story-inset", 1600);
-  await homeImage(home.faqs?.help, "image", "faq-help", 1200);
-  await homeImage(home.why, "image", "why");
-  await homeImage(home.office, "image", "office");
-  await homeImage(home.profile, "image", "profile", 1600);
-  await homeImage(home.about, "image", "about");
-  await homeImage(home.about, "imageBackdrop", "about-backdrop", 1600);
-  await homeImage(home.about, "storyImage", "about-story");
-  await homeImage(home.contact, "image", "contact");
-  await homeImage(home.callBand, "image", "call-band");
-  for (const [i, job] of (home.recentWork?.items ?? []).entries())
-    await homeImage(job, "image", `work-${i + 1}`, 1600);
-  for (const [i, pic] of (home.spotlight?.images ?? []).entries())
-    await homeImage(pic, "image", `spotlight-${i + 1}`, 1600);
-  for (const [i, pair] of (home.beforeAfter?.items ?? []).entries()) {
-    await homeImage(pair, "before", `before-${i + 1}`, 1600);
-    await homeImage(pair, "after", `after-${i + 1}`, 1600);
-  }
-  for (const [i, member] of (home.team?.members ?? []).entries())
-    await homeImage(member, "image", `team-${i + 1}`, 800);
-  for (const [i, badge] of (home.hero.trust ?? []).entries())
-    await homeImage(badge, "image", `trust-${i + 1}`, 320);
 
-  // 1a'. The service-area street map: each town's real boundary from
-  // OpenStreetMap, cached beside demo.json (service-area.geo.json) so a
-  // re-run — and check:demo — needs no network. Written to
-  // src/data/service-area-geo.json, which the home page, the service pages
-  // and the town pages all read. A failed lookup only costs the map.
-  /** @type {unknown[]} */
-  let areaGeo = [];
+  // 1a. The service-area street map: each town's real boundary from
+  // OpenStreetMap (scripts/lib/service-area-geo.mjs, the same function
+  // `npm run map` runs), written to src/data/service-area-geo.json (the
+  // home page, the service pages and the region pages read it) and
+  // src/data/service-radius.json ("within 60 miles of Palmer"). The lookup
+  // cache is `npm run map`'s own, src/data/service-area-geo.cache.json,
+  // so a re-run and a later `npm run map` share it. A
+  // service-area.geo.json beside demo.json (an older demo's cache, or the
+  // fixture's, so check:demo needs no network) seeds it with any town it
+  // lacks. A failed lookup only costs the map.
+  const geoCache = at("src/data/service-area-geo.cache.json");
+  const readCache = (/** @type {string} */ file) =>
+    existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {};
+  const haveCache = readCache(geoCache);
+  const seededCache = {
+    ...readCache(path.join(baseDir, "service-area.geo.json")),
+    ...haveCache,
+  };
+  /* A dry run writes nothing in the repo: it looks up from a scratch copy. */
+  const cacheFile = DRY_RUN
+    ? path.join(os.tmpdir(), `demo-geo-cache-${process.pid}.json`)
+    : geoCache;
+  if (
+    DRY_RUN ||
+    Object.keys(seededCache).length > Object.keys(haveCache).length
+  )
+    await fs.writeFile(cacheFile, `${JSON.stringify(seededCache)}\n`);
+  written.add("src/data/service-area-geo.cache.json");
+  let map;
   try {
-    areaGeo = await serviceAreaGeo(
-      demo.serviceAreas,
-      demo.contact.region,
-      path.join(baseDir, "service-area.geo.json"),
-      (m) => console.warn(`! ${m}`),
-    );
-  } catch (err) {
-    console.warn(
-      `! Service-area map skipped: ${/** @type {Error} */ (err).message}`,
-    );
+    map = await buildMap({
+      areas: demo.serviceAreas,
+      radius: demo.serviceRadius ?? null,
+      region: demo.contact.region,
+      cacheFile,
+      warn: (m) => console.warn(`! ${m}`),
+    });
+  } finally {
+    if (DRY_RUN) await fs.rm(cacheFile, { force: true });
   }
-  await write("src/data/service-area-geo.json", `${JSON.stringify(areaGeo)}\n`);
-
-  // The service radius ("within 60 miles of Palmer"): its centre town looked
-  // up like the others (same cache), then the middle of its outline.
-  /** @type {{ lat: number; lng: number; miles: number } | null} */
-  let serviceRadius = null;
-  if (demo.serviceRadius) {
-    try {
-      const [hit] = await serviceAreaGeo(
-        [demo.serviceRadius.center],
-        demo.contact.region,
-        path.join(baseDir, "service-area.geo.json"),
-        (m) => console.warn(`! ${m}`),
-      );
-      if (hit) {
-        /** @type {number[][]} */
-        const points = [];
-        const walk = (/** @type {unknown} */ c) =>
-          Array.isArray(c) && typeof c[0] === "number"
-            ? points.push(/** @type {number[]} */ (c))
-            : Array.isArray(c) && c.forEach(walk);
-        walk(
-          /** @type {{ coordinates: unknown }} */ (hit.geometry).coordinates,
-        );
-        const lngs = points.map((p) => p[0]);
-        const lats = points.map((p) => p[1]);
-        const mid = (/** @type {number[]} */ v) =>
-          Math.round(((Math.min(...v) + Math.max(...v)) / 2) * 1e4) / 1e4;
-        serviceRadius = {
-          lat: mid(lats),
-          lng: mid(lngs),
-          miles: demo.serviceRadius.miles,
-        };
-      }
-    } catch (err) {
-      console.warn(
-        `! Service radius skipped: ${/** @type {Error} */ (err).message}`,
-      );
-    }
-  }
+  await write("src/data/service-area-geo.json", `${JSON.stringify(map.geo)}\n`);
   await write(
     "src/data/service-radius.json",
-    `${JSON.stringify(serviceRadius)}\n`,
+    `${JSON.stringify(map.radius)}\n`,
   );
 
   // 1b. Logo, favicon, webclip, share image.
@@ -414,7 +422,7 @@ async function main() {
   await write("public/images/webclip.png", await square(180, true));
   await write(
     "public/images/og-image.png",
-    await sharp(await img(demo.home.hero.image))
+    await sharp(await img(demo.seo.image))
       .rotate()
       .resize(1200, 630, { fit: "cover" })
       // A palette PNG: a photo as full-colour PNG is over 1 MB.
@@ -477,22 +485,15 @@ async function main() {
       plate: demo.brand.logo.plate,
     },
     // Local-service chrome: the look, the site-wide estimate CTA (nav,
-    // mobile bar, modal) from home.estimate, and the license line.
+    // mobile bar, modal), the license line and the audience page's button.
     look: demo.look,
-    quote: {
-      label: demo.home.estimate.label,
-      heading: demo.home.estimate.heading,
-      ...(demo.home.estimate.text ? { text: demo.home.estimate.text } : {}),
-      ...(demo.home.estimate.question
-        ? { question: demo.home.estimate.question }
-        : {}),
-      ...(demo.home.estimate.questions
-        ? { questions: demo.home.estimate.questions }
-        : {}),
-    },
+    quote: demo.quote,
     license: demo.license ?? "",
-    navSecondaryCta: demo.audience?.navButton
-      ? { label: demo.audience.navButton, href: `/${demo.audience.path}` }
+    navSecondaryCta: demo.audiencePage?.navButton
+      ? {
+          label: demo.audiencePage.navButton,
+          href: `/${demo.audiencePage.path}`,
+        }
       : null,
   };
   const answersFile = path.join(
@@ -544,7 +545,92 @@ async function main() {
       /(\btexts\s*:\s*)(?:true|false)/,
       (_, lead) => `${lead}${demo.contact.texts ? "true" : "false"}`,
     );
+    // The map's radius and the public rating live in SITE too. A site.ts
+    // without the line (renamed, reformatted) fails rather than keeping the
+    // old value.
+    for (const [key, value] of [
+      ["serviceRadius", demo.serviceRadius ?? null],
+      ["rating", demo.rating ?? null],
+    ]) {
+      const pattern = new RegExp(
+        `(\\n  ${key}: )(?:null|\\{[^}]*\\})(\\s+as\\s)`,
+      );
+      if (!pattern.test(site))
+        fail(`src/config/site.ts has no \`${key}: … as …\` line to write.`);
+      site = site.replace(
+        pattern,
+        (_, lead, tail) => `${lead}${JSON.stringify(value)}${tail}`,
+      );
+    }
     await fs.writeFile(at("src/config/site.ts"), site);
+  }
+
+  // 3a. Reviews — one file each in src/content/reviews: the site's
+  // reviews, then each service's own, tagged with that service. A review in
+  // both places is one file with every service it belongs to.
+  await emptyDir("src/content/reviews", /^images$/);
+  await emptyDir("src/content/reviews/images");
+  /** @type {Map<string, Record<string, any>>} */
+  const reviewFiles = new Map();
+  const reviewIds = new Set();
+  /** The platform named in a review's `meta`; google when it has no meta. */
+  const platformOf = (/** @type {string | undefined} */ meta) =>
+    !meta
+      ? "google"
+      : (REVIEW_PLATFORMS.find(([, pattern]) => pattern.test(meta))?.[0] ??
+        "google");
+  const addReview = (
+    /** @type {Record<string, any>} */ review,
+    /** @type {string | undefined} */ serviceId,
+  ) => {
+    const key = `${review.name}\n${review.text}`;
+    const have = reviewFiles.get(key);
+    if (have) {
+      if (serviceId && !have.services?.includes(serviceId))
+        (have.services ??= []).push(serviceId);
+      return;
+    }
+    const base =
+      review.name
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "review";
+    let id = base;
+    for (let n = 2; reviewIds.has(id); n++) id = `${base}-${n}`;
+    reviewIds.add(id);
+    reviewFiles.set(key, {
+      id,
+      name: review.name,
+      rating: review.rating ?? 5,
+      text: review.text,
+      ...(review.full ? { full: review.full } : {}),
+      ...(review.date ? { date: review.date } : {}),
+      ...(review.meta ? { meta: review.meta } : {}),
+      ...(review.role ? { role: review.role } : {}),
+      ...(review.avatar ? { avatar: review.avatar } : {}),
+      ...(review.avatarAlt ? { avatarAlt: review.avatarAlt } : {}),
+      platform: platformOf(review.meta),
+      ...(review.featured ? { featured: true } : {}),
+      ...(serviceId ? { services: [serviceId] } : {}),
+      order: reviewFiles.size,
+    });
+  };
+  for (const review of demo.reviews) addReview(review, undefined);
+  for (const entry of demo.services)
+    for (const review of entry.reviews ?? []) addReview(review, entry.slug);
+  for (const { id, ...review } of reviewFiles.values()) {
+    if (review.avatar) {
+      await write(
+        `src/content/reviews/images/${id}.webp`,
+        await webp(await img(review.avatar), 256),
+      );
+      review.avatar = `./images/${id}.webp`;
+    }
+    await write(
+      `src/content/reviews/${id}.json`,
+      `${JSON.stringify(review, null, 2)}\n`,
+    );
   }
 
   // 3. Services.
@@ -565,14 +651,12 @@ async function main() {
       return `./images/${file}`;
     };
     service.order ??= (index + 1) * 10;
-    // A service with no reviews of its own shows the business's (home)
-    // reviews and rating: real reviews belong on every service page.
-    if (!service.reviews?.length && demo.home.reviews?.items?.length)
-      service.reviews = structuredClone(demo.home.reviews.items);
-    if (!service.reviewSummary && demo.home.reviews?.rating)
+    // Reviews live in src/content/reviews (step 3a), not in the service.
+    delete service.reviews;
+    if (!service.reviewSummary && demo.rating)
       service.reviewSummary = {
-        rating: demo.home.reviews.rating,
-        ...(demo.home.reviews.count ? { count: demo.home.reviews.count } : {}),
+        rating: demo.rating.value,
+        count: demo.rating.count,
       };
     service.cardImage = await image(service.cardImage, "card", 2400);
     service.hero.image = await image(service.hero.image, "hero", 2400);
@@ -596,9 +680,6 @@ async function main() {
       );
     for (const [i, item] of (service.work?.items ?? []).entries())
       item.image = await image(item.image, `work-${i + 1}`, 1600);
-    for (const [i, review] of (service.reviews ?? []).entries())
-      if (review.avatar)
-        review.avatar = await image(review.avatar, `review-${i + 1}`, 256);
     await write(
       `src/content/services/${id}.json`,
       `${JSON.stringify(service, null, 2)}\n`,
@@ -662,158 +743,57 @@ async function main() {
     await write("src/content/gallery.json", "[]\n");
   }
 
-  // 3d. The audience page (contractors, property managers): its data in
-  // src/data/audience.ts and the page at its own path. A page from an
-  // earlier run (marked GENERATED AUDIENCE PAGE) goes first, so a changed
-  // path leaves nothing behind.
-  const AUDIENCE_MARK = "GENERATED AUDIENCE PAGE";
-  if (!DRY_RUN)
-    for (const f of await fs.readdir(at("src/pages")))
-      if (
-        f.endsWith(".astro") &&
-        (await fs.readFile(at("src/pages", f), "utf8")).includes(AUDIENCE_MARK)
-      )
-        await fs.rm(at("src/pages", f));
-  const audiencePage = demo.audience
-    ? `src/pages/${demo.audience.path}.astro`
-    : null;
-  if (audiencePage && existsSync(at(audiencePage)) && !DRY_RUN)
-    fail(
-      `audience.path "${demo.audience.path}" is already a page (${audiencePage}) — pick another path.`,
-    );
-  if (demo.audience) {
-    // `group` and `navButton` are nav settings, not page data.
-    const {
-      group: _group,
-      navButton: _navButton,
-      ...audience
-    } = structuredClone(demo.audience);
-    audience.path = `/${audience.path}`;
-    /** @type {Array<[string, string]>} identifier → asset path */
-    const audienceImports = [];
-    /** @param {any} holder @param {string} key @param {string} id */
-    const audienceImage = async (holder, key, id) => {
-      if (!holder?.[key]) return;
-      const rel = `src/assets/demo/audience-${id}.webp`;
-      await write(rel, await webp(await img(holder[key])));
-      audienceImports.push([
-        `audience${id[0].toUpperCase()}${id.slice(1)}Image`,
-        rel,
-      ]);
-      holder[key] = `__AUDIENCE_IMAGE_${audienceImports.length - 1}__`;
-    };
-    await audienceImage(audience.hero, "image", "hero");
-    await audienceImage(audience.scope, "image", "scope");
-    await audienceImage(audience.capability, "image", "capability");
-    for (const [i, extra] of (audience.projects?.extras ?? []).entries())
-      await audienceImage(extra, "image", `extra${i + 1}`);
-    let audienceJson = JSON.stringify(audience, null, 2);
-    audienceImports.forEach(([id], i) => {
-      audienceJson = audienceJson.replace(`"__AUDIENCE_IMAGE_${i}__"`, id);
-    });
+  // 3d. The site-wide process steps: settings.json's `process` (the file's
+  // other keys stay). Without demo.process there are none, so the sections
+  // that show them skip: never the starter's sample steps.
+  if (!DRY_RUN) {
+    const settingsFile = at("src/content/settings.json");
+    const settings = JSON.parse(await fs.readFile(settingsFile, "utf8"));
+    if (demo.process) {
+      const { heading, text, steps } = demo.process;
+      settings.site.process = {
+        heading,
+        ...(text ? { text } : {}),
+        steps: steps.map(
+          (/** @type {{ title: string; text: string }} */ step) => ({
+            title: step.title,
+            text: step.text,
+          }),
+        ),
+      };
+    } else delete settings.site.process;
     await write(
-      "src/data/audience.ts",
-      `/**
- * The audience page's content — GENERATED by \`npm run demo\` from
- * demo.json (\`audience\`). Edit demo.json and re-run the script.
- */
-import type { LocalServiceAudienceData } from "@/lib/local-service-audience";
-${audienceImports.map(([id, rel]) => `import ${id} from "@/${rel.replace(/^src\//, "")}";`).join("\n")}
-
-export const AUDIENCE = ${audienceJson} satisfies LocalServiceAudienceData;
-`,
-    );
-    await write(
-      /** @type {string} */ (audiencePage),
-      await fs.readFile(path.join(presetDir, "audience.astro"), "utf8"),
-    );
-  } else if (!DRY_RUN) {
-    await fs.rm(at("src/data/audience.ts"), { force: true });
-  }
-
-  // 4. Home data and the default process steps.
-  home.title ??= `${name} | ${demo.seo.tagline}`;
-  home.description ??= demo.seo.description;
-  let homeJson = JSON.stringify(home, null, 2);
-  homeImports.forEach(([id], i) => {
-    homeJson = homeJson.replace(`"__IMAGE_${i}__"`, id);
-  });
-  await write(
-    "src/data/home.ts",
-    `/**
- * The home page's content — GENERATED by \`npm run demo\` from demo.json.
- * Edit demo.json and re-run the script; changes made here are overwritten.
- */
-import type { LocalServiceHomeData } from "@/lib/local-service-home";
-${homeImports.map(([id, rel]) => `import ${id} from "@/${rel.replace(/^src\//, "")}";`).join("\n")}
-
-export const HOME = ${homeJson} satisfies LocalServiceHomeData;
-`,
-  );
-  if (demo.home.process) {
-    await write(
-      "src/data/process.ts",
-      `/**
- * The default "how it works" steps every service page shows when its own
- * file doesn't set \`process\`. GENERATED by \`npm run demo\` from demo.json
- * (home.process) — edit demo.json and re-run the script.
- */
-export const DEFAULT_PROCESS = ${JSON.stringify(
-        { heading: demo.home.process.heading, steps: demo.home.process.steps },
-        null,
-        2,
-      )};
-`,
+      "src/content/settings.json",
+      `${JSON.stringify(settings, null, 2)}\n`,
     );
   }
 
-  // 5. The preset's pages, and their registry descriptions.
-  for (const page of preset.PAGES) {
-    if (page.when && !page.when(demo)) {
-      if (!DRY_RUN) await fs.rm(at(page.to), { force: true });
-      continue;
-    }
-    const custom = path.join(baseDir, "pages", page.from);
-    const own = await fs.stat(custom).then(
-      () => true,
-      () => false,
-    );
-    if (own)
-      console.log(`  ${page.to}: the demo's own page (pages/${page.from})`);
+  // 3e. The site-wide FAQs: one file each in src/content/faqs, word for
+  // word, named for the question, in source order.
+  await emptyDir("src/content/faqs");
+  const faqIds = new Set();
+  for (const [position, faq] of demo.faqs.entries()) {
+    const base =
+      faq.question
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80)
+        .replace(/-+$/g, "") || "faq";
+    let id = base;
+    for (let n = 2; faqIds.has(id); n++) id = `${base}-${n}`;
+    faqIds.add(id);
     await write(
-      page.to,
-      await fs.readFile(own ? custom : path.join(presetDir, page.from), "utf8"),
+      `src/content/faqs/${id}.json`,
+      `${JSON.stringify({ question: faq.question, answer: faq.answer, order: position }, null, 2)}\n`,
     );
   }
-  // Any other page in pages/ beside demo.json is installed at the same path
-  // under src/pages (pages/services/[slug].astro replaces the service
-  // route). Delete the file and restore the starter's route to undo.
-  {
-    const ownDir = path.join(baseDir, "pages");
-    const presetFiles = new Set(
-      preset.PAGES.map((/** @type {{ from: string }} */ p) => p.from),
-    );
-    /** @param {string} dir @param {string} rel */
-    const install = async (dir, rel) => {
-      const entries = await fs
-        .readdir(dir, { withFileTypes: true })
-        .catch(() => []);
-      for (const entry of entries) {
-        const childRel = rel ? `${rel}/${entry.name}` : entry.name;
-        const child = path.join(dir, entry.name);
-        if (entry.isDirectory()) await install(child, childRel);
-        else if (!(rel === "" && presetFiles.has(entry.name))) {
-          console.log(`  src/pages/${childRel}: the demo's own page`);
-          await write(
-            `src/pages/${childRel}`,
-            await fs.readFile(child, "utf8"),
-          );
-        }
-      }
-    };
-    await install(ownDir, "");
-  }
-  const hasReviewsPage = Boolean(demo.home.reviews?.items?.length);
+
+  // 4a. The nav: the PAGES descriptions of the home and contact pages.
+  const hasPage = (/** @type {string} */ to) =>
+    existsSync(at(to)) || pages.some((page) => page.to === to);
+  const hasReviewsPage = hasPage("src/pages/reviews.astro");
   {
     let structure = await fs.readFile(at("src/data/site-structure.ts"), "utf8");
     for (const [pagePath, desc] of [
@@ -832,14 +812,16 @@ export const DEFAULT_PROCESS = ${JSON.stringify(
     }
     await write("src/data/site-structure.ts", structure);
   }
-  // The preset's extra pages in the nav, the footer and llms.txt — a
+  // 4b. The preset's extra pages in the nav, the footer and llms.txt — a
   // generated file site-structure.ts merges in, so the registry itself is
   // never rewritten beyond the descriptions above.
   {
     const aboutDesc =
-      demo.home.about?.description ?? `Who ${name} is and how we work.`;
-    const audiencePath = demo.audience ? `/${demo.audience.path}` : null;
-    const audienceGroup = demo.audience?.group;
+      demo.aboutDescription ?? `Who ${name} is and how we work.`;
+    const audiencePath = demo.audiencePage
+      ? `/${demo.audiencePage.path}`
+      : null;
+    const audienceGroup = demo.audiencePage?.group;
     const navPaths = [
       ...(audiencePath && !audienceGroup ? [audiencePath] : []),
       ...(demo.projects ? ["/projects"] : []),
@@ -863,12 +845,12 @@ import type { FooterLink, NavMenuItem, SitePage } from "./site-structure";
 import type { ProjectsPageCopy } from "./preset-pages-types";
 
 export const PRESET_PAGES: SitePage[] = [${
-        demo.audience
+        demo.audiencePage
           ? `
   {
     path: ${JSON.stringify(audiencePath)},
-    title: ${JSON.stringify(demo.audience.navLabel)},
-    desc: ${JSON.stringify(demo.audience.description)},
+    title: ${JSON.stringify(demo.audiencePage.navLabel ?? "For contractors")},
+    desc: ${JSON.stringify(demo.audiencePage.desc ?? `${name}: work for contractors and property managers.`)},
     group: "main",
   },`
           : ""
@@ -892,8 +874,8 @@ export const PRESET_PAGES: SitePage[] = [${
 ];
 export const PRESET_NAV: NavMenuItem[] = ${JSON.stringify(
         navPaths.map((p) =>
-          p === "/about" && demo.home.about?.navLabel
-            ? { path: p, label: demo.home.about.navLabel }
+          p === "/about" && demo.aboutNavLabel
+            ? { path: p, label: demo.aboutNavLabel }
             : { path: p },
         ),
       )};
@@ -904,12 +886,9 @@ export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(de
     );
   }
 
-  // 6. The demo switch.
+  // 5. The demo switch — SITE.demo in src/config/site.ts.
   {
-    const switchFile = await fs.readFile(
-      at("src/config/demo.shared.mjs"),
-      "utf8",
-    );
+    const siteSource = await fs.readFile(at("src/config/site.ts"), "utf8");
     const config = {
       slug,
       prospect: name,
@@ -922,25 +901,45 @@ export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(de
       bannerText: fill(defaults.bannerText ?? DEFAULT_BANNER_TEXT, vars),
       bannerHref: fill(defaults.bannerHref ?? DEFAULT_BANNER_HREF, vars),
     };
-    if (!/export const DEMO = /.test(switchFile))
-      fail("src/config/demo.shared.mjs has no `export const DEMO =`.");
+    const value = `{\n${Object.entries(config)
+      .map(([key, v]) => `    ${key}: ${JSON.stringify(v)},`)
+      .join("\n")}\n  }`;
+    const switchPattern =
+      /(\n  demo: )(?:null|\{[\s\S]*?\n  \})( as DemoConfig \| null,)/;
+    if (!switchPattern.test(siteSource))
+      fail("src/config/site.ts has no `demo: … as DemoConfig | null,`.");
     await write(
-      "src/config/demo.shared.mjs",
-      switchFile.replace(
-        /export const DEMO = [\s\S]*$/,
-        () => `export const DEMO = ${JSON.stringify(config, null, 2)};\n`,
+      "src/config/site.ts",
+      siteSource.replace(
+        switchPattern,
+        (_, lead, tail) => `${lead}${value}${tail}`,
       ),
     );
   }
 
+  /* The preset's pages are a scaffold that claims nothing about the
+     business: every run names each one still exactly as installed. */
+  const warnScaffold = () => {
+    for (const page of pages)
+      if (
+        existsSync(at(page.to)) &&
+        readFileSync(at(page.to), "utf8") ===
+          readFileSync(path.join(presetDir, page.from), "utf8")
+      )
+        console.warn(
+          `! ${page.to}: still the scaffold copy — rewrite from the business's facts.`,
+        );
+  };
+
   if (DRY_RUN) {
+    warnScaffold();
     console.log(
       `✓ demo.json is valid. Would write ${written.size} files for ${name} (${siteUrl}).`,
     );
     return;
   }
 
-  // 7. Format, then validate with the real content schema and types.
+  // 6. Format, then validate with the real content schema and types.
   const formattable = [...written].filter((f) =>
     /\.(astro|ts|mjs|css)$/.test(f),
   );
@@ -953,6 +952,7 @@ export const PRESET_PROJECTS_PAGE: ProjectsPageCopy | null = ${JSON.stringify(de
       quiet: true,
     });
 
+  warnScaffold();
   const confirm = demo.notes.confirmOrCut;
   console.log(`
 ✓ Demo written for ${name}

@@ -69,7 +69,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-import { DEMO } from "@/config/demo.shared.mjs";
+import { SITE } from "@/config/site";
 import { SERVICE_NAV, serviceMenus } from "@/lib/service-nav";
 import { AREA_NAV, SERVICE_AREAS_PATH } from "@/lib/area-nav";
 import {
@@ -266,12 +266,12 @@ export type NavMenuItem = NavMenuLink | NavMenuDropdown;
    so registering them there would publish a dev gallery to a production
    artifact. Add `/style-guide` here the same way if you want it linked too. */
 /* ── Demo pruning ───────────────────────────────────────────────────────────
-   A prospect demo (src/config/demo.shared.mjs) drops the links in
-   `DEMO.hiddenPaths` — the sample blog, case studies and so on — from the nav
+   A prospect demo (SITE.demo in src/config/site.ts) drops the links in
+   `SITE.demo.hiddenPaths` — the sample blog, case studies and so on — from the nav
    and footer. The pages still build (noindex, like the rest of a demo); they
    just aren't linked. A dropdown or footer group left empty disappears. On a
-   real site DEMO is null and both helpers return their input untouched. */
-const HIDDEN_PATHS = new Set<string>(DEMO?.hiddenPaths ?? []);
+   real site SITE.demo is null and both helpers return their input untouched. */
+const HIDDEN_PATHS = new Set<string>(SITE.demo?.hiddenPaths ?? []);
 const isShown = (path: string) => !HIDDEN_PATHS.has(path);
 
 function pruneNav(items: NavMenuItem[]): NavMenuItem[] {
@@ -346,7 +346,7 @@ const DEV_FOOTER_LINKS: FooterLink[] = import.meta.env.DEV
  * client tools), so a
  * prospect can open them. Empty on a real site.
  */
-const DEMO_FOOTER_GROUPS: FooterGroup[] = DEMO
+const DEMO_FOOTER_GROUPS: FooterGroup[] = SITE.demo
   ? [
       {
         title: "Also included",
@@ -429,11 +429,11 @@ export const BANNER: {
 /**
  * Resolve the banner for a given pathname (override → default). A prospect
  * demo's banner wins over both, on every page — it is how the demo says who
- * built it and where to go next (src/config/demo.shared.mjs).
+ * built it and where to go next (SITE.demo in src/config/site.ts).
  */
 export function resolveBanner(pathname: string): BannerContent | null {
-  if (DEMO) {
-    return { text: DEMO.bannerText, href: DEMO.bannerHref };
+  if (SITE.demo) {
+    return { text: SITE.demo.bannerText, href: SITE.demo.bannerHref };
   }
   const p = pathname.replace(/\/+$/, "") || "/";
   return p in BANNER.overrides ? BANNER.overrides[p] : BANNER.default;

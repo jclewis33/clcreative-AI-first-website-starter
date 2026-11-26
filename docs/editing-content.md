@@ -51,6 +51,8 @@ prints an error naming the file and the field (section 5), and prints
 | Blog CTAs     | `src/content/ctas/blog/<name>.json`     | `src/content/ctas/blog/images/`     |
 | CTA sections  | `src/content/ctas/section/<name>.json`  | `src/content/ctas/section/images/`  |
 | Default CTAs  | `src/content/settings.json`             | —                                   |
+| Reviews       | `src/content/reviews/<name>.json`       | `src/content/reviews/images/`       |
+| FAQs          | `src/content/faqs/<name>.json`          | —                                   |
 | Service pages | `src/content/services/<name>.json`      | `src/content/services/images/`      |
 | Service areas | `src/content/service-areas/<name>.json` | `src/content/service-areas/images/` |
 
@@ -314,13 +316,39 @@ check stops if it is missing or misspelled):
 }
 ```
 
+### Add or edit a review
+
+Copy a file in `src/content/reviews/` and edit `name`, `rating` (4 or 5
+only), `text` (the line the cards show; an excerpt is fine) and `platform`
+(`google`, `facebook`, `yelp`, `angi`, `nextdoor`, `thumbtack` or `bbb`).
+Optional: `full` (the whole review, word for word), `date`, `meta` (the
+line under the name; default "Google review" and so on), `role` (who they
+are), `avatar` + `avatarAlt` (a reviewer photo, kept in
+`src/content/reviews/images/`), `services` (the service files it is about),
+`featured` and `order`. Only real reviews from real customers.
+
+### Add or edit a FAQ
+
+Copy a file in `src/content/faqs/` and edit `question` and `answer` (a
+little HTML is fine: `<strong>`, `<br><br>`, a link). `order` sorts them,
+lowest first. These are the site-wide questions; a service's own questions
+stay in its service file.
+
+### Change the "how it works" steps
+
+The steps every service page shows without its own are `process` in
+`src/content/settings.json`, beside the default CTAs: a `heading`, an
+optional `text`, and at least two `steps`, each with a `title` and `text`.
+
 ### Add or edit a service area
 
 A service area is a **region** — a group of towns, like a county — not a
 single town. Each one is a file in `src/content/service-areas/` and becomes
 `/service-areas/<name>`. Copy a sibling file, rename it, and edit:
 
-- `towns`: the towns in it. Each town belongs to one region only.
+- `towns`: the towns in it. Each town belongs to one region only, and
+  must also be listed in the site's service areas (`SITE.serviceAreas` in
+  `src/config/site.ts`); a town that isn't is a build error naming the file.
 - `local`: a heading and at least two paragraphs written for this region
   (its pests, homes, seasons). Don't copy another region's text.
 - Real local proof when you have it: `facts` (things only a local would

@@ -3,12 +3,14 @@ import type { HTMLAttributes } from "astro/types";
 /**
  * FAQ — two-column layout with heading left, accordion right.
  *
- * Questions come from `src/data/faqs.ts` — a plain TypeScript file, not the
- * CMS. Add or edit them there; nothing else needs touching.
+ * Questions come from the `faqs` collection (`src/content/faqs/`, one file
+ * each; see the content-files skill). Add or edit them there.
  *
- * Pass `items` to control which questions appear. Defaults to `generalFaqs`.
+ * Pass `items` to control which questions appear. Defaults to every FAQ in
+ * the collection (`getFaqs()`). With no questions (an empty collection,
+ * `items={[]}`) or `render={false}`, nothing renders.
  *
- * @example Default (generalFaqs)
+ * @example Default (the faqs collection)
  * ```astro
  * <FAQ />
  * ```
@@ -22,9 +24,9 @@ import type { HTMLAttributes } from "astro/types";
  *
  * @example A page-specific set
  * ```astro
- * // add `export const webDesignFaqs: FAQItem[] = [...]` to src/data/faqs.ts
- * import { webDesignFaqs, generalFaqs } from "@/data/faqs";
- * <FAQ items={[...webDesignFaqs, ...generalFaqs]} />
+ * import type { FAQItem } from "@/lib/faqs";
+ * const pageFaqs: FAQItem[] = [{ question: "…?", answer: "…" }];
+ * <FAQ items={pageFaqs} />
  * ```
  */
 
@@ -39,8 +41,8 @@ import Button from "@/components/ui/Button.astro";
 import type { ImageMetadata } from "astro";
 import { SITE } from "@/config/site";
 
-import type { FAQItem } from "@/data/faqs";
-import { generalFaqs } from "@/data/faqs";
+import type { FAQItem } from "@/lib/faqs";
+import { getFaqs } from "@/lib/faqs";
 
 /* Single source for the padding union: Section.astro — never re-declare
    these values locally; the copies this replaced had all drifted. */
@@ -69,7 +71,8 @@ type FAQHelp = {
 interface Props extends HTMLAttributes<"section"> {
   /**
    * **FAQ props:**
-   * - `items` — array of `{ question, answer }` objects (default: general FAQs). Answers support inline HTML (`<br><br>`, `<strong>`, etc.)
+   * - `render` — `false` skips the section (default `true`); it also skips itself when there are no questions
+   * - `items` — array of `{ question, answer }` objects (default: the faqs collection). Answers support inline HTML (`<br><br>`, `<strong>`, etc.)
    * - `eyebrow` — optional small label rendered above the heading
    * - `heading` — section heading (default: "Frequently Asked Questions").
    *   In `split`, HTML is allowed (`<strong>` = accent)
@@ -90,6 +93,9 @@ interface Props extends HTMLAttributes<"section"> {
    * - Also accepts any HTML attribute (`style`, `data-*`, `aria-*`, etc.) — forwarded to Section
    */
   docs?: string;
+
+  /** Set to `false` to skip rendering. With no questions it renders nothing anyway. @default true */
+  render?: boolean;
 
   items?: FAQItem[];
   eyebrow?: string;
@@ -121,7 +127,8 @@ interface Props extends HTMLAttributes<"section"> {
 
 const {
   docs,
-  items = [...generalFaqs],
+  render = true,
+  items,
   eyebrow,
   heading = "Frequently Asked Questions",
   variant = "default",
@@ -136,9 +143,13 @@ const {
   class: className,
   ...rest
 } = Astro.props;
+const faqItems = render ? (items ?? (await getFaqs())) : [];
 import { linkPhones } from "@/lib/phone-links";
+const show = render && faqItems.length > 0;
 
 if (import.meta.env.DEV) {
+  if (render && !faqItems.length)
+    console.warn("[FAQ] no questions; nothing renders.");
   if (!["default", "split"].includes(variant))
     console.warn(`[FAQ] Unknown variant "${variant}"; using "default".`);
   if (help && variant !== "split")
@@ -153,7 +164,7 @@ const showHelp = isSplit && Boolean(help?.heading && help?.text);
 ---
 
 {
-  isSplit && (
+  show && isSplit && (
     <Section
       theme={theme}
       paddingTop={paddingTop}
@@ -205,7 +216,7 @@ const showHelp = isSplit && Boolean(help?.heading && help?.text);
         )}
         <div slot="column2" class="faq_panel">
           <Accordion openByDefault={openByDefault} closePrevious>
-            {items.map((faq) => (
+            {faqItems.map((faq) => (
               <AccordionItem data-fade-in question={faq.question}>
                 <Text muted>
                   <Fragment set:html={linkPhones(faq.answer)} />
@@ -220,13 +231,13 @@ const showHelp = isSplit && Boolean(help?.heading && help?.text);
 }
 
 {
-  !isSplit && (
+  show && !isSplit && (
     <Section
       theme={theme}
       paddingTop={paddingTop}
       paddingBottom={paddingBottom}
       id={id}
-      class={className}
+      class:list={["faq_wrap", className]}
       {...rest}
     >
       <Layout
@@ -247,7 +258,7 @@ const showHelp = isSplit && Boolean(help?.heading && help?.text);
         {layout === "stacked" && (
           <div class="faq_list">
             <Accordion openByDefault={openByDefault} closePrevious>
-              {items.map((faq) => (
+              {faqItems.map((faq) => (
                 <AccordionItem data-fade-in question={faq.question}>
                   <Text>
                     <Fragment set:html={linkPhones(faq.answer)} />
@@ -261,7 +272,7 @@ const showHelp = isSplit && Boolean(help?.heading && help?.text);
           {layout !== "stacked" && (
             <div>
               <Accordion openByDefault={openByDefault} closePrevious>
-                {items.map((faq) => (
+                {faqItems.map((faq) => (
                   <AccordionItem data-fade-in question={faq.question}>
                     <Text>
                       <Fragment set:html={linkPhones(faq.answer)} />
