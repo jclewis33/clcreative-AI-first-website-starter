@@ -13,6 +13,11 @@
  *
  * The order is the contractor home's: hero, services, symptoms, reviews,
  * map, how it works, story, comparison, lead form, FAQ, call band.
+ *
+ * The copy claims nothing about the business. Lines in [brackets] are
+ * prompts for facts only the business can supply: replace each with what
+ * their site, profile or reviews say, or cut it. `npm run demo` warns on
+ * every run while this page is still the scaffold's.
  */
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Hero from "@/components/sections/Hero.astro";
@@ -69,11 +74,11 @@ const projectOptions = [
   { label: "Something else", value: "other" },
 ];
 
-const trust = [
-  { label: "Licensed & insured" },
-  { label: "Written quotes" },
-  { label: "Local crew" },
-];
+/* Credentials the business really holds: the license shows when SITE has
+   one. Add others (insured, certified) only from their own material. */
+const trust = [{ label: SITE.license ? "Licensed" : "" }].filter(
+  (badge) => badge.label,
+);
 const symptoms = [
   {
     title: "It stopped working",
@@ -97,34 +102,34 @@ const symptoms = [
   },
 ];
 const storyParagraphs = [
-  "We started with one truck and a simple rule: show up when we said we would, and leave the place cleaner than we found it.",
-  "The same family still runs every job, and the person who quotes the work is the person you can call about it.",
+  "[Their story, in the owner's words, from their About page]",
+  "[Who does the work today, and who customers talk to about a job]",
 ];
 const reasons = [
-  { title: "Written quotes", text: "The price is agreed before we start." },
-  { title: "On time", text: "We give you a window and keep it." },
-  { title: "Clean work", text: "Floors covered, mess cleared every day." },
+  { title: "[How they price]", text: "[Only what they offer, in their words]" },
+  { title: "[When they come]", text: "[Only what they promise about timing]" },
+  { title: "[How they work]", text: "[What their reviews say about the job]" },
 ];
 const comparison = [
   {
     label: "Pricing",
-    us: "A written price before any work starts",
-    them: "An hourly rate that keeps running",
+    us: "[How they price the work]",
+    them: "[What customers say they had before]",
   },
   {
     label: "Scheduling",
-    us: "A time window, and a call if we're running late",
-    them: "Sometime between eight and five",
+    us: "[How they schedule and arrive]",
+    them: "[What customers say they had before]",
   },
   {
     label: "Clean-up",
-    us: "Floors covered, mess cleared before we leave",
-    them: "Dust and offcuts left behind",
+    us: "[How they leave the job, from their reviews]",
+    them: "[What customers say they had before]",
   },
   {
     label: "Follow-up",
-    us: "One number to call about the job",
-    them: "Hard to reach once the bill is paid",
+    us: "[Who customers call after the job]",
+    them: "[What customers say they had before]",
   },
 ];
 ---
@@ -136,12 +141,11 @@ const comparison = [
   <Hero
     variant="split"
     eyebrow={`Serving ${SITE.address.locality} and nearby`}
-    heading="Help for your home, <strong>from a local crew</strong>"
-    text="Tell us what's going on. We'll look at it, explain the options and give you a written price before any work starts."
+    heading={`[What they do] in <strong>${SITE.address.locality}</strong>`}
+    text="Tell us what's going on. Give us a call or fill out the form and we'll get back to you."
     image={heroPhoto}
     imageAlt="Two people looking over a page on a desktop computer"
     ctaStyle="panel"
-    ctaNote="No obligation"
     primaryCta={estimateCta}
     proof={proof}
     proofPosition="above"
@@ -168,7 +172,7 @@ const comparison = [
     reviews={reviews}
     rating={rating?.value}
     count={rating?.count}
-    layout="marquee"
+    layout={reviews.length >= 4 ? "marquee" : "cards"}
   />
 
   <ServiceArea
@@ -189,7 +193,7 @@ const comparison = [
 
   <StorySplit
     eyebrow="Why choose us"
-    heading="A local business that answers the phone"
+    heading="[Why customers pick them, in a line from their reviews]"
     paragraphs={storyParagraphs}
     image={storyPhoto}
     imageAlt="A man working at a laptop by a window"
@@ -207,7 +211,7 @@ const comparison = [
   <LeadFormSection
     eyebrow="Get in touch"
     heading="Tell us about the <strong>job</strong>"
-    text="Send the form and we'll call you back."
+    text="Fill out the form and we'll get back to you."
     formId="contact"
     fields="quote"
     projectOptions={projectOptions}
@@ -217,11 +221,10 @@ const comparison = [
 
   <CallBand
     heading="Need a hand with <strong>your home</strong>?"
-    text="Call now, or send the form and we'll call you back."
+    text="Give us a call or fill out the form and we'll get back to you."
     variant="photo-card"
     image={callPhoto}
     imageAlt="A laptop and a cup of coffee on a wooden desk"
-    ctaNote="No obligation"
     secondaryCta={estimateCta}
   />
 </BaseLayout>

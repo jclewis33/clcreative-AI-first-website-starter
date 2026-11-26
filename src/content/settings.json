@@ -3,23 +3,23 @@
     "defaultBlogCta": "free-site-review",
     "defaultCtaSection": "start-a-project",
     "process": {
-      "heading": "From first call to final walkthrough",
+      "heading": "How a job goes",
       "steps": [
         {
-          "title": "Call or send the form",
-          "text": "Tell us about the project and what you have in mind."
+          "title": "Get in touch",
+          "text": "Give us a call or fill out the form and tell us about the job."
         },
         {
-          "title": "On-site visit",
-          "text": "We measure, look at the space and answer your questions."
+          "title": "We talk it through",
+          "text": "We ask about the job, answer your questions and set up the next step."
         },
         {
-          "title": "Written, fixed quote",
-          "text": "A clear price and schedule before any work starts."
+          "title": "[How you price it]",
+          "text": "[How the business quotes, in its own words: on site or by phone, and what the price includes]"
         },
         {
-          "title": "Build and walkthrough",
-          "text": "One crew, daily updates, and a final walkthrough together."
+          "title": "[The work]",
+          "text": "[What happens on the day, from the business itself or its reviews]"
         }
       ]
     }

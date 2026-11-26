@@ -11,6 +11,11 @@
  * from SITE, the scopes beside a photo, equipment and capacity on dark,
  * the prequal paperwork, the bid invitation form with what happens next,
  * and the towns served (SITE.serviceAreas).
+ *
+ * The copy claims nothing about the business. Lines in [brackets] are
+ * prompts for facts only the business can supply (crews, equipment,
+ * insurance, the scopes they bid): replace each from their own material,
+ * or cut it.
  */
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Hero from "@/components/sections/Hero.astro";
@@ -43,9 +48,9 @@ const facts = [
   { label: "In business since", value: SITE.founded ? `${SITE.founded}` : "" },
 ].filter((fact) => fact.value);
 const scopes = [
-  { title: "New construction", text: "Rough-in to final, on your schedule." },
-  { title: "Tenant finish-outs", text: "Offices, retail and restaurants." },
-  { title: "Turnovers and repairs", text: "Units ready for the next lease." },
+  { title: "New construction", text: "[What they do on new builds]" },
+  { title: "Tenant finish-outs", text: "[The kinds of spaces they finish]" },
+  { title: "Turnovers and repairs", text: "[What they handle between leases]" },
 ];
 const capabilityImages = [
   {
@@ -54,16 +59,13 @@ const capabilityImages = [
   },
 ];
 const capabilities = [
-  { label: "Two crews", text: "So your schedule keeps moving." },
-  { label: "Our own equipment", text: "No waiting on rentals." },
-  {
-    label: "Off-hours work",
-    text: "Nights and weekends when the site needs it.",
-  },
+  { label: "[Crews]", text: "[How many, and how big, as they say it]" },
+  { label: "[Equipment]", text: "[What they own, only what they name]" },
+  { label: "[Hours]", text: "[When they can work on a site]" },
 ];
 const documents = [
-  { title: "Capabilities statement", text: "Scopes, crew and capacity" },
-  { title: "Certificate of insurance", text: "Naming your company" },
+  { title: "[Capabilities statement]", text: "[Only if they have one]" },
+  { title: "[Certificate of insurance]", text: "[Only if they carry it]" },
   { title: "W-9", text: "Current and signed" },
 ];
 const scopeOptions = [
@@ -75,13 +77,13 @@ const scopeOptions = [
 const nextSteps = [
   "We confirm we have your invitation.",
   "We review the drawings and the scope.",
-  "You get our number by the bid date.",
+  "[When they send their number]",
 ];
 ---
 
 <BaseLayout
   title={`Contractors and property managers | ${SITE.name}`}
-  description={`${SITE.name} works with general contractors and property managers in ${SITE.address.locality} and nearby.`}
+  description={`Bid invitations and prequalification paperwork for ${SITE.name} in ${SITE.address.locality}.`}
   breadcrumbs={breadcrumbs}
 >
   <Hero
@@ -89,8 +91,8 @@ const nextSteps = [
     overlay="full"
     headingSize="h1"
     eyebrow="For contractors and property managers"
-    heading="A dependable sub for <strong>your next project</strong>"
-    text="Send the drawings and the bid date. We'll come back with a number and a crew that shows up."
+    heading="[Their trade] for <strong>your next project</strong>"
+    text="Send the drawings and the bid date, and we'll get back to you."
     image={heroPhoto}
     imageAlt="A desktop, laptop, tablet and phone on a wooden desk"
     primaryCta={formCta}
@@ -105,7 +107,7 @@ const nextSteps = [
 
   <RuledList
     eyebrow="Scopes we cover"
-    heading="One crew for the whole scope"
+    heading="[The work they bid on, in their words]"
     items={scopes}
     image={scopePhoto}
     imageAlt="Two screens on a desk, one showing code and one a web page"
@@ -114,7 +116,7 @@ const nextSteps = [
   <FeatureSpotlight
     theme="dark"
     eyebrow="Equipment and capacity"
-    heading="Bigger jobs need a <strong>bigger crew</strong>"
+    heading="[What they can take on: <strong>crews, equipment, hours</strong>]"
     images={capabilityImages}
     items={capabilities}
   />
