@@ -54,16 +54,16 @@ Icon names are the keys of `src/data/service-icons.json`.
 
 ## Recipes
 
-Dev-only sample pages to copy when building a client site (stripped from
-the build via `DEV_ONLY_PATHS`):
+Sample pages to copy when building a client site: the composed pages in
+`presets/local-service/` (home, contact, about, audience).
 
-- `/demo/local-service`: home page. Its ServiceCards link to the service
-  pages and carry `id="services"`, the target of the service breadcrumb.
-- `/demo/local-service-contact`: contact page, kept short: a compact hero
-  (photo behind the heading, dark overlay, call button), the two-step
-  compact LeadForm beside ContactCards (call now, hours — no address card),
-  "what happens next", the map, FAQ. Give it a texture photo (pipes,
-  tools), not a posed person: the heading sits on it.
+- The home page's ServiceCards link to the service pages and carry
+  `id="services"`, the target of the service breadcrumb.
+- The contact page is kept short: a compact hero (photo behind the
+  heading, dark overlay, call button), the two-step compact LeadForm beside
+  ContactCards (call now, hours — no address card), "what happens next",
+  the map, FAQ. Give it a texture photo (pipes, tools), not a posed person:
+  the heading sits on it.
 
 There is no `/services` index page yet. The Services breadcrumb points at
 `SERVICES_INDEX_PATH` (`/#services`) in `src/lib/services.ts`, so the

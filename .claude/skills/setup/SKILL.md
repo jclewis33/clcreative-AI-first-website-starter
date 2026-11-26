@@ -302,7 +302,7 @@ someone else's photography. The CLI does **not** touch `src/assets/`.
 | Home page + hero   | `src/pages/index.astro`                                                                                                |
 | Section components | `Services`, `Pricing`, `WhyWorkWithUs`, `HowItWorks`, `CTASection`, `ImagePromo`, `PostLaunchSupport`, `ProjectImages` |
 | Templates          | `src/components/templates/BlogPostTemplate.astro`                                                                      |
-| Other pages        | `contact.astro`, `components.astro`, `demo/local-service.astro`                                                        |
+| Other pages        | `contact.astro`, `components.astro`                                                                                    |
 
 The sample content's photos are separate: they live beside the entries in
 `src/content/**/images/` and go when the sample content is replaced (the

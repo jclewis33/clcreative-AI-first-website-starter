@@ -40,15 +40,7 @@ export const SITE_NOINDEX =
   SITE.demo !== null || ["1", "true"].includes(process.env.SITE_NOINDEX ?? "");
 
 /** Pages that exist only for local development; stripped from the build. */
-export const DEV_ONLY_PATHS = [
-  "/style-guide",
-  "/components",
-  "/demo/local-service",
-  "/demo/local-service-contact",
-  "/demo/local-service-showcase",
-  "/demo/local-service-about",
-  "/demo/local-service-audience",
-];
+export const DEV_ONLY_PATHS = ["/style-guide", "/components"];
 
 /**
  * Whole path segments: matches `/x` and `/x/...`, never `/blog/x-something`.
